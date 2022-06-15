@@ -607,11 +607,6 @@
       status: "test",
     },
     {
-      name: "CSSGridTemplatePropertyInterpolation",
-      depends_on: ["LayoutNGGridFragmentation"],
-      status: "experimental",
-    },
-    {
       // This needs to be kept as a runtime flag as long as we need to forcibly
       // disable it for WebView on Android versions older than P. See
       // https://crrev.com/f311a84728272e30979432e8474089b3db3c67df
@@ -2287,8 +2282,6 @@
     },
     {
       name: "SubresourceWebBundles",
-      origin_trial_feature_name: "SubresourceWebBundles",
-      origin_trial_allows_third_party: true,
       status: "experimental"
     },
     {

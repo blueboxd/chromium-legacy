@@ -156,11 +156,6 @@ const base::Feature kAssistMultiWord{"AssistMultiWord",
 const base::Feature kAssistMultiWordExpanded{"AssistMultiWordExpanded",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to enable lacros support for the assistive multi word
-// suggestions feature.
-const base::Feature kAssistMultiWordLacrosSupport{
-    "AssistMultiWordLacrosSupport", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether to enable assistive personal information.
 const base::Feature kAssistPersonalInfo{"AssistPersonalInfo",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1431,7 +1426,7 @@ const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
 // Enables or disables using the system input engine for physical typing in
 // Chinese.
 const base::Feature kSystemChinesePhysicalTyping{
-    "SystemChinesePhysicalTyping", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SystemChinesePhysicalTyping", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the System Extensions platform.
 const base::Feature kSystemExtensions{"SystemExtensions",
@@ -1491,7 +1486,7 @@ const base::Feature kUsbNotificationController{
 // Uses new  AuthSession-based API in cryptohome to authenticate users during
 // sign-in.
 const base::Feature kUseAuthsessionAuthentication{
-    "UseAuthsessionAuthentication", base::FEATURE_ENABLED_BY_DEFAULT};
+    "UseAuthsessionAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",

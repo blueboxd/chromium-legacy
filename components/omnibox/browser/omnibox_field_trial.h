@@ -479,26 +479,17 @@ bool RichAutocompletionShowAdditionalText();
 extern const base::FeatureParam<bool> kRichAutocompletionAutocompleteTitles;
 extern const base::FeatureParam<bool>
     kRichAutocompletionAutocompleteTitlesShortcutProvider;
-extern const base::FeatureParam<bool>
-    kRichAutocompletionAutocompleteTitlesNoInputsWithSpaces;
 extern const base::FeatureParam<int>
     kRichAutocompletionAutocompleteTitlesMinChar;
 extern const base::FeatureParam<bool>
     kRichAutocompletionAutocompleteNonPrefixAll;
 extern const base::FeatureParam<bool>
     kRichAutocompletionAutocompleteNonPrefixShortcutProvider;
-extern const base::FeatureParam<bool>
-    kRichAutocompletionAutocompleteNonPrefixNoInputsWithSpaces;
 extern const base::FeatureParam<int>
     kRichAutocompletionAutocompleteNonPrefixMinChar;
 extern const base::FeatureParam<bool> kRichAutocompletionShowAdditionalText;
-extern const base::FeatureParam<bool> kRichAutocompletionSplitTitleCompletion;
-extern const base::FeatureParam<bool> kRichAutocompletionSplitUrlCompletion;
-extern const base::FeatureParam<int> kRichAutocompletionSplitCompletionMinChar;
 extern const base::FeatureParam<bool>
     kRichAutocompletionAutocompleteShortcutText;
-extern const base::FeatureParam<bool>
-    kRichAutocompletionAutocompleteShortcutTextNoInputsWithSpaces;
 extern const base::FeatureParam<int>
     kRichAutocompletionAutocompleteShortcutTextMinChar;
 extern const base::FeatureParam<bool> kRichAutocompletionCounterfactual;
@@ -527,6 +518,9 @@ extern const base::FeatureParam<bool>
     kShortBookmarkSuggestionsByTotalInputLengthCounterfactual;
 extern const base::FeatureParam<int>
     kShortBookmarkSuggestionsByTotalInputLengthThreshold;
+
+// Shortcut Expanding.
+bool IsShortcutExpandingEnabled();
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions.
 // Indicates whether the user is in the counterfactual group in the experiment

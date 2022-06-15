@@ -854,6 +854,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   metadata.page_scale_factor = frame_metadata.page_scale_factor;
   metadata.root_scroll_offset_x = frame_metadata.root_scroll_offset.x();
   metadata.root_scroll_offset_y = frame_metadata.root_scroll_offset.y();
+  metadata.source_size = source_size;
   if (frame_metadata.top_controls_visible_height.has_value()) {
     last_top_controls_visible_height_ =
         *frame_metadata.top_controls_visible_height;
@@ -971,21 +972,12 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     return;
   }
 
-  // If the target is in a different renderer than the root renderer (indicated
-  // by having a different frame sink ID), we currently cannot provide
-  // reasonable metadata about the region capture rect. For more context, see
-  // https://crbug.com/1327560.
-  //
-  // TODO(https://crbug.com/1335175): Provide accurate bounds for elements
-  // embedded in different renderers.
-  const bool is_same_frame_sink_as_requested =
-      resolved_target_->GetFrameSinkId() == target_->frame_sink_id;
-  if (absl::holds_alternative<RegionCaptureCropId>(target_->sub_target) &&
-      is_same_frame_sink_as_requested) {
+  if (absl::holds_alternative<RegionCaptureCropId>(target_->sub_target)) {
     const float scale_factor = frame_metadata.device_scale_factor;
     metadata.region_capture_rect =
         scale_factor ? ScaleToEnclosingRect(capture_region, 1.0f / scale_factor)
                      : capture_region;
+    metadata.source_size = capture_region.size();
   }
   // Note that this is done unconditionally, as a new crop version may indicate
   // that the stream has been successfully uncropped.

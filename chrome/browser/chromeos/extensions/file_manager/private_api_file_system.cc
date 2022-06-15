@@ -41,6 +41,7 @@
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/trash_io_task.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/zip_io_task.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
@@ -995,14 +996,14 @@ void FileManagerPrivateInternalGetDisallowedTransfersFunction::
           *entry_definition_list))));
 }
 
-FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
-    FileManagerPrivateInternalGetFilesRestrictedByDlpFunction() = default;
+FileManagerPrivateInternalGetDlpMetadataFunction::
+    FileManagerPrivateInternalGetDlpMetadataFunction() = default;
 
-FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
-    ~FileManagerPrivateInternalGetFilesRestrictedByDlpFunction() = default;
+FileManagerPrivateInternalGetDlpMetadataFunction::
+    ~FileManagerPrivateInternalGetDlpMetadataFunction() = default;
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::Run() {
+FileManagerPrivateInternalGetDlpMetadataFunction::Run() {
   if (!base::FeatureList::IsEnabled(
           features::kDataLeakPreventionFilesRestriction)) {
     return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
@@ -1014,8 +1015,7 @@ FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::Run() {
     return RespondNow(OneArgument(base::Value(base::Value::Type::LIST)));
   }
 
-  using extensions::api::file_manager_private_internal::
-      GetFilesRestrictedByDlp::Params;
+  using extensions::api::file_manager_private_internal::GetDlpMetadata::Params;
   const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -1033,48 +1033,29 @@ FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::Run() {
   }
 
   files_controller_ = std::make_unique<policy::DlpFilesController>();
-  files_controller_->GetFilesRestrictedByAnyRule(
+  files_controller_->GetDlpMetadata(
       source_urls_,
       base::BindOnce(
-          &FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
-              OnGetFilesRestrictedByDlp,
+          &FileManagerPrivateInternalGetDlpMetadataFunction::OnGetDlpMetadata,
           this));
 
   return RespondLater();
 }
 
-void FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
-    OnGetFilesRestrictedByDlp(
-        std::vector<storage::FileSystemURL> restricted_files) {
-  file_manager::util::FileDefinitionList file_definition_list;
-  for (const auto& file : restricted_files) {
-    file_manager::util::FileDefinition file_definition;
-    file_definition.is_directory = false;
-    file_definition.virtual_path = file.virtual_path();
-    file_definition.absolute_path = file.path();
-    file_definition_list.emplace_back(std::move(file_definition));
+void FileManagerPrivateInternalGetDlpMetadataFunction::OnGetDlpMetadata(
+    std::vector<policy::DlpFilesController::DlpFileMetadata>
+        dlp_metadata_list) {
+  using extensions::api::file_manager_private::DlpMetadata;
+  std::vector<DlpMetadata> converted_list;
+  for (const auto& md : dlp_metadata_list) {
+    DlpMetadata metadata;
+    metadata.is_dlp_restricted = md.is_dlp_restricted;
+    metadata.source_url = md.source_url;
+    converted_list.emplace_back(std::move(metadata));
   }
-
-  file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      file_manager::util::GetFileSystemContextForSourceURL(
-          Profile::FromBrowserContext(browser_context()), source_url()),
-      url::Origin::Create(source_url().DeprecatedGetOriginAsURL()),
-      file_definition_list,  // Safe, since copied internally.
-      base::BindOnce(
-          &FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
-              OnConvertFileDefinitionListToEntryDefinitionList,
-          this));
-}
-
-void FileManagerPrivateInternalGetFilesRestrictedByDlpFunction::
-    OnConvertFileDefinitionListToEntryDefinitionList(
-        std::unique_ptr<file_manager::util::EntryDefinitionList>
-            entry_definition_list) {
-  DCHECK(entry_definition_list);
-
-  Respond(OneArgument(base::Value::FromUniquePtrValue(
-      file_manager::util::ConvertEntryDefinitionListToListValue(
-          *entry_definition_list))));
+  Respond(ArgumentList(
+      api::file_manager_private_internal::GetDlpMetadata::Results::Create(
+          converted_list)));
 }
 
 FileManagerPrivateInternalStartCopyFunction::
@@ -1655,6 +1636,15 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
       task = std::make_unique<file_manager::io_task::DeleteIOTask>(
           std::move(source_urls), file_system_context);
       break;
+    case file_manager::io_task::OperationType::kTrash:
+      if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash)) {
+        task = std::make_unique<file_manager::io_task::TrashIOTask>(
+            std::move(source_urls), profile, file_system_context,
+            /*base_path=*/base::FilePath());
+        break;
+      } else {
+        return RespondNow(Error("Invalid operation type"));
+      }
     case file_manager::io_task::OperationType::kExtract:
       if (base::FeatureList::IsEnabled(
               chromeos::features::kFilesExtractArchive)) {

@@ -1258,32 +1258,6 @@ const FeatureEntry::FeatureVariation
         {"Hide Additional Text", kOmniboxRichAutocompletionAdditionalTextHide,
          std::size(kOmniboxRichAutocompletionAdditionalTextHide), nullptr}};
 
-const FeatureEntry::FeatureParam kOmniboxRichAutocompletionTitlesUrls5[] = {
-    {"RichAutocompletionSplitTitleCompletion", "true"},
-    {"RichAutocompletionSplitUrlCompletion", "true"},
-    {"RichAutocompletionSplitCompletionMinChar", "5"}};
-const FeatureEntry::FeatureParam kOmniboxRichAutocompletionTitlesUrls3[] = {
-    {"RichAutocompletionSplitTitleCompletion", "true"},
-    {"RichAutocompletionSplitUrlCompletion", "true"},
-    {"RichAutocompletionSplitCompletionMinChar", "3"}};
-const FeatureEntry::FeatureParam kOmniboxRichAutocompletionTitles5[] = {
-    {"RichAutocompletionSplitTitleCompletion", "true"},
-    {"RichAutocompletionSplitCompletionMinChar", "5"}};
-const FeatureEntry::FeatureParam kOmniboxRichAutocompletionTitles3[] = {
-    {"RichAutocompletionSplitTitleCompletion", "true"},
-    {"RichAutocompletionSplitCompletionMinChar", "3"}};
-
-const FeatureEntry::FeatureVariation
-    kOmniboxRichAutocompletionSplitVariations[] = {
-        {"Titles & URLs, min char 5", kOmniboxRichAutocompletionTitlesUrls5,
-         std::size(kOmniboxRichAutocompletionTitlesUrls5), nullptr},
-        {"Titles & URLs, min char 3", kOmniboxRichAutocompletionTitlesUrls3,
-         std::size(kOmniboxRichAutocompletionTitlesUrls3), nullptr},
-        {"Titles, min char 5", kOmniboxRichAutocompletionTitles5,
-         std::size(kOmniboxRichAutocompletionTitles5), nullptr},
-        {"Titles, min char 3", kOmniboxRichAutocompletionTitles3,
-         std::size(kOmniboxRichAutocompletionTitles3), nullptr}};
-
 const FeatureEntry::FeatureParam kOmniboxRichAutocompletionPreferUrls[] = {
     {"RichAutocompletionAutocompletePreferUrlsOverPrefixes", "true"}};
 
@@ -4698,10 +4672,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeAssistMultiWordExpandedName,
      flag_descriptions::kImeAssistMultiWordExpandedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAssistMultiWordExpanded)},
-    {"enable-cros-ime-assist-multi-word-lacros",
-     flag_descriptions::kImeAssistMultiWordLacrosSupportName,
-     flag_descriptions::kImeAssistMultiWordLacrosSupportDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAssistMultiWordLacrosSupport)},
     {"enable-cros-ime-assist-personal-info",
      flag_descriptions::kImeAssistPersonalInfoName,
      flag_descriptions::kImeAssistPersonalInfoDescription, kOsCrOS,
@@ -4728,10 +4698,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeStylusHandwritingName,
      flag_descriptions::kImeStylusHandwritingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeStylusHandwriting)},
-    {"enable-cros-language-settings-update-2",
-     flag_descriptions::kCrosLanguageSettingsUpdate2Name,
-     flag_descriptions::kCrosLanguageSettingsUpdate2Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kLanguageSettingsUpdate2)},
     {"enable-cros-language-settings-update-japanese",
      flag_descriptions::kCrosLanguageSettingsUpdateJapaneseName,
      flag_descriptions::kCrosLanguageSettingsUpdateJapaneseDescription, kOsCrOS,
@@ -5132,12 +5098,6 @@ const FeatureEntry kFeatureEntries[] = {
          omnibox::kRichAutocompletion,
          kOmniboxRichAutocompletionShowAdditionalTextVariations,
          "OmniboxBundledExperimentV1")},
-    {"omnibox-rich-autocompletion-split",
-     flag_descriptions::kOmniboxRichAutocompletionSplitName,
-     flag_descriptions::kOmniboxRichAutocompletionSplitDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kRichAutocompletion,
-                                    kOmniboxRichAutocompletionSplitVariations,
-                                    "OmniboxBundledExperimentV1")},
     {"omnibox-rich-autocompletion-prefer-urls-over-prefixes",
      flag_descriptions::kOmniboxRichAutocompletionPreferUrlsOverPrefixesName,
      flag_descriptions::
@@ -5180,6 +5140,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxAggregateShortcutsName,
      flag_descriptions::kOmniboxAggregateShortcutsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kAggregateShortcuts)},
+    {"omnibox-shortcut-expanding",
+     flag_descriptions::kOmniboxShortcutExpandingName,
+     flag_descriptions::kOmniboxShortcutExpandingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kShortcutExpanding)},
     {"omnibox-close-popup-with-escape",
      flag_descriptions::kOmniboxClosePopupWithEscapeName,
      flag_descriptions::kOmniboxClosePopupWithEscapeDescription, kOsDesktop,

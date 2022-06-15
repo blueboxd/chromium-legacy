@@ -108,9 +108,9 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
     // click on the chip to trigger showing the prompt.
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
-    PermissionChip* chip = browser_view->toolbar()->location_bar()->chip();
-    if (chip) {
-      views::test::ButtonTestApi(chip->button())
+    LocationBarView* lbv = browser_view->toolbar()->location_bar();
+    if (lbv->IsChipActive() && !lbv->chip()->IsBubbleShowing()) {
+      views::test::ButtonTestApi(lbv->chip()->button())
           .NotifyClick(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
                                       gfx::Point(), ui::EventTimeForNow(),
                                       ui::EF_LEFT_MOUSE_BUTTON, 0));
@@ -162,8 +162,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest,
   EXPECT_EQ(0u, views::test::WidgetTest::GetAllWidgets().size());
 }
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/1336247): Flaky on Chrome OS.
+#if BUILDFLAG(IS_MAC)
 // TODO(crbug.com/1324444): For Mac builders, the test fails after activating
 // the browser and cannot spot the widget. Needs investigation and fix.
 #define MAYBE_SwitchTabs DISABLED_SwitchTabs

@@ -532,13 +532,15 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest {
   virtual bool StartWebAppProviderForMainProfile() const { return true; }
 
   void StartWebAppProvider(Profile* profile) {
-    auto system_web_app_manager =
-        std::make_unique<web_app::TestSystemWebAppManager>(profile);
-
     auto* provider = web_app::FakeWebAppProvider::Get(profile);
-    provider->SetSystemWebAppManager(std::move(system_web_app_manager));
+
+    auto* system_web_app_manager =
+        web_app::TestSystemWebAppManager::Get(profile);
+
     provider->SetRunSubsystemStartupTasks(true);
     provider->Start();
+
+    system_web_app_manager->ScheduleStart();
   }
 
   ui::BaseWindow* GetLastActiveWindowForItemController(
@@ -1695,6 +1697,20 @@ TEST_F(ChromeShelfControllerLacrosPrimaryTest, ChromeAppWindows) {
   window2.reset();
   VerifyInstance(kDummyAppId, window2.get(), apps::InstanceState::kDestroyed);
   EXPECT_FALSE(proxy()->InstanceRegistry().ContainsAppId(kDummyAppId));
+}
+
+// Regression test for crash. crbug.com/1296949
+TEST_F(ChromeShelfControllerLacrosPrimaryTest, WithoutAppService) {
+  Profile* const controller_profile = profile()->GetOffTheRecordProfile(
+      Profile::OTRProfileID::CreateUniqueForTesting(),
+      /*create_if_needed=*/true);
+  EXPECT_FALSE(apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+      controller_profile));
+
+  ChromeShelfPrefs::SkipPinnedAppsFromSyncForTest();
+  ash::ShelfModel model;
+  FakeChromeShelfItemFactory shelf_item_factory(controller_profile);
+  ChromeShelfController(controller_profile, &model, &shelf_item_factory).Init();
 }
 
 TEST_F(ChromeShelfControllerWithArcTest, ArcAppsHiddenFromLaunchCanBePinned) {

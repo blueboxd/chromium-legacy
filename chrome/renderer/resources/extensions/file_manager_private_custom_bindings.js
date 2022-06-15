@@ -225,9 +225,9 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
       });
 
   apiFunctions.setHandleRequest(
-      'getFilesRestrictedByDlp', function(entries, callback) {
+      'getDlpMetadata', function(entries, callback) {
         var sourceUrls = entries.map(getEntryURL);
-        fileManagerPrivateInternal.getFilesRestrictedByDlp(
+        fileManagerPrivateInternal.getDlpMetadata(
             sourceUrls, callback);
       });
 
@@ -405,3 +405,15 @@ bindingUtil.registerEventArgumentMassager(
   }
   dispatch(args);
 });
+
+bindingUtil.registerEventArgumentMassager(
+    'fileManagerPrivate.onIOTaskProgressStatus', function(args, dispatch) {
+      // Convert outputs arguments into real Entry objects if they exist.
+      const outputs = args[0].outputs;
+      if (outputs) {
+        for (let i = 0; i < outputs.length; i++) {
+          outputs[i] = GetExternalFileEntry(outputs[i]);
+        }
+      }
+      dispatch(args);
+    });

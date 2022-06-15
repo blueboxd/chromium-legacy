@@ -812,8 +812,7 @@ public class TabGridDialogTest {
     @MediumTest
     @DisabledTest(message = "TODO(crbug.com/1128345): Fix flakiness.")
     // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
-            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", TAB_GROUP_LAUNCH_POLISH_PARAMS})
     public void testAccessibilityString() throws ExecutionException {
         // clang-format on
@@ -934,7 +933,6 @@ public class TabGridDialogTest {
     @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", START_SURFACE_BASE_PARAMS + "/single"})
-    @DisabledTest(message = "crbug.com/1119899, crbug.com/1131545")
     public void testUndoClosureInDialog_WithStartSurface() throws Exception {
         // Create a tab group with 2 tabs.
         finishActivity(mActivityTestRule.getActivity());
@@ -1086,7 +1084,8 @@ public class TabGridDialogTest {
 
     private boolean isDialogShowing(ChromeTabbedActivity cta) {
         View dialogView = cta.findViewById(R.id.dialog_parent_view);
-        return dialogView.getVisibility() == View.VISIBLE && dialogView.getAlpha() == 1f;
+        View dialogContainerView = cta.findViewById(R.id.dialog_container_view);
+        return dialogView.getVisibility() == View.VISIBLE && dialogContainerView.getAlpha() == 1f;
     }
 
     private boolean isDialogHiding(ChromeTabbedActivity cta) {

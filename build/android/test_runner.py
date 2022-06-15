@@ -10,6 +10,7 @@ from __future__ import absolute_import
 import argparse
 import collections
 import contextlib
+import io
 import itertools
 import logging
 import os
@@ -436,6 +437,12 @@ def AddInstrumentationTestOptions(parser):
                       type=_RealPath,
                       help='Configures an additional-apk to be forced '
                       'to be queryable by other APKs.')
+  parser.add_argument('--instant-additional-apk',
+                      action='append',
+                      dest='instant_additional_apks',
+                      default=[],
+                      type=_RealPath,
+                      help='Configures an additional-apk to be an instant APK')
   parser.add_argument(
       '-A', '--annotation',
       dest='annotation_str',
@@ -999,6 +1006,9 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
       upload_logcats_file(),
       'upload_logcats_file' in args and args.upload_logcats_file)
 
+  save_detailed_results = (args.local_output or not local_utils.IsOnSwarming()
+                           ) and not args.isolated_script_test_output
+
   ### Set up test objects.
 
   out_manager = output_manager_factory.CreateOutputManager(args)
@@ -1012,6 +1022,9 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
 
   ### Run.
   with out_manager, json_finalizer():
+    # |raw_logs_fh| is only used by Robolectric tests.
+    raw_logs_fh = io.StringIO() if save_detailed_results else None
+
     with json_writer(), logcats_uploader, env, test_instance, test_run:
 
       repetitions = (range(args.repeat +
@@ -1027,7 +1040,7 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
         raw_results = []
         all_raw_results.append(raw_results)
 
-        test_run.RunTests(raw_results)
+        test_run.RunTests(raw_results, raw_logs_fh=raw_logs_fh)
         if not raw_results:
           all_raw_results.pop()
           continue
@@ -1079,8 +1092,17 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
                          str(tot_tests),
                          str(iteration_count))
 
-    if (args.local_output or not local_utils.IsOnSwarming()
-        ) and not args.isolated_script_test_output:
+    if save_detailed_results:
+      assert raw_logs_fh
+      raw_logs_fh.seek(0)
+      raw_logs = raw_logs_fh.read()
+      if raw_logs:
+        with out_manager.ArchivedTempfile(
+            'raw_logs.txt', 'raw_logs',
+            output_manager.Datatype.TEXT) as raw_logs_file:
+          raw_logs_file.write(raw_logs)
+      logging.critical('RAW LOGS: %s', raw_logs_file.Link())
+
       with out_manager.ArchivedTempfile(
           'test_results_presentation.html',
           'test_results_presentation',

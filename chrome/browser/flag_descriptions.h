@@ -1040,8 +1040,6 @@ extern const char kOmniboxRichAutocompletionShortcutTextName[];
 extern const char kOmniboxRichAutocompletionShortcutTextDescription[];
 extern const char kOmniboxRichAutocompletionShowAdditionalTextName[];
 extern const char kOmniboxRichAutocompletionShowAdditionalTextDescription[];
-extern const char kOmniboxRichAutocompletionSplitName[];
-extern const char kOmniboxRichAutocompletionSplitDescription[];
 extern const char kOmniboxRichAutocompletionPreferUrlsOverPrefixesName[];
 extern const char kOmniboxRichAutocompletionPreferUrlsOverPrefixesDescription[];
 extern const char kOmniboxRichAutocompletionPromisingName[];
@@ -1055,6 +1053,9 @@ extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
 
 extern const char kOmniboxShortBookmarkSuggestionsName[];
 extern const char kOmniboxShortBookmarkSuggestionsDescription[];
+
+extern const char kOmniboxShortcutExpandingName[];
+extern const char kOmniboxShortcutExpandingDescription[];
 
 extern const char kOmniboxSiteSearchStarterPackName[];
 extern const char kOmniboxSiteSearchStarterPackDescription[];
@@ -2556,9 +2557,6 @@ extern const char kContextualNudgesDescription[];
 
 extern const char kCroshSWAName[];
 extern const char kCroshSWADescription[];
-
-extern const char kCrosLanguageSettingsUpdate2Name[];
-extern const char kCrosLanguageSettingsUpdate2Description[];
 
 extern const char kCrosLanguageSettingsUpdateJapaneseName[];
 extern const char kCrosLanguageSettingsUpdateJapaneseDescription[];

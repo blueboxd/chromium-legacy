@@ -1611,6 +1611,9 @@ virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/f
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/header-after-break.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/header-footer.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/header.tentative.html [ Pass ]
+virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/hit-test-relative-in-transform.tentative.html [ Pass ]
+virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/hit-test-relative.tentative.html [ Pass ]
+virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/hit-test.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/inline-block.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/multicol.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/table-border-005.html [ Pass ]
@@ -3352,6 +3355,7 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac11 ] virtual/conversions-debug-mode/wpt_internal/attribution-reporting/simple-event-level-report-test.sub.https.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/conversions-debug-mode/wpt_internal/attribution-reporting/simple-aggregatable-report-test.sub.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/WebCryptoAPI/derive_bits_keys/cfrg_curves_bits.https.any.worker.html [ Crash Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/lch-009.html [ Failure ]
@@ -3980,6 +3984,9 @@ crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/footer.tenta
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/header-after-break.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/header-footer.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/header.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/hit-test-relative-in-transform.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/hit-test-relative.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/hit-test.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/inline-block.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/multicol.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/table-border-005.html [ Failure ]
@@ -4090,6 +4097,12 @@ crbug.com/1160916 external/wpt/css/css-backgrounds/border-top-right-radius-010.x
 crbug.com/1045599 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-safe-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-row-axis-self-baseline-synthesized-004.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-self-baseline-not-applied-if-sizing-cyclic-dependency-003.html [ Failure ]
+crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
+crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-composition.html [ Failure ]
+crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-interpolation.html [ Failure ]
+crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
+crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-composition.html [ Failure ]
+crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-interpolation.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Failure ]
 crbug.com/1335889 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-009.html [ Failure ]
 
@@ -6846,7 +6859,6 @@ crbug.com/1312164 webaudio/internals/mediaelementaudiosourcenode-gc.html [ Skip 
 crbug.com/1312164 webaudio/internals/audiocontext-gc.html [ Skip ]
 
 # Sheriff 2022-03-21: More flaky tests.
-crbug.com/1277696 [ Mac ] fast/loader/reload-zero-byte-plugin.html [ Failure Pass ]
 crbug.com/1272376 [ Mac ] plugins/plugin-document-back-forward.html [ Failure Pass ]
 
 # Tests that need updates due to rounding math in layout
@@ -7063,3 +7075,6 @@ crbug.com/1229084 [ Win ] external/wpt/storage-access-api/requestStorageAccess.s
 
 # Sheriff 2022-06-09
 crbug.com/1335002 [ Linux ] external/wpt/event-timing/first-input-interactionid-tap.html [ Skip ]
+
+# Flaky on multiple platforms
+crbug.com/1277696 fast/loader/reload-zero-byte-plugin.html [ Failure Pass ]

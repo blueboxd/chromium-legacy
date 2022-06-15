@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
@@ -170,11 +171,6 @@ bool QtUi::Initialize() {
   return true;
 }
 
-bool QtUi::GetTint(int id, color_utils::HSL* tint) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
-}
-
 bool QtUi::GetColor(int id, SkColor* color, bool use_custom_frame) const {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
@@ -186,33 +182,27 @@ bool QtUi::GetDisplayProperty(int id, int* result) const {
 }
 
 SkColor QtUi::GetFocusRingColor() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::kPlaceholderColor;
+  return shim_->GetColor(ColorType::kHighlightBg, ColorState::kNormal);
 }
 
 SkColor QtUi::GetActiveSelectionBgColor() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::kPlaceholderColor;
+  return shim_->GetColor(ColorType::kHighlightBg, ColorState::kNormal);
 }
 
 SkColor QtUi::GetActiveSelectionFgColor() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::kPlaceholderColor;
+  return shim_->GetColor(ColorType::kHighlightFg, ColorState::kNormal);
 }
 
 SkColor QtUi::GetInactiveSelectionBgColor() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::kPlaceholderColor;
+  return shim_->GetColor(ColorType::kHighlightBg, ColorState::kInactive);
 }
 
 SkColor QtUi::GetInactiveSelectionFgColor() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::kPlaceholderColor;
+  return shim_->GetColor(ColorType::kHighlightFg, ColorState::kInactive);
 }
 
 base::TimeDelta QtUi::GetCursorBlinkInterval() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return base::TimeDelta();
+  return base::Milliseconds(shim_->GetCursorBlinkIntervalMs());
 }
 
 gfx::Image QtUi::GetIconForContentType(const std::string& content_type,
@@ -260,8 +250,7 @@ bool QtUi::PreferDarkTheme() const {
 }
 
 bool QtUi::AnimationsEnabled() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return true;
+  return shim_->GetAnimationDurationMs() > 0;
 }
 
 std::unique_ptr<views::NavButtonProvider> QtUi::CreateNavButtonProvider() {

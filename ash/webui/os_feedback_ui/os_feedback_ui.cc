@@ -52,11 +52,14 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"popularHelpContent", IDS_FEEDBACK_TOOL_POPULAR_HELP_CONTENT},
       {"noMatchedResults", IDS_FEEDBACK_TOOL_NO_MATCHED_RESULTS},
       {"attachFilesLabel", IDS_FEEDBACK_TOOL_ATTACH_FILES_LABEL},
+      {"attachScreenshotLabel", IDS_FEEDBACK_TOOL_SCREENSHOT_LABEL},
       {"replaceFileLabel", IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL},
       {"userEmailLabel", IDS_FEEDBACK_TOOL_USER_EMAIL_LABEL},
       {"shareDiagnosticDataLabel",
        IDS_FEEDBACK_TOOL_SHARE_DIAGNOSTIC_DATA_LABEL},
       {"confirmationTitleOnline", IDS_FEEDBACK_TOOL_PAGE_TITLE_AFTER_SENT},
+      {"diagnosticsAppLabel",
+       IDS_FEEDBACK_TOOL_RESOURCES_DIAGNOSTICS_APP_LABEL},
   };
 
   source->AddLocalizedStrings(kLocalizedStrings);

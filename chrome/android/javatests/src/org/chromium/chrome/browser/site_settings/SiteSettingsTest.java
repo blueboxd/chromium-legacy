@@ -821,7 +821,6 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisabledTest(message = "Flaky - https://crbug.com/1313206")
     public void testPopupsNotBlocked() throws TimeoutException {
         new TwoStatePermissionTestCase(
                 "Popups", SiteSettingsCategory.Type.POPUPS, ContentSettingsType.POPUPS, true)
@@ -1504,7 +1503,6 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisabledTest(message = "https://crbug.com/1094934")
     public void testEmbargoedNotificationCategorySiteSettings() throws Exception {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         final String urlToEmbargo = mPermissionRule.getURLWithHostName(

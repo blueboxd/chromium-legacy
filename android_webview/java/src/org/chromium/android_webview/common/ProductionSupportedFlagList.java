@@ -19,7 +19,6 @@ import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
 import org.chromium.services.network.NetworkServiceFeatures;
-import org.chromium.webrtc_overrides.WebRtcOverridesFeatures;
 
 /**
  * List of experimental features/flags supported for user devices. Add features/flags to this list
@@ -267,8 +266,6 @@ public final class ProductionSupportedFlagList {
                     "Enables prefetching Android fonts on renderer startup."),
             Flag.baseFeature(AwFeatures.WEBVIEW_LEGACY_TLS_SUPPORT,
                     "Whether legacy TLS versions (TLS 1.0/1.1) conections are allowed."),
-            Flag.baseFeature(WebRtcOverridesFeatures.WEB_RTC_METRONOME_TASK_QUEUE,
-                    "Enables more efficient scheduling of work in WebRTC."),
             Flag.baseFeature(BlinkFeatures.INITIAL_NAVIGATION_ENTRY,
                     "Enables creation of initial NavigationEntries on WebContents creation."),
             Flag.baseFeature(BlinkFeatures.CANVAS2D_STAYS_GPU_ON_READBACK,
@@ -297,8 +294,6 @@ public final class ProductionSupportedFlagList {
                     AwFeatures.WEBVIEW_SYNTHESIZE_PAGE_LOAD_ONLY_ON_INITIAL_MAIN_DOCUMENT_ACCESS,
                     "Only synthesize page load for URL spoof prevention at most once,"
                             + " on initial main document access."),
-            Flag.baseFeature(WebRtcOverridesFeatures.WEB_RTC_TIMER_USES_METRONOME,
-                    "Makes WebRtcTimer coalesce delayed tasks on metronome ticks."),
             Flag.baseFeature(BlinkFeatures.VIEWPORT_HEIGHT_CLIENT_HINT_HEADER,
                     "Enables the use of sec-ch-viewport-height client hint."),
             Flag.baseFeature(BlinkFeatures.USER_AGENT_OVERRIDE_EXPERIMENT,

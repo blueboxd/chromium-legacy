@@ -237,9 +237,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
+    @DisableAnimationsTestRule.EnsureAnimationsOn
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisableIf.Build(message = "Flaky on emulators; see https://crbug.com/1313747",
-        supported_abis_includes = "x86")
+    @DisabledTest(message = "https://crbug.com/1300962")
     public void testRenderGrid_3WebTabs() throws IOException {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -258,9 +258,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisableAnimationsTestRule.EnsureAnimationsOn
     @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     @DisabledTest(message = "https://crbug.com/1300962")
-    @DisableIf.Build(sdk_is_greater_than = O_MR1, message = "crbug.com/1077552")
     public void testRenderGrid_10WebTabs() throws IOException {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -1017,6 +1017,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(3, 0, null);
+        View parentView = cta.getCompositorViewHolderForTesting();
 
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
         CriteriaHelper.pollUiThread(
@@ -1027,13 +1028,19 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         // Force portrait mode since the device can be wrongly in landscape. See crbug/1063639.
         ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
+        CriteriaHelper.pollUiThread(() -> parentView.getHeight() > parentView.getWidth());
 
+        // Ensure the message card is visible so we can get its view holder.
         onView(tabSwitcherViewMatcher())
+                .perform(RecyclerViewActions.scrollToPosition(3))
                 .check(MessageCardWidthAssertion.checkMessageItemSpanSize(3, 2));
 
         ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        CriteriaHelper.pollUiThread(() -> parentView.getHeight() < parentView.getWidth());
 
+        // Ensure the message card is visible so we can get its view holder.
         onView(tabSwitcherViewMatcher())
+                .perform(RecyclerViewActions.scrollToPosition(3))
                 .check(MessageCardWidthAssertion.checkMessageItemSpanSize(3, 3));
     }
 

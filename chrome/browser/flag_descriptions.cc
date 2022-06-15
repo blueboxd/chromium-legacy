@@ -1855,11 +1855,6 @@ const char kOmniboxRichAutocompletionShowAdditionalTextName[] =
 const char kOmniboxRichAutocompletionShowAdditionalTextDescription[] =
     "Show the suggestion title or URL additional text when the input matches "
     "the URL or title respectively. Defaults to true.";
-const char kOmniboxRichAutocompletionSplitName[] =
-    "Omnibox Rich Autocompletion Split";
-const char kOmniboxRichAutocompletionSplitDescription[] =
-    "Allow splitting the user input to intermix with autocompletions; e.g., "
-    "the user input 'x z' could be autocompleted as 'x [y ]z'.";
 const char kOmniboxRichAutocompletionPreferUrlsOverPrefixesName[] =
     "Omnibox Rich Autocompletion Prefer URLs over prefixes";
 const char kOmniboxRichAutocompletionPreferUrlsOverPrefixesDescription[] =
@@ -1870,6 +1865,7 @@ const char kOmniboxRichAutocompletionPromisingName[] =
 const char kOmniboxRichAutocompletionPromisingDescription[] =
     "Allow autocompletion for titles and non-prefixes; see Omnibox Rich "
     "Autocompletion.";
+
 const char kOmniboxSiteSearchStarterPackName[] =
     "Omnibox Site Search Starter Pack";
 const char kOmniboxSiteSearchStarterPackDescription[] =
@@ -3945,6 +3941,11 @@ const char kOmniboxShortBookmarkSuggestionsDescription[] =
     "Match very short input words to beginning of words in bookmark "
     "suggestions.";
 
+const char kOmniboxShortcutExpandingName[] = "Omnibox shortcut expanding";
+const char kOmniboxShortcutExpandingDescription[] =
+    "Expand the last word in the shortcut text to be a complete word from the "
+    "suggestion text.";
+
 const char kScreenAIName[] = "Screen AI";
 const char kScreenAIDescription[] =
     "Enables Screen AI local machine intelligence library to use the screen "
@@ -4467,11 +4468,6 @@ const char kCroshSWAName[] = "Crosh System Web App";
 const char kCroshSWADescription[] =
     "When enabled, crosh (ChromeOS Shell) will run as a tabbed System Web App "
     "rather than a normal browser tab.";
-
-const char kCrosLanguageSettingsUpdate2Name[] = "Language Settings Update 2";
-const char kCrosLanguageSettingsUpdate2Description[] =
-    "Enables the second language settings update. Requires "
-    "#enable-cros-language-settings-update to be enabled.";
 
 const char kCrosLanguageSettingsUpdateJapaneseName[] =
     "Language Settings Update Japanese";

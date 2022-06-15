@@ -158,7 +158,7 @@
   {
     "name": "android-force-app-language-prompt",
     "owners": [ "perrier", "chrome-language@google.com" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 107
   },
   {
     "name": "android-picture-in-picture-api",
@@ -1035,8 +1035,8 @@
   },
   {
     "name": "crostini-ime-support",
-    "owners": [ "timloh", "davidmunro@google.com" ],
-    "expiry_milestone": 104
+    "owners": [ "timloh", "sophialin@google.com" ],
+    "expiry_milestone": 111
   },
   {
     "name": "crostini-multi-container",
@@ -1055,8 +1055,8 @@
   },
   {
     "name": "crostini-virtual-keyboard-support",
-    "owners": [ "timloh", "davidmunro@google.com" ],
-    "expiry_milestone": 104
+    "owners": [ "timloh", "sophialin@google.com" ],
+    "expiry_milestone": 111
   },
   {
     "name": "cryptauth-v2-dedup-device-last-activity-time",
@@ -1750,11 +1750,6 @@
     "expiry_milestone": 97
   },
   {
-    "name": "enable-cros-language-settings-update-2",
-    "owners": [ "cros-borders@google.com" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "enable-cros-language-settings-update-japanese",
     "owners": [ "keithlee", "essential-inputs-team@google.com" ],
     "expiry_milestone": 110
@@ -1934,12 +1929,12 @@
   {
     "name": "enable-desktop-pwas-tab-strip",
     "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 110
   },
   {
     "name": "enable-desktop-pwas-tab-strip-settings",
     "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 110
   },
   {
     "name": "enable-desktop-pwas-url-handling",
@@ -4656,13 +4651,13 @@
     "expiry_milestone": 115
   },
   {
-    "name": "omnibox-rich-autocompletion-split",
-    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "name": "omnibox-short-bookmark-suggestions",
+    "owners": [ "orinj", "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 115
   },
   {
-    "name": "omnibox-short-bookmark-suggestions",
-    "owners": [ "orinj", "manukh", "chrome-omnibox-team@google.com" ],
+    "name": "omnibox-shortcut-expanding",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 115
   },
   {

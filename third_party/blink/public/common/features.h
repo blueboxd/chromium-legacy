@@ -763,6 +763,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kPrecompileInlineScripts;
 // See https://crbug.com/1326622 for more info.
 BLINK_COMMON_EXPORT extern const base::Feature kSimulateClickOnAXFocus;
 
+// If enabled, the HTMLPreloadScanner will run on a worker thread.
+BLINK_COMMON_EXPORT extern const base::Feature kThreadedPreloadScanner;
+
 // If enabled, allows the use of WebSQL in non-secure contexts.
 BLINK_COMMON_EXPORT extern const base::Feature kWebSQLNonSecureContextAccess;
 
@@ -774,6 +777,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kFileSystemUrlNavigation;
 // value as before.
 BLINK_COMMON_EXPORT extern const base::Feature
     kEarlyExitOnNoopClassOrStyleChange;
+
+// Enables correct PreFCP and PostFCP metrics for non-main local frame roots.
+// See https://crbug.com/1330675.
+BLINK_COMMON_EXPORT extern const base::Feature kLocalFrameRootPrePostFCPMetrics;
 
 // TODO(https://crbug.com/1201109): temporary flag to disable new ArrayBuffer
 // size limits, so that tests can be written against code receiving these

@@ -536,9 +536,12 @@
       status:  "experimental",
     },
     {
+      // Flag for supporting size and inline-size container-types along with the
+      // @container rules for size queries. Also implies support for container
+      // relative units and inline-size containment.
       // https://drafts.csswg.org/css-contain-3/#container-queries
       name: "CSSContainerQueries",
-      status: "experimental"
+      status: "stable"
     },
     {
       // https://drafts.csswg.org/css-contain-3/#container-lengths
@@ -1102,7 +1105,7 @@
     },
     {
       name: "FixedElementsDontOverscroll",
-      status: "stable",
+      status: "test",
     },
     {
       name: "Fledge",
@@ -1818,7 +1821,9 @@
       status: "stable",
     },
     {
-      name: "PendingBeaconAPI"
+      name: "PendingBeaconAPI",
+      origin_trial_feature_name: "PendingBeaconAPI",
+      origin_trial_allows_third_party: true,
     },
     {
       name: "PercentBasedScrolling",
@@ -1852,10 +1857,9 @@
       name: "PictureInPicture",
       settable_from_internals: true,
     },
-    // Picture-in-Picture API is disabled by default on Android.
     {
       name: "PictureInPictureAPI",
-      status: {"Android": "", "default": "stable"},
+      status: "stable"
     },
     {
       name: "PictureInPictureV2",
@@ -2675,6 +2679,11 @@
     {
       name: "WebGPU",
       origin_trial_feature_name: "WebGPU",
+    },
+    {
+      // WebGPU developer features are deliberately not enabled by experimental
+      // web platform features.
+      name: "WebGPUDeveloperFeatures",
     },
     {
       // Requires both WebGPU and --enable-experimental-web-platform-features

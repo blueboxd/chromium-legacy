@@ -95,7 +95,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_coordinator.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
@@ -338,9 +337,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // The updater that adjusts the toolbar's layout for fullscreen events.
   std::unique_ptr<FullscreenUIUpdater> _fullscreenUIUpdater;
 
-  // Popup Menu UI Updater.
-  id<PopupMenuUIUpdating> _UIUpdater;
-
   // TODO(crbug.com/1331229): Remove all use of the download manager coordinator
   // from BVC Coordinator for the Download Manager UI.
   DownloadManagerCoordinator* _downloadManagerCoordinator;
@@ -370,6 +366,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // one single drag gesture.  When NO, full screen disabler is reset when
   // the thumb strip animation ends.
   BOOL _deferEndFullscreenDisabler;
+
+  BOOL _isShowingPopupMenu;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -430,9 +428,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // ones that cannot be scrolled off screen by full screen.
 @property(nonatomic, strong, readonly) NSArray<HeaderDefinition*>* headerViews;
 
-// Coordinator for the popup menus.
-@property(nonatomic, strong) PopupMenuCoordinator* popupMenuCoordinator;
-
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
 
 // Command handler for text zoom commands
@@ -482,9 +477,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // The webState of the active tab.
 @property(nonatomic, readonly) web::WebState* currentWebState;
-
-// The NewTabPageCoordinator associated with a WebState.
-- (NewTabPageCoordinator*)ntpCoordinatorForWebState:(web::WebState*)webState;
 
 // The coordinator that shows the Send Tab To Self UI.
 @property(nonatomic, strong) SendTabToSelfCoordinator* sendTabToSelfCoordinator;
@@ -537,7 +529,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // TODO(crbug.com/1331229): Remove all use of the download manager
     // coordinator from BVC
     _downloadManagerCoordinator = dependencies.downloadManagerCoordinator;
-    _UIUpdater = dependencies.UIUpdater;
     self.toolbarInterface = dependencies.toolbarInterface;
     self.primaryToolbarCoordinator = dependencies.primaryToolbarCoordinator;
     self.secondaryToolbarCoordinator = dependencies.secondaryToolbarCoordinator;
@@ -841,12 +832,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                       : nullptr;
 }
 
-// TODO(crbug.com/1265565): Remove once kSingleNtp feature is launched and
-// directly reference `self.ntpCoordinator`.
-- (NewTabPageCoordinator*)ntpCoordinatorForWebState:(web::WebState*)webState {
-  return _ntpCoordinator;
-}
-
 #pragma mark - Public methods
 
 - (id<ActivityServicePositioner>)activityServicePositioner {
@@ -1121,8 +1106,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   for (int index = 0; index < webStateList->count(); ++index)
     [self uninstallDelegatesForWebState:webStateList->GetWebStateAt(index)];
 
-  // Disconnect child coordinators.
-  [self.popupMenuCoordinator stop];
   if (base::FeatureList::IsEnabled(kModernTabStrip)) {
     [self.tabStripCoordinator stop];
     self.tabStripCoordinator = nil;
@@ -1306,8 +1289,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [self primaryToolbarHeightWithInset];
 
   if (self.isNTPActiveForCurrentWebState && self.webUsageEnabled) {
-    [self ntpCoordinatorForWebState:self.currentWebState]
-        .viewController.view.frame =
+    _ntpCoordinator.viewController.view.frame =
         [self ntpFrameForWebState:self.currentWebState];
   }
 }
@@ -1773,21 +1755,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _locationBarModel = std::make_unique<LocationBarModelImpl>(
       _locationBarModelDelegate.get(), kMaxURLDisplayChars);
 
-  // TODO(crbug.com/1329094): Move this coordinator to BrowserCoordinator
-  self.popupMenuCoordinator =
-      [[PopupMenuCoordinator alloc] initWithBaseViewController:self
-                                                       browser:self.browser];
-  self.popupMenuCoordinator.bubblePresenter = _bubblePresenter;
-  self.popupMenuCoordinator.UIUpdater = _UIUpdater;
-  [self.popupMenuCoordinator start];
-
   self.primaryToolbarCoordinator.delegate = self;
   self.primaryToolbarCoordinator.popupPresenterDelegate = self;
-  self.primaryToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
   [self.primaryToolbarCoordinator start];
-
-  self.secondaryToolbarCoordinator.longPressDelegate =
-      self.popupMenuCoordinator;
 
   // TODO(crbug.com/880672): Finish ToolbarContainer work.
   if (base::FeatureList::IsEnabled(
@@ -1824,8 +1794,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [self.tabStripCoordinator start];
     } else {
       self.legacyTabStripCoordinator.presentationProvider = self;
-      self.legacyTabStripCoordinator.longPressDelegate =
-          self.popupMenuCoordinator;
 
       [self.legacyTabStripCoordinator start];
     }
@@ -2016,13 +1984,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/1329089): Inject this handler.
   self.helpHandler =
       HandlerForProtocol(self.browser->GetCommandDispatcher(), HelpCommands);
-
-  // TODO(crbug.com/1329098): Assuming all of the coordinators are in
-  // BrowserCoordinator, move this setup there as well.
-  if (!base::FeatureList::IsEnabled(kModernTabStrip)) {
-    self.legacyTabStripCoordinator.longPressDelegate =
-        self.popupMenuCoordinator;
-  }
 
   // TODO(crbug.com/1329089): Inject this handler.
   self.omniboxHandler =
@@ -2229,8 +2190,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(webState);
     if (NTPHelper && NTPHelper->IsActive()) {
-      NewTabPageCoordinator* coordinator =
-          [self ntpCoordinatorForWebState:webState];
+      NewTabPageCoordinator* coordinator = _ntpCoordinator;
       UIViewController* viewController = coordinator.viewController;
       [coordinator ntpDidChangeVisibility:YES];
       viewController.view.frame = [self ntpFrameForWebState:webState];
@@ -2425,7 +2385,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return nil;
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive()) {
-    return [self ntpCoordinatorForWebState:webState].viewController.view;
+    return _ntpCoordinator.viewController.view;
   }
   DCHECK(self.browser->GetWebStateList()->GetIndexOfWebState(webState) !=
          WebStateList::kInvalidIndex);
@@ -2729,9 +2689,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)reloadNTPForWebState:(web::WebState*)webState {
-  NewTabPageCoordinator* coordinator =
-      [self ntpCoordinatorForWebState:webState];
-  [coordinator reload];
+  [_ntpCoordinator reload];
 }
 
 #pragma mark - ViewRevealingAnimatee
@@ -2828,9 +2786,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Stop scrolling in the current web state when transitioning.
   if (self.currentWebState) {
     if (self.isNTPActiveForCurrentWebState) {
-      NewTabPageCoordinator* coordinator =
-          [self ntpCoordinatorForWebState:self.currentWebState];
-      [coordinator stopScrolling];
+      [_ntpCoordinator stopScrolling];
     } else {
       CRWWebViewScrollViewProxy* scrollProxy =
           self.currentWebState->GetWebViewProxy().scrollViewProxy;
@@ -2958,8 +2914,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // If NTP exists, use NTP coordinator's scroll offset.
   if (self.isNTPActiveForCurrentWebState) {
-    NewTabPageCoordinator* coordinator =
-        [self ntpCoordinatorForWebState:self.currentWebState];
+    NewTabPageCoordinator* coordinator = _ntpCoordinator;
     CGFloat scrolledToTopOffset = [coordinator contentInset].top;
     return [coordinator contentOffset].y == scrolledToTopOffset;
   }
@@ -3082,7 +3037,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     willUpdateSnapshotForWebState:(web::WebState*)webState {
   DCHECK(webState);
   if (self.isNTPActiveForCurrentWebState) {
-    [[self ntpCoordinatorForWebState:self.currentWebState] willUpdateSnapshot];
+    [_ntpCoordinator willUpdateSnapshot];
   }
   OverscrollActionsTabHelper::FromWebState(webState)->Clear();
 }
@@ -3091,7 +3046,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
          baseViewForWebState:(web::WebState*)webState {
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive())
-    return [self ntpCoordinatorForWebState:webState].viewController.view;
+    return _ntpCoordinator.viewController.view;
   return webState->GetView();
 }
 
@@ -3259,8 +3214,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(webState);
     if (NTPHelper && NTPHelper->IsActive()) {
-      UIViewController* viewController =
-          [self ntpCoordinatorForWebState:webState].viewController;
+      UIViewController* viewController = _ntpCoordinator.viewController;
       [viewController becomeFirstResponder];
     } else {
       [self.currentWebState->GetWebViewProxy() becomeFirstResponder];
@@ -3702,9 +3656,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)locationBarDidBecomeFirstResponder {
   if (self.isNTPActiveForCurrentWebState) {
-    NewTabPageCoordinator* coordinator =
-        [self ntpCoordinatorForWebState:self.currentWebState];
-    [coordinator locationBarDidBecomeFirstResponder];
+    [_ntpCoordinator locationBarDidBecomeFirstResponder];
   }
   [self.sideSwipeController setEnabled:NO];
 
@@ -3730,9 +3682,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.sideSwipeController setEnabled:YES];
 
   if (self.isNTPActiveForCurrentWebState) {
-    NewTabPageCoordinator* coordinator =
-        [self ntpCoordinatorForWebState:self.currentWebState];
-    [coordinator locationBarDidResignFirstResponder];
+    [_ntpCoordinator locationBarDidResignFirstResponder];
   }
   [UIView animateWithDuration:0.3
       animations:^{
@@ -3899,7 +3849,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)focusFakebox {
   if (self.isNTPActiveForCurrentWebState) {
-    [[self ntpCoordinatorForWebState:self.currentWebState] focusFakebox];
+    [_ntpCoordinator focusFakebox];
   }
 }
 
@@ -3929,8 +3879,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)updateFollowingFeedHasUnseenContent:(BOOL)hasUnseenContent {
-  [[self ntpCoordinatorForWebState:self.currentWebState]
-      updateFollowingFeedHasUnseenContent:hasUnseenContent];
+  [_ntpCoordinator updateFollowingFeedHasUnseenContent:hasUnseenContent];
 }
 
 #pragma mark - WebStateListObserving methods
@@ -3954,7 +3903,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(oldWebState);
     if (NTPHelper && NTPHelper->IsActive()) {
-      [[self ntpCoordinatorForWebState:oldWebState] ntpDidChangeVisibility:NO];
+      [_ntpCoordinator ntpDidChangeVisibility:NO];
     }
     [self dismissPopups];
   }
@@ -3972,7 +3921,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(newWebState);
   if (NTPHelper && NTPHelper->IsActive()) {
-    [[self ntpCoordinatorForWebState:newWebState] ntpDidChangeVisibility:YES];
+    [_ntpCoordinator ntpDidChangeVisibility:YES];
   }
 
   [self webStateSelected:newWebState notifyToolbar:YES];
@@ -4295,7 +4244,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // TODO(crbug.com/1329105): Federate side swipe logic.
 - (BOOL)preventSideSwipe {
-  if ([self.popupMenuCoordinator isShowingPopupMenu])
+  if (_isShowingPopupMenu)
     return YES;
 
   if (_voiceSearchController.visible)
@@ -4348,8 +4297,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
   if (self.isNTPActiveForCurrentWebState) {
-    NewTabPageCoordinator* coordinator =
-        [self ntpCoordinatorForWebState:self.currentWebState];
+    NewTabPageCoordinator* coordinator = _ntpCoordinator;
     if ([coordinator logoAnimationControllerOwner]) {
       // If NTP coordinator is showing a GLIF view (e.g. the NTP when there is
       // no doodle), use that GLIFControllerOwner.
@@ -4517,6 +4465,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return self.presentedViewController;
   }
   return self;
+}
+
+#pragma mark - PopupMenuAppearanceDelegate
+
+- (void)popupMenuDidAppear {
+  _isShowingPopupMenu = YES;
+}
+
+- (void)popupMenuDidDisappear {
+  _isShowingPopupMenu = NO;
 }
 
 #pragma mark - Getters

@@ -387,7 +387,7 @@ std::string GetCrostiniMountPointName(Profile* profile) {
 }
 
 std::string GetGuestOsMountPointName(Profile* profile,
-                                     crostini::ContainerId id) {
+                                     const guest_os::GuestId& id) {
   return base::JoinString(
       {"guestos", ash::ProfileHelper::GetUserIdHashFromProfile(profile),
        base::EscapeAllExceptUnreserved(id.vm_name),
@@ -491,7 +491,7 @@ bool ConvertFileSystemURLToPathInsideVM(
     if (map_crostini_home) {
       absl::optional<crostini::ContainerInfo> container_info =
           crostini::CrostiniManager::GetForProfile(profile)->GetContainerInfo(
-              crostini::ContainerId::GetDefault());
+              crostini::DefaultContainerId());
       if (!container_info) {
         return false;
       }
@@ -546,7 +546,7 @@ bool ConvertPathInsideVMToFileSystemURL(
   if (map_crostini_home) {
     absl::optional<crostini::ContainerInfo> container_info =
         crostini::CrostiniManager::GetForProfile(profile)->GetContainerInfo(
-            crostini::ContainerId::GetDefault());
+            crostini::DefaultContainerId());
     if (container_info &&
         AppendRelativePath(container_info->homedir, inside, &relative_path)) {
       *file_system_url = mount_points->CreateExternalFileSystemURL(

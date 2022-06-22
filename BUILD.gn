@@ -18,7 +18,6 @@ import("//build/config/ui.gni")
 import("//build/gn_logs.gni")
 import("//build/util/generate_wrapper.gni")
 import("//chrome/browser/buildflags.gni")
-import("//chrome/browser/media/router/features.gni")
 import("//components/nacl/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -234,10 +233,6 @@ group("gn_all") {
     }
   }
 
-  if (enable_openscreen) {
-    deps += [ "//chrome/browser/media/router:openscreen_unittests" ]
-  }
-
   if (!is_ios) {
     deps += [
       "//google_apis/gcm:mcs_probe",
@@ -264,6 +259,7 @@ group("gn_all") {
     deps += [
       ":d8_fuchsia",
       "//build/fuchsia/cipd",
+      "//chrome/app:chrome_fuchsia",
       "//fuchsia_web:gn_all",
       "//tools/fuchsia/size_tests:fuchsia_sizes",
 
@@ -1677,7 +1673,6 @@ if (enable_js_type_check) {
       "components/neterror/resources:closure_compile",
       "components/security_interstitials:closure_compile",
       "components/sync/driver/resources:closure_compile",
-      "components/ukm/debug:closure_compile",
       "mojo/public/tools/bindings/generators/js_templates/lite/test:closure_compile",
       "ui/webui/resources:closure_compile",
     ]

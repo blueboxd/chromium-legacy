@@ -88,7 +88,9 @@ void EducationalView::Init(views::View* parent) {
     // UI's banner.
     const gfx::ImageSkia* skia_banner =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDS_ARC_INPUT_OVERLAY_ONBOARDING_ILLUSTRATION);
+            IsDarkModeEnabled()
+                ? IDS_ARC_INPUT_OVERLAY_ONBOARDING_ILLUSTRATION_DARK
+                : IDS_ARC_INPUT_OVERLAY_ONBOARDING_ILLUSTRATION);
     CHECK(skia_banner);
     auto banner = std::make_unique<views::ImageView>(
         ui::ImageModel::FromImageSkia(*skia_banner));
@@ -103,9 +105,9 @@ void EducationalView::Init(views::View* parent) {
     container_view->SetLayoutManager(std::make_unique<views::FlexLayout>())
         ->SetOrientation(views::LayoutOrientation::kHorizontal)
         .SetMainAxisAlignment(views::LayoutAlignment::kCenter);
-    // Game control.
+    // Game controls.
     container_view->AddChildView(ash::login_views_utils::CreateBubbleLabel(
-        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDUCATIONAL_TITLE_ALPHA),
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA),
         /*view_defining_max_width=*/nullptr,
         /*color=*/
         GetContentLayerColor(

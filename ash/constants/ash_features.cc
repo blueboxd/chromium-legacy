@@ -342,7 +342,7 @@ const base::Feature kCrosLanguageSettingsUpdateJapanese{
 
 // Enables or disables Crosh System Web App. When enabled, crosh (ChromeOS
 // Shell) will run as a tabbed System Web App rather than a normal browser tab.
-const base::Feature kCroshSWA{"CroshSWA", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCroshSWA{"CroshSWA", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables upgrading the crostini container to debian bullseye.
 const base::Feature kCrostiniBullseyeUpgrade{"CrostiniBullseyeUpgrade",
@@ -1111,7 +1111,7 @@ const base::Feature kOobeQuickStart{"OobeQuickStart",
 
 // If enabled, the new recommend apps screen is shown.
 const base::Feature kOobeNewRecommendApps{"OobeNewRecommendApps",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Removes "Shut down" button from OOBE, except first login screen and
 // successful enrollment step.
@@ -1194,7 +1194,7 @@ const base::Feature kMoreVideoCaptureBuffers{"MoreVideoCaptureBuffers",
 // from the apps grid. This feature was previously named "AppListBubble".
 // https://crbug.com/1204551
 const base::Feature kProductivityLauncher{"ProductivityLauncher",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable Projector.
 const base::Feature kProjector{"Projector", base::FEATURE_ENABLED_BY_DEFAULT};

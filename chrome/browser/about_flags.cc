@@ -241,7 +241,7 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
-#include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "components/app_restore/features.h"
 #include "components/metrics/structured/structured_metrics_features.h"  // nogncheck
 #include "media/capture/video/chromeos/video_capture_features_chromeos.h"
@@ -2649,6 +2649,18 @@ const FeatureEntry::FeatureVariation kSCTAuditingVariations[] = {
      std::size(kSCTAuditingSamplingRateAlternativeTwo), nullptr},
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+const FeatureEntry::FeatureParam kUseDnsHttpsSvcbBoth[] = {
+    {"UseDnsHttpsSvcbEnableInsecure", "true"}};
+const FeatureEntry::FeatureParam kUseDnsHttpsSvcbDohOnly[] = {
+    {"UseDnsHttpsSvcbEnableInsecure", "false"}};
+
+const FeatureEntry::FeatureVariation kUseDnsHttpsSvcbVariations[] = {
+    {"for DNS-over-HTTPS and insecure DNS", kUseDnsHttpsSvcbBoth,
+     std::size(kUseDnsHttpsSvcbBoth), nullptr},
+    {"for DNS-over-HTTPS only", kUseDnsHttpsSvcbDohOnly,
+     std::size(kUseDnsHttpsSvcbDohOnly), nullptr},
+};
 
 #if BUILDFLAG(IS_ANDROID)
 // The variations of ContentLanguagesInLanguagePicker.
@@ -5602,11 +5614,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPointerLockOptionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPointerLockOptions)},
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
     {"enable-async-dns", flag_descriptions::kAsyncDnsName,
-     flag_descriptions::kAsyncDnsDescription, kOsWin,
+     flag_descriptions::kAsyncDnsDescription, kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kAsyncDns)},
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_ANDROID)
     {"download-auto-resumption-native",
@@ -6431,6 +6443,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsLinux | kOsLacros | kOsWin | kOsFuchsia,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},
 
+    {"enable-webgpu-developer-features",
+     flag_descriptions::kWebGpuDeveloperFeaturesName,
+     flag_descriptions::kWebGpuDeveloperFeaturesDescription,
+     kOsMac | kOsLinux | kOsLacros | kOsWin | kOsFuchsia,
+     SINGLE_VALUE_TYPE(switches::kEnableWebGPUDeveloperFeatures)},
+
 #if BUILDFLAG(IS_ANDROID)
     {"autofill-use-mobile-label-disambiguation",
      flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
@@ -6564,10 +6582,15 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kSettingsAppNotificationSettings)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"dns-httpssvc", flag_descriptions::kDnsHttpssvcName,
-     flag_descriptions::kDnsHttpssvcDescription,
-     kOsMac | kOsWin | kOsCrOS | kOsAndroid,
-     FEATURE_VALUE_TYPE(net::features::kDnsHttpssvc)},
+    {"dns-https-svcb", flag_descriptions::kDnsHttpsSvcbName,
+     flag_descriptions::kDnsHttpsSvcbDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(net::features::kUseDnsHttpsSvcb,
+                                    kUseDnsHttpsSvcbVariations,
+                                    "UseDnsHttpsSvcb")},
+
+    {"encrypted-client-hello", flag_descriptions::kEncryptedClientHelloName,
+     flag_descriptions::kEncryptedClientHelloDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kEncryptedClientHello)},
 
     {"web-bundles", flag_descriptions::kWebBundlesName,
      flag_descriptions::kWebBundlesDescription, kOsAll,
@@ -7070,11 +7093,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNearbySharingOnePageOnboardingName,
      flag_descriptions::kNearbySharingOnePageOnboardingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharingOnePageOnboarding)},
-    {"nearby-sharing-receive-wifi-credentials",
-     flag_descriptions::kNearbySharingReceiveWifiCredentialsName,
-     flag_descriptions::kNearbySharingReceiveWifiCredentialsDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNearbySharingReceiveWifiCredentials)},
     {"nearby-sharing-self-share-auto-accept",
      flag_descriptions::kNearbySharingSelfShareAutoAcceptName,
      flag_descriptions::kNearbySharingSelfShareAutoAcceptDescription, kOsCrOS,
@@ -8935,8 +8953,8 @@ std::vector<std::string> RegisterAllFeatureVariationParameters(
 
 void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            flags_ui::FlagAccess access,
-                           base::Value::ListStorage& supported_entries,
-                           base::Value::ListStorage& unsupported_entries) {
+                           base::Value::List& supported_entries,
+                           base::Value::List& unsupported_entries) {
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
       base::BindRepeating(&ShouldSkipConditionalFeatureEntry,
@@ -8948,8 +8966,8 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
 void GetFlagFeatureEntriesForDeprecatedPage(
     flags_ui::FlagsStorage* flags_storage,
     flags_ui::FlagAccess access,
-    base::Value::ListStorage& supported_entries,
-    base::Value::ListStorage& unsupported_entries) {
+    base::Value::List& supported_entries,
+    base::Value::List& unsupported_entries) {
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
       base::BindRepeating(&ShouldSkipNonDeprecatedFeatureEntry));

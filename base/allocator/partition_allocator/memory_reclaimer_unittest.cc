@@ -41,7 +41,7 @@ class MemoryReclaimerTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    base::PartitionAllocGlobalInit(HandleOOM);
+    PartitionAllocGlobalInit(HandleOOM);
     MemoryReclaimer::Instance()->ResetForTesting();
     allocator_ = std::make_unique<PartitionAllocator>();
     allocator_->init({
@@ -50,6 +50,7 @@ class MemoryReclaimerTest : public ::testing::Test {
         PartitionOptions::Quarantine::kAllowed,
         PartitionOptions::Cookie::kAllowed,
         PartitionOptions::BackupRefPtr::kDisabled,
+        PartitionOptions::BackupRefPtrZapping::kDisabled,
         PartitionOptions::UseConfigurablePool::kNo,
     });
     allocator_->root()->UncapEmptySlotSpanMemoryForTesting();
@@ -58,7 +59,7 @@ class MemoryReclaimerTest : public ::testing::Test {
   void TearDown() override {
     allocator_ = nullptr;
     MemoryReclaimer::Instance()->ResetForTesting();
-    base::PartitionAllocGlobalUninitForTesting();
+    PartitionAllocGlobalUninitForTesting();
   }
 
   void Reclaim() { MemoryReclaimer::Instance()->ReclaimNormal(); }

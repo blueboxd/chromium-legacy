@@ -72,11 +72,11 @@ TEST_F(ThreadProfilerPlatformConfigurationTest, IsSupported) {
 #elif BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(config()->IsSupported(version_info::Channel::UNKNOWN));
   EXPECT_TRUE(config()->IsSupported(version_info::Channel::CANARY));
-  EXPECT_FALSE(config()->IsSupported(version_info::Channel::DEV));
+  EXPECT_TRUE(config()->IsSupported(version_info::Channel::DEV));
   EXPECT_FALSE(config()->IsSupported(version_info::Channel::BETA));
   EXPECT_FALSE(config()->IsSupported(version_info::Channel::STABLE));
 
-  EXPECT_FALSE(config()->IsSupported(absl::nullopt));
+  EXPECT_TRUE(config()->IsSupported(absl::nullopt));
 #else
   EXPECT_FALSE(config()->IsSupported(version_info::Channel::UNKNOWN));
   EXPECT_TRUE(config()->IsSupported(version_info::Channel::CANARY));
@@ -130,6 +130,8 @@ MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
 #if BUILDFLAG(IS_ANDROID)
   EXPECT_EQ((RelativePopulations{0, 50}),
             config()->GetEnableRates(version_info::Channel::CANARY));
+  EXPECT_EQ((RelativePopulations{0, 50}),
+            config()->GetEnableRates(version_info::Channel::DEV));
   // Note: death tests aren't supported on Android. Otherwise this test would
   // check that the other inputs result in CHECKs.
 #else
@@ -149,10 +151,10 @@ MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
 MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
                              GetChildProcessEnableFraction) {
 #if BUILDFLAG(IS_ANDROID)
-  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
-                     metrics::CallStackProfileParams::Process::kGpu));
   EXPECT_EQ(0.75, config()->GetChildProcessEnableFraction(
                       metrics::CallStackProfileParams::Process::kRenderer));
+  EXPECT_EQ(1.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::Process::kGpu));
   EXPECT_EQ(0.0,
             config()->GetChildProcessEnableFraction(
                 metrics::CallStackProfileParams::Process::kNetworkService));
@@ -185,13 +187,13 @@ MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
       metrics::CallStackProfileParams::Process::kBrowser,
       metrics::CallStackProfileParams::Thread::kIo));
 
-  EXPECT_FALSE(config()->IsEnabledForThread(
+  EXPECT_TRUE(config()->IsEnabledForThread(
       metrics::CallStackProfileParams::Process::kGpu,
       metrics::CallStackProfileParams::Thread::kMain));
-  EXPECT_FALSE(config()->IsEnabledForThread(
+  EXPECT_TRUE(config()->IsEnabledForThread(
       metrics::CallStackProfileParams::Process::kGpu,
       metrics::CallStackProfileParams::Thread::kIo));
-  EXPECT_FALSE(config()->IsEnabledForThread(
+  EXPECT_TRUE(config()->IsEnabledForThread(
       metrics::CallStackProfileParams::Process::kGpu,
       metrics::CallStackProfileParams::Thread::kCompositor));
 

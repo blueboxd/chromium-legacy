@@ -280,7 +280,7 @@ class CrostiniManagerTest : public testing::Test {
   base::RunLoop* run_loop() { return run_loop_.get(); }
   Profile* profile() { return profile_.get(); }
   CrostiniManager* crostini_manager() { return crostini_manager_; }
-  const ContainerId& container_id() { return container_id_; }
+  const guest_os::GuestId& container_id() { return container_id_; }
 
   ash::FakeChromeUserManager* fake_user_manager() const {
     return static_cast<ash::FakeChromeUserManager*>(
@@ -296,7 +296,8 @@ class CrostiniManagerTest : public testing::Test {
       run_loop_;  // run_loop_ must be created on the UI thread.
   std::unique_ptr<TestingProfile> profile_;
   CrostiniManager* crostini_manager_;
-  const ContainerId container_id_ = ContainerId(kVmName, kContainerName);
+  const guest_os::GuestId container_id_ =
+      guest_os::GuestId(kVmName, kContainerName);
   device::FakeUsbDeviceManager fake_usb_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
@@ -523,7 +524,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmLowDiskNotification) {
 
   EnsureTerminaInstalled();
   crostini_manager()->StartTerminaVm(
-      ContainerId::GetDefault().vm_name, disk_path, {}, 0,
+      DefaultContainerId().vm_name, disk_path, {}, 0,
       base::BindOnce(&ExpectSuccess, run_loop()->QuitClosure()));
   run_loop()->Run();
 
@@ -545,7 +546,7 @@ TEST_F(CrostiniManagerTest,
 
   EnsureTerminaInstalled();
   crostini_manager()->StartTerminaVm(
-      ContainerId::GetDefault().vm_name, disk_path, {}, 0,
+      DefaultContainerId().vm_name, disk_path, {}, 0,
       base::BindOnce(&ExpectSuccess, run_loop()->QuitClosure()));
   run_loop()->Run();
 
@@ -1165,7 +1166,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForLxdStarted) {
 TEST_F(CrostiniManagerRestartTest, CancelOnContainerCreated) {
   cancel_on_container_created_ = true;
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -1180,7 +1181,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringCreateContainer) {
   fake_cicerone_client_->set_send_create_lxd_container_response_delay(
       base::TimeDelta::Max());
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -1194,7 +1195,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForContainerCreated) {
   fake_cicerone_client_->set_send_notify_lxd_container_created_signal_delay(
       base::TimeDelta::Max());
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -1210,12 +1211,12 @@ TEST_F(CrostiniManagerRestartTest, HeartbeatKeepsCreateContainerFromTimingOut) {
   fake_cicerone_client_->set_send_notify_lxd_container_created_signal_delay(
       base::TimeDelta::Max());
   vm_tools::cicerone::LxdContainerDownloadingSignal signal;
-  signal.set_container_name(ContainerId::GetDefault().container_name);
-  signal.set_vm_name(ContainerId::GetDefault().vm_name);
+  signal.set_container_name(DefaultContainerId().container_name);
+  signal.set_vm_name(DefaultContainerId().vm_name);
   signal.set_owner_id(CryptohomeIdForProfile(profile()));
 
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -1239,7 +1240,7 @@ TEST_F(CrostiniManagerRestartTest, CancelOnContainerCreatedError) {
   fake_cicerone_client_->set_lxd_container_created_signal_status(
       vm_tools::cicerone::LxdContainerCreatedSignal::UNKNOWN);
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::UNKNOWN_ERROR),
       this);
@@ -1254,7 +1255,7 @@ TEST_F(CrostiniManagerRestartTest, CancelOnContainerCreatedError) {
 TEST_F(CrostiniManagerRestartTest, CancelOnContainerStarted) {
   cancel_on_container_started_ = true;
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -1268,7 +1269,7 @@ TEST_F(CrostiniManagerRestartTest, CancelOnContainerStarted) {
 TEST_F(CrostiniManagerRestartTest, CancelOnContainerSetup) {
   cancel_on_container_setup_ = true;
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -1283,7 +1284,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringContainerSetup) {
   fake_cicerone_client_->set_send_set_up_lxd_container_user_response_delay(
       base::TimeDelta::Max());
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -1299,7 +1300,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringStartContainer) {
   fake_cicerone_client_->set_send_start_lxd_container_response_delay(
       base::TimeDelta::Max());
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -1313,7 +1314,7 @@ TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForContainerStarted) {
   fake_cicerone_client_->set_send_container_started_signal_delay(
       base::TimeDelta::Max());
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -1330,13 +1331,13 @@ TEST_F(CrostiniManagerRestartTest,
   fake_cicerone_client_->set_send_container_started_signal_delay(
       base::TimeDelta::Max());
   vm_tools::cicerone::LxdContainerStartingSignal signal;
-  signal.set_container_name(ContainerId::GetDefault().container_name);
-  signal.set_vm_name(ContainerId::GetDefault().vm_name);
+  signal.set_container_name(DefaultContainerId().container_name);
+  signal.set_vm_name(DefaultContainerId().vm_name);
   signal.set_owner_id(CryptohomeIdForProfile(profile()));
   signal.set_status(vm_tools::cicerone::LxdContainerStartingSignal::STARTING);
 
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -2036,7 +2037,7 @@ TEST_F(CrostiniManagerEnterpriseReportingTest,
       response);
 
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -2062,7 +2063,7 @@ TEST_F(CrostiniManagerEnterpriseReportingTest,
       response);
 
   restart_id_ = crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -2387,17 +2388,19 @@ class CrostiniManagerAnsibleInfraTest
 
   // AnsibleManagementService::Observer
   void OnAnsibleSoftwareConfigurationStarted(
-      const ContainerId& container_id) override {}
-  void OnAnsibleSoftwareConfigurationFinished(const ContainerId& container_id,
-                                              bool success) override {}
-  void OnAnsibleSoftwareInstall(const ContainerId& container_id) override {
+      const guest_os::GuestId& container_id) override {}
+  void OnAnsibleSoftwareConfigurationFinished(
+      const guest_os::GuestId& container_id,
+      bool success) override {}
+  void OnAnsibleSoftwareInstall(
+      const guest_os::GuestId& container_id) override {
     if (is_install_ansible_success_) {
       ansible_management_test_helper_->SendSucceededInstallSignal();
     } else {
       ansible_management_test_helper_->SendFailedInstallSignal();
     }
   }
-  void OnApplyAnsiblePlaybook(const ContainerId& container_id) override {
+  void OnApplyAnsiblePlaybook(const guest_os::GuestId& container_id) override {
     if (is_apply_ansible_success_) {
       ansible_management_test_helper_->SendSucceededApplySignal();
     } else {
@@ -2424,7 +2427,7 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerAnsibleInstallFailure) {
       vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
 
   crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::CONTAINER_CONFIGURATION_FAILED),
       this);
@@ -2438,7 +2441,7 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerInstallSignalFailure) {
   SetInstallAnsibleStatus(false);
 
   crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::CONTAINER_CONFIGURATION_FAILED),
       this);
@@ -2453,7 +2456,7 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerApplyFailure) {
       vm_tools::cicerone::ApplyAnsiblePlaybookResponse::FAILED);
 
   crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::CONTAINER_CONFIGURATION_FAILED),
       this);
@@ -2470,7 +2473,7 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerApplySignalFailure) {
   SetApplyAnsibleStatus(false);
 
   crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::CONTAINER_CONFIGURATION_FAILED),
       this);
@@ -2485,7 +2488,7 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerSuccess) {
       vm_tools::cicerone::ApplyAnsiblePlaybookResponse::STARTED);
 
   crostini_manager()->RestartCrostini(
-      ContainerId::GetDefault(),
+      DefaultContainerId(),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS),
       this);
@@ -2527,7 +2530,7 @@ class CrostiniManagerUpgradeContainerTest
  protected:
   // UpgradeContainerProgressObserver
   void OnUpgradeContainerProgress(
-      const ContainerId& container_id,
+      const guest_os::GuestId& container_id,
       UpgradeContainerProgressStatus status,
       const std::vector<std::string>& messages) override {
     if (status == final_status_) {
@@ -2535,7 +2538,7 @@ class CrostiniManagerUpgradeContainerTest
     }
   }
 
-  ContainerId container_id_ = ContainerId(kVmName, kContainerName);
+  guest_os::GuestId container_id_ = guest_os::GuestId(kVmName, kContainerName);
 
   UpgradeContainerProgressStatus final_status_ =
       UpgradeContainerProgressStatus::FAILED;

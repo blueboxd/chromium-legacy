@@ -13,6 +13,7 @@ source_set("modular") {
     ":cr_fuchsia_base_unittests__exec",
     "./test/*",
     "//chromecast/internal/*",
+    "//fuchsia_web/common/test/*",
     "//fuchsia_web/runners/*",
     "//fuchsia_web/webengine/*",
   ]
@@ -31,35 +32,6 @@ source_set("modular") {
   ]
 }
 
-# FIDL/Mojo adapters for MessagePorts.
-source_set("message_port") {
-  visibility = [ "//fuchsia_web/webengine/*" ]
-  sources = [ "message_port.cc" ]
-  public = [ "message_port.h" ]
-  public_deps = [
-    "//third_party/abseil-cpp:absl",
-    "//third_party/blink/public/common:headers",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
-  ]
-  deps = [
-    "//base",
-    "//mojo/public/cpp/bindings",
-    "//third_party/blink/public/common",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
-    "//third_party/fuchsia-sdk/sdk/pkg/fit-promise",
-  ]
-}
-
-static_library("run_all_integration_tests") {
-  testonly = true
-  visibility = [
-    "//fuchsia_web/runners/*",
-    "//fuchsia_web/webengine/*",
-  ]
-  sources = [ "run_all_integration_tests.cc" ]
-  deps = [ "//base/test:test_support" ]
-}
-
 # Unit-tests for all //fuchsia/base utilities.
 test("cr_fuchsia_base_unittests") {
   sources = [ "agent_impl_unittest.cc" ]
@@ -69,7 +41,7 @@ test("cr_fuchsia_base_unittests") {
     "//base:testfidl",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//fuchsia/base/test:test_support",
+    "//fuchsia_web/common/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",

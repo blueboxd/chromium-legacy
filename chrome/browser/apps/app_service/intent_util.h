@@ -138,9 +138,17 @@ apps::mojom::IntentPtr CreateShareIntentFromFiles(
     const std::string& share_title);
 
 base::flat_map<std::string, std::string> CreateArcIntentExtras(
+    const apps::IntentPtr& intent);
+// TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+// interface.
+base::flat_map<std::string, std::string> CreateArcIntentExtras(
     const apps::mojom::IntentPtr& intent);
 
 // Convert between App Service and ARC Intents.
+arc::mojom::IntentInfoPtr ConvertAppServiceToArcIntent(
+    const apps::IntentPtr& intent);
+// TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+// interface.
 arc::mojom::IntentInfoPtr ConvertAppServiceToArcIntent(
     const apps::mojom::IntentPtr& intent);
 
@@ -158,7 +166,7 @@ std::string CreateLaunchIntent(const std::string& package_name,
 // Convert between App Service and ARC IntentFilters.
 arc::IntentFilter ConvertAppServiceToArcIntentFilter(
     const std::string& package_name,
-    const apps::mojom::IntentFilterPtr& intent_filter);
+    const apps::IntentFilterPtr& intent_filter);
 
 apps::IntentFilterPtr CreateIntentFilterForArc(
     const arc::IntentFilter& arc_intent_filter);

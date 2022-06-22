@@ -53,7 +53,7 @@ const base::Feature kAnonymousUpdateChecks{"AnonymousUpdateChecks",
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kAppDiscoveryForOobe{"AppDiscoveryForOobe",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -138,11 +138,6 @@ const base::Feature kClientStorageAccessContextAuditing{
 
 const base::Feature kConsolidatedSiteStorageControls{
     "ConsolidatedSiteStorageControls", base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_ANDROID)
-const base::Feature kContinuousSearch{"ContinuousSearch",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables "usm" service in the list of user services returned by
@@ -304,10 +299,6 @@ const base::Feature kDesktopPWAsWebBundles{"DesktopPWAsWebBundles",
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-// Serves web app settings at chrome://app-settings/<app-id>.
-const base::Feature kDesktopPWAsWebAppSettingsPage{
-    "DesktopPWAsWebAppSettingsPage", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether Chrome Apps are supported. See https://crbug.com/1221251.
 // If the feature is disabled, Chrome Apps continue to work. If enabled, Chrome
 // Apps will not launch and will be marked in the UI as deprecated.

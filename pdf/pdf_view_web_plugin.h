@@ -12,6 +12,8 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/containers/queue.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -25,6 +27,7 @@
 #include "pdf/pdfium/pdfium_form_filler.h"
 #include "pdf/post_message_receiver.h"
 #include "pdf/ppapi_migration/url_loader.h"
+#include "pdf/preview_mode_client.h"
 #include "pdf/v8_value_converter.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
@@ -33,6 +36,8 @@
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "v8/include/v8.h"
 
@@ -46,7 +51,6 @@ struct WebAssociatedURLLoaderOptions;
 namespace gfx {
 class PointF;
 class Range;
-class Rect;
 }  // namespace gfx
 
 namespace net {
@@ -68,7 +72,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public pdf::mojom::PdfListener,
                                public BlinkUrlLoader::Client,
                                public PostMessageReceiver::Client,
-                               public PdfAccessibilityActionHandler {
+                               public PdfAccessibilityActionHandler,
+                               public PreviewModeClient::Client {
  public:
   // Must match `SaveRequestType` in chrome/browser/resources/pdf/constants.ts.
   enum class SaveRequestType {
@@ -271,6 +276,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
+  std::string GetURL() override;
   void SubmitForm(const std::string& url,
                   const void* data,
                   int length) override;
@@ -316,6 +322,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void HandleAccessibilityAction(
       const AccessibilityActionData& action_data) override;
 
+  // PreviewModeClient::Client:
+  void PreviewDocumentLoadComplete() override;
+  void PreviewDocumentLoadFailed() override;
+
   // Initializes the plugin for testing, bypassing certain consistency checks.
   bool InitializeForTesting();
 
@@ -330,9 +340,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
       PDFiumFormFiller::ScriptOption script_option) override;
   const PDFiumEngine* engine() const override;
   PDFiumEngine* engine() override;
-  void set_engine(std::unique_ptr<PDFiumEngine> engine) override;
   void LoadUrl(base::StringPiece url, LoadUrlCallback callback) override;
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
+  void OnPrintPreviewLoaded() override;
   void OnDocumentLoadComplete() override;
   void SendMessage(base::Value::Dict message) override;
   void SetFormTextFieldInFocus(bool in_focus) override;
@@ -353,8 +363,24 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                               int right_height) override;
   void UserMetricsRecordAction(const std::string& action) override;
   bool full_frame() const override;
+  const gfx::Size& plugin_dip_size() const override;
+  const gfx::Rect& plugin_rect() const override;
+  float device_scale() const override;
+  bool needs_reraster() const override;
+  base::i18n::TextDirection ui_direction() const override;
+  bool received_viewport_message() const override;
+  void PrepareForFirstPaint(std::vector<PaintReadyRect>& ready) override;
 
  private:
+  // Metadata about an available preview page.
+  struct PreviewPageInfo {
+    // Data source URL.
+    std::string url;
+
+    // Page index in destination document.
+    int dest_page_index = -1;
+  };
+
   // Call `Destroy()` instead.
   ~PdfViewWebPlugin() override;
 
@@ -362,6 +388,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // Sends whether to do smooth scrolling.
   void SendSetSmoothScrolling();
+
+  // Updates the scroll position, which is in CSS pixels relative to the
+  // top-left corner.
+  void UpdateScroll(const gfx::PointF& scroll_position);
 
   // Handles `Open()` result for `form_loader_`.
   void DidFormOpen(int32_t result);
@@ -377,10 +407,16 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Handles message for setting the background color.
   void HandleSetBackgroundColorMessage(const base::Value::Dict& message);
 
+  // Handles message to disable scrolling.
+  void HandleStopScrollingMessage(const base::Value::Dict& message);
+
+  // Handles message for viewport changes.
+  void HandleViewportMessage(const base::Value::Dict& message);
+
   // Recalculates values that depend on scale factors.
   void UpdateScaledValues();
 
-  void OnViewportChanged(const gfx::Rect& plugin_rect_in_css_pixel,
+  void OnViewportChanged(const gfx::Rect& new_plugin_rect_in_css_pixel,
                          float new_device_scale);
 
   // Text editing methods.
@@ -415,6 +451,21 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Send document metadata data.
   void SendMetadata();
 
+  // Handles message for resetting Print Preview.
+  void HandleResetPrintPreviewModeMessage(const base::Value::Dict& message);
+
+  // Handles message for loading a preview page.
+  void HandleLoadPreviewPageMessage(const base::Value::Dict& message);
+
+  // Starts loading the next available preview page into a blank page.
+  void LoadAvailablePreviewPage();
+
+  // Handles `LoadUrl()` result for a preview page.
+  void DidOpenPreview(std::unique_ptr<UrlLoader> loader, int32_t result);
+
+  // Continues loading the next preview page.
+  void LoadNextPreviewPage();
+
   blink::WebString selected_text_;
 
   std::unique_ptr<Client> const client_;
@@ -425,6 +476,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   mojo::Receiver<pdf::mojom::PdfListener> listener_receiver_{this};
 
   std::unique_ptr<PDFiumEngine> engine_;
+
+  // The URL of the PDF document.
+  std::string url_;
 
   // The current cursor type.
   ui::mojom::CursorType cursor_type_ = ui::mojom::CursorType::kPointer;
@@ -474,6 +528,43 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // The background color of the PDF viewer.
   SkColor background_color_ = SK_ColorTRANSPARENT;
 
+  // Size, in DIPs, of plugin rectangle.
+  gfx::Size plugin_dip_size_;
+
+  // The plugin rectangle in device pixels.
+  gfx::Rect plugin_rect_;
+
+  // Current device scale factor. Multiply by `device_scale_` to convert from
+  // viewport to screen coordinates. Divide by `device_scale_` to convert from
+  // screen to viewport coordinates.
+  float device_scale_ = 1.0f;
+
+  // True if we haven't painted the plugin viewport yet.
+  bool first_paint_ = true;
+
+  // True if last bitmap was smaller than the screen.
+  bool last_bitmap_smaller_ = false;
+
+  // True if we request a new bitmap rendering.
+  bool needs_reraster_ = true;
+
+  // The UI direction.
+  base::i18n::TextDirection ui_direction_ = base::i18n::UNKNOWN_DIRECTION;
+
+  // The scroll offset for the last raster in CSS pixels, before any
+  // transformations are applied.
+  gfx::Vector2dF scroll_offset_at_last_raster_;
+
+  // If this is true, then don't scroll the plugin in response to calls to
+  // `UpdateScroll()`. This will be true when the extension page is in the
+  // process of zooming the plugin so that flickering doesn't occur while
+  // zooming.
+  bool stop_scrolling_ = false;
+
+  // Whether the plugin has received a viewport changed message. Nothing should
+  // be painted until this is received.
+  bool received_viewport_message_ = false;
+
   // If true, the render frame has been notified that we're starting a network
   // request so that it can start the throbber. It will be notified again once
   // the document finishes loading.
@@ -516,6 +607,28 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // Whether the plugin is loaded in Print Preview.
   bool is_print_preview_ = false;
+
+  // Number of pages in Print Preview (non-PDF). 0 if previewing a PDF, and -1
+  // if not in Print Preview.
+  int print_preview_page_count_ = -1;
+
+  // Number of pages loaded in Print Preview (non-PDF). Always less than or
+  // equal to `print_preview_page_count_`.
+  int print_preview_loaded_page_count_ = -1;
+
+  // The PreviewModeClient used for print preview. Will be passed to
+  // `preview_engine_`.
+  std::unique_ptr<PreviewModeClient> preview_client_;
+
+  // Engine used to render individual preview pages. This will use the
+  // `PreviewModeClient` interface.
+  std::unique_ptr<PDFiumEngine> preview_engine_;
+
+  // Document load state for the Print Preview engine.
+  DocumentLoadState preview_document_load_state_ = DocumentLoadState::kComplete;
+
+  // Queue of available preview pages to load next.
+  base::queue<PreviewPageInfo> preview_pages_info_;
 
   base::WeakPtrFactory<PdfViewWebPlugin> weak_factory_{this};
 };

@@ -31,6 +31,18 @@
 #include "ui/views/animation/ink_drop.h"
 
 namespace ash {
+namespace {
+
+// A helper class to override the current time.
+struct TimeOverrideHelper {
+  static base::Time TimeNow() { return current_time; }
+
+  // Used as the current time in ash pixel diff tests.
+  static base::Time current_time;
+};
+
+base::Time TimeOverrideHelper::current_time;
+}  // namespace
 
 class PageFlipWaiter : public ScrollableShelfView::TestObserver {
  public:
@@ -1001,10 +1013,13 @@ TEST_P(ScrollableShelfViewRTLTest, MouseWheelOnEmptyShelfShouldExpandAppList) {
   AddAppShortcut();
   AddAppShortcut();
 
+  GetEventGenerator()->MoveMouseTo(scrollable_shelf_view_->shelf_view()
+                                       ->view_model_for_test()
+                                       ->view_at(1)
+                                       ->GetBoundsInScreen()
+                                       .CenterPoint());
   int shelf_scroll_threshold =
       ShelfConfig::Get()->mousewheel_scroll_offset_threshold();
-  GetEventGenerator()->MoveMouseTo(
-      scrollable_shelf_view_->GetBoundsInScreen().CenterPoint());
   GetEventGenerator()->MoveMouseWheel(0, shelf_scroll_threshold + 1);
 
   // The app list's view is lazily loaded. Since this is the first time, and we
@@ -1392,6 +1407,23 @@ class ScrollableShelfViewWithAppScalingTest : public ScrollableShelfViewTest {
   ~ScrollableShelfViewWithAppScalingTest() override = default;
 
   void SetUp() override {
+    // When the calendar view is enabled, the status widget's bounds could vary
+    // under different dates. For example, "June 10" is longer than "June 9".
+    // Therefore, the code below sets the constant date to avoid flakiness.
+    if (features::IsCalendarViewEnabled()) {
+      scoped_locale_ =
+          std::make_unique<base::test::ScopedRestoreICUDefaultLocale>("en_US"),
+      time_zone_ = std::make_unique<base::test::ScopedRestoreDefaultTimezone>(
+          "America/Chicago");
+
+      constexpr char kFakeNowTimeString[] = "Sunday, 5 June 2022 14:30:00 CDT";
+      ASSERT_TRUE(base::Time::FromString(kFakeNowTimeString,
+                                         &TimeOverrideHelper::current_time));
+      time_override_ = std::make_unique<base::subtle::ScopedTimeClockOverrides>(
+          &TimeOverrideHelper::TimeNow, /*time_ticks_override=*/nullptr,
+          /*thread_ticks_override=*/nullptr);
+    }
+
     ScrollableShelfViewTest::SetUp();
 
     // Display should be big enough (width and height are bigger than 600).
@@ -1428,13 +1460,17 @@ class ScrollableShelfViewWithAppScalingTest : public ScrollableShelfViewTest {
   // If calendar view is enabled, the space is a little smaller and can only
   // show 9 apps at one time.
   static constexpr int kAppCountWithShowingDateTray = 9;
+
+  // Ensures that the current time is constant if the calendar view is enabled.
+  std::unique_ptr<base::test::ScopedRestoreICUDefaultLocale> scoped_locale_;
+  std::unique_ptr<base::test::ScopedRestoreDefaultTimezone> time_zone_;
+  std::unique_ptr<base::subtle::ScopedTimeClockOverrides> time_override_;
 };
 
 // Verifies the basic function of app scaling which scales down the hotseat and
 // its children's sizes if there is insufficient space for shelf buttons to show
 // without scrolling.
-// TODO(crbug.com/1336159): Re-enable this test
-TEST_F(ScrollableShelfViewWithAppScalingTest, DISABLED_AppScalingBasics) {
+TEST_F(ScrollableShelfViewWithAppScalingTest, AppScalingBasics) {
   if (features::IsCalendarViewEnabled())
     PopulateAppShortcut(kAppCountWithShowingDateTray);
   else
@@ -1479,9 +1515,8 @@ TEST_F(ScrollableShelfViewWithAppScalingTest, DISABLED_AppScalingBasics) {
 }
 
 // Verifies that app scaling works as expected with hotseat state transition.
-// TODO(crbug.com/1336159): Re-enable this test
 TEST_F(ScrollableShelfViewWithAppScalingTest,
-       DISABLED_VerifyWithHotseatStateTransition) {
+       VerifyWithHotseatStateTransition) {
   if (features::IsCalendarViewEnabled())
     PopulateAppShortcut(kAppCountWithShowingDateTray);
   else

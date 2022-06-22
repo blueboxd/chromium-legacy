@@ -2312,10 +2312,23 @@ void LocalDOMWindow::DidBufferLoadWhileInBackForwardCache(size_t num_bytes) {
   BackForwardCacheBufferLimitTracker::Get().DidBufferBytes(num_bytes);
 }
 
+bool LocalDOMWindow::IsInFencedFrame() const {
+  return GetFrame() && GetFrame()->IsInFencedFrameTree();
+}
+
 Fence* LocalDOMWindow::fence() {
   // Return nullptr if we aren't in a fenced subtree.
-  if (!GetFrame() || !GetFrame()->IsInFencedFrameTree()) {
+  if (!GetFrame()) {
     return nullptr;
+  }
+  if (!GetFrame()->IsInFencedFrameTree()) {
+    // We temporarily allow window.fence in iframes with fenced frame reporting
+    // metadata (navigated by urn:uuids).
+    // If we are in an iframe that doesn't qualify, return nullptr.
+    if (!blink::features::IsAllowURNsInIframeEnabled() ||
+        !GetFrame()->GetDocument()->Loader()->FencedFrameReporting()) {
+      return nullptr;
+    }
   }
 
   if (!fence_) {

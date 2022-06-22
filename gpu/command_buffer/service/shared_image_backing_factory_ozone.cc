@@ -22,6 +22,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/buildflags.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -43,8 +44,9 @@ gfx::BufferUsage GetBufferUsage(uint32_t usage) {
 }  // namespace
 
 SharedImageBackingFactoryOzone::SharedImageBackingFactoryOzone(
-    SharedContextState* shared_context_state)
-    : shared_context_state_(shared_context_state) {
+    SharedContextState* shared_context_state,
+    const GpuDriverBugWorkarounds& workarounds)
+    : shared_context_state_(shared_context_state), workarounds_(workarounds) {
 #if BUILDFLAG(USE_DAWN)
   dawn_procs_ = base::MakeRefCounted<base::RefCountedData<DawnProcTable>>(
       dawn::native::GetProcs());
@@ -87,7 +89,7 @@ SharedImageBackingFactoryOzone::CreateSharedImageInternal(
   return std::make_unique<SharedImageBackingOzone>(
       mailbox, format, gfx::BufferPlane::DEFAULT, size, color_space,
       surface_origin, alpha_type, usage, shared_context_state_.get(),
-      std::move(pixmap), dawn_procs_);
+      std::move(pixmap), dawn_procs_, workarounds_);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -163,7 +165,7 @@ SharedImageBackingFactoryOzone::CreateSharedImage(
     backing = std::make_unique<SharedImageBackingOzone>(
         mailbox, plane_format, plane, plane_size, color_space, surface_origin,
         alpha_type, usage, shared_context_state_.get(), std::move(pixmap),
-        dawn_procs_);
+        dawn_procs_, workarounds_);
     backing->SetCleared();
   } else if (handle.type == gfx::SHARED_MEMORY_BUFFER) {
     SharedMemoryRegionWrapper shm_wrapper;
@@ -234,17 +236,7 @@ bool SharedImageBackingFactoryOzone::IsSupported(
     return false;
   }
   if (used_by_gl &&
-      !gl::GLSurfaceEGL::GetGLDisplayEGL()->HasEGLExtension("EGL_KHR_image")) {
-    return false;
-  }
-#else
-  // TODO(hitawala): Until SharedImageBackingOzone supports all use cases prefer
-  // using SharedImageBackingGLImage instead
-  bool needs_interop_factory = (gr_context_type == GrContextType::kVulkan &&
-                                (usage & SHARED_IMAGE_USAGE_DISPLAY)) ||
-                               (usage & SHARED_IMAGE_USAGE_WEBGPU) ||
-                               (usage & SHARED_IMAGE_USAGE_VIDEO_DECODE);
-  if (!needs_interop_factory) {
+      !gl::GLSurfaceEGL::GetGLDisplayEGL()->ext->b_EGL_KHR_image) {
     return false;
   }
 #endif

@@ -40,7 +40,7 @@
   },
   {
     "name": "accessible-pdf-form",
-    "owners": [ "ankk@microsoft.com", "mohitb@microsoft.com" ],
+    "owners": [ "asku@microsoft.com", "mohitb@microsoft.com" ],
     "expiry_milestone": 105
   },
   {
@@ -1320,9 +1320,9 @@
     "expiry_milestone": 115
   },
   {
-    "name": "dns-httpssvc",
-    "owners": [ "dmcardle", "ericorth" ],
-    "expiry_milestone": 93
+    "name": "dns-https-svcb",
+    "owners": [ "dmcardle", "ericorth", "davidben" ],
+    "expiry_milestone": 114
   },
   {
     "name": "dns-proxy-enable-doh",
@@ -2296,8 +2296,8 @@
   },
   {
     "name": "enable-jxl",
-    "owners": [ "deymo", "firsching", "lode" ],
-    "expiry_milestone": 105
+    "owners": [ "eustas@chromium.org", "firsching", "sboukortt", "veluca" ],
+    "expiry_milestone": 115
   },
   {
     "name": "enable-keyboard-backlight-toggle",
@@ -2991,6 +2991,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-webgpu-developer-features",
+    "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
+    // This flag is the only way for developers to use WebGPU features
+    // that are development-centric.
+    "expiry_milestone": -1
+  },
+  {
     "name": "enable-webrtc-analog-agc-clipping-control",
     "owners": [ "alessiob", "silen", "minyue" ],
     "expiry_milestone": 103
@@ -3065,6 +3072,11 @@
     "name": "enable-zero-state-app-reinstall-suggestions",
     "owners": [ "robsc", "napper", "jennyz", "thanhdng" ],
     "expiry_milestone": 98
+  },
+  {
+    "name": "encrypted-client-hello",
+    "owners": [ "davidben", "trusty-transport@chromium.org" ],
+    "expiry_milestone": 114
   },
   {
     "name": "enforce-ash-extension-keeplist",
@@ -4254,11 +4266,6 @@
   {
     "name": "nearby-sharing-one-page-onboarding",
     "owners": [ "pushi@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 103
-  },
-  {
-    "name": "nearby-sharing-receive-wifi-credentials",
-    "owners": [ "crisrael@google.com", "chromeos-cross-device-eng@google.com" ],
     "expiry_milestone": 103
   },
   {
@@ -6421,7 +6428,7 @@
   {
     "name": "zero-copy-tab-capture",
     "owners": [ "bialpio@chromium.org", "media-capture-dev@chromium.org" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 110
   },
   {
     "name": "zero-copy-video-capture",

@@ -67,6 +67,9 @@
     margin-bottom: 24px;
   }
 
+  .disabled-input-text {
+    color: var(--cros-text-color-disabled);
+  }
 </style>
 <div id="container">
   <div id="header">
@@ -75,7 +78,7 @@
   <div id="content">
     <!-- Attach files -->
     <div id="attachFiles">
-      <p id="attachFilesLabel">[[i18n('attachFilesLabel')]]</p>
+      <h2 id="attachFilesLabel">[[i18n('attachFilesLabel')]]</h2>
       <div id="attachFilesContainer">
         <!-- Attach a screenshot -->
         <div id="screenshotContainer" class="card-frame">
@@ -95,15 +98,21 @@
     <!-- User e-mail -->
     <div id="userEmail" class="text-field-container"
         hidden$="[[!hasEmail_(feedbackContext)]]">
-      <label id="userEmailLabel">[[i18n('userEmailLabel')]]</label>
+      <h2 id="userEmailLabel">[[i18n('userEmailLabel')]]</h2>
       <select id="userEmailDropDown" aria-labelledby="userEmailLabel">
         <option value$="[[feedbackContext.email]]">[[feedbackContext.email]]</option>
         <option value="">Don't include email address</option>
       </select>
     </div>
+    <!-- User consent -->
+    <div id="userConsent" class="checkbox-field-container">
+      <input id="userConsentCheckbox" type="checkbox"
+          aria-labelledby="userConsentLabel">
+      <label id="userConsentLabel">[[i18n('userConsentLabel')]]</label>
+    </div>
     <!-- Diagnostic data -->
     <div id="shareDiagnosticData">
-      <p id="shareDiagnosticDataLabel">[[i18n('shareDiagnosticDataLabel')]]</p>
+      <h2 id="shareDiagnosticDataLabel">[[i18n('shareDiagnosticDataLabel')]]</h2>
       <!-- URL -->
       <div id="pageUrl" class="checkbox-field-container">
         <input id="pageUrlCheckbox" type="checkbox" aria-labelledby="pageUrlLabel"
@@ -130,11 +139,11 @@
   <div id="navButtons">
     <cr-button id="buttonBack" class="cancel-button"
         on-click="handleBackButtonClicked_">
-      Back
+      [[i18n('backButtonLabel')]]
     </cr-button>
     <cr-button id="buttonSend" class="action-button"
         on-click="handleSendButtonClicked_">
-      Send
+        [[i18n('sendButtonLabel')]]
     </cr-button>
   </div>
 </div>

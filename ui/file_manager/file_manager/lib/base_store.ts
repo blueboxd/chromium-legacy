@@ -87,7 +87,7 @@ export class BaseStore<StateType, ActionType extends BaseAction> {
   /**
    * Subscribe to Store changes/updates.
    * @param observer Callback called whenever the Store is updated.
-   * @returns callback to unsusbscribe the obserer.
+   * @returns callback to unsusbscribe the observer.
    */
   subscribe(observer: StoreObserver<StateType>):
       (observer: StoreObserver<StateType>) => void {
@@ -154,7 +154,7 @@ export class BaseStore<StateType, ActionType extends BaseAction> {
   }
 
   /** Synchronously call apply the `action` by calling the reducer.  */
-  dispatchInternal_(action: ActionType) {
+  private dispatchInternal_(action: ActionType) {
     // action(this.reduce.bind(this));
     this.reduce(action);
   }

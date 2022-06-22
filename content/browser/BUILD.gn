@@ -2462,17 +2462,16 @@ source_set("browser") {
     ]
   }
 
-  if (is_chromecast) {
-    deps += [ "//chromecast:chromecast_buildflags" ]
-  }
-
-  if (is_chromecast && (is_linux || is_chromeos)) {
+  if (is_castos) {
     sources += [
       "tracing/cast_tracing_agent.cc",
       "tracing/cast_tracing_agent.h",
     ]
 
-    deps += [ "//chromecast/tracing:system_tracer" ]
+    deps += [
+      "//chromecast:chromecast_buildflags",
+      "//chromecast/tracing:system_tracer",
+    ]
 
     defines += [ "CAST_TRACING_AGENT=1" ]
   }
@@ -2767,8 +2766,6 @@ source_set("browser") {
     sources += [
       "media/cdm_file_impl.cc",
       "media/cdm_file_impl.h",
-      "media/cdm_storage_impl.cc",
-      "media/cdm_storage_impl.h",
       "media/media_license_database.cc",
       "media/media_license_database.h",
       "media/media_license_manager.cc",

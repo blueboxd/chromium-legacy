@@ -1759,21 +1759,6 @@
             ]
         }
     ],
-    "BlinkCompositorUseDisplayThreadPriority": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BlinkCompositorUseDisplayThreadPriority"
-                    ]
-                }
-            ]
-        }
-    ],
     "BlinkSchedulerPrioritizeRenderingAfterInput": [
         {
             "platforms": [
@@ -3684,35 +3669,6 @@
             ]
         }
     ],
-    "EnableSuggestedFiles": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Quick_Access",
-                    "params": {
-                        "model_name": "quick_access"
-                    },
-                    "enable_features": [
-                        "EnableSuggestedFiles",
-                        "LauncherItemSuggest"
-                    ]
-                },
-                {
-                    "name": "Future_Access",
-                    "params": {
-                        "model_name": "future_access"
-                    },
-                    "enable_features": [
-                        "EnableSuggestedFiles",
-                        "LauncherItemSuggest"
-                    ]
-                }
-            ]
-        }
-    ],
     "EstablishGpuChannelAsync": [
         {
             "platforms": [
@@ -4141,6 +4097,28 @@
                     "enable_features": [
                         "GwpAsanMalloc",
                         "GwpAsanPartitionAlloc"
+                    ]
+                }
+            ]
+        }
+    ],
+    "HTMLParamElementUrlSupport": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled_20220615",
+                    "disable_features": [
+                        "HTMLParamElementUrlSupport"
                     ]
                 }
             ]
@@ -5193,6 +5171,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "LiteralBufferCreateStringWithEncoding"
+                    ]
+                }
+            ]
+        }
+    ],
+    "LocalFrameRootPrePostFCPMetrics": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LocalFrameRootPrePostFCPMetrics"
                     ]
                 }
             ]
@@ -6850,21 +6848,27 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledWithContinueSection",
+                    "name": "EnabledWithContinueSection_20220615",
                     "params": {
                         "enable_continue": "true"
                     },
                     "enable_features": [
                         "ProductivityLauncher"
+                    ],
+                    "disable_features": [
+                        "LauncherItemSuggest"
                     ]
                 },
                 {
-                    "name": "EnabledWithoutContinueSection",
+                    "name": "EnabledWithoutContinueSection_20220615",
                     "params": {
                         "enable_continue": "false"
                     },
                     "enable_features": [
                         "ProductivityLauncher"
+                    ],
+                    "disable_features": [
+                        "LauncherItemSuggest"
                     ]
                 }
             ]
@@ -8370,10 +8374,7 @@
             "experiments": [
                 {
                     "name": "Enabled",
-                    "params": {
-                        "min_gms_core_version_no_dots": "221500000",
-                        "stage": "2"
-                    },
+                    "params": {},
                     "enable_features": [
                         "UnifiedPasswordManagerAndroid"
                     ]
@@ -8981,6 +8982,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ViewportHeightClientHintHeader"
+                    ]
+                }
+            ]
+        }
+    ],
+    "Vp9kSVCHWDecoding": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "Vp9kSVCHWDecoding"
                     ]
                 }
             ]

@@ -258,7 +258,7 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
   SSLPlatformKeySecKey(const SSLPlatformKeySecKey&) = delete;
   SSLPlatformKeySecKey& operator=(const SSLPlatformKeySecKey&) = delete;
 
-  ~SSLPlatformKeySecKey() override {}
+  ~SSLPlatformKeySecKey() override = default;
 
   std::string GetProviderName() override {
     // TODO(https://crbug.com/900721): Is there a more descriptive name to

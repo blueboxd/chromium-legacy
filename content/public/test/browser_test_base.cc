@@ -407,7 +407,7 @@ void BrowserTestBase::SetUp() {
 
   ui::fuchsia::IgnorePresentCallsForTest();
 
-  // Clear the per-process cached BuildInfo, which was initialized by
+  // Clear the per-process cached system info, which was initialized by
   // TestSuite::Initialize(), to prevent a DCHECK for multiple calls during
   // in-process browser tests. There is not a single TestSuite for all browser
   // tests and some use the cached values, so skipping the earlier
@@ -597,10 +597,7 @@ void BrowserTestBase::SetUp() {
   base::i18n::AllowMultipleInitializeCallsForTesting();
   base::i18n::InitializeICU();
 
-  ContentMainDelegate* delegate = GetCustomContentMainDelegate();
-  if (!delegate)
-    delegate = GetContentMainDelegateForTesting();
-
+  ContentMainDelegate* delegate = GetContentMainDelegateForTesting();
   // The delegate should have been set by JNI_OnLoad for the test target.
   DCHECK(delegate);
 
@@ -728,8 +725,6 @@ void BrowserTestBase::SetUp() {
   auto params = CopyContentMainParams();
   params.ui_task = std::move(ui_task);
   params.created_main_parts_closure = std::move(created_main_parts_closure);
-  if (auto* custom_delegate = GetCustomContentMainDelegate())
-    params.delegate = custom_delegate;
   EXPECT_EQ(expected_exit_code_, ContentMain(std::move(params)));
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -1128,10 +1123,6 @@ void BrowserTestBase::CreatedBrowserMainPartsImpl(
     BrowserMainParts* browser_main_parts) {
   browser_main_parts_ = browser_main_parts;
   CreatedBrowserMainParts(browser_main_parts);
-}
-
-ContentMainDelegate* BrowserTestBase::GetCustomContentMainDelegate() {
-  return nullptr;
 }
 
 }  // namespace content

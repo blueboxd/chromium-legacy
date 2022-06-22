@@ -127,7 +127,7 @@ android_resources("signin_test_resources") {
   sources = [ "javatests/res/drawable/test_profile_picture.xml" ]
 }
 
-android_library("javatests") {
+android_library("unit_device_javatests") {
   testonly = true
   deps = [
     ":java",
@@ -149,7 +149,6 @@ android_library("javatests") {
 }
 
 robolectric_library("junit") {
-  testonly = true
   sources = [
     "junit/src/org/chromium/components/signin/AccountManagerFacadeImplTest.java",
     "junit/src/org/chromium/components/signin/AccountRenameCheckerTest.java",
@@ -170,7 +169,6 @@ robolectric_library("junit") {
     "//components/externalauth/android:java",
     "//testing/android/junit:junit_test_support",
     "//third_party/android_deps:guava_android_java",
-    "//third_party/android_deps:robolectric_all_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_test_rules_java",
     "//third_party/junit",

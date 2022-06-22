@@ -1471,6 +1471,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.ImageDecoders.ImageHasMultipleGeneratorClientIds"
+    enum="ImageHasMultipleGeneratorClientIds" expires_after="2022-09-30">
+  <owner>vmpstr@chromium.org</owner>
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    This histogram records whether an image has been decoded by a single client
+    or by multiple clients during decoding. For an image to be decoded, it is
+    always requested by a client with a client_id. If an image has been
+    requested by multiple clients, it would be decoded more than once. The
+    histogram value is recorded at most two times per image (once per bucket).
+    There will be overlap for two buckets, but we can get the the number of an
+    image decodeded by only one client with the difference between two buckets.
+    This helps us to know how often images get duplicated decoding in real life.
+  </summary>
+</histogram>
+
 <histogram name="Blink.ImageDecoders.IncrementalDecodeNeeded"
     enum="IncrementalDecodeNeeded" expires_after="2022-09-15">
   <owner>andrescj@chromium.org</owner>
@@ -2070,6 +2086,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.PreloadRequestWaitTime" units="ms"
+    expires_after="2022-12-07">
+  <owner>cduvall@chromium.org</owner>
+  <owner>swarm-team@google.com</owner>
+  <summary>
+    Measures the time from the creation of a PreloadRequest to when
+    PreloadRequest::Start is called. Logged for each PreloadRequest::Start call.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Blink.PrePaint.UpdateTime" units="microseconds"
     expires_after="2022-11-13">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
@@ -2276,6 +2302,44 @@ chromium-metrics-reviews@google.com.
     Time spent preparing the document to service browser driven behaviors.
     Examples include accessibility, intersection observer, display locking and
     spell checking. Includes time spent in style update and layout.
+
+    This histogram does not record metrics on machines with low-resolution
+    clocks.
+  </summary>
+</histogram>
+
+<histogram name="Blink.SetInnerHtml.ConversionTime" units="microseconds"
+    expires_after="2022-12-12">
+  <owner>sky@chromium.org</owner>
+  <owner>swarm-team@chromium.org</owner>
+  <summary>
+    Time spent converting the v8 string to a blink string when Element.innerHTML
+    is set.
+
+    This histogram does not record metrics on machines with low-resolution
+    clocks.
+  </summary>
+</histogram>
+
+<histogram name="Blink.SetInnerHtml.ExecutionTime" units="microseconds"
+    expires_after="2022-12-12">
+  <owner>sky@chromium.org</owner>
+  <owner>swarm-team@chromium.org</owner>
+  <summary>
+    Time spent processing html string supplied to Element.innerHTML. This
+    specifically captures the time in Element.SetInnerHTML.
+
+    This histogram does not record metrics on machines with low-resolution
+    clocks.
+  </summary>
+</histogram>
+
+<histogram name="Blink.SetInnerHtml.StringLength" units="length"
+    expires_after="2022-12-12">
+  <owner>sky@chromium.org</owner>
+  <owner>swarm-team@chromium.org</owner>
+  <summary>
+    Length of the string supplied to Element.innerHTML.
 
     This histogram does not record metrics on machines with low-resolution
     clocks.

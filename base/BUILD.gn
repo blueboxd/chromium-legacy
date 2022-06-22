@@ -1879,6 +1879,7 @@ mixed_component("base") {
 
     deps += [
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
       "//third_party/fuchsia-sdk/sdk/pkg/async-default",
@@ -3765,6 +3766,7 @@ test("base_unittests") {
       "fuchsia/service_directory_test_base.h",
       "fuchsia/service_provider_impl_unittest.cc",
       "fuchsia/system_build_info_unittest.cc",
+      "fuchsia/system_product_info_unittest.cc",
       "fuchsia/test_component_context_for_process_unittest.cc",
       "fuchsia/time_zone_data_unittest.cc",
       "message_loop/fd_watch_controller_posix_unittest.cc",
@@ -3776,6 +3778,7 @@ test("base_unittests") {
       ":test_log_listener_safe",
       ":testfidl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
@@ -4383,7 +4386,6 @@ if (is_android) {
   }
 
   robolectric_library("base_junit_test_support") {
-    testonly = true
     sources = [
       "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTask.java",
       "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTaskBridge.java",

@@ -343,10 +343,10 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   // There's only one font and it's bold and normal.
   EXPECT_EQ(1u, GetStyleEngine().GetFontSelector()->GetFontFaceCache()
                 ->GetNumSegmentedFacesForTesting());
-  scoped_refptr<CSSSegmentedFontFace> font_face =
-      GetStyleEngine().GetFontSelector()->GetFontFaceCache()->Get(
-          t4->GetComputedStyle()->GetFontDescription(),
-          AtomicString("Cool Font"));
+  CSSSegmentedFontFace* font_face =
+      GetStyleEngine().GetFontSelector()->GetFontFaceCache()
+      ->Get(t4->GetComputedStyle()->GetFontDescription(),
+            AtomicString("Cool Font"));
   EXPECT_TRUE(font_face);
   FontSelectionCapabilities capabilities =
       font_face->GetFontSelectionCapabilities();
@@ -4969,13 +4969,14 @@ TEST_F(StyleEngineTest, UserScrollTimelineOverrideWithCascadeLayers) {
     @layer base, override;
 
     #scroller {
-      overflow: scroll;
+      overflow: hidden;
       width: 100px;
       height: 100px;
     }
 
     #scroll-contents {
       height: 200px;
+      width: 300px;
     }
 
     @keyframes expand {
@@ -4992,16 +4993,14 @@ TEST_F(StyleEngineTest, UserScrollTimelineOverrideWithCascadeLayers) {
     @layer override {
       @scroll-timeline timeline {
         source: selector(#scroller);
-        start: 0px;
-        end: 50px;
+        orientation: block;
       }
     }
 
     @layer base {
       @scroll-timeline timeline {
         source: selector(#scroller);
-        start: 0px;
-        end: 100px;
+        orientation: inline;
       }
     }
   )CSS");
@@ -5017,7 +5016,7 @@ TEST_F(StyleEngineTest, UserScrollTimelineOverrideWithCascadeLayers) {
   UpdateAllLifecyclePhases();
 
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(150, target->OffsetWidth());
+  EXPECT_EQ(125, target->OffsetWidth());
 }
 
 TEST_F(StyleEngineTest, UserAndAuthorScrollTimelineOverrideWithCascadeLayers) {
@@ -5029,7 +5028,7 @@ TEST_F(StyleEngineTest, UserAndAuthorScrollTimelineOverrideWithCascadeLayers) {
     @layer base, override;
 
     #scroller {
-      overflow: scroll;
+      overflow: hidden;
       width: 100px;
       height: 100px;
     }
@@ -5046,8 +5045,7 @@ TEST_F(StyleEngineTest, UserAndAuthorScrollTimelineOverrideWithCascadeLayers) {
     @layer override {
       @scroll-timeline timeline {
         source: selector(#scroller);
-        start: 0px;
-        end: 100px;
+        orientation: inline;
       }
     }
   )CSS");
@@ -5058,8 +5056,7 @@ TEST_F(StyleEngineTest, UserAndAuthorScrollTimelineOverrideWithCascadeLayers) {
     <style>
       @scroll-timeline timeline {
         source: selector(#scroller);
-        start: 0px;
-        end: 50px;
+        orientation: block;
       }
 
       #target {
@@ -5079,7 +5076,7 @@ TEST_F(StyleEngineTest, UserAndAuthorScrollTimelineOverrideWithCascadeLayers) {
   // User-defined scroll timelines should not override author-defined
   // scroll timelines regardless of cascade layers.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(150, target->OffsetWidth());
+  EXPECT_EQ(125, target->OffsetWidth());
 }
 
 TEST_F(StyleEngineSimTest, UserFontFaceOverrideWithCascadeLayers) {

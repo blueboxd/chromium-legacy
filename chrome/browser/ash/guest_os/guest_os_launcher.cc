@@ -15,6 +15,7 @@
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_simple_types.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/guest_os/guest_id.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
@@ -61,7 +62,7 @@ void LaunchCrostini(Profile* profile,
                     LaunchCallback callback) {
   crostini::CrostiniManager::RestartOptions options;
   options.start_vm_only = just_termina;
-  auto container_id = crostini::ContainerId::GetDefault();
+  auto container_id = crostini::DefaultContainerId();
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostiniWithOptions(
       container_id, std::move(options),
       base::BindOnce(

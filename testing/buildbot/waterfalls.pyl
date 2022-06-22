@@ -153,11 +153,9 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
-        # TODO(crbug.com/1293222): Restore after octopus capacity has been
-        # returned.
-        #'test_suites': {
-        #  'gtest_tests': 'chromeos_device_only_gtests',
-        #},
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_only_gtests',
+        },
         'swarming': {
           'dimension_sets': [
             {
@@ -6467,6 +6465,17 @@
         'mixins': [
           'mac_12_beta_arm64',
         ],
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'win11-blink-rel': {
+        'mixins': [
+            'win11',
+        ],
+        'swarming': {
+          'hard_timeout': 900,
+        },
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },

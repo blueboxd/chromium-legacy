@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -452,18 +453,13 @@ class ContentsSeparator : public views::View {
   METADATA_HEADER(ContentsSeparator);
 
   ContentsSeparator() {
+    SetBackground(
+        views::CreateThemedSolidBackground(kColorToolbarContentAreaSeparator));
+
     // BrowserViewLayout will respect either the height or width of this,
     // depending on orientation, not simultaneously both.
     SetPreferredSize(
         gfx::Size(views::Separator::kThickness, views::Separator::kThickness));
-  }
-
- private:
-  // views::View:
-  void OnThemeChanged() override {
-    SetBackground(views::CreateSolidBackground(GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR)));
-    View::OnThemeChanged();
   }
 };
 
@@ -1425,6 +1421,10 @@ void BrowserView::UpdateLoadingAnimations(bool should_animate) {
   }
 }
 
+bool BrowserView::IsLoadingAnimationRunningForTesting() const {
+  return loading_animation_timer_.IsRunning();
+}
+
 void BrowserView::SetStarredState(bool is_starred) {
   PageActionIconView* star_icon =
       toolbar_button_provider_->GetPageActionIconView(
@@ -2199,6 +2199,16 @@ void BrowserView::TryNotifyWindowBoundsChanged(const gfx::Rect& widget_bounds) {
   browser()->extension_window_controller()->NotifyWindowBoundsChanged();
 }
 
+void BrowserView::OnWidgetVisibilityChanged(views::Widget* widget,
+                                            bool visible) {
+  if (!base::FeatureList::IsEnabled(features::kStopRenderingLoadingAnimation)) {
+    return;
+  }
+
+  UpdateLoadingAnimations(visible &&
+                          browser_->tab_strip_model()->TabsAreLoading());
+}
+
 void BrowserView::TouchModeChanged() {
   MaybeInitializeWebUITabStrip();
   MaybeShowWebUITabStripIPH();
@@ -2370,9 +2380,12 @@ BrowserView::ShowScreenshotCapturedBubble(content::WebContents* contents,
 SharingDialog* BrowserView::ShowSharingDialog(
     content::WebContents* web_contents,
     SharingDialogData data) {
+  // TODO(https://crbug.com/1311680): Remove this altogether. This used to
+  // be hardcoded to anchor off the shared clipboard bubble, but that bubble is
+  // now gone altogether.
   auto* dialog_view =
       new SharingDialogView(toolbar_button_provider()->GetAnchorView(
-                                PageActionIconType::kSharedClipboard),
+                                PageActionIconType::kClickToCall),
                             web_contents, std::move(data));
 
   views::BubbleDialogDelegateView::CreateBubble(dialog_view)->Show();

@@ -41,12 +41,14 @@ void SetUpWebUIDataSource(content::WebUIDataSource* source,
 
 void AddLocalizedStrings(content::WebUIDataSource* source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"backButtonLabel", IDS_FEEDBACK_TOOL_BACK_BUTTON_LABEL},
       {"continueButtonLabel", IDS_FEEDBACK_TOOL_CONTINUE_BUTTON_LABEL},
       {"descriptionHint", IDS_FEEDBACK_TOOL_DESCRIPTION_HINT},
       {"descriptionLabel", IDS_FEEDBACK_TOOL_DESCRIPTION_LABEL},
       {"descriptionRequired", IDS_FEEDBACK_TOOL_DESCRIPTION_REQUIRED},
       {"feedbackHelpLinkLabel", IDS_FEEDBACK_TOOL_FEEDBACK_HELP_LINK_LABEL},
       {"pageTitle", IDS_FEEDBACK_TOOL_PAGE_TITLE},
+      {"sendButtonLabel", IDS_FEEDBACK_TOOL_SEND_BUTTON_LABEL},
       // The help content strings are needed for browser tests.
       {"suggestedHelpContent", IDS_FEEDBACK_TOOL_SUGGESTED_HELP_CONTENT},
       {"popularHelpContent", IDS_FEEDBACK_TOOL_POPULAR_HELP_CONTENT},
@@ -60,6 +62,7 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"confirmationTitleOnline", IDS_FEEDBACK_TOOL_PAGE_TITLE_AFTER_SENT},
       {"diagnosticsAppLabel",
        IDS_FEEDBACK_TOOL_RESOURCES_DIAGNOSTICS_APP_LABEL},
+      {"userConsentLabel", IDS_FEEDBACK_TOOL_USER_CONSENT_LABEL},
   };
 
   source->AddLocalizedStrings(kLocalizedStrings);

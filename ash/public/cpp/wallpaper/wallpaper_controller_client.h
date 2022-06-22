@@ -33,8 +33,10 @@ class ASH_PUBLIC_EXPORT WallpaperControllerClient {
   virtual void MaybeClosePreviewWallpaper() = 0;
 
   // Sets the default wallpaper and removes the file for the previous wallpaper.
-  virtual void SetDefaultWallpaper(const AccountId& account_id,
-                                   bool show_wallpaper) = 0;
+  virtual void SetDefaultWallpaper(
+      const AccountId& account_id,
+      bool show_wallpaper,
+      base::OnceCallback<void(bool success)> callback) = 0;
 
   // Retrieves the current collection id from the Wallpaper Picker Chrome App
   // for migration and returns it via |result_callback|. The string in
@@ -79,6 +81,17 @@ class ASH_PUBLIC_EXPORT WallpaperControllerClient {
       const AccountId& account_id,
       const std::string& id,
       FetchGooglePhotosPhotoCallback callback) = 0;
+  virtual void FetchDailyGooglePhotosPhoto(
+      const AccountId& account_id,
+      const std::string& album_id,
+      const absl::optional<std::string>& current_photo_id,
+      FetchGooglePhotosPhotoCallback callback) = 0;
+
+  using FetchGooglePhotosAccessTokenCallback =
+      base::OnceCallback<void(const absl::optional<std::string>& token)>;
+  virtual void FetchGooglePhotosAccessToken(
+      const AccountId& account_id,
+      FetchGooglePhotosAccessTokenCallback callback) = 0;
 };
 
 }  // namespace ash

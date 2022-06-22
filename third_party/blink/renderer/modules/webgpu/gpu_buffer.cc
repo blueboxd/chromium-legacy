@@ -396,8 +396,7 @@ void GPUBuffer::DetachMappedArrayBuffers(v8::Isolate* isolate) {
     DCHECK(array_buffer->IsDetachable(isolate));
 
     array_buffer->DetachContents(isolate);
-    // TODO(crbug.com/1326210): Temporary CHECK to prevent aliased array buffers.
-    CHECK(array_buffer->IsDetached());
+    DCHECK(array_buffer->IsDetached());
   }
   mapped_array_buffers_.clear();
 }

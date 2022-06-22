@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 
+#include <memory>
+
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/locale_update_controller.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/system_tray.h"
 #include "ash/public/cpp/update_types.h"
@@ -14,6 +17,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -38,7 +43,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/ui/webui/access_code_cast/access_code_cast_ui.h"
+#include "chrome/browser/ui/webui/access_code_cast/access_code_cast_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
@@ -61,7 +66,6 @@
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
-#include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -177,6 +181,27 @@ void OpenInBrowser(const GURL& event_url) {
                             ash::NewWindowDelegate::OpenUrlFrom::kUnspecified);
 }
 
+ash::ManagementDeviceMode GetManagementDeviceMode(
+    policy::BrowserPolicyConnectorAsh* connector) {
+  if (connector->IsDeviceEnterpriseManaged())
+    return ash::ManagementDeviceMode::kNone;
+
+  if (connector->IsKioskEnrolled())
+    return ash::ManagementDeviceMode::kKioskSku;
+
+  switch (connector->GetEnterpriseMarketSegment()) {
+    case policy::MarketSegment::UNKNOWN:
+      return ash::ManagementDeviceMode::kOther;
+    case policy::MarketSegment::ENTERPRISE:
+      return ash::ManagementDeviceMode::kChromeEnterprise;
+    case policy::MarketSegment::EDUCATION:
+      return ash::ManagementDeviceMode::kChromeEducation;
+  }
+
+  NOTREACHED();
+  return ash::ManagementDeviceMode::kOther;
+}
+
 }  // namespace
 
 class SystemTrayClientImpl::EnterpriseAccountObserver
@@ -272,7 +297,7 @@ SystemTrayClientImpl::SystemTrayClientImpl()
       policy_connector->GetDeviceCloudPolicyManager();
   if (policy_manager)
     policy_manager->core()->store()->AddObserver(this);
-  UpdateEnterpriseDomainInfo();
+  UpdateDeviceEnterpriseInfo();
 
   system_tray_->SetClient(this);
 
@@ -389,14 +414,8 @@ void SystemTrayClientImpl::ShowDisplaySettings() {
 }
 
 void SystemTrayClientImpl::ShowDarkModeSettings() {
-  if (ash::features::IsPersonalizationHubEnabled()) {
-    ash::NewWindowDelegate* primary_delegate =
-        ash::NewWindowDelegate::GetPrimary();
-    primary_delegate->OpenPersonalizationHub();
-    return;
-  }
-  ShowSettingsSubPageForActiveUser(
-      chromeos::settings::mojom::kDarkModeSubpagePath);
+  DCHECK(ash::features::IsPersonalizationHubEnabled());
+  ash::NewWindowDelegate::GetPrimary()->OpenPersonalizationHub();
 }
 
 void SystemTrayClientImpl::ShowStorageSettings() {
@@ -620,11 +639,11 @@ void SystemTrayClientImpl::ShowNetworkSettingsHelper(
     // kWifi*, but it's actually a generic page.
     page = chromeos::settings::mojom::kWifiDetailsSubpagePath;
     page += "?guid=";
-    page += net::EscapeUrlEncodedData(network_id, true);
+    page += base::EscapeUrlEncodedData(network_id, true);
     page += "&name=";
-    page += net::EscapeUrlEncodedData(network_state->name(), true);
+    page += base::EscapeUrlEncodedData(network_state->name(), true);
     page += "&type=";
-    page += net::EscapeUrlEncodedData(
+    page += base::EscapeUrlEncodedData(
         chromeos::network_util::TranslateShillTypeToONC(network_state->type()),
         true);
     page += "&settingId=";
@@ -656,8 +675,9 @@ void SystemTrayClientImpl::SetLocaleAndExit(
   chrome::AttemptUserExit();
 }
 
-void SystemTrayClientImpl::ShowAccessCodeCastingDialog() {
-  AccessCodeCastDialog::ShowForDesktopMirroring();
+void SystemTrayClientImpl::ShowAccessCodeCastingDialog(
+    AccessCodeCastDialogOpenLocation open_location) {
+  media_router::AccessCodeCastDialog::ShowForDesktopMirroring(open_location);
 }
 
 void SystemTrayClientImpl::ShowCalendarEvent(
@@ -764,28 +784,34 @@ void SystemTrayClientImpl::OnUpgradeRecommended() {
 ////////////////////////////////////////////////////////////////////////////////
 // policy::CloudPolicyStore::Observer
 void SystemTrayClientImpl::OnStoreLoaded(policy::CloudPolicyStore* store) {
-  UpdateEnterpriseDomainInfo();
+  UpdateDeviceEnterpriseInfo();
 }
 
 void SystemTrayClientImpl::OnStoreError(policy::CloudPolicyStore* store) {
-  UpdateEnterpriseDomainInfo();
+  UpdateDeviceEnterpriseInfo();
 }
 
-void SystemTrayClientImpl::UpdateEnterpriseDomainInfo() {
+void SystemTrayClientImpl::UpdateDeviceEnterpriseInfo() {
   policy::BrowserPolicyConnectorAsh* connector =
       g_browser_process->platform_part()->browser_policy_connector_ash();
-  const std::string enterprise_domain_manager =
+  ash::DeviceEnterpriseInfo device_enterprise_info;
+  device_enterprise_info.enterprise_domain_manager =
       connector->GetEnterpriseDomainManager();
-  const bool active_directory_managed = connector->IsActiveDirectoryManaged();
-  if (enterprise_domain_manager == last_enterprise_domain_manager_ &&
-      active_directory_managed == last_active_directory_managed_) {
-    return;
+  device_enterprise_info.active_directory_managed =
+      connector->IsActiveDirectoryManaged();
+  device_enterprise_info.management_device_mode =
+      GetManagementDeviceMode(connector);
+  if (!last_device_enterprise_info_) {
+    last_device_enterprise_info_ =
+        std::make_unique<ash::DeviceEnterpriseInfo>();
   }
+
+  if (device_enterprise_info == *last_device_enterprise_info_)
+    return;
+
   // Send to ash, which will add an item to the system tray.
-  system_tray_->SetEnterpriseDomainInfo(enterprise_domain_manager,
-                                        active_directory_managed);
-  last_enterprise_domain_manager_ = enterprise_domain_manager;
-  last_active_directory_managed_ = active_directory_managed;
+  system_tray_->SetDeviceEnterpriseInfo(device_enterprise_info);
+  *last_device_enterprise_info_ = device_enterprise_info;
 }
 
 void SystemTrayClientImpl::UpdateEnterpriseAccountDomainInfo(Profile* profile) {

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/webui/telemetry_extension_ui/services/convert_ptr.h"
 #include "ash/webui/telemetry_extension_ui/services/probe_service_converters.h"
 #include "base/bind.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -18,6 +17,7 @@
 namespace ash {
 
 namespace {
+namespace cros_healthd = ::ash::cros_healthd;
 constexpr char kOemDataLogName[] = "oemdata";
 }  // namespace
 
@@ -35,7 +35,8 @@ void ProbeService::ProbeTelemetryInfo(
       base::BindOnce(
           [](health::mojom::ProbeService::ProbeTelemetryInfoCallback callback,
              cros_healthd::mojom::TelemetryInfoPtr ptr) {
-            std::move(callback).Run(converters::ConvertPtr(std::move(ptr)));
+            std::move(callback).Run(
+                converters::ConvertProbePtr(std::move(ptr)));
           },
           std::move(callback)));
 }

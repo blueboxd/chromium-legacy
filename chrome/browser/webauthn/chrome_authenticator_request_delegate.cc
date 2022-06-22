@@ -18,6 +18,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/sys_byteorder.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -169,6 +170,101 @@ class CableLinkingEventHandler : public ProfileObserver {
   Profile* profile_;
 };
 
+absl::optional<
+    std::pair<AuthenticatorRequestDialogModel::ExperimentServerLinkSheet,
+              AuthenticatorRequestDialogModel::ExperimentServerLinkTitle>>
+GetServerLinkExperiments(
+    base::span<const device::CableDiscoveryData> pairings_from_extension) {
+  base::span<const uint8_t> experiment_bytes;
+  for (const auto& pairing : pairings_from_extension) {
+    if (pairing.version != device::CableDiscoveryData::Version::V2 ||
+        pairing.v2->experiments.empty()) {
+      continue;
+    }
+
+    base::span<const uint8_t> candidate = pairing.v2->experiments;
+
+    if (experiment_bytes.empty()) {
+      experiment_bytes = candidate;
+      continue;
+    }
+
+    if (candidate.size() != experiment_bytes.size() ||
+        memcmp(candidate.data(), experiment_bytes.data(), candidate.size()) !=
+            0) {
+      FIDO_LOG(ERROR) << "Server-link experiment data inconsistent. Ignoring.";
+      return absl::nullopt;
+    }
+  }
+
+  if (experiment_bytes.empty()) {
+    return absl::nullopt;
+  }
+
+  if (experiment_bytes.size() % sizeof(uint32_t) != 0) {
+    FIDO_LOG(ERROR) << "Server-link experiment data is not a multiple of four "
+                       "bytes. Ignoring.";
+    return absl::nullopt;
+  }
+
+  constexpr AuthenticatorRequestDialogModel::ExperimentServerLinkSheet
+      kSheetArms[] = {
+          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL,
+          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2,
+          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3,
+          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4,
+          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5,
+          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6,
+      };
+
+  constexpr AuthenticatorRequestDialogModel::ExperimentServerLinkTitle
+      kTitleArms[] = {
+          AuthenticatorRequestDialogModel::ExperimentServerLinkTitle::CONTROL,
+          AuthenticatorRequestDialogModel::ExperimentServerLinkTitle::
+              UNLOCK_YOUR_PHONE,
+      };
+
+  absl::optional<AuthenticatorRequestDialogModel::ExperimentServerLinkSheet>
+      sheet_experiment;
+  absl::optional<AuthenticatorRequestDialogModel::ExperimentServerLinkTitle>
+      title_experiment;
+
+  for (size_t i = 0; i < experiment_bytes.size(); i += sizeof(uint32_t)) {
+    uint32_t experiment_id;
+    memcpy(&experiment_id, &experiment_bytes[i], sizeof(experiment_id));
+    experiment_id = base::ByteSwap(experiment_id);
+
+    for (const auto& arm : kSheetArms) {
+      if (experiment_id == static_cast<uint32_t>(arm)) {
+        if (sheet_experiment.has_value()) {
+          LOG(ERROR) << "Duplicate values for sheet experiment.";
+          return absl::nullopt;
+        }
+        sheet_experiment = arm;
+        break;
+      }
+    }
+
+    for (const auto& arm : kTitleArms) {
+      if (experiment_id == static_cast<uint32_t>(arm)) {
+        if (title_experiment.has_value()) {
+          LOG(ERROR) << "Duplicate values for title experiment.";
+          return absl::nullopt;
+        }
+        title_experiment = arm;
+      }
+    }
+
+    FIDO_LOG(DEBUG) << "Ignoring unknown experiment ID " << experiment_id;
+  }
+
+  return std::make_pair(
+      sheet_experiment.value_or(
+          AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL),
+      title_experiment.value_or(
+          AuthenticatorRequestDialogModel::ExperimentServerLinkTitle::CONTROL));
+}
+
 }  // namespace
 
 // ---------------------------------------------------------------------
@@ -179,9 +275,29 @@ ChromeWebAuthenticationDelegate::~ChromeWebAuthenticationDelegate() = default;
 
 #if !BUILDFLAG(IS_ANDROID)
 
-static bool IsAllowedGoogleCorpRemoteProxyingOrigin(
+bool ChromeWebAuthenticationDelegate::
+    OverrideCallerOriginAndRelyingPartyIdValidation(
+        content::BrowserContext* browser_context,
+        const url::Origin& caller_origin,
+        const std::string& relying_party_id) {
+  // Allow chrome-extensions:// origins to make WebAuthn requests.
+  // `MaybeGetRelyingPartyId` will override the RP ID to use when processing
+  // requests from extensions.
+  return caller_origin.scheme() == extensions::kExtensionScheme &&
+         caller_origin.host() == relying_party_id;
+}
+
+bool ChromeWebAuthenticationDelegate::OriginMayUseRemoteDesktopClientOverride(
     content::BrowserContext* browser_context,
     const url::Origin& caller_origin) {
+  // Allow the Google-internal version of Chrome Remote Desktop to use the
+  // RemoteDesktopClientOverride extension and make WebAuthn
+  // requests on behalf of other origins, if a corresponding enteprise policy is
+  // enabled.
+  //
+  // The policy explicitly does not cover external instances of CRD. It
+  // must not be extended to other origins or be made configurable without going
+  // through security review.
   if (!base::FeatureList::IsEnabled(
           device::kWebAuthnGoogleCorpRemoteDesktopClientPrivilege)) {
     return false;
@@ -195,45 +311,23 @@ static bool IsAllowedGoogleCorpRemoteProxyingOrigin(
     return false;
   }
 
-  // The Google-internal CRD origin. The policy explicitly does not cover
-  // external instances of CRD.
   constexpr char kGoogleCorpCrdOrigin[] =
       "https://remotedesktop.corp.google.com";
   if (caller_origin == url::Origin::Create(GURL(kGoogleCorpCrdOrigin))) {
     return true;
   }
 
-  const std::string cmdline_allowed_origin(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          webauthn::switches::kRemoteProxiedRequestsAllowedAdditionalOrigin));
-  if (cmdline_allowed_origin.empty()) {
+  // An additional origin can be passed on the command line for testing.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          webauthn::switches::kRemoteProxiedRequestsAllowedAdditionalOrigin)) {
     return false;
   }
-
-  return caller_origin == url::Origin::Create(GURL(cmdline_allowed_origin));
-}
-
-bool ChromeWebAuthenticationDelegate::
-    OverrideCallerOriginAndRelyingPartyIdValidation(
-        content::BrowserContext* browser_context,
-        const url::Origin& caller_origin,
-        const std::string& relying_party_id) {
-  // Allow the Google-internal version of Chrome Remote Desktop to bypass RP ID
-  // validation so that it can execute WebAuthn requests on behalf of a remote
-  // host. This behavior is gated on an internal-only platform-level enterprise
-  // policy with the hard-coded Google-internal CRD origin. An additional origin
-  // fro development and testing can be supplied via a switch, but only if the
-  // enterprise policy has been enabled.
-  if (IsAllowedGoogleCorpRemoteProxyingOrigin(browser_context, caller_origin)) {
-    // Any Relying Party ID is allowed.
-    return true;
-  }
-
-  // Allow chrome-extensions:// origins to make WebAuthn requests.
-  // `MaybeGetRelyingPartyId` will override the RP ID to use when processing
-  // requests from extensions.
-  return caller_origin.scheme() == extensions::kExtensionScheme &&
-         caller_origin.host() == relying_party_id;
+  // Note that `cmdline_allowed_origin` will be opaque if the flag is not a
+  // valid URL, which won't match `caller_origin`.
+  const url::Origin cmdline_allowed_origin = url::Origin::Create(
+      GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          webauthn::switches::kRemoteProxiedRequestsAllowedAdditionalOrigin)));
+  return caller_origin == cmdline_allowed_origin;
 }
 
 absl::optional<std::string>
@@ -555,6 +649,23 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
 
   const bool cable_extension_permitted = ShouldPermitCableExtension(origin);
 
+  auto experiments = GetServerLinkExperiments(pairings_from_extension);
+  if (experiments.has_value()) {
+    std::tie(weak_dialog_model_->experiment_server_link_sheet_,
+             weak_dialog_model_->experiment_server_link_title_) = *experiments;
+  }
+
+  if (g_observer) {
+    for (const auto& pairing : pairings_from_extension) {
+      if (pairing.version == device::CableDiscoveryData::Version::V2) {
+        g_observer->CableV2ExtensionSeen(
+            pairing.v2->server_link_data, pairing.v2->experiments,
+            weak_dialog_model_->experiment_server_link_sheet_,
+            weak_dialog_model_->experiment_server_link_title_);
+      }
+    }
+  }
+
   // TODO(crbug.com/1052397): Revisit the macro expression once build flag
   // switch of lacros-chrome is complete.
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
@@ -618,17 +729,10 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
       contact_phone_callback = discovery_factory->get_cable_contact_callback();
     }
   }
-  const bool have_paired_phones = !paired_phones.empty();
 
   const bool non_extension_cablev2_enabled =
       (!cable_extension_permitted ||
-       base::FeatureList::IsEnabled(device::kWebAuthCableExtensionAnywhere)) &&
-      (have_paired_phones ||
-       base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
-
-  const bool android_accessory_possible =
-      base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) ||
-      cablev2_extension_provided || !cable_extension_permitted;
+       base::FeatureList::IsEnabled(device::kWebAuthCableExtensionAnywhere));
 
   absl::optional<std::array<uint8_t, device::cablev2::kQRKeySize>>
       qr_generator_key;
@@ -655,16 +759,14 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     }
   }
 
-  if (android_accessory_possible) {
-    mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager;
-    if (!pass_empty_usb_device_manager_) {
-      content::GetDeviceService().BindUsbDeviceManager(
-          usb_device_manager.BindNewPipeAndPassReceiver());
-    }
-    discovery_factory->set_android_accessory_params(
-        std::move(usb_device_manager),
-        l10n_util::GetStringUTF8(IDS_WEBAUTHN_CABLEV2_AOA_REQUEST_DESCRIPTION));
+  mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager;
+  if (!pass_empty_usb_device_manager_) {
+    content::GetDeviceService().BindUsbDeviceManager(
+        usb_device_manager.BindNewPipeAndPassReceiver());
   }
+  discovery_factory->set_android_accessory_params(
+      std::move(usb_device_manager),
+      l10n_util::GetStringUTF8(IDS_WEBAUTHN_CABLEV2_AOA_REQUEST_DESCRIPTION));
 
   if (cable_extension_provided || non_extension_cablev2_enabled) {
     absl::optional<bool> extension_is_v2;

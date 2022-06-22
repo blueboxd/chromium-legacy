@@ -4,13 +4,17 @@
 
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 
+#include <cstring>
+
 #include "base/guid.h"
 #include "base/strings/string_util.h"
+#include "net/base/url_util.h"
 
 namespace blink {
 
 bool IsValidFencedFrameURL(GURL url) {
-  return url.SchemeIs(url::kHttpsScheme) || url.IsAboutBlank();
+  return url.SchemeIs(url::kHttpsScheme) || url.IsAboutBlank() ||
+         net::IsLocalhost(url);
 }
 
 const char kURNUUIDprefix[] = "urn:uuid:";

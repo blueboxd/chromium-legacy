@@ -320,13 +320,43 @@ TEST_F(LanguagePackManagerTest, CheckAllLocalesAvailable) {
 }
 
 TEST_F(LanguagePackManagerTest, IsPackAvailableFalseTest) {
-  // Correct ID, wrong language.
-  bool available = manager_->IsPackAvailable(kHandwritingFeatureId, "fr");
+  // Correct ID, wrong language (Polish).
+  bool available = manager_->IsPackAvailable(kHandwritingFeatureId, "pl");
   EXPECT_FALSE(available);
 
   // ID doesn't exists.
   available = manager_->IsPackAvailable("foo", "fr");
   EXPECT_FALSE(available);
+}
+
+TEST_F(LanguagePackManagerTest, InstallBasePayloadSuccess) {
+  dlcservice_client_->set_install_error(dlcservice::kErrorNone);
+  dlcservice_client_->set_install_root_path("/path");
+
+  // We need to use an existing Pack ID, so that we do get a result back.
+  manager_->InstallBasePayload(
+      kHandwritingFeatureId,
+      base::BindOnce(&LanguagePackManagerTest::InstallTestCallback,
+                     base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(pack_result_.operation_error, dlcservice::kErrorNone);
+  EXPECT_EQ(pack_result_.pack_state, PackResult::INSTALLED);
+  EXPECT_EQ(pack_result_.path, "/path");
+}
+
+TEST_F(LanguagePackManagerTest, InstallBasePayloadFailureTestFailure) {
+  dlcservice_client_->set_install_error(dlcservice::kErrorInternal);
+
+  // We need to use an existing Pack ID, so that we do get a result back.
+  manager_->InstallBasePayload(
+      kHandwritingFeatureId,
+      base::BindOnce(&LanguagePackManagerTest::InstallTestCallback,
+                     base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(pack_result_.operation_error, dlcservice::kErrorInternal);
+  EXPECT_NE(pack_result_.pack_state, PackResult::INSTALLED);
 }
 
 }  // namespace language_packs

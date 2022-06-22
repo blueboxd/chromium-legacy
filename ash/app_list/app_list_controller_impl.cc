@@ -36,6 +36,8 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
+#include "ash/public/cpp/feature_discovery_duration_reporter.h"
+#include "ash/public/cpp/feature_discovery_metric_util.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -71,6 +73,7 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/util/display_util.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
@@ -201,39 +204,37 @@ TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
   }
 }
 
+PrefService* GetLastActiveUserPrefService() {
+  return Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+}
+
 int GetSuggestedContentInfoShownCount() {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   return prefs->GetInteger(prefs::kSuggestedContentInfoShownInLauncher);
 }
 
 void SetSuggestedContentInfoShownCount(int count) {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   prefs->SetInteger(prefs::kSuggestedContentInfoShownInLauncher, count);
 }
 
 bool IsSuggestedContentInfoDismissed() {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   return prefs->GetBoolean(prefs::kSuggestedContentInfoDismissedInLauncher);
 }
 
 void SetSuggestedContentInfoDismissed() {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   prefs->SetBoolean(prefs::kSuggestedContentInfoDismissedInLauncher, true);
 }
 
 bool IsSuggestedContentEnabled() {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   return prefs->GetBoolean(chromeos::prefs::kSuggestedContentEnabled);
 }
 
 int GetOffset(int offset, const char* pref_name) {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   return prefs->GetBoolean(pref_name) ? -offset : offset;
 }
 
@@ -332,6 +333,9 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kLauncherFeedbackOnContinueSectionSent, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kLauncherContinueSectionHidden, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   AppListNudgeController::RegisterProfilePrefs(registry);
 }
@@ -439,6 +443,10 @@ bool AppListControllerImpl::IsVisible(
 
 bool AppListControllerImpl::IsVisible() {
   return IsVisible(absl::nullopt);
+}
+
+void AppListControllerImpl::HideContinueSection() {
+  SetHideContinueSection(true);
 }
 
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(
@@ -567,8 +575,12 @@ void AppListControllerImpl::UpdateAppListWithNewTemporarySortOrder(
   DCHECK(features::IsProductivityLauncherEnabled());
   DCHECK(features::IsLauncherAppSortEnabled());
 
-  if (new_order)
+  if (new_order) {
     RecordAppListSortAction(*new_order, IsInTabletMode());
+    FeatureDiscoveryDurationReporter::GetInstance()->MaybeFinishObservation(
+        feature_discovery::TrackableFeature::
+            kAppListReorderAfterEducationNudge);
+  }
 
   // Adapt the bubble app list to the new sorting order. NOTE: the bubble app
   // list is visible only in clamshell mode. Therefore do not animate in tablet
@@ -1406,10 +1418,10 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
 
 void AppListControllerImpl::GetContextMenuModel(
     const std::string& id,
-    bool add_sort_options,
+    AppListItemContext item_context,
     GetContextMenuModelCallback callback) {
   if (client_)
-    client_->GetContextMenuModel(profile_id_, id, add_sort_options,
+    client_->GetContextMenuModel(profile_id_, id, item_context,
                                  std::move(callback));
 }
 
@@ -1616,6 +1628,26 @@ bool AppListControllerImpl::HasValidProfile() const {
   return profile_id_ != kAppListInvalidProfileID;
 }
 
+bool AppListControllerImpl::ShouldHideContinueSection() const {
+  if (!features::IsLauncherHideContinueSectionEnabled())
+    return false;
+
+  PrefService* prefs = GetLastActiveUserPrefService();
+  return prefs->GetBoolean(prefs::kLauncherContinueSectionHidden);
+}
+
+void AppListControllerImpl::SetHideContinueSection(bool hide) {
+  PrefService* prefs = GetLastActiveUserPrefService();
+  prefs->SetBoolean(prefs::kLauncherContinueSectionHidden, hide);
+  fullscreen_presenter_->UpdateContinueSectionVisibility();
+  bubble_presenter_->UpdateContinueSectionVisibility();
+}
+
+void AppListControllerImpl::CommitTemporarySortOrder() {
+  DCHECK(client_);
+  client_->CommitTemporarySortOrder();
+}
+
 void AppListControllerImpl::GetAppLaunchedMetricParams(
     AppLaunchedMetricParams* metric_params) {
   metric_params->app_list_view_state = GetAppListViewState();
@@ -1768,6 +1800,10 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
     for (auto& observer : observers_)
       observer.OnAppListVisibilityChanged(real_visibility, display_id);
 
+    // Record whether the continue section is hidden by the user.
+    if (real_visibility)
+      RecordHideContinueSectionMetric();
+
     if (!home_launcher_animation_callback_.is_null())
       home_launcher_animation_callback_.Run(real_visibility);
   }
@@ -1847,7 +1883,7 @@ void AppListControllerImpl::UpdateAssistantVisibility() {
 
 int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
   if (IsTabletMode() && !Shell::Get()->display_manager()->IsInUnifiedMode()) {
-    return display::Display::HasInternalDisplay()
+    return display::HasInternalDisplay()
                ? display::Display::InternalDisplayId()
                : display::Screen::GetScreen()->GetPrimaryDisplay().id();
   }
@@ -2025,6 +2061,11 @@ int AppListControllerImpl::GetLastQueryLength() {
 void AppListControllerImpl::Shutdown() {
   DCHECK(!is_shutdown_);
   is_shutdown_ = true;
+
+  // Cancel any pending assistant UI close requests to avoid attempts to update
+  // assistant UI state mid shutdown (possibly after assistant has started
+  // shutting down).
+  IgnoreResult(close_assistant_ui_runner_.Release());
 
   // Always shutdown the bubble presenter, even if ProductivityLauncher is
   // disabled, because tests might have temporarily enabled the feature and

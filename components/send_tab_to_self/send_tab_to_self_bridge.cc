@@ -160,7 +160,7 @@ absl::optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
 
       std::unique_ptr<SendTabToSelfEntry> remote_entry =
           SendTabToSelfEntry::FromProto(specifics, clock_->Now());
-      if (!remote_entry) {
+      if (!remote_entry || remote_entry->GetGUID().empty()) {
         continue;  // Skip invalid entries.
       }
       if (remote_entry->IsExpired(clock_->Now())) {
@@ -296,7 +296,6 @@ const SendTabToSelfEntry* SendTabToSelfBridge::GetEntryByGUID(
 const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     const GURL& url,
     const std::string& title,
-    base::Time navigation_time,
     const std::string& target_device_cache_guid) {
   if (!change_processor()->IsTrackingMetadata()) {
     // TODO(crbug.com/940512) handle failure case.
@@ -312,7 +311,6 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
   // has the first sent tab in progress, and so we will not attempt to resend.
   base::Time shared_time = clock_->Now();
   if (mru_entry_ && url == mru_entry_->GetURL() &&
-      navigation_time == mru_entry_->GetOriginalNavigationTime() &&
       shared_time - mru_entry_->GetSharedTime() < kDedupeTime) {
     send_tab_to_self::RecordNotificationThrottled();
     return mru_entry_;
@@ -330,8 +328,14 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
   }
 
   auto entry = std::make_unique<SendTabToSelfEntry>(
-      guid, url, trimmed_title, shared_time, navigation_time,
-      local_device_name_, target_device_cache_guid);
+      guid, url, trimmed_title, shared_time, local_device_name_,
+      target_device_cache_guid);
+
+  // In the case where the entry was not created properly do not commit it to
+  // the batch data.
+  if (entry->GetGUID().empty()) {
+    return nullptr;
+  }
 
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
@@ -619,8 +623,14 @@ void SendTabToSelfBridge::DoGarbageCollection() {
   auto entry = entries_.begin();
   while (entry != entries_.end()) {
     DCHECK_EQ(entry->first, entry->second->GetGUID());
-
-    std::string guid = entry->first;
+    std::string guid = entry->second->GetGUID();
+    // In the case of an invalid entry remove it here.
+    if (guid.empty()) {
+      entry++;
+      DeleteEntry(guid);
+      removed.push_back(guid);
+      continue;
+    }
     bool expired = entry->second->IsExpired(clock_->Now());
     entry++;
     if (expired) {

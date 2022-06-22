@@ -183,7 +183,7 @@ NSFontWeight ToNSFontWeight(Weight weight) {
         break;
     }
 
-    return bit_cast<CGFloat>(int_value);
+    return base::bit_cast<CGFloat>(int_value);
   }
 }
 

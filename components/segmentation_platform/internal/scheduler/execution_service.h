@@ -15,16 +15,19 @@
 #include "components/segmentation_platform/internal/execution/model_execution_manager_impl.h"
 #include "components/segmentation_platform/internal/scheduler/model_execution_scheduler.h"
 
-namespace segmentation_platform {
+class PrefService;
 
-struct PlatformOptions;
+namespace segmentation_platform {
+namespace processing {
 class FeatureListQueryProcessor;
+}
+
+struct Config;
+struct PlatformOptions;
 class ModelExecutor;
 class ModelProviderFactory;
-class SegmentInfoDatabase;
-class SignalDatabase;
 class SignalHandler;
-class SignalStorageConfig;
+class StorageService;
 class TrainingDataCollector;
 
 // Handles feature processing and model execution.
@@ -37,14 +40,12 @@ class ExecutionService {
   ExecutionService& operator=(ExecutionService&) = delete;
 
   void InitForTesting(
-      std::unique_ptr<FeatureListQueryProcessor> feature_processor,
+      std::unique_ptr<processing::FeatureListQueryProcessor> feature_processor,
       std::unique_ptr<ModelExecutor> executor,
       std::unique_ptr<ModelExecutionScheduler> scheduler);
 
   void Initialize(
-      SignalDatabase* signal_database,
-      SegmentInfoDatabase* segment_info_database,
-      SignalStorageConfig* signal_storage_config,
+      StorageService* storage_service,
       SignalHandler* signal_handler,
       base::Clock* clock,
       ModelExecutionManager::SegmentationModelUpdatedCallback callback,
@@ -52,7 +53,9 @@ class ExecutionService {
       const base::flat_set<OptimizationTarget>& all_segment_ids,
       ModelProviderFactory* model_provider_factory,
       std::vector<ModelExecutionScheduler::Observer*>&& observers,
-      const PlatformOptions& platform_options);
+      const PlatformOptions& platform_options,
+      std::vector<std::unique_ptr<Config>>* configs,
+      PrefService* profile_prefs);
 
   // Called whenever a new or updated model is available. Must be a valid
   // SegmentInfo with valid metadata and features.
@@ -85,13 +88,21 @@ class ExecutionService {
       optimization_guide::proto::OptimizationTarget segment_id,
       const std::pair<float, ModelExecutionStatus>& result);
 
+  // Refreshes model results for all eligible models.
+  void RefreshModelResults();
+
+  // Executes daily maintenance and collection tasks.
+  void RunDailyTasks(bool is_startup);
+
  private:
   // Training/inference input data generation.
-  std::unique_ptr<FeatureListQueryProcessor> feature_list_query_processor_;
+  std::unique_ptr<processing::FeatureListQueryProcessor>
+      feature_list_query_processor_;
 
   // Traing data collection logic.
   std::unique_ptr<TrainingDataCollector> training_data_collector_;
 
+  // Utility to execute model and return result.
   std::unique_ptr<ModelExecutor> model_executor_;
 
   // Model execution.

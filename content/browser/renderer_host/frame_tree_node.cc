@@ -89,12 +89,13 @@ class FrameTreeNode::OpenerDestroyedObserver : public FrameTreeNode::Observer {
 
   void NullifyOpener(FrameTreeNode* node) {
     if (observing_original_opener_) {
-      // The "original owner" is special. It's used for attribution, and clients
-      // walk down the original owner chain. Therefore, if a link in the chain
-      // is being destroyed, reconnect the observation to the parent of the link
-      // being destroyed.
-      CHECK_EQ(owner_->original_opener(), node);
-      owner_->SetOriginalOpener(node->original_opener());
+      // The "original opener" is special. It's used for attribution, and
+      // clients walk down the original opener chain. Therefore, if a link in
+      // the chain is being destroyed, reconnect the observation to the parent
+      // of the link being destroyed.
+      CHECK_EQ(owner_->first_live_main_frame_in_original_opener_chain(), node);
+      owner_->SetOriginalOpener(
+          node->first_live_main_frame_in_original_opener_chain());
       // |this| is deleted at this point.
     } else {
       CHECK_EQ(owner_->opener(), node);
@@ -131,6 +132,44 @@ FrameTreeNode* FrameTreeNode::From(RenderFrameHost* rfh) {
   return static_cast<RenderFrameHostImpl*>(rfh)->frame_tree_node();
 }
 
+RenderFrameHostImpl::FencedFrameStatus ComputeFencedFrameStatus(
+    FrameTree* frame_tree,
+    RenderFrameHostImpl* parent,
+    const blink::FramePolicy& frame_policy) {
+  if (blink::features::IsFencedFramesEnabled()) {
+    switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+      case blink::features::FencedFramesImplementationType::kMPArch: {
+        if (frame_tree->type() == FrameTree::Type::kFencedFrame) {
+          if (!parent)
+            return RenderFrameHostImpl::FencedFrameStatus::kFencedFrameRoot;
+          return RenderFrameHostImpl::FencedFrameStatus::
+              kIframeNestedWithinFencedFrame;
+        } else {
+          return RenderFrameHostImpl::FencedFrameStatus::
+              kNotNestedInFencedFrame;
+        }
+      }
+      case blink::features::FencedFramesImplementationType::kShadowDOM: {
+        // Different from the MPArch case, the ShadowDOM implementation of
+        // fenced frame lives in the same FrameTree as its parent, so we need to
+        // check its effective frame policy instead.
+        if (frame_policy.is_fenced) {
+          return RenderFrameHostImpl::FencedFrameStatus::kFencedFrameRoot;
+        } else if (parent && parent->frame_tree_node()->IsInFencedFrameTree()) {
+          return RenderFrameHostImpl::FencedFrameStatus::
+              kIframeNestedWithinFencedFrame;
+        }
+        return RenderFrameHostImpl::FencedFrameStatus::kNotNestedInFencedFrame;
+      }
+      default: {
+        return RenderFrameHostImpl::FencedFrameStatus::kNotNestedInFencedFrame;
+      }
+    }
+  }
+
+  return RenderFrameHostImpl::FencedFrameStatus::kNotNestedInFencedFrame;
+}
+
 FrameTreeNode::FrameTreeNode(
     FrameTree* frame_tree,
     RenderFrameHostImpl* parent,
@@ -149,6 +188,8 @@ FrameTreeNode::FrameTreeNode(
       is_created_by_script_(is_created_by_script),
       devtools_frame_token_(devtools_frame_token),
       frame_owner_properties_(frame_owner_properties),
+      fenced_frame_status_(
+          ComputeFencedFrameStatus(frame_tree_, parent_, frame_policy)),
       render_manager_(this, frame_tree->manager_delegate()) {
   TRACE_EVENT_BEGIN("navigation", "FrameTreeNode",
                     perfetto::Track::FromPointer(this),
@@ -242,8 +283,9 @@ FrameTreeNode::~FrameTreeNode() {
 
   if (opener_)
     opener_->RemoveObserver(opener_observer_.get());
-  if (original_opener_)
-    original_opener_->RemoveObserver(original_opener_observer_.get());
+  if (first_live_main_frame_in_original_opener_chain_)
+    first_live_main_frame_in_original_opener_chain_->RemoveObserver(
+        original_opener_observer_.get());
 
   g_frame_tree_node_id_map.Get().erase(frame_tree_node_id_);
 
@@ -394,17 +436,19 @@ void FrameTreeNode::SetOriginalOpener(FrameTreeNode* opener) {
   // The original opener tracks main frames only.
   DCHECK(opener == nullptr || !opener->parent());
 
-  if (original_opener_) {
-    original_opener_->RemoveObserver(original_opener_observer_.get());
+  if (first_live_main_frame_in_original_opener_chain_) {
+    first_live_main_frame_in_original_opener_chain_->RemoveObserver(
+        original_opener_observer_.get());
     original_opener_observer_.reset();
   }
 
-  original_opener_ = opener;
+  first_live_main_frame_in_original_opener_chain_ = opener;
 
-  if (original_opener_) {
-    original_opener_observer_ =
-        std::make_unique<OpenerDestroyedObserver>(this, true);
-    original_opener_->AddObserver(original_opener_observer_.get());
+  if (first_live_main_frame_in_original_opener_chain_) {
+    original_opener_observer_ = std::make_unique<OpenerDestroyedObserver>(
+        this, true /* observing_original_opener */);
+    first_live_main_frame_in_original_opener_chain_->AddObserver(
+        original_opener_observer_.get());
   }
 }
 
@@ -459,6 +503,21 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
     pending_frame_policy_.required_document_policy =
         frame_policy.required_document_policy;
   }
+}
+
+void FrameTreeNode::SetAnonymous(bool anonymous) {
+  if (anonymous) {
+    if (!parent_) {
+      bad_message::ReceivedBadMessage(current_frame_host()->GetProcess(),
+                                      bad_message::FTN_ANONYMOUS);
+      return;
+    }
+
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        parent_, blink::mojom::WebFeature::kAnonymousIframe);
+  }
+
+  anonymous_ = anonymous;
 }
 
 bool FrameTreeNode::IsLoading() const {
@@ -627,10 +686,9 @@ void FrameTreeNode::DidFocus() {
 }
 
 void FrameTreeNode::BeforeUnloadCanceled() {
-  // TODO(clamy): Support BeforeUnload in subframes.
-  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
-  // so IsMainFrame should not be used to identify subframes. Follow up to
-  // confirm correctness.
+  // TODO(clamy): Support BeforeUnload in subframes. Fenced Frames don't run
+  // BeforeUnload. Maybe need to check whether other MPArch inner pages cases
+  // need beforeunload(e.g., portals, GuestView if it gets ported to MPArch).
   if (!IsOutermostMainFrame())
     return;
 
@@ -821,6 +879,8 @@ void FrameTreeNode::SetPopupCreatorOrigin(
 void FrameTreeNode::WriteIntoTrace(
     perfetto::TracedProto<TraceProto> proto) const {
   proto->set_frame_tree_node_id(frame_tree_node_id());
+  // TODO(crbug.com/1314749): we should also capture the concept of outermost
+  // main frame here.
   proto->set_is_main_frame(IsMainFrame());
   proto.Set(TraceProto::kCurrentFrameHost, current_frame_host());
   proto.Set(TraceProto::kSpeculativeFrameHost,
@@ -843,11 +903,13 @@ bool FrameTreeNode::HasNavigation() {
 }
 
 bool FrameTreeNode::IsFencedFrameRoot() const {
-  return current_frame_host()->IsFencedFrameRootNoStatus();
+  return fenced_frame_status_ ==
+         RenderFrameHostImpl::FencedFrameStatus::kFencedFrameRoot;
 }
 
 bool FrameTreeNode::IsInFencedFrameTree() const {
-  return current_frame_host()->IsInFencedFrameTree();
+  return fenced_frame_status_ !=
+         RenderFrameHostImpl::FencedFrameStatus::kNotNestedInFencedFrame;
 }
 
 void FrameTreeNode::SetFencedFrameNonceIfNeeded() {

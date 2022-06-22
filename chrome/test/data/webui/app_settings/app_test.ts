@@ -32,6 +32,7 @@ suite('AppSettingsAppTest', () => {
       hidePinToShelf: false,
       isPreferredApp: false,
       windowMode: WindowMode.kWindow,
+      hideWindowMode: false,
       resizeLocked: false,
       hideResizeLocked: true,
       supportedLinks: [],
@@ -44,6 +45,9 @@ suite('AppSettingsAppTest', () => {
         learnMoreUrl: {url: 'https://google.com/'},
       },
       installSource: InstallSource.kUnknown,
+      appSize: '',
+      dataSize: '',
+      publisherId: '',
     };
 
     const permissionTypes = [

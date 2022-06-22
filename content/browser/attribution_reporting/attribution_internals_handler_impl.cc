@@ -16,12 +16,12 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_manager_provider.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_reporting.pb.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -37,6 +37,7 @@
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/abseil-cpp/absl/utility/utility.h"
 
 namespace content {
 
@@ -54,21 +55,6 @@ attribution_internals::mojom::DebugKeyPtr WebUIDebugKey(
                    : nullptr;
 }
 
-base::flat_map<std::string, attribution_internals::mojom::AggregatableKeyPtr>
-Convert(const AttributionAggregatableSource& aggregatable_source) {
-  const proto::AttributionAggregatableSource& proto =
-      aggregatable_source.proto();
-
-  base::flat_map<std::string, attribution_internals::mojom::AggregatableKeyPtr>
-      map;
-  for (const auto& [key_id, key] : proto.keys()) {
-    // TODO(linnan): Replacing with 128-bit value string.
-    map.emplace(key_id, attribution_internals::mojom::AggregatableKey::New(
-                            key.high_bits(), key.low_bits()));
-  }
-  return map;
-}
-
 attribution_internals::mojom::WebUISourcePtr WebUISource(
     const CommonSourceInfo& source,
     Attributability attributability,
@@ -80,7 +66,13 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
       source.source_type(), source.priority(),
       WebUIDebugKey(source.debug_key()), dedup_keys,
       source.filter_data().filter_values(),
-      Convert(source.aggregatable_source()), attributability);
+      base::MakeFlatMap<std::string, std::string>(
+          source.aggregatable_source().keys(), {},
+          [](const auto& key) {
+            return std::make_pair(key.first,
+                                  HexEncodeAggregatableKey(key.second));
+          }),
+      attributability);
 }
 
 void ForwardSourcesToWebUI(
@@ -142,9 +134,7 @@ attribution_internals::mojom::WebUIReportPtr WebUIReport(
           [](const auto& contribution) {
             return attribution_internals::mojom::
                 AggregatableHistogramContribution::New(
-                    attribution_internals::mojom::AggregatableKey::New(
-                        absl::Uint128High64(contribution.key()),
-                        absl::Uint128Low64(contribution.key())),
+                    HexEncodeAggregatableKey(contribution.key()),
                     contribution.value());
           });
       return attribution_internals::mojom::WebUIReportData::
@@ -440,7 +430,7 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
 
   for (const auto& event_trigger : trigger.event_triggers()) {
     web_ui_trigger->event_triggers.emplace_back(
-        base::in_place,
+        absl::in_place,
         /*data=*/event_trigger.data,
         /*priority=*/event_trigger.priority,
         /*deduplication_key=*/event_trigger.dedup_key
@@ -460,10 +450,14 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
     DCHECK_EQ(
         result.event_level_status(),
         AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority);
+    DCHECK(result.new_event_level_report().has_value());
 
-    auto web_ui_report = WebUIReport(
-        *report, /*is_debug_report=*/false,
-        ReportStatus::NewReplacedByHigherPriorityReport(Empty::New()));
+    auto web_ui_report =
+        WebUIReport(*report, /*is_debug_report=*/false,
+                    ReportStatus::NewReplacedByHigherPriorityReport(
+                        result.new_event_level_report()
+                            ->external_report_id()
+                            .AsLowercaseString()));
 
     for (auto& observer : observers_) {
       observer->OnReportDropped(web_ui_report.Clone());

@@ -18,13 +18,22 @@ class Window;
 namespace gfx {
 class Point;
 class Rect;
+class Transform;
 }  // namespace gfx
+
+namespace ui {
+class Layer;
+}  // namespace ui
 
 namespace views {
 class View;
 }  // namespace views
 
-namespace ash::capture_mode_util {
+namespace ash {
+
+class StopRecordingButtonTray;
+
+namespace capture_mode_util {
 
 // Returns true if the capture mode feature is enabled and capture mode is
 // active. This method allows callers to avoid including the full header for
@@ -38,6 +47,10 @@ ASH_EXPORT gfx::Point GetLocationForFineTunePosition(const gfx::Rect& rect,
 // Return whether |position| is a corner.
 bool IsCornerFineTunePosition(FineTunePosition position);
 
+// Returns the stop recording tray button on the given `root`. It may return
+// `nullptr` during shutdown or if `root` is destroying.
+StopRecordingButtonTray* GetStopRecordingButtonForRoot(aura::Window* root);
+
 // Sets the visibility of the stop-recording button in the Shelf's status area
 // widget of the given |root| window.
 void SetStopRecordingButtonVisibility(aura::Window* root, bool visible);
@@ -50,6 +63,7 @@ void TriggerAccessibilityAlert(int message_id);
 // asynchronously as soon as possible. This is used to make sure consecutive
 // alerts do not override one another, so all of them can be announced by
 // ChromeVox.
+void TriggerAccessibilityAlertSoon(const std::string& message);
 void TriggerAccessibilityAlertSoon(int message_id);
 
 // Returns the next horizontal or vertical snap position based on the current
@@ -83,6 +97,10 @@ std::unique_ptr<views::View> CreateBannerView();
 // notification.
 std::unique_ptr<views::View> CreatePlayIconView();
 
+// Returns a transform that scales the given `layer` by the given `scale` factor
+// in both X and Y around its local center point.
+gfx::Transform GetScaleTransformAboutCenter(ui::Layer* layer, float scale);
+
 // Defines an object to hold the values of the camera preview size specs.
 struct CameraPreviewSizeSpecs {
   // The size to which the camera preview should be set under the current
@@ -93,9 +111,17 @@ struct CameraPreviewSizeSpecs {
   // to be collapsible. False otherwise.
   const bool is_collapsible;
 
-  // True if the surface within which the camera preview is confined is big
-  // enough to allow it to show. False otherwise.
+  // Whether the camera preview should be hidden or shown. The visibility of the
+  // preview can be determined by a number of things, e.g.:
+  // - The surface within which the camera preview should be confined is too
+  //   small.
+  // - We're inside a `kRegion` session and the region is being adjusted or
+  //   empty.
   const bool should_be_visible;
+
+  // True if the surface within which the camera preview is confined is too
+  // small, and the preview should be hidden.
+  const bool is_surface_too_small;
 };
 
 // Calculates the size specs of the camera preview which will be confined within
@@ -105,6 +131,14 @@ ASH_EXPORT CameraPreviewSizeSpecs
 CalculateCameraPreviewSizeSpecs(const gfx::Size& confine_bounds_size,
                                 bool is_collapsed);
 
-}  // namespace ash::capture_mode_util
+// Gets the top-most window that is capturable under the mouse/touch position.
+// The windows that are not capturable include the camera preview widget and
+// capture label. There will be a crash if the capture label widget gets picked
+// since the snapshot code tries to snap a deleted window.
+aura::Window* GetTopMostCapturableWindowAtPoint(const gfx::Point& screen_point);
+
+}  // namespace capture_mode_util
+
+}  // namespace ash
 
 #endif  // ASH_CAPTURE_MODE_CAPTURE_MODE_UTIL_H_

@@ -211,6 +211,13 @@ TEST_P(LoginShelfViewTest, ShouldUpdateUiAfterSessionStateChange) {
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
 }
 
+// Checks that the login shelf is not displayed in Shimless RMA.
+TEST_P(LoginShelfViewTest, ShouldHideUiInShimlessRma) {
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+  NotifySessionStateChanged(SessionState::RMA);
+  EXPECT_TRUE(ShowsShelfButtons({}));
+}
+
 // Checks the login shelf updates UI after shutdown policy change when the
 // screen is locked.
 TEST_P(LoginShelfViewTest,
@@ -256,7 +263,7 @@ TEST_P(LoginShelfViewTest, ShouldNotShowAppsButtonAfterSessionStarted) {
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
 
   std::vector<KioskAppMenuEntry> kiosk_apps(1);
-  login_shelf_view_->SetKioskApps(kiosk_apps, {}, {});
+  login_shelf_view_->SetKioskApps(kiosk_apps);
   EXPECT_TRUE(
       login_shelf_view_->GetViewByID(LoginShelfView::kApps)->GetVisible());
 
@@ -271,7 +278,7 @@ TEST_P(LoginShelfViewTest, ShouldShowShutdownOrRestartButtonsBeforeApps) {
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
 
   std::vector<KioskAppMenuEntry> kiosk_apps(1);
-  login_shelf_view_->SetKioskApps(kiosk_apps, {}, {});
+  login_shelf_view_->SetKioskApps(kiosk_apps);
 
   // |reboot_on_shutdown| is initially off
   EXPECT_TRUE(ShowsShelfButtons(
@@ -342,14 +349,14 @@ TEST_P(LoginShelfViewTest, ShouldUpdateUiAfterKioskAppsLoaded) {
                                  LoginShelfView::kAddUser}));
 
   std::vector<KioskAppMenuEntry> kiosk_apps(2);
-  login_shelf_view_->SetKioskApps(kiosk_apps, {}, {});
+  login_shelf_view_->SetKioskApps(kiosk_apps);
   EXPECT_TRUE(ShowsShelfButtons(
       {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest,
        LoginShelfView::kAddUser, LoginShelfView::kApps}));
   EXPECT_TRUE(
       AreButtonsInOrder(LoginShelfView::kShutdown, LoginShelfView::kApps));
 
-  login_shelf_view_->SetKioskApps({}, {}, {});
+  login_shelf_view_->SetKioskApps({});
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
@@ -438,7 +445,7 @@ TEST_P(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
   // By default apps button is hidden during gaia sign in
   login_shelf_view_->SetLoginDialogState(OobeDialogState::GAIA_SIGNIN);
   std::vector<KioskAppMenuEntry> kiosk_apps(1);
-  login_shelf_view_->SetKioskApps(kiosk_apps, {}, {});
+  login_shelf_view_->SetKioskApps(kiosk_apps);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
   // Apps button is hidden during SAML_PASSWORD_CONFIRM STATE
@@ -459,7 +466,7 @@ TEST_P(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
       AreButtonsInOrder(LoginShelfView::kShutdown, LoginShelfView::kApps));
 
   // Kiosk app button is hidden when no app exists.
-  login_shelf_view_->SetKioskApps({}, {}, {});
+  login_shelf_view_->SetKioskApps({});
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kAddUser}));
 
@@ -483,7 +490,7 @@ TEST_P(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
 
   // Only Shutdown button should be available if some device blocking
   // screen is shown (e.g. Device Disabled, or Update Required).
-  login_shelf_view_->SetKioskApps(kiosk_apps, {}, {});
+  login_shelf_view_->SetKioskApps(kiosk_apps);
   login_shelf_view_->SetLoginDialogState(OobeDialogState::BLOCKING);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 }
@@ -1426,10 +1433,81 @@ TEST_P(LoginShelfViewWithShutdownConfirmationTest, ClickRestartButton) {
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
+class LoginShelfViewWithKioskLicenseTest : public LoginShelfViewTest {
+ public:
+  LoginShelfViewWithKioskLicenseTest() = default;
+
+  LoginShelfViewWithKioskLicenseTest(
+      const LoginShelfViewWithKioskLicenseTest&) = delete;
+  LoginShelfViewWithKioskLicenseTest& operator=(
+      const LoginShelfViewWithKioskLicenseTest&) = delete;
+
+  ~LoginShelfViewWithKioskLicenseTest() override = default;
+
+ protected:
+  // Check whether the kiosk instruction bubble is visible.
+  bool IsKioskInstructionBubbleVisible() {
+    return login_shelf_view_->GetKioskInstructionBubbleForTesting() &&
+           login_shelf_view_->GetKioskInstructionBubbleForTesting()
+               ->GetWidget()
+               ->IsVisible();
+  }
+
+  void SetKioskLicenseModeForTesting(bool is_kiosk_license_mode) {
+    login_shelf_view_->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  }
+};
+
+// Checks that kiosk app button and kiosk instruction appears if device is with
+// kiosk license.
+TEST_P(LoginShelfViewWithKioskLicenseTest, ShouldShowKioskInstructionBubble) {
+  SetKioskLicenseModeForTesting(true);
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+
+  std::vector<KioskAppMenuEntry> kiosk_apps(1);
+  login_shelf_view_->SetKioskApps(kiosk_apps);
+
+  EXPECT_TRUE(
+      login_shelf_view_->GetViewByID(LoginShelfView::kApps)->GetVisible());
+  EXPECT_TRUE(IsKioskInstructionBubbleVisible());
+}
+
+// Checks that kiosk app button appears and kiosk instruction hidden if device
+// is not with kiosk license.
+TEST_P(LoginShelfViewWithKioskLicenseTest, ShouldHideKioskInstructionBubble) {
+  SetKioskLicenseModeForTesting(false);
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+
+  std::vector<KioskAppMenuEntry> kiosk_apps(1);
+  login_shelf_view_->SetKioskApps(kiosk_apps);
+
+  EXPECT_TRUE(
+      login_shelf_view_->GetViewByID(LoginShelfView::kApps)->GetVisible());
+  EXPECT_FALSE(IsKioskInstructionBubbleVisible());
+}
+
+// Checks that kiosk app button appears and kiosk instruction hidden if device
+// is with kiosk license and no kiosk app is set up.
+TEST_P(LoginShelfViewWithKioskLicenseTest,
+       ShouldNotShowKioskInstructionBubble) {
+  SetKioskLicenseModeForTesting(true);
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+
+  std::vector<KioskAppMenuEntry> kiosk_apps(0);
+  login_shelf_view_->SetKioskApps(kiosk_apps);
+
+  EXPECT_FALSE(
+      login_shelf_view_->GetViewByID(LoginShelfView::kApps)->GetVisible());
+  EXPECT_FALSE(IsKioskInstructionBubbleVisible());
+}
+
 INSTANTIATE_TEST_SUITE_P(All, LoginShelfViewTest, testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All, OsInstallButtonTest, testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All,
                          LoginShelfViewWithShutdownConfirmationTest,
+                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         LoginShelfViewWithKioskLicenseTest,
                          testing::Bool());
 
 }  // namespace

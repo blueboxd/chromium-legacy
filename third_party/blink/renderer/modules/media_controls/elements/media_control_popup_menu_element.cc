@@ -90,6 +90,7 @@ class MediaControlPopupMenuElement::EventListener final
         case VKEY_RETURN:
         case VKEY_SPACE:
           To<Element>(event->target()->ToNode())->DispatchSimulatedClick(event);
+          popup_menu_->FocusPopupAnchorIfOverflowClosed();
           break;
         default:
           handled = false;
@@ -136,7 +137,7 @@ void MediaControlPopupMenuElement::OnItemSelected() {
 void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
   if (event.type() == event_type_names::kPointermove &&
       event.target() != this) {
-    To<Element>(event.target()->ToNode())->focus();
+    To<Element>(event.target()->ToNode())->Focus();
     last_focused_element_ = To<Element>(event.target()->ToNode());
   } else if (event.type() == event_type_names::kFocusout) {
     GetDocument()
@@ -159,7 +160,7 @@ void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
     if (last_focused_element_) {
       FocusOptions* focus_options = FocusOptions::Create();
       focus_options->setPreventScroll(true);
-      last_focused_element_->focus(focus_options);
+      last_focused_element_->Focus(focus_options);
     }
   }
 
@@ -245,7 +246,7 @@ bool MediaControlPopupMenuElement::FocusListItemIfDisplayed(Node* node) {
 
   if (!element->InlineStyle() ||
       !element->InlineStyle()->HasProperty(CSSPropertyID::kDisplay)) {
-    element->focus();
+    element->Focus();
     last_focused_element_ = element;
     return true;
   }
@@ -286,7 +287,15 @@ void MediaControlPopupMenuElement::SelectPreviousitem() {
 
 void MediaControlPopupMenuElement::CloseFromKeyboard() {
   SetIsWanted(false);
-  PopupAnchor()->focus();
+  PopupAnchor()->Focus();
+}
+
+void MediaControlPopupMenuElement::FocusPopupAnchorIfOverflowClosed() {
+  if (!GetMediaControls().OverflowMenuIsWanted() &&
+      !GetMediaControls().PlaybackSpeedListIsWanted() &&
+      !GetMediaControls().TextTrackListIsWanted()) {
+    PopupAnchor()->Focus();
+  }
 }
 
 }  // namespace blink

@@ -31,26 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CROSS_THREAD_COPIER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CROSS_THREAD_COPIER_H_
 
-#include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include <type_traits>
+
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"  // FunctionThreadAffinity
-#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
-
-struct SkISize;
-class SkRefCnt;
-template <typename T>
-class sk_sp;
-
-namespace blink {
-// TODO(https://crbug.com/1247393): Move this and others to
-// blink/public/platform.
-class WebTimeRanges;
-}  // namespace blink
-
-namespace gpu {
-struct SyncToken;
-}
 
 namespace WTF {
 
@@ -87,35 +72,19 @@ struct CrossThreadCopier
   STATIC_ONLY(CrossThreadCopier);
 };
 
-// CrossThreadCopier specializations follow.
-// See cross_thread_copier_*.h too.
-template <typename T>
-struct CrossThreadCopier<RetainedRefWrapper<T>> {
-  STATIC_ONLY(CrossThreadCopier);
-  static_assert(IsSubclassOfTemplate<T, base::RefCountedThreadSafe>::value,
-                "scoped_refptr<T> can be passed across threads only if T is "
-                "ThreadSafeRefCounted or base::RefCountedThreadSafe.");
-  using Type = RetainedRefWrapper<T>;
-  static Type Copy(Type pointer) { return pointer; }
-};
-
-template <typename T>
-struct CrossThreadCopier<sk_sp<T>>
-    : public CrossThreadCopierPassThrough<sk_sp<T>> {
-  STATIC_ONLY(CrossThreadCopier);
-  static_assert(std::is_base_of<SkRefCnt, T>::value,
-                "sk_sp<T> can be passed across threads only if T is SkRefCnt.");
-};
-
-template <>
-struct CrossThreadCopier<gpu::SyncToken>
-    : public CrossThreadCopierPassThrough<gpu::SyncToken> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-// To allow a type to be passed across threads using its copy constructor, add a
-// forward declaration of the type and provide a specialization of
-// CrossThreadCopier<T> in this file.
+// To allow a type to be passed across threads using its copy constructor,
+// provide a specialization of CrossThreadCopier<T>.
+//
+// * If the type is not defined in third_party/blink/
+//   ==> Choose one of the existing cross_thread_copier_*.h or add new one,
+//       and add a forward declaration and a CrossThreadCopier specialization
+//       for the type to the file.
+// * If the type is defined in third_party/blink/public/
+//   ==> Add a forward declaration and a CrossThreadCopier specialization for
+//       the type to cross_thread_copier_public.h.
+// * If the type is defined in third_party/blink/
+//   ==> Include cross_thread_copier.h from the header defining the type, and
+//       add a CrossThreadCopier specialization for the type to the header.
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 struct CrossThreadCopier<Vector<T, inlineCapacity, Allocator>> {
@@ -140,26 +109,6 @@ struct CrossThreadCopier<Vector<String, inlineCapacity, Allocator>> {
   }
 };
 
-template <typename T>
-struct CrossThreadCopier<CrossThreadUnretainedWrapper<T>>
-    : public CrossThreadCopierPassThrough<CrossThreadUnretainedWrapper<T>> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-template <typename Signature>
-struct CrossThreadCopier<CrossThreadFunction<Signature>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = CrossThreadFunction<Signature>;
-  static Type Copy(Type&& value) { return std::move(value); }
-};
-
-template <typename Signature>
-struct CrossThreadCopier<CrossThreadOnceFunction<Signature>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = CrossThreadOnceFunction<Signature>;
-  static Type Copy(Type&& value) { return std::move(value); }
-};
-
 template <>
 struct CrossThreadCopier<AtomicString>
     : public CrossThreadCopierPassThrough<AtomicString> {
@@ -171,37 +120,6 @@ struct CrossThreadCopier<String> {
   STATIC_ONLY(CrossThreadCopier);
   typedef String Type;
   WTF_EXPORT static Type Copy(const String&);
-};
-
-template <>
-struct CrossThreadCopier<blink::MessagePortChannel> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = blink::MessagePortChannel;
-  static Type Copy(Type pointer) {
-    return pointer;  // This is in fact a move.
-  }
-};
-
-template <wtf_size_t inlineCapacity, typename Allocator>
-struct CrossThreadCopier<
-    Vector<blink::MessagePortChannel, inlineCapacity, Allocator>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = Vector<blink::MessagePortChannel, inlineCapacity, Allocator>;
-  static Type Copy(Type pointer) {
-    return pointer;  // This is in fact a move.
-  }
-};
-
-template <>
-struct CrossThreadCopier<SkISize>
-    : public CrossThreadCopierPassThrough<SkISize> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-template <>
-struct CrossThreadCopier<blink::WebTimeRanges>
-    : public CrossThreadCopierByValuePassThrough<blink::WebTimeRanges> {
-  STATIC_ONLY(CrossThreadCopier);
 };
 
 }  // namespace WTF

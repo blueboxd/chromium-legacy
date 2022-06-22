@@ -10,16 +10,22 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 class ScriptPromiseResolver;
 
 class CrosWindowManagement : public ScriptWrappable,
+                             public Supplement<ExecutionContext>,
                              public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit CrosWindowManagement(ExecutionContext* execution_context);
+  static const char kSupplementName[];
+
+  static CrosWindowManagement& From(ExecutionContext&);
+
+  explicit CrosWindowManagement(ExecutionContext&);
 
   void Trace(Visitor*) const override;
 
@@ -27,9 +33,9 @@ class CrosWindowManagement : public ScriptWrappable,
   // implementation. May return null in error cases.
   mojom::blink::CrosWindowManagement* GetCrosWindowManagementOrNull();
 
-  ScriptPromise windows(ScriptState* script_state);
+  ScriptPromise getWindows(ScriptState* script_state);
   void WindowsCallback(ScriptPromiseResolver* resolver,
-                       WTF::Vector<mojom::blink::CrosWindowPtr> windows);
+                       WTF::Vector<mojom::blink::CrosWindowInfoPtr> windows);
 
  private:
   HeapMojoRemote<mojom::blink::CrosWindowManagement> cros_window_management_;

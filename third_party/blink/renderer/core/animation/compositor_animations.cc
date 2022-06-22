@@ -186,16 +186,18 @@ bool IsNoOpBGColorOrVariableAnimation(const PropertyHandle& property,
   return is_no_op_variable_anim || is_no_op_bgcolor_anim;
 }
 
-bool CompositedAnimationRequiresProperties(const PropertyHandle& property) {
+bool CompositedAnimationRequiresProperties(const PropertyHandle& property,
+                                           LayoutObject* layout_object) {
   if (!property.IsCSSProperty())
     return false;
   switch (property.GetCSSProperty().PropertyID()) {
-    case CSSPropertyID::kOpacity:
-    case CSSPropertyID::kBackdropFilter:
     case CSSPropertyID::kRotate:
     case CSSPropertyID::kScale:
     case CSSPropertyID::kTranslate:
     case CSSPropertyID::kTransform:
+      return !layout_object || layout_object->IsTransformApplicable();
+    case CSSPropertyID::kOpacity:
+    case CSSPropertyID::kBackdropFilter:
     case CSSPropertyID::kFilter:
       return true;
     default:
@@ -249,13 +251,11 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
   const auto& keyframe_effect = To<KeyframeEffectModelBase>(effect);
 
   LayoutObject* layout_object = target_element.GetLayoutObject();
-  if (paint_artifact_compositor) {
-    // Elements with subtrees containing will-change: contents are not
-    // composited for animations as if the contents change the tiles
-    // would need to be rerastered anyways.
-    if (layout_object && layout_object->Style()->SubtreeWillChangeContents()) {
-      reasons |= kTargetHasInvalidCompositingState;
-    }
+  // Elements with subtrees containing will-change: contents are not
+  // composited for animations as if the contents change the tiles
+  // would need to be rerastered anyways.
+  if (layout_object && layout_object->Style()->SubtreeWillChangeContents()) {
+    reasons |= kTargetHasInvalidCompositingState;
   }
 
   PropertyHandleSet properties = keyframe_effect.Properties();
@@ -271,6 +271,9 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     if (IsTransformRelatedCSSProperty(property)) {
       // We use this later in computing element IDs too.
       if (layout_object && !layout_object->IsTransformApplicable()) {
+        // TODO(dbaron): We could consider ignoring the
+        // transform-related property and still running the others on
+        // the compositor.
         reasons |= kTransformRelatedPropertyCannotBeAcceleratedOnTarget;
       }
       if (const auto* svg_element = DynamicTo<SVGElement>(target_element)) {
@@ -436,6 +439,15 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
 
   if (CompositorPropertyAnimationsHaveNoEffect(target_element, effect,
                                                paint_artifact_compositor)) {
+#if DCHECK_IS_ON()
+    if (effect.Affects(PropertyHandle(GetCSSPropertyBackgroundColor()))) {
+      ElementAnimations* element_animations =
+          target_element.GetElementAnimations();
+      DCHECK(element_animations &&
+             element_animations->CompositedBackgroundColorStatus() !=
+                 ElementAnimations::CompositedPaintStatus::kComposited);
+    }
+#endif
     reasons |= kCompositorPropertyAnimationsHaveNoEffect;
   }
 
@@ -479,7 +491,7 @@ bool CompositorAnimations::CompositorPropertyAnimationsHaveNoEffect(
   bool has_paint_properties =
       layout_object && layout_object->FirstFragment().PaintProperties();
   for (const PropertyHandle& property : groups.Keys()) {
-    if (!CompositedAnimationRequiresProperties(property))
+    if (!CompositedAnimationRequiresProperties(property, layout_object))
       continue;
 
     if (!has_paint_properties) {

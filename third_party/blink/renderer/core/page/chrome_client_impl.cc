@@ -37,6 +37,7 @@
 #include "base/debug/alias.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/paint_holding_reason.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -94,7 +95,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
@@ -169,8 +169,6 @@ static bool g_can_browser_handle_focus = false;
 void SetBrowserCanHandleFocusForWebTest(bool value) {
   g_can_browser_handle_focus = value;
 }
-
-class CompositorAnimationTimeline;
 
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* web_view)
     : web_view_(web_view),
@@ -336,7 +334,7 @@ void ChromeClientImpl::InjectGestureScrollEvent(
 void ChromeClientImpl::SetOverscrollBehavior(
     LocalFrame& main_frame,
     const cc::OverscrollBehavior& overscroll_behavior) {
-  DCHECK(main_frame.IsMainFrame());
+  DCHECK(main_frame.IsOutermostMainFrame());
   main_frame.GetWidgetForLocalRoot()->SetOverscrollBehavior(
       overscroll_behavior);
 }
@@ -856,23 +854,21 @@ void ChromeClientImpl::AttachRootLayer(scoped_refptr<cc::Layer> root_layer,
 }
 
 void ChromeClientImpl::AttachCompositorAnimationTimeline(
-    CompositorAnimationTimeline* compositor_timeline,
+    cc::AnimationTimeline* compositor_timeline,
     LocalFrame* local_frame) {
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   FrameWidget* widget = local_frame->GetWidgetForLocalRoot();
   DCHECK(widget);
-  widget->AnimationHost()->AddAnimationTimeline(
-      compositor_timeline->GetAnimationTimeline());
+  widget->AnimationHost()->AddAnimationTimeline(compositor_timeline);
 }
 
 void ChromeClientImpl::DetachCompositorAnimationTimeline(
-    CompositorAnimationTimeline* compositor_timeline,
+    cc::AnimationTimeline* compositor_timeline,
     LocalFrame* local_frame) {
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   FrameWidget* widget = local_frame->GetWidgetForLocalRoot();
   DCHECK(widget);
-  widget->AnimationHost()->RemoveAnimationTimeline(
-      compositor_timeline->GetAnimationTimeline());
+  widget->AnimationHost()->RemoveAnimationTimeline(compositor_timeline);
 }
 
 void ChromeClientImpl::EnterFullscreen(LocalFrame& frame,
@@ -997,13 +993,6 @@ void ChromeClientImpl::NotifyPresentationTime(LocalFrame& frame,
 
 void ChromeClientImpl::RequestBeginMainFrameNotExpected(LocalFrame& frame,
                                                         bool request) {
-  if (!frame.GetWidgetForLocalRoot()) {
-    // We're about to crash due to crbug.com/838348. Record metrics to trigger
-    // Chrometto. We only expect this to be recorded on Android in any
-    // significant numbers (because we CHECK in RenderFrameImpl::Delete).
-    UMA_HISTOGRAM_BOOLEAN("Navigation.RequestBeginMainFrameNotExpectedCrash",
-                          frame.IsMainFrame());
-  }
   frame.GetWidgetForLocalRoot()->RequestBeginMainFrameNotExpected(request);
 }
 
@@ -1281,14 +1270,6 @@ void ChromeClientImpl::SetDelegatedInkMetadata(
     LocalFrame* frame,
     std::unique_ptr<gfx::DelegatedInkMetadata> metadata) {
   frame->GetWidgetForLocalRoot()->SetDelegatedInkMetadata(std::move(metadata));
-}
-
-void ChromeClientImpl::BatterySavingsChanged(LocalFrame& main_frame,
-                                             BatterySavingsFlags savings) {
-  DCHECK(main_frame.IsMainFrame());
-  WebLocalFrameImpl::FromFrame(main_frame)
-      ->FrameWidgetImpl()
-      ->BatterySavingsChanged(savings);
 }
 
 void ChromeClientImpl::FormElementReset(HTMLFormElement& element) {

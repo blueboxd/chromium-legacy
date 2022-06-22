@@ -131,6 +131,8 @@ class ArcContainerClientAdapter
     request.set_arc_generate_pai(params.arc_generate_play_auto_install);
     request.set_enable_notifications_refresh(
         params.enable_notifications_refresh);
+    request.set_enable_tts_caching(params.enable_tts_caching);
+
     return request;
   }
 
@@ -204,7 +206,7 @@ class ArcContainerClientAdapter
   void SetDemoModeDelegate(DemoModeDelegate* delegate) override {}
 
   // The interface is only for ARCVM.
-  void TrimVmMemory(TrimVmMemoryCallback callback) override {
+  void TrimVmMemory(TrimVmMemoryCallback callback, int) override {
     NOTREACHED();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

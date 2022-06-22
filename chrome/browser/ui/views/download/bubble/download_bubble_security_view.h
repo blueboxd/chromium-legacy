@@ -16,7 +16,6 @@ class Checkbox;
 class Label;
 class ImageView;
 class StyledLabel;
-class ImageButton;
 }  // namespace views
 
 class DownloadBubbleUIController;
@@ -33,14 +32,7 @@ class DownloadBubbleSecurityView : public views::View {
   DownloadBubbleSecurityView& operator=(const DownloadBubbleSecurityView&) =
       delete;
   ~DownloadBubbleSecurityView() override;
-
-  // Update the security view when a subpage is opened for a particular
-  // download.
   void UpdateSecurityView(DownloadBubbleRowView* download_row_view);
-
-  // Update the view after it is visible, in particular asking for focus and
-  // announcing accessibility text.
-  void UpdateAccessibilityTextAndFocus();
 
   raw_ptr<views::MdTextButton> keep_button_ = nullptr;
   raw_ptr<views::MdTextButton> discard_button_ = nullptr;
@@ -56,7 +48,6 @@ class DownloadBubbleSecurityView : public views::View {
   void AddIconAndText();
   void UpdateButtons();
   void AddButtons();
-
   void ProcessButtonClick(DownloadCommands::Command command,
                           bool is_first_button);
   views::MdTextButton* GetButtonForCommand(DownloadCommands::Command command);
@@ -70,7 +61,6 @@ class DownloadBubbleSecurityView : public views::View {
   raw_ptr<views::Label> title_ = nullptr;
   raw_ptr<views::ImageView> icon_ = nullptr;
   raw_ptr<views::StyledLabel> styled_label_ = nullptr;
-  raw_ptr<views::ImageButton> back_button_ = nullptr;
   absl::optional<base::Time> warning_time_;
 };
 

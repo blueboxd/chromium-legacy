@@ -120,15 +120,14 @@ const base::Feature kAutofillDelayPopupControllerDeletion{
 const base::Feature kAutofillDisableFilling{"AutofillDisableFilling",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to displace removed forms in both FormCache and
-// AutofillManager.
-// TODO(crbug.com/1215333): Remove the feature when the experiment is completed.
-const base::Feature kAutofillDisplaceRemovedForms{
-    "AutofillDisplaceRemovedForms", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Kill switch for Autofill address import.
 const base::Feature kAutofillDisableAddressImport{
     "AutofillDisableAddressImport", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Kill switch for computing heuristics other than the active ones
+// (GetActivePatternSource()).
+const base::Feature kAutofillDisableShadowHeuristics{
+    "AutofillDisableShadowHeuristics", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls if the heuristic field parsing utilizes shared labels.
 // TODO(crbug.com/1165780): Remove once shared labels are launched.
@@ -183,6 +182,21 @@ const base::Feature kAutofillEnableImportWhenMultiplePhoneNumbers{
     "AutofillEnableImportWhenMultiplePhoneNumbers",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, candidate profiles are temporary stored on import, and merged
+// with future candidate profiles, to create an importable profile. This makes
+// importing from multi-step input flows possible.
+const base::Feature kAutofillEnableMultiStepImports{
+    "AutofillEnableMultiStepImports", base::FEATURE_DISABLED_BY_DEFAULT};
+// When enabled, imported profiles are stored as multi-step candidates too,
+// which enables complementing a recently imported profile during later steps of
+// a multi-step input flow.
+const base::FeatureParam<bool> kAutofillEnableMultiStepImportComplements{
+    &kAutofillEnableMultiStepImports, "enable_multistep_complement", false};
+// Configures the TTL of multi-step import candidates.
+const base::FeatureParam<base::TimeDelta> kAutofillMultiStepImportCandidateTTL{
+    &kAutofillEnableMultiStepImports, "multistep_candidate_ttl",
+    base::Minutes(30)};
+
 // When enabled, the precedence is given to the field label over the name when
 // they match different types. Applied only for parsing of address forms in
 // Turkish.
@@ -228,7 +242,8 @@ const base::Feature kAutofillEnableSupportForHonorificPrefixes{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, trunk prefix-related phone number types are added to the
-// supported and matching types of |PhoneNumber|.
+// supported and matching types of |PhoneNumber|. Local heuristics for these
+// types are enabled as well.
 const base::Feature kAutofillEnableSupportForPhoneNumberTrunkTypes{
     "AutofillEnableSupportForPhoneNumberTrunkTypes",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -338,26 +353,24 @@ extern const base::Feature kAutofillPreventOverridingPrefilledValues{
     "AutofillPreventOverridingPrefilledValues",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Uses the pattern provider to retrieve parsing patterns for the heuristic
-// field type detection.
+// If enabled, use the parsing patterns from a JSON file for heuristics, rather
+// than the hardcoded ones from autofill_regex_constants.cc.
+// The specific pattern set is controlled by the
+// `kAutofillParsingPatternActiveSource` parameter.
+//
+// This feature is intended to work with kAutofillPageLanguageDetection.
+//
+// Enabling this feature is also a prerequisite for emitting shadow metrics.
 // TODO(crbug/1121990): Remove once launched.
 const base::Feature kAutofillParsingPatternProvider{
     "AutofillParsingPatternProvider", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls if language-specific patterns are used for the heuristic field type
-// detection.
-// For this to work, the feature kAutofillPageLanguageDetection must be enabled.
-// Otherwise the pattern provider will revert back to language unspecific
-// patterns.
-const base::FeatureParam<bool>
-    kAutofillParsingWithLanguageSpecificPatternsParam{
-        &kAutofillParsingPatternProvider, "use_language_specific_patterns",
-        true};
-
-// Controls if patterns retrieved with the component updater are used.
-const base::FeatureParam<bool> kAutofillParsingWithRemotePatternsParam{
-    &kAutofillParsingPatternProvider,
-    "use_patterns_retrieved_with_the_component_udpater", false};
+// The specific pattern set is controlled by the `kAutofillParsingPatternActive`
+// parameter. One of "legacy", "default", "experimental", "nextgen". All other
+// values are equivalent to "default".
+// TODO(crbug/1248339): Remove once experiment is finished.
+const base::FeatureParam<std::string> kAutofillParsingPatternActiveSource{
+    &kAutofillParsingPatternProvider, "prediction_source", "default"};
 
 // Enables detection of language from Translate.
 // TODO(crbug/1150895): Cleanup when launched.
@@ -537,10 +550,8 @@ const base::Feature kAutofillEnableNewAddressProfileCreationInSettingsOnIOS{
 
 #if BUILDFLAG(IS_ANDROID)
 bool IsAutofillManualFallbackEnabled() {
-  return base::FeatureList::IsEnabled(
-             autofill::features::kAutofillKeyboardAccessory) &&
-         base::FeatureList::IsEnabled(
-             autofill::features::kAutofillManualFallbackAndroid);
+  return base::FeatureList::IsEnabled(kAutofillKeyboardAccessory) &&
+         base::FeatureList::IsEnabled(kAutofillManualFallbackAndroid);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 

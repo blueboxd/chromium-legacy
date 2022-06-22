@@ -323,7 +323,7 @@ mojom("mojom") {
       ]
       traits_sources = [ "mask_filter_info_mojom_traits.cc" ]
       traits_headers = [ "mask_filter_info_mojom_traits.h" ]
-      traits_public_deps = [ "//ui/gfx" ]
+      traits_public_deps = [ "//ui/gfx/geometry:geometry_skia" ]
     },
     {
       types = [
@@ -334,7 +334,7 @@ mojom("mojom") {
       ]
       traits_sources = [ "linear_gradient_mojom_traits.cc" ]
       traits_headers = [ "linear_gradient_mojom_traits.h" ]
-      traits_public_deps = [ "//ui/gfx" ]
+      traits_public_deps = [ "//ui/gfx/geometry:geometry_skia" ]
     },
   ]
 
@@ -387,6 +387,13 @@ mojom("native_handle_types") {
   }
   cpp_typemaps = [ shared_cpp_typemap ]
   blink_cpp_typemaps = [ shared_cpp_typemap ]
+}
+
+if (is_win) {
+  mojom("dxgi_info") {
+    sources = [ "dxgi_info.mojom" ]
+    public_deps = [ "//mojo/public/mojom/base" ]
+  }
 }
 
 mojom("test_interfaces") {

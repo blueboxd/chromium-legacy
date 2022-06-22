@@ -160,6 +160,16 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
         value: '',
       },
 
+      /*
+       * Whether enter existing passphrase UI should be shown.
+       */
+      showExistingPassphraseBelowAccount_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeShowExistingPassphraseBelowAccount_(' +
+            'syncStatus.signedIn, syncPrefs.passphraseRequired)',
+      },
+
       signedIn_: {
         type: Boolean,
         value: true,
@@ -181,12 +191,10 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
             'syncPrefs.trustedVaultKeysRequired)',
       },
 
-      // <if expr="not chromeos_lacros">
       showSetupCancelDialog_: {
         type: Boolean,
         value: false,
       },
-      // </if>
 
       enterPassphraseLabel_: {
         type: String,
@@ -220,9 +228,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private signedIn_: boolean;
   private syncDisabledByAdmin_: boolean;
   private syncSectionDisabled_: boolean;
-  // <if expr="not chromeos_lacros">
   private showSetupCancelDialog_: boolean;
-  // </if>
   private enterPassphraseLabel_: string;
   private existingPassphraseLabel_: string;
 
@@ -374,7 +380,6 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     });
   }
 
-  // <if expr="not chromeos_lacros">
   private onSetupCancelDialogBack_() {
     this.shadowRoot!.querySelector<CrDialogElement>(
                         '#setupCancelDialog')!.cancel();
@@ -395,7 +400,16 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private onSetupCancelDialogClose_() {
     this.showSetupCancelDialog_ = false;
   }
-  // </if>
+
+  private isNonSyncingProfilesSupported_(): boolean {
+    // <if expr="chromeos_lacros">
+    return loadTimeData.getBoolean('nonSyncingProfilesEnabled');
+    // </if>
+
+    // <if expr="not chromeos_lacros">
+    return true;
+    // </if>
+  }
 
   override currentRouteChanged() {
     const router = Router.getInstance();
@@ -417,11 +431,9 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
       return;
     }
 
-    // On Lacros, turning off sync is not supported yet.
-    // TODO(https://crbug.com/1217645): Enable the cancel dialog.
-    // <if expr="not chromeos_lacros">
     const userActionCancelsSetup = this.syncStatus &&
-        this.syncStatus.firstSetupInProgress && this.didAbort_;
+        this.syncStatus.firstSetupInProgress && this.didAbort_ &&
+        this.isNonSyncingProfilesSupported_();
     if (userActionCancelsSetup && !this.setupCancelConfirmed_) {
       chrome.metricsPrivate.recordUserAction(
           'Signin_Signin_BackOnAdvancedSyncSettings');
@@ -440,7 +452,6 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
       });
       return;
     }
-    // </if>
 
     // Reset variable.
     this.setupCancelConfirmed_ = false;
@@ -663,8 +674,9 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     // </if>
   }
 
-  private shouldShowExistingPassphraseBelowAccount_(): boolean {
-    return this.syncPrefs !== undefined && !!this.syncPrefs.passphraseRequired;
+  private computeShowExistingPassphraseBelowAccount_(): boolean {
+    return this.syncStatus !== undefined && !!this.syncStatus.signedIn &&
+        this.syncPrefs !== undefined && !!this.syncPrefs.passphraseRequired;
   }
 
   private onSyncAdvancedClick_() {

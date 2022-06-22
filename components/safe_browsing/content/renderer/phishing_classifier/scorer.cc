@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base/logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/histogram_functions.h"
@@ -82,8 +83,13 @@ std::unique_ptr<tflite::task::vision::ImageClassifier> CreateClassifier(
     std::string model_data) {
   TRACE_EVENT0("safe_browsing", "CreateTfLiteClassifier");
   tflite::task::vision::ImageClassifierOptions options;
-  options.mutable_model_file_with_metadata()->set_file_content(
-      std::move(model_data));
+  tflite::task::core::BaseOptions* base_options =
+      options.mutable_base_options();
+  base_options->mutable_model_file()->set_file_content(std::move(model_data));
+  base_options->mutable_compute_settings()
+      ->mutable_tflite_settings()
+      ->mutable_cpu_settings()
+      ->set_num_threads(1);
   auto statusor_classifier =
       tflite::task::vision::ImageClassifier::CreateFromOptions(
           options, CreateOpResolver());
@@ -189,17 +195,14 @@ void Scorer::ApplyVisualTfLiteModelHelper(
     const SkBitmap& bitmap,
     int input_width,
     int input_height,
-    const std::string& model_data,
+    std::string model_data,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     base::OnceCallback<void(std::vector<double>)> callback) {
   TRACE_EVENT0("safe_browsing", "ApplyVisualTfLiteModel");
   base::Time before_operation = base::Time::Now();
-  std::string model_data_copy = model_data;
-  base::UmaHistogramTimes("SBClientPhishing.ApplyTfliteTime.ModelCopy",
-                          base::Time::Now() - before_operation);
   before_operation = base::Time::Now();
   std::unique_ptr<tflite::task::vision::ImageClassifier> classifier =
-      CreateClassifier(std::move(model_data_copy));
+      CreateClassifier(std::move(model_data));
   base::UmaHistogramTimes("SBClientPhishing.ApplyTfliteTime.CreateClassifier",
                           base::Time::Now() - before_operation);
   if (!classifier) {

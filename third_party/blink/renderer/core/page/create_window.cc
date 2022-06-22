@@ -27,11 +27,9 @@
 #include "third_party/blink/renderer/core/page/create_window.h"
 
 #include "base/feature_list.h"
-#include "base/metrics/histogram_macros.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/frame/from_ad_state.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
@@ -203,9 +201,13 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string,
       window_features.persistent = true;
     } else if (attribution_reporting_enabled &&
                key_string == "attributionsrc") {
+      // attributionsrc values are encoded in order to support embedded special
+      // characters, such as '='.
+      const String decoded = DecodeURLEscapeSequences(value_string.ToString(),
+                                                      DecodeURLMode::kUTF8);
       window_features.impression =
           dom_window->GetFrame()->GetAttributionSrcLoader()->RegisterNavigation(
-              dom_window->CompleteURL(value_string.ToString()));
+              dom_window->CompleteURL(decoded));
     }
   }
 
@@ -239,11 +241,6 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
   bool is_ad_subframe = opener_frame.IsAdSubframe();
   bool is_ad_script_in_stack =
       ad_tracker->IsAdScriptInStack(AdTracker::StackType::kBottomAndTop);
-  FromAdState state =
-      blink::GetFromAdState(is_ad_subframe, is_ad_script_in_stack);
-
-  // Log to UMA.
-  UMA_HISTOGRAM_ENUMERATION("Blink.WindowOpen.FromAdState", state);
 
   // Log to UKM.
   ukm::UkmRecorder* ukm_recorder = opener_frame.GetDocument()->UkmRecorder();

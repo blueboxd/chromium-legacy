@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/account_info.h"
 
@@ -17,7 +16,7 @@ namespace network {
 class TestURLLoaderFactory;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 namespace account_manager {
 class AccountManagerFacade;
 }
@@ -95,6 +94,16 @@ void RevokeSyncConsent(IdentityManager* identity_manager);
 // consent. Blocks until the primary account is cleared.
 // NOTE: See disclaimer at top of file re: direct usage.
 void ClearPrimaryAccount(IdentityManager* identity_manager);
+
+// Waits until the primary account id at consent_level to be equal to
+// |account_id|.
+//
+// Note: Passing an empty |account_id| will make this function wait until
+// the primary account id is cleared at the |consent_level| (calling
+// identity_manager->HasPrimaryAccount(consent_level) will return false)
+void WaitForPrimaryAccount(IdentityManager* identity_manager,
+                           ConsentLevel consent_level,
+                           const CoreAccountId& account_id);
 
 // Makes an account available for the given email address, generating a GAIA ID
 // and refresh token that correspond uniquely to that email address. Blocks
@@ -206,7 +215,7 @@ void SimulateSuccessfulFetchOfAccountInfo(IdentityManager* identity_manager,
                                           const std::string& locale,
                                           const std::string& picture_url);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 account_manager::AccountManagerFacade* GetAccountManagerFacade(
     IdentityManager* identity_manager);
 #endif

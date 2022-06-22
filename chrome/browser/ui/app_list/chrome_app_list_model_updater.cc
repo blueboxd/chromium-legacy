@@ -152,6 +152,9 @@ void ChromeAppListModelUpdater::SetActive(bool active) {
   if (active) {
     ash::AppListController::Get()->SetActiveModel(model_id(), &model_,
                                                   &search_model_);
+  } else if (is_under_temporary_sort()) {
+    // Commit the temporary order when the model updater is deactivated.
+    EndTemporarySortAndTakeAction(EndAction::kCommit);
   }
 }
 
@@ -537,7 +540,7 @@ size_t ChromeAppListModelUpdater::BadgedItemCount() {
 
 void ChromeAppListModelUpdater::GetContextMenuModel(
     const std::string& id,
-    bool add_sort_options,
+    ash::AppListItemContext item_context,
     GetMenuModelCallback callback) {
   ChromeAppListItem* item = FindItem(id);
   // TODO(stevenjb/jennyz): Implement this for folder items.
@@ -546,7 +549,7 @@ void ChromeAppListModelUpdater::GetContextMenuModel(
     std::move(callback).Run(nullptr);
     return;
   }
-  item->GetContextMenuModel(add_sort_options, std::move(callback));
+  item->GetContextMenuModel(item_context, std::move(callback));
 }
 
 syncer::StringOrdinal ChromeAppListModelUpdater::GetPositionBeforeFirstItem()
@@ -1064,6 +1067,10 @@ void ChromeAppListModelUpdater::OnAppListHidden() {
   DCHECK(temporary_sort_manager_->is_active());
 
   // Commit the temporary sort order if app list gets hidden.
+  EndTemporarySortAndTakeAction(EndAction::kCommit);
+}
+
+void ChromeAppListModelUpdater::CommitTemporarySortOrder() {
   EndTemporarySortAndTakeAction(EndAction::kCommit);
 }
 

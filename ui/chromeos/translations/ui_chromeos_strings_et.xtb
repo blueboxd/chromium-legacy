@@ -94,6 +94,8 @@
 <translation id="1742316578210444689">heebrea, transliteratsioon</translation>
 <translation id="1747761757048858544">hollandi (Holland)</translation>
 <translation id="174937106936716857">Faile kokku</translation>
+<translation id="1755345808328621801">See fail on mõeldud Windowsi tarkvara kasutavale arvutile. See ei ühildu Chrome OS-i käitava seadmega. Otsige sobivat asendusrakendust Chrome'i veebipoest.</translation>
+<translation id="1757915090001272240">Lai ladina</translation>
 <translation id="1773212559869067373">Autentimissertifikaat lükati kohalikult tagasi</translation>
 <translation id="1775381402323441512">Video teave</translation>
 <translation id="180035236176489073">Failide juurde pääsemiseks on vaja võrguühendust.</translation>
@@ -103,6 +105,7 @@
 <translation id="1813278315230285598">Teenused</translation>
 <translation id="1829129547161959350">Pingviin</translation>
 <translation id="183183971458492120">Teabe laadimine …</translation>
+<translation id="1832073788765803750">Poollaiusega katakana</translation>
 <translation id="1834290891154666894">Sobimatu teema alternatiivse nime vaste sisestus</translation>
 <translation id="1838709767668011582">Google'i sait</translation>
 <translation id="1844692022597038441">Fail ei ole võrguühenduseta saadaval.</translation>
@@ -117,7 +120,6 @@
 <translation id="1936717151811561466">soome keel</translation>
 <translation id="1942765061641586207">Kujutise eraldusvõime</translation>
 <translation id="1972984168337863910">Laienda failide tagasisidepaneele</translation>
-<translation id="1984456723671657197">Seda tüüpi faili ei toetata. <ph name="BEGIN_LINK_HELP" />Vaadake lisateavet<ph name="END_LINK_HELP" /> Chrome OS-is failide avamise kohta.</translation>
 <translation id="1995337122023280937">Ava faili asukoht</translation>
 <translation id="2001796770603320721">Halda Drive'is</translation>
 <translation id="2009067268969781306">Ketta vormindamisel kustutatakse kõik sellel olevad andmed. Seda toimingut ei saa tagasi võtta.</translation>
@@ -199,8 +201,6 @@
 <translation id="2649120831653069427">Vikerkaarekala</translation>
 <translation id="2663066752008346276">birma (Myanmar), Myansani klaviatuuriga</translation>
 <translation id="2664412712123763093">Faili asukoht</translation>
-<translation id="2672394958563893062">Ilmnes viga. Klõpsake uuesti alustamiseks.</translation>
-<translation id="2676946222714718093">Mängib seadmes</translation>
 <translation id="2718540689505416944">Rakenduse installimine Linuxiga</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, üksikasjad</translation>
 <translation id="2724954091494693138">türgi, F-klaviatuuriga</translation>
@@ -226,6 +226,7 @@
 <translation id="2943503720238418293">Kasutage lühemat nime</translation>
 <translation id="2949781154072577687">Ketta <ph name="DRIVE_NAME" /> vormindamine …</translation>
 <translation id="2951236788251446349">Millimallikas</translation>
+<translation id="2977940621473452797">See fail on mõeldud Macintoshi tarkvara kasutavale arvutile. See ei ühildu teie seadmega, mis käitab Chrome OS-i. Otsige sobivat asendusrakendust Chrome'i veebipoest.</translation>
 <translation id="2984337792991268709">Täna kell <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2994320653639462337"><ph name="COUNT" /> üksuse taastamine …</translation>
 <translation id="2994669386200004489">Faili <ph name="FILE_NAME" /> ei õnnestunud varundada</translation>
@@ -341,7 +342,6 @@
 <translation id="3901991538546252627">Võrguga <ph name="NAME" /> ühenduse loomine</translation>
 <translation id="3906232975181435906">Mobiiliprofiili installimine, võrk <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3930521966936686665">Esita seadmes</translation>
 <translation id="3943857333388298514">Kleebi</translation>
 <translation id="3952872973865944257">telugu, foneetiline</translation>
 <translation id="3958548648197196644">Kiivi</translation>
@@ -413,7 +413,6 @@
 <translation id="4631887759990505102">Esitaja</translation>
 <translation id="4642769377300286600">Mobiiliprofiili installimine, võrk <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">tšehhi, QWERTY-klaviatuuriga</translation>
-<translation id="4656293982926141856">See arvuti</translation>
 <translation id="4656777537938206294">Muutke failid võrguühenduseta kättesaadavaks</translation>
 <translation id="4658782175094886150">Inimene lumes</translation>
 <translation id="4669606053856530811">Üksuse „<ph name="SOURCE_NAME" />” liikmed kaotavad juurdepääsu, kui neid üksusi nendega ei jagata.</translation>
@@ -423,13 +422,13 @@
 <translation id="4694604912444486114">Pärdik</translation>
 <translation id="469612310041132144">hiina, kiirsisestus</translation>
 <translation id="4697043402264950621">Failide loend on sorditud veeru <ph name="COLUMN_NAME" /> alusel kasvavas järjestuses.</translation>
+<translation id="469897186246626197">See fail on mõeldud Windowsi tarkvara kasutavale arvutile. See ei ühildu teie seadmega, mis käitab Chrome OS-i. <ph name="BEGIN_LINK_HELP" />Vaadake lisateavet<ph name="END_LINK_HELP" /> Chrome OS-is failide avamise kohta.</translation>
 <translation id="4706042980341760088">tamili, kirjutusmasina klaviatuuriga</translation>
 <translation id="4711094779914110278">türgi keel</translation>
 <translation id="4712283082407695269">Faili „<ph name="PATH" />” avamine</translation>
 <translation id="4720185134442950733">Mobiilse andmeside võrk</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> fotot on varundatud</translation>
 <translation id="4725511304875193254">Corgi</translation>
-<translation id="4732760563705710320">Kahjuks ei toeta teie ülekandeseade seda videot.</translation>
 <translation id="4737050008115666127">Maandumine</translation>
 <translation id="4747271164117300400">Makedoonia</translation>
 <translation id="4759238208242260848">Allalaadimised</translation>
@@ -520,6 +519,7 @@
 <translation id="5335458522276292100"><ph name="BEGIN_LINK" />Google Drive'i<ph name="END_LINK" /> varundamine: <ph name="FILE_COUNT" /></translation>
 <translation id="535792325654997756">Kassidega inimene</translation>
 <translation id="5358764674931277">Kaadrisagedus</translation>
+<translation id="5363339716524495120">Sisestuskeel on hiina keel</translation>
 <translation id="5368191757080475556">Kausta jagamine Linuxiga</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5411472733320185105">Ära kasuta puhverserveri seadeid nende hostide ja domeenide puhul:</translation>
@@ -542,8 +542,10 @@
 <translation id="5534520101572674276">Suuruse arvutamine</translation>
 <translation id="554153475311314364">kreeka, transliteratsioon</translation>
 <translation id="5583640892426849032">Tagasilükkeklahv</translation>
+<translation id="5583664733673201137">Kirjavahemärkide laius on täislaius</translation>
 <translation id="5602622065581044566">bulgaaria, foneetilise klaviatuuriga</translation>
 <translation id="5605830556594064952">USA Dvorak</translation>
+<translation id="5618330573454123917">See fail on mõeldud Macintoshi tarkvara kasutavale arvutile. See ei ühildu teie seadmega, mis käitab Chrome OS-i. <ph name="BEGIN_LINK_HELP" />Vaadake lisateavet<ph name="END_LINK_HELP" /> Chrome OS-is failide avamise kohta.</translation>
 <translation id="5625294776298156701">tamili, Tamil99-klaviatuuriga</translation>
 <translation id="5633226425545095130">Selle üksuse teisaldamisel jagatakse seda kõigiga, kes jagatud kausta „<ph name="DESTINATION_NAME" />“ näevad.</translation>
 <translation id="5649768706273821470">Esita</translation>
@@ -619,7 +621,6 @@
 <translation id="6224253798271602650">Ketta <ph name="DRIVE_NAME" /> vormindamine</translation>
 <translation id="6227235786875481728">Faili ei saanud esitada.</translation>
 <translation id="6241349547798190358">hollandi (Belgia)</translation>
-<translation id="6248400709929739064">Luba subtiitrid</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="PHONE_NAME" />, <ph name="SIGNAL_STRENGTH" />, signaalitugevus: <ph name="BATTERY_STATUS" />%, telefoni aku: %, ühenda</translation>
 <translation id="6269630227984243955">malai</translation>
 <translation id="6287852322318138013">Valige faili avamiseks rakendus</translation>
@@ -637,7 +638,6 @@
 <translation id="637062427944097960">Fail on avatud muul töölaual. Selle vaatamiseks avage <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6394388407447716302">Kirjutuskaitstud</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> üksust</translation>
-<translation id="6398765197997659313">Välju täisekraanilt</translation>
 <translation id="642282551015776456">Seda nime ei saa faili või kausta nimena kasutada</translation>
 <translation id="6423031066725912715">vietnami, klaviatuuriga TCVN</translation>
 <translation id="6485131920355264772">Talletusruumi teabe toomine ebaõnnestus</translation>
@@ -673,7 +673,6 @@
 <translation id="6820687829547641339">Gzipi tihendatud TAR-arhiiv</translation>
 <translation id="6823166707458800069">Kõik sellesse kausta salvestatud failid varundatakse võrgus automaatselt.</translation>
 <translation id="6825883775269213504">vene keel</translation>
-<translation id="6827236167376090743">Seda videot esitatakse seni, kuni lehmad koju jõuavad.</translation>
 <translation id="6847101934483209767">Kirje <ph name="ENTRY_NAME" /> eemaldati valikust.</translation>
 <translation id="6856459657722366306"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, signaalitugevus: <ph name="SIGNAL_STRENGTH" />%, üksikasjad</translation>
 <translation id="6861394552169064235">pärsia</translation>
@@ -702,7 +701,6 @@
 <translation id="6970230597523682626">bulgaaria keel</translation>
 <translation id="6973630695168034713">Kaustad</translation>
 <translation id="6976795442547527108">Lõvi</translation>
-<translation id="6978611942794658017">See fail on mõeldud Windowsi tarkvara kasutavale arvutile. See ei ühildu Chrome OS-i käitava seadmega. Otsige sobivat asendusrakendust Chrome'i veebipoest.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6989942356279143254">rootsi</translation>
 <translation id="6990081529015358884">Ruum sai otsa</translation>
@@ -713,6 +711,7 @@
 <translation id="7037472120706603960">tamili, transliteratsioon</translation>
 <translation id="7040138676081995583">Ava rakendusega ...</translation>
 <translation id="7048024426273850086"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, signaalitugevus: <ph name="SIGNAL_STRENGTH" />%, telefoni aku: <ph name="BATTERY_STATUS" />%, ühenda</translation>
+<translation id="7070804685954057874">Otsesisestus</translation>
 <translation id="7075931588889865715">tai, klaviatuuriga TIS 820-2531</translation>
 <translation id="708278670402572152">Skannimise lubamiseks katkestage ühendus</translation>
 <translation id="7086590977277044826">tamili, InScript-klaviatuuriga</translation>
@@ -740,6 +739,7 @@
 <translation id="7309413087278791451">saksa (Belgia)</translation>
 <translation id="7339898014177206373">Uus aken</translation>
 <translation id="7343393116438664539">vietnami, Telex</translation>
+<translation id="7357762654218998920">Seda tüüpi faili ei toetata. <ph name="BEGIN_LINK_HELP" />Vaadake lisateavet<ph name="END_LINK_HELP" /> Chrome OS-is failide avamise kohta.</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> üksuse kopeerimine …</translation>
 <translation id="7375951387215729722">Failide loend on sorditud veeru <ph name="COLUMN_NAME" /> alusel kahanevas järjestuses.</translation>
 <translation id="7402503521691663770">Chrome OS Flexi seadmed</translation>
@@ -752,6 +752,7 @@
 <translation id="7489215562877293245">Leiti <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Drive'i<ph name="END_LINK" /> varundamiseks valmis</translation>
+<translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">malajalami, foneetiline</translation>
 <translation id="7505167922889582512">Kuva peidetud failid</translation>
 <translation id="7514365320538308">Laadi alla</translation>
@@ -811,8 +812,8 @@
 <translation id="7857117644404132472">Lisa erand</translation>
 <translation id="7868774406711971383">poola</translation>
 <translation id="7874321682039004450">filipiini</translation>
-<translation id="7881969471599061635">Keela subtiitrid</translation>
 <translation id="78946041517601018">Jagatud kettad</translation>
+<translation id="7903984238293908205">Katakana</translation>
 <translation id="7908793776359722643">Partitsiooni vormindamisel kustutatakse kõik sellesse salvestatud andmed. Seda toimingut ei saa tagasi võtta.</translation>
 <translation id="7925247922861151263">AAA kontrollimine nurjus</translation>
 <translation id="7925686952655276919">Ära kasuta sünkroonimiseks mobiilset andmesidet</translation>
@@ -824,7 +825,6 @@
 <translation id="7972920761225148017">prantsuse (Šveits)</translation>
 <translation id="7973962044839454485">PPP autentimine ebaõnnestus vale kasutajanime või parooli tõttu</translation>
 <translation id="7980421588063892270">inglise (USA), Colemaki klaviatuuriga</translation>
-<translation id="79907182588096956">See fail on mõeldud Windowsi tarkvara kasutavale arvutile. See ei ühildu teie seadmega, mis käitab Chrome OS-i. <ph name="BEGIN_LINK_HELP" />Vaadake lisateavet<ph name="END_LINK_HELP" /> Chrome OS-is failide avamise kohta.</translation>
 <translation id="8000066093800657092">Võrku pole</translation>
 <translation id="8008366997883261463">Jack Russelli terjer</translation>
 <translation id="8028993641010258682">Suurus</translation>
@@ -841,6 +841,7 @@
 <translation id="8128733386027980860">inglise (Ühendkuningriik), Dvoraki klaviatuuriga</translation>
 <translation id="8137331602592933310">Faili „<ph name="FILENAME" />” on teiega jagatud. Te ei saa seda kustutada, kuna te pole selle omanik.</translation>
 <translation id="813913629614996137">Lähtestamine …</translation>
+<translation id="8147028810663464959">Tähemärkide laius on täislaius</translation>
 <translation id="8151638057146502721">Seadista</translation>
 <translation id="8154842056504218462">Valiti kõik kirjed.</translation>
 <translation id="8157684860301034423">Rakenduse teabe toomine nurjus.</translation>
@@ -850,6 +851,7 @@
 <translation id="8208580316430297579">Kujundus</translation>
 <translation id="8223479393428528563">Kui soovite salvestada need failid võrguühenduseta kasutamiseks, minge uuesti veebi, paremklõpsake failidel ja tehke valik <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Katkesta</translation>
+<translation id="8250690786522693009">Ladina</translation>
 <translation id="8250920743982581267">Dokumendid</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8261561378965667560">hiina, reapõhine sisestus</translation>
@@ -889,7 +891,6 @@
 <translation id="8492972329130824181">Kodune võrk pole saadaval. Ühenduse loomiseks tuleb lubada mobiilse andmeside rändlus.</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> üksuse ekstraktimine …</translation>
 <translation id="8521441079177373948">Ühendkuningriik</translation>
-<translation id="8525306231823319788">Täisekraan</translation>
 <translation id="853494022971700746">prantsuse (Prantsusmaa)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signaalitugevus: <ph name="SIGNAL_STRENGTH" />%, üksikasjad</translation>
 <translation id="8545476925160229291">inglise (USA)</translation>
@@ -935,7 +936,6 @@
 <translation id="8912078710089354287">Saba liputav koer</translation>
 <translation id="8919081441417203123">taani keel</translation>
 <translation id="8965697826696209160">Ruumi ei ole piisavalt.</translation>
-<translation id="8970501467542182729">See fail on mõeldud Macintoshi tarkvara kasutavale arvutile. See ei ühildu teie seadmega, mis käitab Chrome OS-i. <ph name="BEGIN_LINK_HELP" />Vaadake lisateavet<ph name="END_LINK_HELP" /> Chrome OS-is failide avamise kohta.</translation>
 <translation id="8997962250644902079">hiina (traditsiooniline), Pinyin</translation>
 <translation id="9003940392834790328"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signaalitugevus: <ph name="SIGNAL_STRENGTH" />%, võrku haldab teie administraator, üksikasjad</translation>
 <translation id="9017798300203431059">Vene foneetiline</translation>
@@ -954,7 +954,6 @@
 <translation id="9130775360844693113">Sihtkoha „<ph name="DESTINATION_NAME" />” liikmed saavad juurdepääsu nendele üksustele.</translation>
 <translation id="9131598836763251128">Valige üks või mitu faili</translation>
 <translation id="9133055936679483811">Pakkimine ebaõnnestus. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">See fail on mõeldud Macintoshi tarkvara kasutavale arvutile. See ei ühildu teie seadmega, mis käitab Chrome OS-i. Otsige sobivat asendusrakendust Chrome'i veebipoest.</translation>
 <translation id="9144340019284012223">katalaani</translation>
 <translation id="914873105831852105">Vale PIN-kood. Teil on veel 1 katse.</translation>
 <translation id="9153934054460603056">Salvesta identiteet ja parool</translation>

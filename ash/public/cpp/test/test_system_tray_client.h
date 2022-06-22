@@ -8,6 +8,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "base/strings/string_piece.h"
+#include "components/access_code_cast/common/access_code_cast_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -59,7 +60,8 @@ class ASH_PUBLIC_EXPORT TestSystemTrayClient : public SystemTrayClient {
   void ShowFirmwareUpdate() override;
   void RequestRestartForUpdate() override;
   void SetLocaleAndExit(const std::string& locale_iso_code) override;
-  void ShowAccessCodeCastingDialog() override;
+  void ShowAccessCodeCastingDialog(
+      AccessCodeCastDialogOpenLocation open_location) override;
   void ShowCalendarEvent(const absl::optional<GURL>& event_url,
                          bool& opened_pwa,
                          GURL& final_event_url) override;
@@ -100,6 +102,10 @@ class ASH_PUBLIC_EXPORT TestSystemTrayClient : public SystemTrayClient {
     return show_sim_unlock_settings_count_;
   }
 
+  int show_network_create_count() const { return show_network_create_count_; }
+
+  const std::string& last_network_type() const { return last_network_type_; }
+
   int show_firmware_update_count() const { return show_firmware_update_count_; }
 
   const std::string& last_bluetooth_settings_device_id() const {
@@ -121,8 +127,10 @@ class ASH_PUBLIC_EXPORT TestSystemTrayClient : public SystemTrayClient {
   int show_wifi_sync_settings_count_ = 0;
   int show_sim_unlock_settings_count_ = 0;
   int show_firmware_update_count_ = 0;
+  int show_network_create_count_ = 0;
   std::string last_bluetooth_settings_device_id_;
   std::string last_network_settings_network_id_;
+  std::string last_network_type_;
 };
 
 }  // namespace ash

@@ -49,6 +49,8 @@ component("app_types") {
   sources = [
     "app_types.cc",
     "app_types.h",
+    "features.cc",
+    "features.h",
     "intent_filter.cc",
     "intent_filter.h",
     "macros.h",
@@ -83,8 +85,6 @@ component("app_update") {
     "app_update.h",
     "capability_access_update.cc",
     "capability_access_update.h",
-    "features.cc",
-    "features.h",
     "macros.h",
   ]
 
@@ -228,12 +228,24 @@ source_set("protocol_handling") {
   deps = [ "//url" ]
 }
 
+source_set("preferred_app") {
+  sources = [
+    "preferred_app.cc",
+    "preferred_app.h",
+  ]
+
+  deps = [
+    ":app_types",
+    "//components/services/app_service/public/mojom",
+  ]
+}
+
 source_set("preferred_apps") {
   sources = [
-    "preferred_apps.cc",
-    "preferred_apps.h",
     "preferred_apps_converter.cc",
     "preferred_apps_converter.h",
+    "preferred_apps_impl.cc",
+    "preferred_apps_impl.h",
     "preferred_apps_list.cc",
     "preferred_apps_list.h",
     "preferred_apps_list_handle.cc",
@@ -243,6 +255,7 @@ source_set("preferred_apps") {
   deps = [
     ":app_types",
     ":intents",
+    ":preferred_app",
     "//base",
     "//components/services/app_service/public/mojom",
     "//content/public/browser",
@@ -326,6 +339,7 @@ source_set("unit_tests") {
     ":icon_loader",
     ":icon_types",
     ":intents",
+    ":preferred_app",
     ":preferred_apps",
     ":publisher",
     ":run_on_os_login",

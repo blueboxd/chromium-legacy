@@ -86,7 +86,6 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/document_fenced_frames.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -760,8 +759,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& local_root,
     }
   }
 
-  PageWidgetEventHandler::HandleMouseDown(local_root, event);
-  // PageWidgetEventHandler may have detached the frame.
+  WidgetEventHandler::HandleMouseDown(local_root, event);
+  // WidgetEventHandler may have detached the frame.
   if (!LocalRootImpl())
     return;
 
@@ -789,8 +788,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& local_root,
 void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& local_root,
                                           const WebMouseEvent& event) {
   View()->SetMouseOverURL(WebURL());
-  PageWidgetEventHandler::HandleMouseLeave(local_root, event);
-  // PageWidgetEventHandler may have detached the frame.
+  WidgetEventHandler::HandleMouseLeave(local_root, event);
+  // WidgetEventHandler may have detached the frame.
 }
 
 void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
@@ -831,8 +830,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleMouseUp(
     LocalFrame& local_root,
     const WebMouseEvent& event) {
   WebInputEventResult result =
-      PageWidgetEventHandler::HandleMouseUp(local_root, event);
-  // PageWidgetEventHandler may have detached the frame.
+      WidgetEventHandler::HandleMouseUp(local_root, event);
+  // WidgetEventHandler may have detached the frame.
   if (!LocalRootImpl())
     return result;
 
@@ -1004,8 +1003,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleMouseWheel(
     LocalFrame& frame,
     const WebMouseWheelEvent& event) {
   View()->CancelPagePopup();
-  return PageWidgetEventHandler::HandleMouseWheel(frame, event);
-  // PageWidgetEventHandler may have detached the frame.
+  return WidgetEventHandler::HandleMouseWheel(frame, event);
+  // WidgetEventHandler may have detached the frame.
 }
 
 WebInputEventResult WebFrameWidgetImpl::HandleCharEvent(
@@ -1286,8 +1285,13 @@ WebFrameWidgetImpl::AllocateNewLayerTreeFrameSink() {
 }
 
 void WebFrameWidgetImpl::DidBeginMainFrame() {
-  DCHECK(LocalRootImpl()->GetFrame());
-  PageWidgetDelegate::DidBeginFrame(*LocalRootImpl()->GetFrame());
+  LocalFrame* root_frame = LocalRootImpl()->GetFrame();
+  DCHECK(root_frame);
+
+  if (LocalFrameView* frame_view = root_frame->View())
+    frame_view->RunPostLifecycleSteps();
+  if (Page* page = root_frame->GetPage())
+    page->Animator().PostAnimate();
 }
 
 void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
@@ -1296,8 +1300,8 @@ void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
   if (!LocalRootImpl())
     return;
 
-  PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
-                                      requested_update, reason);
+  GetPage()->UpdateLifecycle(*LocalRootImpl()->GetFrame(), requested_update,
+                             reason);
   if (requested_update != WebLifecycleUpdate::kAll)
     return;
 
@@ -2074,7 +2078,7 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
                           .GetScopedTimer(LocalFrameUkmAggregator::kAnimate));
   }
 
-  PageWidgetDelegate::Animate(*GetPage(), last_frame_time);
+  GetPage()->Animate(last_frame_time);
   // Animate can cause the local frame to detach.
   if (!LocalRootImpl())
     return;
@@ -2530,7 +2534,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
 
   // FIXME: This should take in the intended frame, not the local frame
   // root.
-  return PageWidgetDelegate::HandleInputEvent(*this, coalesced_event,
+  return WidgetEventHandler::HandleInputEvent(coalesced_event,
                                               LocalRootImpl()->GetFrame());
 }
 
@@ -3859,11 +3863,6 @@ void WebFrameWidgetImpl::CalculateSelectionBounds(
   }
 }
 
-void WebFrameWidgetImpl::BatterySavingsChanged(BatterySavingsFlags savings) {
-  widget_base_->LayerTreeHost()->SetEnableFrameRateThrottling(
-      savings & kAllowReducedFrameRate);
-}
-
 const viz::LocalSurfaceId& WebFrameWidgetImpl::LocalSurfaceIdFromParent() {
   return widget_base_->local_surface_id_from_parent();
 }
@@ -4147,7 +4146,6 @@ HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
   HitTestResult result =
       LocalRootImpl()->GetFrame()->View()->HitTestWithThrottlingAllowed(
           location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
 }
 

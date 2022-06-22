@@ -116,6 +116,7 @@ WebPreferences::WebPreferences()
       viewport_enabled(false),
 #if BUILDFLAG(IS_ANDROID)
       viewport_meta_enabled(true),
+      auto_zoom_focused_editable_to_legible_scale(true),
       shrinks_viewport_contents_to_fit(true),
       viewport_style(mojom::ViewportStyle::kMobile),
       always_show_context_menu_on_touch(false),
@@ -123,6 +124,7 @@ WebPreferences::WebPreferences()
       main_frame_resizes_are_orientation_changes(true),
 #else
       viewport_meta_enabled(false),
+      auto_zoom_focused_editable_to_legible_scale(false),
       shrinks_viewport_contents_to_fit(false),
       viewport_style(mojom::ViewportStyle::kDefault),
       always_show_context_menu_on_touch(true),
@@ -212,6 +214,13 @@ WebPreferences::WebPreferences()
   sans_serif_font_family_map[web_pref::kCommonScript] = u"Arial";
   cursive_font_family_map[web_pref::kCommonScript] = u"Script";
   fantasy_font_family_map[web_pref::kCommonScript] = u"Impact";
+  // Latin Modern Math is an open source font available in LaTeX distributions,
+  // and consequently other installable system packages. It provides the default
+  // "Computer Modern" style that math people are used to and contains an
+  // OpenType MATH table for math layout. It is thus a good default choice which
+  // may be refined via resource files for the Chrome profile, in order to take
+  // into account platform-specific availability of math fonts.
+  math_font_family_map[web_pref::kCommonScript] = u"Latin Modern Math";
 }
 
 WebPreferences::WebPreferences(const WebPreferences& other) = default;

@@ -6,6 +6,8 @@
 
 #include <sys/stat.h>
 
+#include <map>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -16,6 +18,8 @@
 #include "base/system/sys_info.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ash/crosapi/fake_migration_progress_tracker.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/model/blocking_model_type_store_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -34,6 +38,7 @@ constexpr char kCodeCacheUMAName[] = "CodeCache";
 constexpr char kTextFileContent[] = "Hello, World!";
 constexpr int kTextFileSize = sizeof(kTextFileContent);
 constexpr char kMoveExtensionId[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+constexpr syncer::ModelType kAshSyncDataType = syncer::ModelType::UNSPECIFIED;
 
 struct TargetItemComparator {
   bool operator()(const TargetItem& t1, const TargetItem& t2) const {
@@ -59,6 +64,16 @@ bool IsSameFile(const base::FilePath& file1, const base::FilePath& file2) {
   return (st_1.st_ino == st_2.st_ino);
 }
 
+std::set<std::string> CollectDictKeys(const base::Value::Dict* dict) {
+  std::set<std::string> result;
+  if (dict) {
+    for (const auto entry : *dict) {
+      result.insert(entry.first);
+    }
+  }
+  return result;
+}
+
 // Prepare LocalStorage-like LevelDB.
 void SetUpLocalStorage(const base::FilePath& path,
                        std::unique_ptr<leveldb::DB>& db) {
@@ -76,6 +91,11 @@ void SetUpLocalStorage(const base::FilePath& path,
       browser_data_migrator_util::kExtensionsAshOnly[0];
   batch.Put("META:chrome-extension://" + keep_extension_id, "meta");
   batch.Put("_chrome-extension://" + keep_extension_id + "\x00key1"s, "value1");
+
+  std::string both_extension_id =
+      browser_data_migrator_util::kExtensionsBothChromes[0];
+  batch.Put("META:chrome-extension://" + both_extension_id, "meta");
+  batch.Put("_chrome-extension://" + both_extension_id + "\x00key1"s, "value1");
 
   std::string move_extension_id = kMoveExtensionId;
   batch.Put("META:chrome-extension://" + move_extension_id, "meta");
@@ -98,8 +118,12 @@ void SetUpStateStore(const base::FilePath& path,
   leveldb::WriteBatch batch;
   std::string keep_extension_id =
       browser_data_migrator_util::kExtensionsAshOnly[0];
+  std::string both_extension_id =
+      browser_data_migrator_util::kExtensionsBothChromes[0];
   batch.Put(keep_extension_id + ".key1", "value1");
   batch.Put(keep_extension_id + ".key2", "value2");
+  batch.Put(both_extension_id + ".key1", "value1");
+  batch.Put(both_extension_id + ".key2", "value2");
   batch.Put(std::string(kMoveExtensionId) + ".key1", "value1");
   batch.Put(std::string(kMoveExtensionId) + ".key2", "value2");
 
@@ -107,6 +131,57 @@ void SetUpStateStore(const base::FilePath& path,
   write_options.sync = true;
   status = db->Write(write_options, &batch);
   ASSERT_TRUE(status.ok());
+}
+
+// Prepare Sync Data LevelDB.
+void SetUpSyncData(const base::FilePath& path,
+                   std::unique_ptr<leveldb::DB>& db) {
+  leveldb_env::Options options;
+  options.create_if_missing = true;
+  leveldb::Status status = leveldb_env::OpenDB(options, path.value(), &db);
+  ASSERT_TRUE(status.ok());
+
+  leveldb::WriteBatch batch;
+  const syncer::ModelType lacros_dt =
+      browser_data_migrator_util::kLacrosSyncDataTypes[0];
+
+  batch.Put(syncer::FormatDataPrefix(lacros_dt) + kMoveExtensionId,
+            "lacros_data");
+  batch.Put(syncer::FormatMetaPrefix(lacros_dt) + kMoveExtensionId,
+            "lacros_metadata");
+  batch.Put(syncer::FormatGlobalMetadataKey(lacros_dt),
+            "lacros_globalmetadata");
+
+  batch.Put(syncer::FormatDataPrefix(kAshSyncDataType) + kMoveExtensionId,
+            "ash_data");
+  batch.Put(syncer::FormatMetaPrefix(kAshSyncDataType) + kMoveExtensionId,
+            "ash_metadata");
+  batch.Put(syncer::FormatGlobalMetadataKey(kAshSyncDataType),
+            "ash_globalmetadata");
+
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+  status = db->Write(write_options, &batch);
+  ASSERT_TRUE(status.ok());
+}
+
+// Return all the key-value pairs in a LevelDB.
+std::map<std::string, std::string> ReadLevelDB(const base::FilePath& path) {
+  leveldb_env::Options options;
+  options.create_if_missing = false;
+
+  std::unique_ptr<leveldb::DB> db;
+  leveldb::Status status = leveldb_env::OpenDB(options, path.value(), &db);
+  EXPECT_TRUE(status.ok());
+
+  std::map<std::string, std::string> db_map;
+  std::unique_ptr<leveldb::Iterator> it(
+      db->NewIterator(leveldb::ReadOptions()));
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    db_map.emplace(it->key().ToString(), it->value().ToString());
+  }
+
+  return db_map;
 }
 
 }  // namespace
@@ -214,11 +289,18 @@ TEST(BrowserDataMigratorUtilTest, GetExtensionKeys) {
 
   std::string keep_extension_id =
       browser_data_migrator_util::kExtensionsAshOnly[0];
+  std::string both_extension_id =
+      browser_data_migrator_util::kExtensionsBothChromes[0];
   ExtensionKeys expected_keys = {
       {keep_extension_id,
        {
            "META:chrome-extension://" + keep_extension_id,
            "_chrome-extension://" + keep_extension_id + "\x00key1"s,
+       }},
+      {both_extension_id,
+       {
+           "META:chrome-extension://" + both_extension_id,
+           "_chrome-extension://" + both_extension_id + "\x00key1"s,
        }},
       {kMoveExtensionId,
        {
@@ -241,6 +323,11 @@ TEST(BrowserDataMigratorUtilTest, GetExtensionKeys) {
        {
            keep_extension_id + ".key1",
            keep_extension_id + ".key2",
+       }},
+      {both_extension_id,
+       {
+           both_extension_id + ".key1",
+           both_extension_id + ".key2",
        }},
       {kMoveExtensionId,
        {
@@ -282,11 +369,18 @@ TEST(BrowserDataMigratorUtilTest, MigrateLevelDB) {
 
   std::string keep_extension_id =
       browser_data_migrator_util::kExtensionsAshOnly[0];
+  std::string both_extension_id =
+      browser_data_migrator_util::kExtensionsBothChromes[0];
   ExtensionKeys expected_keys = {
       {keep_extension_id,
        {
            "META:chrome-extension://" + keep_extension_id,
            "_chrome-extension://" + keep_extension_id + "\x00key1"s,
+       }},
+      {both_extension_id,
+       {
+           "META:chrome-extension://" + both_extension_id,
+           "_chrome-extension://" + both_extension_id + "\x00key1"s,
        }},
   };
   EXPECT_EQ(expected_keys, keys);
@@ -315,8 +409,53 @@ TEST(BrowserDataMigratorUtilTest, MigrateLevelDB) {
            keep_extension_id + ".key1",
            keep_extension_id + ".key2",
        }},
+      {both_extension_id,
+       {
+           both_extension_id + ".key1",
+           both_extension_id + ".key2",
+       }},
   };
   EXPECT_EQ(expected_keys, keys);
+}
+
+TEST(BrowserDataMigratorUtilTest, MigrateSyncData) {
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  // Prepare Sync Data LevelDB.
+  std::unique_ptr<leveldb::DB> db;
+  const base::FilePath db_path =
+      scoped_temp_dir.GetPath().Append(FILE_PATH_LITERAL("syncdata"));
+  SetUpSyncData(db_path, db);
+  db.reset();
+
+  // Migrate Sync Data.
+  const base::FilePath ash_db_path = db_path.AddExtension(".ash");
+  const base::FilePath lacros_db_path = db_path.AddExtension(".lacros");
+  EXPECT_TRUE(MigrateSyncData(db_path, ash_db_path, lacros_db_path));
+
+  // Check resulting Ash database.
+  auto ash_db_map = ReadLevelDB(ash_db_path);
+  std::map<std::string, std::string> expected_ash_db_map = {
+      {syncer::FormatDataPrefix(kAshSyncDataType) + kMoveExtensionId,
+       "ash_data"},
+      {syncer::FormatMetaPrefix(kAshSyncDataType) + kMoveExtensionId,
+       "ash_metadata"},
+      {syncer::FormatGlobalMetadataKey(kAshSyncDataType), "ash_globalmetadata"},
+  };
+  EXPECT_EQ(expected_ash_db_map, ash_db_map);
+
+  // Check resulting Lacros database.
+  auto lacros_db_map = ReadLevelDB(lacros_db_path);
+  const syncer::ModelType lacros_dt =
+      browser_data_migrator_util::kLacrosSyncDataTypes[0];
+  std::map<std::string, std::string> expected_lacros_db_map = {
+      {syncer::FormatDataPrefix(lacros_dt) + kMoveExtensionId, "lacros_data"},
+      {syncer::FormatMetaPrefix(lacros_dt) + kMoveExtensionId,
+       "lacros_metadata"},
+      {syncer::FormatGlobalMetadataKey(lacros_dt), "lacros_globalmetadata"},
+  };
+  EXPECT_EQ(expected_lacros_db_map, lacros_db_map);
 }
 
 TEST(BrowserDataMigratorUtilTest, RecordUserDataSize) {
@@ -649,31 +788,39 @@ TEST_F(BrowserDataMigratorUtilWithTargetsTest, DryRunToCollectUMA) {
 TEST(BrowserDataMigratorUtilTest, UpdatePreferencesKeyByType) {
   const std::string keep_extension_dict_key =
       std::string("extensions.settings.") + kExtensionsAshOnly[0];
+  const std::string both_extension_dict_key =
+      std::string("extensions.settings.") + kExtensionsBothChromes[0];
   const std::string move_extension_dict_key =
       std::string("extensions.settings.") + kMoveExtensionId;
 
   base::Value::List extension_list;
   extension_list.Append(kExtensionsAshOnly[0]);
+  extension_list.Append(kExtensionsBothChromes[0]);
   extension_list.Append(kMoveExtensionId);
   const std::string extension_list_key = "extensions.pinned_extensions";
 
   // List of dictionaries instead of list of strings as expected.
   // {"extensions.toolbar": [
   //   { <kExtensionsAshOnly[0]> : "test1"},
-  //   { <kMoveExtensionId> : "test2"},
+  //   { <kExtensionsBothChromes[0]> : "test2"},
+  //   { <kMoveExtensionId> : "test3"},
   // ]}
   base::Value::Dict wrong_type_value1;
   wrong_type_value1.Set(kExtensionsAshOnly[0], "test1");
   base::Value::Dict wrong_type_value2;
-  wrong_type_value2.Set(kMoveExtensionId, "test2");
+  wrong_type_value2.Set(kExtensionsBothChromes[0], "test2");
+  base::Value::Dict wrong_type_value3;
+  wrong_type_value3.Set(kMoveExtensionId, "test3");
   base::Value::List wrong_type_list;
   wrong_type_list.Append(std::move(wrong_type_value1));
   wrong_type_list.Append(std::move(wrong_type_value2));
+  wrong_type_list.Append(std::move(wrong_type_value3));
   const std::string wrong_type_key = "extensions.toolbar";
 
   base::Value::Dict ash_dict;
   ash_dict.SetByDottedPath(keep_extension_dict_key, "test1");
-  ash_dict.SetByDottedPath(move_extension_dict_key, "test2");
+  ash_dict.SetByDottedPath(both_extension_dict_key, "test2");
+  ash_dict.SetByDottedPath(move_extension_dict_key, "test3");
   ash_dict.SetByDottedPath(extension_list_key, std::move(extension_list));
   ash_dict.SetByDottedPath(wrong_type_key, std::move(wrong_type_list));
   base::Value::Dict lacros_dict = ash_dict.Clone();
@@ -685,32 +832,34 @@ TEST(BrowserDataMigratorUtilTest, UpdatePreferencesKeyByType) {
 
   // Test Ash against expected results.
   base::Value::Dict* d = ash_dict.FindDictByDottedPath("extensions.settings");
-  EXPECT_NE(nullptr, d);
-  EXPECT_EQ(1, d->size());
-  EXPECT_EQ(kExtensionsAshOnly[0], d->begin()->first);
+  std::set<std::string> expected_keys = {kExtensionsAshOnly[0],
+                                         kExtensionsBothChromes[0]};
+  EXPECT_EQ(expected_keys, CollectDictKeys(d));
   // If a type other than string is found in a list, it will be left unchanged.
   base::Value::List* l = ash_dict.FindListByDottedPath(wrong_type_key);
   EXPECT_NE(nullptr, l);
-  EXPECT_EQ(2, l->size());
+  EXPECT_EQ(3, l->size());
 
   // Test Lacros against expected results.
   d = lacros_dict.FindDictByDottedPath("extensions.settings");
-  EXPECT_NE(nullptr, d);
-  EXPECT_EQ(1, d->size());
-  EXPECT_EQ(kMoveExtensionId, d->begin()->first);
+  expected_keys = {kExtensionsBothChromes[0], kMoveExtensionId};
+  EXPECT_EQ(expected_keys, CollectDictKeys(d));
   l = lacros_dict.FindListByDottedPath(wrong_type_key);
   EXPECT_NE(nullptr, l);
-  EXPECT_EQ(2, l->size());
+  EXPECT_EQ(3, l->size());
 }
 
 TEST(BrowserDataMigratorUtilTest, MigratePreferencesContents) {
   const std::string keep_extension_dict_key =
       std::string("extensions.settings.") + kExtensionsAshOnly[0];
+  const std::string both_extension_dict_key =
+      std::string("extensions.settings.") + kExtensionsBothChromes[0];
   const std::string move_extension_dict_key =
       std::string("extensions.settings.") + kMoveExtensionId;
 
   base::Value::List extension_list;
   extension_list.Append(kExtensionsAshOnly[0]);
+  extension_list.Append(kExtensionsBothChromes[0]);
   extension_list.Append(kMoveExtensionId);
   const std::string extension_list_key = "extensions.pinned_extensions";
 
@@ -743,8 +892,9 @@ TEST(BrowserDataMigratorUtilTest, MigratePreferencesContents) {
   base::Value::List* ash_extension_list =
       ash_root_dict->FindListByDottedPath(extension_list_key);
   EXPECT_NE(nullptr, ash_extension_list);
-  EXPECT_EQ(1, ash_extension_list->size());
-  EXPECT_EQ(kExtensionsAshOnly[0], ash_extension_list->front().GetString());
+  EXPECT_EQ(2, ash_extension_list->size());
+  EXPECT_EQ(kExtensionsAshOnly[0], (*ash_extension_list)[0].GetString());
+  EXPECT_EQ(kExtensionsBothChromes[0], (*ash_extension_list)[1].GetString());
 
   absl::optional<base::Value> lacros_root =
       base::JSONReader::Read(contents->lacros);
@@ -764,8 +914,9 @@ TEST(BrowserDataMigratorUtilTest, MigratePreferencesContents) {
   base::Value::List* lacros_extension_list =
       lacros_root_dict->FindListByDottedPath(extension_list_key);
   EXPECT_NE(nullptr, lacros_extension_list);
-  EXPECT_EQ(1, lacros_extension_list->size());
-  EXPECT_EQ(kMoveExtensionId, lacros_extension_list->front().GetString());
+  EXPECT_EQ(2, lacros_extension_list->size());
+  EXPECT_EQ(kExtensionsBothChromes[0], (*lacros_extension_list)[0].GetString());
+  EXPECT_EQ(kMoveExtensionId, (*lacros_extension_list)[1].GetString());
 }
 
 TEST(BrowserDataMigratorUtilTest, MigratePreferences) {

@@ -682,7 +682,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       WGPUBuffer buffer = procs_.deviceCreateBuffer(device_, &buffer_desc);
 
       // Read back the Skia image contents into the staging buffer.
-      void* dst_pointer = procs_.bufferGetMappedRange(buffer, 0, 0);
+      void* dst_pointer =
+          procs_.bufferGetMappedRange(buffer, 0, WGPU_WHOLE_MAP_SIZE);
       DCHECK(dst_pointer);
       if (!sk_image->readPixels(shared_context_state_->gr_context(),
                                 sk_image->imageInfo(), dst_pointer,
@@ -696,10 +697,10 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
       // Transition the image back to the desired end state. This is used for
       // transitioning the image to the external queue for Vulkan/GL interop.
-      if (scoped_read_access->end_state()) {
+      if (auto end_state = scoped_read_access->TakeEndState()) {
         if (!shared_context_state_->gr_context()->setBackendTextureState(
                 scoped_read_access->promise_image_texture()->backendTexture(),
-                *scoped_read_access->end_state())) {
+                *end_state)) {
           DLOG(ERROR) << "setBackendTextureState() failed.";
           return false;
         }
@@ -840,7 +841,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
         procs_.bufferRelease(buffer);
         return false;
       }
-      const void* data = procs_.bufferGetConstMappedRange(buffer, 0, 0);
+      const void* data =
+          procs_.bufferGetConstMappedRange(buffer, 0, WGPU_WHOLE_MAP_SIZE);
       DCHECK(data);
       surface->writePixels(SkPixmap(surface->imageInfo(), data, bytes_per_row),
                            /*x*/ 0, /*y*/ 0);
@@ -849,11 +851,10 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
       // Transition the image back to the desired end state. This is used for
       // transitioning the image to the external queue for Vulkan/GL interop.
-      if (scoped_write_access->end_state()) {
+      if (auto end_state = scoped_write_access->TakeEndState()) {
         // It's ok to pass in empty GrFlushInfo here since SignalSemaphores()
         // will populate it with semaphores and call GrDirectContext::flush.
-        scoped_write_access->surface()->flush(/*info=*/{},
-                                              scoped_write_access->end_state());
+        scoped_write_access->surface()->flush(/*info=*/{}, end_state.get());
       }
 
       SignalSemaphores(std::move(end_semaphores));
@@ -1040,7 +1041,8 @@ ContextResult WebGPUDecoderImpl::Initialize(
   }
 
   if (use_webgpu_adapter_ == WebGPUAdapterName::kCompat) {
-    gl_surface_ = new gl::SurfacelessEGL(gfx::Size(1, 1));
+    gl_surface_ = new gl::SurfacelessEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(),
+                                         gfx::Size(1, 1));
     gl::GLContextAttribs attribs;
     attribs.client_major_es_version = 3;
     attribs.client_minor_es_version = 1;
@@ -1677,7 +1679,7 @@ WebGPUDecoderImpl::AssociateMailboxDawn(const Mailbox& mailbox,
     return nullptr;
   }
 
-#if !BUILDFLAG(IS_WIN)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS)
   if (usage & WGPUTextureUsage_StorageBinding) {
     DLOG(ERROR) << "AssociateMailbox: WGPUTextureUsage_StorageBinding is NOT "
                    "supported yet.";

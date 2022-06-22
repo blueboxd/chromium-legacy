@@ -33,6 +33,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/language/core/browser/language_usage_metrics.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace autofill {
 
@@ -42,6 +43,9 @@ namespace {
 
 // Exponential bucket spacing for UKM event data.
 constexpr double kAutofillEventDataBucketSpacing = 2.0;
+
+// Overflow bucket for form user interactions
+constexpr int64_t kFormUserInteractionsOverflowBucket = 20;
 
 // Translates structured name types into simple names that are used for
 // naming histograms.
@@ -1093,17 +1097,6 @@ void AutofillMetrics::LogCreditCardUploadFeedbackMetric(
   DCHECK_LT(metric, NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardUploadFeedback", metric,
                             NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
-}
-
-// static
-void AutofillMetrics::LogManageCardsPromptMetric(ManageCardsPromptMetric metric,
-                                                 bool is_upload_save) {
-  DCHECK_LT(metric, NUM_MANAGE_CARDS_PROMPT_METRICS);
-  std::string destination = is_upload_save ? ".Upload" : ".Local";
-  std::string metric_with_destination =
-      "Autofill.ManageCardsPrompt" + destination;
-  base::UmaHistogramEnumeration(metric_with_destination, metric,
-                                NUM_MANAGE_CARDS_PROMPT_METRICS);
 }
 
 // static
@@ -2388,7 +2381,8 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
     const DenseSet<FormType>& form_types,
     const base::TimeTicks& form_parsed_timestamp,
     FormSignature form_signature,
-    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
+    const FormInteractionCounts& form_interaction_counts) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.FormSubmittedState", state,
                             AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE);
 
@@ -2424,7 +2418,7 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
   }
   form_interactions_ukm_logger->LogFormSubmitted(
       is_for_credit_card, has_upi_vpa_field, form_types, state,
-      form_parsed_timestamp, form_signature);
+      form_parsed_timestamp, form_signature, form_interaction_counts);
 }
 
 // static
@@ -2671,12 +2665,6 @@ void AutofillMetrics::LogCreditCardSeamlessnessAtSubmissionTime(
         "Autofill.CreditCard.SeamlessFills.AtSubmissionTime",
         seamlessness.QualitativeMetric());
   }
-}
-
-// static
-void AutofillMetrics::LogDetermineHeuristicTypesTiming(
-    const base::TimeDelta& duration) {
-  UMA_HISTOGRAM_TIMES("Autofill.Timing.DetermineHeuristicTypes", duration);
 }
 
 // static
@@ -3081,7 +3069,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
     const DenseSet<FormType>& form_types,
     AutofillFormSubmittedState state,
     const base::TimeTicks& form_parsed_timestamp,
-    FormSignature form_signature) {
+    FormSignature form_signature,
+    const FormInteractionCounts& form_interaction_counts) {
   if (!CanLog())
     return;
 
@@ -3090,7 +3079,14 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
       .SetIsForCreditCard(is_for_credit_card)
       .SetHasUpiVpaField(has_upi_vpa_field)
       .SetFormTypes(FormTypesToBitVector(form_types))
-      .SetFormSignature(HashFormSignature(form_signature));
+      .SetFormSignature(HashFormSignature(form_signature))
+      .SetFormElementUserModifications(
+          std::min(form_interaction_counts.form_element_user_modifications,
+                   kFormUserInteractionsOverflowBucket))
+      .SetAutofillFills(std::min(form_interaction_counts.autofill_fills,
+                                 kFormUserInteractionsOverflowBucket))
+      .SetAutocompleteFills(std::min(form_interaction_counts.autocomplete_fills,
+                                     kFormUserInteractionsOverflowBucket));
   if (form_parsed_timestamp.is_null())
     DCHECK(state == NON_FILLABLE_FORM_OR_NEW_DATA ||
            state == FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS)
@@ -3402,10 +3398,9 @@ void AutofillMetrics::LogRemovedSettingInaccessibleFields(bool did_remove) {
 
 // static
 void AutofillMetrics::LogRemovedSettingInaccessibleField(
-    const std::string& country_code,
     ServerFieldType field) {
   base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.InaccessibleFieldsRemoved." + country_code,
+      "Autofill.ProfileImport.InaccessibleFieldsRemoved.ByFieldType",
       ConvertSettingsVisibleFieldTypeForMetrics(field));
 }
 

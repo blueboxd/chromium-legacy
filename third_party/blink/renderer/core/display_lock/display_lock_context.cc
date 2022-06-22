@@ -372,7 +372,8 @@ bool DisplayLockContext::ShouldPrePaintChildren() const {
 bool DisplayLockContext::ShouldPaintChildren() const {
   // Note that forced updates should never require us to paint, so we don't
   // check |forced_info_| here.
-  return !is_locked_;
+  return !is_locked_ || (element_->GetLayoutObject() &&
+                         element_->GetLayoutObject()->IsShapingDeferred());
 }
 // End Should* and Did* functions ==============================================
 
@@ -901,6 +902,12 @@ void DisplayLockContext::ScheduleTopLayerCheck() {
   ScheduleAnimation();
 }
 
+bool DisplayLockContext::IsShapingDeferred() const {
+  if (const auto* layout_object = element_->GetLayoutObject())
+    return layout_object->IsShapingDeferred();
+  return false;
+}
+
 void DisplayLockContext::ScheduleAnimation() {
   DCHECK(element_);
   if (!ConnectedToView() || !document_ || !document_->GetPage())
@@ -947,8 +954,10 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
     if (!object_element->UseFallbackContent())
       return nullptr;
   } else if (IsA<HTMLImageElement>(*element_) ||
-             element_->IsFormControlElement() || element_->IsMediaElement() ||
-             element_->IsFrameOwnerElement() || element_->IsSVGElement()) {
+             (element_->IsFormControlElement() &&
+              !element_->IsOutputElement()) ||
+             element_->IsMediaElement() || element_->IsFrameOwnerElement() ||
+             element_->IsSVGElement()) {
     return nullptr;
   }
 

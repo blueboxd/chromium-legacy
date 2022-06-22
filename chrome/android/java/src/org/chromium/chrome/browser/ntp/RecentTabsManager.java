@@ -8,7 +8,9 @@ import android.content.Context;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.invalidation.SessionsInvalidationManager;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
@@ -33,7 +35,9 @@ import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.url.GURL;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides the domain logic and data for RecentTabsPage and RecentTabsRowAdapter.
@@ -50,7 +54,7 @@ public class RecentTabsManager implements SyncService.SyncStateChangedListener, 
         void onUpdated();
     }
 
-    private static final int RECENTLY_CLOSED_MAX_TAB_COUNT = 5;
+    private static final int RECENTLY_CLOSED_MAX_ENTRY_COUNT = 5;
 
     private static RecentlyClosedTabManager sRecentlyClosedTabManagerForTests;
 
@@ -64,7 +68,7 @@ public class RecentTabsManager implements SyncService.SyncStateChangedListener, 
     private FaviconHelper mFaviconHelper;
     private ForeignSessionHelper mForeignSessionHelper;
     private List<ForeignSession> mForeignSessions;
-    private List<RecentlyClosedTab> mRecentlyClosedTabs;
+    private List<RecentlyClosedEntry> mRecentlyClosedEntries;
     private RecentTabsPagePrefs mPrefs;
     private RecentlyClosedTabManager mRecentlyClosedTabManager;
     private SigninManager mSignInManager;
@@ -74,6 +78,15 @@ public class RecentTabsManager implements SyncService.SyncStateChangedListener, 
     private final ProfileDataCache mProfileDataCache;
     private final SigninPromoController mSigninPromoController;
     private final SyncService mSyncService;
+
+    /**
+     * Maps Session IDs to whether that entry was restored split by entry type. These are used to
+     * record historgrams on {@link #destroy()} to measure restore ratio. Cached Session IDs are
+     * used to de-duplicate as update would otherwise result in incorrect metrics.
+     */
+    private final Map<Integer, Boolean> mTabSessionIdsRestored = new HashMap<>();
+    private final Map<Integer, Boolean> mGroupSessionIdsRestored = new HashMap<>();
+    private final Map<Integer, Boolean> mBulkSessionIdsRestored = new HashMap<>();
 
     /**
      * Create an RecentTabsManager to be used with RecentTabsPage and RecentTabsRowAdapter.
@@ -119,11 +132,40 @@ public class RecentTabsManager implements SyncService.SyncStateChangedListener, 
         SessionsInvalidationManager.get(mProfile).onRecentTabsPageOpened();
     }
 
+    private static int countSessionIdsRestored(Map<Integer, Boolean> sessionIdToRestoredState) {
+        int count = 0;
+        for (Boolean state : sessionIdToRestoredState.values()) {
+            count += (state) ? 1 : 0;
+        }
+        return count;
+    }
+
+    private static void recordEntries(
+            String entryType, Map<Integer, Boolean> sessionIdToRestoredState) {
+        final int shownCount = sessionIdToRestoredState.size();
+        RecordHistogram.recordCount1000Histogram(
+                "Tabs.RecentlyClosed.EntriesShownInPage." + entryType, shownCount);
+        if (shownCount > 0) {
+            final int restoredCount = countSessionIdsRestored(sessionIdToRestoredState);
+            RecordHistogram.recordCount1000Histogram(
+                    "Tabs.RecentlyClosed.EntriesRestoredInPage." + entryType, restoredCount);
+            final int percentRestored = Math.round((restoredCount * 100.0f) / shownCount);
+            RecordHistogram.recordPercentageHistogram(
+                    "Tabs.RecentlyClosed.PercentOfEntriesRestoredInPage." + entryType,
+                    percentRestored);
+        }
+    }
+
     /**
      * Should be called when this object is no longer needed. Performs necessary listener tear down.
      */
     public void destroy() {
         mIsDestroyed = true;
+
+        recordEntries("Tab", mTabSessionIdsRestored);
+        recordEntries("Group", mGroupSessionIdsRestored);
+        recordEntries("Bulk", mBulkSessionIdsRestored);
+
         mSyncService.removeSyncStateChangedListener(this);
 
         mSignInManager.removeSignInStateObserver(this);
@@ -150,8 +192,27 @@ public class RecentTabsManager implements SyncService.SyncStateChangedListener, 
     }
 
     private void updateRecentlyClosedEntries() {
-        mRecentlyClosedTabs =
-                mRecentlyClosedTabManager.getRecentlyClosedTabs(RECENTLY_CLOSED_MAX_TAB_COUNT);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.BULK_TAB_RESTORE)) {
+            mRecentlyClosedEntries = mRecentlyClosedTabManager.getRecentlyClosedEntries(
+                    RECENTLY_CLOSED_MAX_ENTRY_COUNT);
+        } else {
+            mRecentlyClosedEntries =
+                    (List<RecentlyClosedEntry>) (List<? extends RecentlyClosedEntry>)
+                            mRecentlyClosedTabManager.getRecentlyClosedTabs(
+                                    RECENTLY_CLOSED_MAX_ENTRY_COUNT);
+        }
+        for (RecentlyClosedEntry entry : mRecentlyClosedEntries) {
+            if (entry instanceof RecentlyClosedTab
+                    && !mTabSessionIdsRestored.containsKey(entry.getSessionId())) {
+                mTabSessionIdsRestored.put(entry.getSessionId(), false);
+            } else if (entry instanceof RecentlyClosedGroup
+                    && !mGroupSessionIdsRestored.containsKey(entry.getSessionId())) {
+                mGroupSessionIdsRestored.put(entry.getSessionId(), false);
+            } else if (entry instanceof RecentlyClosedBulkEvent
+                    && !mBulkSessionIdsRestored.containsKey(entry.getSessionId())) {
+                mBulkSessionIdsRestored.put(entry.getSessionId(), false);
+            }
+        }
         onUpdateDone();
     }
 
@@ -170,8 +231,8 @@ public class RecentTabsManager implements SyncService.SyncStateChangedListener, 
     /**
      * @return Most up-to-date list of recently closed tabs.
      */
-    public List<RecentlyClosedTab> getRecentlyClosedTabs() {
-        return mRecentlyClosedTabs;
+    public List<RecentlyClosedEntry> getRecentlyClosedEntries() {
+        return mRecentlyClosedEntries;
     }
 
     /**
@@ -197,9 +258,31 @@ public class RecentTabsManager implements SyncService.SyncStateChangedListener, 
      */
     public void openRecentlyClosedTab(RecentlyClosedTab tab, int windowDisposition) {
         if (mIsDestroyed) return;
+        mTabSessionIdsRestored.put(tab.getSessionId(), true);
         RecordUserAction.record("MobileRecentTabManagerRecentTabOpened");
         // Window disposition will select which tab to open.
         mRecentlyClosedTabManager.openRecentlyClosedTab(getTabModel(), tab, windowDisposition);
+    }
+
+    /**
+     * Restores a recently closed entry. Use {@link #openRecentlyClosedTab()} for single tabs..
+     *
+     * @param entry The entry to open.
+     */
+    public void openRecentlyClosedEntry(RecentlyClosedEntry entry) {
+        if (mIsDestroyed) return;
+
+        assert !(entry instanceof RecentlyClosedTab)
+            : "Opening a RecentlyClosedTab should use openRecentlyClosedTab().";
+
+        if (entry instanceof RecentlyClosedGroup) {
+            mGroupSessionIdsRestored.put(entry.getSessionId(), true);
+            RecordUserAction.record("MobileRecentTabManagerRecentGroupOpened");
+        } else if (entry instanceof RecentlyClosedBulkEvent) {
+            mBulkSessionIdsRestored.put(entry.getSessionId(), true);
+            RecordUserAction.record("MobileRecentTabManagerRecentBulkEventOpened");
+        }
+        mRecentlyClosedTabManager.openRecentlyClosedEntry(getTabModel(), entry);
     }
 
     /**
@@ -312,6 +395,7 @@ public class RecentTabsManager implements SyncService.SyncStateChangedListener, 
      */
     public void clearRecentlyClosedEntries() {
         if (mIsDestroyed) return;
+        RecordUserAction.record("MobileRecentTabManagerRecentTabsCleared");
         mRecentlyClosedTabManager.clearRecentlyClosedEntries();
     }
 

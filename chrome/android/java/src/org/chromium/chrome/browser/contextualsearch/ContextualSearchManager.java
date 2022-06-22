@@ -313,8 +313,8 @@ public class ContextualSearchManager
         };
 
         mFullscreenManager.addObserver(mFullscreenObserver);
-        mSelectionController = new ContextualSearchSelectionController(
-                activity, this, mTabSupplier, mBrowserControlsStateProvider);
+        mSelectionController =
+                new ContextualSearchSelectionController(activity, this, mTabSupplier);
         mNetworkCommunicator = this;
         mPolicy = new ContextualSearchPolicy(mSelectionController, mNetworkCommunicator);
         mTranslateController = new ContextualSearchTranslationImpl();
@@ -908,7 +908,6 @@ public class ContextualSearchManager
             if (mSearchPanel.isContentShowing() || shouldPreload) {
                 loadSearchUrl();
             }
-            mPolicy.logSearchTermResolutionDetails(searchTerm);
         }
     }
 

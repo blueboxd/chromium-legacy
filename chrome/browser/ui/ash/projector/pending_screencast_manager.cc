@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "ash/projector/projector_metrics.h"
 #include "ash/public/cpp/projector/projector_controller.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -117,8 +118,12 @@ ash::PendingScreencastSet ProcessAndGenerateNewScreencasts(
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // The valid screencasts set.
   ash::PendingScreencastSet screencasts;
-  if (!base::PathExists(drivefs_mounted_point))
+
+  if (!base::PathExists(drivefs_mounted_point) ||
+      (pending_webm_or_projector_events.empty() &&
+       error_syncing_file.empty())) {
     return screencasts;
+  }
 
   // A map of container directory path to pending screencast. Each screencast
   // has a unique container directory path in DriveFS.
@@ -178,7 +183,7 @@ ash::PendingScreencastSet ProcessAndGenerateNewScreencasts(
 
 }  // namespace
 
-PendingSreencastManager::PendingSreencastManager(
+PendingScreencastManager::PendingScreencastManager(
     PendingScreencastChangeCallback pending_screencast_change_callback)
     : pending_screencast_change_callback_(pending_screencast_change_callback),
       blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
@@ -193,14 +198,14 @@ PendingSreencastManager::PendingSreencastManager(
     session_state_observation_.Observe(user_manager);
 }
 
-PendingSreencastManager::~PendingSreencastManager() = default;
+PendingScreencastManager::~PendingScreencastManager() = default;
 
-bool PendingSreencastManager::IsDriveFsObservationObservingSource(
+bool PendingScreencastManager::IsDriveFsObservationObservingSource(
     drivefs::DriveFsHost* source) const {
   return drivefs_observation_.IsObservingSource(source);
 }
 
-void PendingSreencastManager::OnUnmounted() {
+void PendingScreencastManager::OnUnmounted() {
   if (!pending_screencast_cache_.empty()) {
     pending_screencast_cache_.clear();
     // Since DriveFS is unmounted, screencasts stop uploading. Notifies pending
@@ -218,7 +223,7 @@ void PendingSreencastManager::OnUnmounted() {
 // screencast list.
 // TODO(b/200343894): OnSyncingStatusUpdate() gets called for both upload and
 // download event. Find a way to filter out the upload event.
-void PendingSreencastManager::OnSyncingStatusUpdate(
+void PendingScreencastManager::OnSyncingStatusUpdate(
     const drivefs::mojom::SyncingStatus& status) {
   drive::DriveIntegrationService* drivefs_integration =
       GetDriveIntegrationServiceForActiveProfile();
@@ -243,6 +248,14 @@ void PendingSreencastManager::OnSyncingStatusUpdate(
         drivefs::mojom::ItemEvent(*event.get()));
   }
 
+  // If the `pending_webm_or_projector_events`, `error_syncing_files_` and
+  // `pending_screencast_cache_` are empty, return early because the syncing may
+  // be triggered by files that are not related to Projector.
+  if (pending_webm_or_projector_events.empty() &&
+      error_syncing_files_.empty() && pending_screencast_cache_.empty()) {
+    return;
+  }
+
   // The `task` is a blocking I/O operation while `reply` runs on current
   // thread.
   // TODO(b/223668878) OnSyncingStatusUpdate might get called multiple times
@@ -254,8 +267,9 @@ void PendingSreencastManager::OnSyncingStatusUpdate(
                      error_syncing_files_,
                      drivefs_integration->GetMountPointPath()),
       base::BindOnce(
-          &PendingSreencastManager::OnProcessAndGenerateNewScreencastsFinished,
-          weak_ptr_factory_.GetWeakPtr()));
+          &PendingScreencastManager::OnProcessAndGenerateNewScreencastsFinished,
+          weak_ptr_factory_.GetWeakPtr(),
+          /*task_start_tick=*/base::TimeTicks::Now()));
 }
 
 // Observes the Drive OnError event and add the related files to
@@ -263,7 +277,8 @@ void PendingSreencastManager::OnSyncingStatusUpdate(
 // OnSyncingStatusUpdate because the drivefs::mojom::SyncingStatus contains the
 // info about the file completed uploaded or not and other files status for the
 // same screencast.
-void PendingSreencastManager::OnError(const drivefs::mojom::DriveError& error) {
+void PendingScreencastManager::OnError(
+    const drivefs::mojom::DriveError& error) {
   base::FilePath error_file = base::FilePath(error.path);
   // mojom::DriveError::Type has 2 types: kCantUploadStorageFull and
   // kPinningFailedDiskFull. Only handle kCantUploadStorageFull so far.
@@ -275,12 +290,16 @@ void PendingSreencastManager::OnError(const drivefs::mojom::DriveError& error) {
 }
 
 const ash::PendingScreencastSet&
-PendingSreencastManager::GetPendingScreencasts() const {
+PendingScreencastManager::GetPendingScreencasts() const {
   return pending_screencast_cache_;
 }
 
-void PendingSreencastManager::OnProcessAndGenerateNewScreencastsFinished(
+void PendingScreencastManager::OnProcessAndGenerateNewScreencastsFinished(
+    const base::TimeTicks task_start_tick,
     const ash::PendingScreencastSet& screencasts) {
+  ash::RecordPendingScreencastBatchIOTaskDuration(base::TimeTicks::Now() -
+                                                  task_start_tick);
+
   // Returns if pending screencasts didn't change.
   if (screencasts == pending_screencast_cache_)
     return;
@@ -290,11 +309,12 @@ void PendingSreencastManager::OnProcessAndGenerateNewScreencastsFinished(
   pending_screencast_change_callback_.Run(pending_screencast_cache_);
 }
 
-void PendingSreencastManager::OnUserProfileLoaded(const AccountId& account_id) {
+void PendingScreencastManager::OnUserProfileLoaded(
+    const AccountId& account_id) {
   MaybeSwitchDriveFsObservation();
 }
 
-void PendingSreencastManager::ActiveUserChanged(
+void PendingScreencastManager::ActiveUserChanged(
     user_manager::User* active_user) {
   // After user login, the first ActiveUserChanged() might be called before
   // profile is loaded.
@@ -304,7 +324,7 @@ void PendingSreencastManager::ActiveUserChanged(
   MaybeSwitchDriveFsObservation();
 }
 
-void PendingSreencastManager::MaybeSwitchDriveFsObservation() {
+void PendingScreencastManager::MaybeSwitchDriveFsObservation() {
   auto* profile = ProfileManager::GetActiveUserProfile();
 
   if (!IsProjectorAllowedForProfile(profile))

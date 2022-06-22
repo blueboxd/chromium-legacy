@@ -43,9 +43,13 @@ bool IsHardwareMirrorModeEnabled() {
   return base::FeatureList::IsEnabled(kEnableHardwareMirrorMode);
 }
 
-#if BUILDFLAG(IS_MAC)
-const base::Feature kForce60Hz{"Force60Hz", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+// A temporary flag to require Content Protection to use provisioned key as the
+// kernel doesn't expose that it requires this yet.(b/112172923)
+const base::Feature kRequireHdcpKeyProvisioning{
+    "RequireHdcpKeyProvisioning", base::FEATURE_DISABLED_BY_DEFAULT};
+bool IsHdcpKeyProvisioningRequired() {
+  return base::FeatureList::IsEnabled(kRequireHdcpKeyProvisioning);
+}
 
 }  // namespace features
 }  // namespace display

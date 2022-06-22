@@ -106,7 +106,8 @@ _CONFIG = [
             'base::WrapRefCounted',
             'base::WritableSharedMemoryMapping',
             'base::as_bytes',
-            'base::in_place',
+            'base::bit_cast',
+            'absl::in_place',
             'absl::make_optional',
             'base::make_span',
             'absl::nullopt',
@@ -192,9 +193,6 @@ _CONFIG = [
             'base::SafeUnsignedAbs',
             'base::StrictNumeric',
 
-            # //base/strings/char_traits.h.
-            'base::CharTraits',
-
             # //base/synchronization/lock.h.
             'base::AutoLock',
             'base::AutoUnlock',
@@ -274,6 +272,7 @@ _CONFIG = [
             'base::Feature.*',
             'base::FEATURE_.+',
             "base::GetFieldTrial.*",
+            'base::features::.+',
             'features::.+',
 
             # PartitionAlloc
@@ -432,6 +431,7 @@ _CONFIG = [
             # Animation
             'cc::AnimationHost',
             "cc::AnimationIdProvider",
+            "cc::AnimationTimeline",
             "cc::FilterKeyframe",
             "cc::KeyframedFilterAnimationCurve",
             "cc::KeyframeModel",
@@ -675,6 +675,12 @@ _CONFIG = [
             'absl::holds_alternative',
             'absl::variant',
             'absl::visit',
+
+            # 128-bit absl types
+            'absl::MakeInt128',
+            'absl::MakeUint128',
+            'absl::int128',
+            'absl::uint128',
         ],
         'disallowed': [
             ('base::Bind(|Once|Repeating)',
@@ -791,7 +797,7 @@ _CONFIG = [
     },
     {
         'paths': ['third_party/blink/renderer/core/clipboard'],
-        'allowed': ['net::EscapeForHTML'],
+        'allowed': ['base::EscapeForHTML'],
     },
     {
         'paths': ['third_party/blink/renderer/core/css'],
@@ -929,7 +935,8 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/core/inspector/inspector_memory_agent.cc'
+            'third_party/blink/renderer/core/inspector/inspector_memory_agent.cc',
+            'third_party/blink/renderer/core/inspector/inspector_memory_agent.h',
         ],
         'allowed': [
             'base::ModuleCache',
@@ -946,6 +953,14 @@ _CONFIG = [
             'cc::ContentLayerClient',
             'cc::DisplayItemList',
             'cc::DrawRecordOp',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/css/properties/css_parsing_utils.cc',
+        ],
+        'allowed': [
+            'color_utils::GetContrastRatio',
         ],
     },
     {
@@ -1100,6 +1115,7 @@ _CONFIG = [
             'gpu::raster::RasterInterface',
             'gpu::Mailbox',
             'gpu::MailboxHolder',
+            'gpu::SharedImageInterface',
             'gpu::SyncToken',
             'gpu::webgpu::ReservedTexture',
             'display::Display',

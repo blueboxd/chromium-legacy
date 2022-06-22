@@ -13,20 +13,42 @@
 namespace autofill {
 
 class AutofillProvider;
+class ContentAutofillDriver;
+
+// Creates an AndroidAutofillManager and attaches it to the `driver`.
+//
+// This hook is to be passed to CreateForWebContentsAndDelegate().
+// It is the glue between ContentAutofillDriver[Factory] and
+// AndroidAutofillManager.
+//
+// Other embedders (which don't want to use AndroidAutofillManager) shall use
+// other implementations.
+void AndroidDriverInitHook(
+    AutofillClient* client,
+    AutofillManager::EnableDownloadManager enable_download_manager,
+    ContentAutofillDriver* driver);
 
 // This class forwards AutofillManager calls to AutofillProvider.
 class AndroidAutofillManager : public AutofillManager {
  public:
-  static std::unique_ptr<AutofillManager> Create(
-      AutofillDriver* driver,
-      AutofillClient* client,
-      const std::string& app_locale,
-      AutofillManager::AutofillDownloadManagerState enable_download_manager);
-
   AndroidAutofillManager(const AndroidAutofillManager&) = delete;
   AndroidAutofillManager& operator=(const AndroidAutofillManager&) = delete;
 
   ~AndroidAutofillManager() override;
+
+  AutofillOfferManager* GetOfferManager() override;
+  CreditCardAccessManager* GetCreditCardAccessManager() override;
+
+  bool ShouldClearPreviewedForm() override;
+
+  void FillCreditCardForm(int query_id,
+                          const FormData& form,
+                          const FormFieldData& field,
+                          const CreditCard& credit_card,
+                          const std::u16string& cvc) override;
+  void FillProfileForm(const autofill::AutofillProfile& profile,
+                       const FormData& form,
+                       const FormFieldData& field) override;
 
   void OnFocusNoLongerOnForm(bool had_interacted_form) override;
 
@@ -40,6 +62,8 @@ class AndroidAutofillManager : public AutofillManager {
 
   void Reset() override;
 
+  void ReportAutofillWebOTPMetrics(bool used_web_otp) override {}
+
   base::WeakPtr<AndroidAutofillManager> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -52,10 +76,15 @@ class AndroidAutofillManager : public AutofillManager {
                          const FormData& form);
 
  protected:
+  friend void AndroidDriverInitHook(
+      AutofillClient* client,
+      AutofillManager::EnableDownloadManager enable_download_manager,
+      ContentAutofillDriver* driver);
+
   AndroidAutofillManager(
       AutofillDriver* driver,
       AutofillClient* client,
-      AutofillManager::AutofillDownloadManagerState enable_download_manager);
+      AutofillManager::EnableDownloadManager enable_download_manager);
 
   void OnFormSubmittedImpl(const FormData& form,
                            bool known_success,

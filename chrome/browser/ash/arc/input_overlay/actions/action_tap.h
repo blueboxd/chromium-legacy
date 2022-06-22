@@ -30,15 +30,14 @@ class ActionTap : public Action {
   std::unique_ptr<ActionView> CreateView(
       DisplayOverlayController* display_overlay_controller,
       const gfx::RectF& content_bounds) override;
-  bool RequireInputElement(const InputElement& input_element,
-                           Action** overlapped_action) override;
-  void Unbind() override;
+  void Unbind(const InputElement& input_element) override;
 
  private:
   class ActionTapView;
 
   // Json value format:
   // {
+  //   "id": 0,
   //   "input_sources": [
   //     "keyboard"
   //   ],
@@ -55,6 +54,7 @@ class ActionTap : public Action {
   bool ParseJsonFromKeyboard(const base::Value& value);
   // Json value format:
   // {
+  //   "id": 0,
   //   "name": "any name",
   //   "input_sources": [
   //     "mouse"

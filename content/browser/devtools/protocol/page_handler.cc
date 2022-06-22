@@ -194,9 +194,12 @@ PageHandler::PageHandler(
     EmulationHandler* emulation_handler,
     BrowserHandler* browser_handler,
     bool allow_unsafe_operations,
+    bool may_capture_screenshots_not_from_surface,
     absl::optional<url::Origin> navigation_initiator_origin)
     : DevToolsDomainHandler(Page::Metainfo::domainName),
       allow_unsafe_operations_(allow_unsafe_operations),
+      may_capture_screenshots_not_from_surface_(
+          may_capture_screenshots_not_from_surface),
       navigation_initiator_origin_(navigation_initiator_origin),
       enabled_(false),
       screencast_enabled_(false),
@@ -755,6 +758,11 @@ void PageHandler::CaptureScreenshot(
 
   // We don't support clip/emulation when capturing from window, bail out.
   if (!from_surface.fromMaybe(true)) {
+    if (!may_capture_screenshots_not_from_surface_) {
+      callback->sendFailure(
+          Response::ServerError("Only screenshots from surface are allowed."));
+      return;
+    }
     widget_host->GetSnapshotFromBrowser(
         base::BindOnce(&PageHandler::ScreenshotCaptured,
                        weak_factory_.GetWeakPtr(), std::move(callback),
@@ -1321,9 +1329,6 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
     case Reason::kRendererProcessCrashed:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           RendererProcessCrashed;
-    case Reason::kGrantedMediaStreamAccess:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          GrantedMediaStreamAccess;
     case Reason::kSchedulerTrackedFeatureUsed:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           SchedulerTrackedFeatureUsed;
@@ -1658,7 +1663,6 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kJavaScriptExecution:
     case Reason::kRendererProcessKilled:
     case Reason::kRendererProcessCrashed:
-    case Reason::kGrantedMediaStreamAccess:
     case Reason::kSchedulerTrackedFeatureUsed:
     case Reason::kConflictingBrowsingInstance:
     case Reason::kCacheFlushed:
@@ -1762,14 +1766,15 @@ MapDisableForRenderFrameHostReasonToType(
 
 std::unique_ptr<protocol::Array<Page::BackForwardCacheNotRestoredExplanation>>
 CreateNotRestoredExplanation(
-    const BackForwardCacheCanStoreDocumentResult::NotStoredReasons
-        not_stored_reasons,
+    const BackForwardCacheCanStoreDocumentResult::NotRestoredReasons
+        not_restored_reasons,
     const blink::scheduler::WebSchedulerTrackedFeatures blocklisted_features,
     const std::set<BackForwardCache::DisabledReason>& disabled_reasons) {
   auto reasons = std::make_unique<
       protocol::Array<Page::BackForwardCacheNotRestoredExplanation>>();
 
-  for (BackForwardCacheMetrics::NotRestoredReason reason : not_stored_reasons) {
+  for (BackForwardCacheMetrics::NotRestoredReason reason :
+       not_restored_reasons) {
     if (reason ==
         BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures) {
       DCHECK(!blocklisted_features.Empty());
@@ -1810,7 +1815,7 @@ std::unique_ptr<Page::BackForwardCacheNotRestoredExplanationTree>
 CreateNotRestoredExplanationTree(
     const BackForwardCacheCanStoreTreeResult& tree_result) {
   auto explanation = CreateNotRestoredExplanation(
-      tree_result.GetDocumentResult().not_stored_reasons(),
+      tree_result.GetDocumentResult().not_restored_reasons(),
       tree_result.GetDocumentResult().blocklisted_features(),
       tree_result.GetDocumentResult().disabled_reasons());
 
@@ -1849,7 +1854,7 @@ void PageHandler::BackForwardCacheNotUsed(
   std::string frame_id = ftn->devtools_frame_token().ToString();
 
   auto explanation = CreateNotRestoredExplanation(
-      result->not_stored_reasons(), result->blocklisted_features(),
+      result->not_restored_reasons(), result->blocklisted_features(),
       result->disabled_reasons());
 
   // TODO(crbug.com/1281855): |tree_result| should not be nullptr when |result|

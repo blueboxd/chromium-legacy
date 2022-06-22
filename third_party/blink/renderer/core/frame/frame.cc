@@ -211,8 +211,10 @@ bool Frame::IsCrossOriginToOutermostMainFrame() const {
   return IsCrossOriginToMainFrame() || IsInFencedFrameTree();
 }
 
-bool Frame::IsCrossOriginToParentFrame() const {
+bool Frame::IsCrossOriginToParentOrOuterDocument() const {
   DCHECK(GetSecurityContext());
+  if (IsInFencedFrameTree())
+    return true;
   if (IsMainFrame())
     return false;
   Frame* parent = Tree().Parent();
@@ -582,15 +584,26 @@ void Frame::InsertAfter(Frame* new_child, Frame* previous_sibling) {
   GetPage()->IncrementSubframeCount();
 }
 
-void Frame::ScheduleFormSubmission(FrameScheduler* scheduler,
-                                   FormSubmission* form_submission) {
+base::OnceClosure Frame::ScheduleFormSubmission(
+    FrameScheduler* scheduler,
+    FormSubmission* form_submission) {
   form_submit_navigation_task_ = PostCancellableTask(
       *scheduler->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       WTF::Bind(&FormSubmission::Navigate, WrapPersistent(form_submission)));
+  form_submit_navigation_task_version_++;
+
+  return WTF::Bind(&Frame::CancelFormSubmissionWithVersion,
+                   WrapWeakPersistent(this),
+                   form_submit_navigation_task_version_);
 }
 
 void Frame::CancelFormSubmission() {
   form_submit_navigation_task_.Cancel();
+}
+
+void Frame::CancelFormSubmissionWithVersion(uint64_t version) {
+  if (form_submit_navigation_task_version_ == version)
+    form_submit_navigation_task_.Cancel();
 }
 
 bool Frame::IsFormSubmissionPending() {
@@ -626,12 +639,10 @@ Frame* Frame::Parent(FrameTreeBoundary frame_tree_boundary) const {
   // TODO(crbug.com/1123606): Remove this once we use MPArch as the underlying
   // fenced frames implementation, instead of the
   // `FencedFrameShadowDOMDelegate`.
-  if (frame_tree_boundary == FrameTreeBoundary::kFenced &&
-      RuntimeEnabledFeatures::FencedFramesEnabled(
-          DomWindow()->GetExecutionContext()) &&
-      features::kFencedFramesImplementationTypeParam.Get() ==
-          features::FencedFramesImplementationType::kShadowDOM &&
-      Owner() && Owner()->GetFramePolicy().is_fenced) {
+  if (frame_tree_boundary == FrameTreeBoundary::kFenced && Owner() &&
+      Owner()->GetFramePolicy().is_fenced &&
+      features::IsFencedFramesEnabled() &&
+      features::IsFencedFramesShadowDOMBased()) {
     return nullptr;
   }
 

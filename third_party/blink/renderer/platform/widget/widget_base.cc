@@ -224,7 +224,7 @@ void WidgetBase::InitializeCompositing(
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
       weak_ptr_factory_.GetWeakPtr(), std::move(frame_widget_input_handler),
       never_composited_, compositor_thread_scheduler, main_thread_scheduler,
-      uses_input_handler);
+      uses_input_handler, client_->AllowsScrollResampling());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -449,7 +449,6 @@ void WidgetBase::WasShown(bool was_evicted,
             record_tab_switch_time_request->event_start_time,
             record_tab_switch_time_request->destination_is_loaded,
             record_tab_switch_time_request->show_reason_tab_switching,
-            record_tab_switch_time_request->show_reason_unoccluded,
             record_tab_switch_time_request->show_reason_bfcache_restore));
   }
 
@@ -469,7 +468,6 @@ void WidgetBase::RequestPresentationTimeForNextFrame(
           false /* has_saved_frames */, visible_time_request->event_start_time,
           visible_time_request->destination_is_loaded,
           visible_time_request->show_reason_tab_switching,
-          visible_time_request->show_reason_unoccluded,
           visible_time_request->show_reason_bfcache_restore));
 }
 
@@ -629,7 +627,10 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
                      std::move(render_frame_metadata_observer_remote),
                      std::move(render_frame_metadata_observer),
                      std::move(params), std::move(callback));
-  if (base::FeatureList::IsEnabled(features::kEstablishGpuChannelAsync)) {
+  bool needs_sync_composite_for_test =
+      layer_tree_view_ && LayerTreeHost()->in_composite_for_test();
+  if (base::FeatureList::IsEnabled(features::kEstablishGpuChannelAsync) &&
+      !needs_sync_composite_for_test) {
     Platform::Current()->EstablishGpuChannel(std::move(finish_callback));
   } else {
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =

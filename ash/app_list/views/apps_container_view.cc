@@ -32,10 +32,14 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_model_delegate.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/search_box/search_box_constants.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/style/pill_button.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
@@ -55,6 +59,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
@@ -67,8 +72,7 @@ namespace {
 // enabled.
 constexpr int kPreferredGridRowsInPortraitProductivityLauncher = 5;
 
-// The number of columns for portrait mode with mode productivity launcher
-// enabled.
+// The number of columns for portrait mode with productivity launcher enabled.
 constexpr int kPreferredGridColumnsInPortraitProductivityLauncher = 5;
 
 // The long apps grid dimension when productivity launcher is not enabled:
@@ -105,9 +109,10 @@ constexpr float kNonAppsStateOpacity = 0.1;
 // The ratio of allowed bounds for apps grid view to its maximum margin.
 constexpr int kAppsGridMarginRatio = 16;
 constexpr int kAppsGridMarginRatioForSmallWidth = 12;
+constexpr int kAppsGridMarginRatioForSmallHeight = 24;
 
 // The margins within the apps container for app list folder view.
-constexpr int kFolderMargin = 8;
+constexpr int kFolderMargin = 16;
 
 // The suggestion chip container height.
 constexpr int kSuggestionChipContainerHeight = 32;
@@ -121,8 +126,14 @@ constexpr int kGridToPageSwitcherMargin = 8;
 // Minimal horizontal distance from the page switcher to apps container bounds.
 constexpr int kPageSwitcherEndMargin = 16;
 
-// The vertical margin for the `AppsGridView` contents.
-constexpr int kGridVerticalMargin = 24;
+// The minimum amount of vertical margin between the apps container edges and
+// the its contents.
+constexpr int kMinimumVerticalContainerMargin = 24;
+
+// The vertical margin above the `AppsGridView`. The space between suggestion
+// chips and the app grid. With Productivity launcher, the space between the
+// search box and the app grid.
+constexpr int kAppGridTopMargin = 24;
 
 // The number of columns available for the ContinueSectionView.
 constexpr int kContinueColumnCount = 4;
@@ -157,11 +168,32 @@ class AppsContainerView::ContinueContainer : public views::View {
   ContinueContainer(AppsContainerView* apps_container,
                     AppListViewDelegate* view_delegate,
                     SearchResultPageDialogController* dialog_controller)
-      : separator_(apps_container->separator()) {
+      : view_delegate_(view_delegate), separator_(apps_container->separator()) {
+    DCHECK(view_delegate_);
+    DCHECK(separator_);
     SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 
     SetLayoutManager(std::make_unique<views::FlexLayout>())
         ->SetOrientation(views::LayoutOrientation::kVertical);
+
+    // Add the button to show the continue section, wrapped in a view to center
+    // it horizontally.
+    auto* button_container = AddChildView(std::make_unique<views::View>());
+    button_container
+        ->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical))
+        ->set_cross_axis_alignment(
+            views::BoxLayout::CrossAxisAlignment::kCenter);
+    show_continue_section_button_ =
+        button_container->AddChildView(std::make_unique<PillButton>(
+            base::BindRepeating(&AppsContainerView::ContinueContainer::
+                                    OnPressShowContinueSection,
+                                base::Unretained(this)),
+            l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_SHOW_CONTINUE_SECTION),
+            PillButton::Type::kIcon, &kExpandAllIcon));
+    show_continue_section_button_->SetUseDefaultLabelFont();
+    // Put the icon on the right.
+    show_continue_section_button_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
     continue_section_ = AddChildView(std::make_unique<ContinueSectionView>(
         view_delegate, dialog_controller, kContinueColumnCount,
@@ -175,7 +207,7 @@ class AppsContainerView::ContinueContainer : public views::View {
     recent_apps_->layer()->SetFillsBoundsOpaquely(false);
 
     UpdateRecentAppsMargins();
-    UpdateSeparatorVisibility();
+    UpdateContinueSectionVisibility();
   }
 
   // views::View:
@@ -187,22 +219,40 @@ class AppsContainerView::ContinueContainer : public views::View {
       UpdateRecentAppsMargins();
   }
 
-  bool HasRecentApps() const {
-    return recent_apps_ && recent_apps_->GetVisible();
+  void OnThemeChanged() override {
+    views::View::OnThemeChanged();
+    // The "show continue section" button appears directly over the wallpaper,
+    // so use a "base layer" color for its background.
+    show_continue_section_button_->SetBackgroundColor(
+        AshColorProvider::Get()->GetBaseLayerColor(
+            AshColorProvider::BaseLayerType::kTransparent40));
   }
+
+  bool HasRecentApps() const { return recent_apps_->GetVisible(); }
 
   void UpdateAppListConfig(AppListConfig* config) {
-    if (recent_apps_)
-      recent_apps_->UpdateAppListConfig(config);
+    recent_apps_->UpdateAppListConfig(config);
   }
 
+  void UpdateContinueSectionVisibility() {
+    // Show the "Show continue section" button if continue section is hidden.
+    bool hide_continue_section = view_delegate_->ShouldHideContinueSection();
+    show_continue_section_button_->SetVisible(hide_continue_section);
+    // The continue section view and recent apps view manage their own
+    // visibility internally.
+    continue_section_->UpdateElementsVisibility();
+    recent_apps_->UpdateVisibility();
+    UpdateSeparatorVisibility();
+  }
+
+  PillButton* show_continue_section_button() {
+    return show_continue_section_button_;
+  }
   ContinueSectionView* continue_section() { return continue_section_; }
   RecentAppsView* recent_apps() { return recent_apps_; }
 
  private:
   void UpdateRecentAppsMargins() {
-    if (!recent_apps_ || !continue_section_)
-      return;
     // Remove recent apps top margin if continue section is hidden.
     recent_apps_->SetProperty(
         views::kMarginsKey,
@@ -212,12 +262,17 @@ class AppsContainerView::ContinueContainer : public views::View {
   }
 
   void UpdateSeparatorVisibility() {
-    if (!separator_ || !recent_apps_ || !continue_section_)
-      return;
     separator_->SetVisible(recent_apps_->GetVisible() ||
                            continue_section_->GetVisible());
   }
 
+  void OnPressShowContinueSection(const ui::Event& event) {
+    view_delegate_->SetHideContinueSection(false);
+    UpdateContinueSectionVisibility();
+  }
+
+  AppListViewDelegate* const view_delegate_;
+  PillButton* show_continue_section_button_ = nullptr;
   ContinueSectionView* continue_section_ = nullptr;
   RecentAppsView* recent_apps_ = nullptr;
   views::Separator* separator_ = nullptr;
@@ -274,7 +329,7 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view)
     if (features::IsLauncherAppSortEnabled()) {
       toast_container_ = scrollable_container_->AddChildView(
           std::make_unique<AppListToastContainerView>(
-              app_list_nudge_controller_.get(), a11y_announcer,
+              app_list_nudge_controller_.get(), a11y_announcer, view_delegate,
               /*delegate=*/this, /*tablet_mode=*/true));
       toast_container_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
     }
@@ -335,17 +390,10 @@ AppsContainerView::~AppsContainerView() {
 
 void AppsContainerView::UpdateTopLevelGridDimensions() {
   const GridLayout grid_layout = CalculateGridLayout();
-  if (features::IsProductivityLauncherEnabled()) {
-    apps_grid_view_->SetMaxColumnsAndRows(
-        /*max_columns=*/grid_layout.columns,
-        /*max_rows_on_first_page=*/grid_layout.first_page_rows,
-        /*max_rows=*/grid_layout.rows);
-  } else {
-    apps_grid_view_->SetMaxColumnsAndRows(
-        /*max_columns=*/grid_layout.columns,
-        /*max_rows_on_first_page=*/grid_layout.first_page_rows,
-        /*max_rows=*/grid_layout.rows);
-  }
+  apps_grid_view_->SetMaxColumnsAndRows(
+      /*max_columns=*/grid_layout.columns,
+      /*max_rows_on_first_page=*/grid_layout.first_page_rows,
+      /*max_rows=*/grid_layout.rows);
 }
 
 gfx::Rect AppsContainerView::CalculateAvailableBoundsForAppsGrid(
@@ -357,8 +405,13 @@ gfx::Rect AppsContainerView::CalculateAvailableBoundsForAppsGrid(
   // Reserve vertical space for search box and suggestion chips.
   available_bounds.Inset(gfx::Insets().set_top(GetMinTopMarginForAppsGrid(
       contents_view_->GetSearchBoxSize(AppListState::kStateApps))));
-  // Subtracts apps grid view insets from space available for apps grid.
-  available_bounds.Inset(gfx::Insets::VH(kGridVerticalMargin, 0));
+  // Remove space for vertical margins at the top and bottom of the apps
+  // container.
+  if (features::IsProductivityLauncherEnabled()) {
+    available_bounds.Inset(gfx::Insets::VH(GetIdealVerticalMargin(), 0));
+  } else {
+    available_bounds.Inset(gfx::Insets::VH(kMinimumVerticalContainerMargin, 0));
+  }
 
   return available_bounds;
 }
@@ -798,6 +851,11 @@ void AppsContainerView::UpdateForNewSortingOrder(
   }
 }
 
+void AppsContainerView::UpdateContinueSectionVisibility() {
+  if (continue_container_)
+    continue_container_->UpdateContinueSectionVisibility();
+}
+
 ContinueSectionView* AppsContainerView::GetContinueSection() {
   if (!continue_container_)
     return nullptr;
@@ -918,8 +976,18 @@ void AppsContainerView::Layout() {
   // Set bounding box for the folder view - the folder may overlap with
   // suggestion chips, but not the search box.
   gfx::Rect folder_bounding_box = rect;
+  int top_folder_inset = chip_container_rect.y();
+  int bottom_folder_inset = kFolderMargin;
+
+  if (features::IsProductivityLauncherEnabled())
+    top_folder_inset += kFolderMargin;
+
+  // Account for the hotseat which overlaps with contents bounds in tablet mode.
+  if (contents_view_->app_list_view()->is_tablet_mode())
+    bottom_folder_inset += ShelfConfig::Get()->hotseat_bottom_padding();
+
   folder_bounding_box.Inset(gfx::Insets::TLBR(
-      chip_container_rect.y(), kFolderMargin, kFolderMargin, kFolderMargin));
+      top_folder_inset, kFolderMargin, bottom_folder_inset, kFolderMargin));
   app_list_folder_view_->SetBoundingBox(folder_bounding_box);
 
   // Leave the same available bounds for the apps grid view in both
@@ -936,7 +1004,7 @@ void AppsContainerView::Layout() {
       GetContentsBounds(),
       contents_view_->GetSearchBoxSize(AppListState::kStateApps));
   gfx::Rect grid_rect = rect;
-  grid_rect.Inset(gfx::Insets::TLBR(kGridVerticalMargin, margins.left(),
+  grid_rect.Inset(gfx::Insets::TLBR(kAppGridTopMargin, margins.left(),
                                     margins.bottom(), margins.right()));
   // The grid rect insets are added to calculated margins. Given that the
   // grid bounds rect should include insets, they have to be removed from
@@ -1250,7 +1318,7 @@ int AppsContainerView::GetMinTopMarginForAppsGrid(
           ? 0
           : kSuggestionChipContainerHeight + kSuggestionChipContainerTopMargin;
 
-  return search_box_size.height() + kGridVerticalMargin +
+  return search_box_size.height() + kAppGridTopMargin +
          suggestion_chip_container_size;
 }
 
@@ -1266,7 +1334,20 @@ int AppsContainerView::GetIdealHorizontalMargin() const {
 }
 
 int AppsContainerView::GetIdealVerticalMargin() const {
-  return GetContentsBounds().height() / kAppsGridMarginRatio;
+  if (!features::IsProductivityLauncherEnabled())
+    return GetContentsBounds().height() / kAppsGridMarginRatio;
+
+  const int screen_height =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestView(GetWidget()->GetNativeView())
+          .bounds()
+          .height();
+  const float margin_ratio = (screen_height <= 800)
+                                 ? kAppsGridMarginRatioForSmallHeight
+                                 : kAppsGridMarginRatio;
+
+  return std::max(kMinimumVerticalContainerMargin,
+                  static_cast<int>(screen_height / margin_ratio));
 }
 
 const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
@@ -1317,7 +1398,7 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
     // Productivity launcher does not have a preset number of rows per page.
     // Instead of adjusting the margins to fit a set number of rows, the grid
     // will change the number of rows to fit within the provided space.
-    vertical_margin = kGridVerticalMargin;
+    vertical_margin = GetIdealVerticalMargin();
   } else {
     vertical_margin =
         calculate_margin(GetIdealVerticalMargin(), available_height,
@@ -1330,11 +1411,11 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
 
   const int min_horizontal_margin = GetMinHorizontalMarginForAppsGrid();
 
-  cached_container_margins_.margins =
-      gfx::Insets::TLBR(std::max(vertical_margin, kGridVerticalMargin),
-                        std::max(horizontal_margin, min_horizontal_margin),
-                        std::max(vertical_margin, kGridVerticalMargin),
-                        std::max(horizontal_margin, min_horizontal_margin));
+  cached_container_margins_.margins = gfx::Insets::TLBR(
+      std::max(vertical_margin, kMinimumVerticalContainerMargin),
+      std::max(horizontal_margin, min_horizontal_margin),
+      std::max(vertical_margin, kMinimumVerticalContainerMargin),
+      std::max(horizontal_margin, min_horizontal_margin));
   cached_container_margins_.bounds_size = available_bounds.size();
   cached_container_margins_.search_box_size = search_box_size;
 
@@ -1514,17 +1595,26 @@ AppsContainerView::GridLayout AppsContainerView::CalculateGridLayout() const {
 
   int preferred_columns = 0;
   int preferred_rows = 0;
+  int preferred_rows_first_page = 0;
 
   if (is_portrait_mode) {
     preferred_rows = features::IsProductivityLauncherEnabled()
                          ? kPreferredGridRowsInPortraitProductivityLauncher
                          : kPreferredGridColumns;
+    preferred_rows_first_page = preferred_rows;
     preferred_columns =
         features::IsProductivityLauncherEnabled()
             ? kPreferredGridColumnsInPortraitProductivityLauncher
             : kPreferredGridRows;
   } else {
     preferred_rows = kPreferredGridRows;
+    preferred_rows_first_page = preferred_rows;
+
+    // In landscape mode, the first page should show the preferred number of
+    // rows as well as an additional row for recent apps when possible.
+    if (continue_container_ && continue_container_->HasRecentApps())
+      preferred_rows_first_page++;
+
     preferred_columns = kPreferredGridColumns;
   }
 
@@ -1533,7 +1623,7 @@ AppsContainerView::GridLayout AppsContainerView::CalculateGridLayout() const {
   result.rows =
       apps_grid_view_->CalculateMaxRows(available_height, preferred_rows);
   result.first_page_rows = apps_grid_view_->CalculateFirstPageMaxRows(
-      available_height, preferred_rows);
+      available_height, preferred_rows_first_page);
   return result;
 }
 
@@ -1689,6 +1779,12 @@ int AppsContainerView::GetSeparatorHeight() {
     return 0;
   return separator_->GetProperty(views::kMarginsKey)->height() +
          views::Separator::kThickness;
+}
+
+views::View* AppsContainerView::GetShowContinueSectionButtonForTest() {
+  return continue_container_
+             ? continue_container_->show_continue_section_button()
+             : nullptr;
 }
 
 }  // namespace ash

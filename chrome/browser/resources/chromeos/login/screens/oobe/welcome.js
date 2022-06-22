@@ -60,8 +60,9 @@ OobeWelcomeScreenBase.$;
  * @polymer
  */
 class OobeWelcomeScreen extends OobeWelcomeScreenBase {
-
-  static get is() { return 'oobe-welcome-element'; }
+  static get is() {
+    return 'oobe-welcome-element';
+  }
 
   /* #html_template_placeholder */
 
@@ -186,9 +187,7 @@ class OobeWelcomeScreen extends OobeWelcomeScreenBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('WelcomeScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('WelcomeScreen');
     this.updateLocalizedContent();
   }
 
@@ -209,6 +208,18 @@ class OobeWelcomeScreen extends OobeWelcomeScreenBase {
    */
   onBeforeHide() {
     this.cleanupChromeVoxHint_();
+  }
+
+  cancel() {
+    if (this.uiStep === WelcomeScreenState.LANGUAGE) {
+      this.closeLanguageSection_();
+      return;
+    }
+
+    if (this.uiStep === WelcomeScreenState.ACCESSIBILITY) {
+      this.closeAccessibilitySection_();
+      return;
+    }
   }
 
   /**
@@ -246,8 +257,9 @@ class OobeWelcomeScreen extends OobeWelcomeScreenBase {
    * @param {!OobeTypes.OobeConfiguration} configuration
    */
   updateOobeConfiguration(configuration) {
-    if (!this.configuration_applied_)
+    if (!this.configuration_applied_) {
       window.setTimeout(() => void this.applyOobeConfiguration_(), 0);
+    }
   }
 
   /**
@@ -255,11 +267,13 @@ class OobeWelcomeScreen extends OobeWelcomeScreenBase {
    * @private
    */
   applyOobeConfiguration_() {
-    if (this.configuration_applied_)
+    if (this.configuration_applied_) {
       return;
+    }
     var configuration = Oobe.getInstance().getOobeConfiguration();
-    if (!configuration)
+    if (!configuration) {
       return;
+    }
 
     if (configuration.language) {
       var currentLanguage = loadTimeData.getString('language');
@@ -271,11 +285,13 @@ class OobeWelcomeScreen extends OobeWelcomeScreenBase {
         return;
       }
     }
-    if (configuration.inputMethod)
+    if (configuration.inputMethod) {
       this.applySelectedLkeyboard_(configuration.inputMethod);
+    }
 
-    if (configuration.welcomeNext)
+    if (configuration.welcomeNext) {
       this.onWelcomeNextButtonClicked_();
+    }
 
     if (configuration.enableDemoMode) {
       this.userActed('setupDemoModeGesture');
@@ -429,8 +445,9 @@ class OobeWelcomeScreen extends OobeWelcomeScreenBase {
       this.keyboards[i].selected = true;
       found = true;
     }
-    if (!found)
+    if (!found) {
       return;
+    }
 
     // Force i18n-dropdown to refresh.
     this.keyboards = this.keyboards.slice();
@@ -597,8 +614,9 @@ class OobeWelcomeScreen extends OobeWelcomeScreenBase {
    */
   onTimezoneSelected_(event) {
     var item = event.detail;
-    if (!item)
+    if (!item) {
       return;
+    }
 
     chrome.send('WelcomeScreen.setTimezoneId', [item.value]);
   }

@@ -4,6 +4,7 @@
 
 #include "components/reporting/encryption/encryption.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 

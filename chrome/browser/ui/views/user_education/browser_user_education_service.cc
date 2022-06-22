@@ -109,14 +109,6 @@ void MaybeRegisterChromeFeaturePromos(FeaturePromoRegistry& registry) {
       &feature_engagement::kIPHDesktopPwaInstallFeature, kInstallPwaElementId,
       IDS_DESKTOP_PWA_INSTALL_PROMO));
 
-  // kIPHUpdatedConnectionSecurityIndicatorsFeature:
-  registry.RegisterFeature(std::move(
-      FeaturePromoSpecification::CreateForLegacyPromo(
-          &feature_engagement::kIPHUpdatedConnectionSecurityIndicatorsFeature,
-          kLocationIconElementId,
-          IDS_UPDATED_CONNECTION_SECURITY_INDICATORS_PROMO)
-          .SetBubbleArrow(HelpBubbleArrow::kTopLeft)));
-
   // kIPHDesktopTabGroupsNewGroupFeature:
   registry.RegisterFeature(
       std::move(FeaturePromoSpecification::CreateForTutorialPromo(
@@ -191,13 +183,11 @@ void MaybeRegisterChromeFeaturePromos(FeaturePromoRegistry& registry) {
       FeaturePromoSpecification::AcceleratorInfo(IDC_RESTORE_TAB)));
 
   // kIPHSideSearchFeature:
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
   registry.RegisterFeature(
       std::move(FeaturePromoSpecification::CreateForLegacyPromo(
                     &feature_engagement::kIPHSideSearchFeature,
                     kSideSearchButtonElementId, IDS_SIDE_SEARCH_PROMO)
                     .SetBubbleArrow(HelpBubbleArrow::kTopLeft)));
-#endif
 
   // kIPHTabSearchFeature:
   registry.RegisterFeature(FeaturePromoSpecification::CreateForLegacyPromo(

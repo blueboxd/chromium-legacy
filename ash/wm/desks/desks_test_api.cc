@@ -6,8 +6,11 @@
 
 #include "ash/controls/gradient_layer_delegate.h"
 #include "ash/shell.h"
+#include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_action_context_menu.h"
 #include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
@@ -92,8 +95,37 @@ DeskActionContextMenu* DesksTestApi::GetContextMenuForDesk(int index) {
 }
 
 // static
+views::LabelButton* DesksTestApi::GetCloseAllUndoToastDismissButton() {
+  ToastManagerImpl* toast_manager = Shell::Get()->toast_manager();
+  return toast_manager->GetCurrentOverlayForTesting()
+      ->dismiss_button_for_testing();
+}
+
+// static
+const ui::SimpleMenuModel& DesksTestApi::GetContextMenuModelForDesk(int index) {
+  return GetContextMenuForDesk(index)->context_menu_model_;
+}
+
+views::View* DesksTestApi::GetHighlightOverlayForDeskPreview(int index) {
+  return GetDesksBarView()
+      ->mini_views()[index]
+      ->desk_preview()
+      ->highlight_overlay_;
+}
+
+// static
 bool DesksTestApi::HasVerticalDotsButton() {
   return GetDesksBarView()->vertical_dots_button_;
+}
+
+// static
+bool DesksTestApi::DesksControllerHasDesk(Desk* desk) {
+  return DesksController::Get()->HasDesk(desk);
+}
+
+// static
+bool DesksTestApi::DesksControllerCanUndoDeskRemoval() {
+  return DesksController::Get()->temporary_removed_desk_ != nullptr;
 }
 
 // static

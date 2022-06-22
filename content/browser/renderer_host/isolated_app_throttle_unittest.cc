@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/isolated_app_throttle.h"
 
+#include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/public/browser/content_browser_client.h"
@@ -86,7 +87,7 @@ class IsolatedAppThrottleTest : public RenderViewHostTestHarness {
     RenderViewHostTestHarness::SetUp();
 
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kRestrictedApiOrigins, kAppUrl);
+        switches::kIsolatedAppOrigins, kAppUrl);
     content::SiteIsolationPolicy::DisableFlagCachingForTesting();
 
     old_client_ = SetBrowserClientForTesting(&test_client_);

@@ -103,8 +103,14 @@
     public static **[] values();
 }
 
-# TODO(b/214263216): Re-enable this once R8 is fixed.
 # Mark members annotated with IdentifierNameString as identifier name strings
-# -identifiernamestring class * {
-#     @org.chromium.base.annotations.IdentifierNameString *;
-# }
+-identifiernamestring class * {
+    @org.chromium.base.annotations.IdentifierNameString *;
+}
+
+# -identifiernamestring doesn't keep the module impl around, we have to
+# explicitly keep it.
+-if @org.chromium.components.module_installer.builder.ModuleInterface interface *
+-keep,allowobfuscation,allowaccessmodification class * extends <1> {
+  <init>();
+}

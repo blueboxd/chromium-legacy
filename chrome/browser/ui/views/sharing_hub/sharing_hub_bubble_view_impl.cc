@@ -6,7 +6,7 @@
 
 #include "chrome/browser/share/share_metrics.h"
 #include "chrome/browser/sharing_hub/sharing_hub_model.h"
-#include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller.h"
+#include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller_desktop_impl.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/sharing_hub/preview_view.h"
@@ -39,15 +39,17 @@ constexpr int kActionButtonGroup = 0;
 
 SharingHubBubbleViewImpl::SharingHubBubbleViewImpl(
     views::View* anchor_view,
-    content::WebContents* web_contents,
-    SharingHubBubbleController* controller)
-    : LocationBarBubbleDelegateView(anchor_view, web_contents),
-      controller_(controller->AsWeakPtr()) {
+    content::WebContents* web_contents)
+    : LocationBarBubbleDelegateView(anchor_view, web_contents) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
   SetEnableArrowKeyTraversal(true);
-  DCHECK(controller);
+
+  SharingHubBubbleControllerDesktopImpl* controller =
+      static_cast<SharingHubBubbleControllerDesktopImpl*>(
+          SharingHubBubbleController::CreateOrGetFromWebContents(web_contents));
+  controller_ = controller->AsWeakPtr();
 }
 
 SharingHubBubbleViewImpl::~SharingHubBubbleViewImpl() = default;

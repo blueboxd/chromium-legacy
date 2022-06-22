@@ -53,14 +53,6 @@ class SiteIsolationPrefsObserver;
 class SystemNotificationHelper;
 class StartupData;
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-class PluginsResourceService;
-#endif
-
-namespace base {
-class CommandLine;
-}
-
 namespace breadcrumbs {
 class ApplicationBreadcrumbsLogger;
 class BreadcrumbPersistentStorageManager;
@@ -123,7 +115,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   // Called before the browser threads are created.
-  void PreCreateThreads(const base::CommandLine& command_line);
+  void PreCreateThreads();
 
   // Called after the threads have been created but before the message loops
   // starts running. Allows the browser process to do any initialization that
@@ -394,10 +386,6 @@ class BrowserProcessImpl : public BrowserProcess,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Chrome OS has a different implementation of SodaInstaller.
   std::unique_ptr<speech::SodaInstallerImplChromeOS> soda_installer_impl_;
-#endif
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  std::unique_ptr<PluginsResourceService> plugins_resource_service_;
 #endif
 
   std::unique_ptr<BrowserProcessPlatformPart> platform_part_;

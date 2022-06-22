@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import 'chrome://bluetooth-pairing/strings.m.js';
 
 import {SettingsBluetoothPairingConfirmCodePageElement} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_pairing_confirm_code_page.js';
@@ -13,16 +12,13 @@ import {SettingsBluetoothPairingUiElement} from 'chrome://resources/cr_component
 import {SettingsBluetoothSpinnerPageElement} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_spinner_page.js';
 import {PairingAuthType} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_types.js';
 import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
+import {AudioOutputCapability, BluetoothDeviceProperties, BluetoothSystemState, DeviceConnectionState, DeviceType} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../../chai_assert.js';
 import {eventToPromise, flushTasks} from '../../../test_util.js';
 import {waitAfterNextRender} from '../../../test_util.js';
 
 import {createDefaultBluetoothDevice, FakeBluetoothConfig} from './fake_bluetooth_config.js';
-
-// clang-format on
-
-const mojom = chromeos.bluetoothConfig.mojom;
 
 suite('CrComponentsBluetoothPairingUiTest', function() {
   /** @type {?SettingsBluetoothPairingUiElement} */
@@ -33,8 +29,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
 
   setup(async function() {
     bluetoothConfig = new FakeBluetoothConfig();
-    bluetoothConfig.setSystemState(
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kEnabled);
+    bluetoothConfig.setSystemState(BluetoothSystemState.kEnabled);
     setBluetoothConfigForTesting(bluetoothConfig);
   });
 
@@ -91,10 +86,10 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
   }
 
   /**
-   * @param {!chromeos.bluetoothConfig.mojom.BluetoothDeviceProperties} device
+   * @param {!BluetoothDeviceProperties} device
    */
   async function selectDevice(device) {
-    let event = new CustomEvent('pair-device', {detail: {device}});
+    const event = new CustomEvent('pair-device', {detail: {device}});
     getDeviceSelectionPage().dispatchEvent(event);
     await flushTasks();
   }
@@ -122,11 +117,11 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         /*id=*/ '123456',
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
 
     bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
     await flushTasks();
@@ -154,14 +149,14 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     deviceHandler.requireAuthentication(pairingAuthType, pairingCode);
     await flushTasks();
 
-    let keyEnteredHandler = deviceHandler.getLastKeyEnteredHandlerRemote();
+    const keyEnteredHandler = deviceHandler.getLastKeyEnteredHandlerRemote();
     keyEnteredHandler.handleKeyEntered(2);
     await flushTasks();
 
     assertEquals(getEnterCodePage().numKeysEntered, 2);
     assertEquals(getEnterCodePage().code, pairingCode);
 
-    let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+    const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
     // Finished event is fired on successful pairing.
     deviceHandler.completePairDevice(/*success=*/ true);
     await finishedPromise;
@@ -173,16 +168,16 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
    */
   async function pairingPinOrPassKey(pairingAuthType) {
     await init();
-    let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+    const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
     const device = createDefaultBluetoothDevice(
         /*id=*/ '123456',
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
     const code = '123456';
 
     bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
@@ -251,11 +246,11 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         address,
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
     bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
 
     // Set BluetoothPairingUi's address with the address of the device to be
@@ -287,11 +282,11 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         /*id=*/ '12//345&6789',
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
 
     bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
 
@@ -304,17 +299,17 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     await init();
     const id = '12//345&6789';
     assertTrue(!!getDeviceSelectionPage());
-    let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+    const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
 
     const device = createDefaultBluetoothDevice(
         id,
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
 
     bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
 
@@ -336,21 +331,21 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         deviceId,
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
 
     const device1 = createDefaultBluetoothDevice(
         /*id=*/ '12345654321',
         /*publicName=*/ 'Head phones',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device 2',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
 
     bluetoothConfig.appendToDiscoveredDeviceList(
         [device.deviceProperties, device1.deviceProperties]);
@@ -399,17 +394,17 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
       async function() {
         await init();
         assertTrue(!!getDeviceSelectionPage());
-        let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+        const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
 
         const device = createDefaultBluetoothDevice(
             /*id=*/ '123456',
             /*publicName=*/ 'BeatsX',
             /*connectionState=*/
-            chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+            DeviceConnectionState.kConnected,
             /*opt_nickname=*/ 'device1',
             /*opt_audioCapability=*/
-            mojom.AudioOutputCapability.kCapableOfAudioOutput,
-            /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+            AudioOutputCapability.kCapableOfAudioOutput,
+            /*opt_deviceType=*/ DeviceType.kMouse);
 
         bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
         await flushTasks();
@@ -426,16 +421,16 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
 
   test('Confirm code', async function() {
     await init();
-    let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+    const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
     const device = createDefaultBluetoothDevice(
         /*id=*/ '123456',
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
     const pairingCode = '123456';
 
     bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
@@ -517,41 +512,41 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
 
   test('Pairing a new device cancels old pairing', async function() {
     await init();
-    let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+    const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
     const device = createDefaultBluetoothDevice(
         /*id=*/ '1234321',
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device 1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
 
     const device1 = createDefaultBluetoothDevice(
         /*id=*/ '12345654321',
         /*publicName=*/ 'Head phones',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device 2',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
 
     const device2 = createDefaultBluetoothDevice(
         /*id=*/ '123454321',
         /*publicName=*/ 'Speakers',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device 3',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
 
     bluetoothConfig.appendToDiscoveredDeviceList(
         [device.deviceProperties, device1.deviceProperties]);
     await flushTasks();
-    let deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
+    const deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
 
     // Try pairing to first device.
     let pairDevicePromise = deviceHandler.waitForPairDevice();
@@ -586,36 +581,36 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
       'Do not pair queued device if handler becomes unavailable',
       async function() {
         await init();
-        let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+        const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
         const device = createDefaultBluetoothDevice(
             /*id=*/ '1234321',
             /*publicName=*/ 'BeatsX',
             /*connectionState=*/
-            chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+            DeviceConnectionState.kConnected,
             /*opt_nickname=*/ 'device 1',
             /*opt_audioCapability=*/
-            mojom.AudioOutputCapability.kCapableOfAudioOutput,
-            /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+            AudioOutputCapability.kCapableOfAudioOutput,
+            /*opt_deviceType=*/ DeviceType.kMouse);
 
         const device1 = createDefaultBluetoothDevice(
             /*id=*/ '12345654321',
             /*publicName=*/ 'Head phones',
             /*connectionState=*/
-            chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+            DeviceConnectionState.kConnected,
             /*opt_nickname=*/ 'device 2',
             /*opt_audioCapability=*/
-            mojom.AudioOutputCapability.kCapableOfAudioOutput,
-            /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+            AudioOutputCapability.kCapableOfAudioOutput,
+            /*opt_deviceType=*/ DeviceType.kMouse);
 
         const device2 = createDefaultBluetoothDevice(
             /*id=*/ '12345555554321',
             /*publicName=*/ 'Speakers',
             /*connectionState=*/
-            chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+            DeviceConnectionState.kConnected,
             /*opt_nickname=*/ 'device 3',
             /*opt_audioCapability=*/
-            mojom.AudioOutputCapability.kCapableOfAudioOutput,
-            /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+            AudioOutputCapability.kCapableOfAudioOutput,
+            /*opt_deviceType=*/ DeviceType.kMouse);
 
         bluetoothConfig.appendToDiscoveredDeviceList([
           device.deviceProperties, device1.deviceProperties,
@@ -638,8 +633,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         await waitAfterNextRender(bluetoothPairingUi);
 
         // Disable Bluetooth.
-        bluetoothConfig.setSystemState(
-            chromeos.bluetoothConfig.mojom.BluetoothSystemState.kDisabled);
+        bluetoothConfig.setSystemState(BluetoothSystemState.kDisabled);
         await flushTasks();
 
         assertFalse(getDeviceSelectionPage().isBluetoothEnabled);
@@ -657,10 +651,9 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         // should be the case because device pairing handler is null.
 
         // Re-enable and select the device.
-        let onBluetoothDiscoveryStartedPromise =
+        const onBluetoothDiscoveryStartedPromise =
             bluetoothPairingUi.waitForOnBluetoothDiscoveryStartedForTest();
-        bluetoothConfig.setSystemState(
-            chromeos.bluetoothConfig.mojom.BluetoothSystemState.kEnabled);
+        bluetoothConfig.setSystemState(BluetoothSystemState.kEnabled);
 
         // Wait for |devicePairingHandler_| to be set in
         // onBluetoothDiscoveryStarted().
@@ -686,7 +679,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
   test('Pair with a specific device by address, success', async function() {
     await pairByDeviceAddress(/*address=*/ '123456');
 
-    let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+    const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
     const deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
     deviceHandler.completePairDevice(/*success=*/ true);
     await finishedPromise;
@@ -710,7 +703,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         // devices list.
         assertFalse(!!deviceHandler.getLastPairingDelegate());
 
-        let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+        const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
 
         // Simulate clicking 'Cancel'.
         const event = new CustomEvent('cancel');
@@ -742,15 +735,15 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         /*id=*/ '34567',
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
     bluetoothConfig.appendToDiscoveredDeviceList([device2.deviceProperties]);
     await flushTasks();
 
-    let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+    const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
     await selectDevice(device2.deviceProperties);
 
     deviceHandler.completePairDevice(/*success=*/ true);
@@ -761,7 +754,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     await pairByDeviceAddress(/*address=*/ '123456');
 
     const pairingCode = '123457';
-    let deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
+    const deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
     deviceHandler.requireAuthentication(
         PairingAuthType.CONFIRM_PASSKEY, pairingCode);
     await flushTasks();
@@ -771,8 +764,8 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     assertEquals(getConfirmCodePage().code, pairingCode);
 
     // Simulate pressing 'Confirm'.
-    let event = new CustomEvent('confirm-code');
-    let finishRequestConfirmPasskeyPromise =
+    const event = new CustomEvent('confirm-code');
+    const finishRequestConfirmPasskeyPromise =
         deviceHandler.waitForFinishRequestConfirmPasskey_();
     getConfirmCodePage().dispatchEvent(event);
 
@@ -784,7 +777,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     assertTrue(deviceHandler.getConfirmPasskeyResult());
 
     // Finishing the pairing with success should fire the |finished| event.
-    let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+    const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
     deviceHandler.completePairDevice(/*success=*/ true);
     await finishedPromise;
   });
@@ -795,7 +788,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         await pairByDeviceAddress(/*address=*/ '123456');
 
         const pairingCode = '123456';
-        let deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
+        const deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
         deviceHandler.requireAuthentication(
             PairingAuthType.CONFIRM_PASSKEY, pairingCode);
         await flushTasks();
@@ -831,14 +824,15 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         // The 'Enter Code' page should now be showing.
         assertTrue(!!getEnterCodePage());
 
-        let keyEnteredHandler = deviceHandler.getLastKeyEnteredHandlerRemote();
+        const keyEnteredHandler =
+            deviceHandler.getLastKeyEnteredHandlerRemote();
         keyEnteredHandler.handleKeyEntered(2);
         await flushTasks();
 
         assertEquals(getEnterCodePage().numKeysEntered, 2);
         assertEquals(getEnterCodePage().code, pairingCode);
 
-        let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+        const finishedPromise = eventToPromise('finished', bluetoothPairingUi);
         // Finished event is fired on successful pairing.
         deviceHandler.completePairDevice(/*success=*/ true);
         await finishedPromise;
@@ -853,11 +847,11 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         deviceId,
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
     bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
     await flushTasks();
 
@@ -867,7 +861,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     await selectDevice(device.deviceProperties);
     await flushTasks();
 
-    let deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
+    const deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
     deviceHandler.requireAuthentication(
         PairingAuthType.CONFIRM_PASSKEY, pairingCode);
     await flushTasks();
@@ -921,17 +915,16 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         deviceId,
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
     bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
     await flushTasks();
 
     // Disable Bluetooth.
-    bluetoothConfig.setSystemState(
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kDisabled);
+    bluetoothConfig.setSystemState(BluetoothSystemState.kDisabled);
     await flushTasks();
 
     // This should propagate to the device selection page.
@@ -940,8 +933,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     // Re-enable and select the device.
     let onBluetoothDiscoveryStartedPromise =
         bluetoothPairingUi.waitForOnBluetoothDiscoveryStartedForTest();
-    bluetoothConfig.setSystemState(
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kEnabled);
+    bluetoothConfig.setSystemState(BluetoothSystemState.kEnabled);
 
     // Wait for |devicePairingHandler_| to be set in
     // onBluetoothDiscoveryStarted().
@@ -962,8 +954,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     assertEquals(getConfirmCodePage().code, pairingCode);
 
     // Disable Bluetooth.
-    bluetoothConfig.setSystemState(
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kDisabled);
+    bluetoothConfig.setSystemState(BluetoothSystemState.kDisabled);
     await flushTasks();
 
     // We should be back to the device selection page again.
@@ -974,8 +965,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     // Re-enable.
     onBluetoothDiscoveryStartedPromise =
         bluetoothPairingUi.waitForOnBluetoothDiscoveryStartedForTest();
-    bluetoothConfig.setSystemState(
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kEnabled);
+    bluetoothConfig.setSystemState(BluetoothSystemState.kEnabled);
 
     // Wait for |devicePairingHandler_| to be set in
     // onBluetoothDiscoveryStarted().
@@ -1002,8 +992,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     assertEquals(getDeviceSelectionPage().failedPairingDeviceId, deviceId);
 
     // Disable Bluetooth.
-    bluetoothConfig.setSystemState(
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kDisabled);
+    bluetoothConfig.setSystemState(BluetoothSystemState.kDisabled);
     await flushTasks();
 
     assertFalse(getDeviceSelectionPage().isBluetoothEnabled);
@@ -1011,8 +1000,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     // Re-enable Bluetooth.
     onBluetoothDiscoveryStartedPromise =
         bluetoothPairingUi.waitForOnBluetoothDiscoveryStartedForTest();
-    bluetoothConfig.setSystemState(
-        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kEnabled);
+    bluetoothConfig.setSystemState(BluetoothSystemState.kEnabled);
     await onBluetoothDiscoveryStartedPromise;
 
     assertTrue(getDeviceSelectionPage().isBluetoothEnabled);
@@ -1034,11 +1022,11 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
         deviceId,
         /*publicName=*/ 'BeatsX',
         /*connectionState=*/
-        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected,
+        DeviceConnectionState.kConnected,
         /*opt_nickname=*/ 'device1',
         /*opt_audioCapability=*/
-        mojom.AudioOutputCapability.kCapableOfAudioOutput,
-        /*opt_deviceType=*/ mojom.DeviceType.kMouse);
+        AudioOutputCapability.kCapableOfAudioOutput,
+        /*opt_deviceType=*/ DeviceType.kMouse);
     bluetoothConfig.appendToDiscoveredDeviceList([device.deviceProperties]);
     await flushTasks();
 
@@ -1047,7 +1035,7 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     await flushTasks();
 
     // Simulate pairing failing.
-    let deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
+    const deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
     deviceHandler.completePairDevice(/*success=*/ false);
     await flushTasks();
     await waitAfterNextRender(bluetoothPairingUi);

@@ -42,6 +42,7 @@ class PrefService;
 namespace segmentation_platform {
 
 struct Config;
+class FieldTrialRegister;
 class ModelProviderFactory;
 class SegmentSelectorImpl;
 class SegmentScoreProvider;
@@ -50,26 +51,34 @@ class UkmDataManager;
 // The internal implementation of the SegmentationPlatformService.
 class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
  public:
-  SegmentationPlatformServiceImpl(
-      std::unique_ptr<ModelProviderFactory> model_provider,
-      leveldb_proto::ProtoDatabaseProvider* db_provider,
-      const base::FilePath& storage_dir,
-      UkmDataManager* ukm_data_manager,
-      PrefService* pref_service,
-      history::HistoryService* history_service,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      base::Clock* clock,
-      std::vector<std::unique_ptr<Config>> configs);
+  struct InitParams {
+    InitParams();
+    ~InitParams();
 
-  // For testing only.
-  SegmentationPlatformServiceImpl(
-      std::unique_ptr<StorageService> storage_service,
-      std::unique_ptr<ModelProviderFactory> model_provider,
-      PrefService* pref_service,
-      history::HistoryService* history_service,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      base::Clock* clock,
-      std::vector<std::unique_ptr<Config>> configs);
+    bool IsValid();
+
+    leveldb_proto::ProtoDatabaseProvider* db_provider = nullptr;
+    history::HistoryService* history_service = nullptr;
+    base::FilePath storage_dir;
+    PrefService* profile_prefs = nullptr;
+    PrefService* local_state = nullptr;
+
+    std::unique_ptr<ModelProviderFactory> model_provider;
+    UkmDataManager* ukm_data_manager = nullptr;
+    std::vector<std::unique_ptr<Config>> configs;
+    std::unique_ptr<FieldTrialRegister> field_trial_register;
+
+    scoped_refptr<base::SequencedTaskRunner> task_runner;
+    base::Clock* clock = nullptr;
+
+    // Test only:
+    std::unique_ptr<StorageService> storage_service;
+  };
+
+  explicit SegmentationPlatformServiceImpl(
+      std::unique_ptr<InitParams> init_params);
+
+  SegmentationPlatformServiceImpl();
 
   ~SegmentationPlatformServiceImpl() override;
 
@@ -86,6 +95,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
       const std::string& segmentation_key) override;
   void EnableMetrics(bool signal_collection_allowed) override;
   ServiceProxy* GetServiceProxy() override;
+  bool IsPlatformInitialized() override;
 
  private:
   friend class SegmentationPlatformServiceImplTest;
@@ -96,8 +106,15 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   // Must only be invoked with a valid SegmentInfo.
   void OnSegmentationModelUpdated(proto::SegmentInfo segment_info);
 
+  // Callback sent to child classes to notify when model results need to be
+  // refreshed. For example, when history is cleared.
+  void OnModelRefreshNeeded();
+
   // Called when service status changes.
   void OnServiceStatusChanged();
+
+  // Task that runs every day or at startup to keep the platform data updated.
+  void RunDailyTasks(bool is_startup);
 
   std::unique_ptr<ModelProviderFactory> model_provider_factory_;
 
@@ -109,6 +126,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   std::vector<std::unique_ptr<Config>> configs_;
   base::flat_set<optimization_guide::proto::OptimizationTarget>
       all_segment_ids_;
+  std::unique_ptr<FieldTrialRegister> field_trial_register_;
 
   std::unique_ptr<StorageService> storage_service_;
   bool storage_initialized_ = false;
@@ -128,6 +146,13 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   ExecutionService execution_service_;
 
   std::unique_ptr<ServiceProxyImpl> proxy_;
+
+  // PrefService from profile.
+  raw_ptr<PrefService> profile_prefs_;
+
+  // For metrics only:
+  const base::Time creation_time_;
+  base::Time init_time_;
 
   base::WeakPtrFactory<SegmentationPlatformServiceImpl> weak_ptr_factory_{this};
 };

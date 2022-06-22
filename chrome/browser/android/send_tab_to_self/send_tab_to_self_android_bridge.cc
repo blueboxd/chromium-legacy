@@ -8,14 +8,11 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/time.h"
 #include "chrome/browser/android/send_tab_to_self/android_notification_handler.h"
-#include "chrome/browser/android/send_tab_to_self/send_tab_to_self_entry_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler_registry.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_client_service_factory.h"
-#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/share/android/jni_headers/SendTabToSelfAndroidBridge_jni.h"
 #include "chrome/browser/share/android/jni_headers/TargetDeviceInfo_jni.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -106,55 +103,22 @@ static void JNI_SendTabToSelfAndroidBridge_DeleteAllEntries(
   model->DeleteAllEntries();
 }
 
-// Adds a new entry with the specified parameters. Returns the persisted
-// version which contains additional information such as GUID.
-static ScopedJavaLocalRef<jobject> JNI_SendTabToSelfAndroidBridge_AddEntry(
+// Adds a new entry with the specified parameters. Returns whether the
+// the persistent entry in the bridge was created.
+static jboolean JNI_SendTabToSelfAndroidBridge_AddEntry(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_url,
     const JavaParamRef<jstring>& j_title,
-    jlong j_navigation_time,
     const JavaParamRef<jstring>& j_target_device_sync_cache_guid) {
   const std::string url = ConvertJavaStringToUTF8(env, j_url);
   const std::string title = ConvertJavaStringToUTF8(env, j_title);
   const std::string target_device_sync_cache_guid =
       ConvertJavaStringToUTF8(env, j_target_device_sync_cache_guid);
-  base::Time navigation_time = base::Time::FromJavaTime(j_navigation_time);
 
   SendTabToSelfModel* model = GetModel(j_profile);
-  if (!model->IsReady()) {
-    return nullptr;
-  }
-
-  const SendTabToSelfEntry* persisted_entry = model->AddEntry(
-      GURL(url), title, navigation_time, target_device_sync_cache_guid);
-
-  if (persisted_entry == nullptr) {
-    return nullptr;
-  }
-  return CreateJavaSendTabToSelfEntry(env, persisted_entry);
-}
-
-// Returns the entry associated with a GUID. May return nullptr if none is
-// found.
-static ScopedJavaLocalRef<jobject>
-JNI_SendTabToSelfAndroidBridge_GetEntryByGUID(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_profile,
-    const JavaParamRef<jstring>& j_guid) {
-  SendTabToSelfModel* model = GetModel(j_profile);
-  if (!model->IsReady()) {
-    return nullptr;
-  }
-
-  const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  const SendTabToSelfEntry* found_entry = model->GetEntryByGUID(guid);
-
-  if (found_entry == nullptr) {
-    return nullptr;
-  }
-
-  return CreateJavaSendTabToSelfEntry(env, found_entry);
+  return model->IsReady() &&
+         model->AddEntry(GURL(url), title, target_device_sync_cache_guid);
 }
 
 // Deletes the entry associated with the passed in GUID.
@@ -191,16 +155,6 @@ static void JNI_SendTabToSelfAndroidBridge_MarkEntryOpened(
     const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
     model->MarkEntryOpened(guid);
   }
-}
-
-// Returns whether the feature is available for the specified |web_contents|.
-static jboolean JNI_SendTabToSelfAndroidBridge_IsFeatureAvailable(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(j_web_contents);
-
-  return ShouldOfferFeature(web_contents);
 }
 
 static void JNI_SendTabToSelfAndroidBridge_UpdateActiveWebContents(

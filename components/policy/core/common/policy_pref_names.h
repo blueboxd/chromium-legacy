@@ -21,6 +21,7 @@ POLICY_EXPORT extern const char kDlpReportingEnabled[];
 POLICY_EXPORT extern const char kDlpRulesList[];
 #if BUILDFLAG(IS_MAC)
 POLICY_EXPORT extern const char kEnterpriseMDMManagementMac[];
+POLICY_EXPORT extern const char kScreenTimeEnabled[];
 #endif
 POLICY_EXPORT extern const char kLastPolicyStatisticsUpdate[];
 POLICY_EXPORT extern const char kNativeWindowOcclusionEnabled[];
@@ -41,6 +42,9 @@ POLICY_EXPORT extern const char kIsolatedAppsDeveloperModeAllowed[];
 POLICY_EXPORT extern const char kWebSQLAccess[];
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 POLICY_EXPORT extern const char kLastPolicyCheckTime[];
+#endif
+#if BUILDFLAG(IS_IOS)
+POLICY_EXPORT extern const char kUserPolicyNotificationWasShown[];
 #endif
 
 }  // namespace policy_prefs

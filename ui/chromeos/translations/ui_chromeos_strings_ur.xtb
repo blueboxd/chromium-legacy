@@ -94,6 +94,8 @@
 <translation id="1742316578210444689">عبرانی نقل حرفی</translation>
 <translation id="1747761757048858544">ڈچ (نیدرلینڈز)</translation>
 <translation id="174937106936716857">فائلوں کی کُل تعداد</translation>
+<translation id="1755345808328621801">‏یہ فائل Windows سافٹ ویئر استعمال کر رہے PC کیلئے بنائی گئی ہے۔ یہ آپ کے اس آلہ کے ساتھ موافق نہیں ہے جو ChromeOS چلاتا ہے۔ براہ کرم ایک مناسب متبادل ایپ کیلئے Chrome ویب اسٹور تلاش کریں۔</translation>
+<translation id="1757915090001272240">وائڈ لاطینی</translation>
 <translation id="1773212559869067373">توثیق کا سرٹیفکیٹ مقامی طور پر مسترد کر دیا گیا</translation>
 <translation id="1775381402323441512">ویڈیو کی معلومات</translation>
 <translation id="180035236176489073">ان فائلوں تک رسائی کیلئے آپ کا آن لائن ہونا ضروری ہے۔</translation>
@@ -103,6 +105,7 @@
 <translation id="1813278315230285598">سروسز</translation>
 <translation id="1829129547161959350">پینگوئن</translation>
 <translation id="183183971458492120">معلومات لوڈ ہو رہی ہے…</translation>
+<translation id="1832073788765803750">نصف چوڑائی کٹاکانا</translation>
 <translation id="1834290891154666894">موضوع کے متبادل نام سے مماثل اندراج غلط ہے</translation>
 <translation id="1838709767668011582">‏Google سائٹ</translation>
 <translation id="1844692022597038441">یہ فائل آف لائن دستیاب نہیں ہے۔</translation>
@@ -117,7 +120,6 @@
 <translation id="1936717151811561466">فنّنِش</translation>
 <translation id="1942765061641586207">تصویر کا ریزولیوشن</translation>
 <translation id="1972984168337863910">فائلز کے تاثرات کے پینلز کو پھیلائیں</translation>
-<translation id="1984456723671657197">‏فائل کی یہ قسم غیر تعاون یافتہ ہے۔ Chrome OS پر فائلز کھولنے کے بارے میں <ph name="BEGIN_LINK_HELP" />مزید جانیں<ph name="END_LINK_HELP" />۔</translation>
 <translation id="1995337122023280937">فائل کے مقام پر جائیں</translation>
 <translation id="2001796770603320721">‏Drive میں نظم کریں</translation>
 <translation id="2009067268969781306">ڈرائیو کو فارمیٹ کرنے سے اس پر اسٹور کردہ تمام ڈیٹا حذف ہو جائے گا۔ اس کارروائی کو کالعدم نہیں کیا جا سکتا۔</translation>
@@ -199,8 +201,6 @@
 <translation id="2649120831653069427">رینبو فش</translation>
 <translation id="2663066752008346276">میانسان کی بورڈ کے ساتھ برمی/میانمار</translation>
 <translation id="2664412712123763093">فائل کا مقام</translation>
-<translation id="2672394958563893062">ایک خرابی پیش آگئی۔ ابتدا سے دوبارہ شروع کرنے کیلئے کلک کریں۔</translation>
-<translation id="2676946222714718093">اس پر چل رہا ہے</translation>
 <translation id="2718540689505416944">‏Linux والی ایپ انسٹال کریں</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، تفصیلات</translation>
 <translation id="2724954091494693138">‏F کی بورڈ کے ساتھ ترکی</translation>
@@ -226,6 +226,7 @@
 <translation id="2943503720238418293">اس سے چھوٹا نام استعمال کریں</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" /> کو فارمیٹ کیا جا رہا ہے...</translation>
 <translation id="2951236788251446349">جیلی فش</translation>
+<translation id="2977940621473452797">‏یہ فائل Macintosh سافٹ ویئر استعمال کر رہے کمپیوٹر کیلئے بنائی گئی ہے۔ یہ آپ کے اس آلے کے ساتھ مطابقت پذیر نہیں ہے جو ChromeOS چلاتا ہے۔ براہ کرم ایک مناسب متبادل ایپ کیلئے Chrome ویب اسٹور تلاش کریں۔</translation>
 <translation id="2984337792991268709">آج <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2994320653639462337"><ph name="COUNT" /> آئٹمز بحال ہو رہے ہیں...</translation>
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> کا بیک اپ نہیں لیا جا سکا</translation>
@@ -341,7 +342,6 @@
 <translation id="3901991538546252627"><ph name="NAME" /> سے منسلک کیا جا رہا ہے</translation>
 <translation id="3906232975181435906">موبائل پروفائل انسٹال ہو رہی ہے، نیٹ ورک <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3930521966936686665">ان پر چلائیں</translation>
 <translation id="3943857333388298514">پیسٹ کریں</translation>
 <translation id="3952872973865944257">تیلگو فونیٹک</translation>
 <translation id="3958548648197196644">کیوی</translation>
@@ -413,7 +413,6 @@
 <translation id="4631887759990505102">فن کار</translation>
 <translation id="4642769377300286600">موبائل کی پروفائل انسٹال ہو رہی ہے، نیٹ ورک <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">‏Qwerty کی بورڈ کے ساتھ چیک زبان</translation>
-<translation id="4656293982926141856">اس کمپیوٹر پر</translation>
 <translation id="4656777537938206294">فائلز کو آف لائن دستیاب کرائیں</translation>
 <translation id="4658782175094886150">برف سے ڈھکا ہوا شخص</translation>
 <translation id="4669606053856530811">جب تک ان آئٹمز کا ان کے ساتھ اشتراک نہیں کیا جاتا ہے، <ph name="SOURCE_NAME" /> کے اراکین کی رسائی منقطع ہو جائے گي۔</translation>
@@ -423,13 +422,13 @@
 <translation id="4694604912444486114">بندر</translation>
 <translation id="469612310041132144">‏چینی Quick</translation>
 <translation id="4697043402264950621">فائل کی فہرست کو صعودی ترتیب میں <ph name="COLUMN_NAME" /> کے لحاظ سے ترتیب دیا گیا۔</translation>
+<translation id="469897186246626197">‏یہ فائل Windows سافٹ ویئر استعمال کرنے والے PC کیلئے بنائی گئی ہے۔ یہ آپ کے اس آلے کے ساتھ موافق نہیں ہے جو ChromeOS چلاتا ہے۔ ChromeOS پر فائلز کھولنے کے بارے میں <ph name="BEGIN_LINK_HELP" />مزید جانیں<ph name="END_LINK_HELP" />۔</translation>
 <translation id="4706042980341760088">ٹائپ رائٹر کی بورڈ کے ساتھ تمل</translation>
 <translation id="4711094779914110278">ترکی</translation>
 <translation id="4712283082407695269">"<ph name="PATH" />" کھل رہا ہے</translation>
 <translation id="4720185134442950733">موبائل ڈیٹا نیٹ ورک</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> تصاویر کا بیک اپ لے لیا گیا</translation>
 <translation id="4725511304875193254">کورگی</translation>
-<translation id="4732760563705710320">معذرت، یہ ویڈیو آپ کے کاسٹ آلہ کی جانب سے تعاون یافتہ نہیں ہے۔</translation>
 <translation id="4737050008115666127">لینڈنگ</translation>
 <translation id="4747271164117300400">مقدونيائی</translation>
 <translation id="4759238208242260848">ڈاؤن لوڈز</translation>
@@ -519,6 +518,7 @@
 <translation id="5335458522276292100">‏<ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> پر <ph name="FILE_COUNT" /> کا بیک اپ لیا جا رہا ہے</translation>
 <translation id="535792325654997756">بلیوں کے ساتھ شخص</translation>
 <translation id="5358764674931277">فریم ریٹ</translation>
+<translation id="5363339716524495120">ان پٹ زبان چینی ہے</translation>
 <translation id="5368191757080475556">‏Linux کے ساتھ فولڈر کا اشتراک کریں</translation>
 <translation id="5402367795255837559">بریل</translation>
 <translation id="5411472733320185105">ان میزبانوں اور ڈومینز کیلئے پراکسی ترتیبات استعمال نہ کریں:</translation>
@@ -541,8 +541,10 @@
 <translation id="5534520101572674276">سائز کو شمار کیا جا رہا ہے</translation>
 <translation id="554153475311314364">يونانی نقل حرفی</translation>
 <translation id="5583640892426849032">بیک اسپیس</translation>
+<translation id="5583664733673201137">رموز اوقاف کی چوڑائی پوری ہے</translation>
 <translation id="5602622065581044566">فونیٹک کی بورڈ کے ساتھ بلغاریائی</translation>
 <translation id="5605830556594064952">‏US ڈوراک</translation>
+<translation id="5618330573454123917">‏یہ فائل Macintosh سافٹ ویئر استعمال کر رہے کمپیوٹر کیلئے بنائی گئی ہے۔ یہ آپ کے اس آلے کے ساتھ موافق نہیں ہے جو ChromeOS چلاتا ہے۔ ChromeOS پر فائلز کھولنے کے بارے میں <ph name="BEGIN_LINK_HELP" />مزید جانیں<ph name="END_LINK_HELP" />۔</translation>
 <translation id="5625294776298156701">‏Tamil99 کی بورڈ کے ساتھ تمل</translation>
 <translation id="5633226425545095130">اس آئٹم کو منتقل کرنے سے یہ ہر اس شخص کے ساتھ اشتراک ہو جائے گا جو اشتراک کردہ فولڈر '<ph name="DESTINATION_NAME" />' کو دیکھ سکتا ہے۔</translation>
 <translation id="5649768706273821470">سنیں</translation>
@@ -618,7 +620,6 @@
 <translation id="6224253798271602650"><ph name="DRIVE_NAME" /> کو فارمیٹ کریں</translation>
 <translation id="6227235786875481728">یہ فائل نہیں چلائی جا سکی۔</translation>
 <translation id="6241349547798190358">ڈچ (بیلجیم)</translation>
-<translation id="6248400709929739064">سب ٹائٹلز کو فعال کریں</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="PHONE_NAME" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />%، فون کی بیٹری <ph name="BATTERY_STATUS" />%، منسلک کریں</translation>
 <translation id="6269630227984243955">مالے</translation>
 <translation id="6287852322318138013">یہ فائل کھولنے کیلئے ایک ایپ منتخب کریں</translation>
@@ -636,7 +637,6 @@
 <translation id="637062427944097960">یہ فائل ایک مختلف ڈیسک ٹاپ پر کھولی گئی ہے۔ اسے دیکھنے کیلئے <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) پر منتقل ہوں۔</translation>
 <translation id="6394388407447716302">صرف پڑھنے کے لیے</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> آئٹمز</translation>
-<translation id="6398765197997659313">پوری سکرین سے خارج ہوں</translation>
 <translation id="642282551015776456">یہ نام کسی فائل یا فولڈر نام کے بطور استعمال نہیں کیا جا سکتا ہے</translation>
 <translation id="6423031066725912715">‏TCVN کی بورڈ کے ساتھ ویتنامی</translation>
 <translation id="6485131920355264772">اسپیس کی معلومات کی بازيابی میں ناکام ہوگیا</translation>
@@ -672,7 +672,6 @@
 <translation id="6820687829547641339">‏Gzip کمپریس کردہ tar آرکائیو</translation>
 <translation id="6823166707458800069">اس فولڈر میں محفوظ کردہ سبھی فائلوں کا خودکار طور پر آن لائن بیک اپ لیا جاتا ہے۔</translation>
 <translation id="6825883775269213504">روسی</translation>
-<translation id="6827236167376090743">یہ ویڈیو بہت دیر تک چلتی رہے گی۔</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> کو انتخاب سے ہٹا دیا گیا۔</translation>
 <translation id="6856459657722366306"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" />، <ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی %<ph name="SIGNAL_STRENGTH" />، تفصیلات</translation>
 <translation id="6861394552169064235">فارسی</translation>
@@ -701,7 +700,6 @@
 <translation id="6970230597523682626">بلغاری</translation>
 <translation id="6973630695168034713">فولڈرز</translation>
 <translation id="6976795442547527108">شیر</translation>
-<translation id="6978611942794658017">‏یہ فائل Windows سافٹ ویئر استعمال کر رہے PC کیلئے بنائی گئی ہے۔ یہ آپ کے اس آلہ کے ساتھ مطابقت پذیر نہیں ہے جو Chrome OS چلاتا ہے۔ براہ کرم ایک مناسب متبادل ایپ کیلئے Chrome ویب اسٹور تلاش کریں۔</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6989942356279143254">سویڈش</translation>
 <translation id="6990081529015358884">آپ کے پاس جگہ ختم ہو گئی ہے</translation>
@@ -712,6 +710,7 @@
 <translation id="7037472120706603960">تمل نقل حرفی</translation>
 <translation id="7040138676081995583">ان کے ساتھ کھولیں…</translation>
 <translation id="7048024426273850086"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="PHONE_NAME" />، <ph name="PROVIDER_NAME" />، سگنل کی مضبوطی %<ph name="SIGNAL_STRENGTH" />، فون کی بیٹری %<ph name="BATTERY_STATUS" />، منسلک کریں</translation>
+<translation id="7070804685954057874">براہ راست ان پٹ</translation>
 <translation id="7075931588889865715">‏TIS 820-2531 کی بورڈ کے ساتھ تھائی</translation>
 <translation id="708278670402572152">اسکین کرنے کو فعال کرنے کے لئے غیر منسلک کریں</translation>
 <translation id="7086590977277044826">‏InScript کی بورڈ کے ساتھ تمل</translation>
@@ -739,6 +738,7 @@
 <translation id="7309413087278791451">جرمن (بیلجیئم)</translation>
 <translation id="7339898014177206373">نئی ونڈو</translation>
 <translation id="7343393116438664539">‏ویتنامی Telex</translation>
+<translation id="7357762654218998920">‏فائل کی یہ قسم غیر تعاون یافتہ ہے۔ ChromeOS پر فائلز کھولنے کے بارے میں <ph name="BEGIN_LINK_HELP" />مزید جانیں<ph name="END_LINK_HELP" />۔</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> آئٹمز کاپی کئے جا رہے ہیں...</translation>
 <translation id="7375951387215729722">فائل کی فہرست کو نزولی ترتیب میں <ph name="COLUMN_NAME" /> کے لحاظ سے ترتیب دیا گیا۔</translation>
 <translation id="7402503521691663770">‏ChromeOS Flex آلات</translation>
@@ -751,6 +751,7 @@
 <translation id="7489215562877293245">‏<ph name="FILE_COUNT" /> ملیں
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> پر بیک اپ لینے کیلئے تیار</translation>
+<translation id="749452993132003881">ہیراگنا</translation>
 <translation id="7495372004724182530">ملیالم فونیٹک</translation>
 <translation id="7505167922889582512">پوشیدہ فائلیں دکھائیں</translation>
 <translation id="7514365320538308">ڈاؤن لوڈ کریں</translation>
@@ -810,8 +811,8 @@
 <translation id="7857117644404132472">استثناء شامل کریں</translation>
 <translation id="7868774406711971383">پولش</translation>
 <translation id="7874321682039004450">فلپینو</translation>
-<translation id="7881969471599061635">سب ٹائٹلز کو غیر فعال کریں</translation>
 <translation id="78946041517601018">مشترکہ ڈرائیوز</translation>
+<translation id="7903984238293908205">کٹاکانا</translation>
 <translation id="7908793776359722643">پارٹیشن کو فارمیٹ کرنے سے اس پر اسٹور کردہ تمام ڈیٹا مٹا دیا جائے گا۔ اس عمل کو کالعدم نہیں کیا جا سکتا۔</translation>
 <translation id="7925247922861151263">‏AAA چیک ناکام ہوگیا</translation>
 <translation id="7925686952655276919">مطابقت پذیری کیلئے موبائل ڈیٹا کا استعمال نہ کریں</translation>
@@ -823,7 +824,6 @@
 <translation id="7972920761225148017">فرانسیسی (سوئٹزر لینڈ)</translation>
 <translation id="7973962044839454485">‏ایک غلط صارف نام یا پاس ورڈ کی وجہ سے PPP کی توثیق ناکام ہو گئی</translation>
 <translation id="7980421588063892270">کول مارک کی بورڈ کے ساتھ انگریزی (امریکہ)</translation>
-<translation id="79907182588096956">‏یہ فائل Windows سافٹ ویئر استعمال کرنے والے PC کیلئے بنائی گئی ہے۔ یہ آپ کے اس آلے کے ساتھ موافق نہیں ہے جو Chrome OS چلاتا ہے۔ Chrome OS پر فائلز کھولنے کے بارے میں <ph name="BEGIN_LINK_HELP" />مزید جانیں<ph name="END_LINK_HELP" />۔</translation>
 <translation id="8000066093800657092">کوئی نیٹ ورک نہیں ہے</translation>
 <translation id="8008366997883261463">ڈاگ</translation>
 <translation id="8028993641010258682">سائز</translation>
@@ -840,6 +840,7 @@
 <translation id="8128733386027980860">ڈوراک کی بورڈ کے ساتھ انگریزی (برطانیہ)</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" کا آپ کے ساتھ اشتراک کیا گیا ہے۔ آپ اسے حذف نہیں کر سکتے ہیں کیونکہ آپ اس کے مالک نہیں ہیں۔</translation>
 <translation id="813913629614996137">آغاز کیا جا رہا ہے…</translation>
+<translation id="8147028810663464959">حرف کی چوڑائی پوری ہے</translation>
 <translation id="8151638057146502721">کنفیگر کریں</translation>
 <translation id="8154842056504218462">تمام اندراجات منتخب کئے گئے۔</translation>
 <translation id="8157684860301034423">ایپ کی معلومات دوبارہ حاصل کرنے میں ناکام ہو گئے۔</translation>
@@ -849,6 +850,7 @@
 <translation id="8208580316430297579">فنی شاہکار</translation>
 <translation id="8223479393428528563">آف لائن استعمال کیلئے یہ فائلیں محفوظ کرنے کیلئے، پھر سے آن لائن ہو جائیں، فائلوں پر دایاں کلک کریں اور <ph name="OFFLINE_CHECKBOX_NAME" /> اختیار منتخب کریں۔</translation>
 <translation id="8249296373107784235">منسوخ کریں</translation>
+<translation id="8250690786522693009">لاطينی</translation>
 <translation id="8250920743982581267">دستاویزات</translation>
 <translation id="8261506727792406068">حذف کریں</translation>
 <translation id="8261561378965667560">‏چینی Array</translation>
@@ -888,7 +890,6 @@
 <translation id="8492972329130824181">ہوم نیٹ ورک دستیاب نہیں ہے۔ منسلک ہونے کیلئے موبائل ڈیٹا رومنگ کو فعال کرنا ہوگا۔</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> آئٹمز کو اخذ کیا جا رہا ہے…</translation>
 <translation id="8521441079177373948">UK</translation>
-<translation id="8525306231823319788">پوری اسکرین</translation>
 <translation id="853494022971700746">فرانسیسی (فرانس)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_COUNT" /> میں سے <ph name="NETWORK_INDEX" /> نیٹ ورک، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی<ph name="SIGNAL_STRENGTH" />%، تفصیلات</translation>
 <translation id="8545476925160229291">انگریزی (امریکہ)</translation>
@@ -934,7 +935,6 @@
 <translation id="8912078710089354287">دُم ہلاتا ہوا کتا</translation>
 <translation id="8919081441417203123">ڈينش</translation>
 <translation id="8965697826696209160">اس میں کافی جگہ نہیں ہے۔</translation>
-<translation id="8970501467542182729">‏یہ فائل Macintosh سافٹ ویئر استعمال کر رہے کمپیوٹر کیلئے بنائی گئی ہے۔ یہ آپ کے اس آلے کے ساتھ موافق نہیں ہے جو Chrome OS چلاتا ہے۔ Chrome OS پر فائلز کھولنے کے بارے میں <ph name="BEGIN_LINK_HELP" />مزید جانیں<ph name="END_LINK_HELP" />۔</translation>
 <translation id="8997962250644902079">‏چینی (روایتی) Pinyin</translation>
 <translation id="9003940392834790328"><ph name="NETWORK_COUNT" /> میں سے <ph name="NETWORK_INDEX" /> نیٹ ورک، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />%، آپ کے منتظم کے زیر انتظام ہے، تفصیلات</translation>
 <translation id="9017798300203431059">روسی فونیٹک</translation>
@@ -953,7 +953,6 @@
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' کے اراکین کو ان آئٹمز تک رسائي حاصل ہوگي۔</translation>
 <translation id="9131598836763251128">ایک یا مزید فائلیں منتخب کریں</translation>
 <translation id="9133055936679483811">زپ کرنا ناکام ہوگیا۔ <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">‏یہ فائل Macintosh سافٹ ویئر استعمال کر رہے کمپیوٹر کیلئے بنائی گئی ہے۔ یہ آپ کے اس آلے کے ساتھ مطابقت پذیر نہیں ہے جو Chrome OS چلاتا ہے۔ براہ کرم ایک مناسب متبادل ایپ کیلئے Chrome ویب اسٹور تلاش کریں۔</translation>
 <translation id="9144340019284012223">کیٹیلان</translation>
 <translation id="914873105831852105">‏غلط PIN۔ آپ کے پاس 1 کوشش بچی ہے۔</translation>
 <translation id="9153934054460603056">شناخت اور پاس ورڈ کو محفوظ کریں</translation>

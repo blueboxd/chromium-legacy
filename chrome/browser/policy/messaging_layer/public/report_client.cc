@@ -199,13 +199,13 @@ ReportingClient::ReportingClient()
           [](base::OnceCallback<void(
                  StatusOr<scoped_refptr<StorageModuleInterface>>)>
                  storage_created_cb) {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
             if (StorageSelector::is_use_missive()) {
               StorageSelector::CreateMissiveStorageModule(
                   std::move(storage_created_cb));
               return;
             }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
             // Storage location in the local file system (if local storage is
             // enabled).
@@ -361,7 +361,7 @@ ReportingClient::GetDefaultUploadProvider(
     UploadClient::ReportSuccessfulUploadCallback report_successful_upload_cb,
     UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb,
     GetCloudPolicyClientCallback build_cloud_policy_client_cb) {
-  return std::make_unique<::reporting::EncryptedReportingUploadProvider>(
+  return std::make_unique<EncryptedReportingUploadProvider>(
       report_successful_upload_cb, encryption_key_attached_cb,
       build_cloud_policy_client_cb);
 }

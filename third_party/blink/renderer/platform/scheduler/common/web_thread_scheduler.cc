@@ -141,10 +141,6 @@ void WebThreadScheduler::DidAnimateForInputOnCompositorThread() {
   NOTREACHED();
 }
 
-void WebThreadScheduler::DidScheduleBeginMainFrame() {
-  NOTREACHED();
-}
-
 void WebThreadScheduler::DidRunBeginMainFrame() {
   NOTREACHED();
 }
@@ -184,10 +180,6 @@ void WebThreadScheduler::SetTopLevelBlameContext(
 }
 
 void WebThreadScheduler::SetRendererProcessType(WebRendererProcessType type) {
-  NOTREACHED();
-}
-
-void WebThreadScheduler::OnMainFrameRequestedForInput() {
   NOTREACHED();
 }
 

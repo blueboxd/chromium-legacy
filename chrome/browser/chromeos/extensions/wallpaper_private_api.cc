@@ -13,6 +13,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_enumerator.h"
@@ -245,11 +246,13 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
 
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
     // When the sync settings categorization is on, the wallpaper sync status is
-    // stored in the kSyncOsWallpaper pref. The pref value essentially means
-    // "themes sync is on" && "apps sync is on".
+    // stored in the kSyncOsWallpaper pref.
+    syncer::SyncUserSettings* user_settings = sync_service->GetUserSettings();
+    bool all_os_types_enabled = user_settings->IsSyncAllOsTypesEnabled();
     bool os_wallpaper_sync_enabled = profile->GetPrefs()->GetBoolean(
         chromeos::settings::prefs::kSyncOsWallpaper);
-    dict->SetBoolKey(kSyncThemes, os_wallpaper_sync_enabled);
+    dict->SetBoolKey(kSyncThemes,
+                     all_os_types_enabled || os_wallpaper_sync_enabled);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
   }
@@ -391,7 +394,7 @@ WallpaperPrivateResetWallpaperFunction::Run() {
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
 
   WallpaperControllerClientImpl::Get()->SetDefaultWallpaper(
-      account_id, true /* show_wallpaper */);
+      account_id, true /* show_wallpaper */, base::DoNothing());
   return RespondNow(NoArguments());
 }
 

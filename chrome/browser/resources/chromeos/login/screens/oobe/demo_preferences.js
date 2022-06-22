@@ -80,9 +80,7 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('DemoPreferencesScreen', {
-      resetAllowed: false,
-    });
+    this.initializeLoginScreen('DemoPreferencesScreen');
     this.updateLocalizedContent();
   }
 
@@ -105,11 +103,13 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
 
   /** Called when dialog is shown for the first time */
   applyOobeConfiguration_() {
-    if (this.configuration_applied_)
+    if (this.configuration_applied_) {
       return;
+    }
     const configuration = Oobe.getInstance().getOobeConfiguration();
-    if (!configuration)
+    if (!configuration) {
       return;
+    }
     if (configuration.demoPreferencesNext) {
       this.onNextClicked_();
     }
@@ -140,7 +140,7 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
    */
   setSelectedKeyboard(keyboardId) {
     let found = false;
-    for (let keyboard of this.keyboards) {
+    for (const keyboard of this.keyboards) {
       if (keyboard.value != keyboardId) {
         keyboard.selected = false;
         continue;
@@ -148,8 +148,9 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
       keyboard.selected = true;
       found = true;
     }
-    if (!found)
+    if (!found) {
       return;
+    }
 
     // Force i18n-dropdown to refresh.
     this.keyboards = this.keyboards.slice();
@@ -182,7 +183,7 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
     this.countries = countries;
     this.$.countryDropdownContainer.hidden = countries.length == 0;
     for (let i = 0; i < countries.length; ++i) {
-      let country = countries[i];
+      const country = countries[i];
       if (country.selected && country.value !== this.country_not_selected_id_) {
         this.is_country_selected_ = true;
         return;

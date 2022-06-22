@@ -13,11 +13,16 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_auto_reset.h"
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "base/scoped_observation.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -26,6 +31,9 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/test/test_browser_ui.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/test/pixel/browser_skia_gold_pixel_diff.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -34,6 +42,10 @@
 #include "ui/base/interaction/framework_specific_implementation.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/views/controls/webview/webview.h"
+#include "ui/views/interaction/element_tracker_views.h"
+#include "ui/views/view_class_properties.h"
+#include "ui/views/view_observer.h"
 
 namespace content {
 class RenderFrameHost;
@@ -41,10 +53,60 @@ class RenderFrameHost;
 
 namespace {
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define SUPPORTS_PIXEL_TESTS 1
+#else
+#define SUPPORTS_PIXEL_TESTS 0
+#endif
+
+#if SUPPORTS_PIXEL_TESTS
+class PixelTestUi : public TestBrowserUi {
+ public:
+  PixelTestUi(views::View* view,
+              const std::string& screenshot_name,
+              const std::string& baseline)
+      : view_(view), screenshot_name_(screenshot_name), baseline_(baseline) {}
+  ~PixelTestUi() override = default;
+
+  void ShowUi(const std::string& name) override { NOTREACHED(); }
+  void WaitForUserDismissal() override { NOTREACHED(); }
+
+  bool VerifyUi() override {
+    auto* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+    const std::string test_name =
+        base::StrCat({test_info->test_case_name(), "_", test_info->name()});
+    const std::string screenshot_name =
+        screenshot_name_.empty()
+            ? baseline_
+            : base::StrCat({screenshot_name_, "_", baseline_});
+    return VerifyPixelUi(view_, test_name, screenshot_name);
+  }
+
+ private:
+  base::raw_ptr<views::View> view_ = nullptr;
+  std::string screenshot_name_;
+  std::string baseline_;
+};
+#endif  // SUPPORTS_PIXEL_TESTS
+
 content::WebContents* GetWebContents(Browser* browser,
                                      absl::optional<int> tab_index) {
   auto* const model = browser->tab_strip_model();
   return model->GetWebContentsAt(tab_index.value_or(model->active_index()));
+}
+
+// Provides a template function for "does this element exist" queries.
+// Will return on_missing_selector if 'err?.selector' is valid.
+// Will return on_found if el is valid.
+std::string GetExistsQuery(const char* on_missing_selector,
+                           const char* on_found) {
+  return base::StringPrintf(R"((el, err) => {
+        if (err?.selector) return %s;
+        if (err) throw err;
+        return %s;
+      })",
+                            on_missing_selector, on_found);
 }
 
 // Our replacement for content::EvalJs() that uses the same underlying logic as
@@ -119,14 +181,8 @@ content::EvalJsResult EvalJsLocal(
 
 std::string CreateDeepQuery(
     const InteractionSequenceBrowserUtil::DeepQuery& where,
-    const std::string& function,
-    bool is_exists) {
-  const std::string not_found_action =
-      is_exists ? "return selector"
-                : "throw new Error('Selector not found: ' + selector)";
-  const std::string deepquery_return_expression = is_exists ? "''" : "cur";
-  const std::string final_return_expression =
-      is_exists ? "el" : "(" + function + ")(el)";
+    const std::string& function) {
+  DCHECK(!function.empty());
 
   // Safely convert the selector list in `where` to a JSON/JS list.
   base::Value::List selector_list;
@@ -145,22 +201,38 @@ std::string CreateDeepQuery(
              }
              cur = cur.querySelector(selector);
              if (!cur) {
-               %s;
+               const err = new Error('Selector not found: ' + selector);
+               err.selector = selector;
+               throw err;
              }
            }
-           return %s;
+           return cur;
          }
 
-         let el = deepQuery(%s);
-         return %s;
+         let el, err;
+         try {
+           el = deepQuery(%s);
+         } catch (error) {
+           err = error;
+         }
+
+         const func = (%s);
+         if (err && func.length <= 1) {
+           throw err;
+         }
+         return func(el, err);
        })",
-      not_found_action.c_str(), deepquery_return_expression.c_str(),
-      selectors.c_str(), final_return_expression.c_str());
+      selectors.c_str(), function.c_str());
 }
 
 }  // namespace
 
 InteractionSequenceBrowserUtil::StateChange::StateChange() = default;
+InteractionSequenceBrowserUtil::StateChange::StateChange(
+    InteractionSequenceBrowserUtil::StateChange&& other) = default;
+InteractionSequenceBrowserUtil::StateChange&
+InteractionSequenceBrowserUtil::StateChange::operator=(
+    InteractionSequenceBrowserUtil::StateChange&& other) = default;
 InteractionSequenceBrowserUtil::StateChange::~StateChange() = default;
 
 class InteractionSequenceBrowserUtil::NewTabWatcher
@@ -214,7 +286,7 @@ class InteractionSequenceBrowserUtil::NewTabWatcher
 class InteractionSequenceBrowserUtil::Poller {
  public:
   Poller(InteractionSequenceBrowserUtil* const owner,
-         const std::string function,
+         const std::string& function,
          const DeepQuery& where,
          absl::optional<base::TimeDelta> timeout,
          base::TimeDelta interval)
@@ -234,6 +306,16 @@ class InteractionSequenceBrowserUtil::Poller {
 
  private:
   void Poll() {
+    // Callback can get called again if Evaluate() below stalls. We don't want
+    // to stack callbacks because of issues with message passing to/from web
+    // contents.
+    if (is_polling_)
+      return;
+
+    auto weak_ptr = weak_factory_.GetWeakPtr();
+    base::WeakAutoReset is_polling_auto_reset(weak_ptr, &Poller::is_polling_,
+                                              true);
+
     base::Value result;
     if (where_.empty()) {
       result = owner_->Evaluate(function_);
@@ -243,10 +325,15 @@ class InteractionSequenceBrowserUtil::Poller {
       result = owner_->EvaluateAt(where_, function_);
     }
 
-    if (IsTruthy(result)) {
-      owner_->OnPollEvent(this);
-    } else if (timeout_.has_value() && elapsed_.Elapsed() > timeout_.value()) {
-      owner_->OnPollTimeout(this);
+    // At this point, weak_ptr might be invalid since we could have been deleted
+    // while we were waiting for Evaluate[At]() to complete.
+    if (weak_ptr) {
+      if (IsTruthy(result)) {
+        owner_->OnPollEvent(this);
+      } else if (timeout_.has_value() &&
+                 elapsed_.Elapsed() > timeout_.value()) {
+        owner_->OnPollTimeout(this);
+      }
     }
   }
 
@@ -257,12 +344,103 @@ class InteractionSequenceBrowserUtil::Poller {
   const absl::optional<base::TimeDelta> timeout_;
   const base::raw_ptr<InteractionSequenceBrowserUtil> owner_;
   base::RepeatingTimer timer_;
+  bool is_polling_ = false;
+  base::WeakPtrFactory<Poller> weak_factory_{this};
 };
 
 struct InteractionSequenceBrowserUtil::PollerData {
   std::unique_ptr<Poller> poller;
   ui::CustomElementEventType event;
   ui::CustomElementEventType timeout_event;
+};
+
+// Class that tracks a WebView and its WebContents in a secondary UI.
+class InteractionSequenceBrowserUtil::WebViewData : public views::ViewObserver {
+ public:
+  WebViewData(InteractionSequenceBrowserUtil* owner, views::WebView* web_view)
+      : owner_(owner), web_view_(web_view) {}
+  ~WebViewData() override = default;
+
+  // Separate init is required from construction so that the util object that
+  // owns this object can store a pointer before any calls back to the util
+  // object are performed.
+  void Init() {
+    scoped_observation_.Observe(web_view_);
+    ui::ElementIdentifier id =
+        web_view_->GetProperty(views::kElementIdentifierKey);
+    if (!id) {
+      id = ui::ElementTracker::kTemporaryIdentifier;
+      web_view_->SetProperty(views::kElementIdentifierKey, id);
+    }
+    context_ = views::ElementTrackerViews::GetContextForView(web_view_);
+    CHECK(context_);
+
+    shown_subscription_ =
+        ui::ElementTracker::GetElementTracker()->AddElementShownCallback(
+            id, context_,
+            base::BindRepeating(&WebViewData::OnElementShown,
+                                base::Unretained(this)));
+    hidden_subscription_ =
+        ui::ElementTracker::GetElementTracker()->AddElementHiddenCallback(
+            id, context_,
+            base::BindRepeating(&WebViewData::OnElementHidden,
+                                base::Unretained(this)));
+
+    if (auto* const element =
+            views::ElementTrackerViews::GetInstance()->GetElementForView(
+                web_view_)) {
+      OnElementShown(element);
+    }
+  }
+
+  ui::ElementContext context() const { return context_; }
+
+  bool visible() const { return visible_; }
+
+  views::WebView* web_view() const { return web_view_; }
+
+ private:
+  void OnElementShown(ui::TrackedElement* element) {
+    if (visible_)
+      return;
+    auto* el = element->AsA<views::TrackedElementViews>();
+    if (!el || el->view() != web_view_)
+      return;
+    visible_ = true;
+    owner_->Observe(web_view_->web_contents());
+    owner_->MaybeCreateElement();
+  }
+
+  void OnElementHidden(ui::TrackedElement* element) {
+    if (!visible_)
+      return;
+    auto* el = element->AsA<views::TrackedElementViews>();
+    if (!el || el->view() != web_view_)
+      return;
+    visible_ = false;
+    owner_->Observe(nullptr);
+    owner_->DiscardCurrentElement();
+  }
+
+  // views::ViewObserver:
+  void OnViewIsDeleting(views::View* view) override {
+    visible_ = false;
+    web_view_ = nullptr;
+    shown_subscription_ = ui::ElementTracker::Subscription();
+    hidden_subscription_ = ui::ElementTracker::Subscription();
+    scoped_observation_.Reset();
+    owner_->Observe(nullptr);
+    owner_->DiscardCurrentElement();
+  }
+
+  InteractionSequenceBrowserUtil* const owner_;
+  base::raw_ptr<views::WebView> web_view_;
+  bool visible_ = false;
+  ui::ElementContext context_;
+  ui::ElementTracker::Subscription shown_subscription_;
+  ui::ElementTracker::Subscription hidden_subscription_;
+  base::ScopedObservation<views::View, views::ViewObserver> scoped_observation_{
+      this};
 };
 
 // static
@@ -303,6 +481,38 @@ bool InteractionSequenceBrowserUtil::IsTruthy(const base::Value& value) {
 }
 
 // static
+bool InteractionSequenceBrowserUtil::CompareScreenshot(
+    ui::TrackedElement* element,
+    const std::string& screenshot_name,
+    const std::string& baseline) {
+#if SUPPORTS_PIXEL_TESTS
+  views::View* view = nullptr;
+  if (auto* const view_el = element->AsA<views::TrackedElementViews>()) {
+    view = view_el->view();
+  } else if (auto* const page_el = element->AsA<TrackedElementWebPage>()) {
+    auto* const util = page_el->owner();
+    if (util->web_view_data_) {
+      view = util->web_view_data_->web_view();
+    } else {
+      Browser* const browser = GetBrowserFromContext(page_el->context());
+      BrowserView* const browser_view =
+          BrowserView::GetBrowserViewForBrowser(browser);
+      CHECK(browser_view);
+      CHECK_EQ(util->web_contents(), browser_view->GetActiveWebContents());
+      view = browser_view->contents_web_view();
+    }
+  }
+
+  CHECK(view);
+
+  PixelTestUi pixel_test_ui(view, screenshot_name, baseline);
+  return pixel_test_ui.VerifyUi();
+#else  // !SUPPORTS_PIXEL_TESTS
+  return true;
+#endif
+}
+
+// static
 std::unique_ptr<InteractionSequenceBrowserUtil>
 InteractionSequenceBrowserUtil::ForExistingTabInContext(
     ui::ElementContext context,
@@ -318,19 +528,25 @@ InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
     Browser* browser,
     ui::ElementIdentifier page_identifier,
     absl::optional<int> tab_index) {
-  return ForWebContents(GetWebContents(browser, tab_index), page_identifier,
-                        nullptr);
+  return ForTabWebContents(GetWebContents(browser, tab_index), page_identifier);
 }
 
 // static
 std::unique_ptr<InteractionSequenceBrowserUtil>
-InteractionSequenceBrowserUtil::ForWebContents(
+InteractionSequenceBrowserUtil::ForTabWebContents(
     content::WebContents* web_contents,
-    ui::ElementIdentifier page_identifier,
-    Browser* browser) {
+    ui::ElementIdentifier page_identifier) {
   return base::WrapUnique(new InteractionSequenceBrowserUtil(
-      web_contents, page_identifier,
-      browser ? absl::make_optional(browser) : absl::nullopt));
+      web_contents, page_identifier, absl::nullopt, nullptr));
+}
+
+// static
+std::unique_ptr<InteractionSequenceBrowserUtil>
+InteractionSequenceBrowserUtil::ForNonTabWebView(
+    views::WebView* web_view,
+    ui::ElementIdentifier page_identifier) {
+  return base::WrapUnique(new InteractionSequenceBrowserUtil(
+      web_view->GetWebContents(), page_identifier, absl::nullopt, web_view));
 }
 
 // static
@@ -348,16 +564,16 @@ InteractionSequenceBrowserUtil::ForNextTabInBrowser(
     Browser* browser,
     ui::ElementIdentifier page_identifier) {
   CHECK(browser);
-  return base::WrapUnique(
-      new InteractionSequenceBrowserUtil(nullptr, page_identifier, browser));
+  return base::WrapUnique(new InteractionSequenceBrowserUtil(
+      nullptr, page_identifier, browser, nullptr));
 }
 
 // static
 std::unique_ptr<InteractionSequenceBrowserUtil>
 InteractionSequenceBrowserUtil::ForNextTabInAnyBrowser(
     ui::ElementIdentifier page_identifier) {
-  return base::WrapUnique(
-      new InteractionSequenceBrowserUtil(nullptr, page_identifier, nullptr));
+  return base::WrapUnique(new InteractionSequenceBrowserUtil(
+      nullptr, page_identifier, nullptr, nullptr));
 }
 
 // static
@@ -428,9 +644,27 @@ void InteractionSequenceBrowserUtil::SendEventOnStateChange(
   CHECK(configuration.event);
   CHECK(configuration.timeout.has_value() || !configuration.timeout_event)
       << "Cannot specify timeout event without timeout.";
+
+  // Determine the actual query we should use; for kConditionTrue we can use
+  // configuration.test_function directly, but for the other options we need to
+  // modify it.
+  std::string actual_func;
+  switch (configuration.type) {
+    case StateChange::Type::kExists:
+      DCHECK(configuration.test_function.empty());
+      actual_func = GetExistsQuery("false", "true");
+      break;
+    case StateChange::Type::kConditionTrue:
+      actual_func = configuration.test_function;
+      break;
+    case StateChange::Type::kExistsAndConditionTrue:
+      const std::string on_found = "(" + configuration.test_function + ")(el)";
+      actual_func = GetExistsQuery("false", on_found.c_str());
+      break;
+  }
+
   PollerData poller_data{
-      std::make_unique<Poller>(this, configuration.test_function,
-                               configuration.where,
+      std::make_unique<Poller>(this, actual_func, configuration.where,
                                configuration.timeout,
                                configuration.polling_interval),
       configuration.event, configuration.timeout_event};
@@ -441,7 +675,8 @@ void InteractionSequenceBrowserUtil::SendEventOnStateChange(
 
 bool InteractionSequenceBrowserUtil::Exists(const DeepQuery& query,
                                             std::string* not_found) {
-  const std::string full_query = CreateDeepQuery(query, "", true);
+  const std::string full_query =
+      CreateDeepQuery(query, GetExistsQuery("err.selector", "''"));
   const std::string result = Evaluate(full_query).GetString();
   if (not_found)
     *not_found = result;
@@ -451,7 +686,7 @@ bool InteractionSequenceBrowserUtil::Exists(const DeepQuery& query,
 base::Value InteractionSequenceBrowserUtil::EvaluateAt(
     const DeepQuery& where,
     const std::string& function) {
-  const std::string full_query = CreateDeepQuery(where, function, false);
+  const std::string full_query = CreateDeepQuery(where, function);
   return Evaluate(full_query);
 }
 
@@ -522,28 +757,22 @@ void InteractionSequenceBrowserUtil::OnTabStripModelChanged(
 InteractionSequenceBrowserUtil::InteractionSequenceBrowserUtil(
     content::WebContents* web_contents,
     ui::ElementIdentifier page_identifier,
-    absl::optional<Browser*> browser)
+    absl::optional<Browser*> browser,
+    views::WebView* web_view)
     : WebContentsObserver(web_contents), page_identifier_(page_identifier) {
   CHECK(page_identifier);
 
-  if (browser.has_value()) {
-    // Are we watching for a new tab, or are we just specifying the browser?
-    if (!web_contents) {
-      // Watching for a new tab.
-      new_tab_watcher_ = std::make_unique<NewTabWatcher>(this, browser.value());
-    } else {
-      // See if we redundantly specified a tab and its browser.
-      Browser* const found = chrome::FindBrowserWithWebContents(web_contents);
-      if (found == browser.value()) {
-        // Yes, this is a tab. Watch it as normal.
-        StartWatchingWebContents(web_contents);
-      } else {
-        // No this is not a tab. Remember the context so we can properly create
-        // elements.
-        force_context_ = browser.value()->window()->GetElementContext();
-        MaybeCreateElement();
-      }
-    }
+  if (web_view) {
+    // This is specifically for a web view that is not a tab.
+    CHECK(web_contents);
+    CHECK(!browser);
+    CHECK(!chrome::FindBrowserWithWebContents(web_contents));
+    web_view_data_ = std::make_unique<WebViewData>(this, web_view);
+    web_view_data_->Init();
+  } else if (browser.has_value()) {
+    // Watching for a new tab.
+    CHECK(!web_contents);
+    new_tab_watcher_ = std::make_unique<NewTabWatcher>(this, browser.value());
   } else {
     // This has to be a tab, so use standard watching logic.
     StartWatchingWebContents(web_contents);
@@ -557,8 +786,12 @@ void InteractionSequenceBrowserUtil::MaybeCreateElement(bool force) {
   if (!force && !web_contents()->IsDocumentOnLoadCompletedInPrimaryMainFrame())
     return;
 
-  ui::ElementContext context = force_context_;
-  if (!context) {
+  ui::ElementContext context = ui::ElementContext();
+  if (web_view_data_) {
+    if (!web_view_data_->visible())
+      return;
+    context = web_view_data_->context();
+  } else {
     Browser* const browser = chrome::FindBrowserWithWebContents(web_contents());
     if (!browser)
       return;
@@ -566,9 +799,11 @@ void InteractionSequenceBrowserUtil::MaybeCreateElement(bool force) {
   }
 
   // Ignore events on a page we're navigating away from.
-  if (navigating_away_from_.EqualsIgnoringRef(web_contents()->GetURL()))
+  if (navigating_away_from_ &&
+      navigating_away_from_->EqualsIgnoringRef(web_contents()->GetURL())) {
     return;
-  navigating_away_from_ = GURL();
+  }
+  navigating_away_from_.reset();
 
   current_element_ =
       std::make_unique<TrackedElementWebPage>(page_identifier_, context, this);

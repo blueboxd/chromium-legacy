@@ -1,3 +1,7 @@
+// Copyright 2022 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import {$} from 'chrome://resources/js/util.m.js';
 
 import {AudioBroker} from './audio_broker.js';
@@ -14,7 +18,7 @@ export interface AudioSample {
   description: string;
 }
 
-let audiosSamples: AudioSample[] = [
+const audiosSamples: AudioSample[] = [
   {
     sampleRate: 44100,
     freqency: 440,

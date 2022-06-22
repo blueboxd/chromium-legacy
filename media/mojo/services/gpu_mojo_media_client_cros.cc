@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder.h"
+#include "media/base/audio_encoder.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
 #include "media/gpu/chromeos/platform_video_frame_pool.h"
@@ -108,8 +109,7 @@ std::unique_ptr<VideoDecoder> CreatePlatformVideoDecoder(
                                                  traits.gpu_info)) {
     case VideoDecoderType::kVaapi:
     case VideoDecoderType::kV4L2: {
-      auto frame_pool = std::make_unique<PlatformVideoFramePool>(
-          traits.gpu_memory_buffer_factory);
+      auto frame_pool = std::make_unique<PlatformVideoFramePool>(nullptr);
       auto frame_converter = MailboxVideoFrameConverter::Create(
           base::BindRepeating(&PlatformVideoFramePool::UnwrapFrame,
                               base::Unretained(frame_pool.get())),
@@ -170,6 +170,11 @@ VideoDecoderType GetPlatformDecoderImplementationType(
 
 std::unique_ptr<AudioDecoder> CreatePlatformAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return nullptr;
+}
+
+std::unique_ptr<AudioEncoder> CreatePlatformAudioEncoder(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   return nullptr;
 }
 

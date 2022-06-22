@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -334,7 +333,6 @@ PartialTranslateBubbleView::PartialTranslateBubbleView(
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetFootnoteView(CreateWordmarkView());
   SetProperty(views::kElementIdentifierKey, kIdentifier);
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::TRANSLATE);
 }
 
 views::View* PartialTranslateBubbleView::GetCurrentView() const {
@@ -595,11 +593,11 @@ PartialTranslateBubbleView::CreateViewAdvancedSource() {
 
   // Language icon
   int source_default_index = model_->GetSourceLanguageIndex();
-  source_language_combobox_model_ =
+  auto source_language_combobox_model =
       std::make_unique<SourceLanguageComboboxModel>(source_default_index,
                                                     model_.get());
   auto source_language_combobox = std::make_unique<views::Combobox>(
-      std::move(source_language_combobox_model_));
+      std::move(source_language_combobox_model));
   source_language_combobox->SetProperty(views::kElementIdentifierKey,
                                         kSourceLanguageCombobox);
 
@@ -640,12 +638,12 @@ PartialTranslateBubbleView::CreateViewAdvancedTarget() {
           views::style::CONTEXT_DIALOG_TITLE);
 
   int target_default_index = model_->GetTargetLanguageIndex();
-  target_language_combobox_model_ =
+  auto target_language_combobox_model =
       std::make_unique<TargetLanguageComboboxModel>(target_default_index,
                                                     model_.get());
 
   auto target_language_combobox = std::make_unique<views::Combobox>(
-      std::move(target_language_combobox_model_));
+      std::move(target_language_combobox_model));
   target_language_combobox->SetProperty(views::kElementIdentifierKey,
                                         kTargetLanguageCombobox);
 

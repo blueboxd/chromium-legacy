@@ -5,16 +5,16 @@
 /**
  * @fileoverview Script that runs on the background page.
  */
-import {AbstractTts} from '../common/abstract_tts.js';
-import {CompositeTts} from '../common/composite_tts.js';
-import {ChromeVoxEditableTextBase, TypingEcho} from '../common/editable_text_base.js';
-
-import {BrailleBackground} from './braille/braille_background.js';
-import {BrailleCaptionsBackground} from './braille/braille_captions_background.js';
-import {ConsoleTts} from './console_tts.js';
-import {InjectedScriptLoader} from './injected_script_loader.js';
-import {ChromeVoxPrefs} from './prefs.js';
-import {TtsBackground} from './tts_background.js';
+import {BrailleBackground} from '/chromevox/background/braille/braille_background.js';
+import {BrailleCaptionsBackground} from '/chromevox/background/braille/braille_captions_background.js';
+import {ConsoleTts} from '/chromevox/background/console_tts.js';
+import {InjectedScriptLoader} from '/chromevox/background/injected_script_loader.js';
+import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
+import {TtsBackground} from '/chromevox/background/tts_background.js';
+import {AbstractTts} from '/chromevox/common/abstract_tts.js';
+import {CompositeTts} from '/chromevox/common/composite_tts.js';
+import {ChromeVoxEditableTextBase, TypingEcho} from '/chromevox/common/editable_text_base.js';
+import {ExtensionBridge} from '/chromevox/common/extension_bridge.js';
 
 /**
  * This is the legacy ChromeVox background object.
@@ -94,17 +94,17 @@ export class ChromeVoxBackground {
 
   /**
    * @param {string} pref
-   * @param {*} value
+   * @param {Object|boolean|number|string} value
    * @param {boolean} announce
    */
   static setPref(pref, value, announce) {
     if (pref === 'earcons') {
-      AbstractEarcons.enabled = !!value;
+      AbstractEarcons.enabled = Boolean(value);
     } else if (pref === 'sticky' && announce) {
       if (typeof (value) !== 'boolean') {
         throw new Error('Unexpected sticky mode value ' + value);
       }
-      chrome.accessibilityPrivate.setKeyboardListener(true, !!value);
+      chrome.accessibilityPrivate.setKeyboardListener(true, Boolean(value));
       new Output()
           .withInitialSpeechProperties(AbstractTts.PERSONALITY_ANNOTATION)
           .withString(
@@ -136,13 +136,13 @@ export class ChromeVoxBackground {
             .go();
       }
     } else if (pref === 'brailleCaptions') {
-      BrailleCaptionsBackground.setActive(!!value);
+      BrailleCaptionsBackground.setActive(Boolean(value));
     } else if (pref === 'position') {
       ChromeVox.position =
           /** @type {Object<string, constants.Point>} */ (JSON.parse(
               /** @type {string} */ (value)));
     }
-    window['prefs'].setPref(pref, value);
+    ChromeVoxPrefs.instance.setPref(pref, value);
     ChromeVoxBackground.readPrefs();
   }
 
@@ -274,24 +274,6 @@ export class ChromeVoxBackground {
 
       switch (target) {
         case 'TTS':
-          if (msg['startCallbackId'] !== undefined) {
-            msg['properties']['startCallback'] = function(opt_cleanupOnly) {
-              port.postMessage({
-                'message': 'TTS_CALLBACK',
-                'cleanupOnly': opt_cleanupOnly,
-                'id': msg['startCallbackId']
-              });
-            };
-          }
-          if (msg['endCallbackId'] !== undefined) {
-            msg['properties']['endCallback'] = function(opt_cleanupOnly) {
-              port.postMessage({
-                'message': 'TTS_CALLBACK',
-                'cleanupOnly': opt_cleanupOnly,
-                'id': msg['endCallbackId']
-              });
-            };
-          }
           try {
             this.onTtsMessage(msg);
           } catch (err) {
@@ -329,14 +311,9 @@ export class ChromeVoxBackground {
     // object for access by the options page.
     const background = new ChromeVoxBackground();
 
-    // TODO: this needs to be cleaned up (move to init?).
-    window['speak'] = background.tts.speak.bind(background.tts);
     ChromeVoxState.backgroundTts = background.backgroundTts_;
-    // Export the prefs object for access by the options page.
-    window['prefs'] = ChromeVoxPrefs.instance;
-    // Export the braille translator manager for access by the options page.
-    window['braille_translator_manager'] =
-        background.backgroundBraille_.getTranslatorManager();
-    window['getCurrentVoice'] = background.getCurrentVoice.bind(background);
+    BridgeHelper.registerHandler(
+        /* target= */ 'ChromeVoxBackground', 'getCurrentVoice',
+        () => background.getCurrentVoice());
   }
 }

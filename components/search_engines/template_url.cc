@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/base64url.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
@@ -21,6 +22,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -36,7 +38,6 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/url_formatter/url_formatter.h"
 #include "google_apis/google_api_keys.h"
-#include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/url_util.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
@@ -110,9 +111,9 @@ bool TryEncoding(const std::u16string& terms,
                              &encoded_terms)) {
     return false;
   }
-  *escaped_terms = base::UTF8ToUTF16(is_in_query ?
-      net::EscapeQueryParamValue(encoded_terms, true) :
-      net::EscapePath(encoded_terms));
+  *escaped_terms = base::UTF8ToUTF16(
+      is_in_query ? base::EscapeQueryParamValue(encoded_terms, true)
+                  : base::EscapePath(encoded_terms));
   if (original_query.empty())
     return true;
   std::string encoded_original_query;
@@ -120,7 +121,7 @@ bool TryEncoding(const std::u16string& terms,
                              &encoded_original_query))
     return false;
   *escaped_original_query = base::UTF8ToUTF16(
-      net::EscapeQueryParamValue(encoded_original_query, true));
+      base::EscapeQueryParamValue(encoded_original_query, true));
   return true;
 }
 
@@ -502,13 +503,13 @@ std::u16string TemplateURLRef::SearchTermToString16(
   const std::vector<std::string>& encodings = owner_->input_encodings();
   std::u16string result;
 
-  net::UnescapeRule::Type unescape_rules =
-      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
+  base::UnescapeRule::Type unescape_rules =
+      base::UnescapeRule::SPACES | base::UnescapeRule::PATH_SEPARATORS |
+      base::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
   if (search_term_key_location_ != url::Parsed::PATH)
-    unescape_rules |= net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
+    unescape_rules |= base::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
 
-  std::string unescaped = net::UnescapeURLComponent(term, unescape_rules);
+  std::string unescaped = base::UnescapeURLComponent(term, unescape_rules);
   for (size_t i = 0; i < encodings.size(); ++i) {
     if (base::CodepageToUTF16(unescaped, encodings[i].c_str(),
                               base::OnStringConversionError::FAIL, &result))
@@ -524,7 +525,7 @@ std::u16string TemplateURLRef::SearchTermToString16(
   // encoding is. We need to substitute spaces for pluses ourselves since we're
   // not sending it through an unescaper.
   result = base::UTF8ToUTF16(term);
-  if (unescape_rules & net::UnescapeRule::REPLACE_PLUS_WITH_SPACE)
+  if (unescape_rules & base::UnescapeRule::REPLACE_PLUS_WITH_SPACE)
     std::replace(result.begin(), result.end(), '+', ' ');
   return result;
 }
@@ -748,7 +749,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
 #endif
   } else if (parameter == "google:suggestAPIKeyParameter") {
     url->insert(start,
-                net::EscapeQueryParamValue(google_apis::GetAPIKey(), false));
+                base::EscapeQueryParamValue(google_apis::GetAPIKey(), false));
   } else if (parameter == "google:suggestClient") {
     replacements->push_back(Replacement(GOOGLE_SUGGEST_CLIENT, start));
   } else if (parameter == "google:suggestRid") {
@@ -1098,8 +1099,9 @@ std::string TemplateURLRef::HandleReplacements(
                 &serialized_searchbox_stats);
             if (!serialized_searchbox_stats.empty()) {
               std::string encoded_searchbox_stats;
-              base::Base64Encode(serialized_searchbox_stats,
-                                 &encoded_searchbox_stats);
+              base::Base64UrlEncode(serialized_searchbox_stats,
+                                    base::Base64UrlEncodePolicy::OMIT_PADDING,
+                                    &encoded_searchbox_stats);
               HandleReplacement("gs_lcrp", encoded_searchbox_stats, replacement,
                                 &url);
               base::UmaHistogramCounts1000(
@@ -1135,8 +1137,8 @@ std::string TemplateURLRef::HandleReplacements(
         DCHECK(!replacement.is_post_param);
         if (!search_terms_args.current_page_url.empty()) {
           const std::string& escaped_current_page_url =
-              net::EscapeQueryParamValue(search_terms_args.current_page_url,
-                                         true);
+              base::EscapeQueryParamValue(search_terms_args.current_page_url,
+                                          true);
           HandleReplacement("url", escaped_current_page_url, replacement, &url);
         }
         break;
@@ -1446,6 +1448,8 @@ bool TemplateURL::IsBetterThanEngineWithConflictingKeyword(
         engine->created_from_play_api(),
         // Favor prepopulated engines over other auto-generated engines.
         engine->prepopulate_id() > 0,
+        // Favor starter pack engines over other auto-generated engines.
+        engine->starter_pack_id() > 0,
         // Favor engines derived from OpenSearch descriptions over
         // autogenerated engines heuristically generated from searchable forms.
         engine->originating_url().is_valid(),

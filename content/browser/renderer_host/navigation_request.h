@@ -28,9 +28,9 @@
 #include "content/browser/renderer_host/cross_origin_opener_policy_status.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
+#include "content/browser/renderer_host/navigation_policy_container_builder.h"
 #include "content/browser/renderer_host/navigation_throttle_runner.h"
 #include "content/browser/renderer_host/policy_container_host.h"
-#include "content/browser/renderer_host/policy_container_navigation_bundle.h"
 #include "content/browser/renderer_host/render_frame_host_csp_context.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -1891,8 +1891,7 @@ class CONTENT_EXPORT NavigationRequest
   const bool anonymous_;
 
   // Non-nullopt from construction until |TakePolicyContainerHost()| is called.
-  absl::optional<PolicyContainerNavigationBundle>
-      policy_container_navigation_bundle_;
+  absl::optional<NavigationPolicyContainerBuilder> policy_container_builder_;
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
 
@@ -2039,6 +2038,15 @@ class CONTENT_EXPORT NavigationRequest
   // will be mapped to them.
   absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
       pending_ad_components_map_;
+
+  // If this navigation is a load in a fenced frame of a URN URL that resulted
+  // from a shared storage url selection operation, this contains the metadata
+  // for shared storage budget charging. A non-null pointer will stay valid
+  // during the `FencedFrameURLMapping`'s (thus the page's) lifetime, and a page
+  // will outlive any NavigationRequest occurring in fenced frames in the page,
+  // thus it's safe for this NavigationRequest to store this pointer.
+  raw_ptr<FencedFrameURLMapping::SharedStorageBudgetMetadata>
+      shared_storage_budget_metadata_ = nullptr;
 
   // Prerender2:
   // The type to trigger prerendering. The value is valid only when Prerender2

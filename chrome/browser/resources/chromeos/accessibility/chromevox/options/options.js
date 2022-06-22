@@ -5,14 +5,10 @@
 /**
  * @fileoverview ChromeVox options page.
  */
-import {BluetoothBrailleDisplayUI} from '../background/braille/bluetooth_braille_display_ui.js';
-import {BrailleTable} from '../background/braille/braille_table.js';
-import {BrailleTranslatorManager} from '../background/braille/braille_translator_manager.js';
-import {ConsoleTts} from '../background/console_tts.js';
-import {ChromeVoxPrefs} from '../background/prefs.js';
-import {TtsBackground} from '../background/tts_background.js';
-
-import {AbstractTts} from '../common/abstract_tts.js';
+import {AbstractTts} from '/chromevox/common/abstract_tts.js';
+import {BrailleTable} from '/chromevox/common/braille/braille_table.js';
+import {ExtensionBridge} from '/chromevox/common/extension_bridge.js';
+import {BluetoothBrailleDisplayUI} from '/chromevox/options/bluetooth_braille_display_ui.js';
 
 /** @const {string} */
 const GOOGLE_TTS_EXTENSION_ID = 'gjjabgpgjpampikjhjpfhneeoapjbjaf';
@@ -29,10 +25,7 @@ export class OptionsPage {
    * adding event listeners.
    * @this {OptionsPage}
    */
-  static init() {
-    OptionsPage.prefs = chrome.extension.getBackgroundPage()['prefs'];
-    OptionsPage.backgroundTts =
-        chrome.extension.getBackgroundPage().ChromeVoxState.backgroundTts;
+  static async init() {
     OptionsPage.populateVoicesSelect();
     BrailleTable.getAll(function(tables) {
       /** @type {!Array<BrailleTable.Table>} */
@@ -148,7 +141,7 @@ export class OptionsPage {
     Msgs.addTranslatedMessagesToDom(document);
     OptionsPage.hidePlatformSpecifics();
 
-    OptionsPage.update();
+    await OptionsPage.update();
 
     document.addEventListener('change', OptionsPage.eventListener, false);
     document.addEventListener('click', OptionsPage.eventListener, false);
@@ -212,7 +205,8 @@ export class OptionsPage {
         $('increasePitch').selected = false;
         $('increasePitch').disabled = true;
         localStorage['capitalStrategyBackup'] = localStorage['capitalStrategy'];
-        OptionsPage.prefs.setPref('capitalStrategy', 'announceCapitals');
+        BackgroundBridge.ChromeVoxPrefs.setPref(
+            'capitalStrategy', 'announceCapitals');
       } else {
         $('increasePitch').disabled = false;
         const capitalStrategyBackup = localStorage['capitalStrategyBackup'];
@@ -222,7 +216,8 @@ export class OptionsPage {
               (capitalStrategyBackup === 'announceCapitals');
           $('increasePitch').selected =
               (capitalStrategyBackup === 'increasePitch');
-          OptionsPage.prefs.setPref('capitalStrategy', capitalStrategyBackup);
+          BackgroundBridge.ChromeVoxPrefs.setPref(
+              'capitalStrategy', capitalStrategyBackup);
         }
       }
     });
@@ -233,8 +228,8 @@ export class OptionsPage {
    * This happens if the user presses a key in a tab that changes a
    * pref.
    */
-  static update() {
-    const prefs = OptionsPage.prefs.getPrefs();
+  static async update() {
+    const prefs = await BackgroundBridge.ChromeVoxPrefs.getPrefs();
     for (const key in prefs) {
       // TODO(rshearer): 'active' is a pref, but there's no place in the
       // options page to specify whether you want ChromeVox active.
@@ -248,12 +243,12 @@ export class OptionsPage {
   /**
    * Populates the voices select with options.
    */
-  static populateVoicesSelect() {
+  static async populateVoicesSelect() {
     const select = $('voices');
 
-    function setVoiceList() {
+    async function setVoiceList() {
       const selectedVoice =
-          chrome.extension.getBackgroundPage()['getCurrentVoice']();
+          await BackgroundBridge.ChromeVoxBackground.getCurrentVoice();
       const addVoiceOption = (visibleVoiceName, voiceName) => {
         const option = document.createElement('option');
         option.voiceName = voiceName;
@@ -298,7 +293,7 @@ export class OptionsPage {
     }
 
     window.speechSynthesis.onvoiceschanged = setVoiceList;
-    setVoiceList();
+    await setVoiceList();
 
     select.addEventListener('change', function(evt) {
       const selIndex = select.selectedIndex;
@@ -351,7 +346,7 @@ export class OptionsPage {
         const sel = node.options[selIndex];
         localStorage['brailleTable'] = sel.id;
         localStorage[node.id] = sel.id;
-        OptionsPage.getBrailleTranslatorManager().refresh(
+        BackgroundBridge.BrailleBackground.refreshBrailleTable(
             localStorage['brailleTable']);
       };
     };
@@ -384,7 +379,7 @@ export class OptionsPage {
         tableTypeButton.textContent =
             Msgs.getMsg('options_braille_table_type_8');
       }
-      OptionsPage.getBrailleTranslatorManager().refresh(
+      BackgroundBridge.BrailleBackground.refreshBrailleTable(
           localStorage['brailleTable']);
     };
     updateTableType(false);
@@ -443,7 +438,7 @@ export class OptionsPage {
    * @param {boolean} enabled
    */
   static setEventStreamFilter(name, enabled) {
-    OptionsPage.prefs.setPref(name, enabled);
+    BackgroundBridge.ChromeVoxPrefs.setPref(name, enabled);
     chrome.extension.getBackgroundPage()
         .EventStreamLogger.instance.notifyEventStreamFilterChanged(
             name, enabled);
@@ -461,7 +456,8 @@ export class OptionsPage {
       if (target.id === 'brailleWordWrap') {
         chrome.storage.local.set({brailleWordWrap: target.checked});
       } else if (target.className.indexOf('logging') !== -1) {
-        OptionsPage.prefs.setLoggingPrefs(target.name, target.checked);
+        BackgroundBridge.ChromeVoxPrefs.setLoggingPrefs(
+            target.name, target.checked);
         if (target.name === 'enableEventStreamLogging') {
           OptionsPage.disableEventStreamFilterCheckBoxes(!target.checked);
         }
@@ -471,23 +467,24 @@ export class OptionsPage {
         const selectedPunctuationEcho = target.options[target.selectedIndex].id;
         const punctuationEcho = AbstractTts.PUNCTUATION_ECHOES.findIndex(
             echo => echo.name === selectedPunctuationEcho);
-        OptionsPage.backgroundTts.updatePunctuationEcho(punctuationEcho);
+        BackgroundBridge.ChromeVoxState.updatePunctuationEcho(punctuationEcho);
       } else if (target.classList.contains('pref')) {
         if (target.tagName === 'INPUT' && target.type === 'checkbox') {
-          OptionsPage.prefs.setPref(target.name, target.checked);
+          BackgroundBridge.ChromeVoxPrefs.setPref(target.name, target.checked);
         } else if (target.tagName === 'INPUT' && target.type === 'radio') {
           const key = target.name;
           const elements = document.querySelectorAll('*[name="' + key + '"]');
           for (let i = 0; i < elements.length; i++) {
             if (elements[i].checked) {
-              OptionsPage.prefs.setPref(target.name, elements[i].value);
+              BackgroundBridge.ChromeVoxPrefs.setPref(
+                  target.name, elements[i].value);
             }
           }
         } else if (target.tagName === 'SELECT') {
           const selIndex = target.selectedIndex;
           const sel = target.options[selIndex];
           const value = sel ? sel.id : 'audioNormal';
-          OptionsPage.prefs.setPref(target.id, value);
+          BackgroundBridge.ChromeVoxPrefs.setPref(target.id, value);
         }
       }
     }, 0);
@@ -498,32 +495,7 @@ export class OptionsPage {
    * Hides all elements not matching the current platform.
    */
   static hidePlatformSpecifics() {}
-
-  /**
-   * @return {BrailleTranslatorManager}
-   */
-  static getBrailleTranslatorManager() {
-    return chrome.extension.getBackgroundPage()['braille_translator_manager'];
-  }
 }
-
-/**
- * The ChromeVoxPrefs object.
- * @type {ChromeVoxPrefs}
- */
-OptionsPage.prefs;
-
-/**
- * The ConsoleTts object.
- * @type {ConsoleTts}
- */
-OptionsPage.consoleTts;
-
-/**
- * The TtsBackground object.
- * @type {TtsBackground}
- */
-OptionsPage.backgroundTts;
 
 /**
  * Adds event listeners to input boxes to update local storage values and
@@ -556,15 +528,19 @@ const handleNumericalInputPref = function(id, pref) {
   }, true);
 };
 
-
-chrome.runtime.sendMessage(
-    {target: 'ConsoleTts', action: 'getInstance'},
-    (consoleTts) => OptionsPage.consoleTts = consoleTts);
-
-document.addEventListener('DOMContentLoaded', function() {
-  OptionsPage.init();
+document.addEventListener('DOMContentLoaded', async function() {
+  await OptionsPage.init();
 }, false);
 
 window.addEventListener('beforeunload', function(e) {
   OptionsPage.bluetoothBrailleDisplayUI.detach();
 });
+
+/**
+ * Shortcut for document.getElementById.
+ * @param {string} id of the element.
+ * @return {Element} with the id.
+ */
+function $(id) {
+  return document.getElementById(id);
+}

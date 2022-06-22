@@ -73,6 +73,26 @@ enum class WebApkInstallResult {
   NOT_ENOUGH_SPACE = 8,
   ICON_HASHER_ERROR = 9,
   RESULT_MAX = 10,
+
+  // Indicates that the WebAPK is currently already being installed and the new
+  // install will be aborted. Used when the install was initiated through the
+  // WebApkInstallCoordinator-service to propagate the status to the connecting
+  // client.
+  INSTALL_ALREADY_IN_PROGRESS = 11,
+};
+
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.webapps
+//
+// Lists the fields containing information about the app, which are shown on
+// the default offline experience page.
+enum class WebApkDetailsForDefaultOfflinePage {
+  SHORT_NAME = 0,
+  ICON,
+  BACKGROUND_COLOR,
+  BACKGROUND_COLOR_DARK_MODE,
+  THEME_COLOR,
+  THEME_COLOR_DARK_MODE,
 };
 
 }  // namespace webapps

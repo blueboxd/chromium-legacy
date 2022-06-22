@@ -13,9 +13,8 @@
  * extended to override methods that extract lines for multiline fields
  * or to provide other customizations.
  */
-import {ChromeVoxEvent} from '../background/custom_automation_event.js';
-
-import {AbstractTts} from './abstract_tts.js';
+import {AbstractTts} from '/chromevox/common/abstract_tts.js';
+import {ChromeVoxEvent} from '/chromevox/common/custom_automation_event.js';
 
 /**
  * A class containing the information needed to speak
@@ -332,12 +331,7 @@ export class ChromeVoxEditableTextBase {
         // Moved by one character; read it.
         if (!ChromeVoxEditableTextBase.useIBeamCursor) {
           if (evt.start === this.value.length) {
-            if (ChromeVox.verbosity === ChromeVox.VerbosityType.VERBOSE) {
-              this.speak(
-                  Msgs.getMsg('end_of_text_verbose'), evt.triggeredByUser);
-            } else {
-              this.speak(Msgs.getMsg('end_of_text_brief'), evt.triggeredByUser);
-            }
+            this.speak(Msgs.getMsg('end_of_text_verbose'), evt.triggeredByUser);
           } else {
             this.speak(
                 this.value.substr(evt.start, 1), evt.triggeredByUser,

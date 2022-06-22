@@ -43,6 +43,7 @@
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
@@ -68,6 +69,7 @@
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "components/signin/public/base/signin_switches.h"
 #endif
 
 using content::WebContents;
@@ -336,7 +338,6 @@ void PeopleHandler::DisplayGaiaLogin(signin_metrics::AccessPoint access_point) {
 
 void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     signin_metrics::AccessPoint access_point) {
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (!browser)
@@ -362,16 +363,12 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     SigninErrorController* error_controller =
         SigninErrorControllerFactory::GetForProfile(browser->profile());
     DCHECK(error_controller->HasError());
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH, access_point, false);
+    signin_ui_util::ShowReauthForPrimaryAccountWithAuthError(browser,
+                                                             access_point);
   } else {
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN, access_point, false);
+    signin_ui_util::EnableSyncFromSingleAccountPromo(browser, CoreAccountInfo(),
+                                                     access_point);
   }
-#else
-  // TODO(https://crbug.com/1260291): Add support for Lacros.
-  NOTIMPLEMENTED();
-#endif
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -445,8 +442,17 @@ void PeopleHandler::OnExtendedAccountInfoRemoved(const AccountInfo& info) {
 
 base::Value PeopleHandler::GetStoredAccountsList() {
   base::Value accounts(base::Value::Type::LIST);
+  bool populate_accounts_list = false;
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_)) {
+  populate_accounts_list =
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  populate_accounts_list =
+      base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles) &&
+      !profile_->IsMainProfile();
+#endif
+
+  if (populate_accounts_list) {
     // If dice is enabled, show all the accounts.
     for (const auto& account : signin_ui_util::GetOrderedAccountsForDisplay(
              profile_, /*restrict_to_accounts_eligible_for_sync=*/true)) {
@@ -454,13 +460,14 @@ base::Value PeopleHandler::GetStoredAccountsList() {
     }
     return accounts;
   }
-#endif
+
   // Guest mode does not have a primary account (or an IdentityManager).
   if (profile_->IsGuestSession())
     return base::Value(base::Value::Type::LIST);
   // If DICE is disabled for this profile or unsupported on this platform (e.g.
-  // Chrome OS), then show only the primary account, whether or not that account
-  // has consented to sync.
+  // Chrome OS) or Lacros main profile (sync with a different account than the
+  // device account is not allowed), then show only the primary account,
+  // whether or not that account has consented to sync.
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   AccountInfo primary_account_info = identity_manager->FindExtendedAccountInfo(
       identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSignin));
@@ -631,56 +638,79 @@ void PeopleHandler::HandleStartSignin(const base::Value::List& args) {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void PeopleHandler::HandleSignout(const base::Value::List& args) {
-  // TODO(https://crbug.com/1260291): add support for signed out profiles.
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   bool delete_profile = false;
   if (args[0].is_bool())
     delete_profile = args[0].GetBool();
   base::FilePath profile_path = profile_->GetPath();
 
+  // TODO(crbug.com/1315163): consider splitting `HandleSignout()` in two
+  // different functions: one for "Signout" and one for "Turn off".
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  bool is_syncing =
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
+  DCHECK(is_syncing || !delete_profile)
+      << "Deleting the profile should only be offered if the user is syncing.";
+
   if (!signin_util::IsUserSignoutAllowedForProfile(profile_)) {
     // If the user cannot signout, the profile must be destroyed.
-    DCHECK(delete_profile);
-  } else {
-    Browser* browser =
-        chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-    if (browser) {
-      browser->signin_view_controller()->ShowGaiaLogoutTab(
-          signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
-    }
-
-    auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-    if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-      signin_metrics::SignoutDelete delete_metric =
-          delete_profile ? signin_metrics::SignoutDelete::kDeleted
-                         : signin_metrics::SignoutDelete::kKeeping;
-
-      // Only revoke the sync consent.
-      // * If the primary account is still valid, then it will be removed by
-      // the Gaia logout tab (see http://crbug.com/1068978).
-      // * If the account is already invalid, drop the token now because it's
-      // already invalid on the web, so the Gaia logout tab won't affect it
-      // (see http://crbug.com/1114646).
-      //
-      // This operation may delete the current browser that owns |this| if force
-      // signin is enabled (see https://crbug.com/1153120).
-      identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
-          signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
+    if (delete_profile) {
+      webui::DeleteProfileAtPath(profile_path,
+                                 ProfileMetrics::DELETE_PROFILE_SETTINGS);
     } else {
-      DCHECK(!delete_profile)
-          << "Deleting the profile should only be offered the user is syncing.";
+      DCHECK(false) << "User signout requires profile destruction.";
     }
+    return;
   }
 
-  // CAUTION: |this| may be deleted at this point.
+  signin_metrics::SignoutDelete delete_metric =
+      delete_profile ? signin_metrics::SignoutDelete::kDeleted
+                     : signin_metrics::SignoutDelete::kKeeping;
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (profile_->IsMainProfile()) {
+    if (!is_syncing) {
+      DLOG(ERROR) << "Signout form the main profile is not allowed.";
+      return;
+    }
+    DCHECK(!delete_profile) << "The main profile should never be deleted.";
+    identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
+        signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
+    return;
+  }
+  // For secondary profiles 'Turn off' and 'Signout', clears the primary
+  // account and signout all.
+  identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
+      signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
+#else
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  if (browser) {
+    browser->signin_view_controller()->ShowGaiaLogoutTab(
+        signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
+  }
+
+  if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+    // Only revoke the sync consent.
+    // * If the primary account is still valid, then it will be removed by
+    // the Gaia logout tab (see http://crbug.com/1068978).
+    // * If the account is already invalid, drop the token now because it's
+    // already invalid on the web, so the Gaia logout tab won't affect it
+    // (see http://crbug.com/1114646).
+    //
+    // This operation may delete the current browser that owns |this| if force
+    // signin is enabled (see https://crbug.com/1153120).
+    identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
+        signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  // CAUTION: |this| may be deleted at this point.
   if (delete_profile) {
     webui::DeleteProfileAtPath(profile_path,
                                ProfileMetrics::DELETE_PROFILE_SETTINGS);
   }
-#endif
 }
-#endif
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void PeopleHandler::HandlePauseSync(const base::Value::List& args) {
@@ -751,19 +781,24 @@ void PeopleHandler::CloseSyncSetup() {
         if (sync_service) {
           DVLOG(1) << "Sync setup aborted by user action";
           sync_service->StopAndClear();
-// ChromeOS platforms don't support signing out.
-// TODO(https://crbug.com/1217645): Add signout support to Lacros.
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
-          // Sign out the user on desktop Chrome if they click cancel during
-          // initial setup.
-          if (!sync_service->GetUserSettings()->IsFirstSetupComplete()) {
+// ChromeOS ash doesn't support signing out.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+          bool should_revoke_sync_consent =
+              !sync_service->GetUserSettings()->IsFirstSetupComplete();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+          should_revoke_sync_consent &=
+              base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles);
+#endif
+          // Revoke sync consent on desktop Chrome if they click cancel during
+          // initial setup or close sync setup without confirming sync.
+          if (should_revoke_sync_consent) {
             IdentityManagerFactory::GetForProfile(profile_)
                 ->GetPrimaryAccountMutator()
                 ->RevokeSyncConsent(
                     signin_metrics::ABORT_SIGNIN,
                     signin_metrics::SignoutDelete::kIgnoreMetric);
           }
-#endif
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
         }
       }
     }

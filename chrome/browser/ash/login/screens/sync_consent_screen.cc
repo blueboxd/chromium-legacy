@@ -12,6 +12,7 @@
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -176,6 +177,11 @@ void SyncConsentScreen::Finish(Result result) {
 }
 
 bool SyncConsentScreen::MaybeSkip(WizardContext* context) {
+  if (context->skip_post_login_screens_for_tests) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
+  }
+
   Init(context);
 
   switch (behavior_) {

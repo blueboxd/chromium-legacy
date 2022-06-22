@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/loader/fetch_priority_attribute.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/loader/web_bundle/script_web_bundle.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
@@ -121,12 +122,11 @@ ScriptLoader::~ScriptLoader() {}
 void ScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(parser_document_);
-  visitor->Trace(pending_script_);
   visitor->Trace(prepared_pending_script_);
   visitor->Trace(resource_keep_alive_);
   visitor->Trace(script_web_bundle_);
   visitor->Trace(speculation_rule_set_);
-  PendingScriptClient::Trace(visitor);
+  ResourceFinishObserver::Trace(visitor);
 }
 
 void ScriptLoader::DidNotifySubtreeInsertionsToDocument() {
@@ -169,13 +169,6 @@ void ScriptLoader::Removed() {
     DocumentSpeculationRules::From(element_->GetDocument())
         .RemoveRuleSet(rule_set);
   }
-}
-
-void ScriptLoader::DetachPendingScript() {
-  if (!pending_script_)
-    return;
-  pending_script_->Dispose();
-  pending_script_ = nullptr;
 }
 
 namespace {
@@ -539,9 +532,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   DCHECK(!prepared_pending_script_);
 
+  bool has_render_blocking_attr =
+      RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
+      element_->IsExplicitlyRenderBlocking();
   RenderBlockingBehavior render_blocking_behavior =
-      non_blocking_ || dynamic_async_ ? RenderBlockingBehavior::kNonBlocking
-                                      : RenderBlockingBehavior::kBlocking;
+      !has_render_blocking_attr && (non_blocking_ || dynamic_async_ ||
+                                    element_->DeferAttributeValue())
+          ? RenderBlockingBehavior::kNonBlocking
+          : RenderBlockingBehavior::kBlocking;
 
   // <spec step="22">Let options be a script fetch options whose cryptographic
   // nonce is cryptographic nonce, integrity metadata is integrity metadata,
@@ -638,8 +636,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     }
 
     // If the element is render-blocking, block rendering on the element.
-    if (RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
-        element_->IsRenderBlocking() &&
+    if (has_render_blocking_attr &&
         element_document.GetRenderBlockingResourceManager()) {
       element_document.GetRenderBlockingResourceManager()->AddPendingScript(
           *element_);
@@ -798,21 +795,19 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                 script_web_bundle_or_error)) {
           ScriptWebBundleError error =
               absl::get<ScriptWebBundleError>(script_web_bundle_or_error);
-          // errors with type kSystemError should fire an error event silently
-          // for the user, while kParseError should report an exception.
-          switch (error.GetType()) {
-            case ScriptWebBundleError::Type::kSystemError:
-              element_->DispatchErrorEvent();
-              break;
-            case ScriptWebBundleError::Type::kParseError: {
-              ScriptState* script_state = ToScriptStateForMainWorld(
-                  To<LocalDOMWindow>(element_->GetExecutionContext())
-                      ->GetFrame());
-              if (script_state->ContextIsValid()) {
-                ScriptState::Scope scope(script_state);
-                V8ScriptRunner::ReportException(script_state->GetIsolate(),
-                                                error.ToV8(script_state));
-              }
+          // Errors with type kSystemError should fire an error event silently
+          // for the user, while the other error types should report an
+          // exception.
+          if (error.GetType() == ScriptWebBundleError::Type::kSystemError) {
+            element_->DispatchErrorEvent();
+          } else {
+            ScriptState* script_state = ToScriptStateForMainWorld(
+                To<LocalDOMWindow>(element_->GetExecutionContext())
+                    ->GetFrame());
+            if (script_state->ContextIsValid()) {
+              ScriptState::Scope scope(script_state);
+              V8ScriptRunner::ReportException(script_state->GetIsolate(),
+                                              error.ToV8(script_state));
             }
           }
         }
@@ -987,16 +982,19 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // that will execute in order as soon as possible associated with the node
     // document of the script element at the time the prepare a script algorithm
     // started. ...</spec>
-    pending_script_ = TakePendingScript(ScriptSchedulingType::kInOrder);
+    //
     // TODO(hiroshige): Here the context document is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
     context_window->document()->GetScriptRunner()->QueueScriptForExecution(
-        pending_script_);
-    // Note that watchForLoad can immediately call pendingScriptFinished.
-    pending_script_->WatchForLoad(this);
+        TakePendingScript(ScriptSchedulingType::kInOrder));
     // The part "When the script is ready..." is implemented in
-    // ScriptRunner::notifyScriptReady().
+    // ScriptRunner::PendingScriptFinished().
     // TODO(hiroshige): Annotate it.
+
+    if (resource_keep_alive_) {
+      resource_keep_alive_->AddFinishObserver(
+          this, element_document.GetTaskRunner(TaskType::kNetworking).get());
+    }
 
     return true;
   }
@@ -1013,16 +1011,19 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // element at the time the prepare a script algorithm started. When the
     // script is ready, execute the script block and then remove the element
     // from the set of scripts that will execute as soon as possible.</spec>
-    pending_script_ = TakePendingScript(ScriptSchedulingType::kAsync);
+    //
     // TODO(hiroshige): Here the context document is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
     context_window->document()->GetScriptRunner()->QueueScriptForExecution(
-        pending_script_);
-    // Note that watchForLoad can immediately call pendingScriptFinished.
-    pending_script_->WatchForLoad(this);
+        TakePendingScript(ScriptSchedulingType::kAsync));
     // The part "When the script is ready..." is implemented in
-    // ScriptRunner::notifyScriptReady().
+    // ScriptRunner::PendingScriptFinished().
     // TODO(hiroshige): Annotate it.
+
+    if (resource_keep_alive_) {
+      resource_keep_alive_->AddFinishObserver(
+          this, element_document.GetTaskRunner(TaskType::kNetworking).get());
+    }
 
     return true;
   }
@@ -1123,13 +1124,7 @@ PendingScript* ScriptLoader::TakePendingScript(
   return pending_script;
 }
 
-void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
-  DCHECK(!will_be_parser_executed_);
-  DCHECK_EQ(pending_script_, pending_script);
-  DCHECK(pending_script->IsControlledByScriptRunner());
-  DCHECK(pending_script_->GetSchedulingType() == ScriptSchedulingType::kAsync ||
-         pending_script_->GetSchedulingType() ==
-             ScriptSchedulingType::kInOrder);
+void ScriptLoader::NotifyFinished() {
   // Historically we clear |resource_keep_alive_| when the scheduling type is
   // kAsync or kInOrder (crbug.com/778799). But if the script resource was
   // served via signed exchange, the script may not be in the HTTPCache, and
@@ -1137,23 +1132,9 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   // memory cache. So we keep |resource_keep_alive_| to keep the resource in the
   // memory cache.
   if (resource_keep_alive_ &&
-      !resource_keep_alive_->GetResponse().IsSignedExchangeInnerResponse() &&
-      !base::FeatureList::IsEnabled(
-          blink::features::kKeepScriptResourceAlive)) {
+      !resource_keep_alive_->GetResponse().IsSignedExchangeInnerResponse()) {
     resource_keep_alive_ = nullptr;
   }
-
-  if (!element_->GetExecutionContext()) {
-    DetachPendingScript();
-    return;
-  }
-
-  LocalDOMWindow* context_window =
-      To<LocalDOMWindow>(element_->GetExecutionContext());
-  context_window->document()->GetScriptRunner()->NotifyScriptReady(
-      pending_script);
-  pending_script_->StopWatchingForLoad();
-  pending_script_ = nullptr;
 }
 
 bool ScriptLoader::IgnoresLoadRequest() const {
@@ -1187,12 +1168,6 @@ bool ScriptLoader::IsScriptForEventSupported() const {
   // script is not executed.</spec>
   return EqualIgnoringASCIICase(event_attribute, "onload") ||
          EqualIgnoringASCIICase(event_attribute, "onload()");
-}
-
-PendingScript*
-ScriptLoader::GetPendingScriptIfControlledByScriptRunnerForCrossDocMove() {
-  DCHECK(!pending_script_ || pending_script_->IsControlledByScriptRunner());
-  return pending_script_;
 }
 
 String ScriptLoader::GetScriptText() const {

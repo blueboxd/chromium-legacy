@@ -31,7 +31,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="WebCore.DistillabilityUs" units="microseconds"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>wychen@chromium.org</owner>
   <owner>gilmanmh@google.com</owner>
   <summary>
@@ -68,7 +68,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.FindInPage.DurationBetweenKeystrokes" units="ms"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>jarhar@chromium.org</owner>
   <owner>vmpstr@chromium.org</owner>
   <summary>
@@ -107,7 +107,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.FindInPage.TaskDuration" units="ms"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>rakina@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>
@@ -311,17 +311,6 @@ chromium-metrics-reviews@google.com.
   <owner>cmumford@chromium.org</owner>
   <owner>storage-dev@chromium.org</owner>
   <summary>The reason that a forced-close of a backing store occurred.</summary>
-</histogram>
-
-<histogram name="WebCore.IndexedDB.Database.OutstandingTransactionCount"
-    units="transactions" expires_after="2022-08-01">
-  <owner>dmurph@chromium.org</owner>
-  <owner>pwnall@chromium.org</owner>
-  <owner>storage-dev@chromium.org</owner>
-  <summary>
-    Number of outstanding transactions (running, blocked) in database when a new
-    transaction is created.
-  </summary>
 </histogram>
 
 <histogram name="WebCore.IndexedDB.ErrorDuringForceCloseAborts"

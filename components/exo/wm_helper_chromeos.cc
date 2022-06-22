@@ -11,6 +11,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/singleton.h"
+#include "base/time/time.h"
+#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
@@ -23,6 +26,7 @@
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/display/util/display_util.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -38,9 +42,18 @@ aura::Window* GetPrimaryRoot() {
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelperChromeOS, public:
 
-WMHelperChromeOS::WMHelperChromeOS() : vsync_timing_manager_(this) {}
+WMHelperChromeOS::WMHelperChromeOS() : vsync_timing_manager_(this) {
+  auto* power_manager = chromeos::PowerManagerClient::Get();
+  // May be null in tests
+  if (power_manager)
+    power_manager->AddObserver(this);
+}
 
-WMHelperChromeOS::~WMHelperChromeOS() {}
+WMHelperChromeOS::~WMHelperChromeOS() {
+  auto* power_manager = chromeos::PowerManagerClient::Get();
+  if (power_manager)
+    power_manager->RemoveObserver(this);
+}
 
 WMHelperChromeOS* WMHelperChromeOS::GetInstance() {
   return static_cast<WMHelperChromeOS*>(WMHelper::GetInstance());
@@ -78,6 +91,14 @@ void WMHelperChromeOS::AddFrameThrottlingObserver() {
 void WMHelperChromeOS::RemoveFrameThrottlingObserver() {
   ash::Shell::Get()->frame_throttling_controller()->RemoveArcObserver(
       &vsync_timing_manager_);
+}
+
+void WMHelperChromeOS::AddPowerObserver(WMHelper::PowerObserver* observer) {
+  power_observers_.AddObserver(observer);
+}
+
+void WMHelperChromeOS::RemovePowerObserver(WMHelper::PowerObserver* observer) {
+  power_observers_.RemoveObserver(observer);
 }
 
 void WMHelperChromeOS::AddActivationObserver(
@@ -160,6 +181,25 @@ aura::client::DragDropDelegate::DropCallback WMHelperChromeOS::GetDropCallback(
   return base::BindOnce(&WMHelperChromeOS::PerformDrop,
                         weak_ptr_factory_.GetWeakPtr(),
                         std::move(drop_callbacks));
+}
+
+void WMHelperChromeOS::SuspendDone(base::TimeDelta sleep_duration) {
+  for (PowerObserver& observer : power_observers_)
+    observer.SuspendDone();
+}
+
+void WMHelperChromeOS::ScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  for (PowerObserver& observer : power_observers_)
+    observer.ScreenBrightnessChanged(change.percent());
+}
+
+void WMHelperChromeOS::LidEventReceived(
+    chromeos::PowerManagerClient::LidState state,
+    base::TimeTicks timestamp) {
+  for (PowerObserver& observer : power_observers_)
+    observer.LidEventReceived(state ==
+                              chromeos::PowerManagerClient::LidState::OPEN);
 }
 
 void WMHelperChromeOS::AddVSyncParameterObserver(
@@ -272,7 +312,7 @@ aura::client::CaptureClient* WMHelperChromeOS::GetCaptureClient() {
 }
 
 float GetDefaultDeviceScaleFactor() {
-  if (!display::Display::HasInternalDisplay())
+  if (!display::HasInternalDisplay())
     return 1.0;
 
   if (display::Display::HasForceDeviceScaleFactor())

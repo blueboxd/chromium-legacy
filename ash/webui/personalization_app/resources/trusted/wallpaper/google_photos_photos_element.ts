@@ -12,13 +12,14 @@ import './styles.js';
 import '../../common/styles.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {DisplayableImage} from '../../common/constants.js';
 import {getLoadingPlaceholders, getNumberOfGridItemsPerRow, isNonEmptyArray, isSelectionEvent, normalizeKeyForRTL} from '../../common/utils.js';
-import {CurrentWallpaper, GooglePhotosPhoto, WallpaperImage, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
+import {dismissErrorAction, setErrorAction} from '../personalization_actions.js';
+import {CurrentWallpaper, GooglePhotosPhoto, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {isGooglePhotosPhoto} from '../utils.js';
 
@@ -27,6 +28,7 @@ import {getTemplate} from './google_photos_photos_element.html.js';
 import {fetchGooglePhotosPhotos, selectWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 
+const ERROR_ID = 'GooglePhotosPhotos';
 const PLACEHOLDER_ID = 'placeholder';
 
 /** Returns placeholders to show while Google Photos photos are loading. */
@@ -56,7 +58,8 @@ export type GooglePhotosPhotosRow = GooglePhotosPhotoWithIndex[];
 
 /** A titled list of |GooglePhotosPhotosRow|'s to be rendered in a section. */
 export type GooglePhotosPhotosSection = {
-  title: string,
+  date: string,
+  locations: Set<string>,
   rows: GooglePhotosPhotosRow[],
 };
 
@@ -110,6 +113,7 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
         value: function() {
           return getNumberOfGridItemsPerRow();
         },
+        observer: 'onPhotosPerRowChanged_',
       },
 
       photosResumeToken_: {
@@ -129,7 +133,7 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
   private focusedColIndex_: number;
 
   /** The pending selected wallpaper. */
-  private pendingSelected_: FilePath|GooglePhotosPhoto|WallpaperImage|null;
+  private pendingSelected_: DisplayableImage|null;
 
   /** The list of photos. */
   private photos_: GooglePhotosPhoto[]|null|undefined;
@@ -253,6 +257,9 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
   /** Invoked on changes to this element's |hidden| state. */
   private onHiddenChanged_(hidden: GooglePhotosPhotos['hidden']) {
     if (hidden) {
+      // If |hidden|, the error associated with this element will have lost
+      // user-facing context so it should be dismissed.
+      this.dispatch(dismissErrorAction(ERROR_ID, /*fromUser=*/ false));
       return;
     }
 
@@ -260,6 +267,14 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
     // iron-list will render incorrectly. Force relayout by invalidating the
     // iron-list when this element becomes visible.
     afterNextRender(this, () => this.$.grid.fire('iron-resize'));
+
+    // When showing the user a list of photos that previously failed to load,
+    // we should automatically retry loading the list. Placeholders should be
+    // shown while loading is in progress.
+    if (this.photos_ === null && !this.photosLoading_) {
+      fetchGooglePhotosPhotos(this.wallpaperProvider_, this.getStore());
+      this.photosByRow_ = getPlaceholders();
+    }
   }
 
   /** Invoked on selection of a photo. */
@@ -267,13 +282,40 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
     assert(e.model.photo);
     if (!this.isPhotoPlaceholder_(e.model.photo) && isSelectionEvent(e)) {
       selectWallpaper(e.model.photo, this.wallpaperProvider_, this.getStore());
-      recordWallpaperGooglePhotosSourceUMA(WallpaperGooglePhotosSource.Photos);
+      recordWallpaperGooglePhotosSourceUMA(WallpaperGooglePhotosSource.PHOTOS);
     }
   }
 
   /** Invoked on changes to |photosBySection_|. */
   private onPhotosBySectionChanged_(
       photosBySection: GooglePhotosPhotos['photosBySection_']) {
+    if (photosBySection === null) {
+      // If the list of photos fails to load and is currently showing, display
+      // an error to the user that allows them to make another attempt.
+      if (!this.hidden) {
+        this.dispatch(setErrorAction({
+          id: ERROR_ID,
+          message: this.i18n('googlePhotosError'),
+          dismiss: {
+            message: this.i18n('googlePhotosRetry'),
+            callback: (fromUser: boolean) => {
+              if (fromUser) {
+                // Post the reattempt instead of performing it immediately to
+                // avoid updating the personalization store from the same
+                // sequence that generated this event.
+                setTimeout(
+                    () => fetchGooglePhotosPhotos(
+                        this.wallpaperProvider_, this.getStore()));
+              }
+            },
+          },
+        }));
+      }
+      // Whether the list of photos is currently showing or not, placeholders
+      // should not be removed on load failure.
+      return;
+    }
+
     // NOTE: |photosByRow_| is updated in place to avoid resetting the scroll
     // position of the grid which would otherwise occur during reassignment.
     this.updateList(
@@ -284,6 +326,18 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
             photosBySection.flatMap(section => section.rows) :
             [],
         /*identityBasedUpdate=*/ true);
+  }
+
+  /** Invoked on changes to |photosPerRow_|. */
+  private onPhotosPerRowChanged_(photosPerRow:
+                                     GooglePhotosPhotos['photosPerRow_']) {
+    // Because this element manually partitions photos by row, placeholders need
+    // to be explicitly regenerated when the desired number of photos per row
+    // changes.
+    if (photosPerRow && isNonEmptyArray(this.photosByRow_) &&
+        this.photosByRow_.every(r => r.every(p => p.id === PLACEHOLDER_ID))) {
+      this.photosByRow_ = getPlaceholders();
+    }
   }
 
   /** Invoked on changes to |photosResumeToken_|. */
@@ -311,19 +365,19 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
       return undefined;
     }
 
-    if (!isNonEmptyArray(photos) || !photosPerRow) {
+    if (!Array.isArray(photos) || !photosPerRow) {
       return null;
     }
 
     const sections: GooglePhotosPhotosSection[] = [];
 
     photos.forEach((photo, i) => {
-      const title = photo.date.data.map(c => String.fromCodePoint(c)).join('');
+      const date = photo.date.data.map(c => String.fromCodePoint(c)).join('');
 
       // Find/create the appropriate |section| in which to insert |photo|.
       let section = sections[sections.length - 1];
-      if (!section || section.title !== title) {
-        section = {title, rows: []};
+      if (!section || section.date !== date) {
+        section = {date, locations: new Set<string>(), rows: []};
         sections.push(section);
       }
 
@@ -335,28 +389,57 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
       }
 
       row.push({...photo, index: i});
+
+      if (photo.location) {
+        section.locations.add(photo.location);
+      }
     });
 
     return sections;
   }
 
-  // Returns the title to display for the specified grid |row|.
-  private getGridRowTitle_(
+  /** Returns the date to display for the specified grid |row|. */
+  private getGridRowDate_(
       row: GooglePhotosPhotosRow,
       photosBySection: GooglePhotosPhotos['photosBySection_']): string
       |undefined {
     if (!photosBySection) {
       return undefined;
     }
-    const gridRow = photosBySection.find(section => section.rows[0] === row);
-    return !gridRow ? undefined : gridRow.title;
+    const gridRowSection =
+        photosBySection.find(section => section.rows[0] === row);
+    return gridRowSection ? gridRowSection.date : undefined;
   }
 
-  // Returns whether the title for the specified grid |row| is visible.
+  /** Returns the locations to display for the specified grid |row|. */
+  private getGridRowLocations_(
+      row: GooglePhotosPhotosRow,
+      photosBySection: GooglePhotosPhotos['photosBySection_']): string
+      |undefined {
+    if (!photosBySection) {
+      return undefined;
+    }
+    const gridRowSection =
+        photosBySection.find(section => section.rows[0] === row);
+    return gridRowSection ?
+        Array.from(gridRowSection.locations).sort().join(' · ') :
+        undefined;
+  }
+
+  /** Returns the aria label for the specified |photo|. */
+  private getPhotoAriaLabel_(photo: GooglePhotosPhoto|null): string|undefined {
+    if (photo) {
+      return photo.id === PLACEHOLDER_ID ? this.i18n('ariaLabelLoading') :
+                                           photo.name;
+    }
+    return undefined;
+  }
+
+  /** Returns whether the title for the specified grid |row| is visible. */
   private isGridRowTitleVisible_(
       row: GooglePhotosPhotosRow,
       photosBySection: GooglePhotosPhotos['photosBySection_']): boolean {
-    return !!this.getGridRowTitle_(row, photosBySection);
+    return !!this.getGridRowDate_(row, photosBySection);
   }
 
   /** Returns whether the specified |photo| is a placeholder. */
@@ -364,7 +447,7 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
     return !!photo && photo.id === PLACEHOLDER_ID;
   }
 
-  // Returns whether the specified |photo| is currently selected.
+  /** Returns whether the specified |photo| is currently selected. */
   private isPhotoSelected_(
       photo: GooglePhotosPhoto|null,
       currentSelected: GooglePhotosPhotos['currentSelected_'],
@@ -377,7 +460,7 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
       return true;
     }
     if (!pendingSelected && !!currentSelected &&
-        currentSelected.type === WallpaperType.kGooglePhotos &&
+        currentSelected.type === WallpaperType.kOnceGooglePhotos &&
         currentSelected.key === photo.id) {
       return true;
     }

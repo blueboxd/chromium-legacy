@@ -20,6 +20,11 @@ export class BasePageElement extends PolymerElement {
   }
 
   /** @override */
+  constructor() {
+    super();
+  }
+
+  /** @override */
   ready() {
     super.ready();
   }

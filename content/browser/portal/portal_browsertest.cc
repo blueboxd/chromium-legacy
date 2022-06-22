@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -48,6 +49,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/render_frame_host_test_support.h"
@@ -61,7 +63,6 @@
 #include "content/test/portal/portal_created_observer.h"
 #include "content/test/portal/portal_interceptor_for_testing.h"
 #include "content/test/test_render_frame_host_factory.h"
-#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -85,14 +86,11 @@ namespace content {
 
 class PortalBrowserTest : public ContentBrowserTest {
  protected:
-  PortalBrowserTest() {}
-
-  void SetUp() override {
+  PortalBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{blink::features::kPortals,
                               blink::features::kPortalsCrossOrigin},
         /*disabled_features=*/{});
-    ContentBrowserTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -2517,7 +2515,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DownloadsBlockedInSubframe) {
   GURL download_url = embedded_test_server()->GetURL(
       "portal.test", "/set-header?Content-Disposition: attachment");
   GURL iframe_url = embedded_test_server()->GetURL(
-      "portal.test", "/iframe?" + net::EscapeQueryParamValue(
+      "portal.test", "/iframe?" + base::EscapeQueryParamValue(
                                       download_url.spec(), /*use_plus=*/false));
 
   DownloadObserver download_observer;
@@ -2894,6 +2892,44 @@ IN_PROC_BROWSER_TEST_F(PortalPixelBrowserTest, MAYBE_PageScaleRaster) {
                        "document.querySelector('portal').activate();");
     portal_frame_observer.WaitForExternalPageScaleFactor(1.f, kScaleTolerance);
   }
+}
+
+class PortalFencedFrameBrowserTest : public PortalBrowserTest {
+ public:
+  PortalFencedFrameBrowserTest() = default;
+  ~PortalFencedFrameBrowserTest() override = default;
+
+  RenderFrameHost* primary_main_frame_host() {
+    return shell()->web_contents()->GetMainFrame();
+  }
+
+ protected:
+  content::test::FencedFrameTestHelper fenced_frame_helper_;
+};
+
+// Create a fenced frame in the primary main page that creates a portal which
+// should fail. Ideally this would be a WPT test but that requires a special
+// virtual test suite which would just be for enabling fenced frames and
+// portals together.
+IN_PROC_BROWSER_TEST_F(PortalFencedFrameBrowserTest, CreatePortalBlocked) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  const GURL fenced_frame_url =
+      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+  RenderFrameHost* fenced_frame_rfh = fenced_frame_helper_.CreateFencedFrame(
+      primary_main_frame_host(), fenced_frame_url);
+  ASSERT_NE(nullptr, fenced_frame_rfh);
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "*Cannot use <portal> in a nested browsing context.*");
+
+  EXPECT_TRUE(ExecJs(fenced_frame_rfh,
+                     R"(let portal = document.createElement('portal');
+                        portal.src = new URL('about:blank', location.href);
+                        document.body.appendChild(portal);
+             )"));
+  console_observer.Wait();
 }
 
 }  // namespace content

@@ -12,6 +12,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.BackPressHelper;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
+import org.chromium.chrome.browser.history_clusters.HistoryClustersConstants;
 
 /**
  * Activity for displaying the browsing history manager.
@@ -25,8 +26,12 @@ public class HistoryActivity extends SnackbarActivity {
 
         boolean isIncognito = IntentUtils.safeGetBooleanExtra(
                 getIntent(), IntentHandler.EXTRA_INCOGNITO_MODE, false);
-        mHistoryManager = new HistoryManager(
-                this, true, getSnackbarManager(), isIncognito, /* Supplier<Tab>= */ null);
+        boolean showHistoryClustersImmediately = IntentUtils.safeGetBooleanExtra(
+                getIntent(), HistoryClustersConstants.EXTRA_SHOW_HISTORY_CLUSTERS, false);
+        String historyClustersQuery = IntentUtils.safeGetStringExtra(
+                getIntent(), HistoryClustersConstants.EXTRA_HISTORY_CLUSTERS_QUERY);
+        mHistoryManager = new HistoryManager(this, true, getSnackbarManager(), isIncognito,
+                /* Supplier<Tab>= */ null, showHistoryClustersImmediately, historyClustersQuery);
         setContentView(mHistoryManager.getView());
         BackPressHelper.create(this, getOnBackPressedDispatcher(), mHistoryManager::onBackPressed);
     }

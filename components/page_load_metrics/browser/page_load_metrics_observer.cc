@@ -86,22 +86,11 @@ const char* PageLoadMetricsObserver::GetObserverName() const {
   return nullptr;
 }
 
-base::WeakPtr<PageLoadMetricsObserver> PageLoadMetricsObserver::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
   return CONTINUE_OBSERVING;
-}
-
-PageLoadMetricsObserver::ObservePolicy
-PageLoadMetricsObserver::OnFencedFramesStart(
-    content::NavigationHandle* navigation_handle,
-    const GURL& currently_committed_url) {
-  return STOP_OBSERVING;
 }
 
 PageLoadMetricsObserver::ObservePolicy

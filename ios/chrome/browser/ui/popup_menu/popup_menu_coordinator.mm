@@ -13,7 +13,10 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/follow/follow_action_state.h"
+#import "ios/chrome/browser/follow/follow_util.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -24,9 +27,6 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
-#import "ios/chrome/browser/ui/follow/follow_action_state.h"
-#import "ios/chrome/browser/ui/follow/follow_util.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_mediator.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
@@ -361,11 +361,10 @@ enum class IOSOverflowMenuActionType {
             overlayPresenter;
         self.overflowMenuMediator.browserPolicyConnector =
             GetApplicationContext()->GetBrowserPolicyConnector();
-            
+
         if (IsWebChannelsEnabled()) {
           self.overflowMenuMediator.followActionState = GetFollowActionState(
-              self.browser->GetWebStateList()->GetActiveWebState(),
-              self.browser->GetBrowserState());
+              self.browser->GetWebStateList()->GetActiveWebState());
           ios::GetChromeBrowserProvider()
               .GetFollowProvider()
               ->SetFollowEventDelegate(self.browser);

@@ -166,4 +166,14 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     public void fetchScripts() {
         mPasswordCheckBridge.refreshScripts();
     }
+
+    @Override
+    public void onAutomatedPasswordChangeStarted(CompromisedCredential credential) {
+        mPasswordCheckBridge.onAutomatedPasswordChangeStarted(credential);
+    }
+
+    @Override
+    public void onManualPasswordChangeStarted(CompromisedCredential credential) {
+        mPasswordCheckBridge.onManualPasswordChangeStarted(credential);
+    }
 }

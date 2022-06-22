@@ -36,14 +36,29 @@ deactivate
 
 ### Chromium build
 
-If measuring of profiling Chromium it needs to be built with the following args.gn and copied to the "Applications" folder.
+Chromium needs to be built with the following args.gn 
 
-    use_goma = true
     is_debug = false
     is_component_build = false
     symbol_level = 0
     blink_symbol_level = 0
     is_official_build = true
+    is_chrome_branded = true
+
+If profiling it needs to be built with these additional args.gn 
+
+    enable_profiling = true
+    enable_dsyms = false
+    enable_stripping = false
+
+If tracing it needs to be built with these additional args.gn 
+
+    extended_tracing_enabled = true
+
+In all cases the build needs to be copied to the "Applications" folder. 
+If desired it's possible to build using components builds and dsyms but it
+adds the complexity of having to copy over the additional files to the test
+machine when building from a different machine.
 
 ## Getting around sudo password
 
@@ -97,7 +112,14 @@ This command will produce a file at `./output/idle_on_wiki_cpu_profile.pb`.
 The script can produce a pprof profile that can be used with
 [pprof](https://github.com/google/pprof) or a collapsed profile that can be used
 with tools such as [FlameGraph](https://github.com/brendangregg/FlameGraph) and
-[SpeedScope](https://www.speedscope.app/)
+[SpeedScope](https://www.speedscope.app/).
+
+Known signatures are added to the pprof profile as labels. These can be
+appended to the flamegraph with
+
+```
+pprof -proto -tagroot signature <profile>
+```
 
 ## Usage scenario scripts
 

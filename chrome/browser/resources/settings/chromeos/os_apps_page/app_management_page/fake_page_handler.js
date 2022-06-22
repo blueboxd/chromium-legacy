@@ -105,12 +105,16 @@ export class FakePageHandler {
       hidePinToShelf: false,
       isPreferredApp: false,
       windowMode: WindowMode.kWindow,
+      hideWindowMode: false,
       resizeLocked: false,
       hideResizeLocked: true,
       supportedLinks: [],
       runOnOsLogin: null,
       fileHandlingState: null,
       installSource: InstallSource.kUnknown,
+      appSize: '',
+      dataSize: '',
+      publisherId: '',
     };
 
     if (optConfig) {

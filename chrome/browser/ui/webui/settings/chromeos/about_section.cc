@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/about_section.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/management/management_ui.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_name_handler.h"
@@ -30,6 +32,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/tribool.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
@@ -209,6 +213,9 @@ AboutSection::AboutSection(Profile* profile,
       base::BindRepeating(&AboutSection::UpdateReportIssueSearchTags,
                           base::Unretained(this)));
   UpdateReportIssueSearchTags();
+
+  pref_change_registrar_.Add(prefs::kConsumerAutoUpdateToggle,
+                             base::DoNothingAs<void()>());
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -340,6 +347,20 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
     {"aboutUpgradeTryAgain", IDS_SETTINGS_UPGRADE_TRY_AGAIN},
     {"aboutUpgradeDownloadError", IDS_SETTINGS_UPGRADE_DOWNLOAD_ERROR},
     {"aboutUpgradeAdministrator", IDS_SETTINGS_UPGRADE_ADMINISTRATOR_ERROR},
+
+    // About page auto update toggle.
+    {"aboutConsumerAutoUpdateToggleTitle",
+     IDS_SETTINGS_ABOUT_PAGE_CONSUMER_AUTO_UPDATE_TOGGLE_TITLE},
+    {"aboutConsumerAutoUpdateToggleDescription",
+     IDS_SETTINGS_ABOUT_PAGE_CONSUMER_AUTO_UPDATE_TOGGLE_DESCRIPTION},
+    {"aboutConsumerAutoUpdateToggleDialogTitle",
+     IDS_SETTINGS_ABOUT_PAGE_CONSUMER_AUTO_UPDATE_TOGGLE_DIALOG_TITLE},
+    {"aboutConsumerAutoUpdateToggleDialogDescription",
+     IDS_SETTINGS_ABOUT_PAGE_CONSUMER_AUTO_UPDATE_TOGGLE_DIALOG_DESCRIPTION},
+    {"aboutConsumerAutoUpdateToggleTurnOffButton",
+     IDS_SETTINGS_ABOUT_PAGE_CONSUMER_AUTO_UPDATE_TOGGLE_TURN_OFF_BUTTON},
+    {"aboutConsumerAutoUpdateToggleKeepUpdatesButton",
+     IDS_SETTINGS_ABOUT_PAGE_CONSUMER_AUTO_UPDATE_TOGGLE_KEEP_UPDATES_BUTTON},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -354,11 +375,36 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddString("deviceManager", GetDeviceManager());
 
   if (user_manager::UserManager::IsInitialized()) {
+    bool is_enterprise_managed = webui::IsEnterpriseManaged();
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-    if (!webui::IsEnterpriseManaged() && !user_manager->IsCurrentUserOwner()) {
+    bool is_current_owner = user_manager->IsCurrentUserOwner();
+
+    if (!is_enterprise_managed && !is_current_owner) {
       html_source->AddString("ownerEmail",
                              user_manager->GetOwnerAccountId().GetUserEmail());
     }
+
+    // Hide toggle by default.
+    bool show_cau_toggle = false;
+    auto* identity_manager = IdentityManagerFactory::GetForProfile(profile());
+    if (identity_manager && !is_enterprise_managed) {
+      const std::string& gaia_id =
+          user_manager->GetActiveUser()->GetAccountId().GetGaiaId();
+      const AccountInfo account_info =
+          identity_manager->FindExtendedAccountInfoByGaiaId(gaia_id);
+      // If the user falls under New Deal..
+      if (account_info.capabilities.can_toggle_auto_updates() ==
+          signin::Tribool::kTrue) {
+        // Show toggle based on user's capabilities.
+        show_cau_toggle = true;
+      }
+    }
+
+    show_cau_toggle = show_cau_toggle &&
+                      chromeos::features::IsConsumerAutoUpdateToggleAllowed();
+    html_source->AddBoolean("isConsumerAutoUpdateTogglingAllowed",
+                            show_cau_toggle && is_current_owner);
+    html_source->AddBoolean("showConsumerAutoUpdateToggle", show_cau_toggle);
   }
 
   html_source->AddString(

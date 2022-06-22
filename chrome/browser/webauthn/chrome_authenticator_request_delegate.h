@@ -59,6 +59,9 @@ class ChromeWebAuthenticationDelegate
       content::BrowserContext* browser_context,
       const url::Origin& caller_origin,
       const std::string& relying_party_id) override;
+  bool OriginMayUseRemoteDesktopClientOverride(
+      content::BrowserContext* browser_context,
+      const url::Origin& caller_origin) override;
   absl::optional<std::string> MaybeGetRelyingPartyIdOverride(
       const std::string& claimed_relying_party_id,
       const url::Origin& caller_origin) override;
@@ -107,6 +110,12 @@ class ChromeAuthenticatorRequestDelegate
         device::FidoRequestHandlerBase::TransportAvailabilityInfo* tai) = 0;
 
     virtual void UIShown(ChromeAuthenticatorRequestDelegate* delegate) = 0;
+
+    virtual void CableV2ExtensionSeen(
+        base::span<const uint8_t> server_link_data,
+        base::span<const uint8_t> experiments,
+        AuthenticatorRequestDialogModel::ExperimentServerLinkSheet,
+        AuthenticatorRequestDialogModel::ExperimentServerLinkTitle) = 0;
   };
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

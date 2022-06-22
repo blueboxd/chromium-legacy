@@ -32,7 +32,7 @@ const char kOs[] =
     "win";
 #elif BUILDFLAG(IS_ANDROID)
     "android";
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS)
     "cros";
 #elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     "linux";
@@ -124,10 +124,8 @@ const char* UpdateQueryParams::GetNaclArch() {
 #else
   return "x86-32";
 #endif
-#elif defined(ARCH_CPU_ARMEL)
+#elif defined(ARCH_CPU_ARM_FAMILY)
   return "arm";
-#elif defined(ARCH_CPU_ARM64)
-  return "arm64";
 #elif defined(ARCH_CPU_MIPSEL)
   return "mips32";
 #elif defined(ARCH_CPU_MIPS64EL)

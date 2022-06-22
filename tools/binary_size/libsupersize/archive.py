@@ -6,6 +6,7 @@
 import argparse
 import collections
 import dataclasses
+import functools
 import logging
 import os
 import posixpath
@@ -90,6 +91,8 @@ class ApkSpec:
   # Component to use for symbols when not specified by DIR_METADATA, provided by
   # json config.
   default_component: str = ''
+  # Paths to not create .other symbols for.
+  ignore_apk_paths: set = dataclasses.field(default_factory=set)
 
 
 @dataclasses.dataclass
@@ -97,7 +100,7 @@ class ContainerSpec:
   container_name: str
   apk_spec: ApkSpec
   pak_spec: PakSpec
-  native_specs: list
+  native_spec: NativeSpec
   source_directory: str
   output_directory: str
 
@@ -241,11 +244,11 @@ def CreateBuildConfig(output_directory, source_directory, url=None, title=None):
   return build_config
 
 
-def _CreateMetadata(container_spec):
+def _CreateMetadata(container_spec, elf_info):
   logging.debug('Constructing metadata')
   metadata = {}
   apk_spec = container_spec.apk_spec
-  native_specs = container_spec.native_specs
+  native_spec = container_spec.native_spec
   output_directory = container_spec.output_directory
 
   # Ensure all paths are relative to output directory to make them hermetic.
@@ -256,10 +259,11 @@ def _CreateMetadata(container_spec):
     shorten_path = os.path.basename
 
   if apk_spec:
-    metadata[models.METADATA_APK_SIZE] = os.path.getsize(apk_spec.apk_path)
-    if apk_spec.mapping_path:
-      metadata[models.METADATA_PROGUARD_MAPPING_FILENAME] = shorten_path(
-          apk_spec.mapping_path)
+    if not container_spec.native_spec:
+      metadata[models.METADATA_APK_SIZE] = os.path.getsize(apk_spec.apk_path)
+      if apk_spec.mapping_path:
+        metadata[models.METADATA_PROGUARD_MAPPING_FILENAME] = shorten_path(
+            apk_spec.mapping_path)
     if apk_spec.minimal_apks_path:
       metadata[models.METADATA_APK_FILENAME] = shorten_path(
           apk_spec.minimal_apks_path)
@@ -267,10 +271,12 @@ def _CreateMetadata(container_spec):
     else:
       metadata[models.METADATA_APK_FILENAME] = shorten_path(apk_spec.apk_path)
 
-  if native_specs:
-    native.AddMetadata(metadata=metadata,
-                       native_spec=native_specs[0],
-                       shorten_path=shorten_path)
+  if native_spec:
+    native_metadata = native.CreateMetadata(native_spec=native_spec,
+                                            elf_info=elf_info,
+                                            shorten_path=shorten_path)
+    assert not (metadata.keys() & native_metadata.keys())
+    metadata.update(native_metadata)
 
   logging.debug('Constructing metadata (done)')
   return metadata
@@ -302,13 +308,11 @@ def _CreateContainerSymbols(container_spec, apk_file_manager,
   container_name = container_spec.container_name
   apk_spec = container_spec.apk_spec
   pak_spec = container_spec.pak_spec
-  native_spec = next(iter(container_spec.native_specs), None)
+  native_spec = container_spec.native_spec
   output_directory = container_spec.output_directory
   source_directory = container_spec.source_directory
 
   logging.info('Starting on container: %s', container_spec)
-
-  metadata = _CreateMetadata(container_spec)
 
   raw_symbols = []
   section_sizes = {}
@@ -352,9 +356,9 @@ def _CreateContainerSymbols(container_spec, apk_file_manager,
                                       default_component=default_component)
     raw_symbols.extend(new_raw_symbols)
 
+  elf_info = None
   if native_spec:
-    section_ranges, new_raw_symbols = native.CreateSymbols(
-        metadata=metadata,
+    section_ranges, new_raw_symbols, elf_info = native.CreateSymbols(
         apk_spec=apk_spec,
         native_spec=native_spec,
         output_directory=output_directory,
@@ -364,8 +368,7 @@ def _CreateContainerSymbols(container_spec, apk_file_manager,
              source_path_prefix=native_spec.source_path_prefix,
              component=native_spec.component,
              paths_already_normalized=True)
-
-  if apk_spec and apk_spec.analyze_dex:
+  elif apk_spec and apk_spec.analyze_dex:
     logging.info('Analyzing DEX')
     apk_infolist = apk_file_manager.InfoList(apk_spec.apk_path)
     dex_total_size = sum(i.file_size for i in apk_infolist
@@ -373,24 +376,26 @@ def _CreateContainerSymbols(container_spec, apk_file_manager,
     add_syms(*apkanalyzer.CreateDexSymbols(apk_analyzer_results[container_name],
                                            dex_total_size,
                                            apk_spec.size_info_prefix))
-
   if pak_spec:
     add_syms(*_CreatePakSymbols(pak_spec=pak_spec,
                                 pak_id_map=pak_id_map,
                                 apk_spec=apk_spec,
                                 output_directory=output_directory))
-  if apk_spec:
-    add_syms(*apk.CreateApkOtherSymbols(
-        metadata=metadata, apk_spec=apk_spec, native_spec=native_spec))
+  apk_metadata = {}
+  if not native_spec and apk_spec:
+    section_ranges, new_raw_symbols, apk_metadata = apk.CreateApkOtherSymbols(
+        apk_spec)
+    add_syms(section_ranges, new_raw_symbols)
 
+  metadata = _CreateMetadata(container_spec, elf_info)
+  assert not (metadata.keys() & apk_metadata.keys())
+  metadata.update(apk_metadata)
   container = models.Container(name=container_name,
                                metadata=metadata,
                                section_sizes=section_sizes)
   for symbol in raw_symbols:
     symbol.container = container
 
-  if file_format.LogUnsortedSymbols(raw_symbols) > 0:
-    file_format.SortSymbols(raw_symbols)
   return raw_symbols
 
 
@@ -738,9 +743,9 @@ def _CreateNativeSpecs(*, tentative_output_dir, apk_infolist, elf_path,
   return abi_filters, ret
 
 
-def _DeduceAuxPaths(args, apk_prefix):
-  mapping_path = args.mapping_file
-  resources_pathmap_path = args.resources_pathmap_file
+# Cache to prevent excess log messages.
+@functools.lru_cache
+def _DeduceAuxPaths(mapping_path, resources_pathmap_path, apk_prefix):
   if apk_prefix:
     if not mapping_path:
       possible_mapping_path = apk_prefix + '.mapping'
@@ -789,13 +794,13 @@ def _ReadMultipleArgsFromFile(ssargs_file, on_config_error):
 
 
 # Both |top_args| and |sub_args| may be modified.
-def _CreateContainerSpec(apk_file_manager,
-                         top_args,
-                         sub_args,
-                         json_config,
-                         container_name,
-                         on_config_error,
-                         split_name=None):
+def _CreateContainerSpecs(apk_file_manager,
+                          top_args,
+                          sub_args,
+                          json_config,
+                          base_container_name,
+                          on_config_error,
+                          split_name=None):
   sub_args.source_directory = (sub_args.source_directory
                                or top_args.source_directory)
   sub_args.output_directory = (sub_args.output_directory
@@ -808,12 +813,12 @@ def _CreateContainerSpec(apk_file_manager,
   if split_name:
     apk_path = apk_file_manager.SplitPath(sub_args.minimal_apks_file,
                                           split_name)
-    container_name = '{}/{}.apk'.format(container_name, split_name)
+    base_container_name = f'{base_container_name}/{split_name}.apk'
     # Make on-demand a part of the name so that:
     # * It's obvious from the name which DFMs are on-demand.
     # * Diffs that change an on-demand status show as adds/removes.
     if _IsOnDemand(apk_path):
-      container_name += '?'
+      base_container_name += '?'
   else:
     apk_path = sub_args.apk_file
 
@@ -823,7 +828,8 @@ def _CreateContainerSpec(apk_file_manager,
     apk_prefix = apk_prefix.replace('.minimal.apks', '.aab')
     apk_prefix = apk_prefix.replace('.apks', '.aab')
 
-  mapping_path, resources_pathmap_path = _DeduceAuxPaths(sub_args, apk_prefix)
+  mapping_path, resources_pathmap_path = _DeduceAuxPaths(
+      sub_args.mapping_file, sub_args.resources_pathmap_file, apk_prefix)
 
   apk_spec = None
   if apk_prefix:
@@ -884,12 +890,39 @@ def _CreateContainerSpec(apk_file_manager,
   else:
     native_specs = []
 
-  return ContainerSpec(container_name=container_name,
-                       apk_spec=apk_spec,
-                       pak_spec=pak_spec,
-                       native_specs=native_specs,
-                       source_directory=sub_args.source_directory,
-                       output_directory=sub_args.output_directory)
+  ret = [
+      ContainerSpec(container_name=base_container_name,
+                    apk_spec=apk_spec,
+                    pak_spec=pak_spec,
+                    native_spec=None,
+                    source_directory=sub_args.source_directory,
+                    output_directory=sub_args.output_directory)
+  ]
+  if apk_spec is None:
+    # Special case for when pointed at a single ELF, use just one container.
+    assert len(native_specs) <= 1
+    ret[0].native_spec = native_specs[0] if native_specs else None
+  else:
+    apk_spec.ignore_apk_paths.update(s.apk_so_path for s in native_specs)
+    if pak_spec and pak_spec.apk_pak_paths:
+      apk_spec.ignore_apk_paths.update(pak_spec.apk_pak_paths)
+    if apk_spec.analyze_dex:
+      apk_spec.ignore_apk_paths.update(i.filename for i in apk_infolist
+                                       if i.filename.endswith('.dex'))
+
+    for native_spec in native_specs:
+      so_name = posixpath.basename(native_spec.apk_so_path)
+      abi = posixpath.basename(posixpath.dirname(native_spec.apk_so_path))
+      container_name = f'{base_container_name}/{so_name} ({abi})'
+      # Use same apk_spec so that all containers for the apk_spec can be found.
+      ret.append(
+          ContainerSpec(container_name=container_name,
+                        apk_spec=apk_spec,
+                        pak_spec=None,
+                        native_spec=native_spec,
+                        source_directory=sub_args.source_directory,
+                        output_directory=sub_args.output_directory))
+  return ret
 
 
 def _IsOnDemand(apk_path):
@@ -962,18 +995,20 @@ def _CreateAllContainerSpecs(apk_file_manager, top_args, on_config_error):
     if sub_args.minimal_apks_file:
       split_names = apk_file_manager.ExtractSplits(sub_args.minimal_apks_file)
       for split_name in split_names:
-        ret.append(
-            _CreateContainerSpec(apk_file_manager,
-                                 top_args,
-                                 sub_args,
-                                 json_config,
-                                 container_name,
-                                 on_config_error,
-                                 split_name=split_name))
+        ret += _CreateContainerSpecs(apk_file_manager,
+                                     top_args,
+                                     sub_args,
+                                     json_config,
+                                     container_name,
+                                     on_config_error,
+                                     split_name=split_name)
     else:
-      ret.append(
-          _CreateContainerSpec(apk_file_manager, top_args, sub_args,
-                               json_config, container_name, on_config_error))
+      ret += _CreateContainerSpecs(apk_file_manager, top_args, sub_args,
+                                   json_config, container_name, on_config_error)
+  all_names = [c.container_name for c in ret]
+  assert len(set(all_names)) == len(all_names), \
+      'Found duplicate container names: ' + '\n'.join(sorted(all_names))
+
   return ret
 
 
@@ -993,45 +1028,64 @@ def _FilterContainerSpecs(container_specs, container_re=None):
   return ret
 
 
-def CreateSizeInfo(container_specs,
-                   build_config,
-                   apk_file_manager,
-                   normalize_names=True):
-  raw_symbols_list = []
-  pak_id_map = pakfile.PakIdMap()
-  apk_analyzer_results = {}
-  # Running ApkAnalyzer concurrently saves ~30 seconds for Monochrome.apks.
+def CreateSizeInfo(container_specs, build_config, apk_file_manager):
+  def sort_key(container_spec):
+    # Native containers come first to ensure pak_id_map is populated before
+    # any pak_spec is encountered.
+    if container_spec.native_spec:
+      # Do the most complicated container first, since its most likely to fail.
+      if container_spec.native_spec.algorithm == 'linker_map':
+        native_key = 0
+      elif container_spec.native_spec.algorithm == 'dwarf':
+        native_key = 1
+      else:
+        native_key = 2
+    else:
+      native_key = 3
+    return (native_key, container_spec.container_name)
+
+  container_specs.sort(key=sort_key)
+
   dex_containers = [
-      c for c in container_specs if c.apk_spec and c.apk_spec.analyze_dex
+      c for c in container_specs
+      if not c.native_spec and c.apk_spec and c.apk_spec.analyze_dex
   ]
+  # Running ApkAnalyzer concurrently saves ~30 seconds for Monochrome.apks.
   logging.info('Kicking of ApkAnalyzer for %d .apk files', len(dex_containers))
+  apk_analyzer_results = {}
   for container_spec in dex_containers:
     apk_analyzer_results[container_spec.container_name] = (
         apkanalyzer.RunApkAnalyzerAsync(container_spec.apk_spec.apk_path,
                                         container_spec.apk_spec.mapping_path))
 
+  raw_symbols_list = []
+  pak_id_map = pakfile.PakIdMap()
   for container_spec in container_specs:
     raw_symbols = _CreateContainerSymbols(container_spec, apk_file_manager,
                                           apk_analyzer_results, pak_id_map)
     assert raw_symbols, f'{container_spec.container_name} had no symbols.'
-
     raw_symbols_list.append(raw_symbols)
 
-  all_raw_symbols = []
+  # Normalize names before sorting.
+  logging.info('Normalizing symbol names')
   for raw_symbols in raw_symbols_list:
-    file_format.CalculatePadding(raw_symbols)
+    _NormalizeNames(raw_symbols)
 
-    # Do not call _NormalizeNames() during archive since that method tends to
-    # need tweaks over time. Calling it only when loading .size files allows for
-    # more flexibility.
-    if normalize_names:
-      logging.info('Normalizing symbol names')
-      _NormalizeNames(raw_symbols)
+  # Sorting must happen after normalization.
+  logging.info('Sorting symbols')
+  for raw_symbols in raw_symbols_list:
+    if file_format.LogUnsortedSymbols(raw_symbols) > 0:
+      file_format.SortSymbols(raw_symbols)
 
-    all_raw_symbols += raw_symbols
-
+  logging.debug('Accumulating symbols')
   # Containers should always have at least one symbol.
   container_list = [syms[0].container for syms in raw_symbols_list]
+  all_raw_symbols = []
+  for raw_symbols in raw_symbols_list:
+    all_raw_symbols += raw_symbols
+
+  file_format.CalculatePadding(all_raw_symbols)
+
   return models.SizeInfo(build_config, container_list, all_raw_symbols)
 
 
@@ -1060,10 +1114,7 @@ def Run(top_args, on_config_error):
                                      top_args.source_directory,
                                      url=top_args.url,
                                      title=top_args.title)
-    size_info = CreateSizeInfo(container_specs,
-                               build_config,
-                               apk_file_manager,
-                               normalize_names=False)
+    size_info = CreateSizeInfo(container_specs, build_config, apk_file_manager)
 
   if logging.getLogger().isEnabledFor(logging.DEBUG):
     for line in data_quality.DescribeSizeInfoCoverage(size_info):

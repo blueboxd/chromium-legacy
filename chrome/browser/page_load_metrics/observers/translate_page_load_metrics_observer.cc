@@ -43,6 +43,15 @@ TranslatePageLoadMetricsObserver::OnStart(
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+TranslatePageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // TranslateManager expects that only one TranslateMetricsLoggerImpl
+  // communicates with per WebContents.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 TranslatePageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   translate_metrics_logger_->SetUkmSourceId(GetDelegate().GetPageUkmSourceId());

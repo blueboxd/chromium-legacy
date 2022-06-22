@@ -9,6 +9,7 @@
 #include "services/network/public/mojom/cross_origin_opener_policy.mojom-blink.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/messaging/delegated_capability.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -155,8 +156,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   // marked as "CrossOrigin" in the window.idl.
   void ReportCoopAccess(const char* property_name);
 
-  bool anonymous() const { return anonymous_; }
-
   // Records metrics for cross-origin access to the WindowProxy properties,
   void RecordWindowProxyAccessMetrics(
       mojom::blink::WebFeature property_access,
@@ -175,7 +174,8 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
     Vector<MessagePortChannel> channels;
     Member<LocalDOMWindow> source;
     Member<UserActivation> user_activation;
-    bool delegate_payment_request = false;
+    mojom::blink::DelegatedCapability delegated_capability =
+        mojom::blink::DelegatedCapability::kNone;
   };
   virtual void SchedulePostMessage(PostedMessage* message) = 0;
 
@@ -220,10 +220,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
     WTF::String reported_window_url;
   };
   WTF::Vector<CoopAccessMonitor> coop_access_monitor_;
-
-  // Anonymous Iframe:
-  // https://github.com/camillelamy/explainers/blob/main/anonymous_iframes.md
-  const bool anonymous_ = false;
 };
 
 }  // namespace blink

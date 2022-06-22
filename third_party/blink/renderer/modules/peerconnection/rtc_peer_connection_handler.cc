@@ -432,7 +432,7 @@ class StatsResponse : public webrtc::StatsObserver {
     // callback might be doing.
     TRACE_EVENT_NESTABLE_ASYNC_END0("webrtc", "getStats_Native",
                                     TRACE_ID_LOCAL(this));
-    request_->requestSucceeded(response);
+    request_->requestSucceeded(response.get());
     request_ = nullptr;  // must be freed on the main thread.
   }
 
@@ -490,9 +490,11 @@ void GetRTCStatsOnSignalingThread(
     RTCStatsReportCallbackInternal callback,
     const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
-  native_peer_connection->GetStats(CreateRTCStatsCollectorCallback(
-      main_thread, ConvertToBaseOnceCallback(std::move(callback)),
-      exposed_group_ids));
+  native_peer_connection->GetStats(
+      CreateRTCStatsCollectorCallback(
+          main_thread, ConvertToBaseOnceCallback(std::move(callback)),
+          exposed_group_ids)
+          .get());
 }
 
 void ConvertOfferOptionsToWebrtcOfferOptions(
@@ -682,13 +684,15 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
       PeerConnectionTracker* tracker,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       PeerConnectionTracker::Action action,
-      webrtc::SdpSemantics sdp_semantics)
+      webrtc::SdpSemantics sdp_semantics,
+      bool is_rollback)
       : handler_(handler),
         main_thread_(task_runner),
         web_request_(web_request),
         tracker_(tracker),
         action_(action),
-        sdp_semantics_(sdp_semantics) {}
+        sdp_semantics_(sdp_semantics),
+        is_rollback_(is_rollback) {}
 
   void OnSetDescriptionComplete(
       webrtc::RTCError error,
@@ -840,7 +844,8 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
     if (handler_) {
       handler_->OnModifyTransceivers(
           states.signaling_state, std::move(states.transceiver_states),
-          action_ == PeerConnectionTracker::kActionSetRemoteDescription);
+          action_ == PeerConnectionTracker::kActionSetRemoteDescription,
+          is_rollback_);
     }
   }
 
@@ -850,6 +855,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
   CrossThreadWeakPersistent<PeerConnectionTracker> tracker_;
   PeerConnectionTracker::Action action_;
   webrtc::SdpSemantics sdp_semantics_;
+  bool is_rollback_;
 };
 
 // Receives notifications from a PeerConnection object about state changes. The
@@ -1395,7 +1401,8 @@ void RTCPeerConnectionHandler::SetLocalDescription(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
           task_runner_,
           PeerConnectionTracker::kActionSetLocalDescriptionImplicit,
-          configuration_.sdp_semantics);
+          configuration_.sdp_semantics,
+          /*is_rollback=*/true);
 
   // Surfacing transceivers is not applicable in Plan B.
   bool surface_receivers_only =
@@ -1473,7 +1480,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
       base::MakeRefCounted<WebRtcSetDescriptionObserverImpl>(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
           task_runner_, PeerConnectionTracker::kActionSetLocalDescription,
-          configuration_.sdp_semantics);
+          configuration_.sdp_semantics, type == "rollback");
 
   bool surface_receivers_only =
       (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB);
@@ -1552,7 +1559,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
       base::MakeRefCounted<WebRtcSetDescriptionObserverImpl>(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
           task_runner_, PeerConnectionTracker::kActionSetRemoteDescription,
-          configuration_.sdp_semantics);
+          configuration_.sdp_semantics, type == "rollback");
 
   bool surface_receivers_only =
       (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB);
@@ -1740,7 +1747,8 @@ void RTCPeerConnectionHandler::getStats(
       selector = track_adapter_ref->webrtc_track();
   }
 
-  GetStats(observer, webrtc::PeerConnectionInterface::kStatsOutputLevelStandard,
+  GetStats(observer.get(),
+           webrtc::PeerConnectionInterface::kStatsOutputLevelStandard,
            std::move(selector));
 }
 
@@ -2555,7 +2563,8 @@ void RTCPeerConnectionHandler::OnModifySctpTransport(
 void RTCPeerConnectionHandler::OnModifyTransceivers(
     webrtc::PeerConnectionInterface::SignalingState signaling_state,
     std::vector<blink::RtpTransceiverState> transceiver_states,
-    bool is_remote_description) {
+    bool is_remote_description,
+    bool is_rollback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers(
@@ -2580,7 +2589,6 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
       const auto& previous_state = (*it)->state();
       transceiver_was_modified =
           previous_state.mid() != transceiver_states[i].mid() ||
-          previous_state.stopped() != transceiver_states[i].stopped() ||
           previous_state.direction() != transceiver_states[i].direction() ||
           previous_state.current_direction() !=
               transceiver_states[i].current_direction() ||
@@ -2609,7 +2617,10 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
       }
     }
   }
-  // Search for removed transceivers by comparing to previous state.
+  // Search for removed transceivers by comparing to previous state. All of
+  // these transceivers will have been stopped in the WebRTC layers, but we do
+  // not have access to their states anymore. So it is up to `client_` to ensure
+  // removed transceivers are reflected as "stopped" in JavaScript.
   Vector<uintptr_t> removed_transceivers;
   for (auto transceiver_id : previous_transceiver_ids_) {
     if (std::find(ids.begin(), ids.end(), transceiver_id) == ids.end()) {
@@ -2619,9 +2630,9 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
   }
   previous_transceiver_ids_ = ids;
   if (!is_closed_) {
-    client_->DidModifyTransceivers(signaling_state,
-                                   std::move(platform_transceivers),
-                                   removed_transceivers, is_remote_description);
+    client_->DidModifyTransceivers(
+        signaling_state, std::move(platform_transceivers), removed_transceivers,
+        is_remote_description || is_rollback);
   }
 }
 

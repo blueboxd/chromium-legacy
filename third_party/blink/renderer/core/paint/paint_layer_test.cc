@@ -45,7 +45,13 @@ TEST_P(PaintLayerTest, ChildWithoutPaintLayer) {
   EXPECT_NE(nullptr, root_layer);
 }
 
-TEST_P(PaintLayerTest, RootLayerScrollBounds) {
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1313268): Fix this test on Fuchsia and re-enable.
+#define MAYBE_RootLayerScrollBounds DISABLED_RootLayerScrollBounds
+#else
+#define MAYBE_RootLayerScrollBounds RootLayerScrollBounds
+#endif
+TEST_P(PaintLayerTest, MAYBE_RootLayerScrollBounds) {
   USE_NON_OVERLAY_SCROLLBARS();
 
   SetBodyInnerHTML(
@@ -2332,32 +2338,6 @@ TEST_P(PaintLayerTest, HitTestOverlayResizer) {
 
     target_element->setAttribute(html_names::kStyleAttr, "display: none");
   }
-}
-
-TEST_P(PaintLayerTest,
-       ChangeAlphaNeedsCompositingInputsAndPaintPropertyUpdate) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #target {
-        background: white;
-        width: 100px;
-        height: 100px;
-        position: relative;
-      }
-    </style>
-    <div id='target'>
-    </div>
-  )HTML");
-  PaintLayer* target = GetPaintLayerByElementId("target");
-  EXPECT_FALSE(target->GetLayoutObject().NeedsPaintPropertyUpdate());
-  EXPECT_FALSE(target->Parent()->GetLayoutObject().NeedsPaintPropertyUpdate());
-
-  StyleDifference diff;
-  diff.SetHasAlphaChanged();
-  target->StyleDidChange(diff, target->GetLayoutObject().Style());
-  EXPECT_TRUE(target->GetLayoutObject().NeedsPaintPropertyUpdate());
-  // See the TODO in PaintLayer::SetNeedsCompositingInputsUpdate().
-  EXPECT_TRUE(target->Parent()->GetLayoutObject().NeedsPaintPropertyUpdate());
 }
 
 TEST_P(PaintLayerTest, PaintLayerCommonAncestor) {

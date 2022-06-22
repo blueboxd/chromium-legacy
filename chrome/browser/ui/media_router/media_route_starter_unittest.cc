@@ -76,7 +76,7 @@ class MockPresentationRequestSourceObserver
       starter_->RemovePresentationRequestSourceObserver(this);
   }
 
-  MOCK_METHOD(void, OnSourceUpdated, (std::u16string));
+  MOCK_METHOD(void, OnSourceUpdated, (std::u16string&));
 
  private:
   raw_ptr<MediaRouteStarter> starter_ = nullptr;
@@ -152,6 +152,7 @@ class MediaRouteStarterTest : public ChromeRenderViewHostTestHarness {
     DestroyMediaRouteStarter();
     profile_manager_->DeleteAllTestingProfiles();
     profile_manager_.reset();
+    WebContentsPresentationManager::SetTestInstance(nullptr);
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

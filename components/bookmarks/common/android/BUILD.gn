@@ -18,7 +18,7 @@ source_set("android") {
 
 android_library("bookmarks_java") {
   deps = [
-    "//base:base_java",
+    "//base:jni_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
   srcjar_deps = [ ":bookmark_type_javagen" ]

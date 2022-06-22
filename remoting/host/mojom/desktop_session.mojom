@@ -6,6 +6,7 @@ module remoting.mojom;
 
 import "mojo/public/mojom/base/byte_string.mojom";
 import "mojo/public/mojom/base/shared_memory.mojom";
+import "remoting/host/mojom/keyboard_layout.mojom";
 import "remoting/host/mojom/webrtc_types.mojom";
 import "remoting/host/mojom/wrapped_primitives.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -344,6 +345,34 @@ union CaptureResult {
   DesktopCaptureResult capture_error;
 };
 
+// This struct mirrors the remoting::protocol::VideoTrackLayout message.
+struct VideoTrackLayout {
+  // Unique display identifier, see ScreenId notes in desktop_capture_types.h.
+  int64 screen_id;
+
+  // Name of the video stream, from the WebRTC MediaStream.id property.
+  string media_stream_id;
+
+  // Position of the top left corner of the rectangle covered by the video
+  // track in DIPs (device independent pixels).
+  gfx.mojom.Point position;
+
+  // Size of the area covered by the video track in DIPs.
+  DesktopSize size;
+
+  // DPI of the screen being captured.
+  DesktopVector dpi;
+};
+
+// This struct mirrors the remoting::protocol::VideoLayout message.
+struct VideoLayout {
+  // Layout info for each video track.
+  array<VideoTrackLayout> tracks;
+
+  // True if this display configuration supports capturing the entire desktop.
+  bool supports_full_desktop_capture;
+};
+
 // Allows the desktop process to forward events and data to the network process
 // which may process it (e.g. encode a video frame) or forward it to the client
 // (in the case of updated clipboard contents).
@@ -379,6 +408,15 @@ interface DesktopSessionEventHandler {
   // memory region along with the details on how to access it (e.g. stride,
   // size, etc.), otherwise provides the error reason the capture failed.
   OnCaptureResult(CaptureResult result);
+
+  // Notifies the network process that the host display layout has changed.
+  OnDesktopDisplayChanged(VideoLayout layout);
+
+  // Notifies the network process that the mouse cursor has changed.
+  OnMouseCursorChanged(MouseCursor mouse_cursor);
+
+  // Notifies the network process that the keyboard layout has changed.
+  OnKeyboardLayoutChanged(KeyboardLayout keyboard_layout);
 };
 
 // This enum mirrors the remoting::protocol::ErrorCode enum.
@@ -402,6 +440,7 @@ enum ProtocolErrorCode {
   kExistingAdminSession = 16,
   kAuthzPolicyCheckFailed = 17,
   kDisallowedByPolicy = 18,
+  kLocationAuthzPolicyCheckFailed = 19,
 };
 
 // Provides the desktop integration process with a mechanism for controlling the

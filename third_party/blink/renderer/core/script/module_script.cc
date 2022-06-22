@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/script/module_record_resolver.h"
@@ -107,48 +108,14 @@ void ModuleScript::Trace(Visitor* visitor) const {
   Script::Trace(visitor);
 }
 
-void ModuleScript::RunScript(LocalDOMWindow*) {
-  // We need a HandleScope for the `ScriptEvaluationResult` returned from
-  // `RunScriptAndReturnValue`.
-  v8::HandleScope scope(SettingsObject()->GetScriptState()->GetIsolate());
-  DVLOG(1) << *this << "::RunScript()";
-  std::ignore = RunScriptAndReturnValue();
-}
-
-bool ModuleScript::RunScriptOnWorkerOrWorklet(
-    WorkerOrWorkletGlobalScope& global_scope) {
-  // We need a HandleScope for the `ScriptEvaluationResult` returned from
-  // `RunScriptAndReturnValue`.
-  v8::HandleScope scope(SettingsObject()->GetScriptState()->GetIsolate());
-  DCHECK(global_scope.IsContextThread());
-
-  // TODO(nhiroki): Catch an error when an evaluation error happens.
-  // (https://crbug.com/680046)
-  ScriptEvaluationResult result = RunScriptAndReturnValue();
-
-  // Service workers prohibit async module graphs (those with top-level await),
-  // so the promise result from executing a service worker module is always
-  // settled. To maintain compatibility with synchronous module graphs, rejected
-  // promises are considered synchronous failures in service workers.
-  //
-  // https://github.com/w3c/ServiceWorker/pull/1444
-  if (global_scope.IsServiceWorkerGlobalScope() &&
-      result.GetResultType() == ScriptEvaluationResult::ResultType::kSuccess) {
-    v8::Local<v8::Promise> promise = result.GetSuccessValue().As<v8::Promise>();
-    DCHECK_NE(promise->State(), v8::Promise::kPending);
-    return promise->State() == v8::Promise::kFulfilled;
-  }
-
-  return result.GetResultType() == ScriptEvaluationResult::ResultType::kSuccess;
-}
-
-ScriptEvaluationResult ModuleScript::RunScriptAndReturnValue(
+ScriptEvaluationResult ModuleScript::RunScriptOnScriptStateAndReturnValue(
+    ScriptState* script_state,
+    ExecuteScriptPolicy execute_script_policy,
     V8ScriptRunner::RethrowErrorsOption rethrow_errors) {
+  DCHECK_EQ(execute_script_policy,
+            ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled);
+  DCHECK_EQ(script_state, SettingsObject()->GetScriptState());
   return V8ScriptRunner::EvaluateModule(this, std::move(rethrow_errors));
-}
-
-std::pair<size_t, size_t> ModuleScript::GetClassicScriptSizes() const {
-  return std::pair<size_t, size_t>(0, 0);
 }
 
 std::ostream& operator<<(std::ostream& stream,

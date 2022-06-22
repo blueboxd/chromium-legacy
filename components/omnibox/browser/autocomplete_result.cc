@@ -16,7 +16,6 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -57,6 +56,18 @@ void RotateMatchToFront(ACMatches::iterator it, ACMatches* matches) {
   auto next = std::next(it);
   std::rotate(matches->begin(), it, next);
 }
+
+#if BUILDFLAG(IS_IOS)
+// Maximum number of pedals to show.
+// On iOS, the UI for pedals gets too visually cluttered with too many pedals.
+constexpr size_t kMaxPedalCount = 1;
+// Maximum index of a match in a result for which the pedal should be displayed.
+// On iOS, the UI for pedals gets too visually cluttered with too many pedals.
+constexpr size_t kMaxPedalMatchIndex = 3;
+#else
+constexpr size_t kMaxPedalCount = std::numeric_limits<size_t>::max();
+constexpr size_t kMaxPedalMatchIndex = std::numeric_limits<size_t>::max();
+#endif
 
 }  // namespace
 
@@ -133,7 +144,7 @@ AutocompleteResult::AutocompleteResult() {
   matches_.reserve(std::max(GetMaxMatches(), GetMaxMatches(true)));
 }
 
-AutocompleteResult::~AutocompleteResult() {}
+AutocompleteResult::~AutocompleteResult() = default;
 
 void AutocompleteResult::TransferOldMatches(
     const AutocompleteInput& input,
@@ -225,8 +236,8 @@ void AutocompleteResult::SortAndCull(
     const AutocompleteInput& input,
     TemplateURLService* template_url_service,
     const AutocompleteMatch* preserve_default_match) {
-  for (auto i(matches_.begin()); i != matches_.end(); ++i)
-    i->ComputeStrippedDestinationURL(input, template_url_service);
+  for (auto& match : matches_)
+    match.ComputeStrippedDestinationURL(input, template_url_service);
 
   DemoteOnDeviceSearchSuggestions();
 
@@ -235,7 +246,7 @@ void AutocompleteResult::SortAndCull(
 
 #if !(BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS))
   // Because tail suggestions are a "last resort", we cull the tail suggestions
-  // if there any non-default non-tail suggestions.
+  // if there are any non-default, non-tail suggestions.
   MaybeCullTailSuggestions(&matches_, comparing_object);
 #endif
 
@@ -350,11 +361,11 @@ void AutocompleteResult::SortAndCull(
 }
 
 void AutocompleteResult::GroupAndDemoteMatchesWithHeaders() {
-  constexpr int kNoHeaderSuggesetionGroupId = -1;
+  constexpr int kNoHeaderSuggestionGroupId = -1;
 
   // Create a map from suggestion group ID to the index it first appears.
   // Reserve the first spot for matches without headers.
-  std::map<int, int> group_id_index_map = {{kNoHeaderSuggesetionGroupId, 0}};
+  std::map<int, int> group_id_index_map = {{kNoHeaderSuggestionGroupId, 0}};
   for (auto it = matches_.begin(); it != matches_.end(); ++it) {
     if (it->suggestion_group_id.has_value()) {
       // Record group IDs and header strings, if available, into the
@@ -373,8 +384,7 @@ void AutocompleteResult::GroupAndDemoteMatchesWithHeaders() {
       }
     }
 
-    int group_id =
-        it->suggestion_group_id.value_or(kNoHeaderSuggesetionGroupId);
+    int group_id = it->suggestion_group_id.value_or(kNoHeaderSuggestionGroupId);
     // Use the 1-based index of the match to record the first appearance of its
     // group ID since 0 is reserved for matches without headers. We are
     // interested in the relative values of these indices only and their
@@ -392,12 +402,12 @@ void AutocompleteResult::GroupAndDemoteMatchesWithHeaders() {
   // while preserving the existing order of matches with the same group ID.
   std::stable_sort(
       matches_.begin(), matches_.end(),
-      [&group_id_index_map, kNoHeaderSuggesetionGroupId](const auto& a,
-                                                         const auto& b) {
+      [&group_id_index_map, kNoHeaderSuggestionGroupId](const auto& a,
+                                                        const auto& b) {
         const int a_group_id =
-            a.suggestion_group_id.value_or(kNoHeaderSuggesetionGroupId);
+            a.suggestion_group_id.value_or(kNoHeaderSuggestionGroupId);
         const int b_group_id =
-            b.suggestion_group_id.value_or(kNoHeaderSuggesetionGroupId);
+            b.suggestion_group_id.value_or(kNoHeaderSuggestionGroupId);
         return group_id_index_map[a_group_id] < group_id_index_map[b_group_id];
       });
 }
@@ -483,7 +493,11 @@ void AutocompleteResult::AttachPedalsToMatches(
 
   provider->set_field_trial_triggered(false);
 
-  for (auto& match : matches_) {
+  const size_t max_index = std::min(kMaxPedalMatchIndex, matches_.size());
+
+  for (size_t i = 0; i < max_index && pedals_found.size() < kMaxPedalCount;
+       i++) {
+    AutocompleteMatch& match = matches_[i];
     // Skip matches that have already detected their Pedal, and avoid attaching
     // to matches with types that don't mix well with Pedals (e.g. entities).
     if (match.action ||
@@ -545,8 +559,8 @@ void AutocompleteResult::ConvertOpenTabMatches(
 }
 
 bool AutocompleteResult::HasCopiedMatches() const {
-  for (auto i(begin()); i != end(); ++i) {
-    if (i->from_previous)
+  for (const auto& i : *this) {
+    if (i.from_previous)
       return true;
   }
   return false;
@@ -747,8 +761,8 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& other) {
 
 #if DCHECK_IS_ON()
 void AutocompleteResult::Validate() const {
-  for (auto i(begin()); i != end(); ++i)
-    i->Validate();
+  for (const auto& i : *this)
+    i.Validate();
 }
 #endif  // DCHECK_IS_ON()
 
@@ -921,43 +935,46 @@ void AutocompleteResult::MergeHiddenGroupIds(
     const std::vector<int>& hidden_group_ids) {
   hidden_group_ids_.insert(hidden_group_ids.begin(), hidden_group_ids.end());
 }
-
 // static
-void AutocompleteResult::LogAsynchronousUpdateMetrics(
+void AutocompleteResult::LogUpdateMetrics(
     const std::vector<MatchDedupComparator>& old_result,
-    const AutocompleteResult& new_result) {
-  constexpr char kAsyncMatchChangeHistogramName[] =
-      "Omnibox.MatchStability.AsyncMatchChange2";
-
+    const AutocompleteResult& new_result,
+    bool in_start) {
   bool any_match_changed = false;
 
-  size_t min_size = std::min(old_result.size(), new_result.size());
-  for (size_t i = 0; i < min_size; ++i) {
-    if (old_result[i] != GetMatchComparisonFields(new_result.match_at(i))) {
-      base::UmaHistogramExactLinear(kAsyncMatchChangeHistogramName, i,
-                                    kMaxAutocompletePositionValue);
+  for (size_t i = 0; i < old_result.size(); ++i) {
+    // Log a change for changed or removed matches. Don't log for
+    // matches appended to the bottom since that's less disruptive.
+    if (i >= new_result.size() ||
+        old_result[i] != GetMatchComparisonFields(new_result.match_at(i))) {
+      if (in_start) {
+        UMA_HISTOGRAM_EXACT_LINEAR(
+            "Omnibox.CrossInputMatchStability.MatchChange", i,
+            kMaxAutocompletePositionValue);
+      } else {
+        UMA_HISTOGRAM_EXACT_LINEAR("Omnibox.MatchStability.AsyncMatchChange2",
+                                   i, kMaxAutocompletePositionValue);
+      }
       any_match_changed = true;
     }
   }
 
-  // Also log a change for when the match count decreases. But don't make a log
-  // for appending new matches on the bottom, since that's less disruptive.
-  for (size_t i = new_result.size(); i < old_result.size(); ++i) {
-    base::UmaHistogramExactLinear(kAsyncMatchChangeHistogramName, i,
-                                  kMaxAutocompletePositionValue);
-    any_match_changed = true;
+  if (in_start) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Omnibox.CrossInputMatchStability.MatchChangedInAnyPosition",
+        any_match_changed);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition",
+        any_match_changed);
   }
-
-  base::UmaHistogramBoolean(
-      "Omnibox.MatchStability.AsyncMatchChangedInAnyPosition",
-      any_match_changed);
 }
 
 // static
 bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
                                                const ACMatches& matches) {
-  for (auto i(matches.begin()); i != matches.end(); ++i) {
-    if (i->destination_url == match.destination_url)
+  for (const auto& m : matches) {
+    if (m.destination_url == match.destination_url)
       return true;
   }
   return false;

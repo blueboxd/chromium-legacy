@@ -314,7 +314,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->AddHandler(std::move(emulation_handler));
   auto input_handler = std::make_unique<protocol::InputHandler>(
       session->GetClient()->MayReadLocalFiles(),
-      session->GetClient()->MaySendInputEventsToBrowser());
+      session->GetClient()->IsTrusted());
   session->AddHandler(std::move(input_handler));
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
   session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
@@ -342,7 +342,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
                           },
                           base::Unretained(this))));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
-  const bool may_attach_to_brower = session->GetClient()->MayAttachToBrowser();
+  const bool may_attach_to_brower = session->GetClient()->IsTrusted();
   session->AddHandler(std::make_unique<protocol::ServiceWorkerHandler>(
       /* allow_inspect_worker= */ may_attach_to_brower));
   session->AddHandler(std::make_unique<protocol::StorageHandler>());
@@ -354,6 +354,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->AddHandler(std::make_unique<protocol::PageHandler>(
       emulation_handler_ptr, browser_handler_ptr,
       session->GetClient()->AllowUnsafeOperations(),
+      session->GetClient()->IsTrusted(),
       session->GetClient()->GetNavigationInitiatorOrigin()));
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
@@ -699,7 +700,8 @@ std::string RenderFrameDevToolsAgentHost::GetParentId() {
 std::string RenderFrameDevToolsAgentHost::GetOpenerId() {
   if (!frame_tree_node_)
     return std::string();
-  FrameTreeNode* opener = frame_tree_node_->original_opener();
+  FrameTreeNode* opener =
+      frame_tree_node_->first_live_main_frame_in_original_opener_chain();
   return opener ? opener->devtools_frame_token().ToString() : std::string();
 }
 

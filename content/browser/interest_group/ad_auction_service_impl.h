@@ -17,6 +17,7 @@
 #include "content/public/browser/document_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/interest_group/ad_auction_service.mojom.h"
@@ -43,9 +44,11 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
       mojo::PendingReceiver<blink::mojom::AdAuctionService> receiver);
 
   // blink::mojom::AdAuctionService.
-  void JoinInterestGroup(const blink::InterestGroup& group) override;
+  void JoinInterestGroup(const blink::InterestGroup& group,
+                         JoinInterestGroupCallback callback) override;
   void LeaveInterestGroup(const url::Origin& owner,
-                          const std::string& name) override;
+                          const std::string& name,
+                          LeaveInterestGroupCallback callback) override;
   void LeaveInterestGroupForDocument() override;
   void UpdateAdInterestGroups() override;
   void RunAdAuction(blink::mojom::AuctionAdConfigPtr config,
@@ -58,6 +61,9 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
   void FinalizeAd(const std::string& ads_guid,
                   blink::mojom::AuctionAdConfigPtr config,
                   FinalizeAdCallback callback) override;
+
+  scoped_refptr<network::WrapperSharedURLLoaderFactory>
+  GetRefCountedTrustedURLLoaderFactory();
 
   // AuctionRunner::Delegate implementation:
   network::mojom::URLLoaderFactory* GetFrameURLLoaderFactory() override;
@@ -78,18 +84,17 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
   // `this` can only be destroyed by DocumentService.
   ~AdAuctionServiceImpl() override;
 
+  // Checks if a join or leave interest group is allowed to be sent from the
+  // current renderer. If not, returns false and invokes
+  // ReportBadMessageAndDeleteThis().
+  bool JoinOrLeaveApiAllowedFromRenderer(const url::Origin& owner);
+
   // Returns true if `origin` is allowed to perform the specified
   // `interest_group_api_operation` in this frame. Must be called on worklet /
   // interest group origins before using them in any interest group API.
   bool IsInterestGroupAPIAllowed(ContentBrowserClient::InterestGroupApiOperation
                                      interest_group_api_operation,
                                  const url::Origin& origin) const;
-
-  // Handles passed in report URLs. For each url of `report_urls`, call
-  // FetchReport() to send a request to the url, and add UMA histgrams.
-  void HandleReports(network::mojom::URLLoaderFactory* factory,
-                     const std::vector<GURL>& report_urls,
-                     const std::string& name);
 
   // Deletes `auction`.
   void OnAuctionComplete(
@@ -116,6 +121,12 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
 
   mojo::Remote<network::mojom::URLLoaderFactory> frame_url_loader_factory_;
   mojo::Remote<network::mojom::URLLoaderFactory> trusted_url_loader_factory_;
+
+  // Ref counted wrapper of `trusted_url_loader_factory_`. This will be used for
+  // reporting requests, which might happen after the frame is destroyed, when
+  // `trusted_url_loader_factory_` no longer being available.
+  scoped_refptr<network::WrapperSharedURLLoaderFactory>
+      ref_counted_trusted_url_loader_factory_;
 
   // This must be before `auctions_`, since auctions may own references to
   // worklets it manages.

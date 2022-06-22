@@ -18,6 +18,7 @@ import "browser/generic_ui.proto";
 import "browser/model.proto";
 import "browser/view_layout.proto";
 import "content/common/proto/semantic_feature_overrides.proto";
+import "browser/public/external_action.proto";
 
 // A field trial containing the name of the trial and the name of the
 // randomly selected trial group.
@@ -27,7 +28,7 @@ message FieldTrialProto {
 }
 
 // Context contains client environment details.
-// Next ID: 20
+// Next ID: 21
 message ClientContextProto {
   message Chrome {
     optional string chrome_version = 1;
@@ -125,6 +126,16 @@ message ClientContextProto {
     LANDSCAPE = 2;
   }
   optional ScreenOrientation screen_orientation = 16;
+
+  // The type of platform the device is running on, e.g. Android, Desktop, or
+  // iOS.
+  enum PlatformType {
+    PLATFORM_TYPE_UNDEFINED = 0;
+    PLATFORM_TYPE_ANDROID = 1;
+    PLATFORM_TYPE_IOS = 2;
+    PLATFORM_TYPE_DESKTOP = 3;
+  }
+  optional PlatformType platform_type = 20;
 
   reserved 19;
 }
@@ -230,6 +241,12 @@ message GetUserDataRequestProto {
     optional bytes client_token = 1;
     // The list of supported card networks.
     repeated string supported_card_networks = 2;
+    // The list of known payment instruments from a previous call.
+    repeated string preexisting_ids = 3;
+  }
+  message AddressRequest {
+    // The list of known addresses from a previous call.
+    repeated string preexisting_ids = 1;
   }
 
   // For logging, to know which run this request has originated from.
@@ -238,10 +255,10 @@ message GetUserDataRequestProto {
   optional bool request_name = 2;
   optional bool request_email = 3;
   optional bool request_phone = 4;
-  optional bool request_addresses = 5;
+  optional AddressRequest request_shipping_addresses = 8;
   optional PaymentMethodRequest request_payment_methods = 7;
 
-  reserved 6;
+  reserved 5, 6;
 }
 
 // Response with user data.
@@ -1024,6 +1041,8 @@ message ActionProto {
     UpdateClientSettingsProto update_client_settings = 89;
     JsFlowProto js_flow = 92;
     ExecuteJsProto execute_js = 93;
+    RegisterPasswordResetRequestProto register_password_reset_request = 94;
+    ExternalActionProto external_action = 95;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -1596,6 +1615,9 @@ message SelectorProto {
       //
       // This filter replaces |inner_text| and |value|.
       PropertyFilter property = 14;
+
+      // Retrieve parent of current elements.
+      EmptyFilter parent = 15;
     }
 
     reserved 10;
@@ -2924,6 +2946,11 @@ message SaveSubmittedPasswordProto {
   }
 }
 
+// Notifies the client that a password reset has been requested. This is
+// relevant for analyzing the outcome of password change flows. The action
+// fails if login details are not saved in the client's |UserData|.
+message RegisterPasswordResetRequestProto {}
+
 // Configures the UI of the autofill assistant client.
 message ConfigureUiStateProto {
   enum OverlayBehavior {
@@ -3383,4 +3410,20 @@ message JsFlowProto {
   }
   // The JS flow to execute in a sandbox.
   optional string js_flow = 1;
+}
+
+// Action which forwards a proto to the owner of the |ExternalScriptController|
+// for the current flow. Not supported for internal flows.
+message ExternalActionProto {
+  // The opaque proto to be forwarded to the owner of the
+  // |ExternalScriptController| for this flow.
+  optional external.ActionInfo info = 1;
+
+  // Whether to show the touchable area in the overlay.
+  // If true, it will consume the current touchable area.
+  optional bool show_touchable_area = 2;
+
+  // Whether interrupts should be executed while Autofill Assistant is in prompt
+  // state.
+  optional bool allow_interrupt = 3;
 }

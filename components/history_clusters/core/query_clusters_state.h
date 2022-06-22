@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history_clusters/core/history_clusters_service_task_get_most_recent_clusters.h"
 #include "components/history_clusters/core/history_clusters_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -60,17 +61,18 @@ class QueryClustersState {
   class PostProcessor;
 
   // Callback to `LoadNextBatchOfClusters()`.
-  void OnGotRawClusters(base::TimeTicks query_start_time,
-                        ResultCallback callback,
-                        std::vector<history::Cluster> clusters,
-                        base::Time continuation_end_time) const;
+  void OnGotRawClusters(
+      base::TimeTicks query_start_time,
+      ResultCallback callback,
+      std::vector<history::Cluster> clusters,
+      QueryClustersContinuationParams continuation_params) const;
 
   // Callback to `OnGotRawClusters()`.
   void OnGotClusters(base::ElapsedTimer post_processing_timer,
                      size_t clusters_from_backend_count,
                      base::TimeTicks query_start_time,
                      ResultCallback callback,
-                     base::Time continuation_end_time,
+                     QueryClustersContinuationParams continuation_params,
                      std::vector<history::Cluster> clusters);
 
   // A weak pointer to the service in case we outlive the service.
@@ -80,17 +82,16 @@ class QueryClustersState {
   // The string query the user entered into the searchbox.
   const std::string query_;
 
-  // A nullopt `continuation_end_time` means we have exhausted History.
-  // Note that this differs from History itself, which uses base::Time() as the
-  // value to indicate we've exhausted history. I've found that to be not
-  // explicit enough in practice. This value will never be base::Time().
-  absl::optional<base::Time> continuation_end_time_;
+  // The continuation params used to track where the last query left off and
+  // query for the "next page".
+  QueryClustersContinuationParams continuation_params_;
 
   // True for all 'next-page' responses, but false for the first page.
   bool is_continuation_ = false;
 
   // Used only to fast-cancel tasks in case we are destroyed.
-  base::CancelableTaskTracker task_tracker_;
+  std::unique_ptr<HistoryClustersServiceTaskGetMostRecentClusters>
+      query_clusters_task;
 
   // A task runner to run all the post-processing tasks on.
   scoped_refptr<base::SequencedTaskRunner> post_processing_task_runner_;

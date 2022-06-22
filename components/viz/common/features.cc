@@ -37,12 +37,13 @@ namespace features {
 const base::Feature kAdpf{"Adpf", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Target duration used for power hint on Android.
+// `0` indicates use hard coded default.
 const base::FeatureParam<int> kAdpfTargetDurationMs{&kAdpf,
-                                                    "AdpfTargetDurationMs", 12};
+                                                    "AdpfTargetDurationMs", 0};
 
 const base::Feature kEnableOverlayPrioritization {
   "EnableOverlayPrioritization",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -198,7 +199,12 @@ bool IsClipPrewalkDamageEnabled() {
 }
 
 bool IsOverlayPrioritizationEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // DelegatedCompositing in Lacros makes this feature a no-op.
+  return false;
+#else
   return base::FeatureList::IsEnabled(kEnableOverlayPrioritization);
+#endif
 }
 
 bool IsDelegatedCompositingEnabled() {
@@ -290,8 +296,8 @@ bool ShouldUsePlatformDelegatedInk() {
   return base::FeatureList::IsEnabled(kUsePlatformDelegatedInk);
 }
 
-#if BUILDFLAG(IS_ANDROID)
 bool UseSurfaceLayerForVideo() {
+#if BUILDFLAG(IS_ANDROID)
   // SurfaceLayer video should work fine with new heuristic.
   if (base::FeatureList::IsEnabled(kWebViewNewInvalidateHeuristic))
     return true;
@@ -301,8 +307,12 @@ bool UseSurfaceLayerForVideo() {
     return true;
   }
   return base::FeatureList::IsEnabled(kUseSurfaceLayerForVideoDefault);
+#else
+  return true;
+#endif
 }
 
+#if BUILDFLAG(IS_ANDROID)
 bool UseRealVideoColorSpaceForDisplay() {
   // We need Android S for proper color space support in SurfaceControl.
   if (base::android::BuildInfo::GetInstance()->sdk_int() <

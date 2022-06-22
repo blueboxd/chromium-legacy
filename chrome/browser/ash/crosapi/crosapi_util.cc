@@ -11,11 +11,12 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/browser_version_service_ash.h"
 #include "chrome/browser/ash/crosapi/field_trial_service_ash.h"
+#include "chrome/browser/ash/crosapi/hosted_app_util.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/crosapi/native_theme_service_ash.h"
 #include "chrome/browser/ash/crosapi/resource_manager_ash.h"
@@ -37,6 +38,7 @@
 #include "chromeos/crosapi/mojom/automation.mojom.h"
 #include "chromeos/crosapi/mojom/browser_app_instance_registry.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
+#include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "chromeos/crosapi/mojom/content_protection.mojom.h"
@@ -47,6 +49,8 @@
 #include "chromeos/crosapi/mojom/dlp.mojom.h"
 #include "chromeos/crosapi/mojom/download_controller.mojom.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
+#include "chromeos/crosapi/mojom/echo_private.mojom.h"
+#include "chromeos/crosapi/mojom/extension_info_private.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
@@ -83,10 +87,12 @@
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
+#include "chromeos/startup/startup.h"
 #include "components/account_manager_core/account_manager_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/policy/core/common/values_util.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/ukm_service.h"
@@ -99,8 +105,6 @@
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 using MojoOptionalBool = crosapi::mojom::DeviceSettings::OptionalBool;
-using MojoPolicyMap =
-    base::flat_map<::policy::PolicyNamespace, std::vector<uint8_t>>;
 
 namespace crosapi {
 namespace browser_util {
@@ -129,15 +133,15 @@ absl::optional<std::vector<uint8_t>> GetDeviceAccountPolicy(
 }
 
 // Returns the map containing component policy for each namespace. The values
-// represent the serialized policy blob for the namespace.
-const absl::optional<MojoPolicyMap> GetDeviceAccountComponentPolicy(
+// represent the JSON policy for the namespace.
+absl::optional<policy::ComponentPolicyMap> GetDeviceAccountComponentPolicy(
     EnvironmentProvider* environment_provider) {
-  const MojoPolicyMap& map =
+  const policy::ComponentPolicyMap& map =
       environment_provider->GetDeviceAccountComponentPolicy();
   if (map.empty())
     return absl::nullopt;
 
-  return map;
+  return policy::CopyComponentPolicyMap(map);
 }
 
 // Returns the device specific data needed for Lacros.
@@ -185,6 +189,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserServiceHost>(),
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserVersionService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CertDatabase>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::ChromeAppKioskService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Clipboard>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ClipboardHistory>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ContentProtection>(),
@@ -195,6 +200,8 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Dlp>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DownloadController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DriveIntegrationService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::EchoPrivate>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::ExtensionInfoPrivate>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FieldTrialService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
@@ -331,8 +338,6 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->device_mode = environment_provider->GetDeviceMode();
   params->interface_versions = GetInterfaceVersions();
   params->default_paths = environment_provider->GetDefaultPaths();
-  params->use_new_account_manager =
-      environment_provider->GetUseNewAccountManager();
 
   params->device_account_gaia_id =
       environment_provider->GetDeviceAccountGaiaId();
@@ -350,6 +355,8 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->cros_user_id_hash = ash::ProfileHelper::GetUserIdHashFromProfile(
       ProfileManager::GetPrimaryUserProfile());
   params->device_account_policy = GetDeviceAccountPolicy(environment_provider);
+  params->last_policy_fetch_attempt_timestamp =
+      environment_provider->GetLastPolicyFetchAttemptTimestamp().ToTimeT();
   params->idle_info = IdleServiceAsh::ReadIdleInfoFromSystem();
   params->native_theme_info = NativeThemeServiceAsh::GetNativeThemeInfo();
 
@@ -420,7 +427,7 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
 
   params->standalone_browser_is_only_browser = !IsAshWebBrowserEnabled();
   params->publish_chrome_apps = browser_util::IsLacrosChromeAppsEnabled();
-  params->publish_hosted_apps = apps::ShouldHostedAppsRunInLacros();
+  params->publish_hosted_apps = crosapi::IsStandaloneBrowserHostedAppsEnabled();
 
   // Keep-alive mojom API is now used by the current ash-chrome.
   params->initial_keep_alive =
@@ -461,29 +468,11 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
 base::ScopedFD CreateStartupData(EnvironmentProvider* environment_provider,
                                  InitialBrowserAction initial_browser_action,
                                  bool is_keep_alive_enabled) {
-  auto data = GetBrowserInitParams(environment_provider,
-                                   std::move(initial_browser_action),
-                                   is_keep_alive_enabled);
-  std::vector<uint8_t> serialized =
-      crosapi::mojom::BrowserInitParams::Serialize(&data);
+  const auto& data = GetBrowserInitParams(environment_provider,
+                                          std::move(initial_browser_action),
+                                          is_keep_alive_enabled);
 
-  base::ScopedFD fd(memfd_create("startup_data", 0));
-  if (!fd.is_valid()) {
-    PLOG(ERROR) << "Failed to create a memory backed file";
-    return base::ScopedFD();
-  }
-
-  if (!base::WriteFileDescriptor(fd.get(), serialized)) {
-    LOG(ERROR) << "Failed to dump the serialized startup data";
-    return base::ScopedFD();
-  }
-
-  if (lseek(fd.get(), 0, SEEK_SET) < 0) {
-    PLOG(ERROR) << "Failed to reset the FD position";
-    return base::ScopedFD();
-  }
-
-  return fd;
+  return chromeos::CreateMemFDFromBrowserInitParams(data);
 }
 
 bool IsSigninProfileOrBelongsToAffiliatedUser(Profile* profile) {

@@ -24,6 +24,7 @@
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/test/test_shelf_item_delegate.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -300,7 +301,11 @@ class TestObserver : public DesksController::Observer {
 
   // DesksController::Observer:
   void OnDeskAdded(const Desk* desk) override {
-    desks_.emplace_back(desk);
+    const size_t new_desk_index = DesksController::Get()->GetDeskIndex(desk);
+    if (new_desk_index > desks_.size())
+      desks_.emplace_back(desk);
+    else
+      desks_.insert(desks_.begin() + new_desk_index, desk);
     EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
   void OnDeskRemoved(const Desk* desk) override {
@@ -7070,6 +7075,19 @@ class DesksCloseAllTest : public DesksTest {
         /*event_flags=*/0);
   }
 
+  // Opens the context menu for the mini view at `index`.
+  void OpenContextMenuForMiniView(int index) {
+    ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+    const DeskPreviewView* desk_preview_view =
+        GetPrimaryRootDesksBarView()->mini_views()[index]->desk_preview();
+    const gfx::Point desk_preview_view_center =
+        desk_preview_view->GetBoundsInScreen().CenterPoint();
+    auto* event_generator = GetEventGenerator();
+    event_generator->MoveMouseTo(desk_preview_view_center);
+    event_generator->ClickRightButton();
+    ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  }
+
   // DesksTest:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kDesksCloseAll);
@@ -7133,18 +7151,28 @@ TEST_F(DesksCloseAllTest, CloseDesksWithWindowsInOverview) {
     // We do it in this order so that we do not switch the active desk.
     if (test_case.source == CloseAllSource::kCloseAllButton) {
       ClickOnCloseAllButtonForDesk(1);
+      EXPECT_FALSE(DesksTestApi::DesksControllerHasDesk(desk_2));
+      // `win1` and `win2` should both be valid at this point because `desk_2`
+      // is being preserved.
       EXPECT_TRUE(win1.is_valid());
-      EXPECT_FALSE(win2.is_valid());
+      EXPECT_TRUE(win2.is_valid());
 
       ClickOnCloseAllButtonForDesk(0);
-      EXPECT_FALSE(win1.is_valid());
-    } else if (test_case.source == CloseAllSource::kContextMenu) {
-      ExecuteContextMenuCloseAllForDesk(1);
+      EXPECT_FALSE(DesksTestApi::DesksControllerHasDesk(desk_1));
       EXPECT_TRUE(win1.is_valid());
       EXPECT_FALSE(win2.is_valid());
+    } else if (test_case.source == CloseAllSource::kContextMenu) {
+      ExecuteContextMenuCloseAllForDesk(1);
+      EXPECT_FALSE(DesksTestApi::DesksControllerHasDesk(desk_2));
+      // `win1` and `win2` should both be valid at this point because `desk_2`
+      // is being preserved.
+      EXPECT_TRUE(win1.is_valid());
+      EXPECT_TRUE(win2.is_valid());
 
       ExecuteContextMenuCloseAllForDesk(0);
-      EXPECT_FALSE(win1.is_valid());
+      EXPECT_FALSE(DesksTestApi::DesksControllerHasDesk(desk_1));
+      EXPECT_TRUE(win1.is_valid());
+      EXPECT_FALSE(win2.is_valid());
     }
 
     // Desk activation should have changed to `desk_3` and we should still be in
@@ -7158,9 +7186,435 @@ TEST_F(DesksCloseAllTest, CloseDesksWithWindowsInOverview) {
   }
 }
 
-// TODO(crbug.com/1308429): Should have tests for opening and closing the
-// DeskActionContextMenu (which should also add and remove the highlight
-// overview on the desk preview).
+// Test that a stored desk is cleared when we add a desk.
+TEST_F(DesksCloseAllTest, ClearStoredDeskWhenDeskAdded) {
+  // Create two desks with one app window each.
+  WindowHolder win1(CreateAppWindow());
+  WindowHolder win2(CreateAppWindow());
+  NewDesk();
+  auto* controller = DesksController::Get();
+  controller->SendToDeskAtIndex(win1.window(), 0);
+  controller->SendToDeskAtIndex(win2.window(), 1);
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  ASSERT_EQ(1u, desk_1->windows().size());
+  ASSERT_EQ(1u, desk_2->windows().size());
+  ASSERT_TRUE(desk_1->is_active());
+
+  EnterOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  // Remove `desk_2` to store it in the `controller`.
+  RemoveDesk(desk_2, DeskCloseType::kCloseAllWindowsAndWait);
+  ASSERT_TRUE(desk_2->is_desk_being_removed());
+  ASSERT_EQ(1u, controller->desks().size());
+  ASSERT_TRUE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
+
+  // Creating a new desk should clear the stored desk.
+  NewDesk();
+  EXPECT_EQ(2u, controller->desks().size());
+  EXPECT_FALSE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
+}
+
+// Test that a stored desk is cleared when closing another desk. If the second
+// desk is being removed by a close-all-and-wait operation, then the second desk
+// should replace the first desk in storage. If the second desk is being removed
+// by a combine desks operation or an immediate close-all operation, then the
+// stored desk should be cleared.
+TEST_F(DesksCloseAllTest, ClearStoredDeskWhenClosingAnotherDesk) {
+  // These test cases are differentiated on whether they use the
+  // close-all-and-wait operation to remove the second desk (where
+  // `desk_close_type` is `DeskCloseType::kCloseAllWindowsAndWait`), if they
+  // use the combine desks operation to remove the second desk (where
+  // `desk_close_type` is `DeskCloseType::kCombineDesks), or if they use the
+  // immediate close-all operation to remove the second desk (where
+  // `desk_close_type` is `DeskCloseType::kCloseAllWindows`).
+  struct {
+    const std::string scope_trace;
+    const DeskCloseType desk_close_type;
+  } kTestCases[] = {
+      {"Remove second desk with close-all-and-wait",
+       DeskCloseType::kCloseAllWindowsAndWait},
+      {"Remove second desk with combine desks", DeskCloseType::kCombineDesks},
+      {"Remove second desk with close-all", DeskCloseType::kCloseAllWindows},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.scope_trace);
+    // Create two desks with one app window each.
+    WindowHolder win1(CreateAppWindow());
+    WindowHolder win2(CreateAppWindow());
+
+    // Create one additional desk (so that we can remove the first two).
+    NewDesk();
+    NewDesk();
+    auto* controller = DesksController::Get();
+    controller->SendToDeskAtIndex(win1.window(), 0);
+    controller->SendToDeskAtIndex(win2.window(), 1);
+    Desk* desk_1 = controller->desks()[0].get();
+    Desk* desk_2 = controller->desks()[1].get();
+    Desk* desk_3 = controller->desks()[2].get();
+    ASSERT_EQ(1u, desk_1->windows().size());
+    ASSERT_EQ(1u, desk_2->windows().size());
+    ASSERT_EQ(0u, desk_3->windows().size());
+    ASSERT_TRUE(desk_1->is_active());
+
+    EnterOverview();
+    ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+    // Remove `desk_1` by a close-all-and-wait operation to store it in the
+    // `controller`.
+    RemoveDesk(desk_1, DeskCloseType::kCloseAllWindowsAndWait);
+    ASSERT_TRUE(desk_1->is_desk_being_removed());
+    ASSERT_EQ(2u, controller->desks().size());
+    ASSERT_TRUE(desk_2->is_active());
+    ASSERT_TRUE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
+
+    RemoveDesk(desk_2, test_case.desk_close_type);
+    EXPECT_EQ(1u, controller->desks().size());
+    EXPECT_NE(desk_1, controller->desks()[0].get());
+    EXPECT_NE(desk_2, controller->desks()[0].get());
+
+    switch (test_case.desk_close_type) {
+      case DeskCloseType::kCloseAllWindowsAndWait:
+        // If we are waiting after using close-all to remove the second desk,
+        // then desk_2 should still be preserved, and will maintain
+        // `desk_2->is_desk_being_removed()` to be true.
+        EXPECT_TRUE(desk_2->is_desk_being_removed());
+        EXPECT_TRUE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
+        break;
+      case DeskCloseType::kCombineDesks:
+      case DeskCloseType::kCloseAllWindows:
+        // `kCombineDesks` and `kCloseAllWindows` should both clear the removed
+        // desk immediately.
+        EXPECT_FALSE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
+        break;
+    }
+  }
+}
+
+// Tests that a desk that is closed with all of its windows is restored to its
+// original position and its original active state when the undo callback is
+// run. Also tests that a desk is destroyed when we allow for the undo toast to
+// expire.
+TEST_F(DesksCloseAllTest, RestoreOrDestroyDeskWithToast) {
+  // These test cases are differentiated by whether they run the undo toast's
+  // callback to restore the desk (when `restore_desk` is true) or if they let
+  // the undo toast expire and destroy the removed desk (when `restore_desk` is
+  // false).
+  struct {
+    const std::string scope_trace;
+    const bool restore_desk;
+  } kTestCases[] = {
+      {"Restore removed desk by undo", true},
+      {"Allow undo toast to expire", false},
+  };
+
+  WindowHolder window(CreateAppWindow());
+  NewDesk();
+  auto* controller = DesksController::Get();
+  ASSERT_EQ(2u, controller->desks().size());
+  controller->SendToDeskAtIndex(window.window(), 0);
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  ASSERT_EQ(1u, desk_1->windows().size());
+  ASSERT_EQ(0u, desk_2->windows().size());
+  ASSERT_TRUE(desk_1->is_active());
+
+  EnterOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.scope_trace);
+    RemoveDesk(desk_1, DeskCloseType::kCloseAllWindowsAndWait);
+    ASSERT_TRUE(desk_1->is_desk_being_removed());
+    ASSERT_EQ(1u, controller->desks().size());
+    ASSERT_TRUE(desk_2->is_active());
+    ASSERT_TRUE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
+    ASSERT_TRUE(window.is_valid());
+
+    if (test_case.restore_desk) {
+      // When `desk_1` is restored it should be back in its original position
+      // and should be active again.
+      views::LabelButton* dismiss_button =
+          DesksTestApi::GetCloseAllUndoToastDismissButton();
+      const gfx::Point button_center =
+          dismiss_button->GetBoundsInScreen().CenterPoint();
+      auto* event_generator = GetEventGenerator();
+      event_generator->MoveMouseTo(button_center);
+      event_generator->ClickLeftButton();
+      EXPECT_FALSE(desk_1->is_desk_being_removed());
+      EXPECT_EQ(2u, controller->desks().size());
+      EXPECT_TRUE(desk_1->is_active());
+      EXPECT_EQ(desk_1, controller->desks()[0].get());
+      EXPECT_FALSE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
+      EXPECT_TRUE(window.is_valid());
+    } else {
+      // When we wait for the undo toast to expire, `desk_1` should be
+      // destroyed.
+      WaitForMilliseconds(ToastData::kDefaultToastDuration.InMilliseconds());
+      EXPECT_EQ(1u, controller->desks().size());
+      EXPECT_FALSE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
+      EXPECT_FALSE(window.is_valid());
+    }
+  }
+}
+
+// Checks that the combine desks button and context menu option are not visible
+// when there are no windows on a desk, and that they are visible on desks with
+// windows.
+TEST_F(DesksCloseAllTest, HideCombineDesksOptionWhenNoWindowsOnDesk) {
+  // Create a new desk with no windows to have an expanded desks bar view with
+  // mini views.
+  NewDesk();
+  EnterOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  // We need to hover over the desk preview to properly check the combine desks
+  // button's visibility.
+  DeskMiniView* mini_view = GetPrimaryRootDesksBarView()->mini_views()[0];
+  CloseButton* combine_desks_button =
+      mini_view->desk_action_view()->combine_desks_button();
+  gfx::Point desk_preview_view_center =
+      mini_view->desk_preview()->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(desk_preview_view_center);
+  EXPECT_FALSE(combine_desks_button->GetVisible());
+
+  // We need to open the context menu to trigger state change for the combine
+  // desks option in the context menu.
+  OpenContextMenuForMiniView(0);
+  EXPECT_FALSE(DesksTestApi::GetContextMenuModelForDesk(0).IsVisibleAt(
+      DeskActionContextMenu::CommandId::kCombineDesks));
+  event_generator->ClickLeftButton();
+
+  // Add a window and check to see if that makes the context option visible for
+  // the desk's action view.
+  auto window = CreateAppWindow();
+  DesksController::Get()->SendToDeskAtIndex(window.get(), 0);
+  EnterOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  mini_view = GetPrimaryRootDesksBarView()->mini_views()[0];
+  combine_desks_button = mini_view->desk_action_view()->combine_desks_button();
+  desk_preview_view_center =
+      mini_view->desk_preview()->GetBoundsInScreen().CenterPoint();
+  event_generator->MoveMouseTo(desk_preview_view_center);
+  EXPECT_TRUE(combine_desks_button->GetVisible());
+  OpenContextMenuForMiniView(0);
+  EXPECT_TRUE(DesksTestApi::GetContextMenuModelForDesk(0).IsVisibleAt(
+      DeskActionContextMenu::CommandId::kCombineDesks));
+}
+
+// Tests that the shortcut to close all (Ctrl + Shift + W) on a desk mini view
+// works as expected.
+TEST_F(DesksCloseAllTest, ShortcutCloseAll) {
+  WindowHolder window1(CreateAppWindow());
+  WindowHolder window2(CreateAppWindow());
+  NewDesk();
+  auto* controller = DesksController::Get();
+  ASSERT_EQ(2u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  ASSERT_TRUE(desk_1->is_active());
+  ASSERT_TRUE(base::Contains(desk_1->windows(), window1.window()));
+  ASSERT_TRUE(base::Contains(desk_1->windows(), window2.window()));
+
+  EnterOverview();
+  auto* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  ASSERT_TRUE(overview_session);
+
+  auto* desks_bar =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow())->desks_bar_view();
+  auto* mini_view = desks_bar->mini_views()[0];
+
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  ASSERT_EQ(mini_view,
+            overview_session->highlight_controller()->highlighted_view());
+
+  // Tests that after hitting Ctrl + Shift + W, the desk is destroyed along with
+  // all it's app windows.
+  SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  WaitForMilliseconds(ToastData::kDefaultToastDuration.InMilliseconds());
+  EXPECT_EQ(1u, controller->desks().size());
+  EXPECT_FALSE(window1.is_valid());
+  EXPECT_FALSE(window2.is_valid());
+}
+
+// Checks that the desk preview highlight overlay is visible on a desk preview
+// view only when its corresponding desk mini view's `DeskActionContextMenu` is
+// active.
+TEST_F(DesksCloseAllTest, DeskPreviewHighlightShowsWhenContextMenuIsOpen) {
+  // We need to make the display this large so that the preview view is
+  // right-clickable.
+  UpdateDisplay("1366x768");
+  NewDesk();
+
+  EnterOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  // The highlight overlay should start out invisible.
+  views::View* highlight_overlay =
+      DesksTestApi::GetHighlightOverlayForDeskPreview(0);
+  ASSERT_FALSE(highlight_overlay->GetVisible());
+
+  // Open the context menu for the first desk and check that highlight overlay
+  // is now visible.
+  DeskPreviewView* desk_preview_view =
+      GetPrimaryRootDesksBarView()->mini_views()[0]->desk_preview();
+  gfx::Point desk_preview_view_center =
+      desk_preview_view->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(desk_preview_view_center);
+  event_generator->ClickRightButton();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(highlight_overlay->GetVisible());
+
+  // Close the context menu and check that the highlight overlay is no longer
+  // visible.
+  event_generator->ClickLeftButton();
+
+  // We need to wait for the `DeskActionContextMenu` to close, because
+  // `SimpleMenuModel::MenuWillClose()` runs post tasks asynchronously.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(highlight_overlay->GetVisible());
+}
+
+// Checks that the combine desks tooltip's validity is maintained whenever the
+// user adds a desk, closes a desk, moves a desk, or changes the name of a desk.
+TEST_F(DesksCloseAllTest, CombineDesksTooltipIsUpdatedOnUserActions) {
+  // Possible sources for tooltip updates.
+  enum class UpdateSource {
+    kAddDesk,
+    kCloseDesk,
+    kMoveActiveDesk,
+    kMoveNonActiveDesk,
+    kChangeActiveDeskName,
+    kChangeNonActiveDeskName,
+  };
+
+  struct {
+    const std::string scope_trace;
+    const UpdateSource source;
+
+    // The desk name that we expect `desk_1` in the test case to point to as the
+    // target for its combine desks operation after the test is performed.
+    const std::u16string expected_target_1;
+
+    // The desk name that we expect `desk_2` in the test case to point to as the
+    // target for its combine desks operation after the test is performed.
+    const std::u16string expected_target_2;
+  } kTestCases[] = {
+      {"Adding desk", UpdateSource::kAddDesk, u"Desk 2", u"Desk 1"},
+      {"Closing desk", UpdateSource::kCloseDesk, u"Desk 2", u"Desk 1"},
+      {"Moving active desk", UpdateSource::kMoveActiveDesk, u"Desk 1",
+       u"Desk 2"},
+      {"Moving non-active desk", UpdateSource::kMoveNonActiveDesk, u"Desk 2",
+       u"Desk 1"},
+      {"Changing active desk name", UpdateSource::kChangeActiveDeskName,
+       u"Desk 2", u"goo"},
+      {"Changing non-active desk name", UpdateSource::kChangeNonActiveDeskName,
+       u"gle", u"goo"},
+  };
+
+  // We need to make the display this large so that the mini views are
+  // draggable.
+  UpdateDisplay("1366x768");
+  auto* controller = DesksController::Get();
+
+  // Create two initial desks with one window each.
+  NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+
+  WindowHolder win1(CreateAppWindow());
+  WindowHolder win2(CreateAppWindow());
+  controller->SendToDeskAtIndex(win1.window(), 0);
+  controller->SendToDeskAtIndex(win2.window(), 1);
+  ASSERT_EQ(1u, desk_1->windows().size());
+  ASSERT_EQ(1u, desk_2->windows().size());
+
+  EnterOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  const DesksBarView* desks_bar_view = GetPrimaryRootDesksBarView();
+
+  // Cache the mini views and their name views and combine desks buttons.
+  DeskMiniView* mini_view_1 = desks_bar_view->mini_views()[0];
+  DeskMiniView* mini_view_2 = desks_bar_view->mini_views()[1];
+  DeskNameView* desk_name_view_1 = mini_view_1->desk_name_view();
+  DeskNameView* desk_name_view_2 = mini_view_2->desk_name_view();
+  CloseButton* combine_desks_button_1 =
+      mini_view_1->desk_action_view()->combine_desks_button();
+  CloseButton* combine_desks_button_2 =
+      mini_view_2->desk_action_view()->combine_desks_button();
+
+  const std::u16string tooltip_prefix = u"Combine with ";
+  auto* event_generator = GetEventGenerator();
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.scope_trace);
+
+    ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+    ASSERT_EQ(tooltip_prefix + controller->GetCombineDesksTargetName(desk_1),
+              combine_desks_button_1->GetTooltipText());
+    ASSERT_EQ(tooltip_prefix + controller->GetCombineDesksTargetName(desk_2),
+              combine_desks_button_2->GetTooltipText());
+
+    switch (test_case.source) {
+      case UpdateSource::kAddDesk:
+        NewDesk();
+        break;
+      case UpdateSource::kCloseDesk:
+        ASSERT_EQ(3u, controller->desks().size());
+        RemoveDesk(controller->desks()[2].get());
+        break;
+      case UpdateSource::kMoveActiveDesk:
+        ASSERT_TRUE(controller->desks()[0]->is_active());
+        StartDragDeskPreview(mini_view_1, event_generator);
+        ASSERT_TRUE(desks_bar_view->IsDraggingDesk());
+        event_generator->MoveMouseTo(
+            mini_view_2->GetPreviewBoundsInScreen().CenterPoint());
+        event_generator->ReleaseLeftButton();
+        break;
+      case UpdateSource::kMoveNonActiveDesk:
+        ASSERT_FALSE(controller->desks()[0]->is_active());
+        StartDragDeskPreview(mini_view_2, event_generator);
+        EXPECT_TRUE(desks_bar_view->IsDraggingDesk());
+        event_generator->MoveMouseTo(
+            mini_view_1->GetPreviewBoundsInScreen().CenterPoint());
+        event_generator->ReleaseLeftButton();
+        break;
+      case UpdateSource::kChangeActiveDeskName:
+        ASSERT_TRUE(controller->desks()[0]->is_active());
+        event_generator->MoveMouseTo(
+            desk_name_view_1->GetBoundsInScreen().CenterPoint());
+        event_generator->ClickLeftButton();
+        SendKey(ui::VKEY_G);
+        SendKey(ui::VKEY_O);
+        SendKey(ui::VKEY_O);
+        SendKey(ui::VKEY_RETURN);
+        break;
+      case UpdateSource::kChangeNonActiveDeskName:
+        ASSERT_EQ(u"goo", mini_view_1->desk()->name());
+        ASSERT_FALSE(controller->desks()[1]->is_active());
+        event_generator->MoveMouseTo(
+            desk_name_view_2->GetBoundsInScreen().CenterPoint());
+        event_generator->ClickLeftButton();
+        SendKey(ui::VKEY_G);
+        SendKey(ui::VKEY_L);
+        SendKey(ui::VKEY_E);
+        SendKey(ui::VKEY_RETURN);
+        break;
+    }
+
+    EXPECT_EQ(tooltip_prefix + test_case.expected_target_1,
+              combine_desks_button_1->GetTooltipText());
+    EXPECT_EQ(tooltip_prefix + test_case.expected_target_2,
+              combine_desks_button_2->GetTooltipText());
+  }
+}
 
 // TODO(afakhry): Add more tests:
 // - Always on top windows are not tracked by any desk.

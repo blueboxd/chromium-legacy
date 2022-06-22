@@ -55,26 +55,32 @@ apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(const GURL& url);
 // match compare with filter with only scheme. Each condition type has a
 // matching level value, and this function will return the sum of the matching
 // level values of all existing condition types.
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
 int GetFilterMatchLevel(const apps::mojom::IntentFilterPtr& intent_filter);
 
 // Check if the two intent filters have overlap. i.e. they can handle same
 // intent with same match level.
+bool FiltersHaveOverlap(const apps::IntentFilterPtr& filter1,
+                        const apps::IntentFilterPtr& filter2);
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
 bool FiltersHaveOverlap(const apps::mojom::IntentFilterPtr& filter1,
                         const apps::mojom::IntentFilterPtr& filter2);
 
 // Check if the filter is the older version that doesn't contain action.
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
 bool FilterNeedsUpgrade(const apps::mojom::IntentFilterPtr& filter);
 
 // Upgrade the filter to contain action view.
+void UpgradeFilter(apps::IntentFilterPtr& filter);
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
 void UpgradeFilter(apps::mojom::IntentFilterPtr& filter);
 
 // Check if the filter is a browser filter, i.e. can handle all https
 // or http scheme.
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
 bool IsBrowserFilter(const apps::mojom::IntentFilterPtr& filter);
-
-// Convert an intent filter to a list of its supported links.
-std::set<std::string> AppManagementGetSupportedLinks(
-    const apps::mojom::IntentFilterPtr& intent_filter);
 
 // Checks if the `intent_filter` is a supported link for `app_id`, i.e. it has
 // the "view" action, a http or https scheme, and at least one host and pattern.

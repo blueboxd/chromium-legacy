@@ -37,12 +37,6 @@ constexpr auto enabled_by_default_desktop_android =
 //     base::FEATURE_DISABLED_BY_DEFAULT;
 // #endif
 
-// Feature that enables the tab-switch suggestions corresponding to an open
-// tab, for a button or dedicated suggestion. Enabled by default on Desktop, iOS
-// and Android.
-const base::Feature kOmniboxTabSwitchSuggestions{
-    "OmniboxTabSwitchSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.
 const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
@@ -270,7 +264,7 @@ const base::Feature kOmniboxFuzzyUrlSuggestions{
 // Feature used to enable the first batch of Pedals on Android. The Pedals,
 // which will be enabled on Android, should be already enabled on desktop.
 const base::Feature kOmniboxPedalsAndroidBatch1{
-    "OmniboxPedalsAndroidBatch1", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxPedalsAndroidBatch1", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable the third batch of Pedals (Find your phone, etc.)
 // for non-English locales (English locales are 'en' and 'en-GB').

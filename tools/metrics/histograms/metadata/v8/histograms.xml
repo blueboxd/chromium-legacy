@@ -122,7 +122,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.CompileLazyMicroSeconds" units="microseconds"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>hablich@chromium.org</owner>
   <summary>
     Aggregated time spent compiling functions lazily during a single script
@@ -162,7 +162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.CompileScriptMicroSeconds" units="microseconds"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
   <summary>
@@ -194,7 +194,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.CompileScriptMicroSeconds.ConsumeCache"
-    units="microseconds" expires_after="2022-08-21">
+    units="microseconds" expires_after="2022-10-23">
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
   <summary>
@@ -370,7 +370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.ExecuteMicroSeconds" units="microseconds"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>cbruni@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
   <summary>
@@ -1293,8 +1293,52 @@ chromium-metrics-reviews@google.com.
   <summary>Results from opening V8 snapshot files.</summary>
 </histogram>
 
+<histogram name="V8.InlineCodeCache.MainFrame.CacheTimesMatch"
+    units="BooleanTimesMatch" expires_after="2022-10-10">
+  <owner>sky@chromium.org</owner>
+  <owner>swarm-team@google.com</owner>
+  <summary>
+    Whether the times of the inline code cache data and url load time match. If
+    the times do not match, the code cache is not used. This is recorded when
+    the renderer receives the code cache from the browser (which is early in
+    navigation).
+  </summary>
+</histogram>
+
+<histogram name="V8.InlineCodeCache.Subframe.CacheTimesMatch"
+    units="BooleanTimesMatch" expires_after="2022-10-10">
+  <owner>sky@chromium.org</owner>
+  <owner>swarm-team@google.com</owner>
+  <summary>
+    Whether the times of the inline code cache data and url load time match. If
+    the times do not match, the code cache is not used. This is recorded when
+    the renderer receives the code cache from the browser (which is early in
+    navigation).
+  </summary>
+</histogram>
+
+<histogram name="V8.InlineCodeCache.UsedPreviouslyGeneratedCache"
+    units="BooleanUsed" expires_after="2022-10-10">
+  <owner>sky@chromium.org</owner>
+  <owner>swarm-team@google.com</owner>
+  <summary>
+    Indicates whether a previously compiled inline script was used. This is
+    logged for every frame after all inline scripts have loaded.
+  </summary>
+</histogram>
+
+<histogram name="V8.InlineCodeCache.WillGenerateCache" units="BooleanUsed"
+    expires_after="2022-10-10">
+  <owner>sky@chromium.org</owner>
+  <owner>swarm-team@google.com</owner>
+  <summary>
+    Indicates whether inline script will be compiled and cached for future use.
+    This is logged for every frame after all inline scripts have loaded.
+  </summary>
+</histogram>
+
 <histogram name="V8.LiftoffBailoutReasons" enum="LiftoffBailoutReason"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
@@ -1372,7 +1416,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleTotalCommitted" units="KB"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>hpayer@chromium.org</owner>
   <summary>
     The total size of committed memory used by V8 after each GC in KB.
@@ -1388,7 +1432,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.RegExpBacktracks" units="backtracks"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>jgruber@chromium.org</owner>
   <owner>mvstanton@chromium.org</owner>
   <summary>
@@ -1639,7 +1683,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmCompileFunctionMicroSeconds" units="microseconds"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
@@ -1669,7 +1713,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmCompileHugeFunctionMilliSeconds" units="ms"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>clemensb@chromium.org</owner>
   <owner>ecmziegler@chromium.org</owner>
   <owner>wasm-v8@google.com</owner>
@@ -1706,7 +1750,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmCompileModuleMicroSeconds" units="microseconds"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
@@ -1724,7 +1768,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmCompileModuleStreamingMicroSeconds"
-    units="microseconds" expires_after="2022-08-14">
+    units="microseconds" expires_after="2022-10-16">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
@@ -1752,7 +1796,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmFinishModuleStreamingMicroSeconds" units="microseconds"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>bbudge@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
@@ -1768,7 +1812,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmFunctionsPerModule" units="functions"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
@@ -1793,7 +1837,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmInstantiateModuleMicroSeconds" units="microseconds"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>
@@ -1949,7 +1993,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmModuleSizeBytes" units="bytes"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>ahaas@chromium.org</owner>
@@ -2017,7 +2061,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="V8.WasmTierUpModuleMicroSeconds" units="microseconds"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>ecmziegler@chromium.org</owner>
   <owner>adamk@chromium.org</owner>
   <owner>clemensb@chromium.org</owner>

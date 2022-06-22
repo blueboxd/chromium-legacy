@@ -12,7 +12,6 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_types.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -201,11 +200,17 @@ class AnimationWillRepeatObserver : public ui::LayerAnimationObserver {
 // and indicators (easy unlock, display password, caps lock enabled).
 class LoginPasswordView::LoginPasswordRow : public views::View {
  public:
-  explicit LoginPasswordRow(const LoginPalette& palette)
-      : color_(palette.password_row_background_color) {}
+  explicit LoginPasswordRow(const LoginPalette& palette) {
+    UpdatePalette(palette);
+  }
+
   ~LoginPasswordRow() override = default;
   LoginPasswordRow(const LoginPasswordRow&) = delete;
   LoginPasswordRow& operator=(const LoginPasswordRow&) = delete;
+
+  void UpdatePalette(const LoginPalette& palette) {
+    color_ = palette.password_row_background_color;
+  }
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override {
@@ -219,7 +224,7 @@ class LoginPasswordView::LoginPasswordRow : public views::View {
   }
 
  private:
-  const SkColor color_;
+  SkColor color_;
 };
 
 // A textfield that selects all text on focus and allows to switch between
@@ -461,8 +466,6 @@ class LoginPasswordView::DisplayPasswordButton
         IDS_ASH_LOGIN_DISPLAY_PASSWORD_BUTTON_ACCESSIBLE_NAME_HIDE));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    views::FocusRing::Get(this)->SetColor(
-        ShelfConfig::Get()->shelf_focus_border_color());
 
     SetEnabled(false);
   }
@@ -483,6 +486,13 @@ class LoginPasswordView::DisplayPasswordButton
     SetImage(views::Button::STATE_NORMAL, visible_icon);
     SetImage(views::Button::STATE_DISABLED, visible_icon_disabled);
     SetToggledImage(views::Button::STATE_NORMAL, &invisible_icon);
+  }
+
+  void OnThemeChanged() override {
+    views::ToggleImageButton::OnThemeChanged();
+    views::FocusRing::Get(this)->SetColor(
+        AshColorProvider::Get()->GetControlsLayerColor(
+            AshColorProvider::ControlsLayerType::kFocusRingColor));
   }
 };
 
@@ -945,8 +955,11 @@ void LoginPasswordView::SubmitPassword() {
 void LoginPasswordView::UpdatePalette(const LoginPalette& palette) {
   palette_ = palette;
   SetCapsLockHighlighted(is_capslock_higlight_);
+  password_row_->UpdatePalette(palette);
   textfield_->UpdatePalette(palette);
   display_password_button_->UpdateIcons(palette);
+  submit_button_->SetBackgroundColor(palette.submit_button_background_color);
+  submit_button_->SetIconColor(palette.submit_button_icon_color);
 }
 
 void LoginPasswordView::SetCapsLockHighlighted(bool highlight) {

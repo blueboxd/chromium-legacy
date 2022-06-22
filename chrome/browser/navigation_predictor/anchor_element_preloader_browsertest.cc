@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -110,13 +109,16 @@ IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderBrowserTest, OneAnchorTest) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       R"(
                 const a = document.getElementById('anchor1');
-                var e = new PointerEvent('pointerdown');
+                var e = new PointerEvent('pointerdown', {isPrimary: true});
                 a.dispatchEvent(e);
               )"));
   WaitForPreresolveCountForURL(1);
   EXPECT_EQ(1, preresolve_count_);
-  ukm::SourceId ukm_source_id = ukm::GetSourceIdForWebContentsDocument(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  ukm::SourceId ukm_source_id = browser()
+                                    ->tab_strip_model()
+                                    ->GetActiveWebContents()
+                                    ->GetMainFrame()
+                                    ->GetPageUkmSourceId();
 
   histogram_tester()->ExpectTotalCount(
       kPreloadingAnchorElementPreloaderPreloadingTriggered, 1);
@@ -142,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderBrowserTest, InvalidHref) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       R"(
                 const a = document.getElementById('anchor2');
-                var e = new PointerEvent('pointerdown');
+                var e = new PointerEvent('pointerdown', {isPrimary: true});
                 a.dispatchEvent(e);
               )"));
   EXPECT_EQ(0, preresolve_count_);
@@ -162,7 +164,8 @@ IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderBrowserTest, InvalidHref) {
   EXPECT_EQ(ukm_entries.size(), 0u);
 }
 
-IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderBrowserTest, IframeTest) {
+// TODO(crbug.com/1318937): Re-enable this test
+IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderBrowserTest, DISABLED_IframeTest) {
   const GURL& url = GetTestURL("/iframe_anchor.html");
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   EXPECT_TRUE(content::ExecuteScript(
@@ -171,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderBrowserTest, IframeTest) {
                 const iframe = document.getElementById('iframe1');
                 const iframe_doc = iframe.contentWindow.document;
                 const a = iframe_doc.getElementById('iframe_anchor');
-                var e = new PointerEvent('pointerdown');
+                var e = new PointerEvent('pointerdown', {isPrimary: true});
                 a.dispatchEvent(e);
              )"));
   WaitForPreresolveCountForURL(1);
@@ -184,8 +187,11 @@ IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderBrowserTest, IframeTest) {
       kPreloadingAnchorElementPreloaderPreloadingTriggered,
       AnchorElementPreloaderType::kPreconnect, 1);
 
-  ukm::SourceId ukm_source_id = ukm::GetSourceIdForWebContentsDocument(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  ukm::SourceId ukm_source_id = browser()
+                                    ->tab_strip_model()
+                                    ->GetActiveWebContents()
+                                    ->GetMainFrame()
+                                    ->GetPageUkmSourceId();
 
   auto ukm_entries = test_ukm_recorder()->GetEntries(
       ukm::builders::Preloading_AnchorInteraction::kEntryName,
@@ -207,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents(),
       R"(
                 const a = document.getElementById('anchor1');
-                var e = new PointerEvent('pointerdown');
+                var e = new PointerEvent('pointerdown', {isPrimary: true});
                 a.dispatchEvent(e);
              )"));
   EXPECT_EQ(0, preresolve_count_);
@@ -249,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderHoldbackBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents(),
       R"(
                 const a = document.getElementById('anchor1');
-                var e = new PointerEvent('pointerdown');
+                var e = new PointerEvent('pointerdown', {isPrimary: true});
                 a.dispatchEvent(e);
              )"));
   EXPECT_EQ(0, preresolve_count_);
@@ -261,8 +267,11 @@ IN_PROC_BROWSER_TEST_F(AnchorElementPreloaderHoldbackBrowserTest,
       kPreloadingAnchorElementPreloaderPreloadingTriggered,
       AnchorElementPreloaderType::kPreconnect, 1);
 
-  ukm::SourceId ukm_source_id = ukm::GetSourceIdForWebContentsDocument(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  ukm::SourceId ukm_source_id = browser()
+                                    ->tab_strip_model()
+                                    ->GetActiveWebContents()
+                                    ->GetMainFrame()
+                                    ->GetPageUkmSourceId();
 
   auto ukm_entries = test_ukm_recorder()->GetEntries(
       ukm::builders::Preloading_AnchorInteraction::kEntryName,

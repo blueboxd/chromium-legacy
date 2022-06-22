@@ -95,7 +95,6 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     EXPECT_TRUE(IsCurrentThread());
     To<DedicatedWorkerGlobalScope>(GlobalScope())
         ->Initialize(script_url, network::mojom::ReferrerPolicy::kDefault,
-                     network::mojom::IPAddressSpace::kLocal,
                      Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
                      nullptr /* response_origin_trial_tokens */);
   }
@@ -154,7 +153,6 @@ class DedicatedWorkerMessagingProxyForTest
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin.get()),
         nullptr /* worker_clients */, nullptr /* content_settings_client */,
-        network::mojom::IPAddressSpace::kLocal,
         nullptr /* inherited_trial_features */,
         base::UnguessableToken::Create(), std::move(worker_settings),
         mojom::blink::V8CacheOptions::kDefault,

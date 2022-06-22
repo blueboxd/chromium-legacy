@@ -47,7 +47,6 @@
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/policy_constants.h"
 #include "components/safe_browsing/core/common/features.h"
-#include "components/security_state/core/features.h"
 #import "components/send_tab_to_self/features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -58,33 +57,38 @@
 #include "components/sync/base/features.h"
 #include "components/sync/base/pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/common/translate_util.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
+#import "ios/chrome/browser/ntp/features.h"
 #include "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/sessions/session_features.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/ui/autofill/features.h"
-#import "ios/chrome/browser/ui/bubble/bubble_features.h"
+#include "ios/chrome/browser/ui/bubble/bubble_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
+#import "ios/chrome/browser/ui/sync/utils/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/upgrade/utils/features.h"
 #include "ios/chrome/browser/ui/util/features.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/components/security_interstitials/https_only_mode/feature.h"
 #include "ios/public/provider/chrome/browser/app_utils/app_utils_api.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
@@ -164,6 +168,22 @@ const FeatureEntry::FeatureVariation
          std::size(kOmniboxUIMaxAutocompleteMatches10), nullptr},
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
          std::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
+
+const FeatureEntry::FeatureParam kOmniboxMaxZPSMatches6[] = {
+    {OmniboxFieldTrial::kMaxZeroSuggestMatchesParam, "6"}};
+const FeatureEntry::FeatureParam kOmniboxMaxZPSMatches15[] = {
+    {OmniboxFieldTrial::kMaxZeroSuggestMatchesParam, "15"}};
+const FeatureEntry::FeatureParam kOmniboxMaxZPSMatches20[] = {
+    {OmniboxFieldTrial::kMaxZeroSuggestMatchesParam, "20"}};
+
+const FeatureEntry::FeatureVariation kOmniboxMaxZPSMatchesVariations[] = {
+    {"6 matches", kOmniboxMaxZPSMatches6, std::size(kOmniboxMaxZPSMatches6),
+     nullptr},
+    {"15 matches", kOmniboxMaxZPSMatches15, std::size(kOmniboxMaxZPSMatches15),
+     nullptr},
+    {"20 matches", kOmniboxMaxZPSMatches20, std::size(kOmniboxMaxZPSMatches20),
+     nullptr},
+};
 
 const FeatureEntry::FeatureParam
     kAutofillUseMobileLabelDisambiguationShowAll[] = {
@@ -307,28 +327,6 @@ const FeatureEntry::FeatureVariation kFREDefaultPromoTestingVariations[] = {
      std::size(kFREDefaultPromoTestingShortDelay), nullptr},
 };
 
-const FeatureEntry::FeatureVariation kEnableFREUIModuleIOSVariations[] = {
-    {"TOP | OLD",
-     (FeatureEntry::FeatureParam[]){
-         {kFREUIIdentitySwitcherPositionParam, "top"},
-         {kFREUIStringsSetParam, "old"}},
-     2, nullptr},
-    {"BOTTOM | OLD",
-     (FeatureEntry::FeatureParam[]){
-         {kFREUIIdentitySwitcherPositionParam, "bottom"},
-         {kFREUIStringsSetParam, "old"}},
-     2, nullptr},
-    {"TOP | NEW",
-     (FeatureEntry::FeatureParam[]){
-         {kFREUIIdentitySwitcherPositionParam, "top"},
-         {kFREUIStringsSetParam, "new"}},
-     2, nullptr},
-    {"BOTTOM | NEW",
-     (FeatureEntry::FeatureParam[]){
-         {kFREUIIdentitySwitcherPositionParam, "bottom"},
-         {kFREUIStringsSetParam, "new"}},
-     2, nullptr}};
-
 const FeatureEntry::FeatureParam kNewMICEFREWithUMADialog[] = {
     {kNewMobileIdentityConsistencyFREParam,
      kNewMobileIdentityConsistencyFREParamUMADialog}};
@@ -451,6 +449,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
+    {"omnibox-max-zps-matches", flag_descriptions::kOmniboxMaxZPSMatchesName,
+     flag_descriptions::kOmniboxMaxZPSMatchesDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kMaxZeroSuggestMatches,
+                                    kOmniboxMaxZPSMatchesVariations,
+                                    "OmniboxMaxZPSVariations")},
     {"omnibox-local-history-zero-suggest",
      flag_descriptions::kOmniboxLocalHistoryZeroSuggestName,
      flag_descriptions::kOmniboxLocalHistoryZeroSuggestDescription,
@@ -506,9 +509,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"enable-fre-ui-module-ios-with-options",
      flag_descriptions::kEnableFREUIModuleIOSName,
      flag_descriptions::kEnableFREUIModuleIOSDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFREUIModuleIOS,
-                                    kEnableFREUIModuleIOSVariations,
-                                    "EnableFREUIModuleIOS")},
+     FEATURE_VALUE_TYPE(kEnableFREUIModuleIOS)},
     {"new-mobile-identity-consistency-fre",
      flag_descriptions::kNewMobileIdentityConsistencyFREName,
      flag_descriptions::kNewMobileIdentityConsistencyFREDescription,
@@ -576,12 +577,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ios-crashpad", flag_descriptions::kCrashpadIOSName,
      flag_descriptions::kCrashpadIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCrashpadIOS)},
-    {"detect-form-submission-on-form-clear",
-     flag_descriptions::kDetectFormSubmissionOnFormClearIOSName,
-     flag_descriptions::kDetectFormSubmissionOnFormClearIOSDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kDetectFormSubmissionOnFormClear)},
     {"autofill-address-verification-in-save-prompt",
      flag_descriptions::kEnableAutofillAddressSavePromptAddressVerificationName,
      flag_descriptions::
@@ -679,12 +674,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseLensToSearchForImageDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseLensToSearchForImage)},
     {"use-load-simulated-request-for-error-page-navigation",
-     flag_descriptions::kUseLoadSimulatedRequestForErrorPageNavigationName,
-     flag_descriptions::
-         kUseLoadSimulatedRequestForErrorPageNavigationDescription,
+     flag_descriptions::kUseLoadSimulatedRequestForOfflinePageName,
+     flag_descriptions::kUseLoadSimulatedRequestForOfflinePageDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         web::features::kUseLoadSimulatedRequestForErrorPageNavigation)},
+     FEATURE_VALUE_TYPE(web::features::kUseLoadSimulatedRequestForOfflinePage)},
     {"enable-discover-feed-static-resource-serving",
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingName,
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingDescription,
@@ -834,10 +827,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContentSuggestionsUIViewControllerMigrationDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kContentSuggestionsUIViewControllerMigration)},
-    {"autofill-password-rich-iph",
-     flag_descriptions::kAutofillPasswordRichIPHName,
-     flag_descriptions::kAutofillPasswordRichIPHDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kAutofillPasswordRichIPH)},
     {"bubble-rich-iph", flag_descriptions::kBubbleRichIPHName,
      flag_descriptions::kBubbleRichIPHDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kBubbleRichIPH,
@@ -855,6 +844,34 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"uiview-window-observing", flag_descriptions::kUIViewWindowObservingName,
      flag_descriptions::kUIViewWindowObservingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUIViewWindowObserving)},
+    {"autofill-upstream-allow-additional-email-domains",
+     flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsName,
+     flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamAllowAdditionalEmailDomains)},
+    {"autofill-upstream-allow-all-email-domains",
+     flag_descriptions::kAutofillUpstreamAllowAllEmailDomainsName,
+     flag_descriptions::kAutofillUpstreamAllowAllEmailDomainsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamAllowAllEmailDomains)},
+    {"enable-tflite-language-detection",
+     flag_descriptions::kTFLiteLanguageDetectionName,
+     flag_descriptions::kTFLiteLanguageDetectionDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionEnabled)},
+    {"optimization-guide-model-downloading",
+     flag_descriptions::kOptimizationGuideModelDownloadingName,
+     flag_descriptions::kOptimizationGuideModelDownloadingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         optimization_guide::features::kOptimizationGuideModelDownloading)},
+    {"optimization-target-prediction",
+     flag_descriptions::kOptimizationTargetPredictionName,
+     flag_descriptions::kOptimizationTargetPredictionDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         optimization_guide::features::kOptimizationTargetPrediction)},
     {"sync-standalone-invalidations", flag_descriptions::kSyncInvalidationsName,
      flag_descriptions::kSyncInvalidationsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(::syncer::kUseSyncInvalidations)},
@@ -863,6 +880,27 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncInvalidationsWalletAndOfferDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(::syncer::kUseSyncInvalidationsForWalletAndOffer)},
+    {"suggestions-scrolling-ipad",
+     flag_descriptions::kEnableSuggestionsScrollingOnIPadName,
+     flag_descriptions::kEnableSuggestionsScrollingOnIPadDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableSuggestionsScrollingOnIPad)},
+    {"experience-kit-calendar", flag_descriptions::kCalendarExperienceKitName,
+     flag_descriptions::kCalendarExperienceKitDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCalendarExperienceKit)},
+    {"https-only-mode", flag_descriptions::kHttpsOnlyModeName,
+     flag_descriptions::kHttpsOnlyModeDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(security_interstitials::features::kHttpsOnlyMode)},
+    {"display-sync-errors-refactor",
+     flag_descriptions::kDisplaySyncErrorsRefactorName,
+     flag_descriptions::kDisplaySyncErrorsRefactorDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kDisplaySyncErrorsRefactor)},
+    {"smart-sorting-new-overflow-menu",
+     flag_descriptions::kSmartSortingNewOverflowMenuName,
+     flag_descriptions::kSmartSortingNewOverflowMenuDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSmartSortingNewOverflowMenu)},
+    {"upgrade-center-refactor", flag_descriptions::kUpgradeCenterRefactorName,
+     flag_descriptions::kUpgradeCenterRefactorDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUpgradeCenterRefactor)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1019,6 +1057,21 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
                                    policy::key::kEnableExperimentalPolicies)];
   }
 
+  NSString* metrics_reporting_key = @"MetricsReportingEnabled";
+  switch ([defaults integerForKey:metrics_reporting_key]) {
+    case 1:
+      // Metrics reporting forced.
+      [testing_policies setValue:@(YES) forKey:metrics_reporting_key];
+      break;
+    case 2:
+      // Metrics reporting disabled.
+      [testing_policies setValue:@(NO) forKey:metrics_reporting_key];
+      break;
+    default:
+      // Metrics reporting not managed.
+      break;
+  }
+
   // Warning: Add new flags to TestingPoliciesHash() below.
 
   return testing_policies;
@@ -1029,12 +1082,12 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
 NSString* TestingPoliciesHash() {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   return [NSString
-      stringWithFormat:@"%d|%d|%d|%d|%@|%d|%d|%d|%d|%d|%d|%d",
+      stringWithFormat:@"%d|%d|%d|%d|%@|%d|%d|%d|%d|%d|%d|%d|%d|%@|%d",
                        [defaults boolForKey:@"DisallowChromeDataInBackups"],
                        [defaults boolForKey:@"EnableSyncDisabledPolicy"],
                        [defaults boolForKey:@"EnableSamplePolicies"],
-                       (int)[defaults
-                           integerForKey:@"IncognitoModeAvailability"],
+                       static_cast<int>([defaults
+                           integerForKey:@"IncognitoModeAvailability"]),
                        [defaults stringForKey:@"RestrictAccountsToPatterns"],
                        [defaults boolForKey:@"SyncTypesListBookmarks"],
                        [defaults boolForKey:@"SyncTypesListReadingList"],
@@ -1042,7 +1095,12 @@ NSString* TestingPoliciesHash() {
                        [defaults boolForKey:@"SyncTypesListPasswords"],
                        [defaults boolForKey:@"SyncTypesListAutofill"],
                        [defaults boolForKey:@"SyncTypesListTypedUrls"],
-                       [defaults boolForKey:@"SyncTypesListTabs"]];
+                       [defaults boolForKey:@"SyncTypesListTabs"],
+                       static_cast<int>(
+                           [defaults integerForKey:@"BrowserSignin"]),
+                       [defaults stringForKey:@"NTPLocation"],
+                       static_cast<int>([defaults
+                           integerForKey:@"MetricsReportingEnabled"])];
 }
 }  // namespace
 

@@ -45,6 +45,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_utils.h"
@@ -76,13 +77,14 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "content/public/browser/conditional_ui_delegate_android.h"
 #include "content/public/browser/tts_environment_android.h"
 #endif
 
 namespace content {
 
 std::unique_ptr<BrowserMainParts> ContentBrowserClient::CreateBrowserMainParts(
-    MainFunctionParams parameters) {
+    bool /* is_integration_test */) {
   return nullptr;
 }
 
@@ -99,8 +101,8 @@ bool ContentBrowserClient::IsBrowserStartupComplete() {
 
 void ContentBrowserClient::SetBrowserStartupIsCompleteForTesting() {}
 
-WebContentsViewDelegate* ContentBrowserClient::GetWebContentsViewDelegate(
-    WebContents* web_contents) {
+std::unique_ptr<WebContentsViewDelegate>
+ContentBrowserClient::GetWebContentsViewDelegate(WebContents* web_contents) {
   return nullptr;
 }
 
@@ -260,8 +262,8 @@ bool ContentBrowserClient::ShouldTryToUseExistingProcessHost(
   return false;
 }
 
-bool ContentBrowserClient::ShouldSubframesTryToReuseExistingProcess(
-    RenderFrameHost* main_frame) {
+bool ContentBrowserClient::ShouldEmbeddedFramesTryToReuseExistingProcess(
+    RenderFrameHost* outermost_main_frame) {
   return true;
 }
 
@@ -502,7 +504,7 @@ void ContentBrowserClient::AllowCertificateError(
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
-    bool is_main_frame_request,
+    bool is_primary_main_frame_request,
     bool strict_enforcement,
     base::OnceCallback<void(CertificateRequestResultType)> callback) {
   std::move(callback).Run(CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
@@ -1325,6 +1327,10 @@ bool ContentBrowserClient::IsFirstPartySetsEnabled() {
   return base::FeatureList::IsEnabled(features::kFirstPartySets);
 }
 
+bool ContentBrowserClient::WillProvidePublicFirstPartySets() {
+  return false;
+}
+
 base::Value::Dict ContentBrowserClient::GetFirstPartySetsOverrides() {
   return base::Value::Dict();
 }
@@ -1336,5 +1342,12 @@ ContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     int32_t error_code) {
   return nullptr;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+ConditionalUiDelegateAndroid* ContentBrowserClient::GetConditionalUiDelegate(
+    RenderFrameHost* host) {
+  return nullptr;
+}
+#endif
 
 }  // namespace content

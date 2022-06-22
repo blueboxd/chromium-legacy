@@ -858,14 +858,8 @@
     "script": "//testing/scripts/run_flatbuffers_unittests.py",
     "type": "script",
   },
-  # TODO(crbug.com/1256485): The target is not needed after iOS clusterfuzz
-  # upload bot is set up.
-  "form_activity_tab_helper_fuzzer": {
-    "label": "//components/autofill/ios/form_util:form_activity_tab_helper_fuzzer",
-    "type": "additional_compile_target",
-  },
   "fuchsia_mojo_unittests": {
-    "label": "//fuchsia/mojom:fuchsia_mojo_unittests",
+    "label": "//mojo/public/cpp/base/fuchsia:fuchsia_mojo_unittests",
     "type": "console_test_launcher",
   },
   "fuchsia_sizes": {
@@ -976,6 +970,10 @@
   },
   "ios/chrome/app:chrome": {
     "label": "//ios/chrome/app:chrome",
+    "type": "additional_compile_target",
+  },
+  "ios/chrome/test:all_fuzzer_tests": {
+    "label": "//ios/chrome/test:all_fuzzer_tests",
     "type": "additional_compile_target",
   },
   "ios_chrome_bookmarks_egtests": {
@@ -1165,6 +1163,13 @@
     "label": "//build/lacros:lacros_version_metadata",
     "type": "additional_compile_target",
   },
+  "lacros_variations_tast_tests" : {
+    "label": "//chromeos/lacros:lacros_variations_tast_tests",
+    "type": "generated_script",
+    "args": [
+      "--logs-dir=${ISOLATED_OUTDIR}",
+    ],
+  },
   "latency_unittests": {
     "label": "//ui/latency:latency_unittests",
     "type": "console_test_launcher",
@@ -1341,6 +1346,10 @@
   },
   "build_rust_tests": {
     "label": "//build/rust/tests:build_rust_tests",
+    "type": "generated_script",
+  },
+  "autocxx_tests": {
+    "label": "//third_party/rust/autocxx/chromium_integration/tests:autocxx_tests",
     "type": "generated_script",
   },
   "native_theme_unittests": {
@@ -1573,7 +1582,7 @@
     "label": "//components/cronet/android:resource_sizes_cronet_sample_apk",
     "type": "generated_script",
   },
-  'resource_sizes_lacros_chrome': {
+  "resource_sizes_lacros_chrome": {
     "label": "//chromeos/lacros:resource_sizes_lacros_chrome",
     "type": "generated_script",
   },
@@ -1591,6 +1600,10 @@
   },
   "rust_build_tests": {
     "label": "//build/rust/tests",
+    "type": "additional_compile_target",
+  },
+  "rust_autocxx_tests": {
+    "label": "//third_party/rust/autocxx/chromium_integration/tests",
     "type": "additional_compile_target",
   },
   "rust_gtest_interop_unittests": {
@@ -1775,7 +1788,6 @@
     "label": "//chrome/test:telemetry_perf_unittests_android_monochrome",
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "type": "script",
-    "python3": True,
   },
   "telemetry_unittests": {
     "args": [
@@ -2048,6 +2060,38 @@
       "-v",
     ],
     "label": "//android_webview/test:webview_cts_tests",
+    "script": "//android_webview/tools/run_cts.py",
+    "type": "script",
+  },
+  "webview_trichrome_cts_tests": {
+    "args": [
+      "--skip-expected-failures",
+      "--additional-apk",
+      "apks/TrichromeLibrary.apk",
+      "--use-webview-provider",
+      "apks/TrichromeWebView.apk",
+      "--apk-under-test",
+      "apks/TrichromeWebView.apk",
+      "--use-apk-under-test-flags-file",
+      "-v",
+    ],
+    "label": "//android_webview/test:webview_trichrome_cts_tests",
+    "script": "//android_webview/tools/run_cts.py",
+    "type": "script",
+  },
+  "webview_trichrome_64_cts_tests": {
+    "args": [
+      "--skip-expected-failures",
+      "--additional-apk",
+      "apks/TrichromeLibrary64.apk",
+      "--use-webview-provider",
+      "apks/TrichromeWebView64.apk",
+      "--apk-under-test",
+      "apks/TrichromeWebView64.apk",
+      "--use-apk-under-test-flags-file",
+      "-v",
+    ],
+    "label": "//android_webview/test:webview_trichrome_64_cts_tests",
     "script": "//android_webview/tools/run_cts.py",
     "type": "script",
   },

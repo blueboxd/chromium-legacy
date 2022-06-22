@@ -180,6 +180,9 @@ void TestSchemaValidationHelper(const std::string& source,
       schema.Normalize(&cloned_value, strategy, nullptr, &error, &touched);
   EXPECT_EQ(expected_return_value, returned) << source << ": " << error;
 
+  if (strategy == SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING)
+    return;
+
   bool strictly_valid = schema.Validate(value, SCHEMA_STRICT, nullptr, &error);
   EXPECT_EQ(touched, !strictly_valid && returned) << source;
 
@@ -789,6 +792,8 @@ TEST(SchemaTest, Validate) {
   TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN, true);
   TestSchemaValidation(schema, bundle,
                        SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, true);
+  TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                       true);
   TestSchemaValidationWithPath(schema, bundle, "");
   bundle.RemoveKey("boom");
 
@@ -798,6 +803,8 @@ TEST(SchemaTest, Validate) {
   TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN, false);
   TestSchemaValidation(schema, bundle,
                        SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, false);
+  TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                       false);
   TestSchemaValidationWithPath(schema, bundle, "Boolean");
   bundle.SetBoolKey("Boolean", true);
 
@@ -813,6 +820,8 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         true);
     TestSchemaValidationWithPath(subschema, root, "Object");
     root.RemovePath("Object.three");
 
@@ -822,6 +831,8 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         false);
     TestSchemaValidationWithPath(subschema, root, "Object.one");
     root.RemovePath("Object.one");
   }
@@ -841,6 +852,8 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         true);
     TestSchemaValidationWithPath(subschema, root, "items[0]");
     root.EraseListIter(root_view.begin() + (root_view.size() - 1));
 
@@ -852,6 +865,8 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         false);
     TestSchemaValidationWithPath(subschema, root, "items[0].two");
     root.EraseListIter(root_view.begin() + (root_view.size() - 1));
   }
@@ -871,6 +886,8 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         true);
 
     // Invalid list item.
     list_value->Append("blabla");
@@ -878,6 +895,8 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         false);
     TestSchemaValidationWithPath(subschema, root, "List.items[1]");
   }
 
@@ -887,24 +906,27 @@ TEST(SchemaTest, Validate) {
     ASSERT_TRUE(subschema.valid());
     base::ListValue root;
 
-    auto dict_value = std::make_unique<base::DictionaryValue>();
-    base::ListValue* list_value =
-        dict_value->SetList("List", std::make_unique<base::ListValue>());
+    base::Value::Dict dict_value;
+    base::Value* list_value = dict_value.Set("List", base::Value::List());
     root.Append(std::move(dict_value));
 
     // Test that there are not errors here.
-    list_value->Append("blabla");
+    list_value->GetList().Append("blabla");
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         true);
 
     // Invalid list item.
-    list_value->Append(12345);
+    list_value->GetList().Append(12345);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         false);
     TestSchemaValidationWithPath(subschema, root, "items[0].List.items[1]");
   }
 
@@ -971,6 +993,8 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         true);
     root.RemoveKey("foobar");
   }
 
@@ -987,6 +1011,8 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         false);
 
     // Invalid required property.
     root.SetIntKey("String", 123);
@@ -994,6 +1020,8 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         false);
     root.SetStringKey("String", "a string");
 
     // Invalid subschema of required property with multiple subschemas.
@@ -1008,12 +1036,16 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         false);
 
     root.SetIntKey("Integer", 3);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root,
                          SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+                         false);
   }
 
   // Test that integer to double promotion is allowed.

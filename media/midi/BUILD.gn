@@ -50,6 +50,8 @@ if (is_android) {
   android_library("midi_java") {
     deps = [
       "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -158,10 +160,7 @@ component("midi") {
   }
 
   if (use_alsa && use_udev) {
-    deps += [
-      "//crypto",
-      "//crypto:platform",
-    ]
+    deps += [ "//crypto" ]
     libs += [ "asound" ]
     sources += [
       "midi_manager_alsa.cc",

@@ -6,12 +6,12 @@
  * @fileoverview Script for ChromeOS keyboard explorer.
  *
  */
-import {BrailleCommandData} from '../common/braille_command_data.js';
-import {CommandStore} from '../common/command_store.js';
-import {GestureCommandData} from '../common/gesture_command_data.js';
-import {KeyMap} from '../common/key_map.js';
-import {KeyUtil} from '../common/key_util.js';
-import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
+import {BrailleCommandData} from '/chromevox/common/braille/braille_command_data.js';
+import {CommandStore} from '/chromevox/common/command_store.js';
+import {GestureCommandData} from '/chromevox/common/gesture_command_data.js';
+import {KeyMap} from '/chromevox/common/key_map.js';
+import {KeyUtil} from '/chromevox/common/key_util.js';
+import {ChromeVoxKbHandler} from '/chromevox/common/keyboard_handler.js';
 
 /**
  * Class to manage the keyboard explorer.
@@ -41,12 +41,6 @@ export class LearnMode {
         {target: 'GestureCommandHandler', action: 'setEnabled', value: false});
 
     ChromeVoxKbHandler.handlerKeyMap = KeyMap.get();
-
-    /** @type {LibLouis.Translator} */
-    LearnMode.currentBrailleTranslator_ = await new Promise(
-        resolve => chrome.runtime.sendMessage(
-            {target: 'BrailleBackground', action: 'getDefaultTranslator'},
-            resolve));
 
     ChromeVoxKbHandler.commandHandler = LearnMode.onCommand;
 
@@ -203,9 +197,11 @@ export class LearnMode {
         const cells = new ArrayBuffer(1);
         const view = new Uint8Array(cells);
         view[0] = dots;
-        LearnMode.currentBrailleTranslator_.backTranslate(cells, function(res) {
-          LearnMode.output(res);
-        }.bind(this));
+        BackgroundBridge.BrailleBackground.backTranslate(cells).then((res) => {
+          if (res !== null) {
+            LearnMode.output(res);
+          }
+        });
       }
         return;
       case BrailleKeyCommand.STANDARD_KEY:
@@ -356,3 +352,12 @@ LearnMode.MIN_TOUCH_EXPLORE_OUTPUT_TIME_MS_ = 1000;
 document.addEventListener('DOMContentLoaded', function() {
   LearnMode.init();
 }, false);
+
+/**
+ * Shortcut for document.getElementById.
+ * @param {string} id of the element.
+ * @return {Element} with the id.
+ */
+function $(id) {
+  return document.getElementById(id);
+}

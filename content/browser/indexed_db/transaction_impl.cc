@@ -23,13 +23,13 @@ namespace content {
 
 TransactionImpl::TransactionImpl(
     base::WeakPtr<IndexedDBTransaction> transaction,
-    const blink::StorageKey& storage_key,
+    const storage::BucketLocator& bucket_locator,
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
     scoped_refptr<base::SequencedTaskRunner> idb_runner)
     : dispatcher_host_(dispatcher_host),
       indexed_db_context_(dispatcher_host->context()),
       transaction_(std::move(transaction)),
-      storage_key_(storage_key),
+      bucket_locator_(bucket_locator),
       idb_runner_(std::move(idb_runner)) {
   DCHECK(idb_runner_->RunsTasksInCurrentSequence());
   DCHECK(dispatcher_host_);
@@ -192,7 +192,7 @@ void TransactionImpl::CreateExternalObjects(
   for (size_t i = 0; i < value->external_objects.size(); ++i) {
     auto& object = value->external_objects[i];
     switch (object->which()) {
-      case blink::mojom::IDBExternalObject::Tag::BLOB_OR_FILE: {
+      case blink::mojom::IDBExternalObject::Tag::kBlobOrFile: {
         blink::mojom::IDBBlobInfoPtr& info = object->get_blob_or_file();
         uint64_t size = info->size;
         total_blob_size += size;
@@ -208,7 +208,7 @@ void TransactionImpl::CreateExternalObjects(
         }
         break;
       }
-      case blink::mojom::IDBExternalObject::Tag::FILE_SYSTEM_ACCESS_TOKEN:
+      case blink::mojom::IDBExternalObject::Tag::kFileSystemAccessToken:
         (*external_objects)[i] = IndexedDBExternalObject(
             std::move(object->get_file_system_access_token()));
         break;
@@ -242,8 +242,9 @@ void TransactionImpl::Commit(int64_t num_errors_handled) {
     return;
   }
 
+  // TODO(crbug.com/1319644): Propagate BucketLocator to GetBucketUsageAndQuota.
   indexed_db_context_->quota_manager_proxy()->GetUsageAndQuota(
-      storage_key_, blink::mojom::StorageType::kTemporary,
+      bucket_locator_.storage_key, blink::mojom::StorageType::kTemporary,
       indexed_db_context_->IDBTaskRunner(),
       base::BindOnce(&TransactionImpl::OnGotUsageAndQuotaForCommit,
                      weak_factory_.GetWeakPtr()));

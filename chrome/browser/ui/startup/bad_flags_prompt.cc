@@ -23,7 +23,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -129,10 +128,6 @@ static const char* kBadFlags[] = {
     // updating components won't be performed until shutdown.
     switches::kDisableBestEffortTasks,
 
-    // Enables save data feature which can cause user traffic to be proxied via
-    // Google's data reduction proxy servers.
-    data_reduction_proxy::switches::kEnableDataReductionProxy,
-
     // GPU sanboxing isn't implemented for the Web GPU API yet meaning it would
     // be possible to read GPU data for other Chromium processes.
     switches::kEnableUnsafeWebGPU,
@@ -147,7 +142,7 @@ static const char* kBadFlags[] = {
     // This flag enables restricted APIs (which unlock capabilities
     // with a high potential for security / privacy abuse) for specified
     // origins.
-    switches::kRestrictedApiOrigins,
+    switches::kIsolatedAppOrigins,
 
     // Allows the specified origin to make Web Authentication API requests on
     // behalf of other origins, if a corresponding Google-internal

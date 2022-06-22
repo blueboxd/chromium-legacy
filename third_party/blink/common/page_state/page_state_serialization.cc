@@ -670,12 +670,12 @@ void WritePageState(const ExplodedPageState& state, SerializeObject* obj) {
 void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
                               mojom::RequestBody* mojo_body) {
   for (const auto& element : *request_body.elements()) {
-    mojom::ElementPtr data_element = mojom::Element::New();
+    mojom::ElementPtr data_element;
     switch (element.type()) {
       case network::DataElement::Tag::kBytes: {
         const auto& bytes = element.As<network::DataElementBytes>().bytes();
         const char* data = reinterpret_cast<const char*>(bytes.data());
-        data_element->set_bytes(
+        data_element = mojom::Element::NewBytes(
             std::vector<unsigned char>(data, data + bytes.size()));
         break;
       }
@@ -684,12 +684,12 @@ void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
         mojom::FilePtr file = mojom::File::New(
             element_file.path().AsUTF16Unsafe(), element_file.offset(),
             element_file.length(), element_file.expected_modification_time());
-        data_element->set_file(std::move(file));
+        data_element = mojom::Element::NewFile(std::move(file));
         break;
       }
       case network::DataElement::Tag::kDataPipe:
         NOTIMPLEMENTED();
-        break;
+        continue;
       case network::DataElement::Tag::kChunkedDataPipe:
         NOTREACHED();
         continue;
@@ -705,22 +705,22 @@ void ReadResourceRequestBody(
   for (const auto& element : mojo_body->elements) {
     mojom::Element::Tag tag = element->which();
     switch (tag) {
-      case mojom::Element::Tag::BYTES:
+      case mojom::Element::Tag::kBytes:
         AppendDataToRequestBody(
             request_body,
             reinterpret_cast<const char*>(element->get_bytes().data()),
             element->get_bytes().size());
         break;
-      case mojom::Element::Tag::FILE: {
+      case mojom::Element::Tag::kFile: {
         mojom::File* file = element->get_file().get();
         AppendFileRangeToRequestBody(request_body, file->path, file->offset,
                                      file->length, file->modification_time);
         break;
       }
-      case mojom::Element::Tag::BLOB_UUID:
+      case mojom::Element::Tag::kBlobUuid:
         // No longer supported.
         break;
-      case mojom::Element::Tag::DEPRECATED_FILE_SYSTEM_FILE:
+      case mojom::Element::Tag::kDeprecatedFileSystemFile:
         // No longer supported.
         break;
     }

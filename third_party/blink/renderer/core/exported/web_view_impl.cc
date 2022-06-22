@@ -219,7 +219,7 @@ static const float viewportAnchorCoordY = 0;
 
 // Constants for zooming in on a focused text field.
 static constexpr base::TimeDelta kScrollAndScaleAnimationDuration =
-    base::Microseconds(200);
+    base::Milliseconds(200);
 static const int minReadableCaretHeight = 16;
 static const int minReadableCaretHeightForTextArea = 13;
 static const float minScaleChangeToTriggerZoom = 1.5f;
@@ -297,6 +297,12 @@ void SetFantasyFontFamilyWrapper(WebSettings* settings,
                                  const std::u16string& font,
                                  UScriptCode script) {
   settings->SetFantasyFontFamily(WebString::FromUTF16(font), script);
+}
+
+void SetMathFontFamilyWrapper(WebSettings* settings,
+                              const std::u16string& font,
+                              UScriptCode script) {
+  settings->SetMathFontFamily(WebString::FromUTF16(font), script);
 }
 
 // If |scriptCode| is a member of a family of "similar" script codes, returns
@@ -1440,6 +1446,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
                     settings);
   ApplyFontsFromMap(prefs.fantasy_font_family_map, SetFantasyFontFamilyWrapper,
                     settings);
+  ApplyFontsFromMap(prefs.math_font_family_map, SetMathFontFamilyWrapper,
+                    settings);
   settings->SetDefaultFontSize(prefs.default_font_size);
   settings->SetDefaultFixedFontSize(prefs.default_fixed_font_size);
   settings->SetMinimumFontSize(prefs.minimum_font_size);
@@ -1623,7 +1631,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   settings->SetAccessibilityFontScaleFactor(prefs.font_scale_factor);
   settings->SetDeviceScaleAdjustment(prefs.device_scale_adjustment);
   web_view_impl->SetIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
-  settings->SetAutoZoomFocusedNodeToLegibleScale(true);
   settings->SetDefaultVideoPosterURL(
       WebString::FromASCII(prefs.default_video_poster_url.spec()));
   settings->SetSupportDeprecatedTargetDensityDPI(
@@ -1674,6 +1681,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   settings->SetViewportEnabled(prefs.viewport_enabled);
   settings->SetViewportMetaEnabled(prefs.viewport_meta_enabled);
   settings->SetViewportStyle(prefs.viewport_style);
+  settings->SetAutoZoomFocusedEditableToLegibleScale(
+      prefs.auto_zoom_focused_editable_to_legible_scale);
 
   settings->SetLoadWithOverviewMode(prefs.initialize_at_minimum_page_scale);
   settings->SetMainFrameResizesAreOrientationChanges(
@@ -2029,7 +2038,7 @@ void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
 
 bool WebViewImpl::ShouldZoomToLegibleScale(const Element& element) {
   bool zoom_into_legible_scale =
-      web_settings_->AutoZoomFocusedNodeToLegibleScale() &&
+      web_settings_->AutoZoomFocusedEditableToLegibleScale() &&
       !GetPage()->GetVisualViewport().ShouldDisableDesktopWorkarounds();
 
   if (zoom_into_legible_scale) {
@@ -2534,7 +2543,7 @@ void WebViewImpl::DispatchPageshow(base::TimeTicks navigation_start) {
     if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
       frame->DomWindow()->ToLocalDOMWindow()->DispatchPersistedPageshowEvent(
           navigation_start);
-      if (frame->IsMainFrame()) {
+      if (frame->IsOutermostMainFrame()) {
         UMA_HISTOGRAM_BOOLEAN(
             "BackForwardCache.MainFrameHasPageshowListenersOnRestore",
             frame->DomWindow()->ToLocalDOMWindow()->HasEventListeners(

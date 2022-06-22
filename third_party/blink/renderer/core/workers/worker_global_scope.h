@@ -31,7 +31,6 @@
 
 #include "base/time/time.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -51,6 +50,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/code_cache_host.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "v8/include/v8-inspector.h"
 
 namespace blink {
 
@@ -155,7 +155,6 @@ class CORE_EXPORT WorkerGlobalScope
   virtual void Initialize(
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
-      network::mojom::IPAddressSpace response_address_space,
       Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
       const Vector<String>* response_origin_trial_tokens) = 0;
 
@@ -234,6 +233,15 @@ class CORE_EXPORT WorkerGlobalScope
   FontMatchingMetrics* GetFontMatchingMetrics();
 
   bool IsUrlValid() { return url_.IsValid(); }
+
+  void SetMainResoureIdentifier(uint64_t identifier) {
+    DCHECK(!main_resource_identifier_.has_value());
+    main_resource_identifier_ = identifier;
+  }
+
+  absl::optional<uint64_t> MainResourceIdentifier() const {
+    return main_resource_identifier_;
+  }
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
@@ -332,6 +340,11 @@ class CORE_EXPORT WorkerGlobalScope
   // shared workers.
   std::unique_ptr<WorkerMainScriptLoadParameters>
       worker_main_script_load_params_for_modules_;
+
+  // |main_resource_identifier_| is used to track main script that was started
+  // in the browser process. This field not having a value does not imply
+  // anything.
+  absl::optional<uint64_t> main_resource_identifier_;
 
   // This is the interface that handles generated code cache
   // requests both to fetch code cache when loading resources.

@@ -19,9 +19,6 @@ struct ModelNeutralState {
   ModelNeutralState(const ModelNeutralState& other);
   ~ModelNeutralState();
 
-  // The set of types for which updates were requested from the server.
-  ModelTypeSet get_updates_request_types;
-
   // The set of types for which non-deletion updates were returned from the
   // server.
   ModelTypeSet updated_types;
@@ -34,16 +31,9 @@ struct ModelNeutralState {
   // Download event counters.
   int num_updates_downloaded_total;
   int num_tombstone_updates_downloaded_total;
-  int num_reflected_updates_downloaded_total;
 
   // Update application and conflicts.
-  int num_encryption_conflicts;
   int num_server_conflicts;
-  int num_hierarchy_conflicts;
-
-  // Overwrites due to conflict resolution counters.
-  int num_local_overwrites;
-  int num_server_overwrites;
 
   // Records the most recent results of GetKey, PostCommit and GetUpdates
   // commands.

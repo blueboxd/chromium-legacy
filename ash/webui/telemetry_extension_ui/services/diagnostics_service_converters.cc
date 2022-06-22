@@ -5,7 +5,6 @@
 #include "ash/webui/telemetry_extension_ui/services/diagnostics_service_converters.h"
 
 #include "ash/webui/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"
-#include "ash/webui/telemetry_extension_ui/services/convert_ptr.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/mojo_utils.h"
@@ -32,18 +31,18 @@ health::mojom::RoutineUpdatePtr UncheckedConvertPtr(
   return health::mojom::RoutineUpdate::New(
       input->progress_percent,
       GetStringFromMojoHandle(std::move(input->output)),
-      ConvertPtr(std::move(input->routine_update_union)));
+      ConvertDiagnosticsPtr(std::move(input->routine_update_union)));
 }
 
 health::mojom::RoutineUpdateUnionPtr UncheckedConvertPtr(
     cros_healthd::mojom::RoutineUpdateUnionPtr input) {
   switch (input->which()) {
-    case cros_healthd::mojom::RoutineUpdateUnion::Tag::INTERACTIVE_UPDATE:
+    case cros_healthd::mojom::RoutineUpdateUnion::Tag::kInteractiveUpdate:
       return health::mojom::RoutineUpdateUnion::NewInteractiveUpdate(
-          ConvertPtr(std::move(input->get_interactive_update())));
-    case cros_healthd::mojom::RoutineUpdateUnion::Tag::NONINTERACTIVE_UPDATE:
+          ConvertDiagnosticsPtr(std::move(input->get_interactive_update())));
+    case cros_healthd::mojom::RoutineUpdateUnion::Tag::kNoninteractiveUpdate:
       return health::mojom::RoutineUpdateUnion::NewNoninteractiveUpdate(
-          ConvertPtr(std::move(input->get_noninteractive_update())));
+          ConvertDiagnosticsPtr(std::move(input->get_noninteractive_update())));
   }
 }
 
@@ -174,6 +173,8 @@ health::mojom::DiagnosticRoutineStatusEnum Convert(
 cros_healthd::mojom::DiagnosticRoutineCommandEnum Convert(
     health::mojom::DiagnosticRoutineCommandEnum input) {
   switch (input) {
+    case health::mojom::DiagnosticRoutineCommandEnum::kUnknown:
+      return cros_healthd::mojom::DiagnosticRoutineCommandEnum::kUnknown;
     case health::mojom::DiagnosticRoutineCommandEnum::kContinue:
       return cros_healthd::mojom::DiagnosticRoutineCommandEnum::kContinue;
     case health::mojom::DiagnosticRoutineCommandEnum::kCancel:
@@ -193,6 +194,8 @@ cros_healthd::mojom::DiagnosticRoutineCommandEnum Convert(
 cros_healthd::mojom::AcPowerStatusEnum Convert(
     health::mojom::AcPowerStatusEnum input) {
   switch (input) {
+    case health::mojom::AcPowerStatusEnum::kUnknown:
+      return cros_healthd::mojom::AcPowerStatusEnum::kUnknown;
     case health::mojom::AcPowerStatusEnum::kConnected:
       return cros_healthd::mojom::AcPowerStatusEnum::kConnected;
     case health::mojom::AcPowerStatusEnum::kDisconnected:
@@ -206,6 +209,8 @@ cros_healthd::mojom::AcPowerStatusEnum Convert(
 cros_healthd::mojom::NvmeSelfTestTypeEnum Convert(
     health::mojom::NvmeSelfTestTypeEnum input) {
   switch (input) {
+    case health::mojom::NvmeSelfTestTypeEnum::kUnknown:
+      return cros_healthd::mojom::NvmeSelfTestTypeEnum::kUnknown;
     case health::mojom::NvmeSelfTestTypeEnum::kShortSelfTest:
       return cros_healthd::mojom::NvmeSelfTestTypeEnum::kShortSelfTest;
     case health::mojom::NvmeSelfTestTypeEnum::kLongSelfTest:
@@ -224,6 +229,9 @@ cros_healthd::mojom::DiskReadRoutineTypeEnum Convert(
       return cros_healthd::mojom::DiskReadRoutineTypeEnum::kLinearRead;
     case health::mojom::DiskReadRoutineTypeEnum::kRandomRead:
       return cros_healthd::mojom::DiskReadRoutineTypeEnum::kRandomRead;
+    case health::mojom::DiskReadRoutineTypeEnum::kUnknown:
+      // Fall-through to not-supported case.
+      break;
   }
   NOTREACHED();
   return static_cast<cros_healthd::mojom::DiskReadRoutineTypeEnum>(

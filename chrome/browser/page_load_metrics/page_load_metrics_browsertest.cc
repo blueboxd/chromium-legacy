@@ -76,6 +76,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -116,6 +117,36 @@ using HistoryNavigation = ukm::builders::HistoryNavigation;
 namespace {
 
 constexpr char kCacheablePathPrefix[] = "/cacheable";
+
+constexpr char kCreateFrameAtPositionScript[] = R"(
+  var new_iframe = document.createElement('iframe');
+  new_iframe.src = $1;
+  new_iframe.name = 'frame';
+  new_iframe.frameBorder = 0;
+  new_iframe.setAttribute('style',
+      'position:absolute; top:$2; left:$3; width:$4; height:$4;');
+  document.body.appendChild(new_iframe);)";
+
+constexpr char kCreateFrameAtPositionNotifyOnLoadScript[] = R"(
+  var new_iframe = document.createElement('iframe');
+  new_iframe.src = $1;
+  new_iframe.name = 'frame';
+  new_iframe.frameBorder = 0;
+  new_iframe.setAttribute('style',
+      'position:absolute; top:$2; left:$3; width:$4; height:$4;');
+  new_iframe.onload = function() {
+    window.domAutomationController.send('iframe.onload');
+  };
+  document.body.appendChild(new_iframe);)";
+
+constexpr char kCreateFrameAtTopRightPositionScript[] = R"(
+  var new_iframe = document.createElement('iframe');
+  new_iframe.src = $1;
+  new_iframe.name = 'frame';
+  new_iframe.frameBorder = 0;
+  new_iframe.setAttribute('style',
+      'position:absolute; top:$2; right:$3; width:$4; height:$4;');
+  document.body.appendChild(new_iframe);)";
 
 std::unique_ptr<net::test_server::HttpResponse> HandleCachableRequestHandler(
     const net::test_server::HttpRequest& request) {
@@ -544,6 +575,214 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(NoPageLoadMetricsRecorded())
       << "Recorded metrics: " << GetRecordedPageLoadMetricNames();
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       MainFrameIntersection_RTLPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/scroll/scrollable_page_with_content_rtl.html");
+
+  auto main_frame_intersection_rect_expectation_waiter =
+      CreatePageLoadMetricsTestWaiter();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  int document_width =
+      EvalJs(web_contents, "document.body.scrollWidth").ExtractInt();
+
+  int side_scrollbar_width =
+      EvalJs(web_contents,
+             "window.innerWidth - document.documentElement.clientWidth")
+          .ExtractInt();
+  int bottom_scrollbar_height =
+      EvalJs(web_contents,
+             "window.innerHeight - document.documentElement.clientHeight")
+          .ExtractInt();
+
+  content::RenderWidgetHostView* guest_host_view =
+      web_contents->GetRenderWidgetHostView();
+  gfx::Size viewport_size = guest_host_view->GetVisibleViewportSize();
+  viewport_size -= gfx::Size(side_scrollbar_width, bottom_scrollbar_height);
+
+  main_frame_intersection_rect_expectation_waiter
+      ->AddMainFrameIntersectionExpectation(
+          gfx::Rect(document_width - 100 - 50, 5050, 100, 100));
+
+  ASSERT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 5000)"));
+
+  GURL subframe_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             content::JsReplace(kCreateFrameAtTopRightPositionScript,
+                                subframe_url.spec().c_str(), 5050, 50, 100)));
+
+  main_frame_intersection_rect_expectation_waiter->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PageLoadMetricsBrowserTest,
+    NonZeroMainFrameScrollOffset_NestedSameOriginFrame_MainFrameIntersection) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/scroll/scrollable_page_with_content.html");
+
+  auto main_frame_intersection_expectation_waiter =
+      CreatePageLoadMetricsTestWaiter();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Subframe
+  main_frame_intersection_expectation_waiter
+      ->AddMainFrameIntersectionExpectation(
+          gfx::Rect(/*x=*/50, /*y=*/5050, /*width=*/100, /*height=*/100));
+
+  // Nested frame
+  main_frame_intersection_expectation_waiter
+      ->AddMainFrameIntersectionExpectation(
+          gfx::Rect(/*x=*/55, /*y=*/5055, /*width=*/1, /*height=*/1));
+
+  ASSERT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 5000)"));
+
+  GURL subframe_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  content::DOMMessageQueue dom_message_queue(web_contents);
+  std::string message;
+  content::ExecuteScriptAsync(
+      web_contents,
+      content::JsReplace(kCreateFrameAtPositionNotifyOnLoadScript,
+                         subframe_url.spec().c_str(), 5050, 50, 100));
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+  EXPECT_EQ("\"iframe.onload\"", message);
+
+  content::RenderFrameHost* subframe = content::FrameMatchingPredicate(
+      web_contents->GetPrimaryPage(),
+      base::BindRepeating(&content::FrameMatchesName, "frame"));
+
+  GURL nested_frame_url =
+      embedded_test_server()->GetURL("a.com", "/title1.html");
+  EXPECT_TRUE(ExecJs(
+      subframe, content::JsReplace(kCreateFrameAtPositionScript,
+                                   nested_frame_url.spec().c_str(), 5, 5, 1)));
+
+  main_frame_intersection_expectation_waiter->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PageLoadMetricsBrowserTest,
+    NonZeroMainFrameScrollOffset_NestedCrossOriginFrame_MainFrameIntersection) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/scroll/scrollable_page_with_content.html");
+
+  auto main_frame_intersection_expectation_waiter =
+      CreatePageLoadMetricsTestWaiter();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Subframe
+  main_frame_intersection_expectation_waiter
+      ->AddMainFrameIntersectionExpectation(
+          gfx::Rect(/*x=*/50, /*y=*/5050, /*width=*/100, /*height=*/100));
+
+  // Nested frame
+  main_frame_intersection_expectation_waiter
+      ->AddMainFrameIntersectionExpectation(
+          gfx::Rect(/*x=*/55, /*y=*/5055, /*width=*/1, /*height=*/1));
+
+  ASSERT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 5000)"));
+
+  GURL subframe_url = embedded_test_server()->GetURL("b.com", "/title1.html");
+  content::DOMMessageQueue dom_message_queue(web_contents);
+  std::string message;
+  content::ExecuteScriptAsync(
+      web_contents,
+      content::JsReplace(kCreateFrameAtPositionNotifyOnLoadScript,
+                         subframe_url.spec().c_str(), 5050, 50, 100));
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+  EXPECT_EQ("\"iframe.onload\"", message);
+
+  content::RenderFrameHost* subframe = content::FrameMatchingPredicate(
+      web_contents->GetPrimaryPage(),
+      base::BindRepeating(&content::FrameMatchesName, "frame"));
+
+  GURL nested_frame_url =
+      embedded_test_server()->GetURL("c.com", "/title1.html");
+  EXPECT_TRUE(ExecJs(
+      subframe, content::JsReplace(kCreateFrameAtPositionScript,
+                                   nested_frame_url.spec().c_str(), 5, 5, 1)));
+
+  main_frame_intersection_expectation_waiter->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PageLoadMetricsBrowserTest,
+    NonZeroMainFrameScrollOffset_SameOriginFrameAppended_MainFrameIntersection) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/scroll/scrollable_page_with_content.html");
+
+  auto main_frame_intersection_expectation_waiter =
+      CreatePageLoadMetricsTestWaiter();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  main_frame_intersection_expectation_waiter
+      ->AddMainFrameIntersectionExpectation(
+          gfx::Rect(/*x=*/50, /*y=*/5050, /*width=*/1, /*height=*/1));
+
+  ASSERT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 5000)"));
+
+  GURL subframe_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             content::JsReplace(kCreateFrameAtPositionScript,
+                                subframe_url.spec().c_str(), 5050, 50, 1)));
+
+  main_frame_intersection_expectation_waiter->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PageLoadMetricsBrowserTest,
+    NonZeroMainFrameScrollOffset_CrossOriginFrameAppended_MainFrameIntersection) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/scroll/scrollable_page_with_content.html");
+
+  auto main_frame_intersection_expectation_waiter =
+      CreatePageLoadMetricsTestWaiter();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  main_frame_intersection_expectation_waiter
+      ->AddMainFrameIntersectionExpectation(
+          gfx::Rect(/*x=*/50, /*y=*/5050, /*width=*/1, /*height=*/1));
+
+  ASSERT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 5000)"));
+
+  GURL subframe_url = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             content::JsReplace(kCreateFrameAtPositionScript,
+                                subframe_url.spec().c_str(), 5050, 50, 1)));
+
+  main_frame_intersection_expectation_waiter->Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
@@ -1400,28 +1639,28 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kTextWholeText), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kTextWholeText), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
@@ -1438,13 +1677,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   // CSSPropertyID::kFontFamily
-  histogram_tester_->ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
-                                       1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.CSSProperties", 6, 1);
   // CSSPropertyID::kFontSize
-  histogram_tester_->ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
-                                       1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.CSSProperties", 7, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kCssPropertiesHistogramName,
+      "Blink.UseCounter.CSSProperties",
       blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
@@ -1461,13 +1698,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   // CSSPropertyID::kWidth
-  histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName, 161, 1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.AnimatedCSSProperties",
+                                       161, 1);
   // CSSPropertyID::kMarginLeft
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.AnimatedCSSProperties",
+                                       91, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName, 91, 1);
-  histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName,
+      "Blink.UseCounter.AnimatedCSSProperties",
       blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
@@ -1504,16 +1741,16 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
   NavigateToUntrackedUrl();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kMixedContentAudio), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kMixedContentImage), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kMixedContentVideo), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
@@ -1537,13 +1774,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
   NavigateToUntrackedUrl();
 
   // CSSPropertyID::kFontFamily
-  histogram_tester_->ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
-                                       1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.CSSProperties", 6, 1);
   // CSSPropertyID::kFontSize
-  histogram_tester_->ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
-                                       1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.CSSProperties", 7, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kCssPropertiesHistogramName,
+      "Blink.UseCounter.CSSProperties",
       blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
@@ -1567,13 +1802,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
   NavigateToUntrackedUrl();
 
   // CSSPropertyID::kWidth
-  histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName, 161, 1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.AnimatedCSSProperties",
+                                       161, 1);
   // CSSPropertyID::kMarginLeft
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.AnimatedCSSProperties",
+                                       91, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName, 91, 1);
-  histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName,
+      "Blink.UseCounter.AnimatedCSSProperties",
       blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
@@ -1592,34 +1827,34 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kTextWholeText), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kTextWholeText), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kFullscreenInsecureOrigin), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kFullscreenInsecureOrigin), 1);
 }
 
@@ -1737,29 +1972,29 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, UseCounterFeaturesInIframe) {
   NavigateToUntrackedUrl();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kTextWholeText), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
   // No feature but page visits should get counted.
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kTextWholeText), 0);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 0);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 0);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
@@ -1779,29 +2014,29 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kTextWholeText), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
   // No feature but page visits should get counted.
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kTextWholeText), 0);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 0);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 0);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
+      "Blink.UseCounter.MainFrame.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
@@ -1821,13 +2056,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   // CSSPropertyID::kFontFamily
-  histogram_tester_->ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
-                                       1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.CSSProperties", 6, 1);
   // CSSPropertyID::kFontSize
-  histogram_tester_->ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
-                                       1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.CSSProperties", 7, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kCssPropertiesHistogramName,
+      "Blink.UseCounter.CSSProperties",
       blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
@@ -1847,13 +2080,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   // CSSPropertyID::kFontFamily
-  histogram_tester_->ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
-                                       1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.CSSProperties", 6, 1);
   // CSSPropertyID::kFontSize
-  histogram_tester_->ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
-                                       1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.CSSProperties", 7, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kCssPropertiesHistogramName,
+      "Blink.UseCounter.CSSProperties",
       blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
@@ -1873,13 +2104,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   // CSSPropertyID::kWidth
-  histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName, 161, 1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.AnimatedCSSProperties",
+                                       161, 1);
   // CSSPropertyID::kMarginLeft
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.AnimatedCSSProperties",
+                                       91, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName, 91, 1);
-  histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName,
+      "Blink.UseCounter.AnimatedCSSProperties",
       blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
@@ -1899,13 +2130,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   // CSSPropertyID::kWidth
-  histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName, 161, 1);
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.AnimatedCSSProperties",
+                                       161, 1);
   // CSSPropertyID::kMarginLeft
+  histogram_tester_->ExpectBucketCount("Blink.UseCounter.AnimatedCSSProperties",
+                                       91, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName, 91, 1);
-  histogram_tester_->ExpectBucketCount(
-      internal::kAnimatedCssPropertiesHistogramName,
+      "Blink.UseCounter.AnimatedCSSProperties",
       blink::mojom::CSSSampleId::kTotalPagesMeasured, 1);
 }
 
@@ -1920,7 +2151,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
@@ -1944,9 +2175,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kPermissionsPolicyViolationHistogramName, test_feature, 1);
+      "Blink.UseCounter.PermissionsPolicy.Violation.Enforce", test_feature, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kPermissionsPolicyHeaderHistogramName, test_feature, 1);
+      "Blink.UseCounter.PermissionsPolicy.Header2", test_feature, 1);
 }
 
 // Test UseCounter Permissions Policy Usages observed in child frame
@@ -1971,12 +2202,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kPermissionsPolicyViolationHistogramName, test_feature, 1);
+      "Blink.UseCounter.PermissionsPolicy.Violation.Enforce", test_feature, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kPermissionsPolicyHeaderHistogramName, test_feature, 1);
+      "Blink.UseCounter.PermissionsPolicy.Header2", test_feature, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kPermissionsPolicyIframeAttributeHistogramName, test_feature,
-      1);
+      "Blink.UseCounter.PermissionsPolicy.Allow2", test_feature, 1);
 }
 
 // Test UseCounter Permissions Policy Usages observed in multiple child frames
@@ -2001,12 +2231,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kPermissionsPolicyViolationHistogramName, test_feature, 1);
+      "Blink.UseCounter.PermissionsPolicy.Violation.Enforce", test_feature, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kPermissionsPolicyHeaderHistogramName, test_feature, 1);
+      "Blink.UseCounter.PermissionsPolicy.Header2", test_feature, 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kPermissionsPolicyIframeAttributeHistogramName, test_feature,
-      1);
+      "Blink.UseCounter.PermissionsPolicy.Allow2", test_feature, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetrics) {
@@ -2900,10 +3129,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PreCommitWebFeature) {
   waiter->Wait();
 
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kSecureContextCheckPassed), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kSecureContextCheckFailed), 0);
 }
 
@@ -3502,13 +3731,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithBackForwardCache,
 
   // Check histogram counts.
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kPageVisits), 2);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kFullscreenSecureOrigin), 1);
   histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
+      "Blink.UseCounter.Features",
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
 }
 

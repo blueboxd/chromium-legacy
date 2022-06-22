@@ -53,7 +53,7 @@ void EvaluateGetNetworkDetailsResult(base::OnceClosure closure,
                                      mojom::GetNetworkDetailsResultPtr expected,
                                      mojom::GetNetworkDetailsResultPtr found) {
   ASSERT_EQ(expected->which(), found->which());
-  if (expected->which() == mojom::GetNetworkDetailsResult::Tag::ERROR_MESSAGE) {
+  if (expected->which() == mojom::GetNetworkDetailsResult::Tag::kErrorMessage) {
     ASSERT_EQ(expected->get_error_message(), found->get_error_message());
   } else {
     ASSERT_EQ(expected->get_network_details()->mac_address,
@@ -205,8 +205,7 @@ TEST_F(NetworkingAttributesAshTest, GetNetworkDetailsUserNotAffiliated) {
   AddUser(/*is_affiliated=*/false);
 
   mojom::GetNetworkDetailsResultPtr expected_result_ptr =
-      mojom::GetNetworkDetailsResult::New();
-  expected_result_ptr->set_error_message(kErrorUserNotAffiliated);
+      mojom::GetNetworkDetailsResult::NewErrorMessage(kErrorUserNotAffiliated);
 
   base::RunLoop run_loop;
   networking_attributes_remote_->GetNetworkDetails(
@@ -219,8 +218,8 @@ TEST_F(NetworkingAttributesAshTest, GetNetworkDetailsNetworkNotConnected) {
   AddUser();
 
   mojom::GetNetworkDetailsResultPtr expected_result_ptr =
-      mojom::GetNetworkDetailsResult::New();
-  expected_result_ptr->set_error_message(kErrorNetworkNotConnected);
+      mojom::GetNetworkDetailsResult::NewErrorMessage(
+          kErrorNetworkNotConnected);
 
   base::RunLoop run_loop;
   networking_attributes_remote_->GetNetworkDetails(
@@ -244,8 +243,8 @@ TEST_F(NetworkingAttributesAshTest, GetNetworkDetailsSuccess) {
   expected_network_details->ipv4_address = ipv4_expected;
   expected_network_details->ipv6_address = ipv6_expected;
   mojom::GetNetworkDetailsResultPtr expected_result_ptr =
-      mojom::GetNetworkDetailsResult::New();
-  expected_result_ptr->set_network_details(std::move(expected_network_details));
+      mojom::GetNetworkDetailsResult::NewNetworkDetails(
+          std::move(expected_network_details));
 
   base::RunLoop run_loop;
   networking_attributes_remote_->GetNetworkDetails(

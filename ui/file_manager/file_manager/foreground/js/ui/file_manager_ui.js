@@ -25,6 +25,7 @@ import {ProvidersModel} from '../providers_model.js';
 import {A11yAnnounce} from './a11y_announce.js';
 import {ActionModelUI} from './action_model_ui.js';
 import {ActionsSubmenu} from './actions_submenu.js';
+import {BreadcrumbController} from './breadcrumb_controller.js';
 import {ComboButton} from './combobutton.js';
 import {DefaultTaskDialog} from './default_task_dialog.js';
 import {DialogFooter} from './dialog_footer.js';
@@ -38,7 +39,6 @@ import {GearMenu} from './gear_menu.js';
 import {ImportCrostiniImageDialog} from './import_crostini_image_dialog.js';
 import {InstallLinuxPackageDialog} from './install_linux_package_dialog.js';
 import {ListContainer} from './list_container.js';
-import {LocationLine} from './location_line.js';
 import {MultiMenu} from './multi_menu.js';
 import {MultiMenuButton} from './multi_menu_button.js';
 import {ProgressCenterPanel} from './progress_center_panel.js';
@@ -169,10 +169,10 @@ export class FileManagerUI {
         util.queryDecoratedElement('#text-context-menu', Menu);
 
     /**
-     * Location line.
-     * @type {LocationLine}
+     * Breadcrumb controller.
+     * @type {BreadcrumbController}
      */
-    this.locationLine = null;
+    this.breadcrumbController = null;
 
     /**
      * The toolbar which contains controls.
@@ -399,12 +399,9 @@ export class FileManagerUI {
     this.element.addEventListener('drop', e => {
       e.preventDefault();
     });
-    if (util.runningInBrowser()) {
-      this.element.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    }
+    this.element.addEventListener('contextmenu', e => {
+      e.preventDefault();
+    });
 
     /**
      * True while FilesApp is in the process of a drag and drop. Set to true on
@@ -444,8 +441,8 @@ export class FileManagerUI {
         queryRequiredElement('#list-container', this.element), table, grid,
         this.dialogType_);
 
-    // Location line.
-    this.locationLine = new LocationLine(
+    // Breadcrumb controller.
+    this.breadcrumbController = new BreadcrumbController(
         queryRequiredElement('#location-breadcrumbs', this.element),
         volumeManager, this.listContainer);
 
@@ -470,7 +467,11 @@ export class FileManagerUI {
     }
     pointerActive.forEach((eventType) => {
       document.addEventListener(eventType, (e) => {
-        rootElement.classList.toggle('pointer-active', /down$/.test(e.type));
+        if (/down$/.test(e.type) === false) {
+          rootElement.classList.toggle('pointer-active', false);
+        } else if (e.pointerType !== 'touch') {  // http://crbug.com/1311472
+          rootElement.classList.toggle('pointer-active', true);
+        }
       }, true);
     });
 
@@ -553,8 +554,6 @@ export class FileManagerUI {
    */
   attachFilesTooltip() {
     this.filesTooltip.addTargets(document.querySelectorAll('[has-tooltip]'));
-
-    this.locationLine.filesTooltip = this.filesTooltip;
   }
 
   /**

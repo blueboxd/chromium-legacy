@@ -16,9 +16,11 @@
 #include "chromeos/grit/chromeos_media_app_bundle_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/extra_mojo_js_features.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -74,6 +76,8 @@ content::WebUIDataSource* CreateHostDataSource() {
                             IDR_MEDIA_APP_APP_ICON_192_PNG);
     source->AddResourcePath("system_assets/app_icon_256.png",
                             IDR_MEDIA_APP_APP_ICON_256_PNG);
+    source->AddResourcePath("system_assets/app_icon.svg",
+                            IDR_MEDIA_APP_APP_ICON_192_SVG);  // App favicon.
     app_icons_added = true;
 #endif  // BUILDFLAG(ENABLE_CROS_MEDIA_APP)
   }
@@ -94,9 +98,11 @@ content::WebUIDataSource* CreateHostDataSource() {
                             IDR_MEDIA_APP_GALLERY_ICON_192_PNG);
     source->AddResourcePath("system_assets/app_icon_256.png",
                             IDR_MEDIA_APP_GALLERY_ICON_256_PNG);
+    source->AddResourcePath("system_assets/app_icon.svg",
+                            IDR_MEDIA_APP_APP_ICON_SVG);  // App favicon.
   }
 
-  // Favicons.
+  // File-type favicons.
   source->AddResourcePath("system_assets/pdf_icon.svg",
                           IDR_MEDIA_APP_PDF_ICON_SVG);
   source->AddResourcePath("system_assets/video_icon.svg",
@@ -107,8 +113,6 @@ content::WebUIDataSource* CreateHostDataSource() {
                           IDR_MEDIA_APP_AUDIO_ICON_SVG);
   source->AddResourcePath("system_assets/file_icon.svg",
                           IDR_MEDIA_APP_FILE_ICON_SVG);
-  source->AddResourcePath("system_assets/app_icon.svg",
-                          IDR_MEDIA_APP_APP_ICON_SVG);
   return source;
 }
 
@@ -149,6 +153,12 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
                        ContentSettingsType::JAVASCRIPT,
                        ContentSettingsType::SOUND,
                    });
+  const url::Origin guest_origin =
+      url::Origin::Create(GURL(kChromeUIMediaAppGuestURL));
+  allowlist->RegisterAutoGrantedPermissions(guest_origin,
+                                            {
+                                                ContentSettingsType::COOKIES,
+                                            });
   // Add ability to request chrome-untrusted: URLs.
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 }
@@ -161,16 +171,24 @@ void MediaAppUI::BindInterface(
   page_factory_receiver_.Bind(std::move(receiver));
 }
 
-void MediaAppUI::CreatePageHandler(
-    mojo::PendingReceiver<media_app_ui::mojom::PageHandler> receiver) {
-  page_handler_ =
-      std::make_unique<MediaAppPageHandler>(this, std::move(receiver));
+void MediaAppUI::WebUIRenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  // Allow the render frame to get a MojoHandle from a FileSystemFileHandle.
+  auto features = content::mojom::ExtraMojoJsFeatures::New();
+  features->file_system_access = true;
+  render_frame_host->EnableMojoJsBindings(std::move(features));
 }
 
 bool MediaAppUI::IsJavascriptErrorReportingEnabled() {
   // JavaScript errors are reported via CrashReportPrivate.reportError. Don't
   // send duplicate reports via WebUI.
   return false;
+}
+
+void MediaAppUI::CreatePageHandler(
+    mojo::PendingReceiver<media_app_ui::mojom::PageHandler> receiver) {
+  page_handler_ =
+      std::make_unique<MediaAppPageHandler>(this, std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(MediaAppUI)

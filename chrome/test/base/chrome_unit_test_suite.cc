@@ -34,7 +34,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/dbus/constants/dbus_paths.h"
 #endif
 
@@ -103,8 +103,7 @@ void ChromeUnitTestSuite::Initialize() {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new ChromeUnitTestSuiteInitializer);
-  listeners.Append(
-      new content::CheckForLeakedWebUIControllerFactoryRegistrations);
+  listeners.Append(new content::CheckForLeakedWebUIRegistrations);
 
   {
     ChromeContentClient content_client;
@@ -150,7 +149,7 @@ void ChromeUnitTestSuite::InitializeProviders() {
   ash::RegisterPathProvider();
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   chromeos::dbus_paths::RegisterPathProvider();
 #endif
 

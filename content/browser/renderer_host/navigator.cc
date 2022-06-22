@@ -256,7 +256,7 @@ bool ValidateUnfencedTopNavigation(RenderFrameHostImpl* render_frame_host,
   // It should only be possible to send this IPC with this flag from an
   // MPArch opaque-ads fenced frame. Opaque-ads fenced frames should always
   // have the sandbox flag `allow-top-navigation-by-user-activation`.
-  if (!render_frame_host->IsInFencedFrameTree() ||
+  if (!render_frame_host->frame_tree_node()->IsInFencedFrameTree() ||
       !blink::features::IsFencedFramesMPArchBased() ||
       (render_frame_host->GetMainFrame()
            ->frame_tree_node()
@@ -433,14 +433,21 @@ bool Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
 
   // If `url` is one that is allowed in WebUI renderer process, ensure that its
   // origin is either opaque or its process lock matches the RFH process lock.
+  // As an example, the origin may be opaque if a WebUI navigation resulted in
+  // an error page.
+  //
+  // TODO(alexmos): Currently, `is_allowed_in_web_ui_renderer` is unexpectedly
+  // true for about:blank and renderer debug URLs, even when they commit with
+  // an origin that is not allowed into a WebUI renderer.  For now, these cases
+  // are also skipped via the origin opaqueness check, but
+  // `is_allowed_in_web_ui_renderer` should be strengthened to not be true in
+  // this case so that the checks above also apply.  See
+  // https://crbug.com/1320402.
   if (is_allowed_in_web_ui_renderer) {
-    url::Origin url_origin =
-        url::Origin::Create(url.DeprecatedGetOriginAsURL());
-
     // Verify `site_info`'s process lock matches the RFH's process lock, if one
     // is in place.
     if (should_lock_process) {
-      if (!url_origin.opaque() &&
+      if (!url::Origin::Create(url).opaque() &&
           process_lock != ProcessLock::FromSiteInfo(site_info)) {
         return false;
       }
@@ -1341,6 +1348,12 @@ NavigationEntryImpl*
 Navigator::GetNavigationEntryForRendererInitiatedNavigation(
     const blink::mojom::CommonNavigationParams& common_params,
     FrameTreeNode* frame_tree_node) {
+  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
+  // so IsMainFrame should not be used to identify embedded frames. In this
+  // case, we use IsMainFrame since our only instance of embedded main frames
+  // (fenced frames) have their own NavigationController, and we will enforce
+  // main frame behavior at that level. Will need to follow up to confirm
+  // correctness.
   if (!frame_tree_node->IsMainFrame())
     return nullptr;
 
@@ -1371,7 +1384,11 @@ Navigator::GetNavigationEntryForRendererInitiatedNavigation(
   SiteInstance* current_site_instance =
       frame_tree_node->current_frame_host()->GetSiteInstance();
   SiteInstance* source_site_instance = current_site_instance;
-
+  // If `frame_tree_node` is the outermost main frame, it rewrites a virtual
+  // url in order to adjust the original input url if needed. For inner frames
+  // such as fenced frames or subframes, they don't rewrite urls as the urls
+  // are not input urls by users.
+  bool rewrite_virtual_urls = frame_tree_node->IsOutermostMainFrame();
   std::unique_ptr<NavigationEntryImpl> entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationControllerImpl::CreateNavigationEntry(
@@ -1380,7 +1397,7 @@ Navigator::GetNavigationEntryForRendererInitiatedNavigation(
               ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */,
               std::string() /* extra_headers */,
               controller_.GetBrowserContext(),
-              nullptr /* blob_url_loader_factory */));
+              nullptr /* blob_url_loader_factory */, rewrite_virtual_urls));
 
   entry->set_reload_type(NavigationRequest::NavigationTypeToReloadType(
       common_params.navigation_type));

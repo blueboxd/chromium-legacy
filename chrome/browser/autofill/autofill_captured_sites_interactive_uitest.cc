@@ -89,10 +89,10 @@ class AutofillCapturedSitesInteractiveTest
                     content::RenderFrameHost* frame) override {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(frame);
-    BrowserAutofillManager* autofill_manager =
+    auto* autofill_manager = static_cast<BrowserAutofillManager*>(
         ContentAutofillDriverFactory::FromWebContents(web_contents)
             ->DriverForFrame(frame->GetMainFrame())
-            ->browser_autofill_manager();
+            ->autofill_manager());
     autofill_manager->SetTestDelegate(test_delegate());
 
     int tries = 0;
@@ -254,7 +254,6 @@ class AutofillCapturedSitesInteractiveTest
     // elements in a form to determine if the form is ready for interaction.
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillAcrossIframes,
-                              features::kAutofillDisplaceRemovedForms,
                               features::kAutofillShowTypePredictions,
                               features::kAutofillUseUnassociatedListedElements},
         /*disabled_features=*/{});

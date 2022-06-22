@@ -7,7 +7,7 @@
 #         linux ubuntu
 #         mac bigsur catalina lion highsierra mac-10.12 mojave monterey
 #             mountainlion sierra
-#         win win7 win8 win10 ]
+#         win win8 win10 ]
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
 #             android-pixel-6 android-shield-android-tv
@@ -103,9 +103,6 @@ crbug.com/1084794 [ chromeos ] GpuProcess_swiftshader_for_webgl [ Skip ]
 # Seems to kill the system UI/otherwise make the device unusable.
 crbug.com/1294065 [ android android-shield-android-tv ] GpuProcess_visibility [ Skip ]
 
-# Passes, but then causes crash in the test that runs in the same WebEngine instance.
-crbug.com/1284820 [ fuchsia ] GpuProcess_video [ Skip ]
-
 ###################
 # Failures/Flakes #
 ###################
@@ -130,6 +127,8 @@ crbug.com/1275738 [ linux angle-swiftshader ] GpuProcess_disable_gpu [ RetryOnFa
 
 # Flakey on Lacros FYI bot
 crbug.com/1311719 [ linux display-server-wayland ] GpuProcess_disabling_workarounds_works [ RetryOnFailure ]
+
+crbug.com/1321145 [ fuchsia fuchsia-board-qemu-x64 ] * [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

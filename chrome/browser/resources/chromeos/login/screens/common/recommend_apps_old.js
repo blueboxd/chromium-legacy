@@ -79,9 +79,7 @@ class RecommendAppsOldElement extends RecommendAppsOldElementBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('RecommendAppsOldScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('RecommendAppsOldScreen');
     window.addEventListener('message', this.onMessage_.bind(this));
   }
 
@@ -136,7 +134,7 @@ class RecommendAppsOldElement extends RecommendAppsOldElementBase {
               const app =
                   /** @type {OobeTypes.RecommendedAppsExpectedAppData} */ (
                       app_data);
-              let generateItemScript = 'generateContents("' + app.icon +
+              const generateItemScript = 'generateContents("' + app.icon +
                   '", "' + app.name + '", "' + app.package_name + '");';
               const generateContents = {code: generateItemScript};
               appListView.executeScript(generateContents);
@@ -175,7 +173,7 @@ class RecommendAppsOldElement extends RecommendAppsOldElementBase {
   onInstall_() {
     // Only start installation if there are apps to install.
     if (this.appsSelected_ > 0) {
-      let appListView = this.$.appView;
+      const appListView = this.$.appView;
       appListView.executeScript(
           {code: 'getSelectedPackages();'}, function(result) {
             chrome.send('recommendAppsInstall', [result[0]]);
@@ -188,7 +186,7 @@ class RecommendAppsOldElement extends RecommendAppsOldElementBase {
    * @param {Event} event
    */
   onMessage_(event) {
-    let data =
+    const data =
         /** @type {OobeTypes.RecommendedAppsSelectionEventData} */ (event.data);
     if (data.type && (data.type === 'NUM_OF_SELECTED_APPS')) {
       this.appsSelected_ = data.numOfSelected;
@@ -199,7 +197,7 @@ class RecommendAppsOldElement extends RecommendAppsOldElementBase {
    * Handles Select all button click.
    */
   onSelectAll_() {
-    let appListView = this.$.appView;
+    const appListView = this.$.appView;
     appListView.executeScript({code: 'selectAll();'});
   }
 

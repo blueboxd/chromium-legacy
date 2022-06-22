@@ -31,6 +31,13 @@ chromium-metrics-reviews@google.com.
   <variant name="TalkBack"/>
 </variants>
 
+<variants name="ArcBootTypes">
+  <variant name="FirstBoot" summary="For the very first boot, aka opt-in."/>
+  <variant name="FirstBootAfterUpdate"
+      summary="For the first boot after Chrome OS update."/>
+  <variant name="RegularBoot" summary="For a regular boot."/>
+</variants>
+
 <variants name="ArcPerformanceAppCategories">
   <variant name=".GachaClub" summary="Casual game 2: Gacha Club"/>
   <variant name=".GarenaFreeFire" summary="Shooter game: Garena Free Fire"/>
@@ -419,7 +426,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Auth.AccountCheck.Status{ArcUserTypes}"
-    enum="ArcAuthAccountCheckStatus" expires_after="2022-07-04">
+    enum="ArcAuthAccountCheckStatus" expires_after="2022-12-04">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -429,7 +436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Auth.AccountCheck.TimeDelta{ArcUserTypes}" units="ms"
-    expires_after="2022-07-04">
+    expires_after="2022-12-04">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -451,7 +458,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Auth.Checkin.Attempts{ArcUserTypes}" units="attempts"
-    expires_after="2022-07-04">
+    expires_after="2022-12-04">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -506,7 +513,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Auth.MainAccountResolution.Status{ArcUserTypes}"
-    enum="ArcAuthMainAccountResolutionStatus" expires_after="2022-07-04">
+    enum="ArcAuthMainAccountResolutionStatus" expires_after="2022-12-04">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -528,7 +535,7 @@ chromium-metrics-reviews@google.com.
   <token key="ArcUserTypes" variants="ArcUserTypes"/>
 </histogram>
 
-<histogram name="Arc.Auth.NumAccounts" units="count" expires_after="2022-06-01">
+<histogram name="Arc.Auth.NumAccounts" units="count" expires_after="2023-01-01">
   <owner>anastasiian@google.com</owner>
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
@@ -538,7 +545,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.Auth.PercentAccounts" units="%" expires_after="2022-06-01">
+<histogram name="Arc.Auth.PercentAccounts" units="%" expires_after="2023-01-01">
   <owner>anastasiian@google.com</owner>
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
@@ -924,7 +931,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.FileSystemWatcher.Created" enum="BooleanEnabled"
-    expires_after="2022-08-26">
+    expires_after="2022-10-30">
   <owner>risan@google.com</owner>
   <owner>youkichihosoi@google.com</owner>
   <owner>arc-storage@google.com</owner>
@@ -935,7 +942,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.FileSystemWatcher.ExceedLimit"
-    enum="ArcFileSystemWatcherExceedLimitState" expires_after="2022-08-26">
+    enum="ArcFileSystemWatcherExceedLimitState" expires_after="2022-10-30">
   <owner>risan@google.com</owner>
   <owner>youkichihosoi@google.com</owner>
   <owner>arc-storage@google.com</owner>
@@ -1142,6 +1149,45 @@ chromium-metrics-reviews@google.com.
   <summary>The number of ARC apps launched with ghost window.</summary>
 </histogram>
 
+<histogram
+    name="Arc.LoadAverageX100PerProcessor15MinutesAfterArcStart.{ArcBootType}"
+    units="0.01 jobs/processor" expires_after="2022-11-01">
+  <owner>hashimoto@google.com</owner>
+  <owner>yusukes@google.com</owner>
+  <owner>arc-performance@google.com</owner>
+  <summary>
+    The 15-minute load average multiplied by 100 and divided by the number of
+    logical processors online. Recorded 15 minutes after ARC start.
+  </summary>
+  <token key="ArcBootType" variants="ArcBootTypes"/>
+</histogram>
+
+<histogram
+    name="Arc.LoadAverageX100PerProcessor1MinuteAfterArcStart.{ArcBootType}"
+    units="0.01 jobs/processor" expires_after="2022-11-01">
+  <owner>hashimoto@google.com</owner>
+  <owner>yusukes@google.com</owner>
+  <owner>arc-performance@google.com</owner>
+  <summary>
+    The 1-minute load average multiplied by 100 and divided by the number of
+    logical processors online. Recorded 1 minute after ARC start.
+  </summary>
+  <token key="ArcBootType" variants="ArcBootTypes"/>
+</histogram>
+
+<histogram
+    name="Arc.LoadAverageX100PerProcessor5MinutesAfterArcStart.{ArcBootType}"
+    units="0.01 jobs/processor" expires_after="2022-11-01">
+  <owner>hashimoto@google.com</owner>
+  <owner>yusukes@google.com</owner>
+  <owner>arc-performance@google.com</owner>
+  <summary>
+    The 5-minute load average multiplied by 100 and divided by the number of
+    logical processors online. Recorded 5 minutes after ARC start.
+  </summary>
+  <token key="ArcBootType" variants="ArcBootTypes"/>
+</histogram>
+
 <histogram name="Arc.LowLatencyStylusLibrary.PredictionTarget" units="ms"
     expires_after="2022-04-24">
   <owner>phshah@chromium.org</owner>
@@ -1279,16 +1325,19 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.OptInAction" enum="ArcOptInAction"
-    expires_after="2022-03-17">
-  <owner>elijahtaylor@google.com</owner>
-  <owner>shihuis@google.com</owner>
-  <summary>Arc OptIn action taken by user.</summary>
+    expires_after="2022-12-04">
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Arc OptIn action taken by user. Warning: this histogram was expired from
+    2022-03-17 to 2022-04-18; data may be missing.
+  </summary>
 </histogram>
 
 <histogram name="Arc.OptInCancel" enum="ArcOptInCancel"
-    expires_after="2022-07-04">
-  <owner>elijahtaylor@google.com</owner>
-  <owner>shihuis@google.com</owner>
+    expires_after="2022-12-04">
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>Arc OptIn cancelation reason.</summary>
 </histogram>
 
@@ -1304,23 +1353,28 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.OptInResult" enum="ArcOptInResult"
-    expires_after="2022-11-01">
-  <owner>elijahtaylor@google.com</owner>
+    expires_after="2023-01-10">
+  <owner>mhasank@google.com</owner>
   <owner>khmel@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>Arc OptIn flow result.</summary>
 </histogram>
 
 <histogram name="Arc.OptInSilentAuthCode" enum="ArcOptInSilentAuthCode"
-    expires_after="2022-05-01">
-  <owner>elijahtaylor@google.com</owner>
+    expires_after="2023-01-10">
+  <owner>mhasank@google.com</owner>
+  <owner>khmel@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     Arc Silent Auth Code status. This status is set during the ARC OptIn flow.
   </summary>
 </histogram>
 
 <histogram name="Arc.OptInSilentAuthCode.Reauthorization"
-    enum="ArcOptInSilentAuthCode" expires_after="2021-03-15">
+    enum="ArcOptInSilentAuthCode" expires_after="2023-01-10">
+  <owner>mhasank@google.com</owner>
   <owner>khmel@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     Arc Silent Auth Code status. This status is set during the ARC
     Device/Primary Account reauthorization flow.
@@ -1328,8 +1382,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.OptInSilentAuthCode.SecondaryAccount"
-    enum="ArcOptInSilentAuthCode" expires_after="2022-05-01">
+    enum="ArcOptInSilentAuthCode" expires_after="2023-01-10">
+  <owner>mhasank@google.com</owner>
   <owner>khmel@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     Arc Silent Auth Code status. This status is set during the minting of an
     auth code for a Secondary Account. It can be set for Secondary Account

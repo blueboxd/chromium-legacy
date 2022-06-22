@@ -6,10 +6,11 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 
+import {DisplayableImage} from '../../common/constants.js';
 import {isNonEmptyArray} from '../../common/utils.js';
-import {GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
+import {GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {PersonalizationStore} from '../personalization_store.js';
-import {appendMaxResolutionSuffix, isFilePath, isGooglePhotosPhoto, isWallpaperImage} from '../utils.js';
+import {appendMaxResolutionSuffix, getImageKey, isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage} from '../utils.js';
 
 import * as action from './wallpaper_actions.js';
 
@@ -150,19 +151,6 @@ async function fetchGooglePhotosEnabled(
   store.dispatch(action.setGooglePhotosEnabledAction(state));
 }
 
-/** Fetches the count of Google Photos photos and saves it to the store. */
-async function fetchGooglePhotosCount(
-    provider: WallpaperProviderInterface,
-    store: PersonalizationStore): Promise<void> {
-  // Count should only be fetched after confirming access is allowed.
-  const enabled = store.data.wallpaper.googlePhotos.enabled;
-  assert(enabled === GooglePhotosEnablementState.kEnabled);
-
-  store.dispatch(action.beginLoadGooglePhotosCountAction());
-  const {count} = await provider.fetchGooglePhotosCount();
-  store.dispatch(action.setGooglePhotosCountAction(count >= 0 ? count : null));
-}
-
 /** Fetches the list of Google Photos photos and saves it to the store. */
 export async function fetchGooglePhotosPhotos(
     provider: WallpaperProviderInterface,
@@ -195,6 +183,14 @@ export async function fetchGooglePhotosPhotos(
   }
 
   store.dispatch(action.appendGooglePhotosPhotosAction(photos, resumeToken));
+}
+
+export async function getDefaultImageThumbnail(
+    provider: WallpaperProviderInterface,
+    store: PersonalizationStore): Promise<void> {
+  store.dispatch(action.beginLoadDefaultImageThubmnailAction());
+  const {data} = await provider.getDefaultImageThumbnail();
+  store.dispatch(action.setDefaultImageThumbnailAction(data));
 }
 
 /** Get list of local images from disk and save it to the store. */
@@ -231,15 +227,18 @@ async function getMissingLocalImageThumbnails(
   // Set correct loading state for each image thumbnail. Do in a batch update to
   // reduce number of times that polymer must re-render.
   store.beginBatchUpdate();
-  for (const filePath of store.data.wallpaper.local.images) {
-    if (store.data.wallpaper.local.data[filePath.path] ||
-        store.data.wallpaper.loading.local.data[filePath.path] ||
-        imageThumbnailsToFetch.has(filePath.path)) {
+  for (const image of store.data.wallpaper.local.images) {
+    if (isDefaultImage(image)) {
+      continue;
+    }
+    if (store.data.wallpaper.local.data[image.path] ||
+        store.data.wallpaper.loading.local.data[image.path] ||
+        imageThumbnailsToFetch.has(image.path)) {
       // Do not re-load thumbnail if already present, or already loading.
       continue;
     }
-    imageThumbnailsToFetch.add(filePath.path);
-    store.dispatch(action.beginLoadLocalImageDataAction(filePath));
+    imageThumbnailsToFetch.add(image.path);
+    store.dispatch(action.beginLoadLocalImageDataAction(image));
   }
   store.endBatchUpdate();
 
@@ -256,17 +255,23 @@ async function getMissingLocalImageThumbnails(
 }
 
 export async function selectWallpaper(
-    image: WallpaperImage|FilePath|GooglePhotosPhoto,
-    provider: WallpaperProviderInterface, store: PersonalizationStore,
+    image: DisplayableImage, provider: WallpaperProviderInterface,
+    store: PersonalizationStore,
     layout: WallpaperLayout = WallpaperLayout.kCenterCropped): Promise<void> {
+  const currentWallpaper = store.data.wallpaper.currentSelected;
+  if (currentWallpaper && currentWallpaper.key === getImageKey(image)) {
+    return;
+  }
+
   // Batch these changes together to reduce polymer churn as multiple state
   // fields change quickly.
   store.beginBatchUpdate();
   store.dispatch(action.beginSelectImageAction(image));
   store.dispatch(action.beginLoadSelectedImageAction());
   const {tabletMode} = await provider.isInTabletMode();
-  const shouldPreview =
-      tabletMode && loadTimeData.getBoolean('fullScreenPreviewEnabled');
+  const shouldPreview = tabletMode &&
+      loadTimeData.getBoolean('fullScreenPreviewEnabled') &&
+      !isDefaultImage(image);
   if (shouldPreview) {
     provider.makeTransparent();
   }
@@ -275,6 +280,8 @@ export async function selectWallpaper(
     if (isWallpaperImage(image)) {
       return provider.selectWallpaper(
           image.assetId, /*preview_mode=*/ shouldPreview);
+    } else if (isDefaultImage(image)) {
+      return provider.selectDefaultImage();
     } else if (isFilePath(image)) {
       return provider.selectLocalImage(
           image, layout, /*preview_mode=*/ shouldPreview);
@@ -309,7 +316,7 @@ export async function setCurrentWallpaperLayout(
   assert(image);
   assert(
       image.type === WallpaperType.kCustomized ||
-      image.type === WallpaperType.kGooglePhotos);
+      image.type === WallpaperType.kOnceGooglePhotos);
   assert(
       layout === WallpaperLayout.kCenter ||
       layout === WallpaperLayout.kCenterCropped);
@@ -328,18 +335,39 @@ export async function setDailyRefreshCollectionId(
     store: PersonalizationStore): Promise<void> {
   await provider.setDailyRefreshCollectionId(collectionId);
   // Dispatch action to highlight enabled daily refresh.
-  getDailyRefreshCollectionId(provider, store);
+  getDailyRefreshState(provider, store);
+}
+
+export async function selectGooglePhotosAlbum(
+    albumId: GooglePhotosAlbum['id'], provider: WallpaperProviderInterface,
+    store: PersonalizationStore): Promise<void> {
+  await provider.selectGooglePhotosAlbum(albumId);
+  // Dispatch action to highlight enabled daily refresh.
+  getDailyRefreshState(provider, store);
 }
 
 /**
- * Get the daily refresh collection id. It can be empty if daily refresh is not
- * enabled.
+ * Get the currently active daily refresh id for Backdrop and Google Photos.
+ * One or both will be empty, depending on which, if either, is enabled.
  */
-export async function getDailyRefreshCollectionId(
+export async function getDailyRefreshState(
     provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
-  const {collectionId} = await provider.getDailyRefreshCollectionId();
-  store.dispatch(action.setDailyRefreshCollectionIdAction(collectionId));
+  const [{collectionId}, {albumId}] = await Promise.all([
+    provider.getDailyRefreshCollectionId(),
+    provider.getGooglePhotosDailyRefreshAlbumId()
+  ]);
+
+  // Daily refresh should only be active for either Backdrop or Google Photos
+  assert(!collectionId || !albumId);
+
+  if (collectionId) {
+    store.dispatch(action.setDailyRefreshCollectionIdAction(collectionId));
+  } else if (albumId) {
+    store.dispatch(action.setGooglePhotosDailyRefreshAlbumIdAction(albumId));
+  } else {
+    store.dispatch(action.clearDailyRefreshAction());
+  }
 }
 
 /** Refresh the wallpaper. Noop if daily refresh is not enabled. */
@@ -389,19 +417,12 @@ export async function initializeGooglePhotosData(
   // Only proceed to fetch Google Photos data if the user is allowed.
   const enabled = store.data.wallpaper.googlePhotos.enabled;
   if (enabled === GooglePhotosEnablementState.kEnabled) {
-    await fetchGooglePhotosCount(provider, store);
+    await Promise.all([
+      fetchGooglePhotosAlbums(provider, store),
+      fetchGooglePhotosPhotos(provider, store),
+    ]);
   } else {
-    store.beginBatchUpdate();
-    store.dispatch(action.beginLoadGooglePhotosCountAction());
-    store.dispatch(action.setGooglePhotosCountAction(null));
-    store.endBatchUpdate();
-  }
-
-  // If the count of Google Photos photos is zero or null, it's not necesssary
-  // to query the server for the list of albums/photos.
-  const count = store.data.wallpaper.googlePhotos.count;
-  if (count === 0 || count === null) {
-    const result = count === 0 ? [] : null;
+    const result = null;
     const resumeToken = null;
     store.beginBatchUpdate();
     store.dispatch(action.beginLoadGooglePhotosAlbumsAction());
@@ -409,13 +430,7 @@ export async function initializeGooglePhotosData(
     store.dispatch(action.appendGooglePhotosAlbumsAction(result, resumeToken));
     store.dispatch(action.appendGooglePhotosPhotosAction(result, resumeToken));
     store.endBatchUpdate();
-    return;
   }
-
-  await Promise.all([
-    fetchGooglePhotosAlbums(provider, store),
-    fetchGooglePhotosPhotos(provider, store),
-  ]);
 }
 
 /**

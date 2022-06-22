@@ -92,11 +92,9 @@ cast_test_group("cast_tests") {
     "//cc:cc_unittests",
     "//chromecast/base:cast_base_unittests",
     "//chromecast/base/component:cast_component_unittests",
-    "//chromecast/cast_core:cast_cast_core_unittests",
     "//chromecast/common:cast_common_unittests",
     "//chromecast/crypto:cast_crypto_unittests",
     "//chromecast/device/bluetooth:cast_bluetooth_unittests",
-    "//chromecast/media:cast_media_unittests",
     "//chromecast/metrics:cast_metrics_unittest",
     "//chromecast/net:cast_net_unittests",
     "//chromecast/ui/display_settings:cast_display_settings_unittests",
@@ -112,7 +110,7 @@ cast_test_group("cast_tests") {
     "//ui/base:ui_base_unittests",
   ]
 
-  if (enable_chromecast_extensions) {
+  if (enable_chromecast_extensions && media_use_ffmpeg) {
     tests += [
       "//chromecast/browser/accessibility/flutter:cast_accessibility_unittests",
     ]
@@ -146,6 +144,26 @@ cast_test_group("cast_tests") {
     filters += [ sandbox_linux_unittests_filter ]
   }
 
+  # TODO(crbug/1319009): `media_use_ffmpeg` should not largely affect top-level
+  # test list. Better create another flag to do this or handle the ffmpeg flag
+  # in //chromecast/media/cma/decoder.
+  if (media_use_ffmpeg) {
+    tests += [
+      "//chromecast/cast_core:cast_cast_core_unittests",
+      "//chromecast/media:cast_media_unittests",
+    ]
+
+    cast_media_unittests_filter = {
+      test_name = "cast_media_unittests"
+
+      gtest_excludes = vendor_cast_media_gtest_excludes
+
+      # --test-launcher-jobs=1 => so internal code can bind to port
+      args = [ "--test-launcher-jobs=1" ]
+    }
+    filters += [ cast_media_unittests_filter ]
+  }
+
   if (is_linux || is_chromeos || is_fuchsia) {
     tests += [ "//chromecast/media/cma/backend:cast_audio_backend_unittests" ]
     cast_audio_backend_unittests_filter = {
@@ -165,80 +183,76 @@ cast_test_group("cast_tests") {
     tests += [ "//chromecast/media/cma/backend/android:cast_android_cma_backend_unittests" ]
   }
 
-  cast_media_unittests_filter = {
-    test_name = "cast_media_unittests"
-
-    gtest_excludes = vendor_cast_media_gtest_excludes
-
-    # --test-launcher-jobs=1 => so internal code can bind to port
-    args = [ "--test-launcher-jobs=1" ]
-  }
-  filters += [ cast_media_unittests_filter ]
-
   if (!is_android && !is_fuchsia) {
     tests += [
-      ":cast_shell_browsertests",
-      ":cast_shell_unittests",
       "//ipc:ipc_tests",
       "//url:url_unittests",
     ]
 
-    cast_shell_browsertests_filter = {
-      test_name = "cast_shell_browsertests"
-
-      # --enable-local-file-accesses => to load sample media files
-      # --test-launcher-jobs=1 => so internal code can bind to port
-      args = [
-        "--no-sandbox",
-        "--enable-local-file-accesses",
-        "--test-launcher-jobs=1",
-        "--enable-hardware-overlays=",
+    if (media_use_ffmpeg) {
+      tests += [
+        ":cast_shell_browsertests",
+        ":cast_shell_unittests",
       ]
 
-      gtest_excludes = []
+      cast_shell_browsertests_filter = {
+        test_name = "cast_shell_browsertests"
 
-      # TODO(b/112440248): This test was failing:
-      #   * On v1 and Cast Audio devices since 2017-03-15.
-      #   * On desktop builds since 2018-08-22
-      # Also see: b/36238710, b/36239051, hotlist/461351
-      gtest_excludes += [ "RendererPrelauncherTest.ReusedRenderer" ]
-
-      if (!is_cast_desktop_build) {
-        args += [ "--use-gpu-in-tests" ]
-
-        # TODO(derekjchow): Make these tests pass on Chromecast devices.
-        #    Once all of the CastMediaBlockerTest.* have been un-DISABLEd and
-        #    are running successfully, revisit these tests and see if they pass
-        #    on devices. (crbug/665118, internal b/32023194)
-        gtest_excludes += [
-          "CastMediaBlockerBrowserTest.Video_BlockUnblock",
-          "CastMediaBlockerBrowserTest.Audio_BlockUnblock",
-
-          # This browser test can only be run inside of a source checkout.
-          "CastWebContentsBrowserTest.*",
+        # --enable-local-file-accesses => to load sample media files
+        # --test-launcher-jobs=1 => so internal code can bind to port
+        args = [
+          "--no-sandbox",
+          "--enable-local-file-accesses",
+          "--test-launcher-jobs=1",
+          "--enable-hardware-overlays=",
         ]
-      }
 
-      if (!is_cast_desktop_build && !is_cast_audio_only && !enable_assistant) {
-        # TODO(mbjorge): The VideoPlaybackMp4 test is failing on v1 devices.
-        # Temporarily disable it as part of an effort to re-green the unittests.
-        # Re-enable once the tests have been fixed. Limitations in the filter
-        # system mean this is getting temporarily disabled on all video devices,
-        # though it is only failing on v1.
-        # b/36723698, hotlist/461351
-        gtest_excludes += [ "CastNavigationBrowserTest.VideoPlaybackMp4" ]
-      }
+        gtest_excludes = []
 
-      # TODO(mbjorge): Temporarily disable AudioPlaybackWavPcm because it is
-      # failing on device. As part of an effort to re-green the unittests,
-      # current (2017-03-15) failures are being disabled to get back to a
-      # green state. Re-enable once the tests have been fixed.
-      # b/36239152, hotlist/461351
-      if (enable_assistant && !is_cast_desktop_build) {
-        gtest_excludes += [ "CastNavigationBrowserTest.AudioPlaybackWavPcm" ]
+        # TODO(b/112440248): This test was failing:
+        #   * On v1 and Cast Audio devices since 2017-03-15.
+        #   * On desktop builds since 2018-08-22
+        # Also see: b/36238710, b/36239051, hotlist/461351
+        gtest_excludes += [ "RendererPrelauncherTest.ReusedRenderer" ]
+
+        if (!is_cast_desktop_build) {
+          args += [ "--use-gpu-in-tests" ]
+
+          # TODO(derekjchow): Make these tests pass on Chromecast devices.
+          #    Once all of the CastMediaBlockerTest.* have been un-DISABLEd and
+          #    are running successfully, revisit these tests and see if they pass
+          #    on devices. (crbug/665118, internal b/32023194)
+          gtest_excludes += [
+            "CastMediaBlockerBrowserTest.Video_BlockUnblock",
+            "CastMediaBlockerBrowserTest.Audio_BlockUnblock",
+
+            # This browser test can only be run inside of a source checkout.
+            "CastWebContentsBrowserTest.*",
+          ]
+        }
+
+        if (!is_cast_desktop_build && !is_cast_audio_only &&
+            !enable_assistant) {
+          # TODO(mbjorge): The VideoPlaybackMp4 test is failing on v1 devices.
+          # Temporarily disable it as part of an effort to re-green the unittests.
+          # Re-enable once the tests have been fixed. Limitations in the filter
+          # system mean this is getting temporarily disabled on all video devices,
+          # though it is only failing on v1.
+          # b/36723698, hotlist/461351
+          gtest_excludes += [ "CastNavigationBrowserTest.VideoPlaybackMp4" ]
+        }
+
+        # TODO(mbjorge): Temporarily disable AudioPlaybackWavPcm because it is
+        # failing on device. As part of an effort to re-green the unittests,
+        # current (2017-03-15) failures are being disabled to get back to a
+        # green state. Re-enable once the tests have been fixed.
+        # b/36239152, hotlist/461351
+        if (enable_assistant && !is_cast_desktop_build) {
+          gtest_excludes += [ "CastNavigationBrowserTest.AudioPlaybackWavPcm" ]
+        }
       }
+      filters += [ cast_shell_browsertests_filter ]
     }
-    filters += [ cast_shell_browsertests_filter ]
 
     ipc_tests_filter = {
       test_name = "ipc_tests"
@@ -504,13 +518,20 @@ group("cast_shell_lib_base") {
 
 group("cast_shell_lib_simple") {
   deps = [
-    ":cast_shell_lib_base",
     "//chromecast/browser:prefs_simple",
-    "//chromecast/browser:simple_client",
     "//chromecast/browser:simple_main_parts",
-    "//chromecast/renderer:simple_client",
     "//chromecast/utility:simple_client",
   ]
+
+  if (enable_cast_media_runtime) {
+    deps += [ "//chromecast/cast_core:core_runtime_lib_simple" ]
+  } else {
+    deps += [
+      ":cast_shell_lib_base",
+      "//chromecast/browser:simple_client",
+      "//chromecast/renderer:simple_client",
+    ]
+  }
 }
 
 cast_executable("cast_shell") {
@@ -708,6 +729,8 @@ if (is_android) {
     deps = [
       ":cast_shell_apk_assets",
       "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//chromecast/android:libcast_shell_android",
       "//chromecast/browser/android:cast_shell_java",
       "//components/crash/core/app:chrome_crashpad_handler_named_as_so",
@@ -742,6 +765,8 @@ if (is_android) {
       product_config_java_packages = [ "org.chromium.chromecast.shell" ]
       deps = [
         "//base:base_java",
+        "//base:jni_java",
+        "//build/android:build_java",
         "//chromecast/browser/android:cast_browser_java",
         "//components/crash/core/app:chrome_crashpad_handler_named_as_so",
         "//components/viz/service:service_java",

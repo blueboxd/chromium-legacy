@@ -16,6 +16,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/commands/fetch_manifest_and_install_command.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -30,8 +33,6 @@
 
 namespace web_app {
 
-using WebAppInstallFlow = WebAppInstallManager::WebAppInstallFlow;
-
 namespace {
 
 void OnWebAppInstallShowInstallDialog(
@@ -45,7 +46,7 @@ void OnWebAppInstallShowInstallDialog(
 
   switch (flow) {
     case WebAppInstallFlow::kInstallSite:
-      web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
+      web_app_info->user_display_mode = UserDisplayMode::kStandalone;
       chrome::ShowPWAInstallBubble(
           initiator_web_contents, std::move(web_app_info),
           std::move(web_app_acceptance_callback), iph_state);
@@ -102,9 +103,8 @@ bool CanPopOutWebApp(Profile* profile) {
          !profile->IsOffTheRecord();
 }
 
-void CreateWebAppFromCurrentWebContents(
-    Browser* browser,
-    WebAppInstallManager::WebAppInstallFlow flow) {
+void CreateWebAppFromCurrentWebContents(Browser* browser,
+                                        WebAppInstallFlow flow) {
   DCHECK(CanCreateWebApp(browser));
 
   content::WebContents* web_contents =
@@ -112,23 +112,28 @@ void CreateWebAppFromCurrentWebContents(
   auto* provider = WebAppProvider::GetForWebContents(web_contents);
   DCHECK(provider);
 
-  if (provider->install_manager().IsInstallingForWebContents(web_contents))
+  if (provider->install_manager().IsInstallingForWebContents(web_contents) ||
+      provider->command_manager().IsInstallingForWebContents(web_contents)) {
     return;
+  }
 
   webapps::WebappInstallSource install_source =
       webapps::InstallableMetrics::GetInstallSource(
-          web_contents,
-          flow == WebAppInstallManager::WebAppInstallFlow::kCreateShortcut
-              ? webapps::InstallTrigger::CREATE_SHORTCUT
-              : webapps::InstallTrigger::MENU);
+          web_contents, flow == WebAppInstallFlow::kCreateShortcut
+                            ? webapps::InstallTrigger::CREATE_SHORTCUT
+                            : webapps::InstallTrigger::MENU);
 
   WebAppInstalledCallback callback = base::DoNothing();
 
-  provider->install_manager().InstallWebAppFromManifestWithFallback(
-      web_contents, flow, install_source,
-      base::BindOnce(OnWebAppInstallShowInstallDialog, flow, install_source,
-                     chrome::PwaInProductHelpState::kNotShown),
-      base::BindOnce(OnWebAppInstalled, std::move(callback)));
+  provider->command_manager().ScheduleCommand(
+      std::make_unique<FetchManifestAndInstallCommand>(
+          &provider->install_finalizer(), &provider->registrar(),
+          install_source, web_contents->GetWeakPtr(),
+          /*bypass_service_worker_check=*/false,
+          base::BindOnce(OnWebAppInstallShowInstallDialog, flow, install_source,
+                         chrome::PwaInProductHelpState::kNotShown),
+          base::BindOnce(OnWebAppInstalled, std::move(callback)),
+          /*use_fallback=*/true, flow));
 }
 
 bool CreateWebAppFromManifest(content::WebContents* web_contents,
@@ -140,12 +145,15 @@ bool CreateWebAppFromManifest(content::WebContents* web_contents,
   if (!provider)
     return false;
 
-  provider->install_manager().InstallWebAppFromManifest(
-      web_contents, bypass_service_worker_check, install_source,
-      base::BindOnce(OnWebAppInstallShowInstallDialog,
-                     WebAppInstallManager::WebAppInstallFlow::kInstallSite,
-                     install_source, iph_state),
-      base::BindOnce(OnWebAppInstalled, std::move(installed_callback)));
+  provider->command_manager().ScheduleCommand(
+      std::make_unique<FetchManifestAndInstallCommand>(
+          &provider->install_finalizer(), &provider->registrar(),
+          install_source, web_contents->GetWeakPtr(),
+          bypass_service_worker_check,
+          base::BindOnce(OnWebAppInstallShowInstallDialog,
+                         WebAppInstallFlow::kInstallSite, install_source,
+                         iph_state),
+          base::BindOnce(OnWebAppInstalled, std::move(installed_callback))));
   return true;
 }
 

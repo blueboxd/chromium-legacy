@@ -6,6 +6,7 @@ import 'chrome://connectivity-diagnostics/strings.m.js';
 import 'chrome://resources/cr_components/chromeos/network_health/routine_group.js';
 
 import {Icons, Routine} from 'chrome://resources/cr_components/chromeos/network_health/network_diagnostics_types.js';
+import {RoutineVerdict} from 'chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../../chai_assert.js';
@@ -25,8 +26,7 @@ function createRoutines() {
       resultMsg: 'Passed',
       group: 0,
       type: 0,
-      result: createResult(
-          chromeos.networkDiagnostics.mojom.RoutineVerdict.kNoProblem),
+      result: createResult(RoutineVerdict.kNoProblem),
       ariaDescription: '',
     },
     {
@@ -35,8 +35,7 @@ function createRoutines() {
       resultMsg: 'Passed',
       group: 0,
       type: 1,
-      result: createResult(
-          chromeos.networkDiagnostics.mojom.RoutineVerdict.kNoProblem),
+      result: createResult(RoutineVerdict.kNoProblem),
       ariaDescription: '',
     }
   ];
@@ -114,7 +113,7 @@ suite('RoutineGroupTest', function routineGroupTest() {
    * Test using one running routine.
    */
   test('RunningOne', () => {
-    let routines = createRoutines();
+    const routines = createRoutines();
     routines[0].running = true;
     routines[0].result = null;
     routines[0].resultMsg = '';
@@ -128,8 +127,8 @@ suite('RoutineGroupTest', function routineGroupTest() {
    * Test when all routines are running.
    */
   test('RunningAll', () => {
-    let routines = createRoutines();
-    for (let routine of routines) {
+    const routines = createRoutines();
+    for (const routine of routines) {
       routine.running = true;
       routine.result = null;
       routine.resultMsg = '';
@@ -154,10 +153,9 @@ suite('RoutineGroupTest', function routineGroupTest() {
    * Test when all routines are complete and one has failed.
    */
   test('FailedOne', () => {
-    let routines = createRoutines();
+    const routines = createRoutines();
     routines[0].resultMsg = 'Failed';
-    routines[0].result =
-        createResult(chromeos.networkDiagnostics.mojom.RoutineVerdict.kProblem);
+    routines[0].result = createResult(RoutineVerdict.kProblem);
     setRoutines(routines);
     checkResult(Icons.TEST_FAILED);
     clickRoutineGroup();
@@ -167,10 +165,9 @@ suite('RoutineGroupTest', function routineGroupTest() {
    * Test when routines are complete and one did not run.
    */
   test('NotRunOne', () => {
-    let routines = createRoutines();
+    const routines = createRoutines();
     routines[0].resultMsg = 'Not Run';
-    routines[0].result =
-        createResult(chromeos.networkDiagnostics.mojom.RoutineVerdict.kNotRun);
+    routines[0].result = createResult(RoutineVerdict.kNotRun);
     setRoutines(routines);
     checkResult(Icons.TEST_NOT_RUN);
     clickRoutineGroup();
@@ -180,13 +177,11 @@ suite('RoutineGroupTest', function routineGroupTest() {
    * Test when routines are complete. One routine failed and one did not run.
    */
   test('NotRunAndFailed', () => {
-    let routines = createRoutines();
+    const routines = createRoutines();
     routines[0].resultMsg = 'Not Run';
-    routines[0].result =
-        createResult(chromeos.networkDiagnostics.mojom.RoutineVerdict.kNotRun);
+    routines[0].result = createResult(RoutineVerdict.kNotRun);
     routines[1].resultMsg = 'Failed';
-    routines[1].result =
-        createResult(chromeos.networkDiagnostics.mojom.RoutineVerdict.kProblem);
+    routines[1].result = createResult(RoutineVerdict.kProblem);
     setRoutines(routines);
     checkResult(Icons.TEST_FAILED);
     clickRoutineGroup();

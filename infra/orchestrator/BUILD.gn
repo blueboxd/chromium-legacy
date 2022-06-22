@@ -21,7 +21,8 @@ group("orchestrator_all") {
   # Test specs the Orchestrator needs to trigger swarming tests
   data = [ "//testing/buildbot/*.json" ]
 
-  # coverage tool for the Orchestrator to merge and output coverage data
+  # Orchestrator will run this script to curl for the coverage tool, which
+  # merges and outputs coverage data
   if (use_clang_coverage) {
     data += [ "//tools/clang/scripts/update.py" ]
   }

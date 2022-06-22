@@ -19,7 +19,7 @@ class TestElementApi {
    * @return {HTMLElement}
    */
   element() {
-    throw 'element() should be defined!';
+    throw new Error('element() should be defined!');
   }
 
   /**
@@ -122,18 +122,31 @@ class HIDDetectionScreenTester extends ScreenElementApi {
 
   touchscreenDetected() {
     // Touchscreen entire row is only visible when touchscreen is detected.
-    let touchscreenRow = new PolymerElementApi(this, '#hid-touchscreen-entry');
+    const touchscreenRow =
+        new PolymerElementApi(this, '#hid-touchscreen-entry');
     return touchscreenRow.isVisible();
   }
 
   mouseDetected() {
-    let mouseTickIcon = new PolymerElementApi(this, '#mouse-tick');
+    const mouseTickIcon = new PolymerElementApi(this, '#mouse-tick');
     return mouseTickIcon.isVisible();
   }
 
   keyboardDetected() {
-    let keyboardTickIcon = new PolymerElementApi(this, '#keyboard-tick');
+    const keyboardTickIcon = new PolymerElementApi(this, '#keyboard-tick');
     return keyboardTickIcon.isVisible();
+  }
+
+  getKeyboardNotDetectedText() {
+    return loadTimeData.getString('hidDetectionKeyboardSearching');
+  }
+
+  getMouseNotDetectedText() {
+    return loadTimeData.getString('hidDetectionMouseSearching');
+  }
+
+  getUsbKeyboardDetectedText() {
+    return loadTimeData.getString('hidDetectionUSBKeyboardConnected');
   }
 
   getNextButtonName() {
@@ -153,7 +166,7 @@ class WelcomeScreenTester extends ScreenElementApi {
   /** @override */
   clickNext() {
     if (!this.nextButton) {
-      let mainStep = new PolymerElementApi(this, '#welcomeScreen');
+      const mainStep = new PolymerElementApi(this, '#welcomeScreen');
       this.nextButton = new PolymerElementApi(mainStep, '#getStarted');
     }
 
@@ -238,6 +251,63 @@ class GaiaScreenTester extends ScreenElementApi {
   }
 }
 
+class SyncScreenTester extends ScreenElementApi {
+  constructor() {
+    super('sync-consent');
+  }
+}
+
+class FingerprintScreenTester extends ScreenElementApi {
+  constructor() {
+    super('fingerprint-setup');
+  }
+  /** @override */
+  shouldSkip() {
+    return !loadTimeData.getBoolean('testapi_isFingerprintSupported');
+  }
+}
+
+class AssistantScreenTester extends ScreenElementApi {
+  constructor() {
+    super('assistant-optin-flow');
+    this.mainElement = new PolymerElementApi(this, '#card');
+    this.valueProp = new PolymerElementApi(this.mainElement, '#valueProp');
+    this.valuePropSkipButtonText =
+        new PolymerElementApi(this.valueProp, '#skip-button-text');
+    this.relatedInfo = new PolymerElementApi(this.mainElement, '#relatedInfo');
+  }
+  /** @override */
+  shouldSkip() {
+    return !loadTimeData.getBoolean('testapi_isLibAssistantEnabled');
+  }
+
+  /**
+   * Returns if the assistant screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() &&
+        (this.valueProp.isVisible() || this.relatedInfo.isVisible());
+  }
+
+  getSkipButtonName() {
+    if (this.valueProp.isVisible()) {
+      return this.valuePropSkipButtonText.element().textContent;
+    }
+    return loadTimeData.getString('assistantOptinNoThanksButton');
+  }
+}
+
+class MarketingOptInScreenTester extends ScreenElementApi {
+  constructor() {
+    super('marketing-opt-in');
+  }
+  /** @override */
+  shouldSkip() {
+    return !loadTimeData.getBoolean('testapi_isBrandedBuild');
+  }
+}
+
 class ConfirmSamlPasswordScreenTester extends ScreenElementApi {
   constructor() {
     super('saml-confirm-password');
@@ -268,8 +338,8 @@ class PinSetupScreenTester extends ScreenElementApi {
     this.nextButton = new PolymerElementApi(this, '#nextButton');
     this.doneButton = new PolymerElementApi(this, '#doneButton');
     this.backButton = new PolymerElementApi(this, '#backButton');
-    let pinSetupKeyboard = new PolymerElementApi(this, '#pinKeyboard');
-    let pinKeyboard = new PolymerElementApi(pinSetupKeyboard, '#pinKeyboard');
+    const pinSetupKeyboard = new PolymerElementApi(this, '#pinKeyboard');
+    const pinKeyboard = new PolymerElementApi(pinSetupKeyboard, '#pinKeyboard');
     this.pinField = new TextFieldApi(pinKeyboard, '#pinInput');
     this.pinButtons = {};
     for (let i = 0; i <= 9; i++) {
@@ -390,6 +460,67 @@ class EnterpriseEnrollmentScreenTester extends ScreenElementApi {
   }
 }
 
+class OfflineLoginScreenTester extends ScreenElementApi {
+  constructor() {
+    super('offline-login');
+    this.nextButton = new PolymerElementApi(this, '#nextButton');
+  }
+
+  /**
+   * Returns if the Offline Login Screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.nextButton.isVisible();
+  }
+
+  /**
+   * Returns the email field name on the Offline Login Screen.
+   * @return {string}
+   */
+  getEmailFieldName() {
+    return loadTimeData.getString('offlineLoginEmail');
+  }
+
+  /**
+   * Returns the password field name on the Offline Login Screen.
+   * @return {string}
+   */
+  getPasswordFieldName() {
+    return loadTimeData.getString('offlineLoginPassword');
+  }
+
+  /**
+   * Returns the next button name on the Offline Login Screen.
+   * @return {string}
+   */
+  getNextButtonName() {
+    return loadTimeData.getString('offlineLoginNextBtn');
+  }
+}
+
+class ErrorScreenTester extends ScreenElementApi {
+  constructor() {
+    super('error-message');
+    this.offlineLink = new PolymerElementApi(this, '#error-offline-login-link');
+  }
+
+  /**
+   * Returns if the Error Screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.offlineLink.isVisible();
+  }
+
+  /**
+   * Click the sign in as an existing user Link.
+   */
+  clickSignInAsExistingUserLink() {
+    return this.offlineLink.click();
+  }
+}
+
 class OobeApiProvider {
   constructor() {
     this.screens = {
@@ -401,10 +532,16 @@ class OobeApiProvider {
       EnrollmentScreen: new EnrollmentScreenTester(),
       UserCreationScreen: new UserCreationScreenTester(),
       GaiaScreen: new GaiaScreenTester(),
+      SyncScreen: new SyncScreenTester(),
+      FingerprintScreen: new FingerprintScreenTester(),
+      AssistantScreen: new AssistantScreenTester(),
+      MarketingOptInScreen: new MarketingOptInScreenTester(),
       ConfirmSamlPasswordScreen: new ConfirmSamlPasswordScreenTester(),
       PinSetupScreen: new PinSetupScreenTester(),
       EnterpriseEnrollmentScreen: new EnterpriseEnrollmentScreenTester(),
       GuestTosScreen: new GuestTosScreenTester(),
+      ErrorScreen: new ErrorScreenTester(),
+      OfflineLoginScreen: new OfflineLoginScreenTester(),
     };
 
     this.loginWithPin = function(username, pin) {
@@ -413,6 +550,10 @@ class OobeApiProvider {
 
     this.advanceToScreen = function(screen) {
       chrome.send('OobeTestApi.advanceToScreen', [screen]);
+    };
+
+    this.skipToLoginForTesting = function() {
+      chrome.send('OobeTestApi.skipToLoginForTesting');
     };
 
     this.skipPostLoginScreens = function() {

@@ -124,9 +124,7 @@ class EncryptedReportingUploadProviderTest : public ::testing::Test {
   std::unique_ptr<TestEncryptedReportingUploadProvider> service_provider_;
 };
 
-// Disabled due to flakiness. See crbug.com/1308890.
-TEST_F(EncryptedReportingUploadProviderTest,
-       DISABLED_SuccessfullyUploadsRecord) {
+TEST_F(EncryptedReportingUploadProviderTest, SuccessfullyUploadsRecord) {
   test::TestMultiEvent<SequenceInformation, bool /*force*/> uploaded_event;
   EXPECT_CALL(*this, ReportSuccessfulUpload(_, _))
       .WillOnce([&uploaded_event](SequenceInformation seq_info, bool force) {
@@ -134,7 +132,7 @@ TEST_F(EncryptedReportingUploadProviderTest,
       });
   EXPECT_CALL(cloud_policy_client_,
               UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(::reporting::MakeUploadEncryptedReportAction());
+      .WillOnce(MakeUploadEncryptedReportAction());
 
   auto records = std::make_unique<std::vector<EncryptedRecord>>();
   records->push_back(record_);

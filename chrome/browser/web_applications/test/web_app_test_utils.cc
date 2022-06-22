@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -274,7 +275,7 @@ std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url,
   auto web_app = std::make_unique<WebApp>(app_id);
   web_app->SetStartUrl(start_url);
   web_app->AddSource(source_type);
-  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
   web_app->SetName("Name");
 
   return web_app;
@@ -300,21 +301,39 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   absl::optional<SkColor> dark_mode_background_color;
   const absl::optional<SkColor> synced_theme_color = random.next_uint();
   auto app = std::make_unique<WebApp>(app_id);
+  std::vector<WebAppManagement::Type> management_types;
 
   // Generate all possible permutations of field values in a random way:
-  if (AreSystemWebAppsSupported() && random.next_bool())
+  if (AreSystemWebAppsSupported() && random.next_bool()) {
     app->AddSource(WebAppManagement::kSystem);
-  if (random.next_bool())
+    management_types.push_back(WebAppManagement::kSystem);
+  }
+  if (random.next_bool()) {
     app->AddSource(WebAppManagement::kPolicy);
-  if (random.next_bool())
+    management_types.push_back(WebAppManagement::kPolicy);
+  }
+  if (random.next_bool()) {
     app->AddSource(WebAppManagement::kWebAppStore);
-  if (random.next_bool())
+    management_types.push_back(WebAppManagement::kWebAppStore);
+  }
+  if (random.next_bool()) {
     app->AddSource(WebAppManagement::kSync);
-  if (random.next_bool())
+    management_types.push_back(WebAppManagement::kSync);
+  }
+  if (random.next_bool()) {
     app->AddSource(WebAppManagement::kDefault);
+    management_types.push_back(WebAppManagement::kDefault);
+  }
+  if (random.next_bool()) {
+    app->AddSource(WebAppManagement::kSubApp);
+    management_types.push_back(WebAppManagement::kSubApp);
+  }
+
   // Must always be at least one source.
-  if (!app->HasAnySources())
+  if (!app->HasAnySources()) {
     app->AddSource(WebAppManagement::kSync);
+    management_types.push_back(WebAppManagement::kSync);
+  }
 
   if (random.next_bool()) {
     dark_mode_theme_color = SkColorSetA(random.next_uint(), SK_AlphaOPAQUE);
@@ -337,8 +356,9 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   app->SetIsLocallyInstalled(random.next_bool());
   app->SetIsFromSyncAndPendingInstallation(random.next_bool());
 
-  const DisplayMode user_display_modes[3] = {
-      DisplayMode::kBrowser, DisplayMode::kStandalone, DisplayMode::kTabbed};
+  const UserDisplayMode user_display_modes[3] = {UserDisplayMode::kBrowser,
+                                                 UserDisplayMode::kStandalone,
+                                                 UserDisplayMode::kTabbed};
   app->SetUserDisplayMode(user_display_modes[random.next_uint(3)]);
 
   const base::Time last_badging_time =
@@ -490,6 +510,27 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
     chromeos_data->oem_installed = cros_random.next_bool();
     app->SetWebAppChromeOsData(std::move(chromeos_data));
   }
+
+  base::flat_map<WebAppManagement::Type, WebApp::ExternalManagementConfig>
+      management_to_external_config;
+  for (WebAppManagement::Type type : management_types) {
+    if (type == WebAppManagement::kSync)
+      continue;
+    base::flat_set<GURL> install_urls;
+    WebApp::ExternalManagementConfig config;
+    if (random.next_bool())
+      install_urls.emplace(base_url.Resolve("installer1_" + seed_str + "/"));
+    if (random.next_bool())
+      install_urls.emplace(base_url.Resolve("installer2_" + seed_str + "/"));
+    config.is_placeholder = random.next_bool();
+    config.install_urls = install_urls;
+    management_to_external_config.insert_or_assign(type, std::move(config));
+  }
+
+  app->SetWebAppManagementExternalConfigMap(management_to_external_config);
+
+  app->SetAppSizeInBytes(random.next_uint());
+  app->SetDataSizeInBytes(random.next_uint());
 
   return app;
 }

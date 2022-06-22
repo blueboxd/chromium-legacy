@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include "build/chromeos_buildflags.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -43,7 +45,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "media/base/media_switches.h"
-#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -554,7 +555,7 @@ class CreativeOriginAdsPageLoadMetricsObserverBrowserTest
       query_pieces.push_back(")");
       std::string out = base::StrCat(query_pieces);
       if (should_escape)
-        out = net::EscapeQueryParamValue(out, false /* use_plus */);
+        out = base::EscapeQueryParamValue(out, false /* use_plus */);
       return out;
     }
 
@@ -2428,4 +2429,78 @@ IN_PROC_BROWSER_TEST_F(AdsMemoryMeasurementBrowserTest,
       histogram_tester.GetAllSamples(kMemoryUpdateCountHistogramId)[0].min, 1);
 
   memory_request->RemoveObserver(memory_observer.get());
+}
+
+class AdsPageLoadMetricsObserverPrerenderingBrowserTest
+    : public AdsPageLoadMetricsObserverBrowserTest {
+ public:
+  AdsPageLoadMetricsObserverPrerenderingBrowserTest() = default;
+  ~AdsPageLoadMetricsObserverPrerenderingBrowserTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AdsPageLoadMetricsObserverBrowserTest::SetUpCommandLine(command_line);
+
+    // |prerender_helper_| has a ScopedFeatureList so we needed to delay its
+    // creation until now because AdsPageLoadMetricsObserverBrowserTest also
+    // uses a ScopedFeatureList and initialization order matters.
+    prerender_helper_ = std::make_unique<content::test::PrerenderTestHelper>(
+        base::BindRepeating(
+            &AdsPageLoadMetricsObserverPrerenderingBrowserTest::web_contents,
+            base::Unretained(this)));
+  }
+
+  content::test::PrerenderTestHelper& prerender_helper() {
+    return *prerender_helper_;
+  }
+
+ private:
+  std::unique_ptr<content::test::PrerenderTestHelper> prerender_helper_;
+};
+
+// Test that prerendering doesn't have metrics by AdsPageLoadMetricsObserver.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverPrerenderingBrowserTest,
+                       NoMetricsInPrerendering) {
+  // Navigate to an initial page.
+  GURL initial_url = embedded_test_server()->GetURL("/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), initial_url));
+
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  // Start a prerender.
+  GURL prerender_url =
+      embedded_test_server()->GetURL("/ads_observer/srcdoc_embedded_ad.html");
+  int host_id = prerender_helper().AddPrerender(prerender_url);
+  content::test::PrerenderHostObserver prerender_observer(*web_contents(),
+                                                          host_id);
+
+  // `waiter` is created for prerendering, it counts except for the favicon
+  // resource.
+  waiter->AddMinimumCompleteResourcesExpectation(3);
+  waiter->Wait();
+  waiter.reset();
+
+  // Force navigation to another page, which should force logging of histograms
+  // persisted at the end of the page load lifetime.
+  GURL url = embedded_test_server()->GetURL("/title1.html");
+  prerender_helper().NavigatePrerenderedPage(host_id, url);
+
+  // Navigation to another page in prerendering causes canceling it.
+  prerender_observer.WaitForDestroyed();
+
+  // Ensure that prerendering doesn't have metrics by
+  // AdsPageLoadMetricsObserver.
+  DCHECK_EQ(
+      0u,
+      histogram_tester.GetTotalCountsForPrefix("PageLoad.Clients.Ads.").size());
+
+  waiter = CreatePageLoadMetricsTestWaiter();
+  prerender_helper().NavigatePrimaryPage(prerender_url);
+  waiter->AddMinimumCompleteResourcesExpectation(3);
+  waiter->Wait();
+
+  // Navigation in a primary page has metrics by AdsPageLoadMetricsObserver.
+  DCHECK_NE(
+      0u,
+      histogram_tester.GetTotalCountsForPrefix("PageLoad.Clients.Ads.").size());
 }

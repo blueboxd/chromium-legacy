@@ -72,14 +72,6 @@ void LogScreenOnSettingsButtonClicked(Screen screen) {
                                 screen);
 }
 
-void LogNotificationOptInEvent(InterstitialScreenEvent event) {
-  base::UmaHistogramEnumeration("PhoneHub.NotificationOptInEvents", event);
-}
-
-void LogCameraRollOptInEvent(InterstitialScreenEvent event) {
-  base::UmaHistogramEnumeration("PhoneHub.CameraRoll.OptInEvents", event);
-}
-
 void LogTabContinuationChipClicked(int tab_index) {
   base::UmaHistogramCounts100("PhoneHub.TabContinuationChipClicked", tab_index);
 }
@@ -206,6 +198,10 @@ void LogCameraRollContextMenuDownload(int index,
           static_cast<int>(CameraRollContextMenuDownload::kDownloadGTE5));
       break;
   }
+}
+
+void LogCameraRollContentPresent() {
+  base::UmaHistogramBoolean("PhoneHub.CameraRoll.Content.Present", true);
 }
 
 }  // namespace phone_hub_metrics

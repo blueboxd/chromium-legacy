@@ -27,6 +27,7 @@ import os
 import re
 import shutil
 import subprocess
+import urllib.request
 import zipfile
 
 # Assume this script is stored under third_party/android_deps/
@@ -70,6 +71,13 @@ _CUSTOM_ANDROID_DEPS_FILES = [
     _ADDITIONAL_README_PATHS,
     'subprojects.txt',
 ]
+
+# Dictionary mapping long info file names to shorter ones to avoid paths being
+# over 200 chars. This must match the dictionary in BuildConfigGenerator.groovy.
+_REDUCED_ID_LENGTH_MAP = {
+    'com_google_android_apps_common_testing_accessibility_framework_accessibility_test_framework':
+    'com_google_android_accessibility_test_framework',
+}
 
 # If this file exists in an aar file then it is appended to LICENSE
 _THIRD_PARTY_LICENSE_FILENAME = 'third_party_licenses.txt'
@@ -349,6 +357,17 @@ def _CheckVulnerabilities(build_android_deps_dir, report_dst):
             CopyFileOrDirectory(report_src, report_dst)
 
 
+def _ReduceNameLength(path_str):
+    """Returns a shorter path string if needed.
+
+  Args:
+    path_str: A String representing the path.
+  Returns:
+    A String (possibly shortened) of that path.
+  """
+    return _REDUCED_ID_LENGTH_MAP.get(path_str, path_str)
+
+
 def GetCipdPackageInfo(cipd_yaml_path):
     """Returns the CIPD package name corresponding to a given cipd.yaml file.
 
@@ -410,12 +429,28 @@ def PrintPackageList(packages, list_name):
     print('\n'.join('    - ' + p for p in packages))
 
 
+def _DownloadOverrides(overrides, build_libs_dir):
+    for spec in overrides:
+        subpath, url = spec.split(':', 1)
+        target_path = os.path.join(build_libs_dir, subpath)
+        if not os.path.isfile(target_path):
+            found_files = 'Found instead:\n' + '\n'.join(
+                FindInDirectory(os.path.dirname(target_path), '*'))
+            raise Exception(
+                f'Override path does not exist: {target_path}\n{found_files}')
+        logging.info('Fetching override for %s', target_path)
+        with urllib.request.urlopen(url) as response:
+            with open(target_path, 'wb') as f:
+                shutil.copyfileobj(response, f)
+
+
 def _CreateAarInfos(aar_files):
     jobs = []
 
     for aar_file in aar_files:
         aar_dirname = os.path.dirname(aar_file)
-        aar_info_name = os.path.basename(aar_dirname) + '.info'
+        aar_info_name = _ReduceNameLength(
+            os.path.basename(aar_dirname)) + '.info'
         aar_info_path = os.path.join(aar_dirname, aar_info_name)
 
         logging.debug('- %s', aar_info_name)
@@ -459,6 +494,9 @@ def main():
     parser.add_argument('--ignore-vulnerabilities',
                         help='Ignores vulnerabilities for these deps.',
                         action='store_true')
+    parser.add_argument('--override-artifact',
+                        action='append',
+                        help='lib_subpath:url of .aar / .jar to override.')
     parser.add_argument('-v',
                         '--verbose',
                         dest='verbose_count',
@@ -537,6 +575,8 @@ def main():
         RunCommand(gn_args, print_stdout=debug, cwd=_CHROMIUM_SRC)
 
         build_libs_dir = os.path.join(build_android_deps_dir, _LIBS_DIR)
+        if args.override_artifact:
+            _DownloadOverrides(args.override_artifact, build_libs_dir)
         aar_files = FindInDirectory(build_libs_dir, '*.aar')
 
         logging.info('# Generate Android .aar info files.')

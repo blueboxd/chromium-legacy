@@ -6,6 +6,7 @@
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <zircon/types.h>
 
+#include "base/command_line.h"
 #include "base/fuchsia/mem_buffer_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -178,8 +179,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, CorrectDataSent) {
   LoadPage(kPage1Path, kPage1Title);
 
   // Check that the data values are correct in the FakeSemanticTree.
-  // TODO(fxb/18796): Test more fields once Chrome to Fuchsia conversions are
-  // available.
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
   EXPECT_TRUE(
       semantics_manager_.semantic_tree()->GetNodeFromLabel(kPage1Title));

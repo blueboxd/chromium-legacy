@@ -39,6 +39,7 @@
 #include "base/timer/lap_timer.h"
 #include "base/trace_event/typed_macros.h"
 #include "cc/animation/animation_host.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/document_transition/document_transition_request.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
@@ -56,6 +57,7 @@
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/css/post_style_update_scope.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
@@ -602,8 +604,7 @@ cc::AnimationHost* LocalFrameView::GetCompositorAnimationHost() const {
   return c ? c->GetCompositorAnimationHost() : nullptr;
 }
 
-CompositorAnimationTimeline* LocalFrameView::GetCompositorAnimationTimeline()
-    const {
+cc::AnimationTimeline* LocalFrameView::GetCompositorAnimationTimeline() const {
   if (GetScrollingContext()->GetCompositorAnimationTimeline())
     return GetScrollingContext()->GetCompositorAnimationTimeline();
 
@@ -855,12 +856,22 @@ void LocalFrameView::PerformLayout() {
     } else {
       if (HasOrthogonalWritingModeRoots())
         LayoutOrthogonalWritingModeRoots();
+
+      default_allow_deferred_shaping_ =
+          default_allow_deferred_shaping_ &&
+          RuntimeEnabledFeatures::DeferredShapingEnabled() &&
+          !frame_->PagePopupOwner() &&
+          !FirstMeaningfulPaintDetector::From(*frame_->GetDocument())
+               .SeenFirstMeaningfulPaint();
       base::AutoReset<bool> deferred_shaping(
           &allow_deferred_shaping_,
-          RuntimeEnabledFeatures::DeferredShapingEnabled() &&
-              !frame_->PagePopupOwner() &&
-              !FirstMeaningfulPaintDetector::From(*frame_->GetDocument())
-                   .SeenFirstMeaningfulPaint());
+          default_allow_deferred_shaping_ && !document->Printing() &&
+              // Locking many shaping-deferred elements is very slow if we have
+              // ScopedForcedUpdate instances.
+              // Without this check, PerformPostLayoutTasks() takes 200 seconds
+              // in editing/deleting/delete-many-lines-of-text.html with a
+              // debug build.
+              !document->GetDisplayLockDocumentState().HasForcedScopes());
       DeferredShapingViewportScope viewport_scope(*this, *GetLayoutView());
       GetLayoutView()->UpdateLayout();
     }
@@ -1062,10 +1073,12 @@ void LocalFrameView::RunIntersectionObserverSteps() {
     return;
   }
 
-  if (frame_->IsMainFrame()) {
+  if (frame_->IsOutermostMainFrame()) {
     EnsureOverlayInterstitialAdDetector().MaybeFireDetection(frame_.Get());
     EnsureStickyAdDetector().MaybeFireDetection(frame_.Get());
+  }
 
+  if (frame_->IsMainFrame()) {
     // Report the main frame's document intersection with itself.
     LayoutObject* layout_object = GetLayoutView();
     gfx::Rect main_frame_dimensions(ToRoundedSize(
@@ -1891,8 +1904,6 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
       cache->HandleLayoutComplete(document);
     }
   }
-
-  UpdateDocumentAnnotatedRegions();
 
   GetLayoutView()->EnclosingLayer()->UpdateLayerPositionsAfterLayout();
   frame_->Selection().DidLayout();
@@ -2801,6 +2812,9 @@ bool LocalFrameView::RunAccessibilityLifecyclePhase(
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::RunAccessibilityLifecyclePhase");
 
+  SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kAccessibility);
+
   // Reduce redundant ancestor chain walking for display lock computations.
   auto display_lock_memoization_scope =
       DisplayLockUtilities::CreateLockCheckMemoizationScope();
@@ -3239,6 +3253,7 @@ void LocalFrameView::UpdateStyleAndLayout() {
     PerformPostLayoutTasks(visual_viewport_size_changed);
     GetFrame().GetDocument()->LayoutUpdated();
   }
+  UpdateDocumentAnnotatedRegions();
   UpdateGeometriesIfNeeded();
 }
 
@@ -3850,9 +3865,7 @@ void LocalFrameView::ScrollRectToVisibleInRemoteParent(
              ->CanAccess(GetFrame().GetSecurityContext()->GetSecurityOrigin()));
   PhysicalRect new_rect = ConvertToRootFrame(rect_to_scroll);
   GetFrame().GetLocalFrameHostRemote().ScrollRectToVisibleInParentFrame(
-      gfx::Rect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
-                new_rect.Width().ToInt(), new_rect.Height().ToInt()),
-      std::move(params));
+      gfx::RectF(new_rect), std::move(params));
 }
 
 bool LocalFrameView::AllowedToPropagateScrollIntoView(
@@ -4936,6 +4949,12 @@ DarkModeFilter& LocalFrameView::EnsureDarkModeFilter() {
         std::make_unique<DarkModeFilter>(GetCurrentDarkModeSettings());
   }
   return *dark_mode_filter_;
+}
+
+void LocalFrameView::DisallowDeferredShaping() {
+  DCHECK_EQ(current_viewport_bottom_, kIndefiniteSize);
+  DCHECK_EQ(current_minimum_top_, LayoutUnit());
+  default_allow_deferred_shaping_ = false;
 }
 
 void LocalFrameView::RequestToLockDeferred(Element& element) {

@@ -317,6 +317,36 @@
           </category-setting-exceptions>
         </settings-subpage>
       </template>
+      <template is="dom-if" if="[[enableFederatedIdentityApiContentSetting_]]">
+        <template is="dom-if" route-path="/content/federatedIdentityApi"
+            no-search>
+          <settings-subpage
+              page-title="$i18n{siteSettingsCategoryFederatedIdentityApi}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}">
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsFederatedIdentityApiDescription}
+            </div>
+            <settings-category-default-radio-group
+                category="[[contentSettingsTypesEnum_.FEDERATED_IDENTITY_API]]"
+                allow-option-label=
+                    "$i18n{siteSettingsFederatedIdentityApiAllowed}"
+                allow-option-icon="settings:federated-identity-api"
+                block-option-label=
+                    "$i18n{siteSettingsFederatedIdentityApiBlocked}"
+                block-option-icon="settings:federated-identity-api-off">
+            </settings-category-default-radio-group>
+            <category-setting-exceptions
+                category="[[contentSettingsTypesEnum_.FEDERATED_IDENTITY_API]]"
+                allow-header=
+                    "$i18n{siteSettingsFederatedIdentityApiAllowedExceptions}"
+                block-header=
+                    "$i18n{siteSettingsFederatedIdentityApiBlockedExceptions}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+        </template>
+      </template>
       <template is="dom-if" route-path="/content/location" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryLocation}"
             search-label="$i18n{siteSettingsAllSitesSearch}"
@@ -737,10 +767,10 @@
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/protectedContent" no-search>
-<if expr="not chromeos_ash and not is_win">
+<if expr="not chromeos_ash and not chromeos_lacros and not is_win">
         <settings-subpage page-title="$i18n{siteSettingsProtectedContent}">
 </if>
-<if expr="chromeos_ash or is_win">
+<if expr="chromeos_ash or chromeos_lacros or is_win">
         <settings-subpage page-title="$i18n{siteSettingsProtectedContent}"
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
@@ -774,7 +804,7 @@
               </settings-collapse-radio-button>
             </settings-radio-group>
           </div>
-<if expr="chromeos_ash or is_win">
+<if expr="chromeos_ash or chromeos_lacros or is_win">
           <settings-category-default-radio-group
             header="$i18n{siteSettingsProtectedContentIdentifiers}"
             description=
@@ -787,6 +817,10 @@
             block-option-icon="settings:protected-content-off"
             allow-option-label=
                 "$i18n{siteSettingsProtectedContentIdentifiersAllowed}"
+<if expr="is_win and _google_chrome">
+            allow-option-sub-label=
+                "$i18n{siteSettingsProtectedContentIdentifiersAllowedSubLabel}"
+</if>
             allow-option-icon="settings:protected-content"
             disabled$="[[isGuest_]]">
           </settings-category-default-radio-group>

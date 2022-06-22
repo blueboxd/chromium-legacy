@@ -229,9 +229,10 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
     ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
         ExtensionTabUtil::GetScrubTabBehavior(extension, context_type,
                                               web_contents);
-    args->Append(ExtensionTabUtil::CreateTabObject(
-                     web_contents, scrub_tab_behavior, extension)
-                     ->ToValue());
+    args->Append(base::Value::FromUniquePtrValue(
+        ExtensionTabUtil::CreateTabObject(web_contents, scrub_tab_behavior,
+                                          extension)
+            ->ToValue()));
 
     DispatchEventToExtension(web_contents->GetBrowserContext(),
                              extension_action.extension_id(), histogram_value,
@@ -587,14 +588,13 @@ ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
 
 ExtensionFunction::ResponseAction
 ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
-  std::unique_ptr<base::ListValue> list(new base::ListValue());
+  base::Value::List list;
   SkColor color = extension_action_->GetBadgeBackgroundColor(tab_id_);
-  list->Append(static_cast<int>(SkColorGetR(color)));
-  list->Append(static_cast<int>(SkColorGetG(color)));
-  list->Append(static_cast<int>(SkColorGetB(color)));
-  list->Append(static_cast<int>(SkColorGetA(color)));
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(list))));
+  list.Append(static_cast<int>(SkColorGetR(color)));
+  list.Append(static_cast<int>(SkColorGetG(color)));
+  list.Append(static_cast<int>(SkColorGetB(color)));
+  list.Append(static_cast<int>(SkColorGetA(color)));
+  return RespondNow(OneArgument(base::Value(std::move(list))));
 }
 
 ActionGetUserSettingsFunction::ActionGetUserSettingsFunction() = default;

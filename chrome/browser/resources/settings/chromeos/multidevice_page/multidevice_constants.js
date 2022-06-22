@@ -64,6 +64,7 @@ export const MultiDeviceFeatureState = {
   FURTHER_SETUP_REQUIRED: 8,
   UNAVAILABLE_TOP_LEVEL_FEATURE_DISABLED: 9,
   UNAVAILABLE_NO_VERIFIED_HOST_CLIENT_NOT_READY: 10,
+  UNAVAILABLE_NO_VERIFIED_HOST_NO_ELIGIBLE_HOST: 11,
 };
 
 /**
@@ -105,6 +106,55 @@ export const PhoneHubPermissionsSetupMode = {
   APPS_SETUP_MODE: 2,
   CAMERA_ROLL_SETUP_MODE: 3,
   ALL_PERMISSIONS_SETUP_MODE: 4,
+};
+
+/**
+ * Numerical values the screens for combined set up dialog only.
+ * Update of this enum should be propagate to PermissionsOnboardingStep
+ * in ash/components/phonehub/util/histogram_util.h
+ * @enum {number}
+ */
+export const PhoneHubPermissionsSetupFlowScreens = {
+  NOT_APPLICABLE: 0,
+  INTRO: 1,
+  FINISH_SET_UP_ON_PHONE: 2,
+  CONNECTING: 3,
+  CONNECTION_ERROR: 4,
+  CONNECTION_TIME_OUT: 5,
+  CONNECTED: 6,
+  SET_A_PIN_OR_PASSWORD: 7,
+};
+
+/**
+ * Numerical values the screens for actions in combined set up dialog only.
+ * Update of this enum should be propagate to PermissionsOnboardingScreenEvent
+ * in ash/components/phonehub/util/histogram_util.h
+ * @enum {number}
+ */
+export const PhoneHubPermissionsSetupAction = {
+  UNKNOWN: 0,
+  SHOWN: 1,
+  LEARN_MORE: 2,
+  CANCEL: 3,
+  DONE: 4,
+  NEXT_OR_TRY_AGAIN: 5,
+};
+
+/**
+ * Numerical values the set up mode in combined set up dialog only.
+ * Update of this enum should be propagate to PermissionsOnboardingSetUpMode in
+ * ash/components/phonehub/util/histogram_util.h
+ * @enum {number}
+ */
+export const PhoneHubPermissionsSetupFeatureCombination = {
+  NONE: 0,
+  NOTIFICATION: 1,
+  MESSAGING_APP: 2,
+  CAMERA_ROLL: 3,
+  NOTIFICATION_AND_MESSAGING_APP: 4,
+  NOTIFICATION_AND_CAMERA_ROLL: 5,
+  MESSAGING_APP_AND_CAMERA_ROLL: 6,
+  ALL_PERMISSONS: 7,
 };
 
 /**

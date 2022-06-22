@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.settings;
 
+import static org.chromium.chrome.browser.password_manager.PasswordManagerHelper.hasChosenToSyncPasswords;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerHelper.usesUnifiedPasswordManagerUI;
 
 import android.content.Context;
@@ -12,6 +13,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.SuperscriptSpan;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -20,6 +24,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics.ThemeSettingsEntry;
@@ -54,6 +59,9 @@ import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -91,6 +99,7 @@ public class MainSettings extends PreferenceFragmentCompat
     private SignInPreference mSignInPreference;
     private ChromeBasePreference mManageSync;
     private @Nullable PasswordCheck mPasswordCheck;
+    private ObservableSupplier<ModalDialogManager> mModalDialogManagerSupplier;
 
     public MainSettings() {
         setHasOptionsMenu(true);
@@ -240,6 +249,7 @@ public class MainSettings extends PreferenceFragmentCompat
 
         updateManageSyncPreference();
         updateSearchEnginePreference();
+        updatePasswordsPreference();
 
         Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
         setOnOffSummary(homepagePref, HomepageManager.isHomepageEnabled());
@@ -324,13 +334,47 @@ public class MainSettings extends PreferenceFragmentCompat
         Preference passwordsPreference = findPreference(PREF_PASSWORDS);
         if (usesUnifiedPasswordManagerUI()) {
             // TODO(crbug.com/1217070): Move this to the layout xml once the feature is rolled out
-            passwordsPreference.setTitle(R.string.password_settings_title_gpm);
+            passwordsPreference.setTitle(getPasswordsPreferenceElementTitle());
         }
         passwordsPreference.setOnPreferenceClickListener(preference -> {
-            PasswordManagerLauncher.showPasswordSettings(
-                    getActivity(), ManagePasswordsReferrer.CHROME_SETTINGS);
+            if (shouldShowNewLabelForPasswordsPreference()) {
+                UserPrefs.get(Profile.getLastUsedRegularProfile())
+                        .setBoolean(Pref.PASSWORDS_PREF_WITH_NEW_LABEL_USED, true);
+            }
+            PasswordManagerLauncher.showPasswordSettings(getActivity(),
+                    ManagePasswordsReferrer.CHROME_SETTINGS, mModalDialogManagerSupplier);
             return true;
         });
+    }
+
+    private boolean shouldShowNewLabelForPasswordsPreference() {
+        return usesUnifiedPasswordManagerUI() && hasChosenToSyncPasswords(SyncService.get())
+                && !UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            .getBoolean(Pref.PASSWORDS_PREF_WITH_NEW_LABEL_USED);
+    }
+
+    // TODO(crbug.com/1217070): remove this method once UPM feature is rolled out.
+    // String should be defined in the layout XML.
+    private CharSequence getPasswordsPreferenceElementTitle() {
+        Context context = getContext();
+        if (shouldShowNewLabelForPasswordsPreference()) {
+            // Show the styled "New" text if the user did not accessed the new Password Manager
+            // settings.
+            return SpanApplier.applySpans(context.getString(R.string.password_settings_title_gpm),
+                    new SpanInfo("<new>", "</new>", new SuperscriptSpan(),
+                            new RelativeSizeSpan(0.75f),
+                            new ForegroundColorSpan(
+                                    context.getColor(R.color.default_text_color_blue_baseline))));
+        } else {
+            // Remove the "NEW" text and the trailing whitespace.
+            return (CharSequence) (SpanApplier
+                                           .removeSpanText(
+                                                   context.getString(
+                                                           R.string.password_settings_title_gpm),
+                                                   new SpanInfo("<new>", "</new>"))
+                                           .toString()
+                                           .trim());
+        }
     }
 
     private void setOnOffSummary(Preference pref, boolean isOn) {
@@ -369,6 +413,7 @@ public class MainSettings extends PreferenceFragmentCompat
     @Override
     public void syncStateChanged() {
         updateManageSyncPreference();
+        updatePasswordsPreference();
     }
 
     @VisibleForTesting
@@ -403,5 +448,10 @@ public class MainSettings extends PreferenceFragmentCompat
                         || isPreferenceControlledByCustodian(preference);
             }
         };
+    }
+
+    public void setModalDialogManagerSupplier(
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
+        mModalDialogManagerSupplier = modalDialogManagerSupplier;
     }
 }

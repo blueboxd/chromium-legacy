@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
@@ -62,7 +63,6 @@ class WebAppIconManagerBrowserTest : public InProcessBrowserTest {
  private:
   net::EmbeddedTestServer https_server_;
   apps::AppServiceTest app_service_test_;
-
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
@@ -72,19 +72,18 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
 
   AppId app_id;
   {
-    std::unique_ptr<WebAppInstallInfo> web_application_info =
+    std::unique_ptr<WebAppInstallInfo> install_info =
         std::make_unique<WebAppInstallInfo>();
-    web_application_info->start_url = start_url;
-    web_application_info->scope = start_url.GetWithoutFilename();
-    web_application_info->title = u"App Name";
-    web_application_info->user_display_mode = DisplayMode::kStandalone;
+    install_info->start_url = start_url;
+    install_info->scope = start_url.GetWithoutFilename();
+    install_info->title = u"App Name";
+    install_info->user_display_mode = UserDisplayMode::kStandalone;
 
     {
       SkBitmap bitmap;
       bitmap.allocN32Pixels(icon_size::k32, icon_size::k32, true);
       bitmap.eraseColor(SK_ColorBLUE);
-      web_application_info->icon_bitmaps.any[icon_size::k32] =
-          std::move(bitmap);
+      install_info->icon_bitmaps.any[icon_size::k32] = std::move(bitmap);
     }
 
     WebAppInstallManager& install_manager =
@@ -92,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
 
     base::RunLoop run_loop;
     install_manager.InstallWebAppFromInfo(
-        std::move(web_application_info),
+        std::move(install_info),
         /*overwrite_existing_manifest_fields=*/false, ForInstallableSite::kYes,
         webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(

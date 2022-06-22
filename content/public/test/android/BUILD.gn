@@ -9,8 +9,9 @@ generate_jni("test_support_content_jni_headers") {
 android_library("android_test_message_pump_support_java") {
   testonly = true
   deps = [
-    "//base:base_java",
     "//base:base_java_test_support",
+    "//base:jni_java",
+    "//build/android:build_java",
   ]
   sources = [ "javatests/src/org/chromium/content_public/browser/test/NestedSystemMessageHandler.java" ]
 }
@@ -21,6 +22,8 @@ android_library("content_java_test_support") {
     ":android_test_message_pump_support_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",
     "//net/android:net_java",

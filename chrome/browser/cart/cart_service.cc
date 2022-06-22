@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/commerce_heuristics_data.h"
+#include "components/commerce/core/commerce_heuristics_data_metrics_helper.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -76,9 +77,9 @@ bool CompareTimeStampForProtoPair(const CartDB::KeyAndValue pair1,
 }
 
 absl::optional<base::Value> JSONToDictionary(int resource_id) {
-  base::StringPiece json_resource(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
-  absl::optional<base::Value> value = base::JSONReader::Read(json_resource);
+  absl::optional<base::Value> value = base::JSONReader::Read(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          resource_id));
   DCHECK(value && value.has_value() && value->is_dict());
   return value;
 }
@@ -896,11 +897,15 @@ void CartService::OnAddCart(const std::string& domain,
       domain_name_mapping_->FindStringKey(domain);
   if (merchant_name_from_component.has_value()) {
     proto.set_merchant(*merchant_name_from_component);
+    CommerceHeuristicsDataMetricsHelper::RecordMerchantNameSource(
+        CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_COMPONENT);
   } else if (merchant_name_from_resource) {
     proto.set_merchant(*merchant_name_from_resource);
-    // TODO(crbug.com/1300332): Add UMA here to track when component failed to
-    // feed heuristics. It's going to be a enum of {from component, from
-    // resource, missing}.
+    CommerceHeuristicsDataMetricsHelper::RecordMerchantNameSource(
+        CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_RESOURCE);
+  } else {
+    CommerceHeuristicsDataMetricsHelper::RecordMerchantNameSource(
+        CommerceHeuristicsDataMetricsHelper::HeuristicsSource::MISSING);
   }
   if (cart_url) {
     proto.set_merchant_cart_url(cart_url->spec());
@@ -914,9 +919,6 @@ void CartService::OnAddCart(const std::string& domain,
       proto.set_merchant_cart_url(*fallback_url_from_component);
     } else if (fallback_url_from_resource) {
       proto.set_merchant_cart_url(*fallback_url_from_resource);
-      // TODO(crbug.com/1300332): Add UMA here to track when component failed to
-      // feed heuristics. It's going to be a enum of {from component, from
-      // resource, missing}.
     }
   }
 

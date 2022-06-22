@@ -66,17 +66,23 @@ MixerInput::MixerInput(Source* source, FilterGroup* filter_group)
 
   int source_read_size = filter_group->input_frames_per_write();
   if (output_samples_per_second_ > 0 &&
-      output_samples_per_second_ != input_samples_per_second_) {
-    // Round up to nearest multiple of SincResampler::kKernelSize. The read size
-    // must be > kKernelSize, so we round up to at least 2 * kKernelSize.
-    source_read_size = std::max(source_->desired_read_size(),
-                                ::media::SincResampler::kKernelSize + 1);
-    source_read_size =
-        RoundUpMultiple(source_read_size, ::media::SincResampler::kKernelSize);
-    double resample_ratio = static_cast<double>(input_samples_per_second_) /
-                            output_samples_per_second_;
+      (source_->require_clock_rate_simulation() ||
+       output_samples_per_second_ != input_samples_per_second_)) {
+    if (source_->require_clock_rate_simulation()) {
+      // Minimize latency.
+      source_read_size = ::media::SincResampler::kKernelSize * 2;
+    } else {
+      // Round up to nearest multiple of SincResampler::kKernelSize. The read
+      // size must be > kKernelSize, so we round up to at least 2 * kKernelSize.
+      source_read_size =
+          RoundUpMultiple(std::max(source_->desired_read_size(),
+                                   ::media::SincResampler::kKernelSize + 1),
+                          ::media::SincResampler::kKernelSize);
+    }
+    resample_ratio_ = static_cast<double>(input_samples_per_second_) /
+                      output_samples_per_second_;
     resampler_ = std::make_unique<::media::MultiChannelResampler>(
-        num_channels_, resample_ratio, source_read_size,
+        num_channels_, resample_ratio_, source_read_size,
         base::BindRepeating(&MixerInput::ResamplerReadCallback,
                             base::Unretained(this)));
     resampler_->PrimeWithSilence();
@@ -256,7 +262,10 @@ int MixerInput::FillBuffer(int num_frames,
     mixer_rendering_delay_ = rendering_delay;
     // resampler_->BufferedFrames() gives incorrect values in the read callback,
     // so track the number of buffered frames ourselves.
-    resampler_buffered_frames_ = resampler_->BufferedFrames();
+    // Based on testing, the buffered frames reported by SincResampler does not
+    // include the delay incurred by the filter kernel, so add it explicitly.
+    resampler_buffered_frames_ =
+        resampler_->BufferedFrames() + ::media::SincResampler::kKernelSize / 2;
     filled_for_resampler_ = 0;
     tried_to_fill_resampler_ = false;
     resampler_->Resample(num_frames, dest);
@@ -416,6 +425,14 @@ float MixerInput::TargetVolume() {
 float MixerInput::InstantaneousVolume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return slew_volume_.LastBufferMaxMultiplier();
+}
+
+void MixerInput::SetSimulatedClockRate(double new_clock_rate) {
+  if (new_clock_rate == simulated_clock_rate_ || !resampler_) {
+    return;
+  }
+  simulated_clock_rate_ = new_clock_rate;
+  resampler_->SetRatio(resample_ratio_ * simulated_clock_rate_);
 }
 
 }  // namespace media

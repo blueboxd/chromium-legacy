@@ -268,7 +268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.HomedirEncryptionType" enum="HomedirEncryptionType"
-    expires_after="2022-04-24">
+    expires_after="2023-04-24">
   <owner>dspaid@chromium.org</owner>
   <summary>
     The encryption type used for a user's cryptohome directory. This is logged
@@ -354,6 +354,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.MaskedDownloadsItems" units="items"
+    expires_after="2022-10-01">
+  <owner>benreich@chromium.org</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    If the Downloads bind mount fails, files may be saved to ~/MyFiles/Downloads
+    directly and upon next login an attempt will be made to move these back into
+    ~/Downloads to perform a bind mount. This metric records the number of items
+    (as direct children of ~/MyFiles/Downloads) that get migrated on the next
+    successful cryptohome mount.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.MigrationUI.ConsumedBatteryPercent" units="%"
     expires_after="2020-07-01">
   <owner>fukino@chromium.org</owner>
@@ -416,9 +429,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.OOPMountCleanupResult"
-    enum="CryptohomeOOPMountCleanupResult" expires_after="2022-05-01">
+    enum="CryptohomeOOPMountCleanupResult" expires_after="2023-04-01">
   <owner>betuls@chromium.org</owner>
-  <owner>jorgelo@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     The result of a cryptohome out-of-process mount cleanup. Recorded once per
     logout.
@@ -426,9 +439,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.OOPMountOperationResult"
-    enum="CryptohomeOOPMountOperationResult" expires_after="2022-05-01">
+    enum="CryptohomeOOPMountOperationResult" expires_after="2023-04-01">
   <owner>betuls@chromium.org</owner>
-  <owner>jorgelo@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     The result of a cryptohome out-of-process mount operation. Recorded once per
     login attempt.
@@ -446,7 +459,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.RestoreSELinuxContextResultForHome"
-    enum="BooleanSuccess" expires_after="2022-05-01">
+    enum="BooleanSuccess" expires_after="2023-04-01">
   <owner>betuls@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <summary>
@@ -457,13 +470,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.RestoreSELinuxContextResultForShadow"
-    enum="BooleanSuccess" expires_after="2022-02-25">
+    enum="BooleanSuccess" expires_after="2023-04-01">
   <owner>betuls@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <summary>
     The result of a cryptohome restore SELinux context operation of shadow
     directory /home/.shadow and its subdirectories. Recorded on a user's first
     login on a device or login after factory reset.
+
+    WARNING: This histogram was expired from 2022-02-25 to 2022-04-22.
   </summary>
 </histogram>
 
@@ -535,8 +550,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToMountEx" units="ms"
-    expires_after="2022-05-01">
-  <owner>jorgelo@chromium.org</owner>
+    expires_after="2023-04-01">
+  <owner>betuls@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     The amount of time for Chrome OS cryptohome to mount the encrypted home
@@ -555,8 +570,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToMountGuestEx" units="ms"
-    expires_after="2022-05-01">
-  <owner>jorgelo@chromium.org</owner>
+    expires_after="2023-04-01">
+  <owner>betuls@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     The amount of time for Chrome OS cryptohome to mount the encrypted guest
@@ -565,8 +580,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformEphemeralMount" units="ms"
-    expires_after="2022-05-01">
-  <owner>jorgelo@chromium.org</owner>
+    expires_after="2023-04-01">
+  <owner>betuls@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     The amount of time cryptohome spends actively performing mounts when
@@ -576,9 +591,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformMount" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2023-04-01">
   <owner>betuls@chromium.org</owner>
-  <owner>jorgelo@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     The amount of time cryptohome spends performing the mounts for the user's
@@ -588,7 +602,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TpmResults" enum="CryptohomeTpmResults"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>afakhry@chromium.org</owner>
   <summary>
     The errors resulting from interacting with the Trusted Platform Module (TPM)
@@ -606,8 +620,34 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.UssExperiment.FetchUssExperimentConfigStatus"
+    enum="CryptohomeFetchUssExperimentConfigStatus" expires_after="2023-04-29">
+  <owner>hcyang@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    cryptohomed fetchs the USS experiment config from gstatic when it starts.
+    This metric tracks the fetch and parse result. If fetch and parse is
+    successful, and it determines that the experiment should be
+    enabled/disabled, it reports Enabled/Disabled respectively. If fetch or
+    parse is not successful, it reports Error.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.UssExperiment.UssExperimentFlag"
+    enum="CryptohomeUssExperimentFlag" expires_after="2023-04-29">
+  <owner>hcyang@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    cryptohomed checks the USS experiment flag when a new user is created to
+    decide whether a USS-structured cryptohome should be created. This metrics
+    reports the value of the experiment flag when it checks it. Not found means
+    that the experiment config fetching failed or haven't complete when the flag
+    is checked.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.VaultKeysetMetric.{VaultKeysetMetric}"
-    units="count" expires_after="2022-06-01">
+    units="count" expires_after="2023-02-01">
   <owner>thomascedeno@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>

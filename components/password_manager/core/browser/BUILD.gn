@@ -166,6 +166,8 @@ static_library("browser") {
     "password_manager_metrics_recorder.h",
     "password_manager_metrics_util.cc",
     "password_manager_metrics_util.h",
+    "password_manager_setting.h",
+    "password_manager_settings_service.h",
     "password_manager_util.cc",
     "password_manager_util.h",
     "password_notes_table.cc",
@@ -333,27 +335,27 @@ static_library("browser") {
     sources += [
       "built_in_backend_to_android_backend_migrator.cc",
       "built_in_backend_to_android_backend_migrator.h",
-      "capabilities_service.h",
-      "capabilities_service_impl.cc",
-      "capabilities_service_impl.h",
-      "password_scripts_fetcher.h",
-      "password_scripts_fetcher_impl.cc",
-      "password_scripts_fetcher_impl.h",
       "password_store_backend_migration_decorator.cc",
       "password_store_backend_migration_decorator.h",
       "password_store_proxy_backend.cc",
       "password_store_proxy_backend.h",
-      "saved_passwords_capabilities_fetcher.cc",
-      "saved_passwords_capabilities_fetcher.h",
     ]
-    deps += [ "//components/autofill_assistant/browser/public" ]
   }
 
   if (!is_ios) {
     sources += [
+      "capabilities_service.h",
+      "capabilities_service_impl.cc",
+      "capabilities_service_impl.h",
       "http_credentials_cleaner.cc",
       "http_credentials_cleaner.h",
+      "password_scripts_fetcher.h",
+      "password_scripts_fetcher_impl.cc",
+      "password_scripts_fetcher_impl.h",
+      "saved_passwords_capabilities_fetcher.cc",
+      "saved_passwords_capabilities_fetcher.h",
     ]
+    deps += [ "//components/autofill_assistant/browser/public" ]
   }
 
   if (!is_android && !is_ios) {
@@ -470,6 +472,7 @@ if (is_android) {
       "android_backend_error.h",
       "manage_passwords_referrer.h",
       "password_manager_metrics_util.h",
+      "password_manager_setting.h",
     ]
   }
 }
@@ -688,6 +691,7 @@ source_set("unit_tests") {
     "password_account_storage_settings_watcher_unittest.cc",
     "password_autofill_manager_unittest.cc",
     "password_bubble_experiment_unittest.cc",
+    "password_change_success_tracker_impl_unittest.cc",
     "password_feature_manager_impl_unittest.cc",
     "password_form_filling_unittest.cc",
     "password_form_manager_unittest.cc",

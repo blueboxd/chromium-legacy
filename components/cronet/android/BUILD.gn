@@ -362,7 +362,7 @@ cronet_impl_native_java_deps_to_package = [
   ":cronet_urlconnection_impl_java",
   "//base:base_java",
   "//base:jni_java",
-  "//build/android:build_config_java",
+  "//build/android:build_java",
   "//net/android:net_java",
   "//url:url_java",
 ]
@@ -407,7 +407,7 @@ android_library("cronet_impl_native_base_java") {
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
     "//base:jni_java",
-    "//build/android:build_config_java",
+    "//build/android:build_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
@@ -434,7 +434,16 @@ android_resources("cronet_sample_apk_resources") {
     "sample/res/values/strings.xml",
   ]
   android_manifest = "sample/AndroidManifest.xml"
-  deps = [ "//third_party/android_deps:android_support_v7_appcompat_java" ]
+  deps = [
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
+    "//third_party/androidx:androidx_drawerlayout_drawerlayout_java",
+    "//third_party/androidx:androidx_fragment_fragment_java",
+    "//third_party/androidx:androidx_interpolator_interpolator_java",
+    "//third_party/androidx:androidx_lifecycle_lifecycle_common_java",
+    "//third_party/androidx:androidx_vectordrawable_vectordrawable_animated_java",
+    "//third_party/androidx:androidx_vectordrawable_vectordrawable_java",
+  ]
 }
 
 android_library("cronet_sample_apk_java") {
@@ -448,8 +457,9 @@ android_library("cronet_sample_apk_java") {
     ":cronet_sample_apk_resources",
     ":package_api_java",
     ":package_impl_native_java",
-    "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_lifecycle_lifecycle_viewmodel_java",
   ]
 }
 
@@ -786,7 +796,6 @@ if (!is_component_build) {
       "//third_party/junit",
     ]
 
-    enable_multidex = false
     if (!is_java_debug) {
       proguard_enabled = true
       proguard_configs = [ "sample/javatests/proguard.cfg" ]
@@ -888,6 +897,8 @@ if (!is_component_build) {
       ":cronet_impl_all_java",
       "//base:base_java",
       "//base:base_java_test_support",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//net/android:net_java_test_support",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/junit",
@@ -920,6 +931,8 @@ if (!is_component_build) {
       ":cronet_api_java",
       ":cronet_impl_all_java",
       "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",
@@ -958,6 +971,7 @@ if (!is_component_build) {
     ":cronet_fake_javatests",
     ":cronet_test_apk_java",
     "//base:base_java",
+    "//base:jni_java",
     "//base:base_java_test_support",
 
     "//net/android:embedded_test_server_aidl_java",
@@ -1032,7 +1046,6 @@ if (!is_component_build) {
     # it depends on basically all source files.
     enable_lint = true
     lint_suppressions_file = "lint-suppressions.xml"
-    lint_baseline_file = "lint-baseline.xml"
 
     # Still needs to support KitKat. See crbug.com/1042122.
     lint_min_sdk_version = 19
@@ -1060,6 +1073,8 @@ if (!is_component_build) {
       ":cronet_test_apk_resources",
       "//base:base_java",
       "//base:base_java_test_support",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//net/android:net_java",
       "//net/android:net_java_test_support",
       "//third_party/android_sdk:android_test_base_java",
@@ -1146,6 +1161,8 @@ if (!is_component_build) {
       ":cronet_test_apk_resources",
       "//base:base_java",
       "//base:base_java_test_support",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:runner_java",
@@ -1186,6 +1203,8 @@ if (!is_component_build) {
       ":cronet_javatests",
       ":cronet_test_apk_java",
       "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//third_party/android_sdk:android_test_mock_java",
       "//third_party/junit",
     ]
@@ -1289,6 +1308,7 @@ if (!is_component_build) {
   jar_src("jar_cronet_impl_native_java_source") {
     src_search_dirs = [
       "//base/android/java/src",
+      "//build/android/java/src",
       "//components/cronet/android/java/src",
       "//net/android/java/src",
       "//url/android/java/src",
@@ -1296,6 +1316,8 @@ if (!is_component_build) {
     source_deps = [
       ":cronet_impl_native_base_java",
       "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//net/android:net_java",
       "//url:url_java",
     ]

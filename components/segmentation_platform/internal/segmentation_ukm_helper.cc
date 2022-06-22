@@ -63,8 +63,7 @@ const UkmMemberFn kSegmentationUkmOutputMethods[] = {
     &Segmentation_ModelExecution::SetActualResult5,
     &Segmentation_ModelExecution::SetActualResult6};
 
-// Gets a set of segment IDs that are allowed to upload metrics.
-base::flat_set<int> GetSegmentIdsAllowedForReporting() {
+base::flat_set<OptimizationTarget> GetSegmentIdsAllowedForReporting() {
   std::vector<std::string> segment_ids = base::SplitString(
       base::GetFieldTrialParamValueByFeature(
           segmentation_platform::features::
@@ -72,11 +71,11 @@ base::flat_set<int> GetSegmentIdsAllowedForReporting() {
           segmentation_platform::kSegmentIdsAllowedForReportingKey),
       ",;", base::WhitespaceHandling::TRIM_WHITESPACE,
       base::SplitResult::SPLIT_WANT_NONEMPTY);
-  base::flat_set<int> result;
+  base::flat_set<OptimizationTarget> result;
   for (const auto& id : segment_ids) {
     int segment_id;
     if (base::StringToInt(id, &segment_id))
-      result.emplace(segment_id);
+      result.emplace(static_cast<OptimizationTarget>(segment_id));
   }
   return result;
 }
@@ -125,7 +124,8 @@ ukm::SourceId SegmentationUkmHelper::RecordTrainingData(
     int64_t model_version,
     const std::vector<float>& input_tensor,
     const std::vector<float>& outputs,
-    const std::vector<int>& output_indexes) {
+    const std::vector<int>& output_indexes,
+    const absl::optional<proto::PredictionResult>& prediction_result) {
   ukm::SourceId source_id = ukm::NoURLSourceId();
   ukm::builders::Segmentation_ModelExecution execution_result(source_id);
   if (!AddInputsToUkm(&execution_result, segment_id, model_version,
@@ -137,6 +137,14 @@ ukm::SourceId SegmentationUkmHelper::RecordTrainingData(
     return ukm::kInvalidSourceId;
   }
 
+  if (prediction_result.has_value()) {
+    execution_result.SetPredictionResult(
+        FloatToInt64(prediction_result->result()));
+    base::Time execution_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::Microseconds(prediction_result->timestamp_us()));
+    execution_result.SetOutputDelaySec(
+        (base::Time::Now() - execution_time).InSeconds());
+  }
   execution_result.Record(ukm::UkmRecorder::Get());
   return source_id;
 }
@@ -189,7 +197,7 @@ bool SegmentationUkmHelper::AddOutputsToUkm(
 // static
 int64_t SegmentationUkmHelper::FloatToInt64(float f) {
   // Encode the float number in IEEE754 double precision.
-  return bit_cast<int64_t>(static_cast<double>(f));
+  return base::bit_cast<int64_t>(static_cast<double>(f));
 }
 
 }  // namespace segmentation_platform

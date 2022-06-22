@@ -32,6 +32,8 @@ android_library("net_java") {
   deps = [
     ":net_thread_stats_uid_java",
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
@@ -77,6 +79,7 @@ android_library("net_java_test_support") {
     ":net_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:jni_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
@@ -101,6 +104,8 @@ android_library("net_java_test_support_provider") {
     ":net_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:jni_java",
+    "//build/android:build_java",
   ]
 
   data_deps = [ "//net:test_support" ]
@@ -147,7 +152,7 @@ android_apk("net_test_support_apk") {
   deps = [
     ":net_java_test_support",
     ":net_java_test_support_provider",
-    "//base:base_java",
+    "//build/android:build_java",
   ]
   android_manifest = "../test/android/javatests/AndroidManifest.xml"
   apk_name = "ChromiumNetTestSupport"
@@ -187,6 +192,8 @@ android_library("net_javatests") {
     ":net_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -229,6 +236,7 @@ junit_binary("net_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//build/android:build_java",
     "//third_party/hamcrest:hamcrest_java",
   ]
 }

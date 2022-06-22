@@ -111,11 +111,7 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}
   void SwapBuffers(viz::OutputSurfaceFrame frame) override {}
-  void Reshape(const gfx::Size& size,
-               float scale_factor,
-               const gfx::ColorSpace& color_space,
-               gfx::BufferFormat format,
-               bool use_stencil) override {}
+  void Reshape(const ReshapeParams& params) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
   bool IsDisplayedAsOverlayPlane() const override { return false; }
   unsigned GetOverlayTextureId() const override { return 0; }
@@ -391,6 +387,14 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
                                        /*release_fence=*/gfx::GpuFenceHandle());
     display_->DidReceivePresentationFeedback(
         gfx::PresentationFeedback::Failure());
+
+    viz::FrameTimingDetails details;
+    details.received_compositor_frame_timestamp = now;
+    details.draw_start_timestamp = now;
+    details.swap_timings = {now, now, now, now};
+    details.presentation_feedback = {now, base::TimeDelta(), 0};
+    client_->DidPresentCompositorFrame(submit_frame->metadata.frame_token,
+                                       details);
   } else {
     if (viz_frame_submission_enabled_) {
       frame.metadata.begin_frame_ack =

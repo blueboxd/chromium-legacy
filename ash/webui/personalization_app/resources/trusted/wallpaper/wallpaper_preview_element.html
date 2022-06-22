@@ -34,7 +34,8 @@
     margin-inline-end: -18px;
   }
 
-  #imageContainer {
+  #imageContainer, 
+  #imagePlaceholder {
     grid-area: image;
     justify-self: center;
     max-width: 360px;
@@ -64,12 +65,12 @@
     </cr-icon-button>
   </div>
   <template is="dom-if" if="[[showPlaceholders_(isLoading_, showImage_)]]">
-    <div id="imagePlaceholder"></div>
+    <div id="imagePlaceholder" class="photo-images-container placeholder"></div>
   </template>
   <template is="dom-if" if="[[showImage_]]">
       <div id="imageContainer" class="photo-images-container clickable"
           on-click="onClickWallpaper_" on-keypress="onClickWallpaper_">
-        <img src$="[[getImageSrc_(image_)]]" aria-hidden="true">
+        <img src$="[[getImageSrc_(image_)]]" alt$="[[getImageAltDescription_(image_)]]">
         <div id="shelf"></div>
       </div>
   </template>

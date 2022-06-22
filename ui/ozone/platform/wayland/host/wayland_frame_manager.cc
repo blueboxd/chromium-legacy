@@ -212,7 +212,6 @@ void WaylandFrameManager::PlayBackFrame(std::unique_ptr<WaylandFrame> frame) {
         }
       }
     } else {
-      subsurface->Show();
       subsurface->ConfigureAndShowSurface(
           config->bounds_rect, root_config->bounds_rect,
           root_config->surface_scale_factor, nullptr, reference_above);
@@ -266,12 +265,13 @@ void WaylandFrameManager::ApplySurfaceConfigure(
 
   surface->SetBufferTransform(config->transform);
   surface->SetSurfaceBufferScale(ceil(config->surface_scale_factor));
-  surface->SetViewportSource(config->crop_rect);
+  surface->SetBufferCrop(config->crop_rect);
   surface->SetViewportDestination(config->bounds_rect.size());
   surface->SetOpacity(config->opacity);
   surface->SetBlending(config->enable_blend);
   surface->SetRoundedClipBounds(config->rounded_clip_bounds);
   surface->SetOverlayPriority(config->priority_hint);
+  surface->SetBackgroundColor(config->background_color);
   if (set_opaque_region) {
     std::vector<gfx::Rect> region_px = {
         gfx::Rect(gfx::ToRoundedSize(config->bounds_rect.size()))};
@@ -284,7 +284,7 @@ void WaylandFrameManager::ApplySurfaceConfigure(
   DCHECK(buffer_handle);
   bool will_attach = surface->AttachBuffer(buffer_handle);
   // If we don't attach a released buffer, graphics freeze will occur.
-  DCHECK(will_attach || !buffer_handle->released());
+  DCHECK(will_attach || !buffer_handle->released(surface));
 
   surface->UpdateBufferDamageRegion(config->damage_region);
   if (!config->access_fence_handle.is_null())
@@ -309,7 +309,8 @@ void WaylandFrameManager::ApplySurfaceConfigure(
     }
     buffer_handle->set_buffer_released_callback(
         base::BindOnce(&WaylandFrameManager::OnWlBufferRelease,
-                       weak_factory_.GetWeakPtr(), surface));
+                       weak_factory_.GetWeakPtr(), surface),
+        surface);
   }
 
   if (connection_->presentation() && !frame->pending_feedback) {
@@ -442,9 +443,10 @@ void WaylandFrameManager::VerifyNumberOfSubmittedFrames() {
   }
 }
 
-void WaylandFrameManager::OnExplicitBufferRelease(WaylandSurface* surface,
-                                                  struct wl_buffer* wl_buffer,
-                                                  base::ScopedFD fence) {
+void WaylandFrameManager::OnExplicitBufferRelease(
+    WaylandSurface* surface,
+    struct wl_buffer* wl_buffer,
+    absl::optional<int32_t> fence) {
   DCHECK(wl_buffer);
 
   // Releases may not necessarily come in order, so search the submitted
@@ -455,14 +457,16 @@ void WaylandFrameManager::OnExplicitBufferRelease(WaylandSurface* surface,
         result->second->wl_buffer() == wl_buffer) {
       // Explicitly make this buffer released when
       // linux_explicit_synchronization is used.
-      result->second->OnExplicitRelease();
+      result->second->OnExplicitRelease(surface);
 
-      if (fence.is_valid()) {
+      if (fence.has_value()) {
+        base::ScopedFD fd{fence.value()};
+        // Accumulate release fences into a single fence.
         if (frame->merged_release_fence_fd.is_valid()) {
-          frame->merged_release_fence_fd.reset(sync_merge(
-              "", frame->merged_release_fence_fd.get(), fence.get()));
+          frame->merged_release_fence_fd.reset(
+              sync_merge("", frame->merged_release_fence_fd.get(), fd.get()));
         } else {
-          frame->merged_release_fence_fd = std::move(fence);
+          frame->merged_release_fence_fd = std::move(fd);
         }
         DCHECK(frame->merged_release_fence_fd.is_valid());
       }
@@ -597,7 +601,7 @@ void WaylandFrameManager::Hide() {
     // destroyed, causing graphics freeze. Manually release them and trigger
     // OnSubmission callbacks.
     for (auto& submitted : submitted_frames_.back()->submitted_buffers)
-      submitted.second->OnExplicitRelease();
+      submitted.second->OnExplicitRelease(submitted.first);
     submitted_frames_.back()->submitted_buffers.clear();
     submitted_frames_.back()->feedback = gfx::PresentationFeedback::Failure();
   }
@@ -617,7 +621,7 @@ void WaylandFrameManager::ClearStates(bool closing) {
   for (auto& frame : submitted_frames_) {
     frame->wl_frame_callback.reset();
     for (auto& submitted : frame->submitted_buffers)
-      submitted.second->OnExplicitRelease();
+      submitted.second->OnExplicitRelease(submitted.first);
     frame->submission_acked = true;
     frame->submitted_buffers.clear();
     if (!frame->feedback.has_value())

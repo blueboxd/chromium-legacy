@@ -6,11 +6,13 @@
  * @fileoverview Helper functions for communicating between trusted and
  * untrusted. All trusted -> untrusted communication must happen through the
  * functions in this file.
+ * @deprecated chrome-untrusted://personalization has been removed, but these
+ * functions still exist to keep the API temporarily the same. This file should
+ * be removed when possible.
  */
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
-import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import * as constants from '../common/constants.js';
 import {isNonEmptyArray} from '../common/utils.js';
@@ -22,10 +24,11 @@ import {GooglePhotosEnablementState, WallpaperCollection, WallpaperImage} from '
 /**
  * TODO(b:197023872) this class is deprecated and should be removed by more
  * post-iframe cleanup.
+ * @deprecated
  */
 export class IFrameApi {
   /**
-   * Send an array of wallpaper collections to untrusted.
+   * Send an array of wallpaper collections collections grid..
    */
   sendCollections(
       target: CollectionsGrid, collections: Array<WallpaperCollection>) {
@@ -37,35 +40,14 @@ export class IFrameApi {
   }
 
   /**
-   * Sends the count of Google Photos photos to untrusted.
-   */
-  sendGooglePhotosCount(target: CollectionsGrid, count: number|null) {
-    const event: constants.SendGooglePhotosCountEvent = {
-      type: constants.EventType.SEND_GOOGLE_PHOTOS_COUNT,
-      count
-    };
-    target.onMessageReceived(event);
-  }
-
-  /**
-   * Sends whether the user is allowed to access Google Photos to untrusted.
+   * Sends whether the user is allowed to access Google Photos to collections
+   * grid.
    */
   sendGooglePhotosEnabled(
       target: CollectionsGrid, enabled: GooglePhotosEnablementState) {
     const event: constants.SendGooglePhotosEnabledEvent = {
       type: constants.EventType.SEND_GOOGLE_PHOTOS_ENABLED,
       enabled
-    };
-    target.onMessageReceived(event);
-  }
-
-  /**
-   * Sends the list of Google Photos photos to untrusted.
-   */
-  sendGooglePhotosPhotos(target: CollectionsGrid, photos: Array<Url>|null) {
-    const event: constants.SendGooglePhotosPhotosEvent = {
-      type: constants.EventType.SEND_GOOGLE_PHOTOS_PHOTOS,
-      photos
     };
     target.onMessageReceived(event);
   }
@@ -98,7 +80,7 @@ export class IFrameApi {
   }
 
   /**
-   * Send an array of wallpaper images to chrome-untrusted://.
+   * Send an array of wallpaper images to collections grid.
    * Will clear the page if images is empty array.
    */
   sendImageTiles(target: ImagesGrid, tiles: constants.ImageTile[]) {
@@ -110,9 +92,11 @@ export class IFrameApi {
   }
 
   /**
-   * Send an array of local images to chrome-untrusted://.
+   * Send an array of local images to collections grid.
    */
-  sendLocalImages(target: CollectionsGrid, images: FilePath[]) {
+  sendLocalImages(
+      target: CollectionsGrid,
+      images: Array<FilePath|constants.DefaultImageSymbol>) {
     const event: constants.SendLocalImagesEvent = {
       type: constants.EventType.SEND_LOCAL_IMAGES,
       images
@@ -121,9 +105,11 @@ export class IFrameApi {
   }
 
   /**
-   * Sends image data keyed by stringified image id.
+   * Sends image data keyed by stringified image id (or default image symbol).
    */
-  sendLocalImageData(target: CollectionsGrid, data: Record<string, string>) {
+  sendLocalImageData(
+      target: CollectionsGrid,
+      data: Record<string|constants.DefaultImageSymbol, string>) {
     const event: constants.SendLocalImageDataEvent = {
       type: constants.EventType.SEND_LOCAL_IMAGE_DATA,
       data

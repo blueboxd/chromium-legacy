@@ -63,12 +63,6 @@ export function reimagingCalibrationRunPageTest() {
     return flushTasks();
   }
 
-  test('Initializes', async () => {
-    await initializeCalibrationRunPage();
-    const statusMessage = component.shadowRoot.querySelector('#calibration');
-    assertFalse(statusMessage.hidden);
-  });
-
   test('NextButtonBeforeCalibrationCompleteFails', async () => {
     const resolver = new PromiseResolver();
     await initializeCalibrationRunPage();
@@ -115,7 +109,7 @@ export function reimagingCalibrationRunPageTest() {
         CalibrationOverallStatus.kCalibrationOverallComplete, 0);
     await flushTasks();
 
-    let expectedResult = {foo: 'bar'};
+    const expectedResult = {foo: 'bar'};
     let savedResult;
     component.onNextButtonClick().then((result) => savedResult = result);
     // Resolve to a distinct result to confirm it was not modified.
@@ -183,38 +177,4 @@ export function reimagingCalibrationRunPageTest() {
 
         assertEquals(1, continueCalibrationCalls);
       });
-
-  test('CalibrationProgressUpdatesStatusMessage', async () => {
-    await initializeCalibrationRunPage();
-    const statusMessage = component.shadowRoot.querySelector('#calibration');
-    assertEquals(
-        loadTimeData.getString('runCalibrationStartingText'),
-        statusMessage.textContent.trim());
-    service.triggerCalibrationObserver(
-        {
-          component: ComponentType.kBaseGyroscope,
-          status: CalibrationStatus.kCalibrationInProgress,
-          progress: 0.5
-        },
-        0);
-    await flushTasks();
-    assertEquals(
-        loadTimeData.getStringF(
-            'runCalibrationCalibratingComponent',
-            loadTimeData.getString('componentBaseGyroscope')),
-        statusMessage.textContent.trim());
-    service.triggerCalibrationObserver(
-        {
-          component: ComponentType.kLidAccelerometer,
-          status: CalibrationStatus.kCalibrationWaiting,
-          progress: 0.0
-        },
-        0);
-    await flushTasks();
-    assertEquals(
-        loadTimeData.getStringF(
-            'runCalibrationCalibratingComponent',
-            loadTimeData.getString('componentLidAccelerometer')),
-        statusMessage.textContent.trim());
-  });
 }

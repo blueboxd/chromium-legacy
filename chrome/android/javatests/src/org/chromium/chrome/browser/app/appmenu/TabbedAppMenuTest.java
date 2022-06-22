@@ -25,6 +25,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -215,13 +216,15 @@ public class TabbedAppMenuTest {
         // App menu is shown during setup.
         Assert.assertTrue("App menu should be showing.", mAppMenuHandler.isAppMenuShowing());
         Assert.assertFalse("Overview shouldn't be showing.",
-                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+                mActivityTestRule.getActivity().getLayoutManager().isLayoutVisible(
+                        LayoutType.TAB_SWITCHER));
 
         LayoutTestUtils.startShowingAndWaitForLayout(
                 mActivityTestRule.getActivity().getLayoutManager(), LayoutType.TAB_SWITCHER, false);
 
         Assert.assertTrue("Overview should be showing.",
-                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+                mActivityTestRule.getActivity().getLayoutManager().isLayoutVisible(
+                        LayoutType.TAB_SWITCHER));
         Assert.assertFalse("App menu shouldn't be showing.", mAppMenuHandler.isAppMenuShowing());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue("App menu should be allowed to show.",
@@ -230,12 +233,11 @@ public class TabbedAppMenuTest {
         });
         showAppMenuAndAssertMenuShown();
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mActivityTestRule.getActivity().getLayoutManager().showLayout(
-                                LayoutType.BROWSING, false));
+        LayoutTestUtils.startShowingAndWaitForLayout(
+                mActivityTestRule.getActivity().getLayoutManager(), LayoutType.BROWSING, false);
         Assert.assertFalse("Overview shouldn't be showing.",
-                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+                mActivityTestRule.getActivity().getLayoutManager().isLayoutVisible(
+                        LayoutType.TAB_SWITCHER));
         CriteriaHelper.pollUiThread(
                 () -> !mAppMenuHandler.isAppMenuShowing(), "App menu shouldn't be showing.");
     }
@@ -244,6 +246,7 @@ public class TabbedAppMenuTest {
     @SmallTest
     @Feature({"Browser", "Main", "Bookmark", "RenderTest"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + ":bookmark_in_app_menu/false"})
     public void testBookmarkMenuItem() throws IOException {
         PropertyModel bookmarkStarPropertyModel = AppMenuTestSupport.getMenuItemPropertyModel(
                 mActivityTestRule.getAppMenuCoordinator(), R.id.bookmark_this_page_id);
@@ -286,6 +289,7 @@ public class TabbedAppMenuTest {
     @Feature({"Browser", "Main", "RenderTest"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @EnableFeatures(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION)
+    @DisabledTest(message = "https://crbug.com/1322581")
     public void testRequestDesktopSiteMenuItem() throws IOException {
         Tab tab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
         boolean isRequestDesktopSite =
@@ -320,6 +324,7 @@ public class TabbedAppMenuTest {
     @Feature({"Browser", "Main", "RenderTest"})
     @DisableFeatures(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest(message = "https://crbug.com/1322581")
     public void testRequestDesktopSiteMenuItem_checkbox() throws IOException {
         Tab tab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
         boolean isRequestDesktopSite =
@@ -353,11 +358,8 @@ public class TabbedAppMenuTest {
     @SmallTest
     @Feature({"Browser", "Main"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + "<Study"})
-    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
-            "force-fieldtrial-params=Study.Group:bookmark_in_app_menu/true"})
-    public void
-    testAddBookmarkMenuItem() throws IOException {
+    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + ":bookmark_in_app_menu/true"})
+    public void testAddBookmarkMenuItem() throws IOException {
         int addBookmark = findIndexOfMenuItemById(R.id.add_bookmark_menu_id);
         Assert.assertNotEquals("No add bookmark found.", -1, addBookmark);
     }

@@ -14,24 +14,31 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile_import_process.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
+#include "components/autofill/core/browser/metrics/form_interactions_counter.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/dense_set.h"
-#include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/security_state/core/security_state.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
+class GURL;
+
+namespace ukm::builders {
+class Autofill_CreditCardFill;
+}
 
 namespace autofill {
 
@@ -350,20 +357,6 @@ class AutofillMetrics {
     // The failure icon is clicked and the save card failure bubble is shown.
     CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN,
     NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS,
-  };
-
-  // Metrics to measure user interaction with the Manage Cards view
-  // shown when user clicks on the save card icon after accepting
-  // to save a card.
-  enum ManageCardsPromptMetric {
-    // The manage cards promo was shown.
-    MANAGE_CARDS_SHOWN,
-    // The user clicked on [Done].
-    MANAGE_CARDS_DONE,
-    // The user clicked on [Manage cards].
-    MANAGE_CARDS_MANAGE_CARDS,
-
-    NUM_MANAGE_CARDS_PROMPT_METRICS
   };
 
   // Metrics to measure user interaction with the virtual card manual fallback
@@ -934,14 +927,13 @@ class AutofillMetrics {
   };
 
   // For measuring the frequency of "required actions" returned by the Wallet
-  // server.  This is similar to the autofill::wallet::RequiredAction enum;
-  // but unlike that enum, the values in this one must remain constant over
-  // time, so that the metrics can be consistently interpreted on the
-  // server-side.
+  // server. This is similar to the wallet::RequiredAction enum; but unlike
+  // that enum, the values in this one must remain constant over time, so that
+  // the metrics can be consistently interpreted on the server-side.
   enum WalletRequiredActionMetric {
     // Baseline metric: Issued a request to the Wallet server.
     WALLET_REQUIRED_ACTION_BASELINE_ISSUED_REQUEST = 0,
-    // Values from the autofill::wallet::RequiredAction enum:
+    // Values from the wallet::RequiredAction enum:
     UNKNOWN_REQUIRED_ACTION,  // Catch all type.
     GAIA_AUTH,
     PASSIVE_GAIA_AUTH,
@@ -1284,7 +1276,8 @@ class AutofillMetrics {
                           const DenseSet<FormType>& form_types,
                           AutofillFormSubmittedState state,
                           const base::TimeTicks& form_parsed_timestamp,
-                          FormSignature form_signature);
+                          FormSignature form_signature,
+                          const FormInteractionCounts& form_interaction_counts);
     void LogFormEvent(FormEvent form_event,
                       const DenseSet<FormType>& form_types,
                       const base::TimeTicks& form_parsed_timestamp);
@@ -1411,8 +1404,6 @@ class AutofillMetrics {
   static void LogCreditCardUploadLegalMessageLinkClicked();
   static void LogCreditCardUploadFeedbackMetric(
       CreditCardUploadFeedbackMetric metric);
-  static void LogManageCardsPromptMetric(ManageCardsPromptMetric metric,
-                                         bool is_uploading);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
   static void LogLocalCardMigrationDecisionMetric(
       LocalCardMigrationDecisionMetric metric);
@@ -1798,7 +1789,8 @@ class AutofillMetrics {
       const DenseSet<FormType>& form_types,
       const base::TimeTicks& form_parsed_timestamp,
       FormSignature form_signature,
-      FormInteractionsUkmLogger* form_interactions_ukm_logger);
+      FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      const FormInteractionCounts& form_interaction_counts);
 
   // Logs if every non-empty field in a submitted form was filled by Autofill.
   // If |is_address| an address was filled, otherwise it was a credit card.
@@ -1835,10 +1827,6 @@ class AutofillMetrics {
   // Logs Autofill.CreditCard.SeamlessFills.AtSubmissionTime.
   static void LogCreditCardSeamlessnessAtSubmissionTime(
       const ServerFieldTypeSet& autofilled_types);
-
-  // This should be called when determining the heuristic types for a form's
-  // fields.
-  static void LogDetermineHeuristicTypesTiming(const base::TimeDelta& duration);
 
   // This should be called when parsing each form.
   static void LogParseFormTiming(const base::TimeDelta& duration);
@@ -2042,14 +2030,12 @@ class AutofillMetrics {
       int number_of_affected_fields,
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Records if at least one setting-inaccessible field was removed on import.
+  // Logs if at least one setting-inaccessible field was removed on import.
   static void LogRemovedSettingInaccessibleFields(bool did_remove);
 
-  // Records that |field| was removed in a profile of |country| on import,
-  // because |field| is inaccessible in the |country|-specific settings.
-  static void LogRemovedSettingInaccessibleField(
-      const std::string& country_code,
-      ServerFieldType field);
+  // Logs that |field| was removed from a profile on import, because it is
+  // setting-inaccessible in the profile's country.
+  static void LogRemovedSettingInaccessibleField(ServerFieldType field);
 
   // Logs when the virtual card metadata for one card have been updated.
   static void LogVirtualCardMetadataSynced(bool existing_card);

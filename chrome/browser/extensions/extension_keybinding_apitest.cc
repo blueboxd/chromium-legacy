@@ -411,6 +411,26 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
                        "pageAction.onClicked", expect_dispatch);
 }
 
+// Verify that keyboard shortcut takes effect without reloading the extension.
+// Regression test for https://crbug.com/1190476.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, ActionKeyUpdated) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("keybinding/action")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Simulate the user changing the keybinding.
+  CommandService* command_service = CommandService::Get(browser()->profile());
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), manifest_values::kActionCommandEvent, "Ctrl+Shift+Y");
+
+  // Verify that the action event occurs for the new keyboard shortcut.
+  ResultCatcher catcher;
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_Y, true, true,
+                                              false, false));
+  ASSERT_TRUE(catcher.GetNextResult());
+}
+
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionOverrideChromeShortcut) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
@@ -955,7 +975,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ContinuePropagation) {
 }
 
 // Test is only applicable on Chrome OS.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, ChromeOSConversions) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -977,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, ChromeOSConversions) {
 
   ASSERT_TRUE(catcher.GetNextResult());
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Make sure component extensions retain keybindings after removal then
 // re-adding.

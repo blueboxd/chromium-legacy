@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/html/forms/select_type.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mutation_observer_init.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -231,7 +232,7 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
             .domWindow()
             ->GetInputDeviceCapabilities()
             ->FiresTouchEvents(mouse_event->FromTouch());
-    select_->focus(FocusParams(SelectionBehaviorOnFocus::kRestore,
+    select_->Focus(FocusParams(SelectionBehaviorOnFocus::kRestore,
                                mojom::blink::FocusType::kMouse,
                                source_capabilities));
     if (select_->GetLayoutObject() && !will_be_destroyed_ &&
@@ -280,7 +281,7 @@ bool MenuListSelectType::ShouldOpenPopupForKeyPressEvent(
 }
 
 bool MenuListSelectType::HandlePopupOpenKeyboardEvent() {
-  select_->focus();
+  select_->Focus();
   // Calling focus() may cause us to lose our LayoutObject. Return true so
   // that our caller doesn't process the event further, but don't set
   // the event as handled.
@@ -497,8 +498,8 @@ String MenuListSelectType::UpdateTextStyleInternal() {
     cloned_style->SetUnicodeBidi(option_style->GetUnicodeBidi());
     cloned_style->SetTextAlign(option_style->GetTextAlign(true));
     if (auto* inner_layout = inner_element.GetLayoutObject()) {
-      inner_layout->SetModifiedStyleOutsideStyleRecalc(
-          std::move(cloned_style), LayoutObject::ApplyStyleChanges::kYes);
+      inner_layout->SetStyle(std::move(cloned_style),
+                             LayoutObject::ApplyStyleChanges::kYes);
     } else {
       inner_element.SetComputedStyle(std::move(cloned_style));
     }
@@ -698,7 +699,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   const auto* mouse_event = DynamicTo<MouseEvent>(event);
   const auto* gesture_event = DynamicTo<GestureEvent>(event);
   if (event.type() == event_type_names::kGesturetap && gesture_event) {
-    select_->focus();
+    select_->Focus();
     // Calling focus() may cause us to lose our layoutObject or change the
     // layoutObject type, in which case do not want to handle the event.
     if (!select_->GetLayoutObject() || will_be_destroyed_)
@@ -720,7 +721,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   if (event.type() == event_type_names::kMousedown && mouse_event &&
       mouse_event->button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
-    select_->focus();
+    select_->Focus();
     // Calling focus() may cause us to lose our layoutObject, in which case
     // do not want to handle the event.
     if (!select_->GetLayoutObject() || will_be_destroyed_ ||
@@ -1073,7 +1074,8 @@ void ListBoxSelectType::ScrollToOptionTask() {
   // OptionRemoved() makes sure option_to_scroll_to_ doesn't have an option
   // with another owner.
   DCHECK_EQ(option->OwnerSelectElement(), select_);
-  select_->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kScroll);
+  select_->GetDocument().UpdateStyleAndLayoutForNode(
+      select_, DocumentUpdateReason::kScroll);
   if (!select_->GetLayoutObject())
     return;
   PhysicalRect bounds = option->BoundingBoxForScrollIntoView();

@@ -11,7 +11,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
-#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager_tester.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,6 +26,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/page_load_metrics/browser/observers/core/uma_page_load_metrics_observer.h"
 #include "components/permissions/permission_manager.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -37,6 +37,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -249,11 +250,12 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(web_contents(), url_b));
   EXPECT_EQ(rfh_a->GetLifecycleState(),
             content::RenderFrameHost::LifecycleState::kInBackForwardCache);
-  base::MockOnceCallback<void(ContentSetting)> callback;
-  EXPECT_CALL(callback, Run(ContentSetting::CONTENT_SETTING_ASK));
-  PermissionManagerFactory::GetForProfile(browser()->profile())
-      ->RequestPermission(ContentSettingsType::GEOLOCATION, rfh_a.get(), url_a,
-                          /* user_gesture = */ true, callback.Get());
+  base::MockOnceCallback<void(blink::mojom::PermissionStatus)> callback;
+  EXPECT_CALL(callback, Run(blink::mojom::PermissionStatus::ASK));
+  // PermissionManagerFactory::GetForProfile(browser()->profile())
+  browser()->profile()->GetPermissionController()->RequestPermission(
+      blink::PermissionType::GEOLOCATION, rfh_a.get(), url_a,
+      /* user_gesture = */ true, callback.Get());
 
   // Ensure |rfh_a| is evicted from the cache because it is not allowed to
   // service the GEOLOCATION permission request.

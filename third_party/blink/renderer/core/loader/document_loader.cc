@@ -34,6 +34,8 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -140,7 +142,14 @@
 
 namespace blink {
 
+const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 namespace {
+
+// Controls whether caching of inline script is wired up correctly.
+constexpr base::FeatureParam<bool> kCacheInlineScriptCodeFixConfiguring{
+    &kCacheInlineScriptCode, "fix_configuring", false};
 
 Vector<OriginTrialFeature> CopyInitiatorOriginTrials(
     const WebVector<int>& initiator_origin_trial_features) {
@@ -239,6 +248,7 @@ void ApplyOriginPolicy(ContentSecurityPolicy* csp,
 
 struct SameSizeAsDocumentLoader
     : public GarbageCollected<SameSizeAsDocumentLoader>,
+      public WebDocumentLoader,
       public UseCounter,
       public WebNavigationBodyLoader::Client {
   Member<MHTMLArchive> archive;
@@ -263,6 +273,7 @@ struct SameSizeAsDocumentLoader
   Member<SubresourceFilter> subresource_filter;
   AtomicString original_referrer;
   ResourceResponse response;
+  mutable WrappedResourceResponse response_wrapper;
   WebFrameLoadType load_type;
   bool is_client_redirect;
   bool replaces_current_history_item;
@@ -322,12 +333,13 @@ struct SameSizeAsDocumentLoader
   WebVector<WebHistoryItem> navigation_api_back_entries;
   WebVector<WebHistoryItem> navigation_api_forward_entries;
   std::unique_ptr<CodeCacheHost> code_cache_host;
-  HashSet<KURL> early_hints_preloaded_resources;
+  HashMap<KURL, EarlyHintsPreloadEntry> early_hints_preloaded_resources;
   absl::optional<Vector<KURL>> ad_auction_components;
   mojom::blink::FencedFrameReportingPtr fenced_frame_reporting;
   bool anonymous;
   bool waiting_for_document_loader;
   bool waiting_for_code_cache;
+  std::unique_ptr<ExtraData> extra_data;
 };
 
 // Asserts size of DocumentLoader, so that whenever a new attribute is added to
@@ -342,7 +354,8 @@ DocumentLoader::DocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<PolicyContainer> policy_container)
+    std::unique_ptr<PolicyContainer> policy_container,
+    std::unique_ptr<ExtraData> extra_data)
     : params_(std::move(navigation_params)),
       policy_container_(std::move(policy_container)),
       url_(params_->url),
@@ -368,6 +381,7 @@ DocumentLoader::DocumentLoader(
                         : nullptr),
       original_referrer_(referrer_),
       response_(params_->response.ToResourceResponse()),
+      response_wrapper_(response_),
       load_type_(params_->frame_load_type),
       is_client_redirect_(params_->is_client_redirect),
       data_received_(false),
@@ -424,7 +438,8 @@ DocumentLoader::DocumentLoader(
           params_->is_cross_site_cross_browsing_context_group),
       navigation_api_back_entries_(params_->navigation_api_back_entries),
       navigation_api_forward_entries_(params_->navigation_api_forward_entries),
-      anonymous_(params_->anonymous) {
+      anonymous_(params_->anonymous),
+      extra_data_(std::move(extra_data)) {
   DCHECK(frame_);
 
   // TODO(dgozman): we should get rid of this boolean field, and make client
@@ -479,7 +494,7 @@ DocumentLoader::DocumentLoader(
     ReplaceWithEmptyDocument();
 
   for (const auto& resource : params_->early_hints_preloaded_resources)
-    early_hints_preloaded_resources_.insert(resource);
+    early_hints_preloaded_resources_.insert(resource, EarlyHintsPreloadEntry());
 
   if (IsBackForwardLoadType(params_->frame_load_type))
     DCHECK(history_item_);
@@ -502,6 +517,8 @@ DocumentLoader::DocumentLoader(
       fenced_frame_reporting_->metadata.insert(destination, std::move(data));
     }
   }
+
+  frame_->Client()->DidCreateDocumentLoader(this);
 }
 
 std::unique_ptr<WebNavigationParams>
@@ -571,8 +588,8 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   params->force_enabled_origin_trials =
       CopyForceEnabledOriginTrials(force_enabled_origin_trials_);
   params->anonymous = anonymous_;
-  for (const auto& resource : early_hints_preloaded_resources_)
-    params->early_hints_preloaded_resources.push_back(resource);
+  for (const auto& pair : early_hints_preloaded_resources_)
+    params->early_hints_preloaded_resources.push_back(pair.key);
   if (ad_auction_components_) {
     params->ad_auction_components.emplace();
     for (const KURL& url : *ad_auction_components_) {
@@ -635,20 +652,15 @@ ResourceTimingInfo* DocumentLoader::GetNavigationTimingInfo() const {
   return navigation_timing_info_.get();
 }
 
-const AtomicString& DocumentLoader::OriginalReferrer() const {
+WebString DocumentLoader::OriginalReferrer() const {
   return original_referrer_;
-}
-
-void DocumentLoader::SetSubresourceFilter(
-    SubresourceFilter* subresource_filter) {
-  subresource_filter_ = subresource_filter;
 }
 
 const KURL& DocumentLoader::Url() const {
   return url_;
 }
 
-const AtomicString& DocumentLoader::HttpMethod() const {
+WebString DocumentLoader::HttpMethod() const {
   return http_method_;
 }
 
@@ -1573,6 +1585,7 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   if (!frame_)
     return;
 
+  extra_data_.reset();
   service_worker_network_provider_ = nullptr;
   WeakIdentifierMap<DocumentLoader>::NotifyObjectDestroyed(this);
   frame_ = nullptr;
@@ -1597,6 +1610,10 @@ bool DocumentLoader::WillLoadUrlAsEmpty(const KURL& url) {
   if (url.IsAboutSrcdocURL())
     return false;
   return SchemeRegistry::ShouldLoadURLSchemeAsEmptyDocument(url.Protocol());
+}
+
+bool WebDocumentLoader::WillLoadUrlAsEmpty(const WebURL& url) {
+  return DocumentLoader::WillLoadUrlAsEmpty(url);
 }
 
 void DocumentLoader::InitializeEmptyResponse() {
@@ -1763,14 +1780,18 @@ void DocumentLoader::StartLoadingResponse() {
     return;
   }
 
-  // The |cached_metadata_handler_| is created, even when
-  // |UseIsolatedCodeCache()| is false to support the parts that don't
-  // go throught the site-isolated-code-cache.
-  auto cached_metadata_sender = CachedMetadataSender::Create(
-      response_, blink::mojom::CodeCacheType::kJavascript, requestor_origin_);
-  cached_metadata_handler_ =
-      MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
-          WTF::TextEncoding(), std::move(cached_metadata_sender));
+  ScriptableDocumentParser* scriptable_parser =
+      parser_->AsScriptableDocumentParser();
+  if (scriptable_parser) {
+    auto cached_metadata_sender = CachedMetadataSender::Create(
+        response_, blink::mojom::CodeCacheType::kJavascript,
+        frame_->DomWindow()->GetSecurityOrigin());
+    cached_metadata_handler_ =
+        MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
+            WTF::TextEncoding(), std::move(cached_metadata_sender));
+    if (kCacheInlineScriptCodeFixConfiguring.Get())
+      scriptable_parser->SetInlineScriptCacheHandler(cached_metadata_handler_);
+  }
 
   if (waiting_for_document_loader_) {
     // If we were just waiting for the document loader, the body has already
@@ -1785,11 +1806,8 @@ void DocumentLoader::StartLoadingResponse() {
 }
 
 void DocumentLoader::StartLoadingBodyWithCodeCache() {
-  CodeCacheHost* code_cache_host = nullptr;
-  if (UseIsolatedCodeCache()) {
-    code_cache_host = GetCodeCacheHost();
-    DCHECK(code_cache_host);
-  }
+  CodeCacheHost* code_cache_host =
+      UseIsolatedCodeCache() ? GetCodeCacheHost() : nullptr;
   if (base::FeatureList::IsEnabled(features::kEarlyBodyLoad)) {
     waiting_for_code_cache_ = true;
     // If the body can load in parallel with the code cache, we need to enter
@@ -2065,7 +2083,7 @@ bool ShouldReuseDOMWindow(LocalDOMWindow* window,
   }
 
   // Anonymous is tracked per-Window, so if it does not match, do not reuse it.
-  if (anonymous != window->anonymous()) {
+  if (anonymous != window->isAnonymouslyFramed()) {
     return false;
   }
 
@@ -2291,6 +2309,8 @@ void DocumentLoader::CommitNavigation() {
   DCHECK(frame_->GetPage());
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
   DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
+  DCHECK(!frame_->GetDocument() ||
+         frame_->GetDocument()->ConnectedSubframeCount() == 0);
   state_ = kCommitted;
 
   if (body_loader_ && !loading_main_document_from_mhtml_archive_ &&
@@ -2320,7 +2340,7 @@ void DocumentLoader::CommitNavigation() {
   //
   // Use response_.AddressSpace() instead of frame_->DomWindow()->AddressSpace()
   // since the latter isn't populated in unit tests.
-  if (frame_->IsMainFrame()) {
+  if (frame_->IsOutermostMainFrame()) {
     auto address_space = response_.AddressSpace();
     if ((address_space == network::mojom::blink::IPAddressSpace::kPrivate ||
          address_space == network::mojom::blink::IPAddressSpace::kLocal) &&
@@ -2608,12 +2628,14 @@ void DocumentLoader::CreateParserPostCommit() {
     frame_->DomWindow()->GetScriptController().UpdateDocument();
   }
 
-  // If this is a scriptable parser and there is a resource, register the
-  // resource's cache handler with the parser.
-  ScriptableDocumentParser* scriptable_parser =
-      parser_->AsScriptableDocumentParser();
-  if (scriptable_parser && cached_metadata_handler_)
-    scriptable_parser->SetInlineScriptCacheHandler(cached_metadata_handler_);
+  if (!kCacheInlineScriptCodeFixConfiguring.Get()) {
+    // If this is a scriptable parser and there is a resource, register the
+    // resource's cache handler with the parser.
+    ScriptableDocumentParser* scriptable_parser =
+        parser_->AsScriptableDocumentParser();
+    if (scriptable_parser && cached_metadata_handler_)
+      scriptable_parser->SetInlineScriptCacheHandler(cached_metadata_handler_);
+  }
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 
@@ -2747,7 +2769,7 @@ void DocumentLoader::RecordUseCountersForCommit() {
 
   if (response_.IsSignedExchangeInnerResponse()) {
     CountUse(WebFeature::kSignedExchangeInnerResponse);
-    CountUse(frame_->IsMainFrame()
+    CountUse(frame_->IsOutermostMainFrame()
                  ? WebFeature::kSignedExchangeInnerResponseInMainFrame
                  : WebFeature::kSignedExchangeInnerResponseInSubFrame);
   }
@@ -2886,7 +2908,8 @@ void DocumentLoader::NotifyPrerenderingDocumentActivated(
   GetTiming().MarkActivationStart(params.activation_start);
 }
 
-HashSet<KURL> DocumentLoader::GetEarlyHintsPreloadedResources() {
+HashMap<KURL, EarlyHintsPreloadEntry>
+DocumentLoader::GetEarlyHintsPreloadedResources() {
   return early_hints_preloaded_resources_;
 }
 
@@ -2930,7 +2953,7 @@ ContentSecurityPolicy* DocumentLoader::CreateCSP() {
 }
 
 bool DocumentLoader::UseIsolatedCodeCache() {
-  return RuntimeEnabledFeatures::CacheInlineScriptCodeEnabled() &&
+  return base::FeatureList::IsEnabled(kCacheInlineScriptCode) &&
          ShouldUseIsolatedCodeCache(mojom::blink::RequestContextType::HYPERLINK,
                                     response_);
 }
@@ -2977,6 +3000,46 @@ void DocumentLoader::SetCodeCacheHost(
     code_cache_host_ = std::make_unique<CodeCacheHost>(
         mojo::Remote<mojom::CodeCacheHost>(std::move(code_cache_host)));
   }
+}
+
+void DocumentLoader::SetSubresourceFilter(
+    WebDocumentSubresourceFilter* subresource_filter) {
+  DCHECK(subresource_filter);
+  subresource_filter_ = MakeGarbageCollected<SubresourceFilter>(
+      frame_->DomWindow(), base::WrapUnique(subresource_filter));
+}
+
+WebDocumentLoader::ExtraData* DocumentLoader::GetExtraData() const {
+  return extra_data_.get();
+}
+
+std::unique_ptr<WebDocumentLoader::ExtraData> DocumentLoader::TakeExtraData() {
+  return std::move(extra_data_);
+}
+
+void DocumentLoader::SetExtraData(std::unique_ptr<ExtraData> extra_data) {
+  extra_data_ = std::move(extra_data);
+}
+
+WebArchiveInfo DocumentLoader::GetArchiveInfo() const {
+  if (archive_ &&
+      archive_->LoadResult() == mojom::blink::MHTMLLoadResult::kSuccess) {
+    return {
+        archive_->LoadResult(),
+        archive_->MainResource()->Url(),
+        archive_->Date(),
+    };
+  }
+
+  // TODO(arthursonzogni): Returning MHTMLLoadResult::kSuccess when there are no
+  // archive is very misleading. Consider adding a new enum value to
+  // discriminate success versus no archive.
+  return {
+      archive_ ? archive_->LoadResult()
+               : mojom::blink::MHTMLLoadResult::kSuccess,
+      WebURL(),
+      base::Time(),
+  };
 }
 
 // static

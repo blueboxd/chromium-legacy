@@ -34,7 +34,6 @@
 #include "content/public/browser/mojo_binder_policy_map.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
-#include "content/public/common/main_function_params.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -63,6 +62,10 @@
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "content/public/browser/conditional_ui_delegate_android.h"
+#endif
 
 #if (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)) || BUILDFLAG(IS_FUCHSIA)
 #include "base/posix/global_descriptors.h"
@@ -193,7 +196,6 @@ class FileSystemBackend;
 }  // namespace storage
 
 namespace content {
-enum class PermissionType;
 enum class SiteIsolationMode;
 enum class SmsFetchFailureType;
 class AuthenticatorRequestClientDelegate;
@@ -274,8 +276,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to set any number of custom BrowserMainParts
   // implementations for the browser startup code. See comments in
   // browser_main_parts.h.
+  // |is_integration_test| is true iff MainFunctionParams::ui_task was set and
+  // will thus intercept MainMessageLoopRun (i.e. in integration tests -- ref.
+  // BrowserMainParts::ShouldInterceptMainMessageLoopRun for additional control
+  // the embedder has over that).
   virtual std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
-      MainFunctionParams parameters);
+      bool is_integration_test);
 
   // Allows the embedder to change the default behavior of
   // BrowserThread::PostAfterStartupTask to better match whatever
@@ -303,9 +309,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsShuttingDown();
 
   // If content creates the WebContentsView implementation, it will ask the
-  // embedder to return an (optional) delegate to customize it. The view will
-  // own the delegate.
-  virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
+  // embedder to return an (optional) delegate to customize it.
+  virtual std::unique_ptr<WebContentsViewDelegate> GetWebContentsViewDelegate(
       WebContents* web_contents);
 
   // Allow embedder control GPU process launch retry on failure behavior.
@@ -540,14 +545,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url);
 
-  // Returns whether or not subframes of |main_frame| should try to
-  // aggressively reuse existing processes, even when below process limit.
-  // This gets called when navigating a subframe to a URL that requires a
-  // dedicated process and defaults to true, which minimizes the process count.
-  // The embedder can choose to override this if there is a reason to avoid the
-  // reuse.
-  virtual bool ShouldSubframesTryToReuseExistingProcess(
-      RenderFrameHost* main_frame);
+  // Returns whether or not embedded frames (subframes or embedded main frames)
+  // of |outermost_main_frame| should try to aggressively reuse existing
+  // processes, even when below process limit.  This gets called when navigating
+  // a subframe to a URL that requires a dedicated process and defaults to true,
+  // which minimizes the process count.  The embedder can choose to override
+  // this if there is a reason to avoid the reuse.
+  virtual bool ShouldEmbeddedFramesTryToReuseExistingProcess(
+      RenderFrameHost* outermost_main_frame);
 
   // Returns whether a process that no longer has active RenderFrameHosts (or
   // other reasons to be kept alive) can safely exit. This should return true,
@@ -906,7 +911,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       int cert_error,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
-      bool is_main_frame_request,
+      bool is_primary_main_frame_request,
       bool strict_enforcement,
       base::OnceCallback<void(CertificateRequestResultType)> callback);
 
@@ -2219,6 +2224,16 @@ class CONTENT_EXPORT ContentBrowserClient {
   // should not change in a single browser session.
   virtual bool IsFirstPartySetsEnabled();
 
+  // Returns true iff the embedder will provide a list of First-Party Sets via
+  // content::FirstPartySetsHandler::SetPublicFirstPartySets during startup, at
+  // some point. If `IsFirstPartySetsEnabled()` returns false, this method will
+  // still be called, but its return value will be ignored.
+  //
+  // If this method returns false but `IsFirstPartySetsEnabled()` returns true
+  // (e.g. in tests), an empty list will be used instead of waiting for the
+  // embedder to call content::FirstPartySetsHandler::SetPublicFirstPartySets.
+  virtual bool WillProvidePublicFirstPartySets();
+
   // Returns a base::Value::Dict containing the value of the First-Party Sets
   // Overrides enterprise policy.
   // If the policy was not present or it was invalid, this returns an empty
@@ -2234,6 +2249,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   GetAlternativeErrorPageOverrideInfo(const GURL& url,
                                       BrowserContext* browser_context,
                                       int32_t error_code);
+
+#if BUILDFLAG(IS_ANDROID)
+  // Gets the delegate interface that is used to interact with the Web
+  // Authentication Conditional UI implementation in the embedder.
+  virtual ConditionalUiDelegateAndroid* GetConditionalUiDelegate(
+      RenderFrameHost* host);
+#endif  //  BUILDFLAG(IS_ANDROID)
 };
 
 }  // namespace content

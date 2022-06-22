@@ -36,7 +36,7 @@ void ScreenshotCapturedBubbleController::ShowBubble(
 
   Browser* browser = chrome::FindBrowserWithWebContents(&GetWebContents());
   browser->window()->ShowScreenshotCapturedBubble(&GetWebContents(),
-                                                  captured_image, this);
+                                                  captured_image);
 }
 
 void ScreenshotCapturedBubbleController::HideBubble() {

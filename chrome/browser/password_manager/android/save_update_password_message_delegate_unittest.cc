@@ -108,7 +108,8 @@ class SaveUpdatePasswordMessageDelegateTest
   // expectations.
   MockPasswordEditDialog* PreparePasswordEditDialog();
 
-  void TriggerDialogAcceptedCallback(int selected_user_index);
+  void TriggerDialogAcceptedCallback(int selected_user_index,
+                                     const std::u16string& edited_password);
   void TriggerDialogDismissedCallback(bool dialog_accepted);
 
   void CommitPasswordFormMetrics();
@@ -279,8 +280,10 @@ SaveUpdatePasswordMessageDelegateTest::PreparePasswordEditDialog() {
 }
 
 void SaveUpdatePasswordMessageDelegateTest::TriggerDialogAcceptedCallback(
-    int selected_username_index) {
-  std::move(dialog_accepted_callback_).Run(selected_username_index);
+    int selected_username_index,
+    const std::u16string& edited_password) {
+  std::move(dialog_accepted_callback_)
+      .Run(selected_username_index, edited_password);
 }
 
 void SaveUpdatePasswordMessageDelegateTest::TriggerDialogDismissedCallback(
@@ -560,7 +563,23 @@ TEST_P(SaveUpdatePasswordMessageDelegateTest, UpdatePasswordWithSingleForm) {
       password_manager::metrics_util::CLICKED_ACCEPT, 1);
 }
 
-TEST_P(SaveUpdatePasswordMessageDelegateTest, DialogProperties) {
+TEST_P(SaveUpdatePasswordMessageDelegateTest, DialogPropertiesSignedIn) {
+  SetPendingCredentials(kUsername, kPassword);
+  auto form_manager =
+      CreateFormManager(GURL(kDefaultUrl), two_forms_best_matches());
+  MockPasswordEditDialog* mock_dialog = PreparePasswordEditDialog();
+  // Verify parameters to Show() call.
+  EXPECT_CALL(*mock_dialog, Show(ElementsAre(std::u16string(kUsername),
+                                             std::u16string(kUsername2)),
+                                 0, std::u16string(kPassword),
+                                 std::u16string(kOrigin), kAccountEmail));
+  EnqueueMessage(std::move(form_manager), /*user_signed_in=*/true,
+                 /*update_password=*/true);
+  TriggerActionClick();
+  TriggerDialogDismissedCallback(/*dialog_accepted=*/false);
+}
+
+TEST_P(SaveUpdatePasswordMessageDelegateTest, DialogPropertiesSignedOut) {
   SetPendingCredentials(kUsername, kPassword);
   auto form_manager =
       CreateFormManager(GURL(kDefaultUrl), two_forms_best_matches());
@@ -570,7 +589,7 @@ TEST_P(SaveUpdatePasswordMessageDelegateTest, DialogProperties) {
                                              std::u16string(kUsername2)),
                                  0, std::u16string(kPassword),
                                  std::u16string(kOrigin), std::string()));
-  EnqueueMessage(std::move(form_manager), /*user_signed_in=*/true,
+  EnqueueMessage(std::move(form_manager), /*user_signed_in=*/false,
                  /*update_password=*/true);
   TriggerActionClick();
   TriggerDialogDismissedCallback(/*dialog_accepted=*/false);
@@ -592,7 +611,8 @@ TEST_P(SaveUpdatePasswordMessageDelegateTest, TriggerEditDialog_Accept) {
   EXPECT_NE(nullptr, GetMessageWrapper());
   TriggerActionClick();
   EXPECT_EQ(nullptr, GetMessageWrapper());
-  TriggerDialogAcceptedCallback(/*selected_username_index=*/0);
+  TriggerDialogAcceptedCallback(/*selected_username_index=*/0,
+                                /*edited_password=*/kPassword);
   TriggerDialogDismissedCallback(/*dialog_accepted=*/true);
 
   CommitPasswordFormMetrics();

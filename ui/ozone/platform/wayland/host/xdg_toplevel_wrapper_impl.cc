@@ -384,10 +384,30 @@ void XDGToplevelWrapperImpl::RequestWindowBounds(const gfx::Rect& bounds) {
                                    output->get_output());
 }
 
+void XDGToplevelWrapperImpl::SetSystemModal(bool modal) {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_SET_SYSTEM_MODAL_SINCE_VERSION) {
+    if (modal) {
+      zaura_toplevel_set_system_modal(aura_toplevel_.get());
+    } else {
+      zaura_toplevel_unset_system_modal(aura_toplevel_.get());
+    }
+  }
+}
+
 bool XDGToplevelWrapperImpl::ProtocolSupportsScreenCoordinates() {
   return aura_toplevel_ &&
          zaura_toplevel_get_version(aura_toplevel_.get()) >=
              ZAURA_TOPLEVEL_SET_SUPPORTS_SCREEN_COORDINATES_SINCE_VERSION;
+}
+
+void XDGToplevelWrapperImpl::SetRestoreInfo(int32_t restore_session_id,
+                                            int32_t restore_window_id) {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_SET_RESTORE_INFO_SINCE_VERSION) {
+    zaura_toplevel_set_restore_info(aura_toplevel_.get(), restore_session_id,
+                                    restore_window_id);
+  }
 }
 
 }  // namespace ui

@@ -22,6 +22,8 @@
 
 namespace base {
 class Clock;
+class FilePath;
+class Time;
 }  // namespace base
 
 namespace content {
@@ -66,6 +68,17 @@ AggregatableReport CloneAggregatableReport(const AggregatableReport& report);
 // Generates a public-private key pair for HPKE and also constructs a PublicKey
 // object for use in assembler methods.
 TestHpkeKey GenerateKey(std::string key_id = "example_id");
+
+absl::optional<PublicKeyset> ReadAndParsePublicKeys(
+    const base::FilePath& file,
+    base::Time now,
+    std::string* error_msg = nullptr);
+
+// Returns empty vector in the case of an error.
+std::vector<uint8_t> DecryptPayloadWithHpke(
+    const std::vector<uint8_t>& payload,
+    const EVP_HPKE_KEY& key,
+    const std::string& expected_serialized_shared_info);
 
 }  // namespace aggregation_service
 

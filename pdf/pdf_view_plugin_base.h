@@ -252,18 +252,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Send a notification that the print preview has loaded.
   void SendPrintPreviewLoadedNotification();
 
-  // Initialize image buffer(s) according to the new context size.
-  virtual void InitImageData(const gfx::Size& size) = 0;
-
   // Schedules invalidation tasks after painting finishes.
   void InvalidateAfterPaintDone();
 
   // Updates the available area and the background parts, notifies the PDF
   // engine, and updates the accessibility information.
   void OnGeometryChanged(double old_zoom, float old_device_scale);
-
-  // Returns the plugin-specific image data buffer.
-  virtual SkBitmap GetPluginImageData() const;
 
   // Updates the geometry of the plugin and its image data if the plugin rect
   // or the device scale has changed. `new_plugin_rect` must be in device
@@ -377,8 +371,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   const std::string& link_under_cursor() const { return link_under_cursor_; }
 
   bool full_frame() const { return full_frame_; }
-
-  SkBitmap& mutable_image_data() { return image_data_; }
 
   const gfx::Rect& available_area() const { return available_area_; }
 

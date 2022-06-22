@@ -55,17 +55,7 @@ class OsTrial extends OsTrialScreenElementBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('OsTrialScreen', {
-      resetAllowed: true,
-    });
-  }
-
-  /**
-   * @param {string} locale
-   * @private
-   */
-  getSubtitleHtml_(locale) {
-    return this.i18nAdvanced('osTrialSubtitle');
+    this.initializeLoginScreen('OsTrialScreen');
   }
 
   /**
@@ -73,10 +63,11 @@ class OsTrial extends OsTrialScreenElementBase {
    * @private
    */
   onNextButtonClick_() {
-    if (this.selectedTrialOption == TrialOption.TRY)
+    if (this.selectedTrialOption == TrialOption.TRY) {
       this.userActed('os-trial-try');
-    else
+    } else {
       this.userActed('os-trial-install');
+    }
   }
 
   /**

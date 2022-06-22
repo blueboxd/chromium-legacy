@@ -57,6 +57,19 @@ class CONTENT_EXPORT FirstPartySetsLoader {
   // Close the file on thread pool that allows blocking.
   void DisposeFile(base::File sets_file);
 
+  // Handles addition sets which overlap by intersecting with the same existing
+  // set, known as a transitive-overlap.
+  //
+  // This uses a Union-Find algorithm to select the earliest-provided addition
+  // set as the representative of all other addition sets that
+  // transitively-overlap with it.
+  //
+  // The "earliest-provided" tie-breaker is determined using a set's index in
+  // `addition_sets`.
+  static std::vector<SingleSet> NormalizeAdditionSets(
+      const FlattenedSets& existing_sets,
+      const std::vector<SingleSet>& addition_sets);
+
  private:
   // Parses the contents of `raw_sets` as a collection of First-Party Set
   // declarations, and assigns to `sets_`.
@@ -67,9 +80,41 @@ class CONTENT_EXPORT FirstPartySetsLoader {
   // `SetManuallySpecifiedSet`, and the public sets via `SetComponentSets`.
   void ApplyManuallySpecifiedSet();
 
+  // Removes the intersection between `sets_` and `override_sets` from the
+  // `sets_` member variable, and then adds the `override_sets` into `sets_`.
+  void ApplyReplacementOverrides(const std::vector<SingleSet>& override_sets);
+
+  // Updates the intersection between `sets_` and `override_sets` within the
+  // `sets_` member variable, and then adds the `override_sets` into
+  // `sets_`.
+  //
+  // The applied update ensures that invariants of First-Party Sets are
+  // maintained, and that all sets in sets_ are disjoint.
+  //
+  // This will add in the `override_sets` into `sets_` without removing
+  // any existing sites from the list of First-Party Sets.
+  void ApplyAdditionOverrides(const std::vector<SingleSet>& override_sets);
+
+  // Removes all singletons (owners that have no members) from sets_.
+  void RemoveAllSingletons();
+
+  // Applies the First-Party Sets overrides provided by policy.
+  //
+  // Must not be called until the loader has already received the public sets
+  // via `SetComponentSets` and the CLI-provided sets have been applied to
+  // `sets_`.
+  //
+  // Applies "Replacement" overrides before applying "Addition" overrides.
+  void ApplyAllPolicyOverrides();
+
   // Checks the required inputs have been received, and if so, invokes the
   // callback `on_load_complete_`, after merging sets appropriately.
   void MaybeFinishLoading();
+
+  // Returns true if all sources are present (Component Updater sets, CLI set,
+  // and Policy sets). The Policy sets are provided at construction time, so
+  // this effectively checks that the other two sources are ready.
+  bool HasAllInputs() const;
 
   // Represents the mapping of site -> site, where keys are members of sets,
   // and values are owners of the sets (explicitly including an entry of owner

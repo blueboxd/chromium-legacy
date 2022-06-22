@@ -71,8 +71,7 @@ constexpr gfx::Size InstalledExtensionMenuItemView::kIconSize;
 
 SiteAccessMenuItemView::SiteAccessMenuItemView(
     Browser* browser,
-    std::unique_ptr<ToolbarActionViewController> controller,
-    bool allow_pinning)
+    std::unique_ptr<ToolbarActionViewController> controller)
     : browser_(browser), controller_(std::move(controller)) {
   // Items with kSiteAccess type should only be created if their
   // associated extension has or requests access to the current page.
@@ -96,8 +95,8 @@ SiteAccessMenuItemView::SiteAccessMenuItemView(
       .SetNotifyEnterExitOnChild(true)
       .AddChildren(
           views::Builder<ExtensionsMenuButton>(
-              std::make_unique<ExtensionsMenuButton>(
-                  browser_, controller_.get(), allow_pinning))
+              std::make_unique<ExtensionsMenuButton>(browser_,
+                                                     controller_.get()))
               .CopyAddressTo(&primary_action_button_)
               .SetProperty(views::kFlexBehaviorKey,
                            views::FlexSpecification(
@@ -127,6 +126,10 @@ void SiteAccessMenuItemView::Update() {
   site_access_combobox_->SetSelectedIndex(index);
 }
 
+void SiteAccessMenuItemView::SetSiteAccessComboboxVisible(bool visibility) {
+  site_access_combobox_->SetVisible(visibility);
+}
+
 void SiteAccessMenuItemView::OnComboboxSelectionChanged() {
   int selected_index = site_access_combobox_->GetSelectedIndex();
   site_access_combobox_model_->HandleSelection(selected_index);
@@ -148,8 +151,8 @@ InstalledExtensionMenuItemView::InstalledExtensionMenuItemView(
           .SetNotifyEnterExitOnChild(true)
           .AddChildren(
               views::Builder<ExtensionsMenuButton>(
-                  std::make_unique<ExtensionsMenuButton>(
-                      browser_, controller_.get(), allow_pinning))
+                  std::make_unique<ExtensionsMenuButton>(browser_,
+                                                         controller_.get()))
                   .CopyAddressTo(&primary_action_button_)
                   .SetProperty(views::kFlexBehaviorKey,
                                views::FlexSpecification(
@@ -164,7 +167,7 @@ InstalledExtensionMenuItemView::InstalledExtensionMenuItemView(
                   .SetTooltipText(l10n_util::GetStringUTF16(
                       IDS_EXTENSIONS_MENU_CONTEXT_MENU_TOOLTIP)));
 
-  if (primary_action_button_->CanShowIconInToolbar()) {
+  if (allow_pinning) {
     builder.AddChildAt(
         views::Builder<HoverButton>(
             std::make_unique<HoverButton>(

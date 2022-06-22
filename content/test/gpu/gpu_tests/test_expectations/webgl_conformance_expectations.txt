@@ -7,7 +7,7 @@
 #         linux ubuntu
 #         mac bigsur catalina lion highsierra mac-10.12 mojave monterey
 #             mountainlion sierra
-#         win win7 win8 win10 ]
+#         win win8 win10 ]
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
 #             android-pixel-6 android-shield-android-tv
@@ -343,6 +343,9 @@ crbug.com/1282819 [ win amd-0x6613 angle-d3d11 passthrough ] conformance/canvas/
 # Bug where RelaxedPrecision applied to normalize() produces 0
 crbug.com/angleproject/6228 [ win intel angle-vulkan passthrough ] conformance/misc/shader-precision-format.html [ Failure ]
 
+# Flaky timeouts on multiple platforms - at least Linux/Mac/Win
+crbug.com/1254497 conformance/misc/type-conversion-test.html [ RetryOnFailure ]
+
 ####################
 # Fuchsia failures #
 ####################
@@ -419,9 +422,6 @@ crbug.com/angleproject/5543 [ win intel angle-opengl passthrough ] conformance/e
 # Note that the following test seems to pass, but it may still be flaky.
 crbug.com/478572 [ win angle-d3d9 passthrough ] deqp/data/gles2/shaders/functions.html [ Failure ]
 
-# Win NVIDIA failures
-crbug.com/angleproject/5536 [ win nvidia angle-opengl passthrough oop-c ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
-
 # Win / AMD D3D11 (default) failures
 crbug.com/1043773 [ win amd ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ RetryOnFailure ]
 
@@ -487,8 +487,10 @@ crbug.com/1276186 [ mac amd-0x679e angle-opengl ] conformance/rendering/clear-de
 crbug.com/1144247 [ mac intel-0x3e9b angle-disabled ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
 crbug.com/1144207 [ mac intel-0x3e9b angle-disabled ] conformance/extensions/webgl-multi-draw.html [ Failure ]
 
-# Mac Retina NVidia failures
+# Mac Retina NVidia failures / flakes
 crbug.com/996344 [ mac nvidia-0xfe9 ] conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html [ Failure ]
+crbug.com/1321312 [ mac nvidia-0xfe9 no-passthrough ] conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html [ Skip ]
+crbug.com/1321312 [ mac nvidia-0xfe9 no-passthrough ] conformance/ogles/GL/array/array_001_to_006.html [ Skip ]
 crbug.com/635081 [ mac nvidia-0xfe9 no-passthrough ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
 crbug.com/635081 [ mac nvidia-0xfe9 no-passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/784817 [ mac nvidia-0xfe9 ] conformance/glsl/bugs/init-array-with-loop.html [ Failure ]

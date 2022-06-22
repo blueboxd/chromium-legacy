@@ -109,7 +109,8 @@ typedef void (*GraphemeClusterCallback)(void* context,
                                         float cluster_advance,
                                         CanvasRotationInVertical);
 
-class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
+class PLATFORM_EXPORT ShapeResult
+    : public RefCountedWillBeThreadSafeForParallelTextShaping<ShapeResult> {
   USING_FAST_MALLOC(ShapeResult);
 
  public:
@@ -474,7 +475,6 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   void ComputeGlyphPositions(ShapeResult::RunInfo*,
                              unsigned start_glyph,
                              unsigned num_glyphs,
-                             unsigned start_cluster,
                              hb_buffer_t*);
   // Inserts as many glyphs as possible as a RunInfo, and sets
   // |next_start_glyph| to the start index of the remaining glyphs to be

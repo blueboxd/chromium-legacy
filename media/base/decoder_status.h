@@ -40,6 +40,8 @@ struct DecoderStatusTraits {
     kUnsupportedEncryptionMode = 203,
     kCantChangeCodec = 204,
     kFailedToCreateDecoder = 205,
+    kTooManyDecoders = 206,
+    kMediaFoundationNotAvailable = 207,
   };
   static constexpr StatusGroupType Group() { return "DecoderStatus"; }
   static constexpr Codes DefaultEnumValue() { return Codes::kOk; }

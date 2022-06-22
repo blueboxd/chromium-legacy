@@ -570,6 +570,120 @@ suite('AboutPageTest', function() {
     checkEndOfLifeSection();
   });
 
+  function getBuildInfoPage() {
+    page.scroller = page.offsetParent;
+    assertTrue(!!page.$['detailed-build-info-trigger']);
+    page.$['detailed-build-info-trigger'].click();
+    const buildInfoPage =
+        page.shadowRoot.querySelector('settings-detailed-build-info');
+    assertTrue(!!buildInfoPage);
+    return buildInfoPage;
+  }
+
+  test('Managed user auto update toggle in build info page', async () => {
+    loadTimeData.overrideValues({
+      isManaged: true,
+      // Set this to true to catch UI bugs.
+      showConsumerAutoUpdateToggle: true,
+    });
+
+    async function checkManagedAutoUpdateToggle(isToggleEnabled) {
+      // Create the page.
+      await initNewPage();
+      // Set overrides + response values.
+      aboutBrowserProxy.setManagedAutoUpdate(isToggleEnabled);
+      // Go to the build info page.
+      const buildInfoPage = getBuildInfoPage();
+      // Wait for overrides + response values.
+      await aboutBrowserProxy.whenCalled('isManagedAutoUpdateEnabled');
+
+      const mau_toggle = buildInfoPage.$$('#managedAutoUpdateToggle');
+      assertTrue(!!mau_toggle);
+      // Managed auto update toggle should always be disabled to toggle.
+      assertTrue(!!mau_toggle.hasAttribute('disabled'));
+      assertEquals(isToggleEnabled, mau_toggle.checked);
+      // Consumer auto update toggle should not exist.
+      assertFalse(!!buildInfoPage.$$('#consumerAutoUpdateToggle'));
+    }
+
+    await checkManagedAutoUpdateToggle(true);
+    await checkManagedAutoUpdateToggle(false);
+  });
+
+  test('Consumer user auto update toggle in build info page', async () => {
+    loadTimeData.overrideValues({
+      isManaged: false,
+    });
+
+    async function checkConsumerAutoUpdateToggle(
+        isEnabled, isTogglingAllowed, showToggle) {
+      // Create the page.
+      await initNewPage();
+      // Set overrides + response values.
+      loadTimeData.overrideValues({
+        isConsumerAutoUpdateTogglingAllowed: isTogglingAllowed,
+        showConsumerAutoUpdateToggle: showToggle,
+      });
+      aboutBrowserProxy.resetConsumerAutoUpdate(isEnabled);
+      const prefs = {
+        'settings': {
+          'consumer_auto_update_toggle': {
+            key: 'consumer_auto_update_toggle',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: isEnabled,
+          },
+        },
+      };
+      // Go to the build info page.
+      const buildInfoPage = getBuildInfoPage();
+      // Wait for overrides + response values.
+      buildInfoPage.prefs = Object.assign({}, prefs);
+      await Promise.all([
+        aboutBrowserProxy.whenCalled('isConsumerAutoUpdateEnabled'),
+        aboutBrowserProxy.whenCalled('setConsumerAutoUpdate'),
+      ]);
+
+      // Managed auto update toggle should not exist.
+      assertFalse(!!buildInfoPage.$$('#managedAutoUpdateToggle'));
+      const cauToggle = buildInfoPage.$$('#consumerAutoUpdateToggle');
+      if (showToggle) {
+        assertTrue(!!cauToggle);
+        assertEquals(isTogglingAllowed, !cauToggle.disabled);
+        assertEquals(isEnabled, cauToggle.checked);
+      } else {
+        assertFalse(!!cauToggle);
+      }
+
+      // Check dialog popup when toggling off.
+      if (showToggle && isEnabled) {
+        let dialog = buildInfoPage.shadowRoot.querySelector(
+            'settings-consumer-auto-update-toggle-dialog');
+        assertFalse(!!dialog);
+
+        cauToggle.click();
+        flush();
+
+        dialog = buildInfoPage.shadowRoot.querySelector(
+            'settings-consumer-auto-update-toggle-dialog');
+        // Only when toggling is allowed, should the dialog popup.
+        if (isTogglingAllowed) {
+          assertTrue(!!dialog);
+        } else {
+          assertFalse(!!dialog);
+        }
+      }
+    }
+
+    for (let i = 0; i < (1 << 3); i++) {
+      // showToggle should always be true when isTogglingAllowed is true, but
+      // test to catch unintended behaviors from happening.
+      await checkConsumerAutoUpdateToggle(
+          /*isEnabled=*/ (i & 1) > 0,
+          /*isTogglingAllowed=*/ (i & 2) > 0,
+          /*showToggle=*/ (i & 4) > 0);
+    }
+  });
+
   test('GetHelp', function() {
     assertTrue(!!page.$.help);
     page.$.help.click();
@@ -682,11 +796,34 @@ suite('DetailedBuildInfoTest', function() {
   });
 
   test('Initialization', async () => {
+    loadTimeData.overrideValues({
+      isManaged: false,
+    });
+
     page = document.createElement('settings-detailed-build-info');
     document.body.appendChild(page);
 
     await Promise.all([
       browserProxy.whenCalled('pageReady'),
+      browserProxy.whenCalled('isConsumerAutoUpdateEnabled'),
+      browserProxy.whenCalled('setConsumerAutoUpdate'),
+      browserProxy.whenCalled('canChangeChannel'),
+      browserProxy.whenCalled('getChannelInfo'),
+      browserProxy.whenCalled('getVersionInfo'),
+    ]);
+  });
+
+  test('InitializationManaged', async () => {
+    loadTimeData.overrideValues({
+      isManaged: true,
+    });
+
+    page = document.createElement('settings-detailed-build-info');
+    document.body.appendChild(page);
+
+    await Promise.all([
+      browserProxy.whenCalled('pageReady'),
+      browserProxy.whenCalled('isManagedAutoUpdateEnabled'),
       browserProxy.whenCalled('canChangeChannel'),
       browserProxy.whenCalled('getChannelInfo'),
       browserProxy.whenCalled('getVersionInfo'),
@@ -1238,6 +1375,53 @@ suite('ChannelSwitcherDialogTest', function() {
     assertTrue(isPowerwashAllowed);
     const {detail} = await whenTargetChannelChangedFired;
     assertEquals(BrowserChannel.STABLE, detail);
+  });
+});
+
+suite('Consumer auto update dialog popup', function() {
+  let dialog = null;
+  let browserProxy = null;
+  let events;
+
+  setup(function() {
+    events = [];
+    browserProxy = new TestAboutPageBrowserProxyChromeOS();
+    AboutPageBrowserProxyImpl.setInstance(browserProxy);
+    PolymerTest.clearBody();
+    dialog =
+        document.createElement('settings-consumer-auto-update-toggle-dialog');
+    document.body.appendChild(dialog);
+  });
+
+  teardown(function() {
+    dialog.remove();
+  });
+
+  function getButtonEventPromise() {
+    return new Promise(
+        (resolve) =>
+            dialog.addEventListener('set-consumer-auto-update', (e) => {
+              events.push(e);
+              resolve();
+            }));
+  }
+
+  async function clickButton(buttonId, shouldEnable) {
+    const ButtonEventPromise = getButtonEventPromise();
+    const button = dialog.shadowRoot.querySelector(buttonId);
+    assertTrue(!!button);
+    button.click();
+    await ButtonEventPromise;
+    assertEquals(1, events.length);
+    assertEquals(shouldEnable, events[0].detail.item);
+  }
+
+  test('click turn off button fires disable event', async function() {
+    await clickButton('#turnOffButton', false);
+  });
+
+  test('click keep updates button fires enable event', async function() {
+    await clickButton('#keepUpdatesButton', true);
   });
 });
 

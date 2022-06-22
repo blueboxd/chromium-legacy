@@ -59,18 +59,15 @@ class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
 class ImageDecodeAcceleratorWorker;
 class Scheduler;
-class SyncPointManager;
+class SharedContextState;
 class SharedImageManager;
+class SyncPointManager;
 class VulkanImplementation;
 }  // namespace gpu
 
 namespace media {
 class MediaGpuChannelManager;
-}
-
-namespace gpu {
-class SharedContextState;
-}  // namespace gpu
+}  // namespace media
 
 namespace viz {
 
@@ -194,8 +191,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void StartPeakMemoryMonitor(uint32_t sequence_num) override;
   void GetPeakMemoryUsage(uint32_t sequence_num,
                           GetPeakMemoryUsageCallback callback) override;
-
-  void RequestHDRStatus(RequestHDRStatusCallback callback) override;
+#if BUILDFLAG(IS_WIN)
+  void RequestDXGIInfo(RequestDXGIInfoCallback callback) override;
+#endif
   void LoadedShader(int32_t client_id,
                     const std::string& key,
                     const std::string& data) override;
@@ -236,10 +234,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
-#if BUILDFLAG(IS_WIN)
-  void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
-  void DidUpdateHDRStatus(bool hdr_enabled) override;
-#endif
   void GetDawnInfo(GetDawnInfoCallback callback) override;
 
   void StoreShaderToDisk(int client_id,
@@ -386,7 +380,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) &&
         // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
-  void RequestHDRStatusOnMainThread(RequestHDRStatusCallback callback);
+#if BUILDFLAG(IS_WIN)
+  void RequestDXGIInfoOnMainThread(RequestDXGIInfoCallback callback);
+#endif
 
   void OnBackgroundedOnMainThread();
   void OnForegroundedOnMainThread();
@@ -403,7 +399,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // Update overlay info and HDR status on the GPU process and send the updated
   // info back to the browser process if there is a change.
 #if BUILDFLAG(IS_WIN)
-  void UpdateOverlayAndHDRInfo();
+  void UpdateOverlayAndDXGIInfo();
 #endif
 
   void GetDawnInfoOnMain(GetDawnInfoCallback callback);
@@ -425,7 +421,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
 
-  bool hdr_enabled_ = false;
+#if BUILDFLAG(IS_WIN)
+  gfx::mojom::DXGIInfoPtr dxgi_info_;
+#endif
 
   // What we would have gotten if we haven't fallen back to SwiftShader or
   // pure software (in the viz case).

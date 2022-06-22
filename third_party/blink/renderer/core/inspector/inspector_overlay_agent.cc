@@ -1214,6 +1214,8 @@ void InspectorOverlayAgent::LoadOverlayPageResource() {
       settings.GetGenericFontFamilySettings().Cursive());
   overlay_settings.GetGenericFontFamilySettings().UpdateFantasy(
       settings.GetGenericFontFamilySettings().Fantasy());
+  overlay_settings.GetGenericFontFamilySettings().UpdateMath(
+      settings.GetGenericFontFamilySettings().Math());
   overlay_settings.SetMinimumFontSize(settings.GetMinimumFontSize());
   overlay_settings.SetMinimumLogicalFontSize(
       settings.GetMinimumLogicalFontSize());
@@ -1337,7 +1339,8 @@ void InspectorOverlayAgent::EvaluateInOverlay(const String& method,
 
   v8::Local<v8::Value> v8_method;
   if (!GetV8Property(context, context->Global(), "dispatch")
-           .ToLocal(&v8_method)) {
+           .ToLocal(&v8_method) ||
+      v8_method->IsUndefined()) {
     return;
   }
 

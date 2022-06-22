@@ -1866,6 +1866,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameHostImpl* rfh_1 = current_frame_host();
   scoped_refptr<SiteInstanceImpl> site_instance_1 =
       static_cast<SiteInstanceImpl*>(rfh_1->GetSiteInstance());
+  rfh_1->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
 
   // 2) Use BroadcastChannel (non-sticky) and dummy sticky blocklisted features.
   EXPECT_TRUE(ExecJs(rfh_1, "window.foo = new BroadcastChannel('foo');"));
@@ -1892,6 +1893,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       {blink::scheduler::WebSchedulerTrackedFeature::kDummy},
       {ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache}, {}, {},
       FROM_HERE);
+  // NotRestoredReason tree should match the flattened list.
+  EXPECT_THAT(
+      GetTreeResult()->GetDocumentResult(),
+      MatchesDocumentResult(
+          NotRestoredReasons(NotRestoredReason::kBlocklistedFeatures,
+                           NotRestoredReason::kBrowsingInstanceNotSwapped),
+          BlockListedFeatures(
+              blink::scheduler::WebSchedulerTrackedFeature::kDummy)));
 }
 
 // Tests which blocklisted features are tracked in the metrics when we used a
@@ -2078,8 +2087,14 @@ class AppBannerBackForwardCacheBrowserTest
   }
 };
 
+// Disabled on Mac due to flakes; see https://crbug.com/1276864#c8.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_TestAppBannerCaching DISABLED_TestAppBannerCaching
+#else
+#define MAYBE_TestAppBannerCaching TestAppBannerCaching
+#endif
 IN_PROC_BROWSER_TEST_P(AppBannerBackForwardCacheBrowserTest,
-                       TestAppBannerCaching) {
+                       MAYBE_TestAppBannerCaching) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to A and request a PWA app banner.
@@ -2118,7 +2133,14 @@ INSTANTIATE_TEST_SUITE_P(All,
                          AppBannerBackForwardCacheBrowserTest,
                          testing::Bool());
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebDatabase) {
+// https://crbug.com/1317431: WebSQL does not work on Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_DoesNotCacheIfWebDatabase DISABLED_DoesNotCacheIfWebDatabase
+#else
+#define MAYBE_DoesNotCacheIfWebDatabase DoesNotCacheIfWebDatabase
+#endif
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       MAYBE_DoesNotCacheIfWebDatabase) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to a page with WebDatabase usage.
@@ -3420,7 +3442,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VideoSuspendAndResume) {
   EXPECT_GT(0.02, duration2 - duration1);
 
   // Resume the media.
-  EXPECT_TRUE(ExecJs(rfh_a, "video.play();"));
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+      // Ensure that the video does not auto-pause when it completes as that
+      // would add an unexpected pause event.
+      video.loop = true;
+      video.play();
+    )"));
 
   // Confirm that the media pauses automatically when going to the cache.
   // TODO(hajimehoshi): Confirm that this media automatically resumes if

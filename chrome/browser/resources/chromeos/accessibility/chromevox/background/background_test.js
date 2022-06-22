@@ -31,7 +31,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
         'ChromeVoxBackground', '/chromevox/background/classic_background.js');
     await importModule(
         'CustomAutomationEvent',
-        '/chromevox/background/custom_automation_event.js');
+        '/chromevox/common/custom_automation_event.js');
     await importModule(
         'DesktopAutomationInterface',
         '/chromevox/background/desktop_automation_interface.js');
@@ -3239,8 +3239,7 @@ TEST_F(
       p.doDefault();
 
       // This comes when the <select>'s value changes.
-      await TestUtils.waitForEvent(
-          application, EventType.SELECTED_VALUE_CHANGED);
+      await this.waitForEvent(application, EventType.SELECTED_VALUE_CHANGED);
 
       // Nothing should have been spoken.
       assertEquals(undefined, nextSpeech);

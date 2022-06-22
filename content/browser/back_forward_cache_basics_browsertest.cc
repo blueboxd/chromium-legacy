@@ -6,6 +6,7 @@
 
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/navigation_handle_observer.h"
@@ -33,8 +34,8 @@ using testing::UnorderedElementsAreArray;
 namespace content {
 
 using NotRestoredReason = BackForwardCacheMetrics::NotRestoredReason;
-using NotStoredReasons =
-    BackForwardCacheCanStoreDocumentResult::NotStoredReasons;
+using NotRestoredReasons =
+    BackForwardCacheCanStoreDocumentResult::NotRestoredReasons;
 
 // Navigate from A to B and go back.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
@@ -216,8 +217,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
   EXPECT_THAT(
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
-          NotStoredReasons(NotRestoredReason::kRelatedActiveContentsExist,
-                           NotRestoredReason::kBrowsingInstanceNotSwapped),
+          NotRestoredReasons(NotRestoredReason::kRelatedActiveContentsExist,
+                             NotRestoredReason::kBrowsingInstanceNotSwapped),
           BlockListedFeatures()));
 
   // 4) Make the popup drop the window.opener connection. It happens when the
@@ -529,6 +530,10 @@ IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
 // into BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        ConfirmUnloadEventNotFired) {
+  // This test is only enabled for Android, as pages with unload handlers are
+  // only eligible for bfcache on Android.
+  if (!IsUnloadAllowedToEnterBackForwardCache())
+    return;
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -985,9 +990,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       localStorage.setItem('visibilitychange',
         document.visibilityState);
     }
-    window.onunload = () => {
-      localStorage.setItem('unload', true);
-    }
   )"));
 
   // 3) Navigate to |url_2|.
@@ -1000,7 +1002,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
             GetLocalStorage(current_frame_host(), "pagehide_persisted"));
   EXPECT_EQ("hidden",
             GetLocalStorage(current_frame_host(), "visibilitychange"));
-  EXPECT_EQ(nullptr, GetLocalStorage(current_frame_host(), "unload"));
 }
 
 // Track the events dispatched when a page is deemed ineligible for back-forward
@@ -1030,9 +1031,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
         window.domAutomationController.send('visibilitychange.hidden');
       }
     }
-    window.onunload = () => {
-      window.domAutomationController.send('unload');
-    }
   )"));
 
   DOMMessageQueue dom_message_queue(shell()->web_contents());
@@ -1045,14 +1043,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // "pagehide", "visibilitychange", and "unload" events will be dispatched.
   int num_messages_received = 0;
   std::string expected_messages[] = {"\"pagehide.not_persisted\"",
-                                     "\"visibilitychange.hidden\"",
-                                     "\"unload\""};
+                                     "\"visibilitychange.hidden\""};
   std::string message;
   while (dom_message_queue.PopMessage(&message)) {
     EXPECT_EQ(expected_messages[num_messages_received], message);
     num_messages_received++;
   }
-  EXPECT_EQ(num_messages_received, 3);
+  EXPECT_EQ(num_messages_received, 2);
 }
 
 enum class TestFrameType {

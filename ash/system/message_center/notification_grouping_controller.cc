@@ -224,8 +224,7 @@ void NotificationGroupingController::SetupParentNotification(
     parent_view->UpdateWithNotification(*new_parent_notification);
     // Grouped notifications should start off in the collapsed state.
     parent_view->SetExpanded(false);
-    parent_view->AddGroupNotification(*parent_notification,
-                                      /*newest_first=*/false);
+    parent_view->AddGroupNotification(*parent_notification);
   }
 }
 
@@ -288,12 +287,13 @@ void NotificationGroupingController::RemoveGroupedChild(
 message_center::NotificationViewController*
 NotificationGroupingController::GetActiveNotificationViewController() {
   if (tray_->IsMessageCenterBubbleShown()) {
-    return tray_->message_center_bubble()
-        ->message_center_view()
-        ->message_list_view();
-  } else {
-    return tray_->GetMessagePopupCollection();
+    auto* message_list_view = tray_->message_center_bubble()
+                                  ->message_center_view()
+                                  ->message_list_view();
+    if (message_list_view)
+      return message_list_view;
   }
+  return tray_->GetMessagePopupCollection();
 }
 
 void NotificationGroupingController::OnNotificationAdded(
@@ -332,7 +332,7 @@ void NotificationGroupingController::OnNotificationAdded(
       GetActiveNotificationViewController()->GetMessageViewForNotificationId(
           parent_id);
   if (parent_view)
-    parent_view->AddGroupNotification(*notification, /*newest_first=*/false);
+    parent_view->AddGroupNotification(*notification);
   else
     message_center->ResetSinglePopup(parent_id);
 

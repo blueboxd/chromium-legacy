@@ -57,6 +57,7 @@
 #define COMPONENTS_REPORTING_UTIL_STATUSOR_H_
 
 #include <new>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -80,7 +81,7 @@ class StatusOrHelper {
 }  // namespace internal
 
 template <typename T>
-class StatusOr {
+class [[nodiscard]] StatusOr {
   template <typename U>
   friend class StatusOr;
 
@@ -89,8 +90,8 @@ class StatusOr {
   // is statically set to true, otherwise it is statically set to false.
   template <class U, typename V>
   struct is_implicitly_constructible
-      : base::conjunction<std::is_constructible<U, V>,
-                          std::is_convertible<V, U>> {};
+      : std::conjunction<std::is_constructible<U, V>,
+                         std::is_convertible<V, U>> {};
 
  public:
   // Constructs a new StatusOr with UNINITIALIZED status and no value.

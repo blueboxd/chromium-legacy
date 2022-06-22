@@ -5,10 +5,14 @@
 #ifndef ASH_CAPTURE_MODE_CAPTURE_MODE_CAMERA_PREVIEW_VIEW_H_
 #define ASH_CAPTURE_MODE_CAPTURE_MODE_CAMERA_PREVIEW_VIEW_H_
 
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/capture_mode/camera_video_frame_renderer.h"
+#include "ash/capture_mode/capture_mode_button.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_session_focus_cycler.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/geometry/size.h"
@@ -29,13 +33,35 @@ class NativeViewHost;
 namespace ash {
 
 class CaptureModeCameraController;
-class CaptureModeButton;
+class ScopedA11yOverrideWindowSetter;
+
+// Resize button inside the camera preview view.
+class CameraPreviewResizeButton : public CaptureModeButton {
+ public:
+  METADATA_HEADER(CameraPreviewResizeButton);
+
+  CameraPreviewResizeButton(CameraPreviewView* camera_preview_view,
+                            views::Button::PressedCallback callback,
+                            const gfx::VectorIcon& icon);
+  CameraPreviewResizeButton(const CameraPreviewResizeButton&) = delete;
+  CameraPreviewResizeButton& operator=(const CameraPreviewResizeButton&) =
+      delete;
+  ~CameraPreviewResizeButton() override;
+
+  // CaptureModeSessionFocusCycler::HighlightableView:
+  void PseudoFocus() override;
+  void PseudoBlur() override;
+
+ private:
+  CameraPreviewView* const camera_preview_view_;  // not owned.
+};
 
 // A view that acts as the contents view of the camera preview widget. It will
 // be responsible for painting the latest camera video frame inside its bounds.
 class CameraPreviewView
     : public views::View,
-      public CaptureModeSessionFocusCycler::HighlightableView {
+      public CaptureModeSessionFocusCycler::HighlightableView,
+      public AccessibilityObserver {
  public:
   METADATA_HEADER(CameraPreviewView);
 
@@ -43,14 +69,18 @@ class CameraPreviewView
       CaptureModeCameraController* camera_controller,
       const CameraId& camera_id,
       mojo::Remote<video_capture::mojom::VideoSource> camera_video_source,
-      const media::VideoCaptureFormat& capture_format);
+      const media::VideoCaptureFormat& capture_format,
+      bool should_flip_frames_horizontally);
   CameraPreviewView(const CameraPreviewView&) = delete;
   CameraPreviewView& operator=(const CameraPreviewView&) = delete;
   ~CameraPreviewView() override;
 
   const CameraId& camera_id() const { return camera_id_; }
-  CaptureModeButton* resize_button() const { return resize_button_; }
+  CameraPreviewResizeButton* resize_button() const { return resize_button_; }
   bool is_collapsible() const { return is_collapsible_; }
+  bool should_flip_frames_horizontally() const {
+    return camera_video_renderer_.should_flip_frames_horizontally();
+  }
 
   // Sets this camera preview collapsability to the given `value`, which will
   // update the resize button visibility.
@@ -64,6 +94,17 @@ class CameraPreviewView
   // Called to update visibility of the `resize_button_` when necessary.
   void RefreshResizeButtonVisibility();
 
+  // Updates the a11y override window when focus state changes on the camera
+  // preview. The a11y override window will be set to nullptr if neither the
+  // camera preview nor the resize button has focus. This is done to make sure
+  // a11y focus can be moved to others appropriately.
+  void UpdateA11yOverrideWindow();
+
+  // Removes the focus from camera preview when necessary. Happens if mouse
+  // pressing outside of the camera preview when it has focus. A11y override
+  // window will be updated as well.
+  void MaybeBlurFocus(const ui::MouseEvent& event);
+
   // views::View:
   void AddedToWidget() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -73,16 +114,22 @@ class CameraPreviewView
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void Layout() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // CaptureModeSessionFocusCycler::HighlightableView:
   views::View* GetView() override;
   std::unique_ptr<views::HighlightPathGenerator> CreatePathGenerator() override;
+
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
+  void OnAccessibilityControllerShutdown() override;
 
   base::OneShotTimer* resize_button_hide_timer_for_test() {
     return &resize_button_hide_timer_;
   }
 
  private:
+  friend class CameraPreviewResizeButton;
   friend class CaptureModeTestApi;
 
   // Called when the resize button is clicked or touched.
@@ -108,12 +155,17 @@ class CameraPreviewView
   void FadeInResizeButton();
   void FadeOutResizeButton();
 
-  // Called when the mouse exits the camera preview or after the latest tap
-  // inside the camera preview to start the `resize_button_hide_timer_`.
+  // Called when the mouse exits the camera preview, after the latest tap inside
+  // the camera preview or when focus being removed from the resize button to
+  // start the `resize_button_hide_timer_`.
   void ScheduleRefreshResizeButtonVisibility();
 
   // Returns the target opacity for resize button.
   float CalculateResizeButtonTargetOpacity();
+
+  // Removes the focus from the camera preview and updates the a11y override
+  // window.
+  void BlurA11yFocus();
 
   CaptureModeCameraController* const camera_controller_;
 
@@ -127,7 +179,7 @@ class CameraPreviewView
   // `camera_video_renderer_` into this view's hierarchy.
   views::NativeViewHost* const camera_video_host_view_;
 
-  CaptureModeButton* const resize_button_;
+  CameraPreviewResizeButton* const resize_button_;
 
   // Started when the mouse exits the camera preview or after the latest tap
   // inside the camera preview. Runs RefreshResizeButtonVisibility() to fade out
@@ -140,6 +192,16 @@ class CameraPreviewView
 
   // True only while handling a gesture tap event on this view.
   bool has_been_tapped_ = false;
+
+  base::ScopedObservation<AccessibilityControllerImpl, AccessibilityObserver>
+      accessibility_observation_{this};
+
+  // Helps to update the current a11y override window. It will be the native
+  // window of the camera preview or nullptr, depends on whether the camera
+  // preview has focus or not. Accessibility features will focus on the window
+  // after it is set. Once `this` goes out of scope, the a11y override window is
+  // set to nullptr.
+  std::unique_ptr<ScopedA11yOverrideWindowSetter> scoped_a11y_overrider_;
 
   base::WeakPtrFactory<CameraPreviewView> weak_ptr_factory_{this};
 };

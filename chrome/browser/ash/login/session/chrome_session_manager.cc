@@ -52,7 +52,7 @@
 #include "chrome/browser/ui/webui/chromeos/shimless_rma_dialog.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/rmad/rmad_client.h"
+#include "chromeos/ash/components/dbus/rmad/rmad_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
@@ -171,6 +171,9 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 }
 
 void LaunchShimlessRma() {
+  if (ash::features::IsShimlessRMAFlowEnabled()) {
+    VLOG(1) << "ChromeSessionManager::LaunchShimlessRma";
+  }
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::RMA);
 
@@ -183,6 +186,9 @@ void LaunchShimlessRma() {
 
 // The callback invoked when RmadClient determines that RMA is required.
 void OnRmaIsRequiredResponse() {
+  if (ash::features::IsShimlessRMAFlowEnabled()) {
+    VLOG(1) << "ChromeSessionManager::OnRmaIsRequiredResponse";
+  }
   switch (session_manager::SessionManager::Get()->session_state()) {
     case session_manager::SessionState::UNKNOWN:
       LOG(ERROR) << "OnRmaIsRequiredResponse callback triggered unexpectedly";
@@ -251,8 +257,12 @@ void ChromeSessionManager::Initialize(
 
     // If the RMA state is detected later, OnRmaIsRequiredResponse() is invoked
     // to append the kLaunchRma switch and restart Chrome in RMA mode.
-    chromeos::RmadClient::Get()->SetRmaRequiredCallbackForSessionManager(
+    RmadClient::Get()->SetRmaRequiredCallbackForSessionManager(
         base::BindOnce(&OnRmaIsRequiredResponse));
+  } else {
+    if (ash::features::IsShimlessRMAFlowEnabled()) {
+      VLOG(1) << "ChromeSessionManager::Initialize Shimless RMA is not allowed";
+    }
   }
 
   // Tests should be able to tune login manager before showing it. Thus only

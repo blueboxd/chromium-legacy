@@ -29,6 +29,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -36,7 +37,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "net/base/escape.h"
 #include "pdf/accessibility.h"
 #include "pdf/accessibility_structs.h"
 #include "pdf/buildflags.h"
@@ -59,6 +59,9 @@
 #include "third_party/blink/public/web/web_print_preset_options.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -323,11 +326,11 @@ void PdfViewPluginBase::Email(const std::string& to,
                               const std::string& body) {
   base::Value::Dict message;
   message.Set("type", "email");
-  message.Set("to", net::EscapeUrlEncodedData(to, false));
-  message.Set("cc", net::EscapeUrlEncodedData(cc, false));
-  message.Set("bcc", net::EscapeUrlEncodedData(bcc, false));
-  message.Set("subject", net::EscapeUrlEncodedData(subject, false));
-  message.Set("body", net::EscapeUrlEncodedData(body, false));
+  message.Set("to", base::EscapeUrlEncodedData(to, false));
+  message.Set("cc", base::EscapeUrlEncodedData(cc, false));
+  message.Set("bcc", base::EscapeUrlEncodedData(bcc, false));
+  message.Set("subject", base::EscapeUrlEncodedData(subject, false));
+  message.Set("body", base::EscapeUrlEncodedData(body, false));
   SendMessage(std::move(message));
 }
 
@@ -843,7 +846,8 @@ void PdfViewPluginBase::UpdateGeometryOnPluginRectChanged(
   const gfx::Size new_image_size =
       PaintManager::GetNewContextSize(old_image_size, plugin_rect_.size());
   if (new_image_size != old_image_size) {
-    InitImageData(new_image_size);
+    image_data_.allocPixels(
+        SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(new_image_size)));
     first_paint_ = true;
   }
 
@@ -852,10 +856,6 @@ void PdfViewPluginBase::UpdateGeometryOnPluginRectChanged(
     return;
 
   OnGeometryChanged(zoom_, old_device_scale);
-}
-
-SkBitmap PdfViewPluginBase::GetPluginImageData() const {
-  return image_data_;
 }
 
 void PdfViewPluginBase::RecalculateAreas(double old_zoom,
@@ -1404,6 +1404,7 @@ void PdfViewPluginBase::DoPaint(const std::vector<gfx::Rect>& paint_rects,
 
   engine()->PrePaint();
 
+  std::vector<gfx::Rect> ready_rects;
   for (const gfx::Rect& paint_rect : paint_rects) {
     // Intersect with plugin area since there could be pending invalidates from
     // when the plugin area was larger.
@@ -1422,7 +1423,7 @@ void PdfViewPluginBase::DoPaint(const std::vector<gfx::Rect>& paint_rects,
       engine()->Paint(pdf_rect, image_data_, pdf_ready, pdf_pending);
       for (gfx::Rect& ready_rect : pdf_ready) {
         ready_rect.Offset(available_area_.OffsetFromOrigin());
-        ready.push_back(PaintReadyRect(ready_rect, GetPluginImageData()));
+        ready_rects.push_back(ready_rect);
       }
       for (gfx::Rect& pending_rect : pdf_pending) {
         pending_rect.Offset(available_area_.OffsetFromOrigin());
@@ -1437,8 +1438,8 @@ void PdfViewPluginBase::DoPaint(const std::vector<gfx::Rect>& paint_rects,
     if (rect.y() < first_page_ypos) {
       gfx::Rect region = gfx::IntersectRects(
           rect, gfx::Rect(gfx::Size(plugin_rect_.width(), first_page_ypos)));
-      ready.push_back(PaintReadyRect(region, GetPluginImageData()));
       image_data_.erase(background_color_, gfx::RectToSkIRect(region));
+      ready_rects.push_back(region);
     }
 
     // Ensure the background parts are filled.
@@ -1448,12 +1449,18 @@ void PdfViewPluginBase::DoPaint(const std::vector<gfx::Rect>& paint_rects,
       if (!intersection.IsEmpty()) {
         image_data_.erase(background_part.color,
                           gfx::RectToSkIRect(intersection));
-        ready.push_back(PaintReadyRect(intersection, GetPluginImageData()));
+        ready_rects.push_back(intersection);
       }
     }
   }
 
   engine()->PostPaint();
+
+  // TODO(crbug.com/1263614): Write pixels directly to the `SkSurface` in
+  // `PaintManager`, rather than using an intermediate `SkBitmap` and `SkImage`.
+  sk_sp<SkImage> painted_image = image_data_.asImage();
+  for (const gfx::Rect& ready_rect : ready_rects)
+    ready.emplace_back(ready_rect, painted_image);
 
   InvalidateAfterPaintDone();
 }
@@ -1466,9 +1473,8 @@ void PdfViewPluginBase::PrepareForFirstPaint(
   // Fill the image data buffer with the background color.
   first_paint_ = false;
   image_data_.eraseColor(background_color_);
-  gfx::Rect rect(gfx::SkISizeToSize(image_data_.dimensions()));
-  ready.push_back(
-      PaintReadyRect(rect, GetPluginImageData(), /*flush_now=*/true));
+  ready.emplace_back(gfx::SkIRectToRect(image_data_.bounds()),
+                     image_data_.asImage(), /*flush_now=*/true);
 }
 
 void PdfViewPluginBase::ClearDeferredInvalidates() {

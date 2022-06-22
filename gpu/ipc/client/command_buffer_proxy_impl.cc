@@ -47,7 +47,8 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(
     scoped_refptr<GpuChannelHost> channel,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int32_t stream_id,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::SharedMemoryMapper* transfer_buffer_mapper)
     : channel_(std::move(channel)),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       channel_id_(channel_->channel_id()),
@@ -55,7 +56,8 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(
       stream_id_(stream_id),
       command_buffer_id_(
           CommandBufferIdFromChannelAndRoute(channel_id_, route_id_)),
-      callback_thread_(std::move(task_runner)) {
+      callback_thread_(std::move(task_runner)),
+      transfer_buffer_mapper_(transfer_buffer_mapper) {
   DCHECK(route_id_);
 }
 
@@ -356,7 +358,7 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
   base::UnsafeSharedMemoryRegion shared_memory_region;
   base::WritableSharedMemoryMapping shared_memory_mapping;
   std::tie(shared_memory_region, shared_memory_mapping) =
-      AllocateAndMapSharedMemory(size);
+      AllocateAndMapSharedMemory(size, transfer_buffer_mapper_);
   if (!shared_memory_mapping.IsValid()) {
     if (last_state_.error == gpu::error::kNoError &&
         option != TransferBufferAllocationOption::kReturnNullOnOOM)
@@ -401,70 +403,6 @@ void CommandBufferProxyImpl::SetGpuControlClient(GpuControlClient* client) {
 
 const gpu::Capabilities& CommandBufferProxyImpl::GetCapabilities() const {
   return capabilities_;
-}
-
-int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
-                                            size_t width,
-                                            size_t height) {
-  CheckLock();
-  base::AutoLock lock(last_state_lock_);
-  if (last_state_.error != gpu::error::kNoError)
-    return -1;
-
-  int32_t new_id = channel_->ReserveImageId();
-
-  gfx::GpuMemoryBuffer* gpu_memory_buffer =
-      reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
-  DCHECK(gpu_memory_buffer);
-
-  // This handle is owned by the GPU process and must be passed to it or it
-  // will leak. In otherwords, do not early out on error between here and the
-  // sending of the CreateImage IPC below.
-  gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
-  bool requires_sync_token = handle.type == gfx::IO_SURFACE_BUFFER;
-
-  uint64_t image_fence_sync = 0;
-  if (requires_sync_token)
-    image_fence_sync = GenerateFenceSyncRelease();
-
-  DCHECK(gpu::IsImageFromGpuMemoryBufferFormatSupported(
-      gpu_memory_buffer->GetFormat(), capabilities_))
-      << gfx::BufferFormatToString(gpu_memory_buffer->GetFormat());
-  DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-      gfx::Size(width, height), gpu_memory_buffer->GetFormat()))
-      << gfx::BufferFormatToString(gpu_memory_buffer->GetFormat());
-
-  auto params = mojom::CreateImageParams::New();
-  params->id = new_id;
-  params->gpu_memory_buffer = std::move(handle);
-  params->size = gfx::Size(width, height);
-  params->format = gpu_memory_buffer->GetFormat();
-  params->plane = gfx::BufferPlane::DEFAULT;
-  params->image_release_count = image_fence_sync;
-  command_buffer_->CreateImage(std::move(params));
-
-  if (image_fence_sync) {
-    gpu::SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(),
-                              image_fence_sync);
-
-    // Force a synchronous IPC to validate sync token.
-    EnsureWorkVisible();
-    sync_token.SetVerifyFlush();
-
-    gpu_memory_buffer_manager_->SetDestructionSyncToken(gpu_memory_buffer,
-                                                        sync_token);
-  }
-
-  return new_id;
-}
-
-void CommandBufferProxyImpl::DestroyImage(int32_t id) {
-  CheckLock();
-  base::AutoLock lock(last_state_lock_);
-  if (last_state_.error != gpu::error::kNoError)
-    return;
-
-  command_buffer_->DestroyImage(id);
 }
 
 void CommandBufferProxyImpl::SetLock(base::Lock* lock) {
@@ -649,7 +587,9 @@ void CommandBufferProxyImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
 }
 
 std::pair<base::UnsafeSharedMemoryRegion, base::WritableSharedMemoryMapping>
-CommandBufferProxyImpl::AllocateAndMapSharedMemory(size_t size) {
+CommandBufferProxyImpl::AllocateAndMapSharedMemory(
+    size_t size,
+    base::SharedMemoryMapper* mapper) {
   base::UnsafeSharedMemoryRegion region =
       base::UnsafeSharedMemoryRegion::Create(size);
   if (!region.IsValid()) {
@@ -657,7 +597,7 @@ CommandBufferProxyImpl::AllocateAndMapSharedMemory(size_t size) {
     return {};
   }
 
-  base::WritableSharedMemoryMapping mapping = region.Map();
+  base::WritableSharedMemoryMapping mapping = region.Map(mapper);
   if (!mapping.IsValid()) {
     DLOG(ERROR) << "AllocateAndMapSharedMemory: Map failed";
     return {};

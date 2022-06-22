@@ -122,8 +122,6 @@ void SecurityStateTabHelper::DidStartNavigation(
   UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.FormSubmission",
                             GetSecurityLevel(),
                             security_state::SECURITY_LEVEL_COUNT);
-  UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.FormSubmission",
-                            GetVisibleSecurityState()->safety_tip_info.status);
   if (navigation_handle->IsInMainFrame() &&
       !security_state::IsSchemeCryptographic(GetVisibleSecurityState()->url)) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -142,20 +140,10 @@ void SecurityStateTabHelper::DidStartNavigation(
   }
 }
 
-void SecurityStateTabHelper::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Ignore non-primary FrameTree navigations, subframe navigations,
-  // same-document navigations, and navigations that did not commit (e.g.
-  // HTTP/204 or file downloads).
-  if (!navigation_handle->IsInPrimaryMainFrame() ||
-      navigation_handle->IsSameDocument() ||
-      !navigation_handle->HasCommitted()) {
-    return;
-  }
-
+void SecurityStateTabHelper::PrimaryPageChanged(content::Page& page) {
   net::CertStatus cert_status = GetVisibleSecurityState()->cert_status;
   if (net::IsCertStatusError(cert_status) &&
-      !navigation_handle->IsErrorPage()) {
+      !page.GetMainDocument().IsErrorDocument()) {
     // Record each time a user visits a site after having clicked through a
     // certificate warning interstitial. This is used as a baseline for
     // interstitial.ssl.did_user_revoke_decision2 in order to determine how

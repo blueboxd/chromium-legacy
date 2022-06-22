@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
@@ -26,6 +27,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
@@ -543,8 +545,6 @@ TEST_F(StyleResolverTest, NoFetchForAtPage) {
 }
 
 TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
-  ScopedCSSTargetTextPseudoElementForTest scoped_feature(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       body::target-text, body::selection {
@@ -1600,54 +1600,6 @@ TEST_F(StyleResolverTest, CascadeLayersAfterModifyingAnotherSheet) {
   EXPECT_EQ(properties[1].types_.origin, CascadeOrigin::kAuthor);
 }
 
-// https://crbug.com/1326791
-TEST_F(StyleResolverTest, CascadeLayersAddLayersWithImportantDeclarations) {
-  GetDocument().documentElement()->setInnerHTML(R"HTML(
-    <style id="addrule"></style>
-    <target></target>
-  )HTML");
-
-  UpdateAllLifecyclePhasesForTest();
-
-  GetDocument().getElementById("addrule")->appendChild(
-      GetDocument().createTextNode(
-          "@layer { target { font-size: 20px !important; } }"
-          "@layer { target { font-size: 10px !important; } }"));
-
-  UpdateAllLifecyclePhasesForTest();
-
-  ASSERT_TRUE(GetDocument().GetScopedStyleResolver()->GetCascadeLayerMap());
-
-  StyleResolverState state(GetDocument(),
-                           *GetDocument().QuerySelector("target"));
-  SelectorFilter filter;
-  MatchResult match_result;
-  ElementRuleCollector collector(state.ElementContext(), StyleRecalcContext(),
-                                 filter, match_result, state.Style(),
-                                 EInsideLink::kNotInsideLink);
-  MatchAllRules(state, collector);
-  const auto& properties = match_result.GetMatchedProperties();
-  ASSERT_EQ(properties.size(), 2u);
-
-  // @layer { target { font-size: 20px !important } }
-  EXPECT_TRUE(properties[0].properties->HasProperty(CSSPropertyID::kFontSize));
-  EXPECT_TRUE(
-      properties[0].properties->PropertyIsImportant(CSSPropertyID::kFontSize));
-  EXPECT_EQ("20px", properties[0].properties->GetPropertyValue(
-                        CSSPropertyID::kFontSize));
-  EXPECT_EQ(0u, properties[0].types_.layer_order);
-  EXPECT_EQ(properties[0].types_.origin, CascadeOrigin::kAuthor);
-
-  // @layer { target { font-size: 10px !important } }
-  EXPECT_TRUE(properties[1].properties->HasProperty(CSSPropertyID::kFontSize));
-  EXPECT_TRUE(
-      properties[1].properties->PropertyIsImportant(CSSPropertyID::kFontSize));
-  EXPECT_EQ("10px", properties[1].properties->GetPropertyValue(
-                        CSSPropertyID::kFontSize));
-  EXPECT_EQ(1u, properties[1].types_.layer_order);
-  EXPECT_EQ(properties[1].types_.origin, CascadeOrigin::kAuthor);
-}
-
 // TODO(crbug.com/1095765): We should have a WPT for this test case, but
 // currently Blink web test runner can't test @page rules in WPT.
 TEST_F(StyleResolverTest, CascadeLayersAndPageRules) {
@@ -1673,7 +1625,6 @@ TEST_F(StyleResolverTest, CascadeLayersAndPageRules) {
 }
 
 TEST_F(StyleResolverTest, BodyPropagationLayoutImageContain) {
-  ScopedCSSContainedBodyPropagationForTest enable_scope(true);
   GetDocument().documentElement()->setAttribute(
       html_names::kStyleAttr,
       "contain:size; display:inline-table; content:url(img);");

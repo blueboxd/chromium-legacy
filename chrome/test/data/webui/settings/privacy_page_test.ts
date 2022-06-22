@@ -27,6 +27,7 @@ const redesignedPages: Route[] = [
   routes.SITE_SETTINGS_BACKGROUND_SYNC,
   routes.SITE_SETTINGS_CAMERA,
   routes.SITE_SETTINGS_CLIPBOARD,
+  routes.SITE_SETTINGS_FEDERATED_IDENTITY_API,
   routes.SITE_SETTINGS_FILE_SYSTEM_WRITE,
   routes.SITE_SETTINGS_HANDLERS,
   routes.SITE_SETTINGS_HID_DEVICES,
@@ -149,14 +150,14 @@ suite('PrivacyPage', function() {
     // All redesigned pages, except notifications, protocol handlers, pdf
     // documents and protected content (except chromeos and win), will use a
     // settings-category-default-radio-group.
-    // <if expr="chromeos_ash or is_win">
+    // <if expr="chromeos_ash or chromeos_lacros or is_win">
     assertEquals(
         page.shadowRoot!
             .querySelectorAll('settings-category-default-radio-group')
             .length,
         redesignedPages.length - 3);
     // </if>
-    // <if expr="not chromeos_ash and not is_win">
+    // <if expr="not chromeos_ash and not chromeos_lacros and not is_win">
     assertEquals(
         page.shadowRoot!
             .querySelectorAll('settings-category-default-radio-group')

@@ -21,7 +21,7 @@ namespace features {
 // User, Kiosks, Managed Guest Sessions) to the device status report.
 const base::Feature kActivityReportingSessionType{
     "ActivityReportingSessionType", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables logging for adaptive screen brightness on Chrome OS.
@@ -33,7 +33,7 @@ const base::Feature kAdaptiveScreenBrightnessLogging{
 // Shows settings to adjust and disable touchpad haptic feedback.
 const base::Feature kAllowDisableTouchpadHapticFeedback{
     "AllowDisableTouchpadHapticFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows settings to adjust the touchpad haptic click settings.
@@ -273,7 +273,7 @@ const base::Feature kDesktopPWAsDefaultOfflinePage{
 // for web app windows.
 const base::Feature kDesktopPWAsElidedExtensionsMenu {
   "DesktopPWAsElidedExtensionsMenu",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -283,17 +283,6 @@ const base::Feature kDesktopPWAsElidedExtensionsMenu {
 // Whether to parse and enforce the WebAppSettings policy.
 const base::Feature kDesktopPWAsEnforceWebAppSettingsPolicy{
     "DesktopPWAsEnforceWebAppSettingsPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Replaces the origin text flash and the icon in web app notifications with
-// the name of the app and the icon of the app.
-const base::Feature kDesktopPWAsNotificationIconAndTitle {
-  "DesktopPWAsNotificationIconAndTitle",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 // Enables or disables Desktop PWAs to be auto-started on OS login.
 const base::Feature kDesktopPWAsRunOnOsLogin {
@@ -328,6 +317,11 @@ const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
 const base::Feature kKeepForceInstalledPreinstalledApps{
     "KeepForceInstalledPreinstalledApps", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+// Causes the DMToken to be deleted (rather than invalidated) when a browser is
+// deleted from CBCM.
+const base::Feature kDmTokenDeletion{"DmTokenDeletion",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable DNS over HTTPS (DoH).
 const base::Feature kDnsOverHttps {
@@ -372,7 +366,7 @@ const base::Feature kDnsProxyEnableDOH{"DnsProxyEnableDOH",
 #if BUILDFLAG(IS_ANDROID)
 // Enable loading native libraries earlier in startup on Android.
 const base::Feature kEarlyLibraryLoad{"EarlyLibraryLoad",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -421,6 +415,12 @@ const base::Feature kExtensionWorkflowJustification{
 // default.
 const base::Feature kExternalExtensionDefaultButtonControl{
     "ExternalExtensionDefaultButtonControl", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if !BUILDFLAG(IS_ANDROID)
+// Field trial boolean parameter which indicates whether FedCM desktop settings
+// are enabled.
+const char kFedCmDesktopSettingsFieldTrialParamName[] = "DesktopSettings";
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Show Flash deprecation warning to users who have manually enabled Flash.
@@ -859,7 +859,7 @@ const base::Feature kAbusiveNotificationPermissionRevocation{
 
 const base::Feature kRemoveStatusBarInWebApps {
   "RemoveStatusBarInWebApps",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

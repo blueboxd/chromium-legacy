@@ -48,6 +48,7 @@
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/ash/login/helper.h"
+#include "chrome/browser/ash/login/profile_auth_data.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_salt_storage.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_storage_cryptohome.h"
 #include "chrome/browser/ash/login/reauth_stats.h"
@@ -95,7 +96,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/hibernate/buildflags.h"
+#include "chromeos/ash/components/hibernate/buildflags.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
@@ -132,8 +133,12 @@
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(ENABLE_HIBERNATE)
-#include "chromeos/dbus/hiberman/hiberman_client.h"  // nogncheck
+#include "chromeos/ash/components/dbus/hiberman/hiberman_client.h"  // nogncheck
 #endif
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace ash {
 namespace {
@@ -145,9 +150,6 @@ const char kAutoLaunchNotificationId[] =
     "chrome://managed_guest_session/auto_launch";
 
 const char kAutoLaunchNotifierId[] = "ash.managed_guest_session-auto_launch";
-
-// Delay for transferring the auth cache to the system profile.
-const long int kAuthCacheTransferDelayMs = 2000;
 
 // Delay for restarting the ui if safe-mode login has failed.
 const long int kSafeModeRestartUiDelayMs = 30000;
@@ -165,15 +167,6 @@ void OnTranferredHttpAuthCaches() {
   // have been stuck until now too.
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&RefreshPoliciesOnUIThread));
-}
-
-void TransferHttpAuthCacheToSystemNetworkContext(
-    base::RepeatingClosure completion_callback,
-    const base::UnguessableToken& cache_key) {
-  network::mojom::NetworkContext* system_network_context =
-      g_browser_process->system_network_context_manager()->GetContext();
-  system_network_context->LoadHttpAuthCacheProxyEntries(cache_key,
-                                                        completion_callback);
 }
 
 // Copies any authentication details that were entered in the login profile to
@@ -523,7 +516,7 @@ void ExistingUserController::Observe(
   VLOG(1) << "Authentication was entered manually, possibly for proxyauth.";
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&TransferHttpAuthCaches),
-      base::Milliseconds(kAuthCacheTransferDelayMs));
+      kAuthCacheTransferDelayMs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

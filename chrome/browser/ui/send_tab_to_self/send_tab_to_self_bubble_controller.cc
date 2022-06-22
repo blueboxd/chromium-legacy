@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
@@ -64,7 +65,7 @@ void SendTabToSelfBubbleController::ShowBubble(bool show_back_button) {
   bubble_shown_ = true;
   Browser* browser = chrome::FindBrowserWithWebContents(&GetWebContents());
   send_tab_to_self_bubble_view_ =
-      browser->window()->ShowSendTabToSelfBubble(&GetWebContents(), this, true);
+      browser->window()->ShowSendTabToSelfBubble(&GetWebContents());
 
   if (sharing_hub::SharingHubOmniboxEnabled(
           GetWebContents().GetBrowserContext())) {
@@ -122,7 +123,7 @@ void SendTabToSelfBubbleController::OnDeviceSelected(
 
   model->AddEntry(navigation_entry->GetURL(),
                   base::UTF16ToUTF8(navigation_entry->GetTitle()),
-                  navigation_entry->GetTimestamp(), target_device_guid);
+                  target_device_guid);
   // Show confirmation message.
   show_message_ = true;
   UpdateIcon();

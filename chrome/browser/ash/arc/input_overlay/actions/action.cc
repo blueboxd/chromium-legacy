@@ -11,10 +11,15 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace arc {
 namespace input_overlay {
 namespace {
 // Json strings.
+constexpr char kID[] = "id";
 constexpr char kName[] = "name";
 constexpr char kInputSources[] = "input_sources";
 constexpr char kLocation[] = "location";
@@ -143,6 +148,14 @@ bool Action::ParseFromJson(const base::Value& value) {
   if (name)
     name_ = *name;
 
+  // Unique ID is required.
+  auto id = value.GetDict().FindInt(kID);
+  if (!id) {
+    LOG(ERROR) << "Must have unique ID for action {" << name_ << "}";
+    return false;
+  }
+  id_ = *id;
+
   // Parse action device source.
   auto* sources = value.FindListKey(kInputSources);
   if (!sources || !sources->is_list()) {
@@ -201,26 +214,26 @@ bool IsMouseBound(const InputElement& input_element) {
   return (input_element.input_sources() & InputSource::IS_MOUSE) != 0;
 }
 
-void Action::PrepareToBind(std::unique_ptr<InputElement> input_element) {
-  DCHECK(action_view_);
-  if (!action_view_)
-    return;
+void Action::PrepareToBind(std::unique_ptr<InputElement> input_element,
+                           DisplayMode mode) {
   if (pending_binding_)
     pending_binding_.reset();
   pending_binding_ = std::move(input_element);
   auto bounds = CalculateWindowContentBounds(target_window_);
+
+  if (!action_view_)
+    return;
   action_view_->SetViewContent(BindingOption::kPending, bounds);
-  action_view_->SetDisplayMode(DisplayMode::kEdited);
+  action_view_->SetDisplayMode(mode);
 }
 
 void Action::BindPending() {
   if (!pending_binding_)
     return;
-  DCHECK(action_view_);
-  if (!action_view_)
-    return;
+
   current_binding_.reset();
   current_binding_ = std::move(pending_binding_);
+  DCHECK(!pending_binding_);
 }
 
 void Action::CancelPendingBind(const gfx::RectF& content_bounds) {
@@ -246,6 +259,14 @@ void Action::RestoreToDefault(const gfx::RectF& content_bounds) {
 const InputElement& Action::GetCurrentDisplayedBinding() {
   DCHECK(current_binding_);
   return pending_binding_ ? *pending_binding_ : *current_binding_;
+}
+
+bool Action::IsOverlapped(const InputElement& input_element) {
+  DCHECK(current_binding_);
+  if (!current_binding_)
+    return false;
+  auto& binding = GetCurrentDisplayedBinding();
+  return binding.IsOverlapped(input_element);
 }
 
 absl::optional<gfx::PointF> Action::CalculateTouchPosition(
@@ -337,6 +358,25 @@ void Action::OnTouchCancelled() {
   if (locations_.empty())
     return;
   current_position_index_ = 0;
+}
+
+void Action::PostUnbindProcess() {
+  if (!action_view_)
+    return;
+  auto bounds = CalculateWindowContentBounds(target_window_);
+  action_view_->SetViewContent(BindingOption::kPending, bounds);
+  action_view_->SetDisplayMode(DisplayMode::kEditedUnbound);
+}
+
+std::unique_ptr<ActionProto> Action::ConvertToProtoIfCustomized() {
+  if (*original_binding_ == *current_binding_)
+    return nullptr;
+
+  auto proto = std::make_unique<ActionProto>();
+  proto->set_id(id_);
+  proto->set_allocated_input_element(
+      current_binding_->ConvertToProto().release());
+  return proto;
 }
 
 }  // namespace input_overlay

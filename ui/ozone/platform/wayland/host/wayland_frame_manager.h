@@ -135,7 +135,7 @@ class WaylandFrameManager {
                                 gfx::GpuFenceHandle release_fence_handle);
   void OnExplicitBufferRelease(WaylandSurface* surface,
                                struct wl_buffer* wl_buffer,
-                               base::ScopedFD fence);
+                               absl::optional<int32_t> fence);
   void OnWlBufferRelease(WaylandSurface* surface, struct wl_buffer* wl_buffer);
 
   // wl_callback_listener

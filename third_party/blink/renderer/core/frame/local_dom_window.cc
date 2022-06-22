@@ -39,6 +39,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/event_page_show_persisted.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -201,7 +202,7 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame,
       token_(frame.GetLocalFrameToken()),
       post_message_counter_(PostMessagePartition::kSameProcess),
       network_state_observer_(MakeGarbageCollected<NetworkStateObserver>(this)),
-      anonymous_(anonymous),
+      isAnonymouslyFramed_(anonymous),
       closewatcher_stack_(
           MakeGarbageCollected<CloseWatcher::WatcherStack>(this)) {}
 
@@ -669,8 +670,16 @@ void LocalDOMWindow::CountPermissionsPolicyUsage(
 
 void LocalDOMWindow::CountUseOnlyInCrossOriginIframe(
     mojom::blink::WebFeature feature) {
-  if (GetFrame() && GetFrame()->IsCrossOriginToMainFrame())
+  if (GetFrame() && GetFrame()->IsCrossOriginToOutermostMainFrame())
     CountUse(feature);
+}
+
+void LocalDOMWindow::CountUseOnlyInSameOriginIframe(
+    mojom::blink::WebFeature feature) {
+  if (GetFrame() && !GetFrame()->IsOutermostMainFrame() &&
+      !GetFrame()->IsCrossOriginToOutermostMainFrame()) {
+    CountUse(feature);
+  }
 }
 
 void LocalDOMWindow::CountUseOnlyInCrossSiteIframe(
@@ -787,7 +796,7 @@ void LocalDOMWindow::EnqueueNonPersistedPageshowEvent() {
   // event to skip dispatch when the renderer exits. If this is not the case or
   // there are other cases, we need to fix this code to only record the metric
   // once the event is dispatched.
-  if (GetFrame() && GetFrame()->IsMainFrame()) {
+  if (GetFrame() && GetFrame()->IsOutermostMainFrame()) {
     RecordUMAEventPageShowPersisted(EventPageShowPersisted::kNoInRenderer);
   }
 }
@@ -800,7 +809,7 @@ void LocalDOMWindow::DispatchPersistedPageshowEvent(
   DispatchEvent(*PageTransitionEvent::CreatePersistedPageshow(navigation_start),
                 document_.Get());
 
-  if (GetFrame() && GetFrame()->IsMainFrame()) {
+  if (GetFrame() && GetFrame()->IsOutermostMainFrame()) {
     RecordUMAEventPageShowPersisted(EventPageShowPersisted::kYesInRenderer);
   }
 }
@@ -839,12 +848,15 @@ void LocalDOMWindow::StatePopped(
   if (!GetFrame())
     return;
 
-  // Per step 11 of section 6.5.9 (history traversal) of the HTML5 spec, we
-  // defer firing of popstate until we're in the complete state.
-  if (document()->IsLoadCompleted())
+  // TODO(crbug.com/1254926): Remove pending_state_object_ and the capacity to
+  // delay popstate until after the load event once the behavior is proven
+  // compatible in M103.
+  if (document()->IsLoadCompleted() ||
+      base::FeatureList::IsEnabled(features::kDispatchPopstateSync)) {
     EnqueuePopstateEvent(std::move(state_object));
-  else
+  } else {
     pending_state_object_ = std::move(state_object);
+  }
 }
 
 LocalDOMWindow::~LocalDOMWindow() = default;
@@ -1053,7 +1065,7 @@ void LocalDOMWindow::SchedulePostMessage(PostedMessage* posted_message) {
       std::move(posted_message->channels), std::move(posted_message->data),
       posted_message->source_origin->ToString(), String(),
       posted_message->source, posted_message->user_activation,
-      posted_message->delegate_payment_request);
+      posted_message->delegated_capability);
 
   // Allowing unbounded amounts of messages to build up for a suspended context
   // is problematic; consider imposing a limit or other restriction if this
@@ -1162,10 +1174,20 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
                               ActionAfterPagehide::kReceivedPostMessage);
   }
 
-  if (RuntimeEnabledFeatures::CapabilityDelegationPaymentRequestEnabled(this) &&
-      event->delegatePaymentRequest()) {
+  if (event->delegatedCapability() ==
+      mojom::blink::DelegatedCapability::kPaymentRequest) {
     UseCounter::Count(this, WebFeature::kCapabilityDelegationOfPaymentRequest);
     payment_request_token_.Activate();
+  }
+
+  if (RuntimeEnabledFeatures::CapabilityDelegationFullscreenRequestEnabled(
+          this) &&
+      event->delegatedCapability() ==
+          mojom::blink::DelegatedCapability::kFullscreenRequest) {
+    UseCounter::Count(this,
+                      WebFeature::kCapabilityDelegationOfFullscreenRequest);
+    // TODO(crbug.com/1293083): Activate a corresponding token in the browser.
+    fullscreen_request_token_.Activate();
   }
 
   DispatchEvent(*event);
@@ -1204,9 +1226,7 @@ void LocalDOMWindow::print(ScriptState* script_state) {
     return;
   }
 
-  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
-    CountUse(WebFeature::kSameOriginIframeWindowPrint);
-  }
+  CountUseOnlyInSameOriginIframe(WebFeature::kSameOriginIframeWindowPrint);
   CountUseOnlyInCrossOriginIframe(WebFeature::kCrossOriginWindowPrint);
 
   should_print_when_finished_loading_ = false;
@@ -1246,9 +1266,7 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
   if (!page)
     return;
 
-  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
-    CountUse(WebFeature::kSameOriginIframeWindowAlert);
-  }
+  CountUseOnlyInSameOriginIframe(WebFeature::kSameOriginIframeWindowAlert);
   Deprecation::CountDeprecationCrossOriginIframe(
       this, WebFeature::kCrossOriginWindowAlert);
 
@@ -1282,9 +1300,7 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
   if (!page)
     return false;
 
-  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
-    CountUse(WebFeature::kSameOriginIframeWindowConfirm);
-  }
+  CountUseOnlyInSameOriginIframe(WebFeature::kSameOriginIframeWindowConfirm);
   Deprecation::CountDeprecationCrossOriginIframe(
       this, WebFeature::kCrossOriginWindowConfirm);
 
@@ -1325,9 +1341,7 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
                                                    default_value, return_value))
     return return_value;
 
-  if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
-    CountUse(WebFeature::kSameOriginIframeWindowPrompt);
-  }
+  CountUseOnlyInSameOriginIframe(WebFeature::kSameOriginIframeWindowPrompt);
   Deprecation::CountDeprecationCrossOriginIframe(
       this, WebFeature::kCrossOriginWindowAlert);
 
@@ -2256,6 +2270,14 @@ bool LocalDOMWindow::IsPaymentRequestTokenActive() const {
 
 bool LocalDOMWindow::ConsumePaymentRequestToken() {
   return payment_request_token_.ConsumeIfActive();
+}
+
+bool LocalDOMWindow::IsFullscreenRequestTokenActive() const {
+  return fullscreen_request_token_.IsActive();
+}
+
+bool LocalDOMWindow::ConsumeFullscreenRequestToken() {
+  return fullscreen_request_token_.ConsumeIfActive();
 }
 
 void LocalDOMWindow::SetIsInBackForwardCache(bool is_in_back_forward_cache) {

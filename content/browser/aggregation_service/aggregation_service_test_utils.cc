@@ -14,14 +14,22 @@
 
 #include "base/base64.h"
 #include "base/containers/contains.h"
+#include "base/containers/span.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/guid.h"
+#include "base/json/json_reader.h"
+#include "base/strings/strcat.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/aggregation_service/aggregation_service_storage_sql.h"
 #include "content/browser/aggregation_service/public_key.h"
+#include "content/browser/aggregation_service/public_key_parsing_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -231,6 +239,93 @@ TestHpkeKey GenerateKey(std::string key_id) {
   EVP_HPKE_KEY_copy(&hpke_key.full_hpke_key, key.get());
 
   return hpke_key;
+}
+
+absl::optional<PublicKeyset> ReadAndParsePublicKeys(const base::FilePath& file,
+                                                    base::Time now,
+                                                    std::string* error_msg) {
+  if (!base::PathExists(file)) {
+    if (error_msg)
+      *error_msg = base::StrCat({"Failed to open file: ", file.MaybeAsASCII()});
+
+    return absl::nullopt;
+  }
+
+  std::string contents;
+  if (!base::ReadFileToString(file, &contents)) {
+    if (error_msg)
+      *error_msg = base::StrCat({"Failed to read file: ", file.MaybeAsASCII()});
+
+    return absl::nullopt;
+  }
+
+  base::JSONReader::ValueWithError value_with_error =
+      base::JSONReader::ReadAndReturnValueWithError(contents);
+  if (!value_with_error.value) {
+    if (error_msg) {
+      *error_msg =
+          base::StrCat({"Failed to parse \"", contents,
+                        "\" as JSON: ", value_with_error.error_message});
+    }
+    return absl::nullopt;
+  }
+
+  std::vector<PublicKey> keys = GetPublicKeys(*value_with_error.value);
+  if (keys.empty()) {
+    if (error_msg) {
+      *error_msg =
+          base::StrCat({"Failed to parse public keys from \"", contents, "\""});
+    }
+
+    return absl::nullopt;
+  }
+
+  return PublicKeyset(std::move(keys), /*fetch_time=*/now,
+                      /*expiry_time=*/base::Time::Max());
+}
+
+std::vector<uint8_t> DecryptPayloadWithHpke(
+    const std::vector<uint8_t>& payload,
+    const EVP_HPKE_KEY& key,
+    const std::string& expected_serialized_shared_info) {
+  base::span<const uint8_t> enc =
+      base::make_span(payload).subspan(0, X25519_PUBLIC_VALUE_LEN);
+
+  std::vector<uint8_t> authenticated_info(
+      AggregatableReport::kDomainSeparationPrefix,
+      AggregatableReport::kDomainSeparationPrefix +
+          sizeof(AggregatableReport::kDomainSeparationPrefix));
+  authenticated_info.insert(authenticated_info.end(),
+                            expected_serialized_shared_info.begin(),
+                            expected_serialized_shared_info.end());
+
+  bssl::ScopedEVP_HPKE_CTX recipient_context;
+  if (!EVP_HPKE_CTX_setup_recipient(
+          /*ctx=*/recipient_context.get(), /*key=*/&key,
+          /*kdf=*/EVP_hpke_hkdf_sha256(),
+          /*aead=*/EVP_hpke_chacha20_poly1305(),
+          /*enc=*/enc.data(), /*enc_len=*/enc.size(),
+          /*info=*/authenticated_info.data(),
+          /*info_len=*/authenticated_info.size())) {
+    return {};
+  }
+
+  base::span<const uint8_t> ciphertext =
+      base::make_span(payload).subspan(X25519_PUBLIC_VALUE_LEN);
+  std::vector<uint8_t> plaintext(ciphertext.size());
+  size_t plaintext_len;
+
+  if (!EVP_HPKE_CTX_open(
+          /*ctx=*/recipient_context.get(), /*out=*/plaintext.data(),
+          /*out_len*/ &plaintext_len, /*max_out_len=*/plaintext.size(),
+          /*in=*/ciphertext.data(), /*in_len=*/ciphertext.size(),
+          /*ad=*/nullptr,
+          /*ad_len=*/0)) {
+    return {};
+  }
+
+  plaintext.resize(plaintext_len);
+  return plaintext;
 }
 
 }  // namespace aggregation_service

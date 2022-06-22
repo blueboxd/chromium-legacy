@@ -4,19 +4,23 @@
 
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 
-#include <string>
+#include <iterator>
+#include <sstream>
 #include <utility>
 #include <vector>
 
 #include "base/check.h"
-#include "base/containers/flat_map.h"
+#include "base/ranges/algorithm.h"
+#include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_trigger.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "content/browser/attribution_reporting/attribution_info.h"
+#include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
-#include "third_party/abseil-cpp/absl/numeric/int128.h"
-#include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace content {
 
@@ -26,15 +30,7 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
     const AttributionAggregatableTrigger& trigger) {
   // TODO(linnan): Log metrics for early returns.
 
-  // Pairs of key id and bucket key.
-  std::vector<std::pair<std::string, absl::uint128>> buckets;
-  buckets.reserve(source.proto().keys().size());
-  for (const auto& [key_id, key] : source.proto().keys()) {
-    buckets.emplace_back(key_id,
-                         absl::MakeUint128(key.high_bits(), key.low_bits()));
-  }
-
-  base::flat_map<std::string, absl::uint128> buckets_map(std::move(buckets));
+  AttributionAggregatableSource::Keys buckets = source.keys();
 
   // For each piece of trigger data specified, check if its filters/not_filters
   // match for the given source, and if applicable modify the bucket based on
@@ -46,17 +42,16 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
     }
 
     for (const auto& source_key : data.source_keys()) {
-      auto bucket = buckets_map.find(source_key);
-      if (bucket == buckets_map.end())
+      auto bucket = buckets.find(source_key);
+      if (bucket == buckets.end())
         continue;
 
-      bucket->second |=
-          absl::MakeUint128(data.key().high_bits, data.key().low_bits);
+      bucket->second |= data.key();
     }
   }
 
   std::vector<AggregatableHistogramContribution> contributions;
-  for (const auto& [key_id, key] : buckets_map) {
+  for (const auto& [key_id, key] : buckets) {
     auto value = trigger.values().find(key_id);
     if (value == trigger.values().end())
       continue;
@@ -65,6 +60,51 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
   }
 
   return contributions;
+}
+
+std::string HexEncodeAggregatableKey(absl::uint128 value) {
+  std::ostringstream out;
+  out << "0x";
+  out.setf(out.hex, out.basefield);
+  out << value;
+  return out.str();
+}
+
+absl::optional<AggregatableReportRequest> CreateAggregatableReportRequest(
+    const AttributionReport& report) {
+  const auto* data =
+      absl::get_if<AttributionReport::AggregatableAttributionData>(
+          &report.data());
+  DCHECK(data);
+
+  const AttributionInfo& attribution_info = report.attribution_info();
+
+  AggregatableReportSharedInfo::DebugMode debug_mode =
+      attribution_info.source.common_info().debug_key().has_value() &&
+              attribution_info.debug_key.has_value()
+          ? AggregatableReportSharedInfo::DebugMode::kEnabled
+          : AggregatableReportSharedInfo::DebugMode::kDisabled;
+
+  std::vector<AggregationServicePayloadContents::HistogramContribution>
+      contributions;
+  base::ranges::transform(
+      data->contributions, std::back_inserter(contributions),
+      [](const auto& contribution) {
+        return AggregationServicePayloadContents::HistogramContribution{
+            .bucket = contribution.key(),
+            .value = static_cast<int>(contribution.value())};
+      });
+
+  return AggregatableReportRequest::Create(
+      AggregationServicePayloadContents(
+          AggregationServicePayloadContents::Operation::kHistogram,
+          std::move(contributions),
+          AggregationServicePayloadContents::AggregationMode::kDefault),
+      AggregatableReportSharedInfo(
+          data->initial_report_time, report.PrivacyBudgetKey(),
+          report.external_report_id(),
+          attribution_info.source.common_info().reporting_origin(),
+          debug_mode));
 }
 
 }  // namespace content

@@ -30,6 +30,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -53,9 +54,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/components/sensors/buildflags.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -771,7 +772,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     demo_mode_delegate_ = delegate;
   }
 
-  void TrimVmMemory(TrimVmMemoryCallback callback) override {
+  void TrimVmMemory(TrimVmMemoryCallback callback, int page_limit) override {
     VLOG(2) << "Start trimming VM memory";
     if (user_id_hash_.empty()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -783,6 +784,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     vm_tools::concierge::ReclaimVmMemoryRequest request;
     request.set_name(kArcVmName);
     request.set_owner_id(user_id_hash_);
+    request.set_page_limit(page_limit);
     GetConciergeClient()->ReclaimVmMemory(
         request,
         base::BindOnce(&ArcVmClientAdapter::OnTrimVmMemory,

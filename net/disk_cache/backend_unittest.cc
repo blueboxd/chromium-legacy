@@ -254,7 +254,7 @@ void DiskCacheBackendTest::WaitForSimpleCacheIndexAndCheck(
 void DiskCacheBackendTest::RunUntilIdle() {
   DiskCacheTestWithCache::RunUntilIdle();
   base::RunLoop().RunUntilIdle();
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
 }
 
 int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
@@ -3885,36 +3885,40 @@ TEST_F(DiskCacheBackendTest, FileSharing) {
   ASSERT_TRUE(cache_impl_->CreateExternalFile(&address));
   base::FilePath name = cache_impl_->GetFileName(address);
 
-  scoped_refptr<disk_cache::File> file(new disk_cache::File(false));
-  file->Init(name);
+  {
+    scoped_refptr<disk_cache::File> file(new disk_cache::File(false));
+    file->Init(name);
 
 #if BUILDFLAG(IS_WIN)
-  DWORD sharing = FILE_SHARE_READ | FILE_SHARE_WRITE;
-  DWORD access = GENERIC_READ | GENERIC_WRITE;
-  base::win::ScopedHandle file2(CreateFile(name.value().c_str(), access,
-                                           sharing, nullptr, OPEN_EXISTING, 0,
-                                           nullptr));
-  EXPECT_FALSE(file2.IsValid());
+    DWORD sharing = FILE_SHARE_READ | FILE_SHARE_WRITE;
+    DWORD access = GENERIC_READ | GENERIC_WRITE;
+    base::win::ScopedHandle file2(CreateFile(name.value().c_str(), access,
+                                             sharing, nullptr, OPEN_EXISTING, 0,
+                                             nullptr));
+    EXPECT_FALSE(file2.IsValid());
 
-  sharing |= FILE_SHARE_DELETE;
-  file2.Set(CreateFile(name.value().c_str(), access, sharing, nullptr,
-                       OPEN_EXISTING, 0, nullptr));
-  EXPECT_TRUE(file2.IsValid());
+    sharing |= FILE_SHARE_DELETE;
+    file2.Set(CreateFile(name.value().c_str(), access, sharing, nullptr,
+                         OPEN_EXISTING, 0, nullptr));
+    EXPECT_TRUE(file2.IsValid());
 #endif
 
-  EXPECT_TRUE(base::DeleteFile(name));
+    EXPECT_TRUE(base::DeleteFile(name));
 
-  // We should be able to use the file.
-  const int kSize = 200;
-  char buffer1[kSize];
-  char buffer2[kSize];
-  memset(buffer1, 't', kSize);
-  memset(buffer2, 0, kSize);
-  EXPECT_TRUE(file->Write(buffer1, kSize, 0));
-  EXPECT_TRUE(file->Read(buffer2, kSize, 0));
-  EXPECT_EQ(0, memcmp(buffer1, buffer2, kSize));
+    // We should be able to use the file.
+    const int kSize = 200;
+    char buffer1[kSize];
+    char buffer2[kSize];
+    memset(buffer1, 't', kSize);
+    memset(buffer2, 0, kSize);
+    EXPECT_TRUE(file->Write(buffer1, kSize, 0));
+    EXPECT_TRUE(file->Read(buffer2, kSize, 0));
+    EXPECT_EQ(0, memcmp(buffer1, buffer2, kSize));
+  }
 
-  EXPECT_TRUE(disk_cache::DeleteCacheFile(name));
+  base::File file(name, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  EXPECT_FALSE(file.IsValid());
+  EXPECT_EQ(file.error_details(), base::File::FILE_ERROR_NOT_FOUND);
 }
 
 TEST_F(DiskCacheBackendTest, UpdateRankForExternalCacheHit) {
@@ -4062,7 +4066,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
   base::FilePath to_delete_file = cache_path_.AppendASCII(
       disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 0));
   EXPECT_TRUE(base::PathExists(to_delete_file));
-  EXPECT_TRUE(disk_cache::DeleteCacheFile(to_delete_file));
+  EXPECT_TRUE(base::DeleteFile(to_delete_file));
 
   // Failing to open the entry should delete the rest of these files.
   ASSERT_THAT(OpenEntry(key, &entry), IsError(net::ERR_FAILED));
@@ -4096,7 +4100,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenBadFile) {
   entry = nullptr;
 
   // The entry is being closed on the Simple Cache worker pool
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 
   // Write an invalid header for stream 0 and stream 1.
@@ -4502,13 +4506,13 @@ TEST_F(DiskCacheBackendTest, SimpleLastModified) {
   // Make the Create complete --- SimpleCache can handle it optimistically,
   // and if we let it go fully async then trying to flush the Close might just
   // flush the Create.
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 
   entry1->Close();
 
   // Make the ::Close actually complete, since it is asynchronous.
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 
   Time entry1_timestamp = Time::NowFromSystemTime();
@@ -4523,7 +4527,7 @@ TEST_F(DiskCacheBackendTest, SimpleLastModified) {
   disk_cache::Entry* entry2;
   ASSERT_THAT(CreateEntry(key2, &entry2), IsOk());
   entry2->Close();
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 
   disk_cache::Entry* reopen_entry1;
@@ -5322,4 +5326,112 @@ TEST_F(DiskCacheBackendTest, MemCacheBackwardsClock) {
   EXPECT_EQ(net::OK, DoomEntriesBetween(base::Time(), base::Time::Max()));
   EXPECT_EQ(0, CalculateSizeOfEntriesBetween(base::Time(), base::Time::Max()));
   EXPECT_EQ(0, CalculateSizeOfAllEntries());
+}
+
+TEST_F(DiskCacheBackendTest, SimpleOpenOrCreateIndexError) {
+  // Exercise behavior of OpenOrCreateEntry in SimpleCache where the index
+  // incorrectly claims the entry is missing. Regression test for
+  // https://crbug.com/1316034
+  const char kKey[] = "http://example.org";
+
+  const int kBufSize = 256;
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufSize);
+  CacheTestFillBuffer(buffer->data(), kBufSize, /*no_nulls=*/false);
+
+  SetSimpleCacheMode();
+  InitCache();
+
+  // Create an entry.
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+
+  EXPECT_EQ(kBufSize, WriteData(entry, /*index=*/1, /*offset=*/0, buffer.get(),
+                                /*len=*/kBufSize, /*truncate=*/false));
+  entry->Close();
+
+  // Mess up the index to say it's not there.
+  simple_cache_impl_->index()->Remove(
+      disk_cache::simple_util::GetEntryHashKey(kKey));
+
+  // Reopening with OpenOrCreateEntry should still work.
+  disk_cache::EntryResult result = OpenOrCreateEntry(kKey);
+  ASSERT_THAT(result.net_error(), IsOk());
+  ASSERT_TRUE(result.opened());
+  entry = result.ReleaseEntry();
+  EXPECT_EQ(kBufSize, entry->GetDataSize(/*index=*/1));
+  entry->Close();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleOpenOrCreateIndexErrorOptimistic) {
+  // Exercise behavior of OpenOrCreateEntry in SimpleCache where the index
+  // incorrectly claims the entry is missing and we do an optimistic create.
+  // Covers a codepath adjacent to the one that caused https://crbug.com/1316034
+  const char kKey[] = "http://example.org";
+
+  SetSimpleCacheMode();
+  InitCache();
+
+  const int kBufSize = 256;
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufSize);
+  CacheTestFillBuffer(buffer->data(), kBufSize, /*no_nulls=*/false);
+
+  // Create an entry.
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+  EXPECT_EQ(kBufSize, WriteData(entry, /*index=*/1, /*offset=*/0, buffer.get(),
+                                /*len=*/kBufSize, /*truncate=*/false));
+  entry->Close();
+
+  // Let all the I/O finish, so that OpenOrCreateEntry can try optimistic path.
+  RunUntilIdle();
+
+  // Mess up the index to say it's not there.
+  simple_cache_impl_->index()->Remove(
+      disk_cache::simple_util::GetEntryHashKey(kKey));
+
+  // Reopening with OpenOrCreateEntry should still work, but since the backend
+  // chose to be optimistic based on index, the result should be a fresh empty
+  // entry.
+  disk_cache::EntryResult result = OpenOrCreateEntry(kKey);
+  ASSERT_THAT(result.net_error(), IsOk());
+  ASSERT_FALSE(result.opened());
+  entry = result.ReleaseEntry();
+  EXPECT_EQ(0, entry->GetDataSize(/*index=*/1));
+  entry->Close();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleDoomAfterBackendDestruction) {
+  // Test for when validating file headers/footers during close on simple
+  // backend fails. To get the header to be checked on close, there needs to be
+  // a stream 2, since 0/1 are validated on open, and no other operation must
+  // have happened to stream 2, since those will force it, too. A way of getting
+  // the validation to fail is to perform a doom on the file after the backend
+  // is destroyed, since that will truncated the files to mark them invalid. See
+  // https://crbug.com/1317884
+  const char kKey[] = "Key0";
+
+  const int kBufSize = 256;
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufSize);
+  CacheTestFillBuffer(buffer->data(), kBufSize, /*no_nulls=*/false);
+
+  SetCacheType(net::SHADER_CACHE);
+  SetSimpleCacheMode();
+
+  InitCache();
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+
+  EXPECT_EQ(0, WriteData(entry, /*index=*/2, /*offset=*/1, buffer.get(),
+                         /*len=*/0, /*truncate=*/false));
+  entry->Close();
+
+  ASSERT_THAT(OpenEntry(kKey, &entry), IsOk());
+  cache_.reset();
+  simple_cache_impl_ = nullptr;  // Hygiene.
+
+  entry->Doom();
+  entry->Close();
 }

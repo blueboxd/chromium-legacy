@@ -80,15 +80,18 @@
           "builder": "Android WebView M (dbg)",
           "project": "chromium"
         }
+      ],
+      "mirroring_builder_group_and_names": [
+        {
+          "builder": "android-webview-marshmallow-arm64-dbg",
+          "group": "tryserver.chromium.android"
+        },
+        {
+          "builder": "android_arm64_dbg_recipe",
+          "group": "tryserver.chromium.android"
+        }
       ]
     }
-  },
-  "$build/goma": {
-    "enable_ats": true,
-    "jobs": 150,
-    "rpc_extra_params": "?prod",
-    "server_host": "goma.chromium.org",
-    "use_luci_auth": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
@@ -100,6 +103,6 @@
   "builder_group": "chromium.android",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "android"
   ]
 }

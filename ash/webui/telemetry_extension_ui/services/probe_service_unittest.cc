@@ -10,15 +10,17 @@
 #include "base/bind.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
-#include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
-#include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
+#include "chromeos/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
+
+namespace {
+namespace cros_healthd = ::ash::cros_healthd;
+}  // namespace
 
 class ProbeServiceTest : public testing::Test {
  public:
@@ -30,15 +32,11 @@ class ProbeServiceTest : public testing::Test {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
         std::move(fake_debugd_client));
 
-    CrosHealthdClient::InitializeFake();
+    cros_healthd::FakeCrosHealthd::Initialize();
   }
 
   void TearDown() override {
-    CrosHealthdClient::Shutdown();
-
-    // Wait for ServiceConnection to observe the destruction of the client.
-    cros_healthd::ServiceConnection::GetInstance()->FlushForTesting();
-
+    cros_healthd::FakeCrosHealthd::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -73,7 +71,7 @@ TEST_F(ProbeServiceTest, ProbeTelemetryInfoSuccess) {
     info->battery_result = cros_healthd::mojom::BatteryResult::NewBatteryInfo(
         std::move(battery_info));
 
-    cros_healthd::FakeCrosHealthdClient::Get()
+    cros_healthd::FakeCrosHealthd::Get()
         ->SetProbeTelemetryInfoResponseForTesting(info);
   }
 

@@ -20,11 +20,6 @@ namespace mojom {
 class DisplayDataView;
 }
 
-// Returns true if one of following conditions is met.
-// 1) id1 is internal.
-// 2) output index of id1 < output index of id2 and id2 isn't internal.
-DISPLAY_EXPORT bool CompareDisplayIds(int64_t id1, int64_t id2);
-
 // This class typically, but does not always, correspond to a physical display
 // connected to the system. A fake Display may exist on a headless system, or a
 // Display may correspond to a remote, virtual display.
@@ -91,14 +86,6 @@ class DISPLAY_EXPORT Display final {
   // Indicates if a device scale factor is being explicitly enforced from the
   // command line via "--force-device-scale-factor".
   static bool HasForceDeviceScaleFactor();
-
-  // Returns the forced display color profile, which is given by
-  // "--force-color-profile".
-  static gfx::ColorSpace GetForcedDisplayColorProfile();
-
-  // Indicates if a display color profile is being explicitly enforced from the
-  // command line via "--force-color-profile".
-  static bool HasForceDisplayColorProfile();
 
   // Returns the forced raster color profile, which is given by
   // "--force-raster-color-profile".
@@ -211,15 +198,9 @@ class DISPLAY_EXPORT Display final {
   // True if the display corresponds to internal panel.
   bool IsInternal() const;
 
-  // Gets/Sets an id of display corresponding to internal panel.
+  // [Deprecated] Use `display::GetInternalDisplayIds()`.
+  // Gets an id of display corresponding to internal panel.
   static int64_t InternalDisplayId();
-  static void SetInternalDisplayId(int64_t internal_display_id);
-
-  // Test if the |id| is for the internal display if any.
-  static bool IsInternalDisplayId(int64_t id);
-
-  // True if there is an internal display.
-  static bool HasInternalDisplay();
 
   // Maximum cursor size in native pixels.
   const gfx::Size& maximum_cursor_size() const { return maximum_cursor_size_; }

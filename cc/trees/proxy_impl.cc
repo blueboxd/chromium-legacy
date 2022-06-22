@@ -188,10 +188,34 @@ void ProxyImpl::InitializeLayerTreeFrameSinkOnImpl(
     scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
 }
 
-void ProxyImpl::SetDeferBeginMainFrameOnImpl(
-    bool defer_begin_main_frame) const {
+bool ProxyImpl::ShouldDeferBeginMainFrame() const {
+  return main_wants_defer_begin_main_frame_ ||
+         impl_wants_defer_begin_main_frame_;
+}
+
+void ProxyImpl::SetDeferBeginMainFrameFromMain(bool defer_begin_main_frame) {
+  // This is the impl-side update of a main-thread request (that is, through
+  // ProxyMain::SetDeferMainFrameUpdate) to defer BeginMainFrame.
   DCHECK(IsImplThread());
-  scheduler_->SetDeferBeginMainFrame(defer_begin_main_frame);
+  bool was_deferring = ShouldDeferBeginMainFrame();
+
+  main_wants_defer_begin_main_frame_ = defer_begin_main_frame;
+
+  bool should_defer = ShouldDeferBeginMainFrame();
+  if (was_deferring != should_defer)
+    scheduler_->SetDeferBeginMainFrame(ShouldDeferBeginMainFrame());
+}
+
+void ProxyImpl::SetDeferBeginMainFrameFromImpl(bool defer_begin_main_frame) {
+  // This is a request from the impl thread to defer BeginMainFrame.
+  DCHECK(IsImplThread());
+  bool was_deferring = ShouldDeferBeginMainFrame();
+
+  impl_wants_defer_begin_main_frame_ = defer_begin_main_frame;
+
+  bool should_defer = ShouldDeferBeginMainFrame();
+  if (was_deferring != should_defer)
+    scheduler_->SetDeferBeginMainFrame(ShouldDeferBeginMainFrame());
 }
 
 void ProxyImpl::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
@@ -384,6 +408,11 @@ void ProxyImpl::NotifyReadyToActivate() {
   TRACE_EVENT0("cc", "ProxyImpl::NotifyReadyToActivate");
   DCHECK(IsImplThread());
   scheduler_->NotifyReadyToActivate();
+}
+
+bool ProxyImpl::IsReadyToActivate() {
+  DCHECK(IsImplThread());
+  return scheduler_->IsReadyToActivate();
 }
 
 void ProxyImpl::NotifyReadyToDraw() {
@@ -885,11 +914,6 @@ size_t ProxyImpl::CommitDurationSampleCountForTesting() const {
 void ProxyImpl::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   host_impl_->SetRenderFrameObserver(std::move(observer));
-}
-
-void ProxyImpl::SetEnableFrameRateThrottling(
-    bool enable_frame_rate_throttling) {
-  host_impl_->SetEnableFrameRateThrottling(enable_frame_rate_throttling);
 }
 
 ProxyImpl::DataForCommit::DataForCommit(

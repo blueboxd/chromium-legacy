@@ -24,6 +24,8 @@
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
 #include "chrome/browser/ash/file_system_provider/service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_wayland_server.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -31,14 +33,14 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_service.pb.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
-#include "chromeos/dbus/seneschal/fake_seneschal_client.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -224,17 +226,17 @@ class GuestOsSharePathTest : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
     chromeos::CiceroneClient::InitializeFake();
     chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
 
     fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
-    fake_seneschal_client_ = chromeos::FakeSeneschalClient::Get();
+    fake_seneschal_client_ = ash::FakeSeneschalClient::Get();
   }
 
   GuestOsSharePathTest(const GuestOsSharePathTest&) = delete;
   GuestOsSharePathTest& operator=(const GuestOsSharePathTest&) = delete;
 
   ~GuestOsSharePathTest() override {
-    chromeos::SeneschalClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
     chromeos::ConciergeClient::Shutdown();
     chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -292,6 +294,11 @@ class GuestOsSharePathTest : public testing::Test {
     drivefs_ =
         base::FilePath("/media/fuse/drivefs-84675c855b63e12f384d45f033826980");
 
+    // Setup for a fake wayland server (needed when CrostiniManager makes a VM).
+    guest_os::GuestOsService::GetForProfile(profile())
+        ->WaylandServer()
+        ->OverrideServerForTesting(vm_tools::launch::TERMINA, nullptr, {});
+
     // Create 'vm-running' VM instance which is running.
     crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
         "vm-running");
@@ -335,7 +342,7 @@ class GuestOsSharePathTest : public testing::Test {
   base::FilePath drivefs_;
   std::unique_ptr<file_manager::Volume> volume_downloads_;
 
-  chromeos::FakeSeneschalClient* fake_seneschal_client_;
+  ash::FakeSeneschalClient* fake_seneschal_client_;
   chromeos::FakeConciergeClient* fake_concierge_client_;
 
   content::BrowserTaskEnvironment task_environment_;
@@ -1067,6 +1074,8 @@ TEST_F(GuestOsSharePathTest, RegisterPathThenUnshare) {
 
 TEST_F(GuestOsSharePathTest, IsPathShared) {
   SetUpVolume();
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
   // shared_path_ and children paths are shared for 'termina'.
   for (auto& path : {shared_path_, shared_path_.Append("a.txt"),
                      shared_path_.Append("a"), shared_path_.Append("a/b")}) {

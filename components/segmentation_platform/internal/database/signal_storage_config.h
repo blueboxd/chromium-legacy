@@ -46,7 +46,8 @@ class SignalStorageConfig {
   // evaluation. The model should be skipped if it hasn't been captured long
   // enough.
   virtual bool MeetsSignalCollectionRequirement(
-      const proto::SegmentationModelMetadata& model_metadata);
+      const proto::SegmentationModelMetadata& model_metadata,
+      bool include_output = false);
 
   // Called whenever we find a model. Noop for existing models. Loops through
   // all the signals and updates their storage requirements. Also sets their
@@ -84,7 +85,19 @@ class SignalStorageConfig {
       std::unique_ptr<std::vector<proto::SignalStorageConfigs>> entries);
 
   proto::SignalStorageConfig* FindSignal(uint64_t signal_hash,
+                                         uint64_t event_hash,
                                          proto::SignalType signal_type);
+
+  bool UpdateConfigForSignal(int signal_storage_length,
+                             uint64_t signal_hash,
+                             uint64_t event_hash,
+                             proto::SignalType signal_type);
+
+  bool MeetsSignalCollectionRequirementForSignal(
+      base::TimeDelta min_signal_collection_length,
+      uint64_t signal_hash,
+      uint64_t event_hash,
+      proto::SignalType signal_type);
 
   // Helper method to flush the cached data to the DB. Called whenever the cache
   // is dirty.

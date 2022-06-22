@@ -56,6 +56,14 @@ component("ui_data_pack") {
 
   defines = [ "UI_DATA_PACK_IMPLEMENTATION" ]
 
+  if (is_chromeos_lacros) {
+    sources += [
+      "resource/data_pack_with_resource_sharing_lacros.cc",
+      "resource/data_pack_with_resource_sharing_lacros.h",
+    ]
+    deps += [ "//components/version_info" ]
+  }
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
@@ -275,8 +283,6 @@ component("base") {
       "cocoa/find_pasteboard.mm",
       "cocoa/flipped_view.h",
       "cocoa/flipped_view.mm",
-      "cocoa/focus_tracker.h",
-      "cocoa/focus_tracker.mm",
       "cocoa/menu_controller.h",
       "cocoa/menu_controller.mm",
       "cocoa/nsmenuitem_additions.h",
@@ -317,6 +323,10 @@ component("base") {
       "l10n/l10n_util_mac.mm",
       "resource/resource_bundle_mac.mm",
     ]
+  }
+
+  if (is_chromeos_lacros) {
+    sources += [ "resource/resource_bundle_lacros.cc" ]
   }
 
   if (is_ios) {
@@ -933,6 +943,9 @@ test("ui_base_unittests") {
       "l10n/l10n_util_mac_unittest.mm",
     ]
   }
+  if (is_chromeos_lacros) {
+    sources += [ "resource/data_pack_with_resource_sharing_lacros_unittest.cc" ]
+  }
   if (!is_ios) {
     sources += [
       "themed_vector_icon_unittest.cc",
@@ -1026,7 +1039,6 @@ test("ui_base_unittests") {
         "cocoa/bubble_closer_unittest.mm",
         "cocoa/cocoa_base_utils_unittest.mm",
         "cocoa/constrained_window/constrained_window_animation_unittest.mm",
-        "cocoa/focus_tracker_unittest.mm",
         "cocoa/menu_controller_unittest.mm",
         "cocoa/touch_bar_util_unittest.mm",
         "cocoa/tracking_area_unittest.mm",
@@ -1197,6 +1209,11 @@ test("ui_base_unittests") {
       "//third_party/abseil-cpp:absl",
       "//ui/lottie",
     ]
+  }
+
+  # If the platform supports wayland, run wayland library unittests, too.
+  if (is_chromeos_ash || ozone_platform_wayland) {
+    deps += [ "//ui/base/wayland:unittests" ]
   }
 }
 

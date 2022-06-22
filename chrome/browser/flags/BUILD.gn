@@ -22,7 +22,9 @@ android_library("java") {
   ]
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//build:chromeos_buildflags",
+    "//build/android:build_java",
     "//chrome/browser/preferences:java",
     "//components/version_info/android:version_constants_java",
     "//third_party/android_deps:guava_android_java",
@@ -53,6 +55,8 @@ static_library("flags_android") {
   deps = [
     ":jni_headers",
     "//base",
+    "//chrome/browser:browser_process",
+    "//components/prefs:prefs",
     "//content/public/common",
   ]
 }
@@ -102,6 +106,7 @@ android_library("javatests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base/test:test_support_java",
+    "//build/android:build_java",
     "//chrome/test/android:chrome_java_test_support",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_support_test_runner:runner_java",

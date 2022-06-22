@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -155,7 +156,7 @@ void StyleRuleImport::RequestStyleSheet() {
   DCHECK(!style_sheet_client_->GetResource());
 
   params.SetRenderBlockingBehavior(root_sheet->GetRenderBlockingBehavior());
-  // TODO(yoav): Set defer status based on the IsRenderBlocking flag.
+  // TODO(yoav): Set defer status based on the IsExplicitlyRenderBlocking flag.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1001078
   CSSStyleSheetResource::Fetch(params, fetcher, style_sheet_client_);
   if (loading_) {

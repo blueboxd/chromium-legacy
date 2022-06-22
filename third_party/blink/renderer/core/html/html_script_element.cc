@@ -32,7 +32,9 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/script_type_names.h"
@@ -82,11 +84,6 @@ void HTMLScriptElement::ChildrenChanged(const ChildrenChange& change) {
   children_changed_by_api_ |= !change.ByParser();
 }
 
-void HTMLScriptElement::DidMoveToNewDocument(Document& old_document) {
-  ScriptRunner::MovePendingScript(old_document, GetDocument(), loader_.Get());
-  HTMLElement::DidMoveToNewDocument(old_document);
-}
-
 void HTMLScriptElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kSrcAttr) {
@@ -110,6 +107,11 @@ void HTMLScriptElement::ParseAttribute(
     blocking_attribute_->DidUpdateAttributeValue(params.old_value,
                                                  params.new_value);
     blocking_attribute_->CountTokenUsage();
+    if (GetDocument().GetRenderBlockingResourceManager() &&
+        !blocking_attribute_->IsExplicitlyRenderBlocking()) {
+      GetDocument().GetRenderBlockingResourceManager()->RemovePendingScript(
+          *this);
+    }
   } else {
     HTMLElement::ParseAttribute(params);
   }

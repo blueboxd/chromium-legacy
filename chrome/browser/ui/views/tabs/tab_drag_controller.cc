@@ -1977,8 +1977,8 @@ void TabDragController::CompleteDrag() {
       }
 
       // If source window was maximized - maximize the new window as well.
-#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_MAC)
-
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_MAC)
       // Keeping maximized state breaks snap to Grid on Windows when dragging
       // tabs from maximized windows. TODO:(crbug.com/727051) Explore doing this
       // for other desktop OS's. kMaximizedStateRetainedOnTabDrag in
@@ -1987,6 +1987,10 @@ void TabDragController::CompleteDrag() {
       // macOS opts out since this maps maximize to fullscreen, which can
       // violate user expectations and interacts poorly with some window
       // management actions.
+      //
+      // TODO(https://crbug.com/1252941): Remove the lacros if-clause above when
+      // lacros understands the snapped window state types (eg
+      // chromeos::WindowStateType::kPrimarySnapped|kSecondarySnapped).
       if (was_source_maximized_ || was_source_fullscreen_)
         MaximizeAttachedWindow();
 #endif  // !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX)

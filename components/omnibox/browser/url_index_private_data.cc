@@ -198,17 +198,17 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     // Have to convert to UTF-8 and back, because UnescapeURLComponent doesn't
     // support unescaping UTF-8 characters and converting them to UTF-16.
     std::u16string lower_unescaped_string =
-        base::UTF8ToUTF16(net::UnescapeURLComponent(
+        base::UTF8ToUTF16(base::UnescapeURLComponent(
             base::UTF16ToUTF8(lower_raw_string),
-            net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-                net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
+            base::UnescapeRule::SPACES | base::UnescapeRule::PATH_SEPARATORS |
+                base::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
 
     // Extract individual 'words' (as opposed to 'terms'; see comment in
     // HistoryIdsToScoredMatches()) from the search string. When the user types
     // "colspec=ID%20Mstone Release" we get four 'words': "colspec", "id",
     // "mstone" and "release".
     String16Vector lower_words(
-        String16VectorFromString16(lower_unescaped_string, false, nullptr));
+        String16VectorFromString16(lower_unescaped_string, nullptr));
     if (lower_words.empty())
       continue;
     // If we've already searched for this list of words, don't do it again.
@@ -802,7 +802,7 @@ bool URLIndexPrivateData::IndexRow(
   // Strip out username and password before saving and indexing.
   std::u16string url(url_formatter::FormatUrl(
       gurl, url_formatter::kFormatUrlOmitUsernamePassword,
-      net::UnescapeRule::NONE, nullptr, nullptr, nullptr));
+      base::UnescapeRule::NONE, nullptr, nullptr, nullptr));
 
   HistoryID history_id = static_cast<HistoryID>(row_id);
   DCHECK_LT(history_id, std::numeric_limits<HistoryID>::max());
@@ -1246,10 +1246,10 @@ bool URLIndexPrivateData::RestoreWordStartsMap(
       const history::URLRow& row = entry.second.url_row;
       const std::u16string& url =
           bookmarks::CleanUpUrlForMatching(row.url(), nullptr);
-      String16VectorFromString16(url, false, &word_starts.url_word_starts_);
+      String16VectorFromString16(url, &word_starts.url_word_starts_);
       const std::u16string& title =
           bookmarks::CleanUpTitleForMatching(row.title());
-      String16VectorFromString16(title, false, &word_starts.title_word_starts_);
+      String16VectorFromString16(title, &word_starts.title_word_starts_);
       word_starts_map_[entry.first] = std::move(word_starts);
     }
   }

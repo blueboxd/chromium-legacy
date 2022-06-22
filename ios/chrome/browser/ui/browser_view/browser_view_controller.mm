@@ -63,6 +63,7 @@
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/help_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
@@ -3793,6 +3794,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // TODO(crbug.com/1272534): Move this command implementation to
 // BrowserCoordinator, which should be owning bubblePresenter.
+- (void)showFollowWhileBrowsingIPH {
+  [self.bubblePresenter presentFollowWhileBrowsingTipBubble];
+}
+
+// TODO(crbug.com/1272534): Move this command implementation to
+// BrowserCoordinator, which should be owning bubblePresenter.
 - (void)showDefaultSiteViewIPH {
   [self.bubblePresenter presentDefaultSiteViewTipBubble];
 }
@@ -3897,20 +3904,30 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - NewTabPageCommands
 
 - (void)openNTPScrolledIntoFeedType:(FeedType)feedType {
-  // Configure next NTP to be scrolled into |feedType|.
-  NewTabPageTabHelper* NTPHelper =
-      NewTabPageTabHelper::FromWebState(self.currentWebState);
-  if (NTPHelper) {
-    NTPHelper->SetNextNTPFeedType(feedType);
-    NTPHelper->SetNextNTPScrolledToFeed(YES);
-  }
+  // Dismiss any presenting modal. Ex. Follow management page.
+  [self
+      clearPresentedStateWithCompletion:^{
+        // Configure next NTP to be scrolled into |feedType|.
+        NewTabPageTabHelper* NTPHelper =
+            NewTabPageTabHelper::FromWebState(self.currentWebState);
+        if (NTPHelper) {
+          NTPHelper->SetNextNTPFeedType(feedType);
+          NTPHelper->SetNextNTPScrolledToFeed(YES);
+        }
 
-  // Navigate to NTP in same tab.
-  UrlLoadingBrowserAgent* urlLoadingBrowserAgent =
-      UrlLoadingBrowserAgent::FromBrowser(self.browser);
-  UrlLoadParams urlLoadParams =
-      UrlLoadParams::InCurrentTab(GURL(kChromeUINewTabURL));
-  urlLoadingBrowserAgent->Load(urlLoadParams);
+        // Navigate to NTP in same tab.
+        UrlLoadingBrowserAgent* urlLoadingBrowserAgent =
+            UrlLoadingBrowserAgent::FromBrowser(self.browser);
+        UrlLoadParams urlLoadParams =
+            UrlLoadParams::InCurrentTab(GURL(kChromeUINewTabURL));
+        urlLoadingBrowserAgent->Load(urlLoadParams);
+      }
+                         dismissOmnibox:YES];
+}
+
+- (void)updateFollowingFeedHasUnseenContent:(BOOL)hasUnseenContent {
+  [[self ntpCoordinatorForWebState:self.currentWebState]
+      updateFollowingFeedHasUnseenContent:hasUnseenContent];
 }
 
 #pragma mark - WebStateListObserving methods

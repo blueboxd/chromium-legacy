@@ -36,9 +36,11 @@ import org.chromium.chrome.browser.ChromeBackupAgentImpl;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.DevToolsServer;
+import org.chromium.chrome.browser.app.bluetooth.BluetoothNotificationService;
 import org.chromium.chrome.browser.app.feature_guide.notifications.FeatureNotificationGuideDelegate;
 import org.chromium.chrome.browser.app.video_tutorials.VideoTutorialShareHelper;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantHistoryDeletionObserver;
+import org.chromium.chrome.browser.bluetooth.BluetoothNotificationManager;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
 import org.chromium.chrome.browser.contacts_picker.ChromePickerAdapter;
 import org.chromium.chrome.browser.content_capture.ContentCaptureHistoryDeletionObserver;
@@ -72,6 +74,7 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.photo_picker.DecoderService;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.query_tiles.QueryTileUtils;
@@ -290,6 +293,8 @@ public class ProcessInitializationHandler {
         HistoryDeletionBridge.getInstance().addObserver(
                 new AutofillAssistantHistoryDeletionObserver());
         FeatureNotificationGuideService.setDelegate(new FeatureNotificationGuideDelegate());
+
+        PrivacyPreferencesManagerImpl.getInstance().onNativeInitialized();
     }
 
     /**
@@ -349,8 +354,11 @@ public class ProcessInitializationHandler {
         deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
-                // Clear any media notifications that existed when Chrome was last killed.
+                // Clear any Bluetooth and media notifications that existed when Chrome was last
+                // killed.
                 MediaCaptureNotificationServiceImpl.clearMediaNotifications();
+                BluetoothNotificationManager.clearBluetoothNotifications(
+                        BluetoothNotificationService.class);
 
                 startModerateBindingManagementIfNeeded();
 

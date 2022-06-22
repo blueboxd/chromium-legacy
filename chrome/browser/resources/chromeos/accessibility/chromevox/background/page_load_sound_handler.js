@@ -5,8 +5,8 @@
 /**
  * @fileoverview Handles page loading sounds based on automation events.
  */
-import {BaseAutomationHandler} from './base_automation_handler.js';
-import {ChromeVoxEvent} from './custom_automation_event.js';
+import {BaseAutomationHandler} from '/chromevox/background/base_automation_handler.js';
+import {ChromeVoxEvent} from '/chromevox/common/custom_automation_event.js';
 
 const ActionType = chrome.automation.ActionType;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -18,7 +18,7 @@ const StateType = chrome.automation.StateType;
 /** @implements {ChromeVoxStateObserver} */
 export class PageLoadSoundHandler extends BaseAutomationHandler {
   constructor() {
-    super(undefined);
+    super(null);
 
     /** @private {boolean} */
     this.didRequestLoadSound_ = false;

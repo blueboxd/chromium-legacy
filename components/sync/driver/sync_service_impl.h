@@ -107,7 +107,6 @@ class SyncServiceImpl : public SyncService,
 
   // Initializes the object. This must be called at most once, and
   // immediately after an object of this class is constructed.
-  // TODO(mastiz): Rename this to Start().
   void Initialize();
 
   // SyncService implementation
@@ -161,10 +160,8 @@ class SyncServiceImpl : public SyncService,
       override;
 
   // SyncEngineHost implementation.
-  void OnEngineInitialized(
-      const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      bool success,
-      bool is_first_time_sync_configure) override;
+  void OnEngineInitialized(bool success,
+                           bool is_first_time_sync_configure) override;
   void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;
   void OnConnectionStatusChange(ConnectionStatus status) override;

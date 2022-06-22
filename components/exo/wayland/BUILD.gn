@@ -208,6 +208,7 @@ source_set("wayland") {
     if (enable_color_manager) {
       deps += [
         "//components/exo/wayland/protocol:chrome_color_management_protocol",
+        "//ui/base/wayland:color_manager_util",
       ]
       sources += [
         "zcr_color_manager.cc",
@@ -220,6 +221,7 @@ source_set("wayland") {
       "//services/device/wake_lock/power_save_blocker",
       "//third_party/wayland-protocols:idle_inhibit_protocol",
       "//ui/base/cursor/mojom:cursor_type",
+      "//ui/base/wayland:wayland_server_input_types",
       "//ui/events/ozone/layout",
     ]
   }
@@ -721,6 +723,7 @@ if (ozone_platform_drm) {
       "//ui/gfx:gfx",
       "//ui/gfx/linux:drm",
       "//ui/gfx/linux:gbm",
+      "//ui/gl",
     ]
   }
 

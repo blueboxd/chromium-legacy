@@ -5,8 +5,8 @@
 /**
  * @fileoverview Keeps track of the current braille translators.
  */
-import {BrailleTable} from './braille_table.js';
-import {ExpandingBrailleTranslator} from './expanding_braille_translator.js';
+import {ExpandingBrailleTranslator} from '/chromevox/background/braille/expanding_braille_translator.js';
+import {BrailleTable} from '/chromevox/common/braille/braille_table.js';
 
 export class BrailleTranslatorManager {
   /**
@@ -37,27 +37,27 @@ export class BrailleTranslatorManager {
      */
     this.tables_ = [];
     /**
-     * @type {ExpandingBrailleTranslator}
+     * @type {?ExpandingBrailleTranslator}
      * @private
      */
     this.expandingTranslator_ = null;
     /**
-     * @type {LibLouis.Translator}
+     * @type {?LibLouis.Translator}
      * @private
      */
     this.defaultTranslator_ = null;
     /**
-     * @type {string?}
+     * @type {?string}
      * @private
      */
     this.defaultTableId_ = null;
     /**
-     * @type {LibLouis.Translator}
+     * @type {?LibLouis.Translator}
      * @private
      */
     this.uncontractedTranslator_ = null;
     /**
-     * @type {string?}
+     * @type {?string}
      * @private
      */
     this.uncontractedTableId_ = null;

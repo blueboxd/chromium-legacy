@@ -421,9 +421,15 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
     std::vector<uint8_t> params_bytes =
         blink::mojom::PublicKeyCredentialRequestOptions::Serialize(&params);
 
+    ScopedJavaLocalRef<jbyteArray> tunnel_id;
+    if (global_data.server_link_tunnel_id.has_value()) {
+      tunnel_id = ToJavaByteArray(env_, *global_data.server_link_tunnel_id);
+    }
+
     RecordEvent(&global_data, CableV2MobileEvent::kGetAssertionStarted);
     Java_CableAuthenticator_getAssertion(env_, cable_authenticator_,
-                                         ToJavaByteArray(env_, params_bytes));
+                                         ToJavaByteArray(env_, params_bytes),
+                                         tunnel_id);
   }
 
   void OnStatus(Status status) override {
@@ -940,8 +946,11 @@ static void JNI_CableAuthenticator_RecordEvent(
   auto server_link_values = ParseServerLinkData(env, server_link_data_java);
   base::UmaHistogramEnumeration("WebAuthentication.CableV2.MobileEvent",
                                 static_cast<CableV2MobileEvent>(event));
-  protobuf::LogEvent(env, /*tunnel_id=*/std::get<2>(server_link_values),
-                     protobuf::Type::kEvent, event);
+
+  if (GetGlobalData().metrics_enabled) {
+    protobuf::LogEvent(env, /*tunnel_id=*/std::get<2>(server_link_values),
+                       protobuf::Type::kEvent, event);
+  }
 }
 
 static void JNI_USBHandler_OnUSBData(JNIEnv* env,

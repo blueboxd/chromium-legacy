@@ -102,16 +102,11 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
                  base::RepeatingCallback<bool(const url::Origin&)> filter,
                  base::OnceClosure done) override;
 
-  using SourceOrTrigger = absl::variant<StorableSource, AttributionTrigger>;
-
-  void MaybeEnqueueEventForTesting(SourceOrTrigger event);
-
-  void AddAggregatableAttributionForTesting(AttributionReport report);
-
  private:
   friend class AttributionManagerImplTest;
 
   using ReportSentCallback = AttributionReportSender::ReportSentCallback;
+  using SourceOrTrigger = absl::variant<StorableSource, AttributionTrigger>;
 
   AttributionManagerImpl(
       StoragePartitionImpl* storage_partition,
@@ -152,7 +147,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       bool is_debug_report,
       ReportSentCallback callback,
       absl::optional<AggregatableReport> assembled_report,
-      AggregationService::AssemblyStatus status);
+      AggregationService::AssemblyStatus);
   void MarkReportCompleted(AttributionReport::Id report_id);
 
   void OnSourceStored(StorableSource source,

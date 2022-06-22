@@ -152,6 +152,9 @@ constexpr test::UIPath kSamlBackButton = {"gaia-signin", "signin-frame-dialog",
 const test::UIPath kGaiaLoading = {"gaia-signin", "gaia-loading"};
 const test::UIPath kSamlInterstitial = {"gaia-signin", "saml-interstitial"};
 
+constexpr test::UIPath kFatalErrorActionButton = {"signin-fatal-error",
+                                                  "actionButton"};
+
 constexpr char kGAIASIDCookieName[] = "SID";
 constexpr char kGAIALSIDCookieName[] = "LSID";
 
@@ -193,7 +196,8 @@ class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
   void AuthenticateAuthSession(
       const ::user_data_auth::AuthenticateAuthSessionRequest& request,
       AuthenticateAuthSessionCallback callback) override;
-
+  void AddCredentials(const ::user_data_auth::AddCredentialsRequest& request,
+                      AddCredentialsCallback callback) override;
   void Mount(const ::user_data_auth::MountRequest& request,
              MountCallback callback) override;
 
@@ -211,6 +215,13 @@ void SecretInterceptingFakeUserDataAuthClient::AuthenticateAuthSession(
     AuthenticateAuthSessionCallback callback) {
   salted_hashed_secret_ = request.authorization().key().secret();
   FakeUserDataAuthClient::AuthenticateAuthSession(request, std::move(callback));
+}
+
+void SecretInterceptingFakeUserDataAuthClient::AddCredentials(
+    const ::user_data_auth::AddCredentialsRequest& request,
+    AddCredentialsCallback callback) {
+  salted_hashed_secret_ = request.authorization().key().secret();
+  FakeUserDataAuthClient::AddCredentials(request, std::move(callback));
 }
 
 void SecretInterceptingFakeUserDataAuthClient::Mount(
@@ -376,6 +387,10 @@ class SamlTestWithFeatures
     } else {
       disabled_features.push_back(features::kRedirectToDefaultIdP);
     }
+    // TODO(https://crbug.com/1295294) Introduce a different test suite when the
+    // feature is enabled.
+    disabled_features.push_back(
+        features::kCheckPasswordsAgainstCryptohomeHelper);
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
@@ -722,7 +737,13 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedMultiple) {
 }
 
 // Tests the no password scraped flow.
-IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedNone) {
+// TODO(crbug.com/1315447): Disabled for debug builds.
+#if !defined(NDEBUG)
+#define MAYBE_ScrapedNone DISABLED_ScrapedNone
+#else
+#define MAYBE_ScrapedNone ScrapedNone
+#endif
+IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, MAYBE_ScrapedNone) {
   base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_no_passwords.html");
 
@@ -808,11 +829,21 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures,
 
   ExpectFatalErrorMessage(
       l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS));
+
+  test::OobeJS().TapOnPath(kFatalErrorActionButton);
+  WaitForSigninScreen();
 }
 
 // Tests the password confirm flow when more than one password is scraped: show
 // error on the first failure and fatal error on the second failure.
-IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, PasswordConfirmFlow) {
+// TODO(crbug.com/1315447): Disabled for debug builds.
+#if !defined(NDEBUG)
+#define MAYBE_PasswordConfirmFlow DISABLED_PasswordConfirmFlow
+#else
+#define MAYBE_PasswordConfirmFlow PasswordConfirmFlow
+#endif
+IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, MAYBE_PasswordConfirmFlow) {
+  base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFirstUserCorpExampleComEmail);
@@ -841,6 +872,24 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, PasswordConfirmFlow) {
   SendConfirmPassword("wrong_password");
   ExpectFatalErrorMessage(
       l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_PASSWORD_VERIFICATION));
+
+  test::OobeJS().TapOnPath(kFatalErrorActionButton);
+  WaitForSigninScreen();
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
+                                      2, 1);
+  histogram_tester.ExpectTotalCount("OOBE.GaiaLoginTime", 0);
+
+  histogram_tester.ExpectBucketCount("ChromeOS.Gaia.Message.Saml.UserInfo", 0,
+                                     0);
+  histogram_tester.ExpectBucketCount("ChromeOS.Gaia.Message.Saml.UserInfo", 1,
+                                     1);
+
+  histogram_tester.ExpectBucketCount("ChromeOS.Gaia.Message.Saml.CloseView", 0,
+                                     0);
+  histogram_tester.ExpectBucketCount("ChromeOS.Gaia.Message.Saml.CloseView", 1,
+                                     1);
 }
 
 // Verifies that when the login flow redirects from one host to another, the
@@ -913,6 +962,9 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, HTTPRedirectDisallowed) {
   const GURL url = fake_saml_idp()->GetHttpSamlPageUrl();
   ExpectFatalErrorMessage(l10n_util::GetStringFUTF8(
       IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL, base::UTF8ToUTF16(url.spec())));
+
+  test::OobeJS().TapOnPath(kFatalErrorActionButton);
+  WaitForSigninScreen();
 }
 
 // Verifies that when GAIA attempts to redirect to a page served over http, not
@@ -932,6 +984,9 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, MetaRefreshToHTTPDisallowed) {
 
   ExpectFatalErrorMessage(l10n_util::GetStringFUTF8(
       IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL, base::UTF8ToUTF16(url.spec())));
+
+  test::OobeJS().TapOnPath(kFatalErrorActionButton);
+  WaitForSigninScreen();
 }
 
 class SAMLEnrollmentTest : public SamlTestWithRedirectToDefaultIdPFeature {
@@ -1660,6 +1715,9 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginFailed) {
   ExpectFatalErrorMessage(
       l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS));
 
+  test::OobeJS().TapOnPath(kFatalErrorActionButton);
+  WaitForSigninScreen();
+
   // Make sure no SAML password attributes are saved.
   // None are saved for the logged in user, since there is no logged in user:
   EXPECT_EQ(nullptr, user_manager::UserManager::Get()->GetPrimaryUser());
@@ -1761,41 +1819,29 @@ class SAMLDeviceAttestationEnrolledTest : public SAMLDeviceAttestationTest {
 // Verify that device attestation is not available when
 // DeviceWebBasedAttestationAllowedUrls policy is not set.
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationTest, DefaultPolicy) {
-  base::HistogramTester histogram_tester;
-
   // Leave policy unset.
 
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFourthUserCorpExampleTestEmail);
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
-  histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
-                                      attestation::TpmChallengeKeyResultCode::
-                                          kDeviceWebBasedAttestationUrlError,
-                                      1);
 }
 
 // Verify that device attestation is not available when
 // DeviceWebBasedAttestationAllowedUrls policy is set to empty list of allowed
 // URLs.
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationTest, EmptyPolicy) {
-  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({/* empty list */});
 
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFourthUserCorpExampleTestEmail);
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
-  histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
-                                      attestation::TpmChallengeKeyResultCode::
-                                          kDeviceWebBasedAttestationUrlError,
-                                      1);
 }
 
 // Verify that device attestation is not available when device is not enterprise
 // enrolled.
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationTest, NotEnterpriseEnrolledError) {
-  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({fake_saml_idp()->GetIdpHost()});
 
   StartSamlAndWaitForIdpPageLoad(
@@ -1806,9 +1852,6 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationTest, NotEnterpriseEnrolledError) {
   }
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
-  histogram_tester.ExpectUniqueSample(
-      kSamlChallengeKeyHandlerResultMetric,
-      attestation::TpmChallengeKeyResultCode::kNonEnterpriseDeviceError, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(All, SAMLDeviceAttestationTest, testing::Bool());
@@ -1817,7 +1860,6 @@ INSTANTIATE_TEST_SUITE_P(All, SAMLDeviceAttestationTest, testing::Bool());
 // not enabled.
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest,
                        DeviceAttestationNotEnabledError) {
-  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({fake_saml_idp()->GetIdpHost()});
 
   StartSamlAndWaitForIdpPageLoad(
@@ -1828,14 +1870,10 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest,
   }
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
-  histogram_tester.ExpectUniqueSample(
-      kSamlChallengeKeyHandlerResultMetric,
-      attestation::TpmChallengeKeyResultCode::kDevicePolicyDisabledError, 1);
 }
 
 // Verify that device attestation works when all policies configured correctly.
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, Success) {
-  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({fake_saml_idp()->GetIdpHost()});
   settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
@@ -1849,15 +1887,11 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, Success) {
   ASSERT_TRUE(fake_saml_idp()->IsLastChallengeResponseExists());
   ASSERT_NO_FATAL_FAILURE(
       fake_saml_idp()->AssertChallengeResponseMatchesTpmResponse());
-  histogram_tester.ExpectUniqueSample(
-      kSamlChallengeKeyHandlerResultMetric,
-      attestation::TpmChallengeKeyResultCode::kSuccess, 1);
 }
 
 // Verify that device attestation is not available for URLs that are not in the
 // allowed URLs list.
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, PolicyNoMatchError) {
-  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({fake_saml_idp()->GetIdpDomain()});
   settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
@@ -1869,16 +1903,11 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, PolicyNoMatchError) {
   }
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
-  histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
-                                      attestation::TpmChallengeKeyResultCode::
-                                          kDeviceWebBasedAttestationUrlError,
-                                      1);
 }
 
 // Verify that device attestation is available for URLs that match a pattern
 // from allowed URLs list.
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, PolicyRegexSuccess) {
-  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"[*.]" + fake_saml_idp()->GetIdpDomain()});
   settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
@@ -1892,16 +1921,12 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, PolicyRegexSuccess) {
   ASSERT_TRUE(fake_saml_idp()->IsLastChallengeResponseExists());
   ASSERT_NO_FATAL_FAILURE(
       fake_saml_idp()->AssertChallengeResponseMatchesTpmResponse());
-  histogram_tester.ExpectUniqueSample(
-      kSamlChallengeKeyHandlerResultMetric,
-      attestation::TpmChallengeKeyResultCode::kSuccess, 1);
 }
 
 // Verify that device attestation works in case of multiple items in allowed
 // URLs list.
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest,
                        PolicyTwoEntriesSuccess) {
-  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"example2.com", fake_saml_idp()->GetIdpHost()});
   settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
@@ -1915,13 +1940,9 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest,
   ASSERT_TRUE(fake_saml_idp()->IsLastChallengeResponseExists());
   ASSERT_NO_FATAL_FAILURE(
       fake_saml_idp()->AssertChallengeResponseMatchesTpmResponse());
-  histogram_tester.ExpectUniqueSample(
-      kSamlChallengeKeyHandlerResultMetric,
-      attestation::TpmChallengeKeyResultCode::kSuccess, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, TimeoutError) {
-  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"example2.com", fake_saml_idp()->GetIdpHost()});
   settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
@@ -1945,9 +1966,6 @@ IN_PROC_BROWSER_TEST_P(SAMLDeviceAttestationEnrolledTest, TimeoutError) {
   }
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
-  histogram_tester.ExpectUniqueSample(
-      kSamlChallengeKeyHandlerResultMetric,
-      attestation::TpmChallengeKeyResultCode::kTimeoutError, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

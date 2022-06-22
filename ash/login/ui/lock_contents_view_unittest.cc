@@ -17,6 +17,7 @@
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/fake_login_detachable_base_model.h"
+#include "ash/login/ui/kiosk_app_default_message.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_screen_media_controls_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
@@ -32,9 +33,11 @@
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
@@ -897,8 +900,10 @@ TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfAdbSideloadingEnabled) {
 // Show bottom status indicator if device is enrolled
 TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfEnrolledDevice) {
   // If the device is enrolled, bottom_status_indicator should be visible.
-  Shell::Get()->system_tray_model()->SetEnterpriseDomainInfo("BestCompanyEver",
-                                                             false);
+  Shell::Get()->system_tray_model()->SetDeviceEnterpriseInfo(
+      DeviceEnterpriseInfo{"BestCompanyEver",
+                           /*active_directory_managed=*/false,
+                           ManagementDeviceMode::kNone});
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
@@ -922,8 +927,10 @@ TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfEnrolledDevice) {
 // Show bottom status indicator if device is enrolled
 TEST_F(LockContentsViewUnitTest, ShowManagementBubbleOnClickIfEnrolledDevice) {
   // If the device is enrolled, bottom_status_indicator should be visible.
-  Shell::Get()->system_tray_model()->SetEnterpriseDomainInfo("BestCompanyEver",
-                                                             false);
+  Shell::Get()->system_tray_model()->SetDeviceEnterpriseInfo(
+      DeviceEnterpriseInfo{"BestCompanyEver",
+                           /*active_directory_managed=*/false,
+                           ManagementDeviceMode::kNone});
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
@@ -957,8 +964,10 @@ TEST_F(LockContentsViewUnitTest, ShowManagementBubbleOnClickIfEnrolledDevice) {
 // device is enrolled.
 TEST_F(LockContentsViewUnitTest, DoNotShowManagementBubbleOnClickIfAdb) {
   // If the device is enrolled, bottom_status_indicator should be visible.
-  Shell::Get()->system_tray_model()->SetEnterpriseDomainInfo("BestCompanyEver",
-                                                             false);
+  Shell::Get()->system_tray_model()->SetDeviceEnterpriseInfo(
+      DeviceEnterpriseInfo{"BestCompanyEver",
+                           /*active_directory_managed=*/false,
+                           ManagementDeviceMode::kNone});
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
@@ -3226,6 +3235,158 @@ TEST_F(LockContentsViewUnitTest, SmartLockStateHidesAuthErrorMessage) {
   // notifying a successful auth result will hide the password field.
   DataDispatcher()->NotifySmartLockAuthResult(account_id, /*successful=*/true);
   EXPECT_FALSE(test_api.auth_error_bubble()->GetVisible());
+}
+
+class LockContentsViewWithKioskLicenseTest : public LoginTestBase {
+ protected:
+  LockContentsViewWithKioskLicenseTest() = default;
+  LockContentsViewWithKioskLicenseTest(LockContentsViewWithKioskLicenseTest&) =
+      delete;
+  LockContentsViewWithKioskLicenseTest& operator=(
+      LockContentsViewWithKioskLicenseTest&) = delete;
+  ~LockContentsViewWithKioskLicenseTest() override = default;
+
+  void SetUp() override {
+    set_start_session(false);
+    LoginTestBase::SetUp();
+    login_shelf_view_ = GetPrimaryShelf()->shelf_widget()->login_shelf_view();
+    // Set initial states.
+    NotifySessionStateChanged(session_manager::SessionState::OOBE);
+  }
+
+  void SetNumberOfKioskApps(int number_apps) {
+    std::vector<KioskAppMenuEntry> kiosk_apps(number_apps);
+    login_shelf_view_->SetKioskApps(kiosk_apps);
+  }
+
+  void NotifySessionStateChanged(session_manager::SessionState state) {
+    GetSessionControllerClient()->SetSessionState(state);
+    GetSessionControllerClient()->FlushForTest();
+  }
+
+  LoginShelfView* login_shelf_view_ = nullptr;  // Unowned.
+};
+
+// Checks default message hides if device is with kiosk license but with apps.
+TEST_F(LockContentsViewWithKioskLicenseTest,
+       ShouldNotShowKioskDefaultMessageWithApps) {
+  // Set up
+  const bool is_kiosk_license_mode = true;
+  login_shelf_view_->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  // Show login screen with no user.
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* lock_contents_view =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  lock_contents_view->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  LockContentsView::TestApi test_api(lock_contents_view);
+  SetUserCount(0);
+  std::unique_ptr<views::Widget> widget =
+      CreateWidgetWithContent(lock_contents_view);
+
+  NotifySessionStateChanged(session_manager::SessionState::LOGIN_PRIMARY);
+  SetNumberOfKioskApps(1);
+
+  EXPECT_FALSE(test_api.kiosk_default_message());
+}
+
+// Checks default message hidden if device is not with kiosk license and has
+// no apps.
+TEST_F(LockContentsViewWithKioskLicenseTest, ShouldHideKioskDefaultMessage) {
+  // Set up
+  const bool is_kiosk_license_mode = false;
+  login_shelf_view_->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  // Show login screen with no user.
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* lock_contents_view =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  lock_contents_view->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  LockContentsView::TestApi test_api(lock_contents_view);
+  SetUserCount(0);
+  std::unique_ptr<views::Widget> widget =
+      CreateWidgetWithContent(lock_contents_view);
+
+  NotifySessionStateChanged(session_manager::SessionState::LOGIN_PRIMARY);
+  SetNumberOfKioskApps(0);
+
+  EXPECT_FALSE(test_api.kiosk_default_message());
+}
+
+// Checks default message appeared if device is with kiosk license and no
+// kiosk app is set up.
+TEST_F(LockContentsViewWithKioskLicenseTest,
+       ShouldShowKioskDefaultMessageWithoutApps) {
+  // Set up
+  const bool is_kiosk_license_mode = true;
+  login_shelf_view_->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  // Show login screen with no user.
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* lock_contents_view =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  lock_contents_view->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  LockContentsView::TestApi test_api(lock_contents_view);
+  SetUserCount(0);
+  std::unique_ptr<views::Widget> widget =
+      CreateWidgetWithContent(lock_contents_view);
+
+  NotifySessionStateChanged(session_manager::SessionState::LOGIN_PRIMARY);
+  SetNumberOfKioskApps(0);
+
+  EXPECT_TRUE(test_api.kiosk_default_message());
+  EXPECT_TRUE(test_api.kiosk_default_message()->GetWidget()->IsVisible());
+}
+
+// Checks default message appeared if device is with kiosk license, no
+// kiosk app is set up and has users.
+TEST_F(LockContentsViewWithKioskLicenseTest,
+       ShouldShowKioskDefaultMessageWithoutAppsWithUsers) {
+  // Set up
+  const bool is_kiosk_license_mode = true;
+  login_shelf_view_->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  // Show login screen with one user.
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* lock_contents_view =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  lock_contents_view->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  LockContentsView::TestApi test_api(lock_contents_view);
+  SetUserCount(1);
+  std::unique_ptr<views::Widget> widget =
+      CreateWidgetWithContent(lock_contents_view);
+
+  NotifySessionStateChanged(session_manager::SessionState::LOGIN_PRIMARY);
+  SetNumberOfKioskApps(0);
+
+  EXPECT_TRUE(test_api.kiosk_default_message());
+  EXPECT_TRUE(test_api.kiosk_default_message()->GetWidget()->IsVisible());
+}
+
+// Checks default message appeared if device is with kiosk license and no
+// kiosk app is set up. After some kiosk app is set up, the default message
+// shall disappear.
+TEST_F(LockContentsViewWithKioskLicenseTest,
+       ShouldShowAndHideKioskDefaultMessageWithAppChanges) {
+  // Set up
+  const bool is_kiosk_license_mode = true;
+  login_shelf_view_->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  // Show login screen with no user.
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* lock_contents_view =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  lock_contents_view->SetKioskLicenseModeForTesting(is_kiosk_license_mode);
+  LockContentsView::TestApi test_api(lock_contents_view);
+  SetUserCount(0);
+  std::unique_ptr<views::Widget> widget =
+      CreateWidgetWithContent(lock_contents_view);
+
+  NotifySessionStateChanged(session_manager::SessionState::LOGIN_PRIMARY);
+  SetNumberOfKioskApps(0);
+
+  EXPECT_TRUE(test_api.kiosk_default_message());
+  EXPECT_TRUE(test_api.kiosk_default_message()->GetWidget()->IsVisible());
+
+  SetNumberOfKioskApps(1);
+
+  EXPECT_TRUE(test_api.kiosk_default_message());
+  EXPECT_FALSE(test_api.kiosk_default_message()->GetWidget()->IsVisible());
 }
 
 }  // namespace ash

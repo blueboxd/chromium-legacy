@@ -94,6 +94,8 @@
 <translation id="1742316578210444689">хебрејски, транслитерација</translation>
 <translation id="1747761757048858544">холандски (Холандија)</translation>
 <translation id="174937106936716857">Укупан број датотека</translation>
+<translation id="1755345808328621801">Фајл је осмишљен за рачунар који користи Windows софтвер. Није компатибилан са уређајем, који користи Chrome ОС. Претражите Chrome веб-продавницу да бисте нашли одговарајућу замену за апликацију.</translation>
+<translation id="1757915090001272240">латиница – широко</translation>
 <translation id="1773212559869067373">Сертификат за потврду аутентичности је одбијен локално</translation>
 <translation id="1775381402323441512">Информације о видео датотеци</translation>
 <translation id="180035236176489073">Морате да будете на мрежи да бисте приступили овим датотекама.</translation>
@@ -103,6 +105,7 @@
 <translation id="1813278315230285598">Услуге</translation>
 <translation id="1829129547161959350">Пингвин</translation>
 <translation id="183183971458492120">Информације се учитавају...</translation>
+<translation id="1832073788765803750">катакана са пола ширине</translation>
 <translation id="1834290891154666894">Неважећи унос подударања алтернативног назива субјекта</translation>
 <translation id="1838709767668011582">Google сајт</translation>
 <translation id="1844692022597038441">Ова датотека није доступна ван мреже.</translation>
@@ -117,7 +120,6 @@
 <translation id="1936717151811561466">фински</translation>
 <translation id="1942765061641586207">Резолуција слике</translation>
 <translation id="1972984168337863910">Прошири окна за повратне информације о датотекама</translation>
-<translation id="1984456723671657197">Овај тип фајла није подржан. <ph name="BEGIN_LINK_HELP" />Сазнајте више<ph name="END_LINK_HELP" /> о отварању фајлова у Chrome ОС-у.</translation>
 <translation id="1995337122023280937">Иди на локацију датотеке</translation>
 <translation id="2001796770603320721">Управљајте на Диску</translation>
 <translation id="2009067268969781306">Форматирањем диска избрисаће се сви подаци сачувани на њему. Ова радња не може да се опозове.</translation>
@@ -199,8 +201,6 @@
 <translation id="2649120831653069427">Риба</translation>
 <translation id="2663066752008346276">бурмански/Мијанмар са мјансан тастатуром</translation>
 <translation id="2664412712123763093">Локација датотеке</translation>
-<translation id="2672394958563893062">Дошло је до грешке. Кликните да бисте кренули из почетка.</translation>
-<translation id="2676946222714718093">Пуштено на</translation>
 <translation id="2718540689505416944">Инсталирајте апликацију за Linux</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, детаљи</translation>
 <translation id="2724954091494693138">турски са тастатуром F</translation>
@@ -226,6 +226,7 @@
 <translation id="2943503720238418293">Користите краћи назив</translation>
 <translation id="2949781154072577687">Форматира се <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Медуза</translation>
+<translation id="2977940621473452797">Овај фајл је осмишљен за рачунар који користи Macintosh софтвер. Није компатибилан са уређајем, који користи Chrome ОС. Претражите Chrome веб-продавницу да бисте нашли одговарајућу замену за апликацију.</translation>
 <translation id="2984337792991268709">Данас у <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2994320653639462337">Враћају се ставке (<ph name="COUNT" />)...</translation>
 <translation id="2994669386200004489">Прављење резервне копије за датотеку <ph name="FILE_NAME" /> није успело</translation>
@@ -341,7 +342,6 @@
 <translation id="3901991538546252627">Повезивање са мрежом <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Инсталира се профил за мобилне уређаје, мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3930521966936686665">Пусти на</translation>
 <translation id="3943857333388298514">Налепи</translation>
 <translation id="3952872973865944257">фонетски телугу</translation>
 <translation id="3958548648197196644">Киви</translation>
@@ -413,7 +413,6 @@
 <translation id="4631887759990505102">Извођач</translation>
 <translation id="4642769377300286600">Инсталира се профил за мобилне уређаје, мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">чешки са Qwerty тастатуром</translation>
-<translation id="4656293982926141856">Овај рачунар</translation>
 <translation id="4656777537938206294">Учините фајлове доступним офлајн</translation>
 <translation id="4658782175094886150">Особа на снегу</translation>
 <translation id="4669606053856530811">Чланови из „<ph name="SOURCE_NAME" />“ ће изгубити приступ ако се ове ставке не деле са њима.</translation>
@@ -423,13 +422,13 @@
 <translation id="4694604912444486114">Мајмун</translation>
 <translation id="469612310041132144">кинески брзи</translation>
 <translation id="4697043402264950621">Листа датотека је сортирана по растућем редоследу по критеријуму <ph name="COLUMN_NAME" />.</translation>
+<translation id="469897186246626197">Овај фајл је осмишљен за рачунар који користи Windows софтвер. Није компатибилан са вашим уређајем, који користи Chrome ОС. <ph name="BEGIN_LINK_HELP" />Сазнајте више<ph name="END_LINK_HELP" /> о отварању фајлова у Chrome ОС-у.</translation>
 <translation id="4706042980341760088">тамилски са тастатуром писаће машине</translation>
 <translation id="4711094779914110278">турски</translation>
 <translation id="4712283082407695269">Отвара се „<ph name="PATH" />“</translation>
 <translation id="4720185134442950733">Мобилна мрежа за пренос података</translation>
 <translation id="4724850507808590449">Направљена је резервна копија слика (<ph name="FILE_COUNT" />)</translation>
 <translation id="4725511304875193254">Корги</translation>
-<translation id="4732760563705710320">Жао нам је, уређај за пребацивање не подржава овај видео.</translation>
 <translation id="4737050008115666127">Слетање</translation>
 <translation id="4747271164117300400">македонски</translation>
 <translation id="4759238208242260848">Преузимања</translation>
@@ -520,6 +519,7 @@
 <translation id="5335458522276292100">Праве се резервне копије (<ph name="FILE_COUNT" />) на <ph name="BEGIN_LINK" />Google диску<ph name="END_LINK" /></translation>
 <translation id="535792325654997756">Особа са мачкама</translation>
 <translation id="5358764674931277">Брзина кадрова</translation>
+<translation id="5363339716524495120">Језик уноса је кинески</translation>
 <translation id="5368191757080475556">Делите директоријум са Linux-ом</translation>
 <translation id="5402367795255837559">Брајева азбука</translation>
 <translation id="5411472733320185105">Не користи подешавања проксија за ове хостове и домене:</translation>
@@ -542,8 +542,10 @@
 <translation id="5534520101572674276">Израчунавање величине</translation>
 <translation id="554153475311314364">грчки, транслитерација</translation>
 <translation id="5583640892426849032">Backspace</translation>
+<translation id="5583664733673201137">Ширина знакова интерпункције је пуна</translation>
 <translation id="5602622065581044566">бугарски са фонетском тастатуром</translation>
 <translation id="5605830556594064952">америчка Дворак</translation>
+<translation id="5618330573454123917">Овај фајл је осмишљен за рачунар који користи Macintosh софтвер. Није компатибилан са вашим уређајем, који користи Chrome ОС. <ph name="BEGIN_LINK_HELP" />Сазнајте више<ph name="END_LINK_HELP" /> о отварању фајлова у Chrome ОС-у.</translation>
 <translation id="5625294776298156701">тамилски са тастатуром Tamil99</translation>
 <translation id="5633226425545095130">Премештањем ове ставке делите је са свима који могу да виде дељени фолдер <ph name="DESTINATION_NAME" />.</translation>
 <translation id="5649768706273821470">Слушај</translation>
@@ -619,7 +621,6 @@
 <translation id="6224253798271602650">Форматирај: <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Ову датотеку није могуће пустити.</translation>
 <translation id="6241349547798190358">холандски (Белгија)</translation>
-<translation id="6248400709929739064">Омогући титлове</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, батерија телефона <ph name="BATTERY_STATUS" />%, повежи</translation>
 <translation id="6269630227984243955">малајски</translation>
 <translation id="6287852322318138013">Изаберите апликацију за отварање ове датотеке</translation>
@@ -637,7 +638,6 @@
 <translation id="637062427944097960">Ова датотека је отворена на другом профилу. Пређите на <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) да бисте је погледали.</translation>
 <translation id="6394388407447716302">Само за читање</translation>
 <translation id="6395575651121294044">Ставки: <ph name="NUMBER_OF_FILES" /></translation>
-<translation id="6398765197997659313">Изађи из режима целог екрана</translation>
 <translation id="642282551015776456">Овај назив не може да се користи као назив датотеке или директоријума</translation>
 <translation id="6423031066725912715">вијетнамски са тастатуром TCVN</translation>
 <translation id="6485131920355264772">Преузимање информација о простору није успело</translation>
@@ -673,7 +673,6 @@
 <translation id="6820687829547641339">Gzip компримована tar архива</translation>
 <translation id="6823166707458800069">За све датотеке сачуване у овом директоријуму аутоматски се прави онлајн резервна копија.</translation>
 <translation id="6825883775269213504">руски</translation>
-<translation id="6827236167376090743">Репродукција овог видео снимка ће се наставити у недоглед.</translation>
 <translation id="6847101934483209767">Уклонили сте <ph name="ENTRY_NAME" /> из избора.</translation>
 <translation id="6856459657722366306"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, детаљи</translation>
 <translation id="6861394552169064235">персијски</translation>
@@ -702,7 +701,6 @@
 <translation id="6970230597523682626">бугарски</translation>
 <translation id="6973630695168034713">Директоријуми</translation>
 <translation id="6976795442547527108">Лав</translation>
-<translation id="6978611942794658017">Датотека је осмишљена за рачунар који користи Windows софтвер. Није компатибилна са уређајем, који користи Chrome ОС. Претражите Chrome веб-продавницу да бисте нашли одговарајућу замену за апликацију.</translation>
 <translation id="6979158407327259162">Google диск</translation>
 <translation id="6989942356279143254">шведски</translation>
 <translation id="6990081529015358884">Понестало вам је простора</translation>
@@ -713,6 +711,7 @@
 <translation id="7037472120706603960">транслитерација тамилског</translation>
 <translation id="7040138676081995583">Отвори помоћу апликације...</translation>
 <translation id="7048024426273850086"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, батерија телефона <ph name="BATTERY_STATUS" />%, повежите</translation>
+<translation id="7070804685954057874">Директни унос</translation>
 <translation id="7075931588889865715">тајски са тастатуром TIS 820-2531</translation>
 <translation id="708278670402572152">Прекините везу да бисте омогућили скенирање</translation>
 <translation id="7086590977277044826">тамилски са индијском тастатуром</translation>
@@ -740,6 +739,7 @@
 <translation id="7309413087278791451">немачки (Белгија)</translation>
 <translation id="7339898014177206373">Нови прозор</translation>
 <translation id="7343393116438664539">вијетнамски (Telex)</translation>
+<translation id="7357762654218998920">Овај тип фајла није подржан. <ph name="BEGIN_LINK_HELP" />Сазнајте више<ph name="END_LINK_HELP" /> о отварању фајлова у Chrome ОС-у.</translation>
 <translation id="7359359531237882347">Копирају се ставке (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="7375951387215729722">Листа датотека је сортирана по опадајућем редоследу по критеријуму <ph name="COLUMN_NAME" />.</translation>
 <translation id="7402503521691663770">Chrome OS Flex уређаји</translation>
@@ -752,6 +752,7 @@
 <translation id="7489215562877293245">Пронађене су датотеке (<ph name="FILE_COUNT" />)
     <ph name="LINE_BREAK1" />
     Све је спремно за прављење резервних копија на <ph name="BEGIN_LINK" />Google диску<ph name="END_LINK" /></translation>
+<translation id="749452993132003881">хирагана</translation>
 <translation id="7495372004724182530">фонетски малајалам</translation>
 <translation id="7505167922889582512">Прикажи скривене датотеке</translation>
 <translation id="7514365320538308">Преузми</translation>
@@ -811,8 +812,8 @@
 <translation id="7857117644404132472">Додај изузетак</translation>
 <translation id="7868774406711971383">пољски</translation>
 <translation id="7874321682039004450">филипински</translation>
-<translation id="7881969471599061635">Онемогући титлове</translation>
 <translation id="78946041517601018">Дељени дискови</translation>
+<translation id="7903984238293908205">катакана</translation>
 <translation id="7908793776359722643">Ако форматирате партицију, бришете све податке на њој. Ова радња не може да се опозове.</translation>
 <translation id="7925247922861151263">Провера потврде идентитета, овлашћења и приступа није успела</translation>
 <translation id="7925686952655276919">Не користи податке за мобилне уређаје за синхронизацију</translation>
@@ -824,7 +825,6 @@
 <translation id="7972920761225148017">француски (Швајцарска)</translation>
 <translation id="7973962044839454485">Провера аутентичности преко протокола PPP није успела због нетачног корисничког имена или лозинке</translation>
 <translation id="7980421588063892270">енглески (САД) са тастатуром Colemak</translation>
-<translation id="79907182588096956">Овај фајл је осмишљен за рачунар који користи Windows софтвер. Није компатибилан са вашим уређајем, који користи Chrome ОС. <ph name="BEGIN_LINK_HELP" />Сазнајте више<ph name="END_LINK_HELP" /> о отварању фајлова у Chrome ОС-у.</translation>
 <translation id="8000066093800657092">Нема мреже</translation>
 <translation id="8008366997883261463">Пас</translation>
 <translation id="8028993641010258682">Величина</translation>
@@ -841,6 +841,7 @@
 <translation id="8128733386027980860">енглески (САД) са тастатуром Dvorak</translation>
 <translation id="8137331602592933310">„<ph name="FILENAME" />“ се дели са вама. Не можете да је избришете јер није у вашем власништву.</translation>
 <translation id="813913629614996137">Покреће се…</translation>
+<translation id="8147028810663464959">Ширина знакова је пуна</translation>
 <translation id="8151638057146502721">Конфигуриши</translation>
 <translation id="8154842056504218462">Изабрали сте све ставке.</translation>
 <translation id="8157684860301034423">Преузимање информација о апликацији није успело.</translation>
@@ -850,6 +851,7 @@
 <translation id="8208580316430297579">Илустрације</translation>
 <translation id="8223479393428528563">Да бисте сачували ове датотеке за офлајн коришћење, повежите се поново на интернет, кликните десним тастером на датотеке и изаберите опцију <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Откажи</translation>
+<translation id="8250690786522693009">латиница</translation>
 <translation id="8250920743982581267">Документи</translation>
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8261561378965667560">низ за кинески</translation>
@@ -889,7 +891,6 @@
 <translation id="8492972329130824181">Кућна мрежа није доступна. Пренос података у ромингу мора да буде омогућен ради повезивања.</translation>
 <translation id="8499098729323186194">Издвајају се ставке (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="8521441079177373948">УК</translation>
-<translation id="8525306231823319788">Цео екран</translation>
 <translation id="853494022971700746">француски (Француска)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, детаљи</translation>
 <translation id="8545476925160229291">енглески (САД)</translation>
@@ -935,7 +936,6 @@
 <translation id="8912078710089354287">Пас маше репом</translation>
 <translation id="8919081441417203123">дански</translation>
 <translation id="8965697826696209160">Нема довољно простора.</translation>
-<translation id="8970501467542182729">Овај фајл је осмишљен за рачунар који користи Macintosh софтвер. Није компатибилан са вашим уређајем, који користи Chrome ОС. <ph name="BEGIN_LINK_HELP" />Сазнајте више<ph name="END_LINK_HELP" /> о отварању фајлова у Chrome ОС-у.</translation>
 <translation id="8997962250644902079">кинески (традиционални) пинјин</translation>
 <translation id="9003940392834790328"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, управља администратор, детаљи</translation>
 <translation id="9017798300203431059">руска фонетска</translation>
@@ -954,7 +954,6 @@
 <translation id="9130775360844693113">Чланови из „<ph name="DESTINATION_NAME" />“ ће добити приступ овим ставкама.</translation>
 <translation id="9131598836763251128">Избор једне или више датотека</translation>
 <translation id="9133055936679483811">Додавање у zip датотеку није успело. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">Ова датотека је осмишљена за рачунар који користи Macintosh софтвер. Није компатибилна са уређајем, који користи Chrome ОС. Претражите Chrome веб-продавницу да бисте нашли одговарајућу замену за апликацију.</translation>
 <translation id="9144340019284012223">каталонски</translation>
 <translation id="914873105831852105">Неважећи PIN. Имате још 1 покушај.</translation>
 <translation id="9153934054460603056">Сачувај идентитет и лозинку</translation>

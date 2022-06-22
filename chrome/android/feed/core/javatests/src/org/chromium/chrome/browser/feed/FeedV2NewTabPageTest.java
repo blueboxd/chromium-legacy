@@ -30,7 +30,6 @@ import android.content.pm.ActivityInfo;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -85,7 +84,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
@@ -183,8 +181,6 @@ public class FeedV2NewTabPageTest {
 
     private Tab mTab;
     private NewTabPage mNtp;
-    private ViewGroup mTileGridLayout;
-    private LinearLayout mScrollableMVTLayout;
     private FakeMostVisitedSites mMostVisitedSites;
     private EmbeddedTestServer mTestServer;
     private List<SiteSuggestion> mSiteSuggestions;
@@ -246,13 +242,8 @@ public class FeedV2NewTabPageTest {
         Assert.assertTrue(mTab.getNativePage() instanceof NewTabPage);
         mNtp = (NewTabPage) mTab.getNativePage();
 
-        if (mEnableScrollableMVT) {
-            mScrollableMVTLayout = mNtp.getView().findViewById(R.id.mv_tiles_layout);
-            Assert.assertEquals(mSiteSuggestions.size(), mScrollableMVTLayout.getChildCount());
-        } else {
-            mTileGridLayout = mNtp.getView().findViewById(R.id.tile_grid_layout);
-            Assert.assertEquals(mSiteSuggestions.size(), mTileGridLayout.getChildCount());
-        }
+        ViewGroup mvTilesLayout = mNtp.getView().findViewById(R.id.mv_tiles_layout);
+        Assert.assertEquals(mSiteSuggestions.size(), mvTilesLayout.getChildCount());
     }
 
     private void waitForPopup(Matcher<View> matcher) {
@@ -377,11 +368,14 @@ public class FeedV2NewTabPageTest {
         onView(withId(R.id.feed_stream_recycler_view))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
+    }
 
+    @Test
+    @MediumTest
+    @Feature({"FeedNewTabPage"})
+    public void testSignInPromo_AccountsReady() {
         mIsCachePopulatedInAccountManagerFacade = true;
-        TestThreadUtils.runOnUiThreadBlocking(mTab::reload);
-        ChromeTabUtils.waitForTabPageLoaded(mTab, ChromeTabUtils.getUrlStringOnUiThread(mTab));
-
+        openNewTabPage();
         // Check that the sign-in promo is displayed this time.
         onView(withId(R.id.feed_stream_recycler_view))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));

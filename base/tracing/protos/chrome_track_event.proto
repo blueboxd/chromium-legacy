@@ -420,6 +420,9 @@ message SendBeginMainFrameToCommitBreakdown {
   // Layout update breakdown
   optional uint64 layout_update_us = 4;
 
+  // Accessibility update breakdown
+  optional uint64 accessibility_update_us = 12;
+
   // Prepaint breakdown
   optional uint64 prepaint_us = 5;
 
@@ -681,6 +684,7 @@ message RendererMainThreadTaskExecution {
   optional bool frame_visible = 2;
   optional bool page_visible = 3;
   optional FrameType frame_type = 4;
+  optional bool is_ad_frame = 5;
 }
 
 message EventLatency {

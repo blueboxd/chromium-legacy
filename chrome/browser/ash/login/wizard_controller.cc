@@ -213,6 +213,10 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace ash {
 namespace {
 
@@ -266,14 +270,6 @@ const StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
 
 bool IsResumableOobeScreen(OobeScreenId screen_id) {
   for (const auto& resumable_screen : kResumableOobeScreens) {
-    if (screen_id == resumable_screen)
-      return true;
-  }
-  return false;
-}
-
-bool IsResumablePostLoginScreen(OobeScreenId screen_id) {
-  for (const auto& resumable_screen : kResumablePostLoginScreens) {
     if (screen_id == resumable_screen)
       return true;
   }
@@ -366,9 +362,6 @@ OobeScreenId PrefToScreenId(const std::string& pref_value) {
 const int WizardController::kMinAudibleOutputVolumePercent = 10;
 
 // static
-bool WizardController::skip_post_login_screens_ = false;
-
-// static
 bool WizardController::skip_enrollment_prompts_for_testing_ = false;
 
 // static
@@ -388,6 +381,8 @@ WizardController::WizardController(WizardContext* wizard_context)
     : screen_manager_(std::make_unique<ScreenManager>()),
       wizard_context_(wizard_context),
       network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {
+  wizard_context_->skip_post_login_screens_for_tests =
+      switches::ShouldSkipOobePostLogin();
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   if (accessibility_manager) {
     // accessibility_manager could be null in Tests.
@@ -415,9 +410,8 @@ void WizardController::Init(OobeScreenId first_screen) {
   DCHECK(!is_initialized());
   is_initialized_ = true;
 
-  prescribed_enrollment_config_ = g_browser_process->platform_part()
-                                      ->browser_policy_connector_ash()
-                                      ->GetPrescribedEnrollmentConfig();
+  prescribed_enrollment_config_ =
+      policy::EnrollmentConfig::GetPrescribedEnrollmentConfig();
 
   VLOG(1) << "Starting OOBE wizard with screen: " << first_screen;
 
@@ -625,7 +619,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnRecommendAppsScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<AppDownloadingScreen>(
-      oobe_ui->GetView<AppDownloadingScreenHandler>(),
+      oobe_ui->GetView<AppDownloadingScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnAppDownloadingScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<WrongHWIDScreen>(
@@ -688,10 +682,10 @@ WizardController::CreateScreens() {
       oobe_ui->GetView<PackagedLicenseScreenHandler>(),
       base::BindRepeating(&WizardController::OnPackagedLicenseScreenExit,
                           weak_factory_.GetWeakPtr())));
-  auto gaia_screen = std::make_unique<GaiaScreen>(base::BindRepeating(
-      &WizardController::OnGaiaScreenExit, weak_factory_.GetWeakPtr()));
-  gaia_screen->SetView(oobe_ui->GetView<GaiaScreenHandler>());
-  append(std::move(gaia_screen));
+  append(std::make_unique<GaiaScreen>(
+      oobe_ui->GetView<GaiaScreenHandler>()->AsWeakPtr(),
+      base::BindRepeating(&WizardController::OnGaiaScreenExit,
+                          weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<SamlConfirmPasswordScreen>(
       oobe_ui->GetView<SamlConfirmPasswordHandler>()->AsWeakPtr(),
@@ -833,10 +827,6 @@ void WizardController::OnSignInFatalErrorScreenExit() {
 }
 
 void WizardController::ShowLoginScreen() {
-  // This may be triggered by multiply asynchronous events from the JS side.
-  if (login_screen_started_)
-    return;
-
   if (!time_eula_accepted_.is_null()) {
     base::TimeDelta delta = base::TimeTicks::Now() - time_eula_accepted_;
     base::UmaHistogramMediumTimes("OOBE.EULAToSignInTime", delta);
@@ -844,7 +834,6 @@ void WizardController::ShowLoginScreen() {
   VLOG(1) << "Showing login screen.";
   UpdateStatusAreaVisibilityForScreen(GaiaView::kScreenId);
   GetLoginDisplayHost()->StartSignInScreen();
-  login_screen_started_ = true;
 }
 
 void WizardController::ShowGaiaPasswordChangedScreen(
@@ -865,9 +854,8 @@ void WizardController::ShowEulaScreen() {
 
 void WizardController::ShowEnrollmentScreen() {
   // Update the enrollment configuration and start the screen.
-  prescribed_enrollment_config_ = g_browser_process->platform_part()
-                                      ->browser_policy_connector_ash()
-                                      ->GetPrescribedEnrollmentConfig();
+  prescribed_enrollment_config_ =
+      policy::EnrollmentConfig::GetPrescribedEnrollmentConfig();
   StartEnrollmentScreen(false);
 }
 
@@ -1285,7 +1273,6 @@ void WizardController::SkipToLoginForTesting() {
   if (current_screen_ && current_screen_->screen_id() == GaiaView::kScreenId)
     return;
   wizard_context_->skip_to_login_for_tests = true;
-  login_screen_started_ = false;
 
   if (!chromeos::features::IsOobeConsolidatedConsentEnabled())
     StartupUtils::MarkEulaAccepted();
@@ -1380,15 +1367,10 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
           DemoSession::DemoModeConfig::kOnline);
       ShowEulaScreen();
       break;
-    case NetworkScreen::Result::OFFLINE_DEMO:
-      DCHECK(demo_setup_controller_);
-      demo_setup_controller_->set_demo_config(
-          DemoSession::DemoModeConfig::kOffline);
-      ShowEulaScreen();
-      break;
     case NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT:
     case NetworkScreen::Result::NOT_APPLICABLE_CONSOLIDATED_CONSENT:
       DCHECK(!demo_setup_controller_);
+      MaybeTakeTPMOwnership();
       PerformPostEulaActions();
       InitiateOOBEUpdate();
       break;
@@ -1396,6 +1378,7 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       DCHECK(demo_setup_controller_);
       demo_setup_controller_->set_demo_config(
           DemoSession::DemoModeConfig::kOnline);
+      MaybeTakeTPMOwnership();
       PerformPostEulaActions();
       InitiateOOBEUpdate();
       break;
@@ -1469,6 +1452,7 @@ void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
   switch (result) {
     case UpdateScreen::Result::UPDATE_NOT_REQUIRED:
     case UpdateScreen::Result::UPDATE_SKIPPED:
+    case UpdateScreen::Result::UPDATE_OPT_OUT_INFO_SHOWN:
       OnUpdateCompleted();
       break;
     case UpdateScreen::Result::UPDATE_ERROR:
@@ -1729,11 +1713,6 @@ void WizardController::OnArcTermsOfServiceScreenExit(
     case ArcTermsOfServiceScreen::Result::NOT_APPLICABLE:
       ShowAssistantOptInFlowScreen();
       break;
-    case ArcTermsOfServiceScreen::Result::ACCEPTED_DEMO_OFFLINE:
-    case ArcTermsOfServiceScreen::Result::NOT_APPLICABLE_DEMO_OFFLINE:
-      DCHECK(demo_setup_controller_);
-      ShowDemoModeSetupScreen();
-      break;
     case ArcTermsOfServiceScreen::Result::ACCEPTED_DEMO_ONLINE:
     case ArcTermsOfServiceScreen::Result::NOT_APPLICABLE_DEMO_ONLINE:
       DCHECK(demo_setup_controller_);
@@ -1874,9 +1853,8 @@ void WizardController::OnOobeFlowFinished() {
 }
 
 void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
-  prescribed_enrollment_config_ = g_browser_process->platform_part()
-                                      ->browser_policy_connector_ash()
-                                      ->GetPrescribedEnrollmentConfig();
+  prescribed_enrollment_config_ =
+      policy::EnrollmentConfig::GetPrescribedEnrollmentConfig();
 
   bool configuration_forced_enrollment = false;
   auto* start_enrollment_value = wizard_context_->configuration.FindKeyOfType(
@@ -2018,7 +1996,16 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
     current_screen_->Hide();
   }
 
-  previous_screen_ = current_screen_;
+  // If the last screen user have visited before reaching SignInFatalError
+  // screen was SamlConfirmPassword screen. Then 'previous_screen_' shouldn't be
+  // saved to send the user back to the Login Screen not to SamlConfirmPassword
+  // screen.
+  if (current_screen_ &&
+      current_screen_->screen_id() != SamlConfirmPasswordView::kScreenId) {
+    previous_screen_ = current_screen_;
+  } else {
+    previous_screen_ = nullptr;
+  }
   current_screen_ = new_current;
 
   if (!current_screen_) {
@@ -2129,7 +2116,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
                  << current_screen_->screen_id();
     return;
   }
-  login_screen_started_ = false;
 
   if (screen_id == WelcomeView::kScreenId) {
     ShowWelcomeScreen();
@@ -2330,30 +2316,22 @@ bool WizardController::IsZeroDelayEnabled() {
   return g_using_zero_delays;
 }
 
-// static
 void WizardController::SkipPostLoginScreensForTesting() {
-  skip_post_login_screens_ = true;
-  if (!default_controller() || !default_controller()->current_screen())
-    return;
-
-  const OobeScreenId current_screen_id =
-      default_controller()->current_screen()->screen_id();
-  if (current_screen_id == LocaleSwitchView::kScreenId ||
-      current_screen_id == TermsOfServiceScreenView::kScreenId ||
-      current_screen_id == FamilyLinkNoticeView::kScreenId ||
-      current_screen_id == EduCoexistenceLoginScreen::kScreenId ||
-      current_screen_id == SyncConsentScreenView::kScreenId ||
-      current_screen_id == FingerprintSetupScreenView::kScreenId ||
-      current_screen_id == ArcTermsOfServiceScreenView::kScreenId ||
-      current_screen_id == PinSetupScreenView::kScreenId ||
-      current_screen_id == MarketingOptInScreenView::kScreenId ||
-      current_screen_id == ParentalHandoffScreenView::kScreenId ||
-      current_screen_id == ConsolidatedConsentScreenView::kScreenId) {
-    default_controller()->OnOobeFlowFinished();
-  } else {
-    LOG(WARNING) << "SkipPostLoginScreensForTesting(): Ignore screen "
-                 << current_screen_id.name;
+  wizard_context_->skip_post_login_screens_for_tests = true;
+  auto* current_screen = default_controller()->current_screen();
+  if (current_screen && !current_screen->MaybeSkip(wizard_context_)) {
+    LOG(WARNING) << __func__ << ": Ignore screen "
+                 << current_screen->screen_id().name;
   }
+}
+
+// statis
+bool WizardController::IsResumablePostLoginScreen(OobeScreenId screen_id) {
+  for (const auto& resumable_screen : kResumablePostLoginScreens) {
+    if (screen_id == resumable_screen)
+      return true;
+  }
+  return false;
 }
 
 // static
@@ -2541,4 +2519,12 @@ AutoEnrollmentController* WizardController::GetAutoEnrollmentController() {
   return auto_enrollment_controller_.get();
 }
 
+void WizardController::MaybeTakeTPMOwnership() {
+  if (wizard_context_->is_branded_build || switches::IsTpmDynamic())
+    return;
+
+  DCHECK(chromeos::features::IsOobeConsolidatedConsentEnabled());
+  TpmManagerClient::Get()->TakeOwnership(::tpm_manager::TakeOwnershipRequest(),
+                                         base::DoNothing());
+}
 }  // namespace ash

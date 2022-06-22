@@ -24,10 +24,8 @@ DISPLAY_EXPORT extern const base::Feature kEnableHardwareMirrorMode;
 
 DISPLAY_EXPORT bool IsHardwareMirrorModeEnabled();
 
-#if BUILDFLAG(IS_MAC)
-// If enabled, vsync of 120 is forced to 60.
-DISPLAY_EXPORT extern const base::Feature kForce60Hz;
-#endif
+DISPLAY_EXPORT extern const base::Feature kRequireHdcpKeyProvisioning;
+DISPLAY_EXPORT bool IsHdcpKeyProvisioningRequired();
 
 }  // namespace features
 }  // namespace display

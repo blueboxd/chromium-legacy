@@ -63,12 +63,6 @@ class GURL;
                                            completion:
                                                (ProceduralBlock)completion;
 
-// Creates a UIAction instance for showing an element.
-- (UIAction*)actionToShowLinkPreview;
-
-// Creates a UIAction instance for hidding an element.
-- (UIAction*)actionToHideLinkPreview;
-
 // Creates a UIAction instance for opening a new tab.
 - (UIAction*)actionToOpenNewTab;
 

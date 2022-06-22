@@ -20,6 +20,12 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(IS_WIN)
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
+
 namespace base {
 
 namespace {
@@ -95,27 +101,46 @@ void MakeSomeErrors(char *ptr, size_t size) {
 
 }  // namespace
 
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
+    defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(UNDEFINED_SANITIZER)
+// build/sanitizers/sanitizer_options.cc defines symbols like
+// __asan_default_options which the sanitizer runtime calls if they exist
+// in the executable. If they don't, the sanitizer runtime silently uses an
+// internal default value instead. The build puts the symbol
+// _sanitizer_options_link_helper (which the sanitizer runtime doesn't know
+// about, it's a chrome thing) in that file and then tells the linker that
+// that symbol must exist. This causes sanitizer_options.cc to be part of
+// our binaries, which in turn makes sure our __asan_default_options are used.
+// We had problems with __asan_default_options not being used, so this test
+// verifies that _sanitizer_options_link_helper actually makes it into our
+// binaries.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
+// TODO(https://crbug.com/1322143): Sanitizer options are currently broken
+// on Android.
+// TODO(https://crbug.com/1321584): __asan_default_options should be used
+// on Windows too, but currently isn't.
+#define MAYBE_LinksSanitizerOptions DISABLED_LinksSanitizerOptions
+#else
+#define MAYBE_LinksSanitizerOptions LinksSanitizerOptions
+#endif
+TEST(ToolsSanityTest, MAYBE_LinksSanitizerOptions) {
+  constexpr char kSym[] = "_sanitizer_options_link_helper";
+#if BUILDFLAG(IS_WIN)
+  auto sym = GetProcAddress(GetModuleHandle(nullptr), kSym);
+#else
+  void* sym = dlsym(RTLD_DEFAULT, kSym);
+#endif
+  EXPECT_TRUE(sym != nullptr);
+}
+#endif  // sanitizers
+
 // A memory leak detector should report an error in this test.
 TEST(ToolsSanityTest, MemoryLeak) {
   // Without the |volatile|, clang optimizes away the next two lines.
   int* volatile leak = new int[256];  // Leak some memory intentionally.
   leak[4] = 1;  // Make sure the allocated memory is used.
 }
-
-// The following tests pass with Clang r170392, but not r172454, which
-// makes AddressSanitizer detect errors in them. We disable these tests under
-// AddressSanitizer until we fully switch to Clang r172454. After that the
-// tests should be put back under the (BUILDFLAG(IS_IOS) || BUILDFLAG(IS_WIN))
-// clause above.
-// See also http://crbug.com/172614.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_SingleElementDeletedWithBraces \
-    DISABLED_SingleElementDeletedWithBraces
-#define MAYBE_ArrayDeletedWithoutBraces DISABLED_ArrayDeletedWithoutBraces
-#else
-#define MAYBE_ArrayDeletedWithoutBraces ArrayDeletedWithoutBraces
-#define MAYBE_SingleElementDeletedWithBraces SingleElementDeletedWithBraces
-#endif  // defined(ADDRESS_SANITIZER)
 
 TEST(ToolsSanityTest, AccessesToNewMemory) {
   char* foo = new char[16];
@@ -149,6 +174,19 @@ TEST(ToolsSanityTest, AccessesToStack) {
 
 #if defined(ADDRESS_SANITIZER)
 
+// alloc_dealloc_mismatch defaults to
+// !SANITIZER_MAC && !SANITIZER_WINDOWS && !SANITIZER_ANDROID,
+// in the sanitizer runtime upstream.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_SingleElementDeletedWithBraces \
+    DISABLED_SingleElementDeletedWithBraces
+#define MAYBE_ArrayDeletedWithoutBraces DISABLED_ArrayDeletedWithoutBraces
+#else
+#define MAYBE_ArrayDeletedWithoutBraces ArrayDeletedWithoutBraces
+#define MAYBE_SingleElementDeletedWithBraces SingleElementDeletedWithBraces
+#endif  // defined(ADDRESS_SANITIZER)
+
 static int* allocateArray() {
   // Clang warns about the mismatched new[]/delete if they occur in the same
   // function.
@@ -159,11 +197,12 @@ static int* allocateArray() {
 TEST(ToolsSanityTest, MAYBE_ArrayDeletedWithoutBraces) {
   // Without the |volatile|, clang optimizes away the next two lines.
   int* volatile foo = allocateArray();
-  delete foo;
+  HARMFUL_ACCESS(delete foo, "alloc-dealloc-mismatch");
+  // Under ASan the crash happens in the process spawned by HARMFUL_ACCESS,
+  // need to free the memory in the parent.
+  delete [] foo;
 }
-#endif
 
-#if defined(ADDRESS_SANITIZER)
 static int* allocateScalar() {
   // Clang warns about the mismatched new/delete[] if they occur in the same
   // function.
@@ -175,7 +214,10 @@ TEST(ToolsSanityTest, MAYBE_SingleElementDeletedWithBraces) {
   // Without the |volatile|, clang optimizes away the next two lines.
   int* volatile foo = allocateScalar();
   (void) foo;
-  delete [] foo;
+  HARMFUL_ACCESS(delete [] foo, "alloc-dealloc-mismatch");
+  // Under ASan the crash happens in the process spawned by HARMFUL_ACCESS,
+  // need to free the memory in the parent.
+  delete foo;
 }
 #endif
 
@@ -415,10 +457,6 @@ TEST(ToolsSanityTest, BadUnrelatedCast) {
 #endif  // CFI_ERROR_MSG
 
 #undef CFI_ERROR_MSG
-#undef MAYBE_AccessesToNewMemory
-#undef MAYBE_AccessesToMallocMemory
-#undef MAYBE_ArrayDeletedWithoutBraces
-#undef MAYBE_SingleElementDeletedWithBraces
 #undef HARMFUL_ACCESS
 #undef HARMFUL_ACCESS_IS_NOOP
 

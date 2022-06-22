@@ -13,6 +13,7 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crosapi/migration_progress_tracker.h"
+#include "components/sync/base/model_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -210,6 +211,13 @@ constexpr const char* const kExtensionsAshOnly[] = {
     "cnbgggchhmkkdmeppjobngjoejnihlei",  // Arc Support (Play Store)
 };
 
+// List of extension ids to be kept in both Ash and Lacros.
+constexpr const char* const kExtensionsBothChromes[] = {
+    "cfmgaohenjcikllcgjpepfadgbflcjof",  // GCSE (Google Corp SSH Extension)
+    "lfboplenmmjcmpbkeemecobbadnmpfhi",  // gnubbyd-v3 (new Gnubby extension)
+    "beknehfpfkghjoafdifaflglpjkojoco",  // gnubbyd
+};
+
 // Extensions path.
 constexpr char kExtensionsFilePath[] = "Extensions";
 
@@ -219,6 +227,10 @@ constexpr char kIndexedDBFilePath[] = "IndexedDB";
 // `Local Storage` paths.
 constexpr char kLocalStorageFilePath[] = "Local Storage";
 constexpr char kLocalStorageLeveldbName[] = "leveldb";
+
+// `Sync Data` path.
+constexpr char kSyncDataFilePath[] = "Sync Data";
+constexpr char kSyncDataLeveldbName[] = "LevelDB";
 
 // State Store paths.
 constexpr const char* const kStateStorePaths[] = {
@@ -275,6 +287,15 @@ constexpr const char* kAshOnlyPreferencesKeys[] = {
 // Preferences's key that has to be moved to Lacros, and cleared in Ash.
 constexpr const char* kLacrosOnlyPreferencesKeys[] = {
     "sync.cache_guid",
+};
+
+// List of data types in Sync Data that have to be migrated to Lacros.
+// TODO(andreaorru): fill this in with the complete list.
+static_assert(38 == syncer::GetNumModelTypes(),
+              "If adding a new sync data type, update the list below below if"
+              " you want to migrate the new data type to Lacros.");
+constexpr syncer::ModelType kLacrosSyncDataTypes[] = {
+    syncer::ModelType::WEB_APPS,
 };
 
 constexpr char kTotalSize[] = "Ash.UserDataStatsRecorder.DataSize.TotalSize";
@@ -454,6 +475,13 @@ bool MigrateLevelDB(const base::FilePath& original_path,
                     const base::FilePath& target_path,
                     const LevelDBType leveldb_type);
 
+// Migrate Sync Data's LevelDB instance at `original_path` to Ash and Lacros.
+// For Ash, filter out the data types that are not meant to be ported to Lacros.
+// For Lacros, filter out the data types that are meant to stay in Ash.
+bool MigrateSyncData(const base::FilePath& original_path,
+                     const base::FilePath& ash_target_path,
+                     const base::FilePath& lacros_target_path);
+
 // Manipulates the given representation of Preferences (`root_dict`)
 // so that the given key only contains values relevant to Ash or
 // Lacros, depending on `chrome_type`.
@@ -481,6 +509,12 @@ absl::optional<PreferencesContents> MigratePreferencesContents(
 bool MigratePreferences(const base::FilePath& original_path,
                         const base::FilePath& ash_target_path,
                         const base::FilePath& lacros_target_path);
+
+// Copy or move IndexedDB objects to Ash's profile directory.
+bool MigrateAshIndexedDB(const base::FilePath& src_profile_dir,
+                         const base::FilePath& target_indexed_db_dir,
+                         const char* extension_id,
+                         bool copy);
 
 }  // namespace ash::browser_data_migrator_util
 

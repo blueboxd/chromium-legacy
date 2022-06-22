@@ -14,7 +14,7 @@
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/cpp/in_session_auth_dialog_controller.h"
+#include "ash/public/cpp/webauthn_dialog_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -334,8 +334,8 @@ AuthDialogContentsView::AuthDialogContentsView(
       auth_metadata_(auth_metadata) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   auto border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::FLOAT, views::BubbleBorder::STANDARD_SHADOW,
-      kBackgroundColor);
+      views::BubbleBorder::FLOAT, views::BubbleBorder::STANDARD_SHADOW);
+  border->SetColor(kBackgroundColor);
   border->SetCornerRadius(kCornerRadius);
   SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));
@@ -416,7 +416,7 @@ void AuthDialogContentsView::AddedToWidget() {
   if (auth_methods_ & kAuthFingerprint) {
     // Inject a callback from the contents view so that we can show retry
     // prompt.
-    InSessionAuthDialogController::Get()->AuthenticateUserWithFingerprint(
+    WebAuthNDialogController::Get()->AuthenticateUserWithFingerprint(
         base::BindOnce(&AuthDialogContentsView::OnFingerprintAuthComplete,
                        weak_factory_.GetWeakPtr()));
   }
@@ -626,7 +626,7 @@ void AuthDialogContentsView::OnAuthSubmit(bool authenticated_by_pin,
   } else {
     password_view_->SetReadOnly(true);
   }
-  InSessionAuthDialogController::Get()->AuthenticateUserWithPasswordOrPin(
+  WebAuthNDialogController::Get()->AuthenticateUserWithPasswordOrPin(
       base::UTF16ToUTF8(password), authenticated_by_pin,
       base::BindOnce(&AuthDialogContentsView::OnPasswordOrPinAuthComplete,
                      weak_factory_.GetWeakPtr(), authenticated_by_pin));
@@ -673,7 +673,7 @@ void AuthDialogContentsView::OnFingerprintAuthComplete(
   fingerprint_view_->SetState(fingerprint_state);
   // Prepare for the next fingerprint scan.
   if (!success && fingerprint_state == FingerprintState::AVAILABLE_DEFAULT) {
-    InSessionAuthDialogController::Get()->AuthenticateUserWithFingerprint(
+    WebAuthNDialogController::Get()->AuthenticateUserWithFingerprint(
         base::BindOnce(&AuthDialogContentsView::OnFingerprintAuthComplete,
                        weak_factory_.GetWeakPtr()));
   }
@@ -681,11 +681,11 @@ void AuthDialogContentsView::OnFingerprintAuthComplete(
 }
 
 void AuthDialogContentsView::OnCancelButtonPressed(const ui::Event& event) {
-  InSessionAuthDialogController::Get()->Cancel();
+  WebAuthNDialogController::Get()->Cancel();
 }
 
 void AuthDialogContentsView::OnNeedHelpButtonPressed(const ui::Event& event) {
-  InSessionAuthDialogController::Get()->OpenInSessionAuthHelpPage();
+  WebAuthNDialogController::Get()->OpenInSessionAuthHelpPage();
 }
 
 }  // namespace ash

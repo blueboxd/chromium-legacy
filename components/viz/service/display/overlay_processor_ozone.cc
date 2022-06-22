@@ -61,6 +61,9 @@ void ConvertToOzoneOverlaySurface(
   ozone_candidate->requires_overlay = overlay_candidate.requires_overlay;
   ozone_candidate->priority_hint = overlay_candidate.priority_hint;
   ozone_candidate->rounded_corners = overlay_candidate.rounded_corners;
+  // That can be a solid color quad.
+  if (!overlay_candidate.is_solid_color)
+    ozone_candidate->background_color = overlay_candidate.color;
 }
 
 uint32_t MailboxToUInt32(const gpu::Mailbox& mailbox) {
@@ -260,9 +263,11 @@ void OverlayProcessorOzone::MaybeObserveHardwareCapabilities() {
   if (max_overlays_config_ <= 1) {
     return;
   }
-  overlay_candidates_->ObserveHardwareCapabilities(
-      base::BindRepeating(&OverlayProcessorOzone::ReceiveHardwareCapabilities,
-                          weak_ptr_factory_.GetWeakPtr()));
+  if (overlay_candidates_) {
+    overlay_candidates_->ObserveHardwareCapabilities(
+        base::BindRepeating(&OverlayProcessorOzone::ReceiveHardwareCapabilities,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void OverlayProcessorOzone::ReceiveHardwareCapabilities(

@@ -55,6 +55,7 @@
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/geometry/point.h"
@@ -139,7 +140,7 @@ void AshTestBase::TearDown() {
   event_generator_.reset();
   // Some tests set an internal display id,
   // reset it here, so other tests will continue in a clean environment.
-  display::Display::SetInternalDisplayId(display::kInvalidDisplayId);
+  display::SetInternalDisplayIds({display::kInvalidDisplayId});
 
   // Tests can add devices, so reset the lists for future tests.
   ui::DeviceDataManager::GetInstance()->ResetDeviceListsForTest();
@@ -193,12 +194,36 @@ aura::Window* AshTestBase::GetContext() {
   return ash_test_helper_->GetContext();
 }
 
+namespace {
+class DefaultWidgetDelegate : public views::WidgetDelegate {
+ public:
+  DefaultWidgetDelegate() {
+    // In most situations where a Widget is used without a delegate the Widget
+    // is used as a container, so that we want focus to advance to the top-level
+    // widget. A good example of this is the find bar.
+    SetOwnedByWidget(true);
+    SetFocusTraversesOut(true);
+    SetCanMaximize(true);
+    SetCanMinimize(true);
+    SetCanResize(true);
+  }
+
+  DefaultWidgetDelegate(const DefaultWidgetDelegate&) = delete;
+  DefaultWidgetDelegate& operator=(const DefaultWidgetDelegate&) = delete;
+
+  ~DefaultWidgetDelegate() override = default;
+};
+}  // namespace
+
 // static
 std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
     views::WidgetDelegate* delegate,
     int container_id,
     const gfx::Rect& bounds,
     bool show) {
+  if (!delegate)
+    delegate = new DefaultWidgetDelegate();  // owned by widget
+
   return TestWidgetBuilder()
       .SetDelegate(delegate)
       .SetBounds(bounds)
@@ -210,6 +235,7 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
 // static
 std::unique_ptr<views::Widget> AshTestBase::CreateFramelessTestWidget() {
   return TestWidgetBuilder()
+      .SetTestWidgetDelegate()
       .SetWidgetType(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS)
       .BuildOwnsNativeWidget();
 }

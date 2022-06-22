@@ -7,6 +7,10 @@
 
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
+namespace blink {
+enum class PermissionType;
+}
+
 namespace url {
 class Origin;
 }
@@ -14,12 +18,11 @@ class Origin;
 namespace content {
 
 class PermissionController;
-enum class PermissionType;
 
 void SetPermissionControllerOverrideForDevTools(
     PermissionController* permission_controller,
     const absl::optional<url::Origin>& origin,
-    PermissionType permission,
+    blink::PermissionType permission,
     const blink::mojom::PermissionStatus& status);
 
 }  // namespace content

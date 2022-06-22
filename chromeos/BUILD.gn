@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
+import("./features.gni")
 import("./tast_control.gni")
 
 if (is_chromeos_device) {
@@ -17,6 +18,11 @@ assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 # Used by targets that compile into the implementation.
 config("chromeos_implementation") {
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
+}
+
+buildflag_header("features") {
+  header = "features.h"
+  flags = [ "USE_REAL_CHROMEOS_SERVICES=$use_real_chromeos_services" ]
 }
 
 component("chromeos") {
@@ -32,13 +38,10 @@ component("chromeos") {
     deps += [
       ":chromeos_export",
       "//base",
-      "//net",
     ]
     sources += [
       "hugepage_text/hugepage_text.cc",
       "hugepage_text/hugepage_text.h",
-      "scanning/scanner.cc",
-      "scanning/scanner.h",
     ]
     if (current_cpu == "arm" || current_cpu == "x86") {
       defines = [ "BINDER_IPC_32BIT" ]
@@ -111,12 +114,11 @@ test("chromeos_unittests") {
   if (is_chromeos_ash) {
     deps += [
       ":test_support",
-      "//chromeos/ash/components/dbus:unit_tests",
+      "//chromeos/ash/components:unit_tests",
       "//chromeos/crosapi/cpp:unit_tests",
       "//chromeos/crosapi/mojom:unit_tests",
       "//chromeos/dbus:test_support",
       "//chromeos/dbus:unit_tests",
-      "//chromeos/dbus/services:unit_tests",
       "//chromeos/language/language_packs:unit_tests",
       "//chromeos/login/login_state:unit_tests",
       "//chromeos/memory:unit_tests",
@@ -132,7 +134,6 @@ test("chromeos_unittests") {
       "//components/prefs:test_support",
       "//components/proxy_config",
       "//crypto",
-      "//crypto:platform",
       "//dbus:test_support",
       "//google_apis",
       "//net",
@@ -162,6 +163,12 @@ if (is_chromeos_ash && is_chromeos_device) {
     # Assume every time we build cros_test_wrapper, we also build chrome and
     # want to deploy it to the DUT.
     deploy_chrome = true
+
+    # The only targets that currently use cros_test_wrapper are Telemetry-based
+    # tests, which have their own crash/symbolization handling code. So, strip
+    # Chrome before deploying in order to save disk space and avoid potential
+    # memory issues on 32-bit devices.
+    strip_chrome = true
   }
 
   tast_test("chrome_login_tast_tests") {

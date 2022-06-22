@@ -71,6 +71,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
@@ -960,6 +961,71 @@ TEST_F(AppsGridViewTest, MoveItemAcrossRowDoesNotCauseAnimation) {
   // The item should be repositioned immediately when the widget is not visible.
   EXPECT_FALSE(apps_grid_view_->IsAnimatingView(view0));
   EXPECT_EQ(view0->bounds(), GetItemRectOnCurrentPageAt(1, 2));
+}
+
+// Test that when dragging an item between pages/rows, the apps grid items
+// animate between rows correctly. Items should not animate vertically when the
+// reorder placeholder is changed during drag.
+TEST_P(AppsGridViewTabletTest, BetweenRowsAnimationOnDragToPreviousPage) {
+  ASSERT_TRUE(paged_apps_grid_view_);
+  model_->PopulateApps(GetTilesPerPage(0) + 15);
+  UpdateLayout();
+
+  GetPaginationModel()->SelectPage(1 /*page*/, false /*animate*/);
+  EXPECT_EQ(1, GetSelectedPage(paged_apps_grid_view_));
+
+  // Begin dragging the third item of the second page.
+  InitiateDragForItemAtCurrentPageAt(AppsGridView::MOUSE, 0, 2,
+                                     apps_grid_view_);
+
+  // Drag the current item to flip to the first page.
+  gfx::Point point_in_page_flip_buffer =
+      gfx::Point(paged_apps_grid_view_->bounds().width() / 2, 0);
+  UpdateDrag(AppsGridView::MOUSE, point_in_page_flip_buffer,
+             paged_apps_grid_view_, 10 /*steps*/);
+  while (HasPendingPageFlip(paged_apps_grid_view_)) {
+    page_flip_waiter_->Wait();
+  }
+  EXPECT_EQ(0, GetSelectedPage(paged_apps_grid_view_));
+
+  // Move dragged item to the second slot on the first page.
+  gfx::Point to;
+  if (is_rtl_) {
+    to = GetItemRectOnCurrentPageAt(0, 0).left_center();
+  } else {
+    to = GetItemRectOnCurrentPageAt(0, 0).right_center();
+  }
+  UpdateDrag(AppsGridView::MOUSE, to, paged_apps_grid_view_, 5 /*steps*/);
+
+  ASSERT_TRUE(paged_apps_grid_view_->reorder_timer_for_test()->IsRunning());
+  paged_apps_grid_view_->reorder_timer_for_test()->FireNow();
+
+  const views::ViewModelT<AppListItemView>* view_model =
+      apps_grid_view_->view_model();
+
+  // The reorder placeholder should be after the first item. This will cause the
+  // following items to animate one slot over, overflowing to the second page.
+  EXPECT_EQ(GridIndex(0, 1), paged_apps_grid_view_->reorder_placeholder());
+
+  for (int i = 1; i < view_model->view_size(); i++) {
+    AppListItemView* item_view = view_model->view_at(i);
+    // The first item and items off screen on the second page should not
+    // animate.
+    if (i == 0 || i > GetTilesPerPage(0) + 1) {
+      EXPECT_FALSE(apps_grid_view_->IsAnimatingView(item_view));
+      continue;
+    }
+
+    // Check that none of the items are animating vertically, because any items
+    // moving vertically should instead use a between rows animation, which is
+    // purely horizontal.
+    EXPECT_TRUE(apps_grid_view_->IsAnimatingView(item_view));
+    gfx::Rect target_bounds =
+        apps_grid_view_->bounds_animator_for_testing()->GetTargetBounds(
+            item_view);
+    EXPECT_EQ(item_view->bounds().y(), target_bounds.y());
+    EXPECT_NE(item_view->bounds().x(), target_bounds.x());
+  }
 }
 
 // Tests that control + arrow while a suggested chip is focused does not crash.
@@ -5235,7 +5301,7 @@ TEST_P(AppsGridViewAppSortTest,
   // Cache the current context menu view.
   views::MenuItemView* reorder_option =
       context_menu->root_menu_item_view()->GetSubmenu()->GetMenuItemAt(1);
-  ASSERT_TRUE(reorder_option->title() == u"Name");
+  ASSERT_EQ(reorder_option->title(), u"Name");
 
   // Open the Reorder by Name submenu.
   const gfx::Point reorder_option_point =
@@ -5251,7 +5317,7 @@ TEST_P(AppsGridViewAppSortTest,
 
   reorder_option =
       context_menu->root_menu_item_view()->GetSubmenu()->GetMenuItemAt(2);
-  ASSERT_TRUE(reorder_option->title() == u"Color");
+  ASSERT_EQ(reorder_option->title(), u"Color");
 
   const gfx::Point color_option =
       reorder_option->GetBoundsInScreen().CenterPoint();
@@ -5283,7 +5349,7 @@ TEST_P(AppsGridViewAppSortTest,
   // Cache the current context menu view.
   views::MenuItemView* reorder_submenu =
       context_menu->root_for_testing()->GetSubmenu()->GetMenuItemAt(2);
-  ASSERT_TRUE(reorder_submenu->title() == u"Sort by");
+  ASSERT_EQ(reorder_submenu->title(), u"Sort by");
 
   // Open the Sort by submenu.
   gfx::Point reorder_submenu_point =
@@ -5292,7 +5358,7 @@ TEST_P(AppsGridViewAppSortTest,
 
   views::MenuItemView* reorder_option =
       reorder_submenu->GetSubmenu()->GetMenuItemAt(0);
-  ASSERT_TRUE(reorder_option->title() == u"Name");
+  ASSERT_EQ(reorder_option->title(), u"Name");
   gfx::Point reorder_option_point =
       reorder_option->GetBoundsInScreen().CenterPoint();
   SimulateLeftClickOrTapAt(reorder_option_point);
@@ -5312,14 +5378,14 @@ TEST_P(AppsGridViewAppSortTest,
 
   reorder_submenu =
       context_menu->root_for_testing()->GetSubmenu()->GetMenuItemAt(2);
-  ASSERT_TRUE(reorder_submenu->title() == u"Sort by");
+  ASSERT_EQ(reorder_submenu->title(), u"Sort by");
 
   // Open the Sort by submenu.
   reorder_submenu_point = reorder_submenu->GetBoundsInScreen().CenterPoint();
   SimulateLeftClickOrTapAt(reorder_submenu_point);
 
   reorder_option = reorder_submenu->GetSubmenu()->GetMenuItemAt(1);
-  ASSERT_TRUE(reorder_option->title() == u"Color");
+  ASSERT_EQ(reorder_option->title(), u"Color");
   reorder_option_point = reorder_option->GetBoundsInScreen().CenterPoint();
   SimulateLeftClickOrTapAt(reorder_option_point);
 
@@ -5328,6 +5394,67 @@ TEST_P(AppsGridViewAppSortTest,
   EXPECT_EQ(
       Shell::GetPrimaryRootWindowController()->menu_model_adapter_for_testing(),
       nullptr);
+}
+
+TEST_P(AppsGridViewAppSortTest,
+       NoSortOptionsWhenSearchPageIsShownInTabletMode) {
+  // This test checks the context menu on root window in tablet mode.
+  if (!create_as_tablet_mode_)
+    return;
+
+  model_->PopulateApps(1);
+  EXPECT_EQ(AppListSortOrder::kCustom, model_->requested_sort_order());
+
+  // Get a point in `apps_grid_view_` that doesn't have an item on it.
+  const gfx::Point empty_space =
+      apps_grid_view_->GetBoundsInScreen().CenterPoint();
+
+  // Open the menu to test the alphabetical sort option.
+  SimulateRightClickOrLongPressAt(empty_space);
+  AppMenuModelAdapter* context_menu =
+      Shell::GetPrimaryRootWindowController()->menu_model_adapter_for_testing();
+  EXPECT_TRUE(context_menu->IsShowingMenu());
+
+  // Cache the current context menu view.
+  views::MenuItemView* reorder_submenu =
+      context_menu->root_for_testing()->GetSubmenu()->GetMenuItemAt(2);
+  ASSERT_EQ(reorder_submenu->title(), u"Sort by");
+
+  // Open the Sort by submenu.
+  gfx::Point reorder_submenu_point =
+      reorder_submenu->GetBoundsInScreen().CenterPoint();
+  SimulateLeftClickOrTapAt(reorder_submenu_point);
+
+  views::MenuItemView* reorder_option =
+      reorder_submenu->GetSubmenu()->GetMenuItemAt(0);
+  ASSERT_EQ(reorder_option->title(), u"Name");
+  gfx::Point reorder_option_point =
+      reorder_option->GetBoundsInScreen().CenterPoint();
+  SimulateLeftClickOrTapAt(reorder_option_point);
+
+  // Check that the apps are sorted and the menu is closed.
+  EXPECT_EQ(AppListSortOrder::kNameAlphabetical,
+            model_->requested_sort_order());
+  EXPECT_EQ(
+      Shell::GetPrimaryRootWindowController()->menu_model_adapter_for_testing(),
+      nullptr);
+
+  // Activate the search box.
+  gfx::Point search_box_point =
+      search_box_view_->GetBoundsInScreen().CenterPoint();
+  SimulateLeftClickOrTapAt(search_box_point);
+
+  // Open the menu again.
+  SimulateRightClickOrLongPressAt(empty_space);
+  context_menu =
+      Shell::GetPrimaryRootWindowController()->menu_model_adapter_for_testing();
+  EXPECT_TRUE(context_menu->IsShowingMenu());
+
+  // Verify that the sort option is removed and there are only 2 options in the
+  // menu.
+  int context_menu_size =
+      context_menu->root_for_testing()->GetSubmenu()->GetMenuItems().size();
+  EXPECT_LT(context_menu_size, 3);
 }
 
 TEST_P(AppsGridViewAppSortTest, ContextMenuOnFolderItemSortAllApps) {
@@ -5358,7 +5485,7 @@ TEST_P(AppsGridViewAppSortTest, ContextMenuOnFolderItemSortAllApps) {
   // Cache the current context menu view.
   views::MenuItemView* reorder_option =
       context_menu->root_menu_item_view()->GetSubmenu()->GetMenuItemAt(1);
-  ASSERT_TRUE(reorder_option->title() == u"Name");
+  ASSERT_EQ(reorder_option->title(), u"Name");
 
   // Open the Reorder by Name submenu.
   gfx::Point reorder_option_point =
@@ -5374,7 +5501,7 @@ TEST_P(AppsGridViewAppSortTest, ContextMenuOnFolderItemSortAllApps) {
 
   reorder_option =
       context_menu->root_menu_item_view()->GetSubmenu()->GetMenuItemAt(2);
-  ASSERT_TRUE(reorder_option->title() == u"Color");
+  ASSERT_EQ(reorder_option->title(), u"Color");
 
   const gfx::Point color_option =
       reorder_option->GetBoundsInScreen().CenterPoint();

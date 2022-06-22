@@ -77,6 +77,23 @@ export class ReimagingCalibrationFailedPage extends
     super();
     /** @private {ShimlessRmaServiceInterface} */
     this.shimlessRmaService_ = getShimlessRmaService();
+
+    /**
+     * The "Skip calibration" button on this page is styled and positioned like
+     * a cancel button. So we use the common cancel button from shimless_rma.js
+     * This function needs to be public, because it's invoked by
+     * shimless_rma.js as part of the response to the cancel button click.
+     * @return {!Promise<!StateResult>}
+     */
+    this.onCancelButtonClick = () => {
+      if (this.tryingToSkipWithFailedComponents_()) {
+        this.shadowRoot.querySelector('#failedComponentsDialog').showModal();
+        return Promise.reject(
+            new Error('Attempting to skip with failed components.'));
+      }
+
+      return this.skipCalibration_();
+    };
   }
 
   /** @override */
@@ -111,8 +128,8 @@ export class ReimagingCalibrationFailedPage extends
   }
 
   /**
-   * @private
    * @return {!Array<!CalibrationComponentStatus>}
+   * @private
    */
   getComponentsList_() {
     return this.componentCheckboxes_.map(item => {
@@ -123,17 +140,6 @@ export class ReimagingCalibrationFailedPage extends
         progress: 0.0
       };
     });
-  }
-
-  /** @return {!Promise<!StateResult>} */
-  onNextButtonClick() {
-    if (this.tryingToSkipWithFailedComponents_()) {
-      this.shadowRoot.querySelector('#failedComponentsDialog').showModal();
-      return Promise.reject(
-          new Error('Attempting to skip with failed components.'));
-    }
-
-    return this.skipCalibration_();
   }
 
   /**
@@ -151,12 +157,9 @@ export class ReimagingCalibrationFailedPage extends
     return this.shimlessRmaService_.startCalibration(skippedComponents);
   }
 
-  /** @private */
-  onRetryCalibrationButtonClicked_() {
-    executeThenTransitionState(
-        this,
-        () => this.shimlessRmaService_.startCalibration(
-            this.getComponentsList_()));
+  /** @return {!Promise<!StateResult>} */
+  onNextButtonClick() {
+    return this.shimlessRmaService_.startCalibration(this.getComponentsList_());
   }
 
   /**

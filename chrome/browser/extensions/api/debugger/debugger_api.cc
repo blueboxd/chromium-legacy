@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -151,7 +152,7 @@ constexpr char kBrowserTargetId[] = "browser";
 
 constexpr char kPerfettoUIExtensionId[] = "lfmkphfpdbjijhpomgecfikhfohaoine";
 
-bool ExtensionMayAttachToBrowser(const Extension& extension) {
+bool ExtensionIsTrusted(const Extension& extension) {
   return extension.id() == kPerfettoUIExtensionId;
 }
 
@@ -201,6 +202,14 @@ bool ExtensionMayAttachToWebContents(const Extension& extension,
                                      Profile* extension_profile,
                                      WebContents& web_contents,
                                      std::string* error) {
+  security_interstitials::SecurityInterstitialTabHelper*
+      security_interstitial_tab_helper = security_interstitials::
+          SecurityInterstitialTabHelper::FromWebContents(&web_contents);
+  if (security_interstitial_tab_helper &&
+      security_interstitial_tab_helper->IsDisplayingInterstitial()) {
+    *error = debugger_api_constants::kRestrictedError;
+    return false;
+  }
   // This is *not* redundant to the checks below, as
   // web_contents.GetLastCommittedURL() may be different from
   // web_contents.GetMainFrame()->GetLastCommittedURL(), with the
@@ -277,7 +286,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   bool MayAttachToRenderFrameHost(
       content::RenderFrameHost* render_frame_host) override;
   bool MayAttachToURL(const GURL& url, bool is_webui) override;
-  bool MayAttachToBrowser() override;
+  bool IsTrusted() override;
   bool MayReadLocalFiles() override;
   bool MayWriteLocalFiles() override;
   absl::optional<url::Origin> GetNavigationInitiatorOrigin() override;
@@ -500,8 +509,8 @@ bool ExtensionDevToolsClientHost::MayAttachToURL(const GURL& url,
   return ExtensionMayAttachToURLOrInnerURL(*extension_, profile_, url, &error);
 }
 
-bool ExtensionDevToolsClientHost::MayAttachToBrowser() {
-  return ExtensionMayAttachToBrowser(*extension_);
+bool ExtensionDevToolsClientHost::IsTrusted() {
+  return ExtensionIsTrusted(*extension_);
 }
 
 bool ExtensionDevToolsClientHost::MayReadLocalFiles() {
@@ -582,7 +591,7 @@ bool DebuggerFunction::InitAgentHost(std::string* error) {
       }
       agent_host_ = std::move(agent_host);
     } else if (*debuggee_.target_id == kBrowserTargetId &&
-               ExtensionMayAttachToBrowser(*extension())) {
+               ExtensionIsTrusted(*extension())) {
       // TODO(caseq): get rid of the below code, browser agent host should
       // really be a singleton.
       // Re-use existing browser agent hosts.
@@ -773,33 +782,33 @@ const char kTargetTypeBackgroundPage[] = "background_page";
 const char kTargetTypeWorker[] = "worker";
 const char kTargetTypeOther[] = "other";
 
-base::Value SerializeTarget(scoped_refptr<DevToolsAgentHost> host) {
-  base::Value dictionary(base::Value::Type::DICTIONARY);
-  dictionary.SetStringKey(kTargetIdField, host->GetId());
-  dictionary.SetStringKey(kTargetTitleField, host->GetTitle());
-  dictionary.SetBoolKey(kTargetAttachedField, host->IsAttached());
-  dictionary.SetStringKey(kTargetUrlField, host->GetURL().spec());
+base::Value::Dict SerializeTarget(scoped_refptr<DevToolsAgentHost> host) {
+  base::Value::Dict dictionary;
+  dictionary.Set(kTargetIdField, host->GetId());
+  dictionary.Set(kTargetTitleField, host->GetTitle());
+  dictionary.Set(kTargetAttachedField, host->IsAttached());
+  dictionary.Set(kTargetUrlField, host->GetURL().spec());
 
   std::string type = host->GetType();
   std::string target_type = kTargetTypeOther;
   if (type == DevToolsAgentHost::kTypePage) {
     int tab_id =
         extensions::ExtensionTabUtil::GetTabId(host->GetWebContents());
-    dictionary.SetIntKey(kTargetTabIdField, tab_id);
+    dictionary.Set(kTargetTabIdField, tab_id);
     target_type = kTargetTypePage;
   } else if (type == ChromeDevToolsManagerDelegate::kTypeBackgroundPage) {
-    dictionary.SetStringKey(kTargetExtensionIdField, host->GetURL().host());
+    dictionary.Set(kTargetExtensionIdField, host->GetURL().host());
     target_type = kTargetTypeBackgroundPage;
   } else if (type == DevToolsAgentHost::kTypeServiceWorker ||
              type == DevToolsAgentHost::kTypeSharedWorker) {
     target_type = kTargetTypeWorker;
   }
 
-  dictionary.SetStringKey(kTargetTypeField, target_type);
+  dictionary.Set(kTargetTypeField, target_type);
 
   GURL favicon_url = host->GetFaviconURL();
   if (favicon_url.is_valid())
-    dictionary.SetStringKey(kTargetFaviconUrlField, favicon_url.spec());
+    dictionary.Set(kTargetFaviconUrlField, favicon_url.spec());
 
   return dictionary;
 }
@@ -812,18 +821,17 @@ DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() = default;
 
 ExtensionFunction::ResponseAction DebuggerGetTargetsFunction::Run() {
   content::DevToolsAgentHost::List list = DevToolsAgentHost::GetOrCreateAll();
-  std::unique_ptr<base::ListValue> result(new base::ListValue());
+  base::Value::List result;
   Profile* profile = Profile::FromBrowserContext(browser_context());
   for (auto& host : list) {
     if (!ExtensionMayAttachToTargetProfile(
             profile, include_incognito_information(), *host)) {
       continue;
     }
-    result->Append(SerializeTarget(host));
+    result.Append(SerializeTarget(host));
   }
 
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
+  return RespondNow(OneArgument(base::Value(std::move(result))));
 }
 
 }  // namespace extensions

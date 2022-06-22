@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/synchronization/waitable_event.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
@@ -100,7 +99,7 @@ void CreateNestedWorkerThenTerminateParent(
               DidCreateWorkerGlobalScope(_))
       .Times(1);
   EXPECT_CALL(*nested_worker_helper->reporting_proxy,
-              WillEvaluateClassicScriptMock(_, _))
+              WillEvaluateClassicScriptMock())
       .Times(1);
   EXPECT_CALL(*nested_worker_helper->reporting_proxy,
               DidEvaluateTopLevelScript(true))
@@ -189,8 +188,7 @@ class WorkerThreadTest : public testing::Test {
  protected:
   void ExpectReportingCalls() {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
-    EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
-        .Times(1);
+    EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock()).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidEvaluateTopLevelScript(true)).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
@@ -198,7 +196,7 @@ class WorkerThreadTest : public testing::Test {
 
   void ExpectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization() {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
-    EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
+    EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock())
         .Times(AtMost(1));
     EXPECT_CALL(*reporting_proxy_, DidEvaluateTopLevelScript(_))
         .Times(AtMost(1));
@@ -209,8 +207,7 @@ class WorkerThreadTest : public testing::Test {
 
   void ExpectReportingCallsForWorkerForciblyTerminated() {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
-    EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
-        .Times(1);
+    EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock()).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidEvaluateTopLevelScript(false)).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
@@ -392,7 +389,6 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           CalculateHttpsState(security_origin_.get()),
           MakeGarbageCollected<WorkerClients>(),
           nullptr /* content_settings_client */,
-          network::mojom::IPAddressSpace::kLocal,
           nullptr /* inherited_trial_features */,
           base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),

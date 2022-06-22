@@ -14,8 +14,10 @@
 #include "base/timer/timer.h"
 #include "components/cast/message_port/message_port.h"
 #include "components/cast_streaming/browser/cast_message_port_impl.h"
+#include "components/cast_streaming/browser/demuxer_stream_data_provider.h"
 #include "components/cast_streaming/browser/playback_command_dispatcher.h"
 #include "components/cast_streaming/browser/public/receiver_session.h"
+#include "components/cast_streaming/browser/remoting_session_client.h"
 #include "components/cast_streaming/browser/renderer_controller_config.h"
 #include "components/openscreen_platform/network_util.h"
 #include "components/openscreen_platform/task_runner.h"
@@ -35,22 +37,16 @@ class StreamConsumer;
 // Cast Streaming Session for a provided MessagePort server.
 class CastStreamingSession {
  public:
-  template <class T>
-  struct StreamInfo {
-    T decoder_config;
-    mojo::ScopedDataPipeConsumerHandle data_pipe;
-  };
-  using AudioStreamInfo = StreamInfo<media::AudioDecoderConfig>;
-  using VideoStreamInfo = StreamInfo<media::VideoDecoderConfig>;
-
   class Client {
    public:
     // Called when the Cast Streaming Session has been successfully initialized.
     // It is guaranteed that at least one of |audio_stream_info| or
     // |video_stream_info| will be set.
     virtual void OnSessionInitialization(
-        absl::optional<AudioStreamInfo> audio_stream_info,
-        absl::optional<VideoStreamInfo> video_stream_info) = 0;
+        StreamingInitializationInfo initialization_info,
+        absl::optional<mojo::ScopedDataPipeConsumerHandle> audio_pipe_consumer,
+        absl::optional<mojo::ScopedDataPipeConsumerHandle>
+            video_pipe_consumer) = 0;
 
     // Called on every new audio buffer after OnSessionInitialization(). The
     // frame data must be accessed via the |data_pipe| property in StreamInfo.
@@ -65,8 +61,10 @@ class CastStreamingSession {
     // Called on receiver session reinitialization. It is guaranteed that at
     // least one of |audio_stream_info| or |video_stream_info| will be set.
     virtual void OnSessionReinitialization(
-        absl::optional<AudioStreamInfo> audio_stream_info,
-        absl::optional<VideoStreamInfo> video_stream_info) = 0;
+        StreamingInitializationInfo initialization_info,
+        absl::optional<mojo::ScopedDataPipeConsumerHandle> audio_pipe_consumer,
+        absl::optional<mojo::ScopedDataPipeConsumerHandle>
+            video_pipe_consumer) = 0;
 
     // Called when the Cast Streaming Session has ended.
     virtual void OnSessionEnded() = 0;
@@ -106,14 +104,15 @@ class CastStreamingSession {
   // Return a callback that may be used to request a buffer of the specified
   // type, to be returned asynchronously through the client API. May only be
   // called following a call to Start() and prior to a call to Stop().
-  base::RepeatingClosure GetAudioBufferRequester();
-  base::RepeatingClosure GetVideoBufferRequester();
+  AudioDemuxerStreamDataProvider::RequestBufferCB GetAudioBufferRequester();
+  VideoDemuxerStreamDataProvider::RequestBufferCB GetVideoBufferRequester();
 
  private:
   // Owns the Open Screen ReceiverSession. The Streaming Session is tied to the
   // lifespan of this object.
   class ReceiverSessionClient final
-      : public openscreen::cast::ReceiverSession::Client {
+      : public openscreen::cast::ReceiverSession::Client,
+        public remoting::RemotingSessionClient::Dispatcher {
    public:
     ReceiverSessionClient(
         CastStreamingSession::Client* client,
@@ -129,23 +128,22 @@ class CastStreamingSession {
     // Requests a new buffer of the specified type, which will be provided
     // Return a callback that may be used to request a buffer of the specified
     // type, to be returned asynchronously through the |client_|.
-    base::RepeatingClosure GetAudioBufferRequester();
-    base::RepeatingClosure GetVideoBufferRequester();
+    AudioDemuxerStreamDataProvider::RequestBufferCB GetAudioBufferRequester();
+    VideoDemuxerStreamDataProvider::RequestBufferCB GetVideoBufferRequester();
 
    private:
     void OnInitializationTimeout();
 
-    // Initializes the audio consumer with |audio_capture_config|. Returns an
-    // empty Optional on failure.
-    absl::optional<AudioStreamInfo> InitializeAudioConsumer(
-        openscreen::cast::Receiver* audio_receiver,
-        const openscreen::cast::AudioCaptureConfig& audio_capture_config);
+    // Initializes the audio or video consumer, returning the data pipe to
+    // be used to pass DecoderBuffer data to the Renderer process on success.
+    absl::optional<mojo::ScopedDataPipeConsumerHandle> InitializeAudioConsumer(
+        const StreamingInitializationInfo& initialization_info);
+    absl::optional<mojo::ScopedDataPipeConsumerHandle> InitializeVideoConsumer(
+        const StreamingInitializationInfo& initialization_info);
 
-    // Initializes the video consumer with |video_capture_config|. Returns an
-    // empty Optional on failure.
-    absl::optional<VideoStreamInfo> InitializeVideoConsumer(
-        openscreen::cast::Receiver* video_receiver,
-        const openscreen::cast::VideoCaptureConfig& video_capture_config);
+    // remoting::PlaybackCommandDispatcher::Client implementation.
+    void StartStreamingSession(
+        StreamingInitializationInfo initialization_info) override;
 
     // openscreen::cast::ReceiverSession::Client implementation.
     void OnNegotiated(const openscreen::cast::ReceiverSession* session,

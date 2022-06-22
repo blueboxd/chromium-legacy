@@ -18,6 +18,7 @@
 #include "base/types/pass_key.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_database.h"
@@ -99,7 +100,9 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
   }
 
   // Always override user_display mode with a synced value.
-  app->SetUserDisplayMode(ToMojomDisplayMode(sync_data.user_display_mode()));
+  app->SetUserDisplayMode(
+      CreateUserDisplayModeFromWebAppSpecificsUserDisplayMode(
+          sync_data.user_display_mode()));
   app->SetUserPageOrdinal(syncer::StringOrdinal(sync_data.user_page_ordinal()));
   app->SetUserLaunchOrdinal(
       syncer::StringOrdinal(sync_data.user_launch_ordinal()));
@@ -188,30 +191,30 @@ void WebAppSyncBridge::Init(base::OnceClosure callback) {
 }
 
 void WebAppSyncBridge::SetAppUserDisplayMode(const AppId& app_id,
-                                             DisplayMode user_display_mode,
+                                             UserDisplayMode user_display_mode,
                                              bool is_user_action) {
   if (is_user_action) {
     switch (user_display_mode) {
-      case DisplayMode::kStandalone:
+      case UserDisplayMode::kStandalone:
         base::RecordAction(
             base::UserMetricsAction("WebApp.SetWindowMode.Window"));
         break;
-      case DisplayMode::kBrowser:
+      case UserDisplayMode::kBrowser:
         base::RecordAction(base::UserMetricsAction("WebApp.SetWindowMode.Tab"));
         break;
-      case DisplayMode::kTabbed:
+      case UserDisplayMode::kTabbed:
         base::RecordAction(
             base::UserMetricsAction("WebApp.SetWindowMode.Tabbed"));
         break;
-      default:
-        NOTREACHED();
     }
   }
 
-  ScopedRegistryUpdate update(this);
-  WebApp* web_app = update->UpdateApp(app_id);
-  if (web_app)
-    web_app->SetUserDisplayMode(user_display_mode);
+  {
+    ScopedRegistryUpdate update(this);
+    WebApp* web_app = update->UpdateApp(app_id);
+    if (web_app)
+      web_app->SetUserDisplayMode(user_display_mode);
+  }
 
   registrar_->NotifyWebAppUserDisplayModeChanged(app_id, user_display_mode);
 }
@@ -443,11 +446,9 @@ void WebAppSyncBridge::CheckRegistryUpdateData(
 #endif
 }
 
-std::vector<std::unique_ptr<WebApp>> WebAppSyncBridge::UpdateRegistrar(
+void WebAppSyncBridge::UpdateRegistrar(
     std::unique_ptr<RegistryUpdateData> update_data) {
   registrar_->CountMutation();
-
-  std::vector<std::unique_ptr<WebApp>> apps_unregistered;
 
   for (std::unique_ptr<WebApp>& web_app : update_data->apps_to_create) {
     AppId app_id = web_app->app_id();
@@ -468,16 +469,11 @@ std::vector<std::unique_ptr<WebApp>> WebAppSyncBridge::UpdateRegistrar(
     // object pointer value (the object's identity) to support stored pointers.
     *original_web_app = std::move(*web_app);
   }
-
   for (const AppId& app_id : update_data->apps_to_delete) {
     auto it = registrar_->registry().find(app_id);
     DCHECK(it != registrar_->registry().end());
-
-    apps_unregistered.push_back(std::move(it->second));
     registrar_->registry().erase(it);
   }
-
-  return apps_unregistered;
 }
 
 void WebAppSyncBridge::UpdateSync(
@@ -582,7 +578,7 @@ void WebAppSyncBridge::MergeLocalAppsToSync(
   }
 }
 
-void WebAppSyncBridge::ApplySyncDataChange(
+void WebAppSyncBridge::PrepareLocalUpdateFromSyncChange(
     const syncer::EntityChange& change,
     RegistryUpdateData* update_local_data) {
   // app_id is storage key.
@@ -599,12 +595,14 @@ void WebAppSyncBridge::ApplySyncDataChange(
     // Do copy on write:
     auto app_copy = std::make_unique<WebApp>(*existing_web_app);
     app_copy->RemoveSource(WebAppManagement::kSync);
-
-    if (app_copy->HasAnySources())
-      update_local_data->apps_to_update.push_back(std::move(app_copy));
-    else
-      update_local_data->apps_to_delete.push_back(app_id);
-
+    if (!app_copy->HasAnySources()) {
+      // Uninstallation from the local database is a two-phase commit. Setting
+      // this flag to true signals that uninstallation should occur, and then
+      // when all asynchronous uninstallation tasks are complete then the entity
+      // is deleted from the database.
+      app_copy->SetIsUninstalling(true);
+    }
+    update_local_data->apps_to_update.push_back(std::move(app_copy));
     return;
   }
 
@@ -663,31 +661,32 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
     registrar_->NotifyWebAppsWillBeUpdatedFromSync(new_apps_state);
   }
 
+  std::vector<WebApp*> apps_to_install;
+  for (const auto& web_app : update_local_data->apps_to_create)
+    apps_to_install.push_back(web_app.get());
+
+  UpdateRegistrar(std::move(update_local_data));
+
+  std::vector<AppId> apps_to_delete;
+  for (const WebApp& app : registrar_->GetAppsIncludingStubsMutable()) {
+    if (app.is_uninstalling())
+      apps_to_delete.push_back(app.app_id());
+  }
+
   // Initiate any uninstall actions to clean up os integration, disk data, etc.
   // This starts before the registry is updated as some of these functions
   // require the web app data to still exist in the registry. This includes
   // eventually notifying observers of `WebAppWillBeUninstalled` and
   // `WebAppUninstalled`.
-  const std::vector<AppId>& apps_to_delete = update_local_data->apps_to_delete;
   if (!apps_to_delete.empty()) {
     apps_in_sync_uninstall_.insert(apps_to_delete.begin(),
                                    apps_to_delete.end());
     command_manager_->NotifyBeforeSyncUninstalls(apps_to_delete);
-
-    install_delegate_->UninstallWithoutRegistryUpdateFromSync(
+    install_delegate_->UninstallFromSync(
         apps_to_delete,
         base::BindRepeating(&WebAppSyncBridge::WebAppUninstalled,
                             weak_ptr_factory_.GetWeakPtr()));
   }
-
-  std::vector<WebApp*> apps_to_install;
-  for (const auto& web_app : update_local_data->apps_to_create)
-    apps_to_install.push_back(web_app.get());
-
-  // TODO(dmurph): Determine if we these are needed anymore, and if not,
-  // simplify the code to just delete them earlier.
-  std::vector<std::unique_ptr<WebApp>> apps_unregistered =
-      UpdateRegistrar(std::move(update_local_data));
 
   // Do a full follow up install for all remote entities that don’t exist
   // locally.
@@ -711,7 +710,7 @@ absl::optional<syncer::ModelError> WebAppSyncBridge::MergeSyncData(
 
   for (const auto& change : entity_data) {
     DCHECK_NE(change->type(), syncer::EntityChange::ACTION_DELETE);
-    ApplySyncDataChange(*change, update_local_data.get());
+    PrepareLocalUpdateFromSyncChange(*change, update_local_data.get());
   }
 
   MergeLocalAppsToSync(entity_data, metadata_change_list.get());
@@ -734,7 +733,7 @@ absl::optional<syncer::ModelError> WebAppSyncBridge::ApplySyncChanges(
   auto update_local_data = std::make_unique<RegistryUpdateData>();
 
   for (const auto& change : entity_changes)
-    ApplySyncDataChange(*change, update_local_data.get());
+    PrepareLocalUpdateFromSyncChange(*change, update_local_data.get());
 
   database_->Write(
       *update_local_data, std::move(metadata_change_list),

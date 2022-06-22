@@ -19,7 +19,7 @@ function onFlagsInfoReceived(flags) {
   const addEntry = function(flag) {
     const nameLabel = flag['name'];
     const enabledLabel = flag['enabled'];
-    const table = $('flags_table');
+    const table = $('flags-table');
     table.appendChild(createTableRow(nameLabel, enabledLabel));
     // If they exist, also list feature parameters.
     if ('parameters' in flag) {
@@ -35,7 +35,7 @@ function onScriptFetchingInfoReceived(scriptFetcherInfo) {
   if (!scriptFetcherInfo) {
     return;
   }
-  const table = $('script_fetching_table');
+  const table = $('script-fetching-table');
   for (const [key, value] of Object.entries(scriptFetcherInfo)) {
     table.appendChild(createTableRow(key, value));
   }
@@ -45,10 +45,43 @@ function onAutofillAssistantInfoReceived(autofillAssistantInfo) {
   if (!autofillAssistantInfo) {
     return;
   }
-  const table = $('autofill_assistant_table');
+  const table = $('autofill-assistant-table');
   for (const [key, value] of Object.entries(autofillAssistantInfo)) {
     table.appendChild(createTableRow(key, value));
   }
+}
+
+function hideScriptCache() {
+  const element = $('script-cache-content');
+  element.textContent = 'Cache not shown.';
+}
+
+function showScriptCache() {
+  chrome.send('get-script-cache');
+}
+
+function refreshScriptCache() {
+  chrome.send('refresh-script-cache');
+}
+
+function onScriptCacheReceived(scriptsCacheInfo) {
+  const element = $('script-cache-content');
+  if (!scriptsCacheInfo.length) {
+    element.textContent = 'Cache is empty.';
+    return;
+  }
+
+  const table = document.createElement('table');
+  for (const cacheEntry of scriptsCacheInfo) {
+    const columns = [cacheEntry['url']];
+    if ('has_script' in cacheEntry) {
+      columns.push(cacheEntry['has_script'] ? 'Available' : 'Not available');
+    }
+
+    const row = createTableRow(...columns);
+    table.appendChild(row);
+  }
+  element.replaceChildren(table);
 }
 
 document.addEventListener('DOMContentLoaded', function(event) {
@@ -58,6 +91,12 @@ document.addEventListener('DOMContentLoaded', function(event) {
   addWebUIListener(
       'on-autofill-assistant-information-received',
       onAutofillAssistantInfoReceived);
+  addWebUIListener('on-script-cache-received', onScriptCacheReceived);
+
+  hideScriptCache();
+  $('script-cache-hide').onclick = hideScriptCache;
+  $('script-cache-show').onclick = showScriptCache;
+  $('script-cache-refresh').onclick = refreshScriptCache;
 
   chrome.send('loaded');
 });

@@ -20,7 +20,6 @@
 #include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -45,15 +44,6 @@ gfx::ImageSkiaRep ScaleImageSkiaRep(const gfx::ImageSkiaRep& rep,
       target_scale);
 }
 
-// Make sure the background color is opaque. See http://crbug.com/619499
-SkColor GetBadgeBackgroundColor(IconWithBadgeImageSource::Badge* badge,
-                                const ui::ColorProvider* color_provider) {
-  return SkColorGetA(badge->background_color) == SK_AlphaTRANSPARENT
-             ? color_provider->GetColor(
-                   kColorExtensionIconBadgeBackgroundDefault)
-             : SkColorSetA(badge->background_color, SK_AlphaOPAQUE);
-}
-
 float GetBlockedActionBadgeRadius() {
   return 12.0f;
 }
@@ -69,13 +59,12 @@ IconWithBadgeImageSource::Badge::~Badge() {}
 
 IconWithBadgeImageSource::IconWithBadgeImageSource(
     const gfx::Size& size,
-    GetColorProviderCallback get_color_provider_callback)
-    : gfx::CanvasImageSource(size),
-      get_color_provider_callback_(std::move(get_color_provider_callback)) {
-  DCHECK(get_color_provider_callback_);
+    const ui::ColorProvider* color_provider)
+    : gfx::CanvasImageSource(size), color_provider_(color_provider) {
+  CHECK(color_provider_);
 }
 
-IconWithBadgeImageSource::~IconWithBadgeImageSource() = default;
+IconWithBadgeImageSource::~IconWithBadgeImageSource() {}
 
 void IconWithBadgeImageSource::SetIcon(const gfx::Image& icon) {
   icon_ = icon;
@@ -87,12 +76,10 @@ void IconWithBadgeImageSource::SetBadge(std::unique_ptr<Badge> badge) {
   if (!badge_ || badge_->text.empty())
     return;
 
-  // Generate the badge's render text. Make sure it contrasts with the badge
-  // background.
+  // Generate the badge's render text.
   SkColor text_color =
       SkColorGetA(badge_->text_color) == SK_AlphaTRANSPARENT
-          ? color_utils::GetColorWithMaxContrast(GetBadgeBackgroundColor(
-                badge_.get(), get_color_provider_callback_.Run()))
+          ? color_provider_->GetColor(kColorExtensionIconBadgeForegroundDefault)
           : badge_->text_color;
 
   constexpr int kBadgeHeight = 12;
@@ -190,8 +177,11 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
   if (!badge_text_)
     return;
 
+  // Make sure the background color is opaque. See http://crbug.com/619499
   SkColor background_color =
-      GetBadgeBackgroundColor(badge_.get(), get_color_provider_callback_.Run());
+      SkColorGetA(badge_->background_color) == SK_AlphaTRANSPARENT
+          ? color_provider_->GetColor(kColorExtensionIconBadgeBackgroundDefault)
+          : SkColorSetA(badge_->background_color, SK_AlphaOPAQUE);
   cc::PaintFlags rect_flags;
   rect_flags.setStyle(cc::PaintFlags::kFill_Style);
   rect_flags.setAntiAlias(true);
@@ -223,14 +213,13 @@ void IconWithBadgeImageSource::PaintBlockedActionDecoration(
   // to double the CSS-based blur values.
   constexpr int kBlurCorrection = 2;
 
-  const ui::ColorProvider* color_provider = get_color_provider_callback_.Run();
   const gfx::ShadowValue key_shadow(
       gfx::Vector2d(0, 1), kBlurCorrection * 2 /*blur*/,
-      color_provider->GetColor(kColorExtensionIconDecorationKeyShadow));
+      color_provider_->GetColor(kColorExtensionIconDecorationKeyShadow));
 
   const gfx::ShadowValue ambient_shadow(
       gfx::Vector2d(0, 2), kBlurCorrection * 6 /*blur*/,
-      color_provider->GetColor(kColorExtensionIconDecorationAmbientShadow));
+      color_provider_->GetColor(kColorExtensionIconDecorationAmbientShadow));
 
   const float blocked_action_badge_radius = GetBlockedActionBadgeRadius();
 
@@ -243,7 +232,7 @@ void IconWithBadgeImageSource::PaintBlockedActionDecoration(
   paint_flags.setStyle(cc::PaintFlags::kFill_Style);
   paint_flags.setAntiAlias(true);
   paint_flags.setColor(
-      color_provider->GetColor(kColorExtensionIconDecorationBackground));
+      color_provider_->GetColor(kColorExtensionIconDecorationBackground));
   paint_flags.setLooper(
       gfx::CreateShadowDrawLooper({key_shadow, ambient_shadow}));
 

@@ -25,7 +25,7 @@
 #include "components/autofill_assistant/android/jni_headers_public/AssistantAutofillCreditCard_jni.h"
 #include "components/autofill_assistant/android/jni_headers_public/AssistantAutofillProfile_jni.h"
 #include "components/autofill_assistant/browser/android/client_android.h"
-#include "components/autofill_assistant/browser/android/dependencies.h"
+#include "components/autofill_assistant/browser/android/dependencies_android.h"
 #include "components/autofill_assistant/browser/generic_ui_java_generated_enums.h"
 #include "components/autofill_assistant/browser/service/service.h"
 #include "components/autofill_assistant/browser/service/service_request_sender.h"
@@ -172,7 +172,7 @@ int GetPixelSizeOrDefault(JNIEnv* env,
 base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
     JNIEnv* env,
     const JavaRef<jobject>& jcontext,
-    const Dependencies& dependencies,
+    const DependenciesAndroid& dependencies,
     const DrawableProto& proto,
     const UserModel* user_model) {
   switch (proto.drawable_case()) {
@@ -724,7 +724,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateAssistantAutofillCreditCard(
       credit_card.instrument_id(),
       ConvertUTF16ToJavaString(env, credit_card.nickname()),
       url::GURLAndroid::FromNativeGURL(env, credit_card.card_art_url()),
-      static_cast<jint>(credit_card.virtual_card_enrollment_state()));
+      static_cast<jint>(credit_card.virtual_card_enrollment_state()),
+      ConvertUTF16ToJavaString(env, credit_card.product_description()));
 }
 
 void PopulateAutofillCreditCardFromJava(
@@ -792,6 +793,9 @@ void PopulateAutofillCreditCardFromJava(
       static_cast<autofill::CreditCard::VirtualCardEnrollmentState>(
           Java_AssistantAutofillCreditCard_getVirtualCardEnrollmentState(
               env, jcredit_card)));
+  credit_card->set_product_description(ConvertJavaStringToUTF16(
+      Java_AssistantAutofillCreditCard_getProductDescription(env,
+                                                             jcredit_card)));
 }
 
 }  // namespace ui_controller_android_utils

@@ -28,15 +28,10 @@ extern const char kLoadedHintLocalHistogramString[];
 // The folder where the hint data will be stored on disk.
 extern const base::FilePath::CharType kOptimizationGuideHintStore[];
 
-// The folder where the prediction model and associated metadata are
-// currently stored on disk. This is per profile.
+// The folder where the prediction model and host model features data will be
+// stored on disk.
 extern const base::FilePath::CharType
-    kOptimizationGuidePredictionModelMetadataStore[];
-
-// The folder where the prediction model downloads are stored. This is per
-// profile.
-extern const base::FilePath::CharType
-    kOptimizationGuidePredictionModelDownloads[];
+    kOptimizationGuidePredictionModelAndFeaturesStore[];
 
 // The folder where the page entities metadata store will be stored on disk.
 extern const base::FilePath::CharType kPageEntitiesMetadataStore[];

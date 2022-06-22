@@ -5,13 +5,20 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding-inline-end: 40px;
-    padding-inline-start: var(--page-left-margin);
+    padding-bottom: var(--container-vertical-padding);
+    padding-inline: var(--container-horizontal-padding);
+    padding-top: var(--container-vertical-padding);
     width: 100%;
   }
 
+  #header,
+  #contentContainer,
+  #footer {
+    padding-inline: var(--content-container-padding);
+  }
+
   #contentContainer {
-    flex-grow: 1;
+    min-height: var(--content-container-height);
   }
 
   .shimless-content {
@@ -19,18 +26,19 @@
     width: 100%;
   }
 
-  .shimless-footer {
-    height: var(--footer-height);
+  #footer {
+    min-height: var(--header-footer-height);
     text-align: end;
   }
 
-  .shimless-header {
-    height: 80px;
+  #header {
+    min-height: var(--header-footer-height);
   }
 
   #back {
     border: 0;
     height: 100%;
+    padding-inline-start: 0;
   }
 
   #next {
@@ -48,15 +56,20 @@
     width: 20px;
   }
 
+  .button-icon {
+    height: var(--cr-icon-size);
+    width: var(--cr-icon-size);
+  }
+
   #cancelButtonSpinner,
   #nextButtonCaret,
   #nextButtonSpinner {
-    margin-inline-start: 5px;
+    margin-inline-start: 8px;
   }
 
   #backButtonCaret,
   #backButtonSpinner {
-    margin-inline-end: 5px;
+    margin-inline-end: 8px;
   }
 
   #busyStateOverlay {
@@ -76,7 +89,7 @@
 
 <div id="shimlessRMAContainer">
   <div id="busyStateOverlay"></div>
-  <div class="shimless-header">
+  <div id="header">
     <cr-button
       id="back" on-click="onBackButtonClicked_"
       disabled="[[isButtonDisabled_(currentPage_.buttonBack, allButtonsDisabled_)]]"
@@ -84,22 +97,22 @@
       <paper-spinner-lite id="backButtonSpinner" class="busy-icon"
           hidden$="[[!backButtonClicked_]]" active>
       </paper-spinner-lite>
-      <span id="backButtonCaret" hidden$="[[backButtonClicked_]]">
-        &#60;
-      </span>
+      <iron-icon id="backButtonCaret" icon="cr:chevron-left"
+          class="button-icon" hidden$="[[backButtonClicked_]]">
+      </iron-icon>
       <span id="backButtonLabel">
         [[i18n('backButtonLabel')]]
       </span>
     </cr-button>
   </div>
   <div id="contentContainer"></div>
-  <div class="shimless-footer">
+  <div id="footer">
     <cr-button
       id="cancel" class="pill" on-click="onCancelButtonClicked_"
       disabled="[[isButtonDisabled_(currentPage_.buttonCancel, allButtonsDisabled_)]]"
       hidden$="[[isButtonHidden_(currentPage_.buttonCancel)]]">
       <span id="cancelButtonLabel">
-        [[i18n('cancelButtonLabel')]]
+        [[getCancelButtonLabel_(currentPage_.buttonCancelLabelKey)]]
       </span>
       <paper-spinner-lite id="cancelButtonSpinner" class="busy-icon"
           hidden$="[[!cancelButtonClicked_]]" active>
@@ -115,9 +128,9 @@
       <paper-spinner-lite id="nextButtonSpinner" class="busy-icon"
           hidden$="[[!nextButtonClicked_]]" active>
       </paper-spinner-lite>
-      <span id="nextButtonCaret" hidden$="[[nextButtonClicked_]]">
-        &#62;
-      </span>
+      <iron-icon id="nextButtonCaret" icon="cr:chevron-right"
+          class="button-icon" hidden$="[[nextButtonClicked_]]">
+      </iron-icon>
     </cr-button>
   </div>
 </div>

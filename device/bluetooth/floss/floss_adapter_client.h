@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "dbus/exported_object.h"
 #include "dbus/object_path.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
 
@@ -36,6 +37,13 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
     kAuto = 0,
     kBrEdr = 1,
     kLe = 2,
+  };
+
+  enum class BluetoothDeviceType {
+    kUnknown = 0,
+    kBredr = 1,
+    kBle = 2,
+    kDual = 3,
   };
 
   enum class BluetoothSspVariant {
@@ -92,6 +100,11 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
     // get the same device twice).
     virtual void AdapterFoundDevice(const FlossDeviceId& device_found) {}
 
+    // Notification sent when a found device is cleared. It will be sent when
+    // a device found during discovery is determined to be stale (was last seen
+    // some amount of time ago).
+    virtual void AdapterClearedDevice(const FlossDeviceId& device_cleared) {}
+
     // Notification sent for Simple Secure Pairing.
     virtual void AdapterSspRequest(const FlossDeviceId& remote_device,
                                    uint32_t cod,
@@ -126,6 +139,10 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
   // of dict entries with a signature of a{sv}).
   static void SerializeFlossDeviceId(dbus::MessageWriter* writer,
                                      const FlossDeviceId& device);
+
+  // Parses |BluetoothUUID| from DBus.
+  static bool ParseUUID(dbus::MessageReader* reader,
+                        device::BluetoothUUID* uuid);
 
   FlossAdapterClient(const FlossAdapterClient&) = delete;
   FlossAdapterClient& operator=(const FlossAdapterClient&) = delete;
@@ -173,10 +190,23 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
   virtual void RemoveBond(ResponseCallback<bool> callback,
                           FlossDeviceId device);
 
+  // Gets the transport type of the device.
+  virtual void GetRemoteType(ResponseCallback<BluetoothDeviceType> callback,
+                             FlossDeviceId device);
+
+  // Gets class of a device.
+  virtual void GetRemoteClass(ResponseCallback<uint32_t> callback,
+                              FlossDeviceId device);
+
   // Get connection state of a device.
   // TODO(b/202334519): Change return type to enum instead of u32
   virtual void GetConnectionState(ResponseCallback<uint32_t> callback,
                                   const FlossDeviceId& device);
+
+  // Gets UUIDs of a device.
+  virtual void GetRemoteUuids(
+      ResponseCallback<device::BluetoothDevice::UUIDList> callback,
+      FlossDeviceId device);
 
   // Get bonding state of a device.
   virtual void GetBondState(ResponseCallback<uint32_t> callback,
@@ -185,6 +215,10 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
   // Connect to all enabled profiles.
   virtual void ConnectAllEnabledProfiles(ResponseCallback<Void> callback,
                                          const FlossDeviceId& device);
+
+  // Disconnect all enabled profiles.
+  virtual void DisconnectAllEnabledProfiles(ResponseCallback<Void> callback,
+                                            const FlossDeviceId& device);
 
   // Indicates whether the user approves the pairing, if accepted then a pairing
   // should be completed on the remote device.
@@ -252,6 +286,10 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
   // Handle callback |OnDeviceFound| on exported object path.
   void OnDeviceFound(dbus::MethodCall* method_call,
                      dbus::ExportedObject::ResponseSender response_sender);
+
+  // Handle callback |OnDeviceCleared| on exported object path.
+  void OnDeviceCleared(dbus::MethodCall* method_call,
+                       dbus::ExportedObject::ResponseSender response_sender);
 
   // Handle callback |OnSspRequest| on exported object path.
   void OnSspRequest(dbus::MethodCall* method_call,

@@ -237,10 +237,6 @@ String SerializeTransceiver(const RTCRtpTransceiverPlatform& transceiver) {
     result.Append("  receiver:");
     result.Append(SerializeReceiver("  ", *transceiver.Receiver()));
     result.Append(",\n");
-    // stopped:false,
-    result.Append("  stopped:");
-    result.Append(SerializeBoolean(transceiver.Stopped()));
-    result.Append(",\n");
     // direction:'sendrecv',
     result.Append("  direction:");
     result.Append(SerializeDirection(transceiver.Direction()));
@@ -749,7 +745,7 @@ void PeerConnectionTracker::GetLegacyStats() {
             pair.value, main_thread_task_runner_,
             CrossThreadBindOnce(&PeerConnectionTracker::AddLegacyStats,
                                 WrapCrossThreadWeakPersistent(this))));
-    pair.key->GetStats(observer,
+    pair.key->GetStats(observer.get(),
                        webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
                        nullptr);
   }

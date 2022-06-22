@@ -1034,8 +1034,8 @@ util.getRootTypeLabel = locationInfo => {
     // Drive or subdirectory under it, but not the Shared Drives grand
     // directory. Every Shared Drive and its subdirectories always have
     // individual names (locationInfo.hasFixedLabel is false). So
-    // getRootTypeLabel() is only used by LocationLine.show() to display the
-    // ancestor name in the location line like this:
+    // getRootTypeLabel() is only used by BreadcrumbController.show() to display
+    // the ancestor name in the breadcrumb like this:
     //   Shared Drives > ABC Shared Drive > Folder1
     //   ^^^^^^^^^^^
     // By this reason, we return the label of the Shared Drives grand root here.
@@ -1324,14 +1324,6 @@ util.isSinglePartitionFormatEnabled = () => {
 };
 
 /**
- * Returns true if  flag is enabled.
- * @return {boolean}
- */
-util.isVideoPlayerJsModulesEnabled = () => {
-  return loadTimeData.getBoolean('VIDEO_PLAYER_JS_MODULES_ENABLED');
-};
-
-/**
  * Returns true if FilesExtractArchive flag is enabled.
  * @return {boolean}
  */
@@ -1345,6 +1337,16 @@ util.isExtractArchiveEnabled = () => {
  */
 util.isFuseBoxEnabled = () => {
   return loadTimeData.getBoolean('FUSEBOX');
+};
+
+/**
+ * Returns true if FuseBoxDebug flag is enabled.
+ * @return {boolean}
+ */
+util.isFuseBoxDebugEnabled = () => {
+  return loadTimeData.isInitialized() &&
+      loadTimeData.valueExists('FUSEBOX_DEBUG') &&
+      loadTimeData.getBoolean('FUSEBOX_DEBUG');
 };
 
 /**

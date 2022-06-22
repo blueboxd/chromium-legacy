@@ -37,8 +37,9 @@ class QuotaInternalsWebUiBrowserTest : public ContentBrowserTest {
 };
 
 // Ensures that the page is loaded correctly.
+// https://crbug.com/1322015: flaky.
 IN_PROC_BROWSER_TEST_F(QuotaInternalsWebUiBrowserTest,
-                       NavigationUrl_ResolvedToWebUI) {
+                       DISABLED_NavigationUrl_ResolvedToWebUI) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kQuotaInternalsUrl)));
   EXPECT_TRUE(
       ExecJsInWebUI("document.body.innerHTML.search('Total Space') >= 0;"));
@@ -81,6 +82,10 @@ IN_PROC_BROWSER_TEST_F(QuotaInternalsWebUiBrowserTest,
   EXPECT_TRUE(
       ExecJsInWebUI("document.getElementsByClassName('syncable-global-and-"
                     "unlimited-usage') >= 0;"));
+  EXPECT_TRUE(
+      ExecJsInWebUI("document.body.innerHTML.search('Temp Pool Size') >= 0;"));
+  EXPECT_TRUE(
+      ExecJsInWebUI("document.getElementsByClassName('temp-pool-size') >= 0;"));
 }
 
 }  // namespace content

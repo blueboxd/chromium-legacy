@@ -13,17 +13,19 @@ import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import '../../common/icons.js';
 import './styles.js';
 
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {isNonEmptyArray} from '../../common/utils.js';
+import {getLocalStorageAttribution, isNonEmptyArray} from '../../common/utils.js';
 import {CurrentWallpaper, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {Paths} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {getWallpaperLayoutEnum, hasHttpScheme, removeHighResolutionSuffix} from '../utils.js';
 
-import {getDailyRefreshCollectionId, setCurrentWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './wallpaper_controller.js';
+import {getDailyRefreshState, selectGooglePhotosAlbum, setCurrentWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 import {getTemplate} from './wallpaper_selected_element.html.js';
+import {DailyRefreshState} from './wallpaper_state.js';
 
 export class WallpaperSelected extends WithPersonalizationStore {
   static get is() {
@@ -42,6 +44,11 @@ export class WallpaperSelected extends WithPersonalizationStore {
       collectionId: String,
 
       /**
+       * The current Google Photos Album id to display.
+       */
+      googlePhotosAlbumId: String,
+
+      /**
        * The current path of the page.
        */
       path: String,
@@ -53,7 +60,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
 
       imageTitle_: {
         type: String,
-        computed: 'computeImageTitle_(image_, dailyRefreshCollectionId_)',
+        computed: 'computeImageTitle_(image_, dailyRefreshState_)',
       },
 
       imageOtherAttribution_: {
@@ -61,7 +68,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
         computed: 'computeImageOtherAttribution_(image_)',
       },
 
-      dailyRefreshCollectionId_: String,
+      dailyRefreshState_: Object,
 
       isLoading_: Boolean,
 
@@ -77,7 +84,8 @@ export class WallpaperSelected extends WithPersonalizationStore {
 
       showWallpaperOptions_: {
         type: Boolean,
-        computed: 'computeShowWallpaperOptions_(image_, path)',
+        computed:
+            'computeShowWallpaperOptions_(image_, path, googlePhotosAlbumId)',
       },
 
       showCollectionOptions_: {
@@ -85,21 +93,27 @@ export class WallpaperSelected extends WithPersonalizationStore {
         computed: 'computeShowCollectionOptions_(path)',
       },
 
+      showDailyRefreshButton_: {
+        type: Boolean,
+        computed: 'isDailyRefreshable_(path,googlePhotosAlbumId)',
+      },
+
       showRefreshButton_: {
         type: Boolean,
         computed:
-            'isDailyRefreshCollectionId_(collectionId,dailyRefreshCollectionId_)',
+            'computeShowRefreshButton_(collectionId,googlePhotosAlbumId,dailyRefreshState_)',
       },
 
       dailyRefreshIcon_: {
         type: String,
         computed:
-            'computeDailyRefreshIcon_(collectionId,dailyRefreshCollectionId_)',
+            'computeDailyRefreshIcon_(collectionId,googlePhotosAlbumId,dailyRefreshState_)',
       },
 
       ariaPressed_: {
         type: String,
-        computed: 'computeAriaPressed_(collectionId,dailyRefreshCollectionId_)',
+        computed:
+            'computeAriaPressed_(collectionId,googlePhotosAlbumId,dailyRefreshState_)',
       },
 
       fillIcon_: {
@@ -126,12 +140,16 @@ export class WallpaperSelected extends WithPersonalizationStore {
     };
   }
 
-  collectionId: string;
+  // Only one of |collectionId| and |googlePhotosAlbumId| should ever be set,
+  // since we can't be in a Backdrop collection or a Google Photos album
+  // simultaneously
+  collectionId: string|undefined;
+  googlePhotosAlbumId: string|undefined;
   path: string;
   private image_: CurrentWallpaper|null;
   private imageTitle_: string;
   private imageOtherAttribution_: string[];
-  private dailyRefreshCollectionId_: string|null;
+  private dailyRefreshState_: DailyRefreshState|null;
   private isLoading_: boolean;
   private hasError_: boolean;
   private showImage_: boolean;
@@ -161,11 +179,9 @@ export class WallpaperSelected extends WithPersonalizationStore {
         state => state.wallpaper.loading.setImage > 0 ||
             state.wallpaper.loading.selected ||
             state.wallpaper.loading.refreshWallpaper);
-    this.watch(
-        'dailyRefreshCollectionId_',
-        state => state.wallpaper.dailyRefresh.collectionId);
+    this.watch('dailyRefreshState_', state => state.wallpaper.dailyRefresh);
     this.updateFromStore();
-    getDailyRefreshCollectionId(this.wallpaperProvider_, this.getStore());
+    getDailyRefreshState(this.wallpaperProvider_, this.getStore());
   }
 
 
@@ -191,23 +207,26 @@ export class WallpaperSelected extends WithPersonalizationStore {
   }
 
   private computeImageTitle_(
-      image: CurrentWallpaper|null, dailyRefreshCollectionId: string): string {
+      image: CurrentWallpaper|null,
+      dailyRefreshState: DailyRefreshState|null): string {
     if (!image) {
       return this.i18n('unknownImageAttribution');
     }
+    if (image.type === WallpaperType.kDefault) {
+      return this.i18n('defaultWallpaper');
+    }
+    const isDailyRefreshActive = !!dailyRefreshState;
     if (isNonEmptyArray(image.attribution)) {
       const title = image.attribution[0];
-      return dailyRefreshCollectionId ?
-          this.i18n('dailyRefresh') + ': ' + title :
-          title;
+      return isDailyRefreshActive ? this.i18n('dailyRefresh') + ': ' + title :
+                                    title;
     } else {
       // Fallback to cached attribution.
-      const attribution = this.getLocalStorageAttribution(image.key);
+      const attribution = getLocalStorageAttribution(image.key);
       if (isNonEmptyArray(attribution)) {
         const title = attribution[0];
-        return dailyRefreshCollectionId ?
-            this.i18n('dailyRefresh') + ': ' + title :
-            title;
+        return isDailyRefreshActive ? this.i18n('dailyRefresh') + ': ' + title :
+                                      title;
       }
     }
     return this.i18n('unknownImageAttribution');
@@ -222,7 +241,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
       return image.attribution.slice(1);
     }
     // Fallback to cached attribution.
-    const attribution = this.getLocalStorageAttribution(image.key);
+    const attribution = getLocalStorageAttribution(image.key);
     if (isNonEmptyArray(attribution)) {
       return attribution.slice(1);
     }
@@ -230,16 +249,27 @@ export class WallpaperSelected extends WithPersonalizationStore {
   }
 
   private computeShowWallpaperOptions_(
-      image: CurrentWallpaper|null, path: string): boolean {
+      image: CurrentWallpaper|null, path: string,
+      googlePhotosAlbumId: string): boolean {
     return !!image &&
         ((image.type === WallpaperType.kCustomized &&
-              path === Paths.LocalCollection ||
-          (image.type === WallpaperType.kGooglePhotos &&
-           path === Paths.GooglePhotosCollection)));
+              path === Paths.LOCAL_COLLECTION ||
+          (image.type === WallpaperType.kOnceGooglePhotos &&
+           path === Paths.GOOGLE_PHOTOS_COLLECTION && !googlePhotosAlbumId)));
   }
 
   private computeShowCollectionOptions_(path: string): boolean {
-    return path === Paths.CollectionImages;
+    return path === Paths.COLLECTION_IMAGES ||
+        path === Paths.GOOGLE_PHOTOS_COLLECTION;
+  }
+
+  private computeShowRefreshButton_(
+      collectionId: string|undefined, googlePhotosAlbumId: string|undefined,
+      dailyRefreshState: DailyRefreshState|null) {
+    return (!collectionId && !googlePhotosAlbumId) ?
+        false :
+        this.isDailyRefreshId_(
+            collectionId! || googlePhotosAlbumId!, dailyRefreshState);
   }
 
   private getCenterAriaPressed_(image: CurrentWallpaper): string {
@@ -272,37 +302,48 @@ export class WallpaperSelected extends WithPersonalizationStore {
   }
 
   private computeDailyRefreshIcon_(
-      collectionId: string, dailyRefreshCollectionId: string): string {
-    if (this.isDailyRefreshCollectionId_(
-            collectionId, dailyRefreshCollectionId)) {
+      collectionId: string, googlePhotosAlbumId: string,
+      dailyRefreshState: DailyRefreshState|null): string {
+    if (this.isDailyRefreshId_(
+            collectionId || googlePhotosAlbumId, dailyRefreshState)) {
       return 'personalization:checkmark';
     }
     return 'personalization:change-daily';
   }
 
   private computeAriaPressed_(
-      collectionId: string, dailyRefreshCollectionId: string): string {
-    if (this.isDailyRefreshCollectionId_(
-            collectionId, dailyRefreshCollectionId)) {
+      collectionId: string|undefined, googlePhotosAlbumId: string|undefined,
+      dailyRefreshState: DailyRefreshState|null): string {
+    if (this.isDailyRefreshId_(
+            collectionId || googlePhotosAlbumId, dailyRefreshState)) {
       return 'true';
     }
     return 'false';
   }
 
-  private onClickDailyRefreshToggle_(event: Event) {
-    const eventTarget = event.currentTarget as HTMLElement;
-    const collectionId = eventTarget.dataset['collectionId'];
-    const dailyRefreshCollectionId =
-        eventTarget.dataset['dailyRefreshCollectionId'];
-    const isDailyRefreshCollectionId = this.isDailyRefreshCollectionId_(
-        collectionId!, dailyRefreshCollectionId!);
-    setDailyRefreshCollectionId(
-        isDailyRefreshCollectionId ? '' : collectionId!,
-        this.wallpaperProvider_, this.getStore());
-    // Only refresh the wallpaper if daily refresh is toggled on.
-    if (!isDailyRefreshCollectionId) {
-      updateDailyRefreshWallpaper(this.wallpaperProvider_, this.getStore());
+  private onClickDailyRefreshToggle_() {
+    const isDailyRefreshId = this.isDailyRefreshId_(
+        this.collectionId || this.googlePhotosAlbumId, this.dailyRefreshState_);
+    if (this.googlePhotosAlbumId) {
+      assert(!this.collectionId);
+      selectGooglePhotosAlbum(
+          isDailyRefreshId ? '' : this.googlePhotosAlbumId,
+          this.wallpaperProvider_, this.getStore());
+    } else {
+      setDailyRefreshCollectionId(
+          isDailyRefreshId ? '' : this.collectionId!, this.wallpaperProvider_,
+          this.getStore());
+      // Only refresh the wallpaper if daily refresh is toggled on.
+      if (!isDailyRefreshId) {
+        updateDailyRefreshWallpaper(this.wallpaperProvider_, this.getStore());
+      }
     }
+  }
+
+  private isDailyRefreshable_(
+      path: string, googlePhotosAlbumId: string|undefined) {
+    return path === Paths.COLLECTION_IMAGES ||
+        (path === Paths.GOOGLE_PHOTOS_COLLECTION && !!googlePhotosAlbumId);
   }
 
   /**
@@ -310,9 +351,10 @@ export class WallpaperSelected extends WithPersonalizationStore {
    * enabled with daily refresh. If true, highlight the toggle and display the
    * refresh button
    */
-  private isDailyRefreshCollectionId_(
-      collectionId: string, dailyRefreshCollectionId: string): boolean {
-    return collectionId === dailyRefreshCollectionId;
+  private isDailyRefreshId_(
+      id: string|undefined,
+      dailyRefreshState: DailyRefreshState|null): boolean {
+    return dailyRefreshState ? id === dailyRefreshState.id : false;
   }
 
   private onClickUpdateDailyRefreshWallpaper_() {
@@ -330,18 +372,34 @@ export class WallpaperSelected extends WithPersonalizationStore {
     return (!loading || !!error) && !image;
   }
 
-  private getAriaLabel_(image: CurrentWallpaper|null): string {
+  private getAriaLabel_(
+      image: CurrentWallpaper|null,
+      dailyRefreshState: DailyRefreshState|null): string {
     if (!image) {
       return this.i18n('currentlySet') + ' ' +
           this.i18n('unknownImageAttribution');
     }
+    if (image.type === WallpaperType.kDefault) {
+      return `${this.i18n('currentlySet')} ${this.i18n('defaultWallpaper')}`;
+    }
+    const isDailyRefreshActive = !!dailyRefreshState;
     if (isNonEmptyArray(image.attribution)) {
-      return [this.i18n('currentlySet'), ...image.attribution].join(' ');
+      return isDailyRefreshActive ?
+          [
+            this.i18n('currentlySet'), this.i18n('dailyRefresh'),
+            ...image.attribution
+          ].join(' ') :
+          [this.i18n('currentlySet'), ...image.attribution].join(' ');
     }
     // Fallback to cached attribution.
-    const attribution = this.getLocalStorageAttribution(image.key);
+    const attribution = getLocalStorageAttribution(image.key);
     if (isNonEmptyArray(attribution)) {
-      return [this.i18n('currentlySet'), ...attribution].join(' ');
+      return isDailyRefreshActive ?
+          [
+            this.i18n('currentlySet'), this.i18n('dailyRefresh'),
+            ...image.attribution
+          ].join(' ') :
+          [this.i18n('currentlySet'), ...attribution].join(' ');
     }
     return this.i18n('currentlySet') + ' ' +
         this.i18n('unknownImageAttribution');
@@ -372,16 +430,6 @@ export class WallpaperSelected extends WithPersonalizationStore {
       }
       window.localStorage['attribution'] = JSON.stringify(attributionMap);
     }
-  }
-
-  getLocalStorageAttribution(key: string): string[] {
-    const attributionMap =
-        JSON.parse((window.localStorage['attribution'] || '{}'));
-    const attribution = attributionMap[key];
-    if (!attribution) {
-      console.warn('Unable to get attribution from local storage.', key);
-    }
-    return attribution;
   }
 
   /**

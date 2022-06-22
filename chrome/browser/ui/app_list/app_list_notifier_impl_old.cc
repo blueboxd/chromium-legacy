@@ -39,6 +39,14 @@ void AppListNotifierImplOld::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void AppListNotifierImplOld::NotifyContinueSectionVisibilityChanged(
+    Location location,
+    bool visible) {
+  // App list is not expected to have continue section when "old" app list
+  // notifier is active.
+  NOTREACHED();
+}
+
 void AppListNotifierImplOld::NotifyLaunched(Location location,
                                             const Result& result) {
   launched_result_ = result;
@@ -78,6 +86,14 @@ void AppListNotifierImplOld::NotifySearchQueryChanged(
   for (auto& observer : observers_) {
     observer.OnQueryChanged(query);
   }
+}
+
+bool AppListNotifierImplOld::FireImpressionTimerForTesting(Location location) {
+  auto timer_it = timers_.find(location);
+  if (timer_it == timers_.end() || !timer_it->second->IsRunning())
+    return false;
+  timer_it->second->FireNow();
+  return true;
 }
 
 void AppListNotifierImplOld::OnViewStateChanged(ash::AppListViewState view) {

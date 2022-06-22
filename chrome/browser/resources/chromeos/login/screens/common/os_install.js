@@ -75,9 +75,7 @@ class OsInstall extends OsInstallScreenElementBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('OsInstallScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('OsInstallScreen');
   }
 
   /**
@@ -121,15 +119,6 @@ class OsInstall extends OsInstallScreenElementBase {
   onCloseConfirmDialogButtonPressed_() {
     this.$.osInstallDialogConfirm.hideDialog();
     this.$.osInstallIntroNextButton.focus();
-  }
-
-  /**
-   * @param {string} locale
-   * @return {string}
-   * @private
-   */
-  getConfirmBodyHtml_(locale) {
-    return this.i18nAdvanced('osInstallDialogConfirmBody');
   }
 
   /**

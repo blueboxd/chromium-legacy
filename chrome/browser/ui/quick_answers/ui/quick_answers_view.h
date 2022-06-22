@@ -62,7 +62,7 @@ class QuickAnswersView : public views::View {
   void InitLayout();
   void InitWidget();
   void AddContentView();
-  void AddSettingsButton();
+  void AddFrameButtons();
   void AddPhoneticsAudioButton(
       const quick_answers::PhoneticsInfo& phonetics_info,
       View* container);
@@ -92,6 +92,7 @@ class QuickAnswersView : public views::View {
   views::View* report_query_view_ = nullptr;
   views::Label* first_answer_label_ = nullptr;
   views::LabelButton* retry_label_ = nullptr;
+  views::ImageButton* dogfood_feedback_button_ = nullptr;
   views::ImageButton* settings_button_ = nullptr;
   views::ImageButton* phonetics_audio_button_ = nullptr;
 

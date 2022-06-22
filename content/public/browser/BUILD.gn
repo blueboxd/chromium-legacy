@@ -167,7 +167,6 @@ source_set("browser_sources") {
     "feature_observer_client.h",
     "federated_identity_active_session_permission_context_delegate.h",
     "federated_identity_api_permission_context_delegate.h",
-    "federated_identity_request_permission_context_delegate.h",
     "federated_identity_sharing_permission_context_delegate.h",
     "file_select_listener.h",
     "file_system_access_entry_factory.h",
@@ -284,8 +283,6 @@ source_set("browser_sources") {
     "permission_controller.h",
     "permission_controller_delegate.cc",
     "permission_controller_delegate.h",
-    "permission_type.cc",
-    "permission_type.h",
     "picture_in_picture_window_controller.h",
     "platform_notification_context.h",
     "platform_notification_service.h",
@@ -453,6 +450,7 @@ source_set("browser_sources") {
     "//build:chromecast_buildflags",
     "//components/browsing_topics/common:common",
     "//components/download/public/common:public",
+    "//components/services/storage/privileged/mojom",
     "//components/services/storage/public/mojom",
     "//content/public/common:common_sources",
     "//device/vr/buildflags",
@@ -527,10 +525,6 @@ source_set("browser_sources") {
     deps += [ "//ppapi/c" ]
   }
 
-  if (is_chromeos || is_android || is_win || is_chromecast || is_fuchsia) {
-    defines = [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
-  }
-
   if (is_posix || is_fuchsia) {
     sources += [ "posix_file_descriptor_info.h" ]
   }
@@ -554,6 +548,7 @@ source_set("browser_sources") {
       "android/synchronous_compositor.h",
       "android/synchronous_compositor_client.h",
       "ax_inspect_factory_android.cc",
+      "conditional_ui_delegate_android.h",
       "tts_environment_android.h",
     ]
   }

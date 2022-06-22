@@ -21,10 +21,10 @@
 #include "device/bluetooth/floss/floss_dbus_client.h"
 #include "device/bluetooth/floss/floss_manager_client.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "device/bluetooth/bluetooth_low_energy_scan_filter.h"
 #include "device/bluetooth/bluetooth_low_energy_scan_session.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace floss {
 
@@ -104,7 +104,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   void SetServiceAllowList(const UUIDList& uuids,
                            base::OnceClosure callback,
                            ErrorCallback error_callback) override;
@@ -117,7 +117,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
       std::unique_ptr<device::BluetoothLowEnergyScanFilter> filter,
       base::WeakPtr<device::BluetoothLowEnergyScanSession::Delegate> delegate)
       override;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Set the adapter name to one chosen from the system information. Only Ash
@@ -143,6 +143,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
                         ErrorCallback error_callback,
                         const absl::optional<Void>& ret,
                         const absl::optional<Error>& error);
+
+  // Handle when discovery is automatically repeated based on active sessions.
+  void OnRepeatedDiscoverySessionResult(
+      bool start_discovery,
+      bool is_error,
+      device::UMABluetoothDiscoverySessionOutcome outcome);
 
   // Called on completion of start discovery and stop discovery
   void OnStartDiscovery(DiscoverySessionResultCallback callback,
@@ -182,6 +188,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
   void DiscoverableChanged(bool discoverable) override;
   void AdapterDiscoveringChanged(bool state) override;
   void AdapterFoundDevice(const FlossDeviceId& device_found) override;
+  void AdapterClearedDevice(const FlossDeviceId& device_found) override;
   void AdapterSspRequest(const FlossDeviceId& remote_device,
                          uint32_t cod,
                          FlossAdapterClient::BluetoothSspVariant variant,

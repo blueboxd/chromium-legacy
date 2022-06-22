@@ -142,7 +142,6 @@ public class QueryTileUtils {
         if (noPreviousHistory) {
             // If this is the first time we make a decision, don't show query tiles.
             resultFromCode = false;
-            updateDisplayStatusAndNextDecisionTime(resultFromCode);
         } else if (nextDecisionTimestampReached) {
             int recentMVClicks = SharedPreferencesManager.getInstance().readInt(
                     ChromePreferenceKeys.QUERY_TILES_NUM_RECENT_MV_TILE_CLICKS, 0);
@@ -156,7 +155,6 @@ public class QueryTileUtils {
             // Otherwise, show it for a period of time.
             resultFromCode = (recentMVClicks <= mvTileClickThreshold
                     || recentMVClicks <= recentQueryTileClicks);
-            updateDisplayStatusAndNextDecisionTime(resultFromCode);
         } else {
             resultFromCode = SharedPreferencesManager.getInstance().readBoolean(
                     ChromePreferenceKeys.QUERY_TILES_SHOW_ON_NTP, false);
@@ -168,6 +166,7 @@ public class QueryTileUtils {
             recordSegmentationResultComparison(getSegmentationResult(), resultFromCode);
         }
 
+        updateDisplayStatusAndNextDecisionTime(resultFromCode);
         return resultFromCode;
     }
 

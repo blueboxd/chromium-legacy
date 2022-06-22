@@ -33,6 +33,8 @@ namespace {
 
 const char kWww[] = "www.";
 constexpr size_t kWwwLength = 4;
+const char kMobilePrefix[] = "m.";
+constexpr size_t kMobilePrefixLength = 2;
 
 IDNConversionResult IDNToUnicodeWithAdjustments(
     base::StringPiece host,
@@ -71,52 +73,91 @@ class AppendComponentTransform {
 
 class HostComponentTransform : public AppendComponentTransform {
  public:
-  explicit HostComponentTransform(bool trim_trivial_subdomains)
-      : trim_trivial_subdomains_(trim_trivial_subdomains) {}
+  HostComponentTransform(bool trim_trivial_subdomains, bool trim_mobile_prefix)
+      : trim_trivial_subdomains_(trim_trivial_subdomains),
+        trim_mobile_prefix_(trim_mobile_prefix) {}
 
  private:
   std::u16string Execute(
       const std::string& component_text,
       base::OffsetAdjuster::Adjustments* adjustments) const override {
-    if (!trim_trivial_subdomains_)
+    // Nothing to change.
+    if (!trim_trivial_subdomains_ && !trim_mobile_prefix_)
       return IDNToUnicodeWithAdjustments(component_text, adjustments).result;
 
-    std::string www_stripped_component_text = StripWWW(component_text);
-    // If StripWWW() did nothing, then "www." wasn't a prefix, or it otherwise
-    // didn't meet conditions for stripping "www." (such as intranet hostnames).
-    // In this case, no adjustments for trivial subdomains are needed.
-    if (www_stripped_component_text == component_text)
+    std::string stripped_component_text = component_text;
+    if (base::StartsWith(component_text, "www.m.") &&
+        trim_trivial_subdomains_ && trim_mobile_prefix_) {
+      stripped_component_text = StripWWW(stripped_component_text);
+      stripped_component_text = StripMobilePrefix(stripped_component_text);
+    } else if (base::StartsWith(component_text, "m.www.") &&
+               trim_mobile_prefix_ && trim_trivial_subdomains_) {
+      stripped_component_text = StripMobilePrefix(stripped_component_text);
+      stripped_component_text = StripWWW(stripped_component_text);
+    } else {
+      if (trim_trivial_subdomains_) {
+        stripped_component_text = StripWWW(component_text);
+      }
+      if (trim_mobile_prefix_) {
+        stripped_component_text = StripMobilePrefix(stripped_component_text);
+      }
+    }
+
+    // If StripWWW() and StripMobilePrefix() did nothing, then "www." and "m."
+    // weren't a prefix, or it otherwise didn't meet conditions for stripping
+    // "www." (such as intranet hostnames). In this case, no adjustments for
+    // trivial subdomains are needed.
+    if (stripped_component_text == component_text)
       return IDNToUnicodeWithAdjustments(component_text, adjustments).result;
-    base::OffsetAdjuster::Adjustments trivial_subdomains_adjustments;
-    trivial_subdomains_adjustments.push_back(
-        base::OffsetAdjuster::Adjustment(0, kWwwLength, 0));
+
+    base::OffsetAdjuster::Adjustments offset_adjustments;
+
+    if (component_text.length() ==
+        stripped_component_text.length() + kMobilePrefixLength + kWwwLength) {
+      // Add www. and m. offsets.
+      offset_adjustments.push_back(
+          base::OffsetAdjuster::Adjustment(0, kWwwLength, 0));
+      offset_adjustments.push_back(
+          base::OffsetAdjuster::Adjustment(0, kMobilePrefixLength, 0));
+    } else if (component_text.length() ==
+               stripped_component_text.length() + kWwwLength) {
+      // Add www. offset.
+      offset_adjustments.push_back(
+          base::OffsetAdjuster::Adjustment(0, kWwwLength, 0));
+    } else if (component_text.length() ==
+               stripped_component_text.length() + kMobilePrefixLength) {
+      // Add m. offset
+      offset_adjustments.push_back(
+          base::OffsetAdjuster::Adjustment(0, kMobilePrefixLength, 0));
+    }
     std::u16string unicode_result =
-        IDNToUnicodeWithAdjustments(www_stripped_component_text, adjustments)
+        IDNToUnicodeWithAdjustments(stripped_component_text, adjustments)
             .result;
-    base::OffsetAdjuster::MergeSequentialAdjustments(
-        trivial_subdomains_adjustments, adjustments);
+    base::OffsetAdjuster::MergeSequentialAdjustments(offset_adjustments,
+                                                     adjustments);
     return unicode_result;
   }
 
   bool trim_trivial_subdomains_;
+  bool trim_mobile_prefix_;
 };
 
 class NonHostComponentTransform : public AppendComponentTransform {
  public:
-  explicit NonHostComponentTransform(net::UnescapeRule::Type unescape_rules)
+  explicit NonHostComponentTransform(base::UnescapeRule::Type unescape_rules)
       : unescape_rules_(unescape_rules) {}
 
  private:
   std::u16string Execute(
       const std::string& component_text,
       base::OffsetAdjuster::Adjustments* adjustments) const override {
-    return (unescape_rules_ == net::UnescapeRule::NONE)
+    return (unescape_rules_ == base::UnescapeRule::NONE)
                ? base::UTF8ToUTF16WithAdjustments(component_text, adjustments)
-               : net::UnescapeAndDecodeUTF8URLComponentWithAdjustments(
+               : base::UnescapeAndDecodeUTF8URLComponentWithAdjustments(
                      component_text, unescape_rules_, adjustments);
   }
 
-  const net::UnescapeRule::Type unescape_rules_;
+  const base::UnescapeRule::Type unescape_rules_;
 };
 
 // Transforms the portion of |spec| covered by |original_component| according to
@@ -192,7 +233,7 @@ void AdjustAllComponentsButScheme(int delta, url::Parsed* parsed) {
 std::u16string FormatViewSourceUrl(
     const GURL& url,
     FormatUrlTypes format_types,
-    net::UnescapeRule::Type unescape_rules,
+    base::UnescapeRule::Type unescape_rules,
     url::Parsed* new_parsed,
     size_t* prefix_end,
     base::OffsetAdjuster::Adjustments* adjustments) {
@@ -500,6 +541,7 @@ const FormatUrlType kFormatUrlOmitTrivialSubdomains = 1 << 5;
 const FormatUrlType kFormatUrlTrimAfterHost = 1 << 6;
 const FormatUrlType kFormatUrlOmitFileScheme = 1 << 7;
 const FormatUrlType kFormatUrlOmitMailToScheme = 1 << 8;
+const FormatUrlType kFormatUrlOmitMobilePrefix = 1 << 9;
 
 const FormatUrlType kFormatUrlOmitDefaults =
     kFormatUrlOmitUsernamePassword | kFormatUrlOmitHTTP |
@@ -507,7 +549,7 @@ const FormatUrlType kFormatUrlOmitDefaults =
 
 std::u16string FormatUrl(const GURL& url,
                          FormatUrlTypes format_types,
-                         net::UnescapeRule::Type unescape_rules,
+                         base::UnescapeRule::Type unescape_rules,
                          url::Parsed* new_parsed,
                          size_t* prefix_end,
                          size_t* offset_for_adjustment) {
@@ -524,7 +566,7 @@ std::u16string FormatUrl(const GURL& url,
 std::u16string FormatUrlWithOffsets(
     const GURL& url,
     FormatUrlTypes format_types,
-    net::UnescapeRule::Type unescape_rules,
+    base::UnescapeRule::Type unescape_rules,
     url::Parsed* new_parsed,
     size_t* prefix_end,
     std::vector<size_t>* offsets_for_adjustment) {
@@ -539,7 +581,7 @@ std::u16string FormatUrlWithOffsets(
 std::u16string FormatUrlWithAdjustments(
     const GURL& url,
     FormatUrlTypes format_types,
-    net::UnescapeRule::Type unescape_rules,
+    base::UnescapeRule::Type unescape_rules,
     url::Parsed* new_parsed,
     size_t* prefix_end,
     base::OffsetAdjuster::Adjustments* adjustments) {
@@ -618,9 +660,11 @@ std::u16string FormatUrlWithAdjustments(
   // Host.
   bool trim_trivial_subdomains =
       (format_types & kFormatUrlOmitTrivialSubdomains) != 0;
-  AppendFormattedComponent(spec, parsed.host,
-                           HostComponentTransform(trim_trivial_subdomains),
-                           &url_string, &new_parsed->host, adjustments);
+  bool trim_mobile_prefix = (format_types & kFormatUrlOmitMobilePrefix) != 0;
+  AppendFormattedComponent(
+      spec, parsed.host,
+      HostComponentTransform(trim_trivial_subdomains, trim_mobile_prefix),
+      &url_string, &new_parsed->host, adjustments);
 
   // Port.
   if (parsed.port.is_nonempty()) {
@@ -741,7 +785,7 @@ bool CanStripTrailingSlash(const GURL& url) {
 void AppendFormattedHost(const GURL& url, std::u16string* output) {
   AppendFormattedComponent(
       url.possibly_invalid_spec(), url.parsed_for_possibly_invalid_spec().host,
-      HostComponentTransform(false), output, nullptr, nullptr);
+      HostComponentTransform(false, false), output, nullptr, nullptr);
 }
 
 IDNConversionResult UnsafeIDNToUnicodeWithDetails(base::StringPiece host) {
@@ -773,6 +817,14 @@ void StripWWWFromHostComponent(const std::string& url, url::Component* host) {
     return;
   host->begin += kWwwLength;
   host->len -= kWwwLength;
+}
+
+std::string StripMobilePrefix(const std::string& text) {
+  return text.size() >= kMobilePrefixLength &&
+                 base::StartsWith(text, kMobilePrefix,
+                                  base::CompareCase::SENSITIVE)
+             ? text.substr(kMobilePrefixLength)
+             : text;
 }
 
 Skeletons GetSkeletons(const std::u16string& host) {

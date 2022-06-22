@@ -69,6 +69,7 @@ class StorageService {
                      all_segment_ids,
                  ModelProviderFactory* model_provider_factory);
 
+  // For tests:
   StorageService(
       std::unique_ptr<leveldb_proto::ProtoDatabase<proto::SegmentInfo>>
           segment_db,
@@ -81,6 +82,13 @@ class StorageService {
       base::flat_set<optimization_guide::proto::OptimizationTarget>
           all_segment_ids,
       ModelProviderFactory* model_provider_factory);
+
+  // For tests:
+  StorageService(std::unique_ptr<SegmentInfoDatabase> segment_info_database,
+                 std::unique_ptr<SignalDatabase> signal_database,
+                 std::unique_ptr<SignalStorageConfig> signal_storage_config,
+                 std::unique_ptr<DefaultModelManager> default_model_manager,
+                 UkmDataManager* ukm_data_manager);
 
   ~StorageService();
 
@@ -95,6 +103,9 @@ class StorageService {
   // Returns a bitmap of the service status. See `ServiceStatus` enum for the
   // bitmap values.
   int GetServiceStatus() const;
+
+  // Executes all database maintenance tasks.
+  void ExecuteDatabaseMaintenanceTasks(bool is_startup);
 
   DefaultModelManager* default_model_manager() {
     DCHECK(default_model_manager_);
@@ -119,10 +130,6 @@ class StorageService {
   void OnSignalStorageConfigInitialized(bool success);
   bool IsInitializationFinished() const;
   void MaybeFinishInitialization();
-
-  // Executes all database maintenance tasks. This should be invoked after a
-  // short amount of time has passed since initialization happened.
-  void OnExecuteDatabaseMaintenanceTasks();
 
   // Default models.
   std::unique_ptr<DefaultModelManager> default_model_manager_;

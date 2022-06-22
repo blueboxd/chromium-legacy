@@ -43,7 +43,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings,
     : settings_(settings),
       dev_tools_emulator_(dev_tools_emulator),
       render_v_sync_notification_enabled_(false),
-      auto_zoom_focused_node_to_legible_scale_(false),
+      auto_zoom_focused_editable_to_legible_scale_(false),
       support_deprecated_target_density_dpi_(false),
       viewport_meta_non_user_scalable_quirk_(false),
       clobber_user_agent_initial_scale_quirk_(false) {
@@ -107,6 +107,12 @@ void WebSettingsImpl::SetFantasyFontFamily(const WebString& font,
     settings_->NotifyGenericFontFamilyChange();
 }
 
+void WebSettingsImpl::SetMathFontFamily(const WebString& font,
+                                        UScriptCode script) {
+  if (settings_->GetGenericFontFamilySettings().UpdateMath(font, script))
+    settings_->NotifyGenericFontFamilyChange();
+}
+
 void WebSettingsImpl::SetDefaultFontSize(int size) {
   settings_->SetDefaultFontSize(size);
 }
@@ -132,10 +138,10 @@ void WebSettingsImpl::SetAutoplayPolicy(mojom::blink::AutoplayPolicy policy) {
       static_cast<blink::AutoplayPolicy::Type>(policy));
 }
 
-void WebSettingsImpl::SetAutoZoomFocusedNodeToLegibleScale(
-    bool auto_zoom_focused_node_to_legible_scale) {
-  auto_zoom_focused_node_to_legible_scale_ =
-      auto_zoom_focused_node_to_legible_scale;
+void WebSettingsImpl::SetAutoZoomFocusedEditableToLegibleScale(
+    bool auto_zoom_focused_editable_to_legible_scale) {
+  auto_zoom_focused_editable_to_legible_scale_ =
+      auto_zoom_focused_editable_to_legible_scale;
 }
 
 void WebSettingsImpl::SetTextAutosizingEnabled(bool enabled) {
@@ -773,11 +779,6 @@ void WebSettingsImpl::SetAccessibilityIncludeSvgGElement(bool include) {
 void WebSettingsImpl::SetWebXRImmersiveArAllowed(
     bool webxr_immersive_ar_allowed) {
   settings_->SetWebXRImmersiveArAllowed(webxr_immersive_ar_allowed);
-}
-
-void WebSettingsImpl::SetLitePageSubresourceRedirectOrigin(
-    const WebString& origin) {
-  settings_->SetLitePageSubresourceRedirectOrigin(origin);
 }
 
 }  // namespace blink

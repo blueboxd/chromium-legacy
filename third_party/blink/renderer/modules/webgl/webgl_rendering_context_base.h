@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_webgl_context_attributes.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/ukm_parameters.h"
@@ -607,6 +606,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       return nullptr;
     return d->ContextGL();
   }
+  gpu::SharedImageInterface* SharedImageInterface() const {
+    DrawingBuffer* d = GetDrawingBuffer();
+    if (!d)
+      return nullptr;
+    return d->ContextProvider()->SharedImageInterface();
+  }
+
   WebGLContextGroup* ContextGroup() const { return context_group_.Get(); }
   Extensions3DUtil* ExtensionsUtil();
 
@@ -1204,36 +1210,33 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // virtual because some state is only tracked in WebGL 2.
   virtual void GetCurrentUnpackState(TexImageParams& params);
 
-  void TexImageSkPixmap(TexImageParams params,
-                        const SkPixmap* pixmap,
-                        bool pixmap_has_flip_y);
+  // Upload `image` to the specified texture.
+  void TexImageSkImage(TexImageParams params,
+                       sk_sp<SkImage> image,
+                       bool image_has_flip_y);
 
-  void TexImage2DBase(GLenum target,
-                      GLint level,
-                      GLint internalformat,
-                      GLsizei width,
-                      GLsizei height,
-                      GLint border,
-                      GLenum format,
-                      GLenum type,
-                      const void* pixels);
-  void TexImageImpl(TexImageParams params,
-                    Image* image,
-                    WebGLImageConversion::ImageHtmlDomSource,
-                    bool image_has_flip_y);
+  // Call the underlying Tex[Sub]Image{2D|3D} function. Always replace
+  // `params.internalformat` with the result from ConvertTexInternalFormat.
+  void TexImageBase(const TexImageParams& params, const void* pixels);
+
+  // Upload `image` to the specified texture. If `allow_copy_via_gpu` is
+  // true and `image` is an AcceleratedBitmapImage, then the copy may be
+  // performed using TexImageViaGPU. Otherwise, the copy will be be performed
+  // using TexImageSkImage.
+  void TexImageStaticBitmapImage(TexImageParams params,
+                                 StaticBitmapImage* image,
+                                 bool image_has_flip_y,
+                                 bool allow_copy_via_gpu);
   template <typename T>
   gfx::Rect GetTextureSourceSize(T* texture_source) {
     return gfx::Rect(0, 0, texture_source->width(), texture_source->height());
   }
 
   template <typename T>
-  bool ValidateTexImageSubRectangle(const char* function_name,
-                                    TexImageFunctionID function_id,
+  bool ValidateTexImageSubRectangle(const TexImageParams& params,
                                     T* image,
-                                    const gfx::Rect& sub_rect,
-                                    GLsizei depth,
-                                    GLint unpack_image_height,
                                     bool* selecting_sub_rectangle) {
+    const char* function_name = GetTexImageFunctionName(params.function_id);
     DCHECK(function_name);
     DCHECK(selecting_sub_rectangle);
     if (!image) {
@@ -1242,8 +1245,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       return false;
     }
 
-    int image_width = static_cast<int>(image->width());
-    int image_height = static_cast<int>(image->height());
+    const int image_width = static_cast<int>(image->width());
+    const int image_height = static_cast<int>(image->height());
+    const gfx::Rect sub_rect(params.unpack_skip_pixels, params.unpack_skip_rows,
+                             params.width.value_or(image_width),
+                             params.height.value_or(image_height));
+    const GLsizei depth = params.depth.value_or(1);
     *selecting_sub_rectangle =
         !(sub_rect.x() == 0 && sub_rect.y() == 0 &&
           sub_rect.width() == image_width && sub_rect.height() == image_height);
@@ -1266,8 +1273,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       return false;
     }
 
-    if (function_id == kTexImage3D || function_id == kTexSubImage3D) {
-      DCHECK_GE(unpack_image_height, 0);
+    if (params.function_id == kTexImage3D ||
+        params.function_id == kTexSubImage3D) {
+      DCHECK_GE(params.unpack_image_height, 0);
 
       if (depth < 1) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
@@ -1278,8 +1286,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       // According to the WebGL 2.0 spec, specifying depth > 1 means
       // to select multiple rectangles stacked vertically.
       base::CheckedNumeric<GLint> max_y_accessed;
-      if (unpack_image_height) {
-        max_y_accessed = unpack_image_height;
+      if (params.unpack_image_height) {
+        max_y_accessed = params.unpack_image_height;
       } else {
         max_y_accessed = sub_rect.height();
       }
@@ -1302,7 +1310,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       }
     } else {
       DCHECK_EQ(depth, 1);
-      DCHECK_EQ(unpack_image_height, 0);
+      DCHECK_EQ(params.unpack_image_height, 0);
     }
     return true;
   }
@@ -1350,9 +1358,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // Wrapper function for validateTexture2D(3D)Binding, used in TexImageHelper
   // functions.
-  virtual WebGLTexture* ValidateTexImageBinding(const char*,
-                                                TexImageFunctionID,
-                                                GLenum);
+  virtual WebGLTexture* ValidateTexImageBinding(const TexImageParams& params);
 
   // Helper function to check texture 2D target and texture bound to the target.
   // Generate GL errors and return 0 if target is invalid or texture bound is
@@ -1795,14 +1801,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       scoped_refptr<media::VideoFrame> media_video_frame,
       media::PaintCanvasVideoRenderer* video_renderer);
 
-  // Copy from the source directly to the texture via the gpu, without
-  // a read-back to system memory. Source can be a texture-backed
-  // Image, or another canvas's WebGLRenderingContext.
+  // Copy from the source directly to texture target specified by `params` via
+  // the gpu, without a read-back to system memory. Source can be an
+  // AcceleratedStaticBitmapImage or WebGLRenderingContextBase.
   void TexImageViaGPU(TexImageParams,
-                      WebGLTexture*,
                       AcceleratedStaticBitmapImage*,
-                      WebGLRenderingContextBase*,
-                      const gfx::Rect& source_sub_rectangle);
+                      WebGLRenderingContextBase*);
   bool CanUseTexImageViaGPU(const TexImageParams&);
 
   const Platform::ContextType context_type_;

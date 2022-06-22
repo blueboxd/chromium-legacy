@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -27,7 +28,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "net/base/escape.h"
 #include "net/base/parse_number.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_log_util.h"
@@ -962,7 +962,7 @@ bool HttpResponseHeaders::IsRedirect(std::string* location) const {
     // valid UTF-8, so encoding errors turn into replacement characters before
     // escaping. Escaping here preserves the bytes as-is. See
     // https://crbug.com/942073#c14.
-    *location = EscapeNonASCII(location_strpiece);
+    *location = base::EscapeNonASCII(location_strpiece);
   }
 
   return true;

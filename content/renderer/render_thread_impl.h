@@ -108,6 +108,8 @@ class StreamTextureFactory;
 
 #if BUILDFLAG(IS_WIN)
 class DCOMPTextureFactory;
+class OverlayStateServiceProvider;
+class OverlayStateServiceProviderImpl;
 #endif
 
 // The RenderThreadImpl class represents the main thread, where RenderView
@@ -269,6 +271,10 @@ class CONTENT_EXPORT RenderThreadImpl
 
 #if BUILDFLAG(IS_WIN)
   scoped_refptr<DCOMPTextureFactory> GetDCOMPTextureFactory();
+  // The OverlayStateService is only available where Media Foundation for
+  // clear is supported, otherwise GetOverlayStateServiceProvider will return
+  // nullptr.
+  OverlayStateServiceProvider* GetOverlayStateServiceProvider();
 #endif
 
   blink::WebVideoCaptureImplManager* video_capture_impl_manager() const {
@@ -390,14 +396,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<base::SingleThreadTaskRunner>
   CreateVideoFrameCompositorTaskRunner();
-
-  // In the case of kOnDemand, we wont be using the task_runner created in
-  // CreateVideoFrameCompositorTaskRunner.
-  // TODO(https://crbug/901513): Remove once kOnDemand is removed.
-  void SetVideoFrameCompositorTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    video_frame_compositor_task_runner_ = task_runner;
-  }
 
   void CreateSharedStorageWorkletService(
       mojo::PendingReceiver<
@@ -553,6 +551,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
 #if BUILDFLAG(IS_WIN)
   scoped_refptr<DCOMPTextureFactory> dcomp_texture_factory_;
+  std::unique_ptr<OverlayStateServiceProviderImpl>
+      overlay_state_service_provider_;
 #endif
 
   scoped_refptr<viz::ContextProviderCommandBuffer> shared_main_thread_contexts_;

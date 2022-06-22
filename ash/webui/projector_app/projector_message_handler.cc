@@ -88,7 +88,8 @@ base::Value ScreencastListToValue(const PendingScreencastSet& screencasts) {
 bool IsUserPrefSupported(const std::string& pref) {
   return pref == ash::prefs::kProjectorCreationFlowEnabled ||
          pref == ash::prefs::kProjectorGalleryOnboardingShowCount ||
-         pref == ash::prefs::kProjectorViewerOnboardingShowCount;
+         pref == ash::prefs::kProjectorViewerOnboardingShowCount ||
+         pref == ash::prefs::kProjectorExcludeTranscriptDialogShown;
 }
 
 bool IsValidOnboardingPref(const SetUserPrefArgs& args) {
@@ -102,8 +103,14 @@ bool IsValidCreationFlowPref(const SetUserPrefArgs& args) {
          args.pref_name == ash::prefs::kProjectorCreationFlowEnabled;
 }
 
+bool IsValidExcludeTranscriptDialogShownPref(const SetUserPrefArgs& args) {
+  return args.value.is_bool() &&
+         args.pref_name == ash::prefs::kProjectorExcludeTranscriptDialogShown;
+}
+
 bool IsValidPrefValueArg(const SetUserPrefArgs& args) {
-  return IsValidCreationFlowPref(args) || IsValidOnboardingPref(args);
+  return IsValidCreationFlowPref(args) || IsValidOnboardingPref(args) ||
+         IsValidExcludeTranscriptDialogShownPref(args);
 }
 
 // Returns true if the request, `args`, contains a valid user preference string.

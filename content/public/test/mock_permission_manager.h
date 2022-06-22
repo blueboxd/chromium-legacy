@@ -9,9 +9,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
-namespace content {
-
+namespace blink {
 enum class PermissionType;
+}
+
+namespace content {
 
 // Mock of the permission manager for unit tests.
 class MockPermissionManager : public PermissionControllerDelegate {
@@ -25,44 +27,44 @@ class MockPermissionManager : public PermissionControllerDelegate {
 
   // PermissionManager:
   MOCK_METHOD3(GetPermissionStatus,
-               blink::mojom::PermissionStatus(PermissionType permission,
+               blink::mojom::PermissionStatus(blink::PermissionType permission,
                                               const GURL& requesting_origin,
                                               const GURL& embedding_origin));
   MOCK_METHOD3(GetPermissionStatusForFrame,
                blink::mojom::PermissionStatus(
-                   PermissionType permission,
+                   blink::PermissionType permission,
                    content::RenderFrameHost* render_frame_host,
                    const GURL& requesting_origin));
   MOCK_METHOD2(GetPermissionStatusForCurrentDocument,
                blink::mojom::PermissionStatus(
-                   PermissionType permission,
+                   blink::PermissionType permission,
                    content::RenderFrameHost* render_frame_host));
   MOCK_METHOD3(GetPermissionStatusForWorker,
                blink::mojom::PermissionStatus(
-                   PermissionType permission,
+                   blink::PermissionType permission,
                    content::RenderProcessHost* render_process_host,
                    const GURL& worker_origin));
   void RequestPermission(
-      PermissionType permission,
+      blink::PermissionType permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       bool user_gesture,
       base::OnceCallback<void(blink::mojom::PermissionStatus)> callback)
       override;
   void RequestPermissions(
-      const std::vector<PermissionType>& permission,
+      const std::vector<blink::PermissionType>& permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       bool user_gesture,
       base::OnceCallback<
           void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
       override;
-  void ResetPermission(PermissionType permission,
+  void ResetPermission(blink::PermissionType permission,
                        const GURL& requesting_origin,
                        const GURL& embedding_origin) override {}
   MOCK_METHOD5(SubscribePermissionStatusChange,
                SubscriptionId(
-                   PermissionType permission,
+                   blink::PermissionType permission,
                    RenderProcessHost* render_process_host,
                    RenderFrameHost* render_frame_host,
                    const GURL& requesting_origin,

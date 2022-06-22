@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/check_op.h"
+
 namespace base {
 
 UnsafeSharedMemoryRegion::CreateFunction*
@@ -46,22 +48,24 @@ UnsafeSharedMemoryRegion UnsafeSharedMemoryRegion::Duplicate() const {
   return UnsafeSharedMemoryRegion(handle_.Duplicate());
 }
 
-WritableSharedMemoryMapping UnsafeSharedMemoryRegion::Map() const {
-  return MapAt(0, handle_.GetSize());
+WritableSharedMemoryMapping UnsafeSharedMemoryRegion::Map(
+    SharedMemoryMapper* mapper) const {
+  return MapAt(0, handle_.GetSize(), mapper);
 }
 
-WritableSharedMemoryMapping UnsafeSharedMemoryRegion::MapAt(uint64_t offset,
-                                                            size_t size) const {
+WritableSharedMemoryMapping UnsafeSharedMemoryRegion::MapAt(
+    uint64_t offset,
+    size_t size,
+    SharedMemoryMapper* mapper) const {
   if (!IsValid())
     return {};
 
-  void* memory = nullptr;
-  size_t mapped_size = 0;
-  if (!handle_.MapAt(offset, size, &memory, &mapped_size))
+  auto result = handle_.MapAt(offset, size, mapper);
+  if (!result.has_value())
     return {};
 
-  return WritableSharedMemoryMapping(memory, size, mapped_size,
-                                     handle_.GetGUID());
+  return WritableSharedMemoryMapping(result.value(), size, handle_.GetGUID(),
+                                     mapper);
 }
 
 bool UnsafeSharedMemoryRegion::IsValid() const {

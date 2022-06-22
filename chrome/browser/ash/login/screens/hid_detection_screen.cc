@@ -27,6 +27,10 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace ash {
 namespace {
 
@@ -145,8 +149,6 @@ void HIDDetectionScreen::CleanupOnExit() {
       adapter_initially_powered_ && !(*adapter_initially_powered_);
   if (adapter_is_powered && need_switching_off)
     PowerOff();
-
-  demo_mode_detector_.reset();
 }
 
 void HIDDetectionScreen::OnViewDestroyed(HIDDetectionView* view) {
@@ -195,8 +197,6 @@ void HIDDetectionScreen::ShowImpl() {
     GetInputDevicesList();
   else
     UpdateDevices();
-  demo_mode_detector_ = std::make_unique<DemoModeDetector>(
-      base::DefaultTickClock::GetInstance(), this);
   if (view_) {
     view_->Show();
   }
@@ -205,7 +205,6 @@ void HIDDetectionScreen::ShowImpl() {
 void HIDDetectionScreen::HideImpl() {
   if (is_hidden())
     return;
-  demo_mode_detector_.reset();
 
   if (discovery_session_.get())
     discovery_session_->Stop();

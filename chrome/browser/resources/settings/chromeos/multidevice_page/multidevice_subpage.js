@@ -16,6 +16,7 @@ import './multidevice_wifi_sync_item.js';
 
 import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {loadTimeData} from '../../i18n_setup.js';
 import {Route} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
@@ -23,7 +24,7 @@ import {OsSettingsRoutes} from '../os_settings_routes.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_browser_proxy.js';
-import {MultiDeviceFeature, MultiDeviceFeatureState, MultiDeviceSettingsMode, PhoneHubFeatureAccessProhibitedReason} from './multidevice_constants.js';
+import {MultiDeviceFeature, MultiDeviceFeatureState, MultiDeviceSettingsMode, PhoneHubFeatureAccessProhibitedReason, PhoneHubPermissionsSetupFeatureCombination} from './multidevice_constants.js';
 import {MultiDeviceFeatureBehavior} from './multidevice_feature_behavior.js';
 
 /**
@@ -204,6 +205,19 @@ Polymer({
   },
 
   /**
+   * TODO(b/227674947): Delete method when Sign in with Smart Lock is removed.
+   * If Smart Lock Sign in is removed there is no subpage to navigate to, so we
+   * set the subpageRoute to undefined.
+   * @return {undefined | Object}
+   * @private
+   */
+  getSmartLockSubpageRoute_() {
+    return loadTimeData.getBoolean('isSmartLockSignInRemoved') ?
+        undefined :
+        routes.SMART_LOCK;
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -255,6 +269,17 @@ Polymer({
   /** @private */
   handlePhoneHubSetupClick_() {
     this.fire('permission-setup-requested');
+    let setupMode = PhoneHubPermissionsSetupFeatureCombination.NONE;
+    if (this.shouldShowPhoneHubCameraRollItem_()) {
+      setupMode = PhoneHubPermissionsSetupFeatureCombination.CAMERA_ROLL;
+    }
+    if (this.shouldShowPhoneHubNotificationsItem_()) {
+      setupMode = PhoneHubPermissionsSetupFeatureCombination.NOTIFICATION;
+    }
+    if (this.shouldShowPhoneHubAppsItem_()) {
+      setupMode = PhoneHubPermissionsSetupFeatureCombination.MESSAGING_APP;
+    }
+    this.browserProxy_.logPhoneHubPermissionSetUpButtonClicked(setupMode);
   },
 
   /**

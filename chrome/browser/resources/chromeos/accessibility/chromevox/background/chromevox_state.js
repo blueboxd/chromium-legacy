@@ -30,7 +30,7 @@ ChromeVoxStateObserver = class {
 };
 
 /**
- * ChromeVox2 state object.
+ * ChromeVox state object.
  * @constructor
  */
 ChromeVoxState = function() {
@@ -195,3 +195,7 @@ ChromeVoxState.removeObserver = function(observer) {
     ChromeVoxState.observers.splice(index, 1);
   }
 };
+
+BridgeHelper.registerHandler(
+    BridgeTarget.CHROMEVOX_STATE, BridgeAction.UPDATE_PUNCTUATION_ECHO,
+    (echo) => ChromeVoxState.backgroundTts.updatePunctuationEcho(echo));

@@ -7,8 +7,7 @@ import UIKit
 
 /// Extends UIView to notify via KVO when it moved to a new window.
 extension UIView {
-  /// Whether the original and alternative implementations have been swapped.
-  private static var swizzled = false
+  /// MARK: Public
 
   /// Whether all instances of UIView will notify key-value observers for their `window` property.
   ///
@@ -43,11 +42,18 @@ extension UIView {
     return false
   }
 
+  /// MARK: Private
+
+  /// Whether the original and alternative implementations have been swapped.
+  private static var swizzled = false
+
+  /// Adds a call to the KVO `willChangeValue(forKey:)` method.
   @objc private func cr_willMove(toWindow newWindow: UIWindow?) {
     cr_willMove(toWindow: newWindow)
     willChangeValue(forKey: "window")
   }
 
+  /// Adds a call to the KVO `didChangeValue(forKey:)` method.
   @objc private func cr_didMoveToWindow() {
     cr_didMoveToWindow()
     didChangeValue(forKey: "window")

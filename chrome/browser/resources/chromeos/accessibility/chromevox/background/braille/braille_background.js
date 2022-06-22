@@ -5,10 +5,10 @@
 /**
  * @fileoverview Sends Braille commands to the Braille API.
  */
-import {BrailleDisplayManager} from './braille_display_manager.js';
-import {BrailleInputHandler} from './braille_input_handler.js';
-import {BrailleKeyEventRewriter} from './braille_key_event_rewriter.js';
-import {BrailleTranslatorManager} from './braille_translator_manager.js';
+import {BrailleDisplayManager} from '/chromevox/background/braille/braille_display_manager.js';
+import {BrailleInputHandler} from '/chromevox/background/braille/braille_input_handler.js';
+import {BrailleKeyEventRewriter} from '/chromevox/background/braille/braille_key_event_rewriter.js';
+import {BrailleTranslatorManager} from '/chromevox/background/braille/braille_translator_manager.js';
 
 /**
  * @implements {BrailleInterface}
@@ -71,7 +71,6 @@ export class BrailleBackground {
     return BrailleBackground.instance_;
   }
 
-
   /** @override */
   write(params) {
     if (this.frozen_) {
@@ -80,7 +79,7 @@ export class BrailleBackground {
 
     if (localStorage['enableBrailleLogging'] === 'true') {
       const logStr = 'Braille "' + params.text.toString() + '"';
-      LogStore.getInstance().writeTextLog(logStr, LogStore.LogType.BRAILLE);
+      LogStore.getInstance().writeTextLog(logStr, LogType.BRAILLE);
       console.log(logStr);
     }
 
@@ -174,11 +173,17 @@ export class BrailleBackground {
 /** @type {?BrailleBackground} */
 BrailleBackground.instance_ = null;
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.target === 'BrailleBackground' &&
-      message.action === 'getDefaultTranslator') {
-    sendResponse(BrailleBackground.getInstance()
-                     .getTranslatorManager()
-                     .getDefaultTranslator());
-  }
-});
+BridgeHelper.registerHandler(
+    BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.BACK_TRANSLATE,
+    (cells) => new Promise(resolve => {
+      BrailleBackground.getInstance()
+          .getTranslatorManager()
+          .getDefaultTranslator()
+          .backTranslate(cells, resolve);
+    }));
+
+BridgeHelper.registerHandler(
+    BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.REFRESH_BRAILLE_TABLE,
+    (brailleTable) =>
+        BrailleBackground.getInstance().getTranslatorManager().refresh(
+            brailleTable));

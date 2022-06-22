@@ -9,7 +9,6 @@
  */
 
 // #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {i18nTemplate} from 'chrome://resources/js/i18n_template_no_process.m.js';
 // #import {$} from 'chrome://resources/js/util.m.js';
 // #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
@@ -86,11 +85,10 @@ cr.define('cr.ui', function() {
     }
 
     /**
-     * Updates version label visibility.
-     * @param {boolean} show True if version label should be visible.
+     * Toggles system info visibility.
      */
-    static showVersion(show) {
-      Oobe.getInstance().showVersion(show);
+    static toggleSystemInfo() {
+      Oobe.getInstance().toggleSystemInfo();
     }
 
     /**
@@ -307,10 +305,33 @@ cr.define('cr.ui', function() {
     static reloadContent(data) {
       // Reload global local strings, process DOM tree again.
       loadTimeData.overrideValues(data);
-      i18nTemplate.process(document, loadTimeData);
+      Oobe.updateDocumentLocalizedStrings();
 
       // Update localized content of the screens.
       Oobe.getInstance().updateLocalizedContent_();
+    }
+
+    /**
+     * Update localized strings in tags that are used at the `document` level.
+     * These strings are used outside of a Polymer Element and cannot leverage
+     * I18nBehavior for it.
+     */
+    static updateDocumentLocalizedStrings() {
+      // Update attributes used in the <html> tag.
+      const attrToStrMap = {
+        lang: 'language',
+        dir: 'textdirection',
+        highlight: 'highlightStrength',
+      };
+      for (const [attribute, stringName] of Object.entries(attrToStrMap)) {
+        const localizedString = loadTimeData.getValue(stringName);
+        document.documentElement.setAttribute(attribute, localizedString);
+      }
+
+      // Update this standalone div in the main document.
+      const notice = loadTimeData.getValue('missingAPIKeysNotice');
+      const apiKeysNoticeDiv = $('api-keys-notice');
+      apiKeysNoticeDiv.textContent = notice;
     }
 
     /**

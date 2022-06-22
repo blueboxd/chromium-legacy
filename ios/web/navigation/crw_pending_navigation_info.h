@@ -36,7 +36,6 @@
 @property(nonatomic, assign) BOOL hasUserGesture;
 // Whether the navigation had a server redirect.
 @property(nonatomic, assign) BOOL unsafeRedirect;
-
 @end
 
 #endif  // IOS_WEB_NAVIGATION_CRW_PENDING_NAVIGATION_INFO_H_

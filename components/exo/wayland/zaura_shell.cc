@@ -36,7 +36,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_manager.h"
-#include "ui/display/manager/display_util.h"
+#include "ui/display/manager/display_manager_util.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -704,6 +704,11 @@ void AuraToplevel::SetWindowBounds(int32_t x,
     shell_surface_->SetWindowBounds(gfx::Rect(x, y, width, height));
 }
 
+void AuraToplevel::SetRestoreInfo(int32_t restore_session_id,
+                                  int32_t restore_window_id) {
+  shell_surface_->SetRestoreInfo(restore_session_id, restore_window_id);
+}
+
 void AuraToplevel::OnOriginChange(const gfx::Point& origin) {
   zaura_toplevel_send_origin_change(aura_toplevel_resource_, origin.x(),
                                     origin.y());
@@ -720,6 +725,10 @@ void AuraToplevel::SetClientUsesScreenCoordinates() {
                                               weak_ptr_factory_.GetWeakPtr())));
   shell_surface_->set_origin_change_callback(base::BindRepeating(
       &AuraToplevel::OnOriginChange, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AuraToplevel::SetSystemModal(bool modal) {
+  shell_surface_->SetSystemModal(modal);
 }
 
 void AddState(wl_array* states, xdg_toplevel_state state) {
@@ -1054,11 +1063,31 @@ void aura_toplevel_set_window_bounds(wl_client* client,
   GetUserDataAs<AuraToplevel>(resource)->SetWindowBounds(x, y, width, height);
 }
 
+void aura_toplevel_set_restore_info(wl_client* client,
+                                    wl_resource* resource,
+                                    int32_t restore_session_id,
+                                    int32_t restore_window_id) {
+  GetUserDataAs<AuraToplevel>(resource)->SetRestoreInfo(restore_session_id,
+                                                        restore_window_id);
+}
+
+void aura_toplevel_set_system_modal(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraToplevel>(resource)->SetSystemModal(true);
+}
+
+void aura_toplevel_unset_system_modal(wl_client* client,
+                                      wl_resource* resource) {
+  GetUserDataAs<AuraToplevel>(resource)->SetSystemModal(false);
+}
+
 const struct zaura_toplevel_interface aura_toplevel_implementation = {
     aura_toplevel_set_orientation_lock,
     aura_toplevel_surface_submission_in_pixel_coordinates,
     aura_toplevel_set_client_supports_window_bounds,
     aura_toplevel_set_window_bounds,
+    aura_toplevel_set_restore_info,
+    aura_toplevel_set_system_modal,
+    aura_toplevel_unset_system_modal,
 };
 
 void aura_popup_surface_submission_in_pixel_coordinates(wl_client* client,

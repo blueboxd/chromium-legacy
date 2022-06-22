@@ -23,6 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.metrics.HistogramTestRule;
 import org.chromium.base.test.params.ParameterAnnotations;
@@ -32,14 +33,16 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragment;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTabsFragment;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryActivity;
+import org.chromium.chrome.browser.history_clusters.HistoryClustersBottomSheetContent;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.action.OmniboxActionType;
 import org.chromium.chrome.browser.omnibox.action.OmniboxPedalType;
 import org.chromium.chrome.browser.omnibox.suggestions.pedal.PedalSuggestionView;
 import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
@@ -54,15 +57,17 @@ import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionInfo;
 import org.chromium.components.browser_ui.accessibility.AccessibilitySettings;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.site_settings.SiteSettings;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.AutocompleteResult;
+import org.chromium.components.omnibox.action.HistoryClustersAction;
 import org.chromium.components.omnibox.action.OmniboxPedal;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
-import org.chromium.ui.test.util.UiDisableIf;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -73,8 +78,7 @@ import java.util.List;
  * Tests of the Omnibox Pedals feature.
  */
 @RunWith(ParameterizedRunner.class)
-@CommandLineFlags.
-Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=OmniboxPedalsAndroidBatch1"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Batch(Batch.PER_CLASS)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 public class OmniboxPedalsTest {
@@ -100,6 +104,11 @@ public class OmniboxPedalsTest {
 
     @BeforeClass
     public static void beforeClass() {
+        FeatureList.TestValues featureTestValues = new FeatureList.TestValues();
+        featureTestValues.addFeatureFlagOverride(ChromeFeatureList.HISTORY_JOURNEYS, true);
+        FeatureList.setTestValues(featureTestValues);
+        FeatureList.setTestCanUseDefaultsForTesting();
+
         sActivityTestRule.startMainActivityOnBlankPage();
         sActivityTestRule.waitForActivityNativeInitializationComplete();
         sActivityTestRule.waitForDeferredStartup();
@@ -156,7 +165,7 @@ public class OmniboxPedalsTest {
         return null;
     }
 
-    private void clickOnPedal(@OmniboxPedalType int omniboxPedalType) {
+    private void clickOnPedal() {
         SuggestionInfo<PedalSuggestionView> info =
                 mOmniboxUtils.getSuggestionByType(OmniboxSuggestionUiType.PEDAL_SUGGESTION);
         CriteriaHelper.pollUiThread(() -> {
@@ -189,7 +198,7 @@ public class OmniboxPedalsTest {
     private <T> T clickOnPedalToSettings(
             final Class<T> activityType, @OmniboxPedalType int pedalType) {
         return ActivityTestUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
-                activityType, () -> { clickOnPedal(pedalType); });
+                activityType, () -> clickOnPedal());
     }
 
     /**
@@ -250,6 +259,15 @@ public class OmniboxPedalsTest {
                 .setDisplayText(name)
                 .setOmniboxPedal(new OmniboxPedal(id, "hints", "suggestionContents",
                         "accessibilitySuffix", "accessibilityHint", GURL.emptyGURL()))
+                .build();
+    }
+
+    private AutocompleteMatch createDummyHistoryClustersAction(String name) {
+        return AutocompleteMatchBuilder.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                .setDisplayText(name)
+                .setOmniboxPedal(new HistoryClustersAction(OmniboxActionType.HISTORY_CLUSTERS,
+                        "hints", "suggestionContents", "accessibilitySuffix", "accessibilityHint",
+                        GURL.emptyGURL(), name))
                 .build();
     }
 
@@ -325,7 +343,7 @@ public class OmniboxPedalsTest {
 
         checkPedalWasShown(OmniboxPedalType.LAUNCH_INCOGNITO, /*expectShown=*/true);
 
-        clickOnPedal(OmniboxPedalType.LAUNCH_INCOGNITO);
+        clickOnPedal();
 
         CriteriaHelper.pollUiThread(() -> {
             Tab tab = sActivityTestRule.getActivity().getActivityTab();
@@ -402,12 +420,27 @@ public class OmniboxPedalsTest {
 
     @Test
     @MediumTest
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1291207
     public void testViewYourChromeHistoryOmniboxPedalSuggestion() throws InterruptedException {
         // Generate the view chrome history pedal.
         typeInOmnibox("view chrome history");
 
         checkPedalWasShown(OmniboxPedalType.VIEW_CHROME_HISTORY, /*expectShown=*/true);
+
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(sActivityTestRule.getActivity())) {
+            // On the phone, the history setting page will be shown as a {@link Fragment}, but on
+            // the tablet, the history setting page will be shown as a native url. So we need to
+            // have a different way to verify if the history setting page is opened.
+            clickOnPedal();
+            CriteriaHelper.pollUiThread(() -> {
+                Tab tab = sActivityTestRule.getActivity().getActivityTab();
+                Criteria.checkThat(tab, Matchers.notNullValue());
+                Criteria.checkThat(tab.getUrl().getSpec(),
+                        Matchers.startsWith(UrlConstants.NATIVE_HISTORY_URL));
+            });
+
+            verifyHistogram(OmniboxPedalType.VIEW_CHROME_HISTORY);
+            return;
+        }
 
         HistoryActivity historyActivity =
                 clickOnPedalToSettings(HistoryActivity.class, OmniboxPedalType.VIEW_CHROME_HISTORY);
@@ -474,7 +507,7 @@ public class OmniboxPedalsTest {
         checkPedalWasShown(OmniboxPedalType.PLAY_CHROME_DINO_GAME, /*expectShown=*/true);
 
         // Click the pedal.
-        clickOnPedal(OmniboxPedalType.PLAY_CHROME_DINO_GAME);
+        clickOnPedal();
 
         CriteriaHelper.pollUiThread(() -> {
             Tab tab = sActivityTestRule.getActivity().getActivityTab();
@@ -519,5 +552,31 @@ public class OmniboxPedalsTest {
         SuggestionInfo<PedalSuggestionView> info =
                 mOmniboxUtils.getSuggestionByType(OmniboxSuggestionUiType.PEDAL_SUGGESTION);
         Assert.assertNotNull("Should show a pedal if the suggestion is in top 3 suggestions", info);
+    }
+
+    @Test
+    @MediumTest
+    public void testHistoryClustersAction() {
+        mOmniboxUtils.requestFocus();
+        List<AutocompleteMatch> suggestionsList = buildDummySuggestionsList(2, "Suggestion");
+        suggestionsList.add(createDummyHistoryClustersAction("query"));
+
+        mOmniboxUtils.setSuggestions(
+                AutocompleteResult.fromCache(suggestionsList, null), "Suggestion");
+        mOmniboxUtils.checkSuggestionsShown();
+
+        SuggestionInfo<PedalSuggestionView> info =
+                mOmniboxUtils.getSuggestionByType(OmniboxSuggestionUiType.PEDAL_SUGGESTION);
+        Assert.assertNotNull("Should show", info);
+
+        clickOnPedal();
+
+        CriteriaHelper.pollUiThread(() -> {
+            BottomSheetController bottomSheetController = sActivityTestRule.getActivity()
+                                                                  .getRootUiCoordinatorForTesting()
+                                                                  .getBottomSheetController();
+            Criteria.checkThat(bottomSheetController.getCurrentSheetContent(),
+                    Matchers.instanceOf(HistoryClustersBottomSheetContent.class));
+        });
     }
 }

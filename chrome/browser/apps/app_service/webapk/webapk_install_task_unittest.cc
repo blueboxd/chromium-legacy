@@ -12,6 +12,7 @@
 #include "ash/components/arc/test/fake_webapk_instance.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
@@ -109,8 +110,6 @@ class WebApkInstallTaskTest : public testing::Test {
     testing::Test::SetUp();
     app_service_test_.SetUp(&profile_);
 
-    auto* const provider = web_app::FakeWebAppProvider::Get(&profile_);
-    provider->SkipAwaitingExtensionSystem();
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
 
     // Disable WebApkManager by policy. This allows us to unit test

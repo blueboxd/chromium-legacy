@@ -19,10 +19,12 @@
 #include "ash/metrics/login_metrics_recorder.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/login_accelerators.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/kiosk_app_instruction_bubble.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_shutdown_confirmation_bubble.h"
 #include "ash/shelf/shelf_widget.h"
@@ -32,6 +34,8 @@
 #include "ash/style/default_color_constants.h"
 #include "ash/style/default_colors.h"
 #include "ash/style/style_util.h"
+#include "ash/system/model/enterprise_domain_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -233,8 +237,6 @@ class LoginShelfButton : public views::LabelButton {
     SetInstallFocusRingOnFocus(true);
     views::InstallRoundRectHighlightPathGenerator(
         this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());
-    views::FocusRing::Get(this)->SetColor(
-        ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
@@ -298,6 +300,13 @@ class LoginShelfButton : public views::LabelButton {
     keyboard_controller->HideKeyboardImplicitlyByUser();
   }
 
+  void OnThemeChanged() override {
+    views::LabelButton::OnThemeChanged();
+    views::FocusRing::Get(this)->SetColor(
+        AshColorProvider::Get()->GetControlsLayerColor(
+            AshColorProvider::ControlsLayerType::kFocusRingColor));
+  }
+
  private:
   const int text_resource_id_;
   const gfx::VectorIcon& icon_;
@@ -323,8 +332,6 @@ class KioskAppsButton : public views::MenuButton,
     SetInstallFocusRingOnFocus(true);
     views::InstallRoundRectHighlightPathGenerator(
         this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());
-    views::FocusRing::Get(this)->SetColor(
-        ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
@@ -360,12 +367,7 @@ class KioskAppsButton : public views::MenuButton,
   }
 
   // Replace the existing items list with a new list of kiosk app menu items.
-  void SetApps(
-      const std::vector<KioskAppMenuEntry>& kiosk_apps,
-      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
-      const base::RepeatingClosure& on_show_menu) {
-    launch_app_callback_ = launch_app;
-    on_show_menu_ = on_show_menu;
+  void SetApps(const std::vector<KioskAppMenuEntry>& kiosk_apps) {
     kiosk_apps_ = kiosk_apps;
     Clear();
     const gfx::Size kAppIconSize(16, 16);
@@ -381,6 +383,15 @@ class KioskAppsButton : public views::MenuButton,
     if (menu_runner_ && menu_runner_->IsRunning()) {
       DisplayMenu();
     }
+  }
+
+  void ConfigureKioskCallbacks(
+      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
+      const base::RepeatingClosure& on_show_menu,
+      const base::RepeatingClosure& on_close_menu) {
+    launch_app_callback_ = launch_app;
+    on_show_menu_ = on_show_menu;
+    on_close_menu_ = on_close_menu;
   }
 
   bool HasApps() const { return !kiosk_apps_.empty(); }
@@ -435,13 +446,23 @@ class KioskAppsButton : public views::MenuButton,
 
   void OnMenuWillShow(SimpleMenuModel* source) override { on_show_menu_.Run(); }
 
+  void MenuClosed(SimpleMenuModel* source) override { on_close_menu_.Run(); }
+
   bool IsCommandIdChecked(int command_id) const override { return false; }
 
   bool IsCommandIdEnabled(int command_id) const override { return true; }
 
+  void OnThemeChanged() override {
+    views::MenuButton::OnThemeChanged();
+    views::FocusRing::Get(this)->SetColor(
+        AshColorProvider::Get()->GetControlsLayerColor(
+            AshColorProvider::ControlsLayerType::kFocusRingColor));
+  }
+
  private:
   base::RepeatingCallback<void(const KioskAppMenuEntry&)> launch_app_callback_;
-  base::RepeatingCallback<void()> on_show_menu_;
+  base::RepeatingClosure on_show_menu_;
+  base::RepeatingClosure on_close_menu_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
   std::vector<KioskAppMenuEntry> kiosk_apps_;
 
@@ -635,12 +656,25 @@ LoginShelfView::LoginShelfView(
       lock_screen_action_background);
   login_data_dispatcher_observation_.Observe(
       Shell::Get()->login_screen_controller()->data_dispatcher());
-  UpdateUi();
+
+  // If feature is enabled, update the boolean kiosk_license_mode_. Otherwise,
+  // it's false by default.
+  if (features::IsKioskEnrollmentInOobeEnabled()) {
+    kiosk_license_mode_ =
+        Shell::Get()
+            ->system_tray_model()
+            ->enterprise_domain()
+            ->management_device_mode() == ManagementDeviceMode::kKioskSku;
+  }
 }
 
 LoginShelfView::~LoginShelfView() = default;
 
 void LoginShelfView::UpdateAfterSessionChange() {
+  UpdateUi();
+}
+
+void LoginShelfView::AddedToWidget() {
   UpdateUi();
 }
 
@@ -706,12 +740,39 @@ void LoginShelfView::InstallTestUiUpdateDelegate(
   test_ui_update_delegate_ = std::move(delegate);
 }
 
+void LoginShelfView::OnKioskMenuShown(
+    const base::RepeatingClosure& on_kiosk_menu_shown) {
+  if (kiosk_instruction_bubble_)
+    kiosk_instruction_bubble_->GetWidget()->Hide();
+
+  on_kiosk_menu_shown.Run();
+}
+
+void LoginShelfView::OnKioskMenuclosed() {
+  if (kiosk_instruction_bubble_)
+    kiosk_instruction_bubble_->GetWidget()->Show();
+}
+
 void LoginShelfView::SetKioskApps(
-    const std::vector<KioskAppMenuEntry>& kiosk_apps,
-    const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
-    const base::RepeatingCallback<void()>& on_show_menu) {
-  kiosk_apps_button_->SetApps(kiosk_apps, launch_app, on_show_menu);
+    const std::vector<KioskAppMenuEntry>& kiosk_apps) {
+  kiosk_apps_button_->SetApps(kiosk_apps);
   UpdateUi();
+  if (LockScreen::HasInstance()) {
+    LockScreen::Get()->SetKioskAppsButtonPresence(
+        kiosk_apps_button_->GetVisible());
+  }
+}
+
+void LoginShelfView::ConfigureKioskCallbacks(
+    const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
+    const base::RepeatingClosure& on_show_menu) {
+  const auto show_kiosk_menu_callback =
+      base::BindRepeating(&LoginShelfView::OnKioskMenuShown,
+                          weak_ptr_factory_.GetWeakPtr(), on_show_menu);
+  const auto close_kiosk_menu_callback = base::BindRepeating(
+      &LoginShelfView::OnKioskMenuclosed, weak_ptr_factory_.GetWeakPtr());
+  kiosk_apps_button_->ConfigureKioskCallbacks(
+      launch_app, show_kiosk_menu_callback, close_kiosk_menu_callback);
 }
 
 void LoginShelfView::SetLoginDialogState(OobeDialogState state) {
@@ -787,6 +848,10 @@ void LoginShelfView::SetButtonOpacity(float target_opacity) {
                        ShelfConfig::Get()->DimAnimationTween());
 }
 
+void LoginShelfView::SetKioskLicenseModeForTesting(bool is_kiosk_license_mode) {
+  kiosk_license_mode_ = is_kiosk_license_mode;
+}
+
 std::unique_ptr<ScopedGuestButtonBlocker>
 LoginShelfView::GetScopedGuestButtonBlocker() {
   return std::make_unique<LoginShelfView::ScopedGuestButtonBlockerImpl>(
@@ -826,6 +891,11 @@ void LoginShelfView::HandleLocaleChange() {
   }
 }
 
+KioskAppInstructionBubble*
+LoginShelfView::GetKioskInstructionBubbleForTesting() {
+  return kiosk_instruction_bubble_;
+}
+
 ShelfShutdownConfirmationBubble*
 LoginShelfView::GetShutdownConfirmationBubbleForTesting() {
   return test_shutdown_confirmation_bubble_;
@@ -849,7 +919,8 @@ void LoginShelfView::UpdateUi() {
 
   SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
-  if (session_state == SessionState::ACTIVE) {
+  if (session_state == SessionState::ACTIVE ||
+      session_state == SessionState::RMA) {
     // The entire view was set invisible. The buttons are also set invisible
     // to avoid affecting calculation of the shelf size.
     for (auto* child : children())
@@ -891,9 +962,26 @@ void LoginShelfView::UpdateUi() {
   // Show add user button when it's in login screen and Oobe UI dialog is not
   // visible. The button should not appear if the device is not connected to a
   // network.
-  GetViewByID(kAddUser)->SetVisible(!dialog_visible && is_login_primary);
+  GetViewByID(kAddUser)->SetVisible(!kiosk_license_mode_ && !dialog_visible &&
+                                    is_login_primary);
   kiosk_apps_button_->SetVisible(kiosk_apps_button_->HasApps() &&
                                  ShouldShowAppsButton());
+  if (kiosk_license_mode_) {
+    // Create the bubble once the login shelf view is available for anchoring.
+    if (!kiosk_instruction_bubble_) {
+      Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+      kiosk_instruction_bubble_ = new KioskAppInstructionBubble(
+          GetViewByID(kApps), shelf->alignment(),
+          shelf->shelf_widget()->GetShelfBackgroundColor());
+    }
+    if (kiosk_instruction_bubble_) {
+      // Show kiosk instructions if the kiosk app button is visible.
+      if (kiosk_apps_button_->GetVisible())
+        kiosk_instruction_bubble_->GetWidget()->Show();
+      else
+        kiosk_instruction_bubble_->GetWidget()->Hide();
+    }
+  }
 
   GetViewByID(kOsInstall)->SetVisible(ShouldShowOsInstallButton());
 
@@ -991,6 +1079,7 @@ bool LoginShelfView::ShouldShowShutdownButton() const {
 // only signin option), the guest button should be shown if allowed by policy
 // and OOBE.
 // 6. There are no scoped guest buttons blockers active.
+// 7. The device is not in kiosk license mode.
 bool LoginShelfView::ShouldShowGuestButton() const {
   if (!allow_guest_)
     return false;
@@ -1008,6 +1097,9 @@ bool LoginShelfView::ShouldShowGuestButton() const {
     return is_first_signin_step_;
 
   if (session_state != SessionState::LOGIN_PRIMARY)
+    return false;
+
+  if (kiosk_license_mode_)
     return false;
 
   return true;

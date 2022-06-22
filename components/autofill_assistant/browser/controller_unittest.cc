@@ -1994,7 +1994,7 @@ TEST_F(ControllerTest, WriteUserData) {
             TermsAndConditionsState::ACCEPTED);
 }
 
-TEST_F(ControllerTest, StartPasswordChangeFlow) {
+TEST_F(ControllerTest, StartPasswordChangeFlowFromUPM) {
   const GURL initialUrl("http://example.com/password");
   const std::string username = "test_username";
   EXPECT_CALL(*mock_service_, GetScriptsForUrl(Eq(initialUrl), _, _))
@@ -2004,7 +2004,38 @@ TEST_F(ControllerTest, StartPasswordChangeFlow) {
               OnChangePasswordFlowStarted(
                   initialUrl.DeprecatedGetOriginAsURL(), username,
                   password_manager::PasswordChangeSuccessTracker::StartEvent::
-                      kAutomatedFlow));
+                      kAutomatedFlow,
+                  password_manager::PasswordChangeSuccessTracker::EntryPoint::
+                      kLeakCheckInSettings));
+
+  EXPECT_TRUE(controller_->Start(
+      initialUrl,
+      // 9 is the enum value of |GOOGLE_PASSWORD_MANAGER|, i.e. a call
+      // from the Unified Password Manager.
+      std::make_unique<TriggerContext>(
+          /* parameters=*/std::make_unique<ScriptParameters>(
+              base::flat_map<std::string, std::string>{
+                  {"PASSWORD_CHANGE_USERNAME", username}, {"CALLER", "9"}}),
+          TriggerContext::Options())));
+  // Initial navigation.
+  SimulateNavigateToUrl(GURL("http://b.example.com"));
+  EXPECT_EQ(GetUserData()->selected_login_->username, username);
+  EXPECT_EQ(GetUserData()->selected_login_->origin,
+            initialUrl.DeprecatedGetOriginAsURL());
+  EXPECT_EQ(controller_->GetCurrentURL().host(), "b.example.com");
+}
+
+TEST_F(ControllerTest, StartPasswordChangeFlow) {
+  const GURL initialUrl("http://example.com/password");
+  const std::string username = "test_username";
+  EXPECT_CALL(*mock_service_, GetScriptsForUrl(Eq(initialUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, "",
+                                   ServiceRequestSender::ResponseInfo{}));
+  // We do not expect a call to the tracker, since the flow is not started
+  // from UPM.
+  EXPECT_CALL(mock_password_change_success_tracker_,
+              OnChangePasswordFlowStarted)
+      .Times(0);
 
   EXPECT_TRUE(controller_->Start(
       initialUrl, std::make_unique<TriggerContext>(
@@ -2200,6 +2231,70 @@ TEST_F(ControllerPrerenderTest, SuccessfulNavigation) {
   EXPECT_FALSE(controller_->HasNavigationError());
 
   simulator->Commit();
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  controller_->RemoveNavigationListener(&listener);
+
+  EXPECT_THAT(listener.events, IsEmpty());
+}
+
+TEST_F(ControllerTest, MustUseBackendData) {
+  EXPECT_CALL(mock_client_, MustUseBackendData).WillOnce(Return(true));
+  EXPECT_TRUE(controller_->MustUseBackendData());
+}
+
+class ControllerFencedFrameTest : public ControllerTest {
+ public:
+  ControllerFencedFrameTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kFencedFrames, {{"implementation_type", "mparch"}});
+  }
+  ~ControllerFencedFrameTest() override = default;
+
+  content::RenderFrameHost* CreateFencedFrame(
+      content::RenderFrameHost* parent) {
+    content::RenderFrameHost* fenced_frame =
+        content::RenderFrameHostTester::For(parent)->AppendFencedFrame();
+    return fenced_frame;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(ControllerFencedFrameTest, DoNotNavigateInFencedFrame) {
+  EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
+  EXPECT_FALSE(controller_->HasNavigationError());
+
+  NavigationStateChangeListener listener(controller_.get());
+  controller_->AddNavigationListener(&listener);
+
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://initialurl.com"), web_contents()->GetMainFrame());
+
+  EXPECT_THAT(
+      listener.events,
+      ElementsAre(
+          NavigationState{/* navigating= */ true, /* has_errors= */ false},
+          NavigationState{/* navigating= */ false, /* has_errors= */ false}));
+
+  listener.events.clear();
+
+  // Create a fenced frame.
+  content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+      ->InitializeRenderFrameIfNeeded();
+  content::RenderFrameHost* fenced_frame_rfh =
+      CreateFencedFrame(web_contents()->GetMainFrame());
+  GURL kFencedFrameUrl("https://fencedframe.com");
+  std::unique_ptr<content::NavigationSimulator> navigation_simulator =
+      content::NavigationSimulator::CreateForFencedFrame(kFencedFrameUrl,
+                                                         fenced_frame_rfh);
+  navigation_simulator->Commit();
+  fenced_frame_rfh = navigation_simulator->GetFinalRenderFrameHost();
+  EXPECT_TRUE(fenced_frame_rfh->IsFencedFrameRoot());
+
+  // Autofill assistant controller doesn't handle navigations in fenced frames.
   EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
   EXPECT_FALSE(controller_->HasNavigationError());
 

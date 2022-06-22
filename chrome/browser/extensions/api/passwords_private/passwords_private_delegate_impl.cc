@@ -51,7 +51,7 @@
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils_chromeos.h"
 #endif
 
@@ -558,6 +558,13 @@ bool PasswordsPrivateDelegateImpl::MuteInsecureCredential(
 bool PasswordsPrivateDelegateImpl::UnmuteInsecureCredential(
     const api::passwords_private::InsecureCredential& credential) {
   return password_check_delegate_.UnmuteInsecureCredential(credential);
+}
+
+void PasswordsPrivateDelegateImpl::RecordChangePasswordFlowStarted(
+    const api::passwords_private::InsecureCredential& credential,
+    bool is_manual_flow) {
+  password_check_delegate_.RecordChangePasswordFlowStarted(credential,
+                                                           is_manual_flow);
 }
 
 void PasswordsPrivateDelegateImpl::StartPasswordCheck(

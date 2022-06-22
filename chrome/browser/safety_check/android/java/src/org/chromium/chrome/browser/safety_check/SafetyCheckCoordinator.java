@@ -4,15 +4,19 @@
 
 package org.chromium.chrome.browser.safety_check;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
+import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelper;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -33,22 +37,29 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
      * @param updatesClient An instance implementing the {@SafetyCheckUpdatesDelegate} interface.
      * @param settingsLauncher An instance implementing the {@SettingsLauncher} interface.
      * @param signinLauncher An instance implementing {@SigninActivityLauncher}.
+     * @param modalDialogManagerSupplier An supplier for the {@ModalDialogManager}.
      */
     public static void create(SafetyCheckSettingsFragment settingsFragment,
             SafetyCheckUpdatesDelegate updatesClient, SettingsLauncher settingsLauncher,
-            SyncConsentActivityLauncher signinLauncher) {
-        new SafetyCheckCoordinator(
-                settingsFragment, updatesClient, settingsLauncher, signinLauncher);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_SCRIPTS_FETCHING)) {
+            SyncConsentActivityLauncher signinLauncher,
+            @Nullable PasswordCheckupClientHelper passwordCheckupHelper,
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
+        new SafetyCheckCoordinator(settingsFragment, updatesClient, settingsLauncher,
+                signinLauncher, passwordCheckupHelper, modalDialogManagerSupplier);
+        if (passwordCheckupHelper == null
+                && (ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_SCRIPTS_FETCHING)
+                        || ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.PASSWORD_DOMAIN_CAPABILITIES_FETCHING))) {
             // Triggers pre-fetching the list of password change scripts.
             PasswordCheckFactory.getOrCreate(settingsLauncher).fetchScripts();
         }
     }
 
-
     private SafetyCheckCoordinator(SafetyCheckSettingsFragment settingsFragment,
             SafetyCheckUpdatesDelegate updatesClient, SettingsLauncher settingsLauncher,
-            SyncConsentActivityLauncher signinLauncher) {
+            SyncConsentActivityLauncher signinLauncher,
+            PasswordCheckupClientHelper passwordCheckupHelper,
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
         mSettingsFragment = settingsFragment;
         mUpdatesClient = updatesClient;
         // Create the model and the mediator once the view is created.
@@ -71,8 +82,9 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
                             // The View is available, so now we can create the Model, MCP, and
                             // Mediator.
                             PropertyModel model = createModelAndMcp(mSettingsFragment);
-                            mMediator = new SafetyCheckMediator(
-                                    model, mUpdatesClient, settingsLauncher, signinLauncher);
+                            mMediator = new SafetyCheckMediator(model, mUpdatesClient,
+                                    settingsLauncher, signinLauncher, passwordCheckupHelper,
+                                    modalDialogManagerSupplier);
                         }
                     }
                 });

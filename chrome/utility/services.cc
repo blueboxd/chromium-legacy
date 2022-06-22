@@ -9,14 +9,16 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"  // nogncheck
-#include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
+#include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"
+#include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"
+#include "chrome/services/speech/buildflags/buildflags.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/language_detection/language_detection_service_impl.h"
 #include "components/services/language_detection/public/mojom/language_detection.mojom.h"
 #include "components/services/patch/file_patcher_impl.h"
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "components/services/unzip/unzipper_impl.h"
 #include "components/webapps/services/web_app_origin_association/public/mojom/web_app_origin_association_parser.mojom.h"
@@ -28,11 +30,13 @@
 #include "printing/buildflags/buildflags.h"
 #include "ui/accessibility/accessibility_features.h"
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#include "components/services/screen_ai/screen_ai_service_impl.h"
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "components/services/screen_ai/screen_ai_service_impl.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(IS_WIN)
+#include "chrome/services/system_signals/public/mojom/system_signals.mojom.h"
+#include "chrome/services/system_signals/win/win_system_signals_service.h"
 #include "chrome/services/util_win/processor_metrics.h"
 #include "chrome/services/util_win/public/mojom/util_read_icon.mojom.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
@@ -50,13 +54,16 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/common/importer/profile_import.mojom.h"
-#include "chrome/services/speech/speech_recognition_service_impl.h"
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "components/mirroring/service/mirroring_service.h"
-#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
+#include "chrome/services/speech/speech_recognition_service_impl.h"  // nogncheck
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"  // nogncheck
+#endif  // BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
 
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/services/ipp_parser/ipp_parser.h"  // nogncheck
@@ -167,6 +174,13 @@ auto RunWindowsUtility(mojo::PendingReceiver<chrome::mojom::UtilWin> receiver) {
   return std::make_unique<UtilWinImpl>(std::move(receiver));
 }
 
+auto RunSystemSignalsService(
+    mojo::PendingReceiver<system_signals::mojom::SystemSignalsService>
+        receiver) {
+  return std::make_unique<system_signals::WinSystemSignalsService>(
+      std::move(receiver));
+}
+
 auto RunWindowsIconReader(
     mojo::PendingReceiver<chrome::mojom::UtilReadIcon> receiver) {
   return std::make_unique<UtilReadIcon>(std::move(receiver));
@@ -208,14 +222,17 @@ auto RunMirroringService(
       std::move(receiver), content::UtilityThread::Get()->GetIOTaskRunner());
 }
 
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
 auto RunSpeechRecognitionService(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionService> receiver) {
   return std::make_unique<speech::SpeechRecognitionServiceImpl>(
       std::move(receiver));
 }
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 auto RunScreenAIService(
     mojo::PendingReceiver<screen_ai::mojom::ScreenAIService> receiver) {
   return std::make_unique<screen_ai::ScreenAIService>(std::move(receiver));
@@ -379,10 +396,13 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 #if !BUILDFLAG(IS_ANDROID)
   services.Add(RunProfileImporter);
   services.Add(RunMirroringService);
-  services.Add(RunSpeechRecognitionService);
-#endif
+#endif  // !BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
+  services.Add(RunSpeechRecognitionService);
+#endif  // !BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (features::IsScreenAIEnabled())
     services.Add(RunScreenAIService);
 #endif
@@ -391,6 +411,7 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunProcessorMetrics);
   services.Add(RunQuarantineService);
   services.Add(RunWindowsUtility);
+  services.Add(RunSystemSignalsService);
   services.Add(RunWindowsIconReader);
 #endif  // BUILDFLAG(IS_WIN)
 

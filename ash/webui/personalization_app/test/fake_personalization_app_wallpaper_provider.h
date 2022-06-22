@@ -53,8 +53,6 @@ class FakePersonalizationAppWallpaperProvider
       const absl::optional<std::string>& resume_token,
       FetchGooglePhotosAlbumsCallback callback) override;
 
-  void FetchGooglePhotosCount(FetchGooglePhotosCountCallback callback) override;
-
   void FetchGooglePhotosEnabled(
       FetchGooglePhotosEnabledCallback callback) override;
 
@@ -63,6 +61,9 @@ class FakePersonalizationAppWallpaperProvider
       const absl::optional<std::string>& album_id,
       const absl::optional<std::string>& resume_token,
       FetchGooglePhotosPhotosCallback callback) override;
+
+  void GetDefaultImageThumbnail(
+      GetDefaultImageThumbnailCallback callback) override;
 
   void GetLocalImages(GetLocalImagesCallback callback) override;
 
@@ -77,11 +78,20 @@ class FakePersonalizationAppWallpaperProvider
                        bool preview_mode,
                        SelectWallpaperCallback callback) override;
 
+  void SelectDefaultImage(SelectDefaultImageCallback callback) override;
+
   void SelectGooglePhotosPhoto(
       const std::string& id,
       ash::WallpaperLayout layout,
       bool preview_mode,
       SelectGooglePhotosPhotoCallback callback) override;
+
+  void SelectGooglePhotosAlbum(
+      const std::string& id,
+      SelectGooglePhotosAlbumCallback callback) override;
+
+  void GetGooglePhotosDailyRefreshAlbumId(
+      GetGooglePhotosDailyRefreshAlbumIdCallback callback) override;
 
   void SelectLocalImage(const base::FilePath& path,
                         ash::WallpaperLayout layout,

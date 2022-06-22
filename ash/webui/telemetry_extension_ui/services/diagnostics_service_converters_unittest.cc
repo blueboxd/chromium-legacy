@@ -11,6 +11,15 @@
 namespace ash {
 namespace converters {
 
+// Tests that |ConvertDiagnosticsPtr| function returns nullptr if input is
+// nullptr. ConvertDiagnosticsPtr is a template, so we can test this function
+// with any valid type.
+TEST(DiagnosticsServiceConvertersTest, ConvertDiagnosticsPtrTakesNullPtr) {
+  EXPECT_TRUE(
+      ConvertDiagnosticsPtr(cros_healthd::mojom::InteractiveRoutineUpdatePtr())
+          .is_null());
+}
+
 TEST(DiagnosticsServiceConvertersTest, ConvertDiagnosticRoutineStatusEnum) {
   namespace cros_healthd = ::chromeos::cros_healthd::mojom;
   namespace health = ::ash::health::mojom;
@@ -58,6 +67,8 @@ TEST(DiagnosticsServiceConvertersTest, ConvertDiagnosticRoutineCommandEnum) {
   namespace cros_healthd = ::chromeos::cros_healthd::mojom;
   namespace health = ::ash::health::mojom;
 
+  EXPECT_EQ(Convert(health::DiagnosticRoutineCommandEnum::kUnknown),
+            cros_healthd::DiagnosticRoutineCommandEnum::kUnknown);
   EXPECT_EQ(Convert(health::DiagnosticRoutineCommandEnum::kContinue),
             cros_healthd::DiagnosticRoutineCommandEnum::kContinue);
   EXPECT_EQ(Convert(health::DiagnosticRoutineCommandEnum::kCancel),
@@ -72,6 +83,8 @@ TEST(DiagnosticsServiceConvertersTest, ConvertAcPowerStatusEnum) {
   namespace cros_healthd = ::chromeos::cros_healthd::mojom;
   namespace health = ::ash::health::mojom;
 
+  EXPECT_EQ(Convert(health::AcPowerStatusEnum::kUnknown),
+            cros_healthd::AcPowerStatusEnum::kUnknown);
   EXPECT_EQ(Convert(health::AcPowerStatusEnum::kConnected),
             cros_healthd::AcPowerStatusEnum::kConnected);
   EXPECT_EQ(Convert(health::AcPowerStatusEnum::kDisconnected),
@@ -82,6 +95,8 @@ TEST(DiagnosticsServiceConvertersTest, ConvertNvmeSelfTestTypeEnum) {
   namespace cros_healthd = ::chromeos::cros_healthd::mojom;
   namespace health = ::ash::health::mojom;
 
+  EXPECT_EQ(Convert(health::NvmeSelfTestTypeEnum::kUnknown),
+            cros_healthd::NvmeSelfTestTypeEnum::kUnknown);
   EXPECT_EQ(Convert(health::NvmeSelfTestTypeEnum::kShortSelfTest),
             cros_healthd::NvmeSelfTestTypeEnum::kShortSelfTest);
   EXPECT_EQ(Convert(health::NvmeSelfTestTypeEnum::kLongSelfTest),

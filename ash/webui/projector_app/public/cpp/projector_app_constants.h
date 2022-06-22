@@ -7,7 +7,6 @@
 
 namespace ash {
 
-// TODO(b/193670945): Migrate to ash/components and ash/webui.
 extern const char kChromeUIProjectorAppHost[];
 extern const char kChromeUIProjectorAnnotatorHost[];
 
@@ -17,11 +16,10 @@ extern const char kChromeUIUntrustedProjectorPwaUrl[];
 extern const char kChromeUITrustedProjectorUrl[];
 extern const char kChromeUITrustedProjectorAppUrl[];
 
-extern const char kChromeUITrustedProjectorSelfieCamUrl[];
-
 extern const char kChromeUITrustedAnnotatorUrl[];
 extern const char kChromeUIUntrustedAnnotatorUrl[];
-extern const char kChromeUIAnnotatorUrl[];
+extern const char kChromeUITrustedAnnotatorAppUrl[];
+extern const char kChromeUIUntrustedAnnotatorAppUrl[];
 
 extern const char kChromeUITrustedProjectorSwaAppId[];
 

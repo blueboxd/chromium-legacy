@@ -9,6 +9,18 @@
 
 #include "base/files/file_path.h"
 
+class PrefService;
+
+namespace ash {
+class InstallAttributes;
+}
+
+namespace chromeos {
+namespace system {
+class StatisticsProvider;
+}
+}  // namespace chromeos
+
 namespace policy {
 
 // An enumeration of different enrollment licenses.
@@ -56,8 +68,9 @@ struct EnrollmentConfig {
     // Forced enrollment triggered as a fallback to attestation re-enrollment,
     // user can't skip.
     MODE_ATTESTATION_MANUAL_FALLBACK,
+    // Deprecated: Demo mode does not support offline enrollment.
     // Enrollment for offline demo mode with locally stored policy data.
-    MODE_OFFLINE_DEMO,
+    MODE_OFFLINE_DEMO_DEPRECATED,
     // Obsolete. Flow that happens when already enrolled device undergoes
     // version rollback. Enrollment information is preserved during rollback,
     // but some steps have to be repeated as stateful partition was wiped.
@@ -84,6 +97,22 @@ struct EnrollmentConfig {
     // that requires the least user interaction).
     AUTH_MECHANISM_BEST_AVAILABLE,
   };
+
+  // Get the enrollment configuration that has been set up via signals such as
+  // device requisition, OEM manifest, pre-existing installation-time attributes
+  // or server-backed state retrieval. The configuration is stored in |config|,
+  // |config.mode| will be MODE_NONE if there is no prescribed configuration.
+  // |config.management_domain| will contain the domain the device is supposed
+  // to be enrolled to as decided by factors such as forced re-enrollment,
+  // enrollment recovery, or already-present install attributes. Note that
+  // |config.management_domain| may be non-empty even if |config.mode| is
+  // MODE_NONE.
+  // |statistics_provider| would also be const if it had const access methods.
+  static EnrollmentConfig GetPrescribedEnrollmentConfig();
+  static EnrollmentConfig GetPrescribedEnrollmentConfig(
+      const PrefService& local_state,
+      const ash::InstallAttributes& install_attributes,
+      chromeos::system::StatisticsProvider* statistics_provider);
 
   EnrollmentConfig();
   EnrollmentConfig(const EnrollmentConfig& config);
@@ -138,12 +167,6 @@ struct EnrollmentConfig {
   bool is_mode_oauth() const {
     return mode != MODE_NONE && !is_mode_attestation();
   }
-
-  // Whether state keys request should be skipped.
-  // Skipping the request is allowed only for offline demo mode. Offline demo
-  // mode setup ensures that online validation of state keys is not required in
-  // that case.
-  bool skip_state_keys_request() const { return mode == MODE_OFFLINE_DEMO; }
 
   // Indicates the enrollment flow variant to trigger during OOBE.
   Mode mode = MODE_NONE;

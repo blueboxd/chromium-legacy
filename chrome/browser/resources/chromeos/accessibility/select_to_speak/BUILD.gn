@@ -121,7 +121,8 @@ js2gtest("select_to_speak_extjs_tests") {
     "//ash",
     "//ash/keyboard/ui",
     "//base",
-    "//chrome/browser/chromeos",
+    "//chrome/browser/ash",
+    "//chrome/browser/ash/crosapi",
     "//chrome/common",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -150,6 +151,7 @@ js_type_check("closure_compile") {
     "../common:rect_util",
     "../common:tree_walker",
   ]
+  closure_flags = [ "js_module_root=../" ]
 }
 
 js_library("select_to_speak") {

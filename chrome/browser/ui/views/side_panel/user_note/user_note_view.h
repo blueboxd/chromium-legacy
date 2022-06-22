@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_SIDE_PANEL_USER_NOTE_USER_NOTE_VIEW_H_
 
 #include "components/user_notes/browser/user_note_instance.h"
+#include "ui/views/controls/textarea/textarea.h"
 #include "ui/views/view.h"
 
 // View of a user note in the side panel in multiple states. The view in the
@@ -36,17 +37,26 @@ class UserNoteView : public views::View {
   ~UserNoteView() override;
 
   const base::UnguessableToken& UserNoteId() {
-    return user_note_instance_->model().id();
+    return user_note_instance_ != nullptr ? user_note_instance_->model().id()
+                                          : base::UnguessableToken::Null();
+  }
+
+  const gfx::Rect& user_note_rect() const {
+    return user_note_instance_->rect();
   }
 
  private:
-  std::unique_ptr<views::View> CreateHeaderView(std::string& note_date);
-  std::unique_ptr<views::View> CreateQuoteView(std::string& note_quote);
-  std::unique_ptr<views::View> CreateBodyView(std::string& note_text);
-  std::unique_ptr<views::View> CreateButtonsView();
-  std::unique_ptr<views::View> CreateTextareaView(std::string& text);
+  void OnCancelNewUserNote();
+  void OnAddUserNote();
+
+  void OnOpenMenu();
 
   raw_ptr<user_notes::UserNoteInstance> user_note_instance_;
+  raw_ptr<views::Textarea> text_area_;
+  raw_ptr<views::View> button_container_;
+  raw_ptr<views::Label> user_note_body_;
+  raw_ptr<views::View> user_note_header_;
+  raw_ptr<views::View> user_note_quote_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_SIDE_PANEL_USER_NOTE_USER_NOTE_VIEW_H_

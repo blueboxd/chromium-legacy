@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/trace_event/typed_macros.h"
 #include "components/shared_highlighting/core/common/fragment_directives_utils.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/fragment_directive/fragment_directive.h"
 #include "third_party/blink/renderer/core/fragment_directive/fragment_directive_utils.h"
 #include "third_party/blink/renderer/core/fragment_directive/text_directive.h"
 #include "third_party/blink/renderer/core/fragment_directive/text_fragment_handler.h"
@@ -191,9 +193,7 @@ TextFragmentAnchor::TextFragmentAnchor(
   DCHECK(!text_directives.IsEmpty());
   DCHECK(frame_->View());
 
-  metrics_->DidCreateAnchor(
-      text_directives.size(),
-      frame.GetDocument()->fragmentDirective().LengthForMetrics());
+  metrics_->DidCreateAnchor(text_directives.size());
 
   directive_finder_pairs_.ReserveCapacity(text_directives.size());
   for (Member<TextDirective>& directive : text_directives) {
@@ -242,9 +242,6 @@ bool TextFragmentAnchor::InvokeSelector() {
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::TextFragment());
 
-  if (user_scrolled_ && !did_scroll_into_view_)
-    metrics_->ScrollCancelled();
-
   if (!did_find_match_) {
     metrics_->DidStartSearch();
   }
@@ -281,17 +278,6 @@ bool TextFragmentAnchor::InvokeSelector() {
 
 void TextFragmentAnchor::Installed() {}
 
-void TextFragmentAnchor::DidScroll(mojom::blink::ScrollType type) {
-  SelectorFragmentAnchor::DidScroll(type);
-
-  if ((type == mojom::blink::ScrollType::kUser ||
-       type == mojom::blink::ScrollType::kCompositor) &&
-      did_non_zero_scroll_ &&
-      frame_->View()->GetScrollableArea()->GetScrollOffset().IsZero()) {
-    metrics_->DidScrollToTop();
-  }
-}
-
 void TextFragmentAnchor::PerformPreRafActions() {
   if (!needs_perform_pre_raf_actions_)
     return;
@@ -321,10 +307,8 @@ void TextFragmentAnchor::Trace(Visitor* visitor) const {
   SelectorFragmentAnchor::Trace(visitor);
 }
 
-void TextFragmentAnchor::DidFindMatch(
-    const RangeInFlatTree& range,
-    const TextFragmentAnchorMetrics::Match match_metrics,
-    bool is_unique) {
+void TextFragmentAnchor::DidFindMatch(const RangeInFlatTree& range,
+                                      bool is_unique) {
   // TODO(bokan): Can this happen or should this be a DCHECK?
   if (search_finished_)
     return;
@@ -370,7 +354,7 @@ void TextFragmentAnchor::DidFindMatch(
 
   Node& first_node = *range.ToEphemeralRange().Nodes().begin();
 
-  metrics_->DidFindMatch(match_metrics);
+  metrics_->DidFindMatch();
   did_find_match_ = true;
 
   if (first_match_needs_scroll_) {
@@ -394,28 +378,14 @@ void TextFragmentAnchor::DidFindMatch(
             ScrollAlignment::CenterAlways(), ScrollAlignment::CenterAlways(),
             mojom::blink::ScrollType::kProgrammatic);
     params->cross_origin_boundaries = false;
-    PhysicalRect scrolled_bounding_box =
-        first_node.GetLayoutObject()->ScrollRectToVisible(bounding_box,
-                                                          std::move(params));
+    first_node.GetLayoutObject()->ScrollRectToVisible(bounding_box,
+                                                      std::move(params));
     did_scroll_into_view_ = true;
 
     if (AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache())
       cache->HandleScrolledToAnchor(&first_node);
 
-    metrics_->DidScroll();
-
-    // We scrolled the text into view if the main document scrolled or the text
-    // bounding box changed, i.e. if it was scrolled in a nested scroller.
-    // TODO(nburris): The rect returned by ScrollRectToVisible,
-    // scrolled_bounding_box, should be in frame coordinates in which case
-    // just checking its location would suffice, but there is a bug where it is
-    // actually in document coordinates and therefore does not change with a
-    // main document scroll.
-    if (!frame_->View()->GetScrollableArea()->GetScrollOffset().IsZero() ||
-        scrolled_bounding_box.offset != bounding_box.offset) {
-      did_non_zero_scroll_ = true;
-      metrics_->DidNonZeroScroll();
-    }
+    metrics_->DidInvokeScrollIntoView();
   }
   EphemeralRange dom_range =
       EphemeralRange(ToPositionInDOMTree(range.StartPosition()),
@@ -466,7 +436,6 @@ bool TextFragmentAnchor::Dismiss() {
 
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::TextFragment());
-  metrics_->Dismissed();
 
   return SelectorFragmentAnchor::Dismiss();
 }

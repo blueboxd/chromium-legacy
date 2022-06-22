@@ -171,7 +171,7 @@
       <site-details-permission category="[[contentSettingsTypesEnum_.HID_DEVICES]]"
           icon="settings:hid-device" label="$i18n{siteSettingsHidDevices}">
       </site-details-permission>
-<if expr="chromeos_ash or is_win">
+<if expr="chromeos_ash or chromeos_lacros or is_win">
       <site-details-permission
           category="[[contentSettingsTypesEnum_.PROTECTED_CONTENT]]"
           icon="settings:protected-content"
@@ -197,6 +197,11 @@
           category="[[contentSettingsTypesEnum_.MIXEDSCRIPT]]"
           icon="settings:insecure-content"
           label="$i18n{siteSettingsInsecureContent}">
+      </site-details-permission>
+      <site-details-permission
+          category="[[contentSettingsTypesEnum_.FEDERATED_IDENTITY_API]]"
+          icon="settings:federated-identity-api"
+          label="$i18n{siteSettingsFederatedIdentityApi}">
       </site-details-permission>
       <site-details-permission category="[[contentSettingsTypesEnum_.AR]]"
           icon="settings:vr-headset" label="$i18n{siteSettingsAr}">

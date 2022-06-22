@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/cart/commerce_hint_agent.h"
 
+#include "base/features.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
@@ -18,6 +19,7 @@
 #include "chrome/grit/renderer_resources.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/commerce_heuristics_data.h"
+#include "components/commerce/core/commerce_heuristics_data_metrics_helper.h"
 #include "components/commerce/core/heuristics/commerce_heuristics_provider.h"
 #include "components/search/ntp_features.h"
 #include "content/public/renderer/render_frame.h"
@@ -287,8 +289,9 @@ const std::map<std::string, std::string>& GetPurchaseURLPatternMapping() {
     const base::Value json(
         base::JSONReader::Read(
             kPurchaseURLPatternMapping.Get().empty()
-                ? ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-                      IDR_PURCHASE_URL_REGEX_DOMAIN_MAPPING_JSON)
+                ? ui::ResourceBundle::GetSharedInstance()
+                      .LoadDataResourceString(
+                          IDR_PURCHASE_URL_REGEX_DOMAIN_MAPPING_JSON)
                 : kPurchaseURLPatternMapping.Get())
             .value());
     DCHECK(json.is_dict());
@@ -399,8 +402,9 @@ const std::map<std::string, std::string>& GetSkipAddToCartMapping() {
     const base::Value json(
         base::JSONReader::Read(
             kSkipAddToCartMapping.Get().empty()
-                ? ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-                      IDR_SKIP_ADD_TO_CART_REQUEST_DOMAIN_MAPPING_JSON)
+                ? ui::ResourceBundle::GetSharedInstance()
+                      .LoadDataResourceString(
+                          IDR_SKIP_ADD_TO_CART_REQUEST_DOMAIN_MAPPING_JSON)
                 : kSkipAddToCartMapping.Get())
             .value());
     DCHECK(json.is_dict());
@@ -547,8 +551,14 @@ const WebString& GetProductExtractionScript(
               ";\n";
           DVLOG(2) << config;
           script_string = config + script_string;
+          CommerceHeuristicsDataMetricsHelper::RecordCartExtractionScriptSource(
+              CommerceHeuristicsDataMetricsHelper::HeuristicsSource::
+                  FROM_RESOURCE);
         } else {
           script_string = cart_extraction_script_component;
+          CommerceHeuristicsDataMetricsHelper::RecordCartExtractionScriptSource(
+              CommerceHeuristicsDataMetricsHelper::HeuristicsSource::
+                  FROM_COMPONENT);
         }
 
         if (!product_id_json_component.empty()) {
@@ -558,9 +568,9 @@ const WebString& GetProductExtractionScript(
         }
         const std::string id_extraction_map =
             kProductIdPatternMapping.Get().empty()
-                ? std::string(ui::ResourceBundle::GetSharedInstance()
-                                  .GetRawDataResource(
-                                      IDR_CART_DOMAIN_PRODUCT_ID_REGEX_JSON))
+                ? ui::ResourceBundle::GetSharedInstance()
+                      .LoadDataResourceString(
+                          IDR_CART_DOMAIN_PRODUCT_ID_REGEX_JSON)
                 : kProductIdPatternMapping.Get();
         script_string = "var idExtractionMap = " + id_extraction_map + ";\n" +
                         script_string;
@@ -846,6 +856,15 @@ void CommerceHintAgent::WillSendRequest(const blink::WebURLRequest& request) {
   const GURL& url(frame->GetDocument().Url());
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
+
+  // The rest of this method is not concerned with data URLs but makes a copy of
+  // the URL which can be expensive for large data URLs.
+  // TODO(crbug.com/1321924): Clean up this method to avoid copies once this
+  // optimization has been measured in the field and launches.
+  if (base::FeatureList::IsEnabled(base::features::kOptimizeDataUrls) &&
+      request.Url().ProtocolIs(url::kDataScheme)) {
+    return;
+  }
 
   // Only check XHR POST requests for add-to-cart.
   // Other add-to-cart matches like navigation is handled in

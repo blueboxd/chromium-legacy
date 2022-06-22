@@ -76,7 +76,7 @@ struct FlatHashMapPolicy;
 // absl/hash/hash.h for information on extending Abseil hashing to user-defined
 // types.
 //
-// Using `absl::flat_hash_map` at interface boundries in dynamically loaded
+// Using `absl::flat_hash_map` at interface boundaries in dynamically loaded
 // libraries (e.g. .dll, .so) is unsupported due to way `absl::Hash` values may
 // be randomized across dynamically loaded libraries.
 //
@@ -361,8 +361,8 @@ class flat_hash_map : public absl::container_internal::raw_hash_map<
   // `flat_hash_map`.
   //
   //   iterator try_emplace(const_iterator hint,
-  //                        const init_type& k, Args&&... args):
-  //   iterator try_emplace(const_iterator hint, init_type&& k, Args&&... args):
+  //                        const key_type& k, Args&&... args):
+  //   iterator try_emplace(const_iterator hint, key_type&& k, Args&&... args):
   //
   // Inserts (via copy or move) the element of the specified key into the
   // `flat_hash_map` using the position of `hint` as a non-binding suggestion

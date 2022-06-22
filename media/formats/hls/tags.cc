@@ -55,7 +55,9 @@ enum class XStreamInfTagAttribute {
   kAverageBandwidth,
   kBandwidth,
   kCodecs,
+  kFrameRate,
   kProgramId,  // Ignored for backwards compatibility
+  kResolution,
   kScore,
   kMaxValue = kScore,
 };
@@ -68,8 +70,12 @@ constexpr base::StringPiece GetAttributeName(XStreamInfTagAttribute attribute) {
       return "BANDWIDTH";
     case XStreamInfTagAttribute::kCodecs:
       return "CODECS";
+    case XStreamInfTagAttribute::kFrameRate:
+      return "FRAME-RATE";
     case XStreamInfTagAttribute::kProgramId:
       return "PROGRAM-ID";
+    case XStreamInfTagAttribute::kResolution:
+      return "RESOLUTION";
     case XStreamInfTagAttribute::kScore:
       return "SCORE";
   }
@@ -398,7 +404,44 @@ ParseStatus::Or<XStreamInfTag> XStreamInfTag::Parse(
     out.codecs = std::string{std::move(codecs).value()};
   }
 
+  // Extract the 'RESOLUTION' attribute
+  if (map.HasValue(XStreamInfTagAttribute::kResolution)) {
+    auto resolution = types::DecimalResolution::Parse(
+        map.GetValue(XStreamInfTagAttribute::kResolution));
+    if (resolution.has_error()) {
+      return ParseStatus(ParseStatusCode::kMalformedTag)
+          .AddCause(std::move(resolution).error());
+    }
+    out.resolution = std::move(resolution).value();
+  }
+
+  // Extract the 'FRAME-RATE' attribute
+  if (map.HasValue(XStreamInfTagAttribute::kFrameRate)) {
+    auto frame_rate = types::ParseDecimalFloatingPoint(
+        map.GetValue(XStreamInfTagAttribute::kFrameRate));
+    if (frame_rate.has_error()) {
+      return ParseStatus(ParseStatusCode::kMalformedTag)
+          .AddCause(std::move(frame_rate).error());
+    }
+    out.frame_rate = std::move(frame_rate).value();
+  }
+
   return out;
+}
+
+ParseStatus::Or<XTargetDurationTag> XTargetDurationTag::Parse(TagItem tag) {
+  DCHECK(tag.GetName() == ToTagName(XTargetDurationTag::kName));
+  if (!tag.GetContent().has_value()) {
+    return ParseStatusCode::kMalformedTag;
+  }
+
+  auto duration = types::ParseDecimalInteger(*tag.GetContent());
+  if (duration.has_error()) {
+    return ParseStatus(ParseStatusCode::kMalformedTag)
+        .AddCause(std::move(duration).error());
+  }
+
+  return XTargetDurationTag{.duration = std::move(duration).value()};
 }
 
 }  // namespace media::hls

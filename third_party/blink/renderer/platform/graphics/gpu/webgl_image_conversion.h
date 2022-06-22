@@ -8,7 +8,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
-#include "third_party/blink/renderer/platform/graphics/skia/image_pixel_locker.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -112,13 +111,6 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     kAlphaDoUnmultiply = 2
   };
 
-  enum ImageHtmlDomSource {
-    kHtmlDomImage = 0,
-    kHtmlDomCanvas = 1,
-    kHtmlDomVideo = 2,
-    kHtmlDomNone = 3
-  };
-
   struct PLATFORM_EXPORT PixelStoreParams final {
     PixelStoreParams();
 
@@ -134,29 +126,31 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     STACK_ALLOCATED();
 
    public:
+    // Extract an SkImage from an Image. If the alpha channel will ultimately
+    // be premultiplied, then `premultiply_alpha` should be true. If the color
+    // space of image is to be ignored then `target_color_space` is to be
+    // nullptr. Otherwise, `target_color_space` should be set to the color space
+    // that the image will ultimately be converted to.
     ImageExtractor(Image*,
-                   ImageHtmlDomSource,
                    bool premultiply_alpha,
-                   bool ignore_color_space);
+                   sk_sp<SkColorSpace> target_color_space);
     ImageExtractor(const ImageExtractor&) = delete;
     ImageExtractor& operator=(const ImageExtractor&) = delete;
 
-    const SkPixmap* GetSkPixmap() {
-      return image_pixel_locker_ ? image_pixel_locker_->GetSkPixmap() : nullptr;
-    }
-    AlphaOp ImageAlphaOp() { return alpha_op_; }
+    sk_sp<SkImage> GetSkImage() { return sk_image_; }
 
    private:
-    // Extracts the image and keeps track of its status, such as width, height,
-    // Source Alignment, format, AlphaOp, etc. This needs to lock the resources
-    // or relevant data if needed.
-    void ExtractImage(bool premultiply_alpha, bool ignore_color_space);
-
-    Image* image_;
-    absl::optional<ImagePixelLocker> image_pixel_locker_;
-    ImageHtmlDomSource image_html_dom_source_;
-    AlphaOp alpha_op_;
+    sk_sp<SkImage> sk_image_;
   };
+
+  // Convert a GL format and GL type to a DataFormat. This will return
+  // kDataFormatNumFormats if combination is invalid.
+  static DataFormat GetDataFormat(GLenum format, GLenum type);
+
+  // Convert a DataFormat to an SkColorType. If there is no exactly matching
+  // SkColorType, return the specified `default_color_type`.
+  static SkColorType DataFormatToSkColorType(DataFormat data_format,
+                                             SkColorType default_color_type);
 
   // Convert an SkColorType to the most appropriate DataFormat.
   static DataFormat SkColorTypeToDataFormat(SkColorType color_type);

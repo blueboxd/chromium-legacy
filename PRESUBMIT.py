@@ -19,11 +19,16 @@ PRESUBMIT_VERSION = '2.0.0'
 USE_PYTHON3 = True
 
 _EXCLUDED_PATHS = (
+    # Generated file
+    (r"chrome[\\/]android[\\/]webapk[\\/]shell_apk[\\/]src[\\/]org[\\/]chromium"
+     r"[\\/]webapk[\\/]lib[\\/]runtime_library[\\/]IWebApkApi.java"),
     # File needs to write to stdout to emulate a tool it's replacing.
     r"chrome[\\/]updater[\\/]mac[\\/]keystone[\\/]ksadmin.mm",
     # Generated file.
     (r"^components[\\/]variations[\\/]proto[\\/]devtools[\\/]"
      r"client_variations.js"),
+    # These are video files, not typescript.
+    r"^media[\\/]test[\\/]data[\\/].*.ts",
     r"^native_client_sdksrc[\\/]build_tools[\\/]make_rules.py",
     r"^native_client_sdk[\\/]src[\\/]build_tools[\\/]make_simple.py",
     r"^native_client_sdk[\\/]src[\\/]tools[\\/].*.mk",
@@ -659,6 +664,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
        '^chromecast/cast_core/grpc',
        '^chromecast/cast_core/runtime/browser',
        # Fuchsia provides C++ libraries that use std::shared_ptr<>.
+       '^base/fuchsia/filtered_service_directory\.(cc|h)',
+       '^base/fuchsia/service_directory_test_base\.h',
        '.*fuchsia.*test\.(cc|h)',
        # Needed for clang plugin tests
        '^tools/clang/plugins/tests/',
@@ -1043,8 +1050,11 @@ _KNOWN_TEST_DATA_AND_INVALID_JSON_FILE_PATTERNS = [
     r'testing[\\/]buildbot[\\/]',
     r'^components[\\/]policy[\\/]resources[\\/]policy_templates\.json$',
     r'^third_party[\\/]protobuf[\\/]',
+    r'^third_party[\\/]blink[\\/]perf_tests[\\/]speedometer[\\/]resources[\\/]todomvc[\\/]learn.json',
     r'^third_party[\\/]blink[\\/]renderer[\\/]devtools[\\/]protocol\.json$',
     r'^third_party[\\/]blink[\\/]web_tests[\\/]external[\\/]wpt[\\/]',
+    r'^tools[\\/]perf[\\/]',
+    r'^tools[\\/]traceline[\\/]svgui[\\/]startup-release.json',
 ]
 
 # These are not checked on the public chromium-presubmit trybot.
@@ -1056,6 +1066,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 
 
 _GENERIC_PYDEPS_FILES = [
+    'android_webview/test/components/run_webview_component_smoketest.pydeps',
     'android_webview/tools/run_cts.pydeps',
     'base/android/jni_generator/jni_generator.pydeps',
     'base/android/jni_generator/jni_registration_generator.pydeps',
@@ -1099,9 +1110,11 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/jinja_template.pydeps',
     'build/android/gyp/lint.pydeps',
     'build/android/gyp/merge_manifest.pydeps',
+    'build/android/gyp/optimize_resources.pydeps',
     'build/android/gyp/prepare_resources.pydeps',
     'build/android/gyp/process_native_prebuilt.pydeps',
     'build/android/gyp/proguard.pydeps',
+    'build/android/gyp/trace_event_bytecode_rewriter.pydeps',
     'build/android/gyp/turbine.pydeps',
     'build/android/gyp/unused_resources.pydeps',
     'build/android/gyp/validate_static_library_dex_references.pydeps',
@@ -1124,7 +1137,7 @@ _GENERIC_PYDEPS_FILES = [
     'components/module_installer/android/module_desc_java.pydeps',
     'content/public/android/generate_child_service.pydeps',
     'net/tools/testserver/testserver.pydeps',
-    'testing/scripts/run_android_wpt.pydeps',
+    'testing/scripts/run_wpt_tests.pydeps',
     'testing/scripts/run_isolated_script_test.pydeps',
     'testing/merge_scripts/standard_isolated_script_merge.pydeps',
     'testing/merge_scripts/standard_gtest_merge.pydeps',
@@ -1463,7 +1476,17 @@ def CheckForgettingMAYBEInTests(input_api, output_api):
     # false positives with macros wrapping the actual tests name.
     define_maybe_pattern = input_api.re.compile(
         r'^\#define MAYBE_(?P<test_name>\w*[a-z]\w*)')
-    test_maybe_pattern = r'^\s*\w*TEST[^(]*\(\s*\w+,\s*MAYBE_{test_name}\)'
+    # The test_maybe_pattern needs to handle all of these forms. The standard:
+    #   IN_PROC_TEST_F(SyncTest, MAYBE_Start) {
+    # With a wrapper macro around the test name:
+    #   IN_PROC_TEST_F(SyncTest, E2E_ENABLED(MAYBE_Start)) {
+    # And the odd-ball NACL_BROWSER_TEST_f format:
+    #    NACL_BROWSER_TEST_F(NaClBrowserTest, SimpleLoad, {
+    # The optional E2E_ENABLED-style is handled with (\w*\()?
+    # The NACL_BROWSER_TEST_F pattern is handled by allowing a trailing comma or
+    # trailing ')'.
+    test_maybe_pattern = (
+        r'^\s*\w*TEST[^(]*\(\s*\w+,\s*(\w*\()?MAYBE_{test_name}[\),]')
     suite_maybe_pattern = r'^\s*\w*TEST[^(]*\(\s*MAYBE_{test_name}[\),]'
     warnings = []
 
@@ -1732,6 +1755,8 @@ def CheckNoPragmaOnce(input_api, output_api):
     pattern = input_api.re.compile(r'^#pragma\s+once', input_api.re.MULTILINE)
     for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
         if not f.LocalPath().endswith('.h'):
+            continue
+        if f.LocalPath().endswith('com_imported_mstscax.h'):
             continue
         contents = input_api.ReadFile(f)
         if pattern.search(contents):
@@ -2088,7 +2113,10 @@ def CheckNoAbbreviationInPngFileName(input_api, output_api):
     """
     errors = []
     files_to_check = [r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$']
-    files_to_skip = [r'^native_client_sdk[\\/]']
+    files_to_skip = [r'^native_client_sdk[\\/]',
+                     r'^services[\\/]test[\\/]',
+                     r'^third_party[\\/]blink[\\/]web_tests[\\/]',
+                    ]
     file_filter = lambda f: input_api.FilterSourceFile(
         f, files_to_check=files_to_check, files_to_skip=files_to_skip)
     for f in input_api.AffectedFiles(include_deletes=False,
@@ -2581,6 +2609,10 @@ def _GetJSONParseError(input_api, filename, eat_comments=True):
 def _GetIDLParseError(input_api, filename):
     try:
         contents = input_api.ReadFile(filename)
+        for i, char in enumerate(contents):
+          if not char.isascii():
+            return ('Non-ascii character "%s" (ord %d) found at offset %d.'
+                    % (char, ord(char), i))
         idl_schema = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                             'tools', 'json_schema_compiler',
                                             'idl_schema.py')
@@ -4788,6 +4820,7 @@ def CheckForIncludeGuards(input_api, output_api):
         file_with_path = input_api.os_path.normpath(f.LocalPath())
         return (file_with_path.endswith('.h')
                 and not file_with_path.endswith('_message_generator.h')
+                and not file_with_path.endswith('com_imported_mstscax.h')
                 and (not file_with_path.startswith('third_party')
                      or file_with_path.startswith(
                          input_api.os_path.join('third_party', 'blink'))))
@@ -5078,9 +5111,6 @@ def CheckChangeOnCommit(input_api, output_api):
         input_api.canned_checks.CheckChangeHasBugField(input_api, output_api))
     results.extend(
         input_api.canned_checks.CheckChangeHasNoUnwantedTags(
-            input_api, output_api))
-    results.extend(
-        input_api.canned_checks.CheckChangeHasDescription(
             input_api, output_api))
     return results
 
@@ -5658,13 +5688,13 @@ def CheckMPArchApiUsage(input_api, output_api):
     presence of MPArch features such as bfcache, prerendering, and fenced frames.
     """
 
-    # Only consider top-level directories that (1) can use content APIs, (2)
-    # apply to desktop or android chrome, and (3) are known to have a significant
-    # number of uses of the APIs of concern.
+    # Only consider top-level directories that (1) can use content APIs or
+    # problematic blink APIs, (2) apply to desktop or android chrome, and (3)
+    # are known to have a significant number of uses of the APIs of concern.
     files_to_check = (
-        r'^(chrome|components|content|extensions)[\\/].+%s' %
+        r'^(chrome|components|content|extensions|third_party[\\/]blink[\\/]renderer)[\\/].+%s' %
         _IMPLEMENTATION_EXTENSIONS,
-        r'^(chrome|components|content|extensions)[\\/].+%s' %
+        r'^(chrome|components|content|extensions|third_party[\\/]blink[\\/]renderer)[\\/].+%s' %
         _HEADER_EXTENSIONS,
     )
     files_to_skip = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
@@ -5708,14 +5738,21 @@ def CheckMPArchApiUsage(input_api, output_api):
         'GetMainFrame',
         'GetFrameTreeNodeId',
     ]
+    concerning_rfhi_methods = [
+        'is_main_frame',
+    ]
     concerning_ftn_methods = [
         'IsMainFrame',
+    ]
+    concerning_blink_frame_methods = [
+        'IsCrossOriginToMainFrame',
     ]
     concerning_method_pattern = input_api.re.compile(r'(' + r'|'.join(
         item for sublist in [
             concerning_wco_methods, concerning_nav_handle_methods,
             concerning_web_contents_methods, concerning_rfh_methods,
-            concerning_ftn_methods,
+            concerning_rfhi_methods, concerning_ftn_methods,
+            concerning_blink_frame_methods,
         ] for item in sublist) + r')\(')
 
     used_apis = set()

@@ -102,7 +102,6 @@
 #include "components/safe_browsing/content/common/proto/download_file_types.pb.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/services/quarantine/test_support.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -3479,13 +3478,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   ASSERT_EQ(jpeg_url, download_items[1]->GetOriginalUrl());
 }
 
-// TODO(crbug.com/1249757): Flaky on Windows 7.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_DownloadErrorsServer DISABLED_DownloadErrorsServer
-#else
-#define MAYBE_DownloadErrorsServer DownloadErrorsServer
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadErrorsServer) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsServer) {
   DownloadInfo download_info[] = {
       {// Normal navigated download.
        "a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
@@ -3511,13 +3504,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadErrorsServer) {
        "download-anchor-attrib-name-not-resolved.html",
        "http://doesnotexist/shouldnotberesolved", DOWNLOAD_NAVIGATE,
        download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, false},
-      {// Simulates clicking on <a href="http://..." download=""> where the URL
-       // leads to a 404 response. This is different from the previous test case
-       // in that the ResourceLoader issues a OnResponseStarted() callback since
-       // the headers are successfully received.
-       "download-anchor-attrib-404.html", "there_IS_no_spoon.zip",
-       DOWNLOAD_NAVIGATE,
-       download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, true, false},
       {// Similar to the above, but the resulting response contains a status
        // code of 400.
        "download-anchor-attrib-400.html", "zip_file_not_found.zip",
@@ -3527,6 +3513,20 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadErrorsServer) {
        "http://doesnotexist/shouldnotdownloadsuccessfully",
        "http://doesnotexist/shouldnotdownloadsuccessfully", DOWNLOAD_DIRECT,
        download::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, true, false}};
+
+  DownloadFilesCheckErrors(std::size(download_info), download_info);
+}
+
+// TODO(crbug.com/1249757): Flaky on multiple platforms.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadErrorsServerNavigate404) {
+  DownloadInfo download_info[] = {
+      {// Simulates clicking on <a href="http://..." download=""> where the URL
+       // leads to a 404 response. This is different from the previous test case
+       // in that the ResourceLoader issues a OnResponseStarted() callback since
+       // the headers are successfully received.
+       "download-anchor-attrib-404.html", "there_IS_no_spoon.zip",
+       DOWNLOAD_NAVIGATE,
+       download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT, true, false}};
 
   DownloadFilesCheckErrors(std::size(download_info), download_info);
 }
@@ -4691,74 +4691,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SecurityLevels) {
   histogram_tester.ExpectTotalCount("Security.SecurityLevel.DownloadStarted",
                                     2);
 }
-
-class DownloadTestWithOptionalSafetyTipsFeature
-    : public DownloadTest,
-      public ::testing::WithParamInterface<bool> {
- public:
-  DownloadTestWithOptionalSafetyTipsFeature() {
-    if (GetParam())
-      feature_list_.InitAndEnableFeature(
-          security_state::features::kSafetyTipUI);
-    else
-      feature_list_.InitAndDisableFeature(
-          security_state::features::kSafetyTipUI);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Tests that the Safety Tip status of the initiating page is used for the
-// histogram rather than the status of the download URL, and that downloads in
-// new tabs are not tracked.
-IN_PROC_BROWSER_TEST_P(DownloadTestWithOptionalSafetyTipsFeature, SafetyTips) {
-  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
-  ASSERT_TRUE(embedded_test_server()->Start());
-  net::EmbeddedTestServer download_server;
-  download_server.ServeFilesFromDirectory(GetTestDataDirectory());
-  ASSERT_TRUE(download_server.Start());
-  GURL download_url = download_server.GetURL("/downloads/empty.bin");
-
-  // Test that the correct histogram value is recorded for a page that does not
-  // trigger a Safety Tip.
-  {
-    base::HistogramTester histogram_tester;
-    ASSERT_TRUE(ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL("/simple.html")));
-    DownloadAndWait(browser(), download_url);
-    histogram_tester.ExpectUniqueSample("Security.SafetyTips.DownloadStarted",
-                                        security_state::SafetyTipStatus::kNone,
-                                        1);
-  }
-
-  // When a Safety Tip is triggered, test with the feature both enabled and
-  // disabled. The same metrics should be recorded either way.
-  reputation::SetSafetyTipBadRepPatterns(
-      {embedded_test_server()->GetURL("/").host() + "/"});
-
-  base::HistogramTester histogram_tester;
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/simple.html")));
-  DownloadAndWait(browser(), download_url);
-  histogram_tester.ExpectUniqueSample(
-      "Security.SafetyTips.DownloadStarted",
-      security_state::SafetyTipStatus::kBadReputation, 1);
-
-  // Test that no Safety Tip status is recorded for a download in a new tab.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/simple.html")));
-  DownloadAndWaitWithDisposition(browser(), download_url,
-                                 WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                                 ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  histogram_tester.ExpectUniqueSample(
-      "Security.SafetyTips.DownloadStarted",
-      security_state::SafetyTipStatus::kBadReputation, 1);
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         DownloadTestWithOptionalSafetyTipsFeature,
-                         ::testing::Bool());
 
 // Tests that opening the downloads page will cause file existence check.
 IN_PROC_BROWSER_TEST_F(DownloadTest, FileExistenceCheckOpeningDownloadsPage) {

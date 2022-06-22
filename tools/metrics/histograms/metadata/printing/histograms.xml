@@ -138,7 +138,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.JobDuration.JobDone" units="ms"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -214,7 +214,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.PrintersDiscovered" units="printers"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>bmgordon@chromium.org</owner>
   <owner>src/chromeos/printing/OWNERS</owner>
   <summary>
@@ -250,7 +250,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterStatusQueryResult"
-    enum="PrinterStatusQueryResult" expires_after="2022-06-15">
+    enum="PrinterStatusQueryResult" expires_after="2022-12-15">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -271,7 +271,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterStatusRetrySuccess" enum="Boolean"
-    expires_after="2022-06-15">
+    expires_after="2022-12-15">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -294,7 +294,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.TotalNetworkPrintersCount" units="printers"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -350,6 +350,22 @@ chromium-metrics-reviews@google.com.
     setup is attempted from the print preview dialog. Only recorded on Chrome
     OS. Printer setup results go into either this histogram or the
     Printing.CUPS.PrinterSetupResult.PrintPreview histogram - not both.
+  </summary>
+</histogram>
+
+<histogram name="Printing.Oop.PrintResult" enum="PrintOopResult"
+    expires_after="2022-11-07">
+  <owner>awscreen@chromium.org</owner>
+  <owner>thestig@chromium.org</owner>
+  <summary>
+    Records the final result of a print job where the interactions with the
+    system printing APIs are performed out-of-process in the PrintBackend
+    service.
+
+    This covers printing initiated from Print Preview as well as from a system
+    print dialog for platforms which provide that.
+
+    Recorded upon completion of each print job by PrintJobWorkerOop.
   </summary>
 </histogram>
 

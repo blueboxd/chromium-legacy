@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/notreached.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,7 +41,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -529,16 +529,6 @@ void FileSystemAccessManagerImpl::SetDefaultPathAndShowPicker(
     suggested_name_path =
         net::GenerateFileName(GURL(), std::string(), std::string(),
                               suggested_name, std::string(), std::string());
-
-    auto suggested_extension = suggested_name_path.Extension();
-    // Our version of `IsShellIntegratedExtension()` is more stringent than
-    // the version used in `net::GenerateFileName()`. See
-    // `FileSystemChooser::IsShellIntegratedExtension()` for details.
-    if (FileSystemChooser::IsShellIntegratedExtension(suggested_extension)) {
-      suggested_extension = FILE_PATH_LITERAL("download");
-      suggested_name_path =
-          suggested_name_path.ReplaceExtension(suggested_extension);
-    }
   }
 
   FileSystemChooser::Options file_system_chooser_options(

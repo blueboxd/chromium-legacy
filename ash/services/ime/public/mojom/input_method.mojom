@@ -6,14 +6,14 @@
 // the Chromium repo. This file should be updated first, before syncing in the
 // other repos.
 
-// Next MinVersion: 11
+// Next MinVersion: 12
 
 module ash.ime.mojom;
 
 // Do not modify this enum. If new values are needed, deprecate the entire enum.
-[Stable, RenamedFrom="chromeos.ime.mojom.KeyEventType"]
+[Stable, Extensible, RenamedFrom="chromeos.ime.mojom.KeyEventType"]
 enum KeyEventType {
-  kKeyDown = 0,
+  [Default] kKeyDown = 0,
   kKeyUp = 1,
 };
 
@@ -55,11 +55,12 @@ enum NamedDomKey {
 // NamedDomKey for special keys (e.g. Shift), as specified by:
 // https://www.w3.org/TR/uievents/#dom-keyboardevent-key
 //
-// TODO(crbug/1201949): Note that the Extensible keyword is not supported for
-// union types. We may need to revisit this type in the future.
+// TODO(crbug.com/1261313): Note that this type must be marked [Extensible] in
+// all deployed versions before new ordinals can be introduced, and [Extensible]
+// requires specifying a [Default] field.
 //
 // Next ordinal: 2
-[Stable, Extensible, RenamedFrom="chromeos.ime.mojom.DomKey"]
+[Stable, RenamedFrom="chromeos.ime.mojom.DomKey"]
 union DomKey {
   // If the key is a key with a "named key attribute" in:
   // https://www.w3.org/TR/uievents-key/#named-key-attribute-value
@@ -176,10 +177,10 @@ struct PhysicalKeyEvent {
 };
 
 // Do not modify this enum. If new values are needed, deprecate the entire enum.
-[Stable, RenamedFrom="chromeos.ime.mojom.KeyEventResult"]
+[Stable, Extensible, RenamedFrom="chromeos.ime.mojom.KeyEventResult"]
 enum KeyEventResult {
   // The event should be handled by the system.
-  kNeedsHandlingBySystem = 0,
+  [Default] kNeedsHandlingBySystem = 0,
   // The event was consumed by the IME and should not be handled by the system.
   kConsumedByIme = 1,
 };
@@ -259,9 +260,11 @@ struct InputFieldInfo {
 };
 
 // Next ordinal: 4
-// TODO(crbug/1201949): Note that the Extensible keyword is not supported for
-// union types. We may need to revisit this type in the future.
-[Stable, Extensible, RenamedFrom="chromeos.ime.mojom.InputMethodSettings"]
+//
+// TODO(crbug.com/1261313): Note that this type must be marked [Extensible] in
+// all deployed versions before new ordinals can be introduced, and [Extensible]
+// requires specifying a [Default] field.
+[Stable, RenamedFrom="chromeos.ime.mojom.InputMethodSettings"]
 union InputMethodSettings {
   KoreanSettings korean_settings@0;
   LatinSettings latin_settings@1;
@@ -345,7 +348,7 @@ struct PinyinSettings {
 };
 
 // Next ordinal: 3
-[Stable, Extensible, MinVersion=7, RenamedFrom="chromeos.ime.mojom.ZhuyinLayout"]
+[Stable, Extensible,RenamedFrom="chromeos.ime.mojom.ZhuyinLayout"]
 enum ZhuyinLayout {
   [Default] kStandard = 0,
   kIbm = 1,
@@ -360,7 +363,7 @@ enum ZhuyinLayout {
 // See the default enum value for an example.
 //
 // Next ordinal: 5
-[Stable, Extensible, MinVersion=7, RenamedFrom="chromeos.ime.mojom.ZhuyinSelectionKeys"]
+[Stable, Extensible, RenamedFrom="chromeos.ime.mojom.ZhuyinSelectionKeys"]
 enum ZhuyinSelectionKeys {
   // Corresponds to '1234567890'.
   // '1' selects the 1st candidate, '2' selects the 2nd, and so on, and '0'
@@ -386,12 +389,58 @@ struct ZhuyinSettings {
   [MinVersion=7] uint32 page_size@2;
 };
 
+// Next ordinal: 2
+// TODO(crbug.com/1261313): Note that this type must be marked [Extensible] in
+// all deployed versions before new ordinals can be introduced, and [Extensible]
+// requires specifying a [Default] field.
+// TODO(b/217279530): Consider removing this or unifying it with
+// InputMethodSettings.
+[Stable]
+union InputMethodQuickSettings {
+  ChineseQuickSettings chinese_settings@0;
+  JapaneseQuickSettings japanese_settings@1;
+};
+
+[Stable, Extensible]
+enum ChineseLanguageMode {
+  // In Chinese mode, the IME outputs Chinese characters.
+  [Default] kChinese = 0,
+  // In raw mode, the IME will only output latin-script characters.
+  kRaw = 1
+};
+
+// All Chinese IMEs have the same set of quick settings.
+// Next ordinal: 3
+[Stable]
+struct ChineseQuickSettings {
+  ChineseLanguageMode mode@0;
+  bool full_width_characters@1;
+  bool full_width_punctuation@2;
+};
+
+// Next ordinal: 6
+[Stable, Extensible]
+enum JapaneseInputMode {
+  [Default] kHiragana = 0,
+  kKatakana = 1,
+  kWideLatin = 2,
+  kHalfWidthKatakana = 3,
+  kLatin = 4,
+  kDirectInput = 5,
+};
+
+// Next ordinal: 1
+[Stable]
+struct JapaneseQuickSettings {
+  JapaneseInputMode mode@0;
+};
+
 // An input method that is provided natively by the IME Service.
 // The browser process uses this interface to communicate with IMEs hosted in
 // a Chrome utility process, and this interface uses the InputMethodHost
 // interface to communicate back to the browser process.
 //
-// Next ordinal: 7
+// Next ordinal: 8
 [Stable, RenamedFrom="chromeos.ime.mojom.InputMethod"]
 interface InputMethod {
   // DEPRECATED: Called when there's a new focused input field.
@@ -399,9 +448,10 @@ interface InputMethod {
                       [MinVersion=4] InputMethodSettings? settings);
 
   // Called when there's a new focused input field.
+  // `deprecated_settings` is DEPRECATED.
   [MinVersion=9]
   OnFocus@6(InputFieldInfo input_field_info,
-            InputMethodSettings? settings) => (bool success);
+            InputMethodSettings? deprecated_settings) => (bool success);
 
   // Called when the input field loses focus.
   OnBlur@1();
@@ -429,4 +479,7 @@ interface InputMethod {
   // the user. This is usually from the user clicking the candidate.
   // |selected_candidate_index| is the index of the selected candidate.
   [MinVersion=3] OnCandidateSelected@5(uint32 selected_candidate_index);
+
+  // Informs the IME that the user has changed the input method quick settings.
+  [MinVersion=11] OnQuickSettingsUpdated@7(InputMethodQuickSettings settings);
 };

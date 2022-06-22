@@ -29,7 +29,7 @@ public final class InvalidPaymentRequest implements PaymentRequest {
     }
 
     @Override
-    public void show(boolean unusedIsUserGesture, boolean unusedWaitForUpdatedDetails) {
+    public void show(boolean unusedWaitForUpdatedDetails) {
         if (mClient != null) {
             mClient.onError(PaymentErrorReason.USER_CANCEL, ErrorStrings.WEB_PAYMENT_API_DISABLED);
             mClient.close();

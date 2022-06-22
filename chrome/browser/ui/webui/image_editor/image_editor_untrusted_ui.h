@@ -15,11 +15,10 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/webui_config.h"
 #include "ui/webui/untrusted_web_ui_controller.h"
-#include "ui/webui/webui_config.h"
 
 namespace image_editor {
 
-class ImageEditorUntrustedUIConfig : public ui::WebUIConfig {
+class ImageEditorUntrustedUIConfig : public content::WebUIConfig {
  public:
   ImageEditorUntrustedUIConfig();
   ~ImageEditorUntrustedUIConfig() override;

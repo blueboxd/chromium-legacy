@@ -95,8 +95,8 @@ class CONTENT_EXPORT FrameTree {
     // `current_node_` and `root_of_subtree_to_skip_` are not a raw_ptr<...> for
     // performance reasons (based on analysis of sampling profiler data and
     // tab_search:top100:2020).
-    FrameTreeNode* current_node_;
-    const FrameTreeNode* const root_of_subtree_to_skip_;
+    RAW_PTR_EXCLUSION FrameTreeNode* current_node_;
+    RAW_PTR_EXCLUSION const FrameTreeNode* const root_of_subtree_to_skip_;
 
     const bool should_descend_into_inner_trees_;
     base::circular_deque<FrameTreeNode*> queue_;
@@ -536,6 +536,9 @@ class CONTENT_EXPORT FrameTree {
   // more RenderFrameHosts or RenderFrameProxyHosts using it.
   RenderViewHostMap render_view_host_map_;
 
+  // Indicates type of frame tree.
+  const Type type_;
+
   // This is an owned ptr to the root FrameTreeNode, which never changes over
   // the lifetime of the FrameTree. It is not a scoped_ptr because we need the
   // pointer to remain valid even while the FrameTreeNode is being destroyed,
@@ -551,9 +554,6 @@ class CONTENT_EXPORT FrameTree {
   // unsafe to show the pending URL. Usually false unless another window tries
   // to modify the blank page.  Always false after the first commit.
   bool has_accessed_initial_main_document_ = false;
-
-  // Indicates type of frame tree.
-  const Type type_;
 
   bool is_being_destroyed_ = false;
 

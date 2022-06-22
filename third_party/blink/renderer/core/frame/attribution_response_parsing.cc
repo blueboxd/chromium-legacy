@@ -11,7 +11,10 @@
 
 #include "base/check.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/blink/public/common/attribution_reporting/constants.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
@@ -20,7 +23,6 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
-#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -29,22 +31,22 @@ namespace blink::attribution_response_parsing {
 
 namespace {
 
-mojom::blink::AttributionAggregatableKeyPtr ParseAttributionAggregatableKey(
-    const JSONObject* object) {
+bool ParseAttributionAggregatableKey(const JSONObject* object,
+                                     absl::uint128* out) {
   String key_piece;
   if (!object->GetString("key_piece", &key_piece))
-    return nullptr;
+    return false;
 
   // Final keys will be restricted to a maximum of 128 bits and the hex strings
   // should be limited to at most 32 digits.
   if (key_piece.length() < 3 || key_piece.length() > 34 ||
       !key_piece.StartsWith("0x", kTextCaseASCIIInsensitive)) {
-    return nullptr;
+    return false;
   }
 
   for (wtf_size_t i = 2; i < key_piece.length(); ++i) {
     if (!IsASCIIHexDigit(key_piece[i]))
-      return nullptr;
+      return false;
   }
 
   uint64_t low_bits;
@@ -55,19 +57,20 @@ mojom::blink::AttributionAggregatableKeyPtr ParseAttributionAggregatableKey(
   if (key_piece.length() <= 18) {
     low_bits = key_piece.Substring(2).HexToUInt64Strict(&ok);
     if (!ok)
-      return nullptr;
+      return false;
     high_bits = 0;
   } else {
     low_bits = key_piece.Right(16).HexToUInt64Strict(&ok);
     if (!ok)
-      return nullptr;
+      return false;
     high_bits =
         key_piece.Substring(2, key_piece.length() - 18).HexToUInt64Strict(&ok);
     if (!ok)
-      return nullptr;
+      return false;
   }
 
-  return mojom::blink::AttributionAggregatableKey::New(high_bits, low_bits);
+  *out = absl::MakeUint128(high_bits, low_bits);
+  return true;
 }
 
 bool ParseAttributionFilterData(
@@ -80,9 +83,23 @@ bool ParseAttributionFilterData(
   if (!object)
     return false;
 
+  const int kExclusiveMaxHistogramValue = 101;
+
+  static_assert(kMaxValuesPerAttributionFilter < kExclusiveMaxHistogramValue,
+                "Bump the version for histogram Conversions.ValuesPerFilter");
+
+  static_assert(
+      kMaxAttributionFiltersPerSource < kExclusiveMaxHistogramValue,
+      "Bump the version for histogram Conversions.FiltersPerFilterData");
+
   const wtf_size_t num_filters = object->size();
   if (num_filters > kMaxAttributionFiltersPerSource)
     return false;
+
+  // The metrics are called potentially many times while parsing an attribution
+  // header, therefore using the macros to avoid the overhead of taking a lock
+  // and performing a map lookup.
+  UMA_HISTOGRAM_COUNTS_100("Conversions.FiltersPerFilterData", num_filters);
 
   for (wtf_size_t i = 0; i < num_filters; ++i) {
     JSONObject::Entry entry = object->at(i);
@@ -99,6 +116,8 @@ bool ParseAttributionFilterData(
     const wtf_size_t num_values = array->size();
     if (num_values > kMaxValuesPerAttributionFilter)
       return false;
+
+    UMA_HISTOGRAM_COUNTS_100("Conversions.ValuesPerFilter", num_values);
 
     WTF::Vector<String> values;
 
@@ -122,20 +141,28 @@ bool ParseAttributionFilterData(
 }  // namespace
 
 bool ParseAttributionAggregatableSource(
-    const AtomicString& json_string,
+    const String& json_string,
     mojom::blink::AttributionAggregatableSource& source) {
   // TODO(apaseltiner): Consider applying a max stack depth to this.
   std::unique_ptr<JSONValue> json = ParseJSON(json_string);
   if (!json)
     return false;
 
-  const auto* array = JSONArray::Cast(json.get());
-  if (!array ||
-      array->size() > kMaxAttributionAggregatableKeysPerSourceOrTrigger) {
-    return false;
-  }
+  const int kExclusiveMaxHistogramValue = 101;
 
+  static_assert(
+      kMaxAttributionAggregatableKeysPerSourceOrTrigger <
+          kExclusiveMaxHistogramValue,
+      "Bump the version for histogram Conversions.AggregatableKeysPerSource");
+
+  const auto* array = JSONArray::Cast(json.get());
   const wtf_size_t num_keys = array->size();
+
+  if (!array || num_keys > kMaxAttributionAggregatableKeysPerSourceOrTrigger)
+    return false;
+
+  base::UmaHistogramCounts100("Conversions.AggregatableKeysPerSource",
+                              num_keys);
 
   source.keys.ReserveCapacityForSize(num_keys);
 
@@ -154,12 +181,11 @@ bool ParseAttributionAggregatableSource(
       return false;
     }
 
-    mojom::blink::AttributionAggregatableKeyPtr key =
-        ParseAttributionAggregatableKey(object);
-    if (!key)
+    absl::uint128 key;
+    if (!ParseAttributionAggregatableKey(object, &key))
       return false;
 
-    source.keys.insert(std::move(key_id), std::move(key));
+    source.keys.insert(std::move(key_id), key);
   }
 
   return true;
@@ -172,7 +198,7 @@ mojom::blink::AttributionDebugKeyPtr ParseDebugKey(const String& string) {
 }
 
 bool ParseSourceRegistrationHeader(
-    const AtomicString& json_string,
+    const String& json_string,
     mojom::blink::AttributionSourceData& source_data) {
   // TODO(apaseltiner): Consider applying a max stack depth to this.
   std::unique_ptr<JSONValue> json = ParseJSON(json_string);
@@ -241,7 +267,7 @@ bool ParseSourceRegistrationHeader(
 }
 
 bool ParseEventTriggerData(
-    const AtomicString& json_string,
+    const String& json_string,
     WTF::Vector<mojom::blink::EventTriggerDataPtr>& event_trigger_data) {
   // TODO(apaseltiner): Consider applying a max stack depth to this.
   std::unique_ptr<JSONValue> json = ParseJSON(json_string);
@@ -331,7 +357,7 @@ bool ParseFilters(const String& json_string,
 }
 
 bool ParseAttributionAggregatableTriggerData(
-    const AtomicString& json_string,
+    const String& json_string,
     WTF::Vector<mojom::blink::AttributionAggregatableTriggerDataPtr>&
         trigger_data) {
   // TODO(apaseltiner): Consider applying a max stack depth to this.
@@ -339,13 +365,24 @@ bool ParseAttributionAggregatableTriggerData(
   if (!json)
     return false;
 
+  const int kExclusiveMaxHistogramValue = 101;
+
+  static_assert(kMaxAttributionAggregatableTriggerDataPerTrigger <
+                    kExclusiveMaxHistogramValue,
+                "Bump the version for histogram "
+                "Conversions.AggregatableTriggerDataLength");
+
   const auto* array = JSONArray::Cast(json.get());
+  const wtf_size_t num_trigger_data = array->size();
+
   if (!array ||
       array->size() > kMaxAttributionAggregatableTriggerDataPerTrigger) {
     return false;
   }
 
-  const wtf_size_t num_trigger_data = array->size();
+  base::UmaHistogramCounts100("Conversions.AggregatableTriggerDataLength",
+                              num_trigger_data);
+
   trigger_data.ReserveInitialCapacity(num_trigger_data);
 
   for (wtf_size_t i = 0; i < num_trigger_data; ++i) {
@@ -358,8 +395,7 @@ bool ParseAttributionAggregatableTriggerData(
 
     auto data = mojom::blink::AttributionAggregatableTriggerData::New();
 
-    data->key = ParseAttributionAggregatableKey(object);
-    if (!data->key)
+    if (!ParseAttributionAggregatableKey(object, &data->key))
       return false;
 
     JSONArray* source_keys_val = object->GetArray("source_keys");
@@ -403,7 +439,7 @@ bool ParseAttributionAggregatableTriggerData(
 }
 
 bool ParseAttributionAggregatableValues(
-    const AtomicString& json_string,
+    const String& json_string,
     WTF::HashMap<String, uint32_t>& values) {
   // TODO(apaseltiner): Consider applying a max stack depth to this.
   std::unique_ptr<JSONValue> json = ParseJSON(json_string);
@@ -431,8 +467,10 @@ bool ParseAttributionAggregatableValues(
     }
 
     int key_value;
-    if (!value->AsInteger(&key_value) || key_value <= 0)
+    if (!value->AsInteger(&key_value) || key_value <= 0 ||
+        key_value > kMaxAttributionAggregatableValue) {
       return false;
+    }
 
     values.insert(std::move(key_id), key_value);
   }

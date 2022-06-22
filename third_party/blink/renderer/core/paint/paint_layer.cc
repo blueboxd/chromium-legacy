@@ -724,8 +724,6 @@ bool PaintLayer::UpdateSize() {
   } else if (LayoutBox* box = GetLayoutBox()) {
     size_ = box->Size();
   }
-  if (old_size != size_)
-    MarkAncestorChainForFlagsUpdate();
 
   return old_size != size_;
 }
@@ -898,9 +896,10 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
 
   MarkAncestorChainForFlagsUpdate();
 
-  // TODO(wangxianzhu): Change this to the same pattern as cull rect update
-  // when removing pre-CAP code.
-  child->SetNeedsRepaint();
+  if (child->SelfNeedsRepaint())
+    MarkCompositingContainerChainForNeedsRepaint();
+  else
+    child->SetNeedsRepaint();
 
   if (child->NeedsCullRectUpdate())
     MarkCompositingContainerChainForNeedsCullRectUpdate();
@@ -2218,13 +2217,6 @@ PhysicalRect PaintLayer::LocalBoundingBox() const {
   return rect;
 }
 
-PhysicalRect PaintLayer::ClippedLocalBoundingBox(
-    const PaintLayer& ancestor_layer) const {
-  return Intersection(LocalBoundingBox(),
-                      Clipper(GeometryMapperOption::kUseGeometryMapper)
-                          .LocalClipRect(ancestor_layer));
-}
-
 PhysicalRect PaintLayer::PhysicalBoundingBox(
     const PaintLayer* ancestor_layer) const {
   PhysicalOffset offset_from_root;
@@ -2445,10 +2437,6 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   // to recompute the bit once scrollbars have been updated.
   UpdateSelfPaintingLayer();
 
-  // HasAlphaChanged can affect whether a composited layer is opaque.
-  if (diff.NeedsLayout() || diff.HasAlphaChanged())
-    MarkAncestorChainForFlagsUpdate();
-
   // A scroller that changes background color might become opaque or not
   // opaque, which in turn affects whether it can be composited on low-DPI
   // screens.
@@ -2664,16 +2652,12 @@ bool PaintLayer::ComputeHasFilterThatMovesPixels() const {
 }
 
 void PaintLayer::SetNeedsRepaint() {
-  SetSelfNeedsRepaint();
-  // Do this unconditionally to ensure container chain is marked when
-  // compositing status of the layer changes.
-  MarkCompositingContainerChainForNeedsRepaint();
-}
-
-void PaintLayer::SetSelfNeedsRepaint() {
+  if (self_needs_repaint_)
+    return;
   self_needs_repaint_ = true;
   // Invalidate as a display item client.
   static_cast<DisplayItemClient*>(this)->Invalidate();
+  MarkCompositingContainerChainForNeedsRepaint();
 }
 
 void PaintLayer::SetDescendantNeedsRepaint() {

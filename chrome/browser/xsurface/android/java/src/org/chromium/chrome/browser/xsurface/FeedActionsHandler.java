@@ -157,4 +157,36 @@ public interface FeedActionsHandler {
      * @param toInvalidate Identifies which feed or feeds should have their caches invalidated.
      */
     default void invalidateContentCacheFor(@FeedIdentifier int toInvalidate) {}
+
+    /**
+     * Reports that the info card is being tracked for its full visibility.
+     * @param type Type of the info card.
+     */
+    default void reportInfoCardTrackViewStarted(int type) {}
+
+    /**
+     * Reports that the info card is fully visible in the viewport.
+     * @param type Type of the info card.
+     * @param minimumViewIntervalSeconds The minimum interval in seconds from the last time the info
+     * card is viewed in order for it to be considered viewed again.
+     */
+    default void reportInfoCardViewed(int type, int minimumViewIntervalSeconds) {}
+
+    /**
+     * Reports that the user tapps the info card.
+     * @param type Type of the info card.
+     */
+    default void reportInfoCardClicked(int type) {}
+
+    /**
+     * Reports that the user dismisses the info card explicitly by tapping the close button.
+     * @param type Type of the info card.
+     */
+    default void reportInfoCardDismissedExplicitly(int type) {}
+
+    /**
+     * Resets all the states of the info card.
+     * @param type Type of the info card.
+     */
+    default void resetInfoCardStates(int type) {}
 }

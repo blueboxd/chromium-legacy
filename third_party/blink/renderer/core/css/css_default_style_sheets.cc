@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
@@ -301,11 +302,9 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     }
   }
 
-  if (!popup_style_sheet_ &&
-      (IsA<HTMLPopupElement>(element) || element.HasValidPopupAttribute())) {
-    // TODO: We should assert that this sheet only contains rules for <popup>.
-    DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
-           RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  if (!popup_style_sheet_ && element.HasValidPopupAttribute()) {
+    // TODO: We should assert that this sheet only contains rules for popups.
+    DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
     popup_style_sheet_ =
         ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_POPUP_CSS));
     AddRulesToDefaultStyleSheets(popup_style_sheet_, NamespaceType::kHTML);

@@ -62,16 +62,12 @@ void FakeSkiaOutputSurface::BindFramebuffer() {
   // TODO(penghuang): remove this method when GLRenderer is removed.
 }
 
-void FakeSkiaOutputSurface::Reshape(const gfx::Size& size,
-                                    float device_scale_factor,
-                                    const gfx::ColorSpace& color_space,
-                                    gfx::BufferFormat format,
-                                    bool use_stencil) {
+void FakeSkiaOutputSurface::Reshape(const ReshapeParams& params) {
   auto& sk_surface = sk_surfaces_[AggregatedRenderPassId{0}];
   SkColorType color_type = kRGBA_8888_SkColorType;
-  SkImageInfo image_info =
-      SkImageInfo::Make(size.width(), size.height(), color_type,
-                        kPremul_SkAlphaType, color_space.ToSkColorSpace());
+  SkImageInfo image_info = SkImageInfo::Make(
+      params.size.width(), params.size.height(), color_type,
+      kPremul_SkAlphaType, params.color_space.ToSkColorSpace());
   sk_surface =
       SkSurface::MakeRenderTarget(gr_context(), SkBudgeted::kNo, image_info);
 
@@ -199,6 +195,7 @@ SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(
     ResourceFormat format,
     bool mipmap,
     sk_sp<SkColorSpace> color_space,
+    bool is_overlay,
     const gpu::Mailbox& mailbox) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
@@ -338,23 +335,6 @@ gpu::SyncToken FakeSkiaOutputSurface::Flush() {
 bool FakeSkiaOutputSurface::EnsureMinNumberOfBuffers(int n) {
   return false;
 }
-
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
-SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPassOverlay(
-    const gfx::Size& size,
-    ResourceFormat format,
-    bool mipmap,
-    sk_sp<SkColorSpace> color_space) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-sk_sp<SkDeferredDisplayList>
-FakeSkiaOutputSurface::EndPaintRenderPassOverlay() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
 
 void FakeSkiaOutputSurface::SetOutOfOrderCallbacks(
     bool out_of_order_callbacks) {

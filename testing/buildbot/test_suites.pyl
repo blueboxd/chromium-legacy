@@ -229,7 +229,7 @@
       'cc_unittests': {},
       'content_browsertests': {
         'swarming': {
-          'shards': 15,
+          'shards': 20,
         },
       },
       'viz_unittests': {},
@@ -1787,11 +1787,7 @@
       'blink_common_unittests': {},
       'blink_heap_unittests': {},
       'blink_platform_unittests': {},
-      'blink_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.blink_unittests.filter',
-        ],
-      },
+      'blink_unittests': {},
       'boringssl_crypto_tests': {},
       'boringssl_ssl_tests': {},
       'capture_unittests': {},
@@ -1816,11 +1812,7 @@
       'google_apis_unittests': {},
       'gpu_unittests': {},
       'gwp_asan_unittests': {},
-      'headless_browsertests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.headless_browsertests.filter',
-        ],
-      },
+      'headless_browsertests': {},
       'ipc_tests': {},
       'latency_unittests': {},
       'media_unittests': {},
@@ -1853,11 +1845,7 @@
       'skia_unittests': {},
       'snapshot_unittests': {},
       'sql_unittests': {},
-      'storage_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.storage_unittests.filter',
-        ],
-      },
+      'storage_unittests': {},
       'ui_base_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',
@@ -1886,6 +1874,7 @@
     },
 
     'fuchsia_experimental_gtests': {
+      'blink_fuzzer_unittests': {},
       'browser_tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.browser_tests.filter',
@@ -1898,14 +1887,13 @@
       },
       'content_browsertests': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_browsertests.filter',
           '--',
           '--disable-gpu',
           '--headless',
           '--ozone-platform=headless',
         ],
         'swarming': {
-          'shards': 6,
+          'shards': 8,
         },
       },
       'unit_tests': {
@@ -3923,7 +3911,7 @@
       },
       'ios_chrome_signin_eg2tests_module': {
       'swarming': {
-          'shards': 2,
+          'shards': 5,
         },
       },
       'ios_chrome_ui_eg2tests_module': {
@@ -4083,6 +4071,18 @@
       },
     },
 
+    'lacros_variations_tast_tests': {
+      'lacros_variations_tast_tests': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        },
+        'resultdb': {
+          'enable': True,
+        },
+        'experiment_percentage': 100,
+      },
+    },
+
     'layout_ng_gtests': {
       'webkit_unit_tests_ng': {
         'args': [
@@ -4227,9 +4227,45 @@
       'sandbox_linux_unittests': {},
     },
 
+    'linux_lacros_chrome_browsertests_non_version_skew': {
+      'lacros_chrome_browsertests on ToT ash': {
+        'name': 'lacros_chrome_browsertests',
+        'test': 'lacros_chrome_browsertests',
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter',
+        ],
+      },
+      'lacros_chrome_browsertests_run_in_series on ToT ash': {
+        'name': 'lacros_chrome_browsertests_run_in_series',
+        'test': 'lacros_chrome_browsertests_run_in_series',
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter',
+        ],
+      },
+    },
+
     'linux_lacros_chrome_browsertests_version_skew': {
-      'lacros_chrome_browsertests': { },
-      'lacros_chrome_browsertests_run_in_series': { },
+      'lacros_chrome_browsertests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
+        ],
+      },
+      'lacros_chrome_browsertests_run_in_series': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
+        ],
+      },
+    },
+
+    'linux_lacros_chrome_interactive_ui_tests_version_skew': {
+      'interactive_ui_tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
+        ],
+        'swarming': {
+          'shards': 3,
+        },
+      },
     },
 
     'linux_lacros_specific_gtests': {
@@ -4580,9 +4616,21 @@
         'args': [
           '--browser-ui-tests-verify-pixels',
           '--enable-pixel-output-in-tests',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_tests.filter',
         ],
         'test': 'browser_tests',
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
+      'pixel_interactive_ui_tests': {
+        'name': 'pixel_interactive_ui_tests',
+        'args': [
+          '--browser-ui-tests-verify-pixels',
+          '--enable-pixel-output-in-tests',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_tests.filter',
+        ],
+        'test': 'interactive_ui_tests',
         'mixins': [
           'skia_gold_test',
         ],
@@ -4648,6 +4696,10 @@
     },
 
     'rust_native_tests': {
+      'autocxx_tests': {
+        'swarming': {},
+        'test': 'autocxx_tests',
+      },
       'build_rust_tests': {
         'swarming': {},
         'test': 'build_rust_tests',
@@ -5335,7 +5387,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC',
+              'revision': '7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC',
             }
           ]
         },
@@ -5372,7 +5424,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC',
+              'revision': '7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC',
             }
           ]
         },
@@ -5390,11 +5442,41 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC',
+              'revision': '7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC',
             }
           ]
         },
         'test': 'webview_cts_tests',
+      },
+    },
+
+    'webview_trichrome_64_cts_tests_gtest': {
+      'webview_trichrome_64_cts_tests': {
+        'swarming': {
+          'shards': 2,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/android_webview/tools/cts_archive',
+              'location': 'android_webview/tools/cts_archive',
+              'revision': '7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC',
+            }
+          ]
+        },
+      },
+    },
+
+    'webview_trichrome_cts_tests_gtest': {
+      'webview_trichrome_cts_tests': {
+        'swarming': {
+          'shards': 2,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/android_webview/tools/cts_archive',
+              'location': 'android_webview/tools/cts_archive',
+              'revision': '7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC',
+            }
+          ]
+        },
       },
     },
 
@@ -5614,7 +5696,7 @@
       'system_webview_shell_instrumentation_tests', # Not an experimental test
       'weblayer_android_gtests',
       'weblayer_gtests',
-      'webview_cts_tests_gtest',
+      'webview_trichrome_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
 
@@ -5633,7 +5715,7 @@
       'system_webview_shell_instrumentation_tests', # Not an experimental test
       'weblayer_android_gtests',
       'weblayer_gtests',
-      'webview_64_cts_tests_gtest',
+      'webview_trichrome_64_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
 
@@ -6147,15 +6229,6 @@
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
-    'gpu_angle_win7_nvidia_gtests': [
-      'gpu_angle_end2end_gtests',
-      'gpu_angle_unit_gtests',
-      'gpu_angle_white_box_gtests',
-      'gpu_angle_deqp_egl_d3d11_gtests',
-      'gpu_angle_deqp_gles2_d3d11_gtests',
-      'gpu_angle_deqp_gles3_d3d11_gtests',
-    ],
-
     'gpu_angle_win_intel_gtests': [
       'gpu_angle_deqp_gles2_d3d11_gtests',
       'gpu_angle_end2end_gtests',
@@ -6368,10 +6441,6 @@
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 
-    'gpu_fyi_linux_optional_gtests': [
-      'gpu_gles2_conform_gtests',
-    ],
-
     'gpu_fyi_linux_release_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_passthrough',
@@ -6400,6 +6469,40 @@
       'gpu_skia_renderer_vulkan_passthrough_telemetry_tests',
     ],
 
+    # The same as gpu_fyi_mac_debug_gtests but with validating tests removed
+    # due to capacity issues on AMD Macbooks.
+    'gpu_fyi_mac_amd_debug_gtests': [
+      'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
+      'gpu_fyi_and_optional_non_linux_gtests',
+      'gpu_fyi_mac_specific_gtests',
+      'gpu_gles2_conform_gtests',
+    ],
+
+    # The same as gpu_fyi_mac_release_gtests but with validating tests removed
+    # due to capacity issues on AMD Macbooks.
+    'gpu_fyi_mac_amd_release_gtests': [
+      'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
+      'gpu_desktop_specific_gtests',
+      'gpu_fyi_and_optional_non_linux_gtests',
+      'gpu_fyi_mac_specific_gtests',
+      'gpu_gles2_conform_gtests',
+    ],
+
+    # The same as gpu_fyi_mac_release_telemetry_tests but with validating
+    # tests removed due to capacity issues on AMD Macbooks.
+    'gpu_fyi_mac_amd_release_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_mediapipe_passthrough_telemetry_tests',
+      'gpu_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
+    ],
+
     'gpu_fyi_mac_debug_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_passthrough',
@@ -6409,12 +6512,14 @@
       'gpu_gles2_conform_gtests',
     ],
 
+    # Validating tests removed since this group is only used on AMD Macbooks and
+    # we don't want to run those tests there due to capacity issues.
     'gpu_fyi_mac_debug_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
-      'gpu_validating_telemetry_tests',
+      # 'gpu_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_validating_telemetry_tests',
+      # 'gpu_webgl_conformance_validating_telemetry_tests',
     ],
 
     'gpu_fyi_mac_optional_gtests': [
@@ -6456,14 +6561,6 @@
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
-    'gpu_fyi_optional_linux_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
-      'gpu_webcodecs_telemetry_test',
-      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-    ],
-
     'gpu_fyi_optional_mac_passthrough_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_mediapipe_passthrough_telemetry_tests',
@@ -6494,34 +6591,6 @@
       'gpu_mediapipe_validating_telemetry_tests',
       'gpu_webcodecs_telemetry_test',
       'gpu_webgl2_conformance_validating_telemetry_tests',
-    ],
-
-    'gpu_fyi_win7_amd_gtests': [
-      'gpu_angle_unit_gtests',
-      'gpu_common_gtests_passthrough',
-      'gpu_desktop_specific_gtests',
-      'gpu_fyi_and_optional_non_linux_gtests',
-      'gpu_fyi_and_optional_win_specific_gtests',
-      'gpu_gles2_conform_gtests',
-    ],
-
-    'gpu_fyi_win7_gtests': [
-      'gpu_angle_unit_gtests',
-      'gpu_common_gtests_passthrough',
-      'gpu_desktop_specific_gtests',
-      'gpu_fyi_and_optional_non_linux_gtests',
-      'gpu_fyi_and_optional_win_specific_gtests',
-      'gpu_gles2_conform_gtests',
-    ],
-
-    'gpu_fyi_win7_nvidia_amd_release_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_passthrough_telemetry_tests',
-      'gpu_webcodecs_telemetry_test',
-      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 
     'gpu_fyi_win_amd_release_telemetry_tests': [
@@ -6656,10 +6725,6 @@
       'gpu_webgl_conformance_swangle_passthrough_telemetry_tests',
     ],
 
-    'gpu_test_buildbucket_api_gpu_use_cases': [
-      'test_buildbucket_api_gpu_use_cases',
-    ],
-
     'gpu_v8_desktop_passthrough_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
@@ -6672,11 +6737,6 @@
       'gpu_validating_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
-    ],
-
-    'gpu_win_angle_amd_telemetry_tests': [
-      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
     ],
 
     'gpu_win_gtests': [
@@ -7095,7 +7155,7 @@
     'ios_clang_tot_device_tests': {
       'ios_clang_tests': {
         'variants': [
-          'IPHONE_6S_12_3_1',
+          'IPHONE_7_15_4_1',
         ],
       }
     },
@@ -7349,19 +7409,24 @@
       },
     },
 
-    'lacros_all_tast_tests_eve': {
-      'lacros_all_tast_tests': {
-        'variants': [
-          'LACROS_EVE',
-        ]
-      },
-    },
-
     'lacros_amd64_generic_rel_skylab_fyi': {
       'lacros_skylab_poc': {
         'variants': [
           'CROS_OCTOPUS_FULL',
           'CROS_EVE_FULL',
+        ]
+      },
+    },
+
+    'lacros_device_or_vm_tast_tests': {
+      'lacros_all_tast_tests': {
+        'variants': [
+          'LACROS_EVE',
+        ]
+      },
+      'lacros_variations_tast_tests': {
+        'variants': [
+          'LACROS_AMD64_GENERIC',
         ]
       },
     },
@@ -7408,12 +7473,8 @@
         'variants': [
           'CROS_HANA_RELEASE_LKGM',
           'CROS_HANA_RELEASE_DEV',
-          'CROS_HANA_RELEASE_BETA',
-          'CROS_HANA_RELEASE_STABLE',
           'CROS_JACUZZI_RELEASE_LKGM',
           'CROS_JACUZZI_RELEASE_DEV',
-          'CROS_JACUZZI_RELEASE_BETA',
-          'CROS_JACUZZI_RELEASE_STABLE',
         ]
       },
     },
@@ -7436,12 +7497,8 @@
         'variants': [
           'CROS_ATLAS_RELEASE_LKGM',
           'CROS_ATLAS_RELEASE_DEV',
-          'CROS_ATLAS_RELEASE_BETA',
-          'CROS_ATLAS_RELEASE_STABLE',
           'CROS_EVE_RELEASE_LKGM',
           'CROS_EVE_RELEASE_DEV',
-          'CROS_EVE_RELEASE_BETA',
-          'CROS_EVE_RELEASE_STABLE',
         ]
       },
     },
@@ -7474,9 +7531,9 @@
       'linux_lacros_specific_gtests': {  },
       'non_android_chromium_gtests': {
       },
+      'linux_lacros_chrome_browsertests_non_version_skew': { },
       'linux_lacros_chrome_browsertests_version_skew': {
         'variants': [
-          'LACROS_TOT',
           'LACROS_VERSION_SKEW_CANARY',
           'LACROS_VERSION_SKEW_DEV',
           'LACROS_VERSION_SKEW_BETA',
@@ -7486,7 +7543,7 @@
     },
 
     'linux_lacros_version_skew_tests': {
-      'linux_lacros_chrome_browsertests_version_skew': {
+      'linux_lacros_chrome_interactive_ui_tests_version_skew': {
         'variants': [
           'LACROS_VERSION_SKEW_CANARY',
           'LACROS_VERSION_SKEW_DEV',
@@ -7631,102 +7688,6 @@
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
-        ],
-      },
-    },
-
-    'win_optional_gpu_tests_rel_gpu_telemetry_tests': {
-      'gpu_common_and_optional_telemetry_tests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_mediapipe_passthrough_telemetry_tests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webcodecs_telemetry_test': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_fast_call_passthrough_telemetry_tests': {
-        'variants': [
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_win_intel_specific_telemetry_tests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-        ],
-      },
-    },
-
-    'win_optional_gpu_tests_rel_gtests': {
-      'gpu_default_and_optional_win_specific_gtests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_fyi_and_optional_non_linux_gtests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_fyi_and_optional_win_specific_gtests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_gles2_conform_gtests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-    },
-
-    'win_optional_gpu_tests_rel_isolated_scripts': {
-      'gpu_command_buffer_perf_passthrough_isolated_scripts': {
-        'variants': [
-          'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },
     },

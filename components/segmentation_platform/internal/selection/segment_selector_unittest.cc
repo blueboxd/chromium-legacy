@@ -16,6 +16,7 @@
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
 #include "components/segmentation_platform/public/config.h"
+#include "components/segmentation_platform/public/field_trial_register.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,6 +30,13 @@ class SegmentInfo;
 }  // namespace proto
 
 namespace {
+
+class MockFieldTrialRegister : public FieldTrialRegister {
+ public:
+  MOCK_METHOD2(RegisterFieldTrial,
+               void(base::StringPiece trial_name,
+                    base::StringPiece group_name));
+};
 
 Config CreateTestConfig() {
   Config config;
@@ -76,7 +84,7 @@ class SegmentSelectorTest : public testing::Test {
     prefs_ = prefs_moved.get();
     segment_selector_ = std::make_unique<SegmentSelectorImpl>(
         segment_database_.get(), &signal_storage_config_,
-        std::move(prefs_moved), &config_, &clock_,
+        std::move(prefs_moved), &config_, &field_trial_register_, &clock_,
         PlatformOptions::CreateDefault(), default_manager_.get());
     segment_selector_->OnPlatformInitialized(nullptr);
   }
@@ -99,7 +107,7 @@ class SegmentSelectorTest : public testing::Test {
   void InitializeMetadataForSegment(OptimizationTarget segment_id,
                                     float mapping[][2],
                                     int num_mapping_pairs) {
-    EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+    EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
         .WillRepeatedly(Return(true));
     segment_database_->FindOrCreateSegment(segment_id)
         ->mutable_model_metadata()
@@ -120,6 +128,7 @@ class SegmentSelectorTest : public testing::Test {
   TestModelProviderFactory::Data model_providers_;
   TestModelProviderFactory provider_factory_;
   Config config_;
+  MockFieldTrialRegister field_trial_register_;
   base::SimpleTestClock clock_;
   std::unique_ptr<test::TestSegmentInfoDatabase> segment_database_;
   MockSignalStorageConfig signal_storage_config_;
@@ -130,7 +139,7 @@ class SegmentSelectorTest : public testing::Test {
 
 TEST_F(SegmentSelectorTest, FindBestSegmentFlowWithTwoSegments) {
   SetUpWithConfig(CreateTestConfig());
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillRepeatedly(Return(true));
 
   OptimizationTarget segment_id =
@@ -169,7 +178,7 @@ TEST_F(SegmentSelectorTest, NewSegmentResultOverridesThePreviousBest) {
   float mapping2[][2] = {{0.3, 1}, {0.4, 4}};
   InitializeMetadataForSegment(segment_id2, mapping2, 2);
 
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillRepeatedly(Return(true));
 
   // Model 1 completes with a zero-ish score. We will wait for the other model
@@ -230,7 +239,7 @@ TEST_F(SegmentSelectorTest, UnknownSegmentTtlExpiryForBooleanModel) {
   float mapping[][2] = {{0.7, 1}};
   InitializeMetadataForSegment(segment_id, mapping, 1);
 
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillRepeatedly(Return(true));
 
   // Set a value less than 1 and result should be UNKNOWN.
@@ -281,7 +290,7 @@ TEST_F(SegmentSelectorTest, DoesNotMeetSignalCollectionRequirement) {
   segment_database_->AddDiscreteMapping(segment_id1, mapping1, 4,
                                         config_.segmentation_key);
 
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillRepeatedly(Return(false));
 
   CompleteModelExecution(segment_id1, 0.5);
@@ -291,7 +300,7 @@ TEST_F(SegmentSelectorTest, DoesNotMeetSignalCollectionRequirement) {
 TEST_F(SegmentSelectorTest,
        GetSelectedSegmentReturnsResultFromPreviousSession) {
   SetUpWithConfig(CreateTestConfig());
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillRepeatedly(Return(true));
   OptimizationTarget segment_id0 =
       OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_SHARE;
@@ -311,8 +320,8 @@ TEST_F(SegmentSelectorTest,
   // Construct a segment selector. It should read result from last session.
   segment_selector_ = std::make_unique<SegmentSelectorImpl>(
       segment_database_.get(), &signal_storage_config_, std::move(prefs_moved),
-      &config_, &clock_, PlatformOptions::CreateDefault(),
-      default_manager_.get());
+      &config_, &field_trial_register_, &clock_,
+      PlatformOptions::CreateDefault(), default_manager_.get());
   segment_selector_->OnPlatformInitialized(nullptr);
 
   SegmentSelectionResult result;
@@ -339,7 +348,7 @@ TEST_F(SegmentSelectorTest,
 // Tests that prefs are properly updated after calling UpdateSelectedSegment().
 TEST_F(SegmentSelectorTest, UpdateSelectedSegment) {
   SetUpWithConfig(CreateTestConfig());
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillRepeatedly(Return(true));
 
   OptimizationTarget segment_id =

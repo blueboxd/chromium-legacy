@@ -32,16 +32,17 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/unified/camera_mic_tray_item_view.h"
 #include "ash/system/unified/current_locale_view.h"
-#include "ash/system/unified/hps_notify_view.h"
 #include "ash/system/unified/ime_mode_view.h"
 #include "ash/system/unified/managed_device_tray_item_view.h"
 #include "ash/system/unified/notification_counter_view.h"
 #include "ash/system/unified/notification_icons_controller.h"
+#include "ash/system/unified/snooping_protection_view.h"
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -83,6 +84,7 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
   void SetTrayBubbleHeight(int height) {
     message_popup_collection_->SetTrayBubbleHeight(height);
   }
+
   message_center::MessagePopupView* GetPopupViewForNotificationID(
       const std::string& notification_id) {
     return message_popup_collection_->GetPopupViewForNotificationID(
@@ -238,8 +240,17 @@ UnifiedSystemTray::~UnifiedSystemTray() {
   ShelfConfig::Get()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 
-  message_center_bubble_.reset();
-  bubble_.reset();
+  DestroyBubbles();
+}
+
+void UnifiedSystemTray::AddObserver(Observer* observer) {
+  if (observer)
+    observers_.AddObserver(observer);
+}
+
+void UnifiedSystemTray::RemoveObserver(Observer* observer) {
+  if (observer)
+    observers_.RemoveObserver(observer);
 }
 
 bool UnifiedSystemTray::MoreThanOneVisibleTrayItem() const {
@@ -443,8 +454,21 @@ void UnifiedSystemTray::OnShelfConfigUpdated() {
       0);
 }
 
+void UnifiedSystemTray::OnOpeningCalendarView() {
+  SetIsActive(false);
+  for (auto& observer : observers_)
+    observer.OnOpeningCalendarView();
+}
+
+void UnifiedSystemTray::OnTransitioningFromCalendarToMainView() {
+  SetIsActive(true);
+  for (auto& observer : observers_)
+    observer.OnLeavingCalendarView();
+}
+
 void UnifiedSystemTray::OnDateTrayActionPerformed(const ui::Event& event) {
-  ShowBubble();
+  if (!bubble_)
+    ShowBubble();
   bubble_->ShowCalendarView(calendar_metrics::CalendarViewShowSource::kTimeView,
                             calendar_metrics::GetEventType(event));
 }
@@ -470,15 +494,31 @@ void UnifiedSystemTray::SetTargetNotification(
   model_->SetTargetNotification(notification_id);
 }
 
+bool UnifiedSystemTray::PerformAction(const ui::Event& event) {
+  if (!GetBubbleWidget()) {
+    ShowBubble();
+  } else if (IsShowingCalendarView()) {
+    bubble_->unified_system_tray_controller()->TransitionToMainView(
+        /*restore_focus=*/true);
+  } else {
+    CloseBubble();
+  }
+
+  return true;
+}
+
 void UnifiedSystemTray::ShowBubble() {
   // ShowBubbleInternal will be called from UiDelegate.
   if (!bubble_) {
+    time_opened_ = base::TimeTicks::Now();
     ui_delegate_->ui_controller()->ShowMessageCenterBubble();
     Shell::Get()->system_tray_notifier()->NotifySystemTrayBubbleShown();
   }
 }
 
 void UnifiedSystemTray::CloseBubble() {
+  base::UmaHistogramMediumTimes("Ash.QuickSettings.UserJourneyTime",
+                                base::TimeTicks::Now() - time_opened_);
   // HideMessageCenterBubbleInternal will be called from UiDelegate.
   ui_delegate_->ui_controller()->HideMessageCenterBubble();
 
@@ -568,6 +608,7 @@ void UnifiedSystemTray::ShowBubbleInternal() {
   presentation_time_recorder->RequestNext();
 
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this);
+  bubble_->unified_system_tray_controller()->AddObserver(this);
 
   message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
   message_center_bubble_->ShowBubble();
@@ -586,8 +627,12 @@ void UnifiedSystemTray::ShowBubbleInternal() {
 }
 
 void UnifiedSystemTray::HideBubbleInternal() {
-  message_center_bubble_.reset();
-  bubble_.reset();
+  if (IsShowingCalendarView()) {
+    for (auto& observer : observers_)
+      observer.OnLeavingCalendarView();
+  }
+
+  DestroyBubbles();
   SetIsActive(false);
 }
 
@@ -623,6 +668,13 @@ void UnifiedSystemTray::AddTrayItemToContainer(TrayItemView* tray_item) {
 
 void UnifiedSystemTray::AddObservedTrayItem(TrayItemView* tray_item) {
   tray_items_observations_.AddObservation(tray_item);
+}
+
+void UnifiedSystemTray::DestroyBubbles() {
+  message_center_bubble_.reset();
+  if (bubble_)
+    bubble_->unified_system_tray_controller()->RemoveObserver(this);
+  bubble_.reset();
 }
 
 }  // namespace ash

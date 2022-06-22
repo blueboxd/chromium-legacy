@@ -15,7 +15,7 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/config.h"
-#include "components/history_clusters/core/features.h"
+#include "components/history_clusters/core/history_clusters_types.h"
 
 namespace history_clusters {
 
@@ -41,16 +41,18 @@ base::Time GetAnnotatedVisitsToCluster::GetBeginTimeOnDayBoundary(
 }
 
 GetAnnotatedVisitsToCluster::GetAnnotatedVisitsToCluster(
-    HistoryClustersService::IncompleteVisitMap incomplete_visit_map,
+    IncompleteVisitMap incomplete_visit_map,
     base::Time begin_time,
-    base::Time end_time,
+    QueryClustersContinuationParams continuation_params,
     Callback callback)
     : incomplete_visit_map_(incomplete_visit_map),
       begin_time_limit_(
           std::max(begin_time, base::Time::Now() - base::Days(90))),
-      original_end_time_(end_time),
-      continuation_end_time_(end_time),
-      callback_(std::move(callback)) {}
+      continuation_params_(continuation_params),
+      callback_(std::move(callback)) {
+  // Callers shouldn't ask for more visits if they've been exhausted.
+  DCHECK(!continuation_params.exhausted_history);
+}
 
 GetAnnotatedVisitsToCluster::~GetAnnotatedVisitsToCluster() = default;
 
@@ -59,54 +61,27 @@ bool GetAnnotatedVisitsToCluster::RunOnDBThread(
     history::HistoryDatabase* db) {
   base::ElapsedThreadTimer query_visits_timer;
 
+  // The end time used in the initial history request for completed visits.
+  // This is the upper bound time of all the visits fetched. Used later to add
+  // incomplete visits from the same time range we scanned for completed visits.
+  // Cached here as `continuation_params` will be updated after each history
+  // request.
+  base::Time original_end_time = continuation_params_.continuation_time;
+
   history::QueryOptions options;
-
-  // History Clusters wants a complete navigation graph and internally handles
-  // de-duplication.
-  options.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
-
   // Accumulate 1 day at a time of visits to avoid breaking up clusters.
-  // We hard cap at `options.max_count` which is enforced at the database level
-  // to avoid any one day blasting past the hard cap, causing OOM errors.
-  while (annotated_visits_.empty() && !exhausted_history_) {
-    // Provide a parameter-controlled hard-cap of the max visits to fetch.
-    // Note in most cases we stop fetching visits far before reaching this
-    // number. This is to prevent OOM errors. See https://crbug.com/1262016.
-    options.max_count =
-        GetConfig().max_visits_to_cluster - annotated_visits_.size();
 
-    // Bound visits by `original_end_time_` and `begin_time_limit_`, fetching
-    // the more recent visits 1st.
-    options.end_time = continuation_end_time_;
-    options.begin_time = std::max(begin_time_limit_,
-                                  GetBeginTimeOnDayBoundary(options.end_time));
+  while (annotated_visits_.empty() && !continuation_params_.is_done) {
+    options = GetHistoryQueryOptions();
 
     // Tack on all the newly fetched visits onto our accumulator vector.
     bool limited_by_max_count = AddUnclusteredVisits(backend, options);
 
-    // If we didn't get enough visits, ask for another day's worth from History
-    // and call this method again when done.
-    // If `limited_by_max_count` is true, `annotated_visits_` "shouldn't" be
-    // empty. But it actually can be if a visit's URL is missing from the URL
-    // table. `limited_by_max_count` is set before visits are filtered to
-    // those whose URL is found.
-    if (limited_by_max_count && !annotated_visits_.empty()) {
-      continuation_end_time_ = annotated_visits_.back().visit_row.visit_time;
-    } else {
-      continuation_end_time_ = options.begin_time;
-    }
-
-    // TODO(tommycli): Connect this to History's limit defined internally in
-    //  components/history.
-    // `exhausted_history_` is true if we've reached `begin_time_limit_` (bound
-    // to be at most 90 days old). This does not necessarily mean we've added
-    // all visits; e.g. `begin_time_limit_` can be more recent than 90 days ago
-    // or `original_end_time_` can be older than now.
-    exhausted_history_ =
-        !limited_by_max_count && continuation_end_time_ <= begin_time_limit_;
+    IncrementContinuationParams(options, limited_by_max_count);
   }
 
-  AddIncompleteVisits(backend);
+  AddIncompleteVisits(backend, continuation_params_.continuation_time,
+                      original_end_time);
 
   RemoveVisitsFromSync();
 
@@ -115,6 +90,28 @@ bool GetAnnotatedVisitsToCluster::RunOnDBThread(
       query_visits_timer.Elapsed());
 
   return true;
+}
+
+history::QueryOptions GetAnnotatedVisitsToCluster::GetHistoryQueryOptions() {
+  history::QueryOptions options;
+
+  // History Clusters wants a complete navigation graph and internally handles
+  // de-duplication.
+  options.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
+
+  // We hard cap at `options.max_count` which is enforced at the database level
+  // to avoid any request getting too many visits causing OOM errors. See
+  // https://crbug.com/1262016.
+  options.max_count =
+      GetConfig().max_visits_to_cluster - annotated_visits_.size();
+
+  // Bound visits by `continuation_end_time_` and `begin_time_limit_`,
+  // fetching the more recent visits 1st.
+  options.end_time = continuation_params_.continuation_time;
+  options.begin_time =
+      std::max(GetBeginTimeOnDayBoundary(options.end_time), begin_time_limit_);
+
+  return options;
 }
 
 bool GetAnnotatedVisitsToCluster::AddUnclusteredVisits(
@@ -128,7 +125,9 @@ bool GetAnnotatedVisitsToCluster::AddUnclusteredVisits(
 }
 
 void GetAnnotatedVisitsToCluster::AddIncompleteVisits(
-    history::HistoryBackend* backend) {
+    history::HistoryBackend* backend,
+    base::Time begin_time,
+    base::Time end_time) {
   // Now we have enough visits for clustering, add all incomplete visits
   // between the current `options.begin_time` and `original_end_time`, as
   // otherwise they will be mysteriously missing from the Clusters UI. They
@@ -154,9 +153,8 @@ void GetAnnotatedVisitsToCluster::AddIncompleteVisits(
     // `options.max_count`.
     const auto& visit_time =
         incomplete_visit_context_annotations.visit_row.visit_time;
-    if ((!continuation_end_time_.is_null() &&
-         visit_time < continuation_end_time_) ||
-        (!original_end_time_.is_null() && visit_time >= original_end_time_)) {
+    if ((!begin_time.is_null() && visit_time < begin_time) ||
+        (!end_time.is_null() && visit_time >= end_time)) {
       continue;
     }
 
@@ -213,13 +211,38 @@ void GetAnnotatedVisitsToCluster::RemoveVisitsFromSync() {
       annotated_visits_.end());
 }
 
-void GetAnnotatedVisitsToCluster::DoneRunOnMainThread() {
-  // Don't give a continuation end time if we exhausted all of History.
-  base::Time continuation_end_time_result;
-  if (!exhausted_history_)
-    continuation_end_time_result = continuation_end_time_;
+void GetAnnotatedVisitsToCluster::IncrementContinuationParams(
+    history::QueryOptions options,
+    bool limited_by_max_count) {
+  continuation_params_.is_continuation = true;
 
-  std::move(callback_).Run(annotated_visits_, continuation_end_time_result);
+  // If `limited_by_max_count` is true, `annotated_visits_` "shouldn't" be
+  // empty. But it actually can be if a visit's URL is missing from the URL
+  // table. `limited_by_max_count` is set before visits are filtered to
+  // those whose URL is found.
+  // TODO(manukh): We shouldn't skip the day's remaining visits when
+  //  `annotated_visits_` is empty.
+  if (limited_by_max_count && !annotated_visits_.empty()) {
+    continuation_params_.continuation_time =
+        annotated_visits_.back().visit_row.visit_time;
+    continuation_params_.is_partial_day = true;
+  } else {
+    continuation_params_.continuation_time = options.begin_time;
+    continuation_params_.is_partial_day = false;
+
+    // We've exhausted history if we've reached `begin_time_limit_` (bound to be
+    // at most 90 days old). This does not necessarily mean we've added all
+    // visits; e.g. `begin_time_limit_` can be more recent than 90 days ago or
+    // the initial `continuation_end_time_` could have been older than now.
+    if (continuation_params_.continuation_time <= begin_time_limit_) {
+      continuation_params_.exhausted_history = true;
+      continuation_params_.is_done = true;
+    }
+  }
+}
+
+void GetAnnotatedVisitsToCluster::DoneRunOnMainThread() {
+  std::move(callback_).Run(annotated_visits_, continuation_params_);
 }
 
 }  // namespace history_clusters

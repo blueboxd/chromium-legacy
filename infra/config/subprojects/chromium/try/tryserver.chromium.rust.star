@@ -14,7 +14,7 @@ try_.defaults.set(
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
@@ -36,9 +36,9 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux-rust-x64-dbg",
+    name = "linux-rust-x64-rel-android-toolchain",
 )
 
 try_.builder(
-    name = "linux-rust-intree-x64-rel",
+    name = "linux-rust-x64-dbg",
 )

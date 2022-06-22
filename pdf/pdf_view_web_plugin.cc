@@ -42,8 +42,6 @@
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/post_message_receiver.h"
 #include "pdf/post_message_sender.h"
-#include "pdf/ppapi_migration/bitmap.h"
-#include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/result_codes.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/ui/document_properties.h"
@@ -821,21 +819,6 @@ bool PdfViewWebPlugin::IsValidLink(const std::string& url) {
   return base::Value(url).is_string();
 }
 
-std::unique_ptr<Graphics> PdfViewWebPlugin::CreatePaintGraphics(
-    const gfx::Size& size) {
-  // `this` must be valid when creating new graphics. `this` is guaranteed to
-  // outlive `graphics`; the implemented client interface owns the paint manager
-  // in which the graphics device exists.
-  auto graphics = SkiaGraphics::Create(this, size);
-  DCHECK(graphics);
-  return graphics;
-}
-
-bool PdfViewWebPlugin::BindPaintGraphics(Graphics& graphics) {
-  InvalidatePluginContainer();
-  return false;
-}
-
 void PdfViewWebPlugin::SetCaretPosition(const gfx::PointF& position) {
   PdfViewPluginBase::SetCaretPosition(position);
 }
@@ -880,6 +863,10 @@ void PdfViewWebPlugin::OnMessage(const base::Value::Dict& message) {
   PdfViewPluginBase::HandleMessage(message);
 }
 
+void PdfViewWebPlugin::InvalidatePluginContainer() {
+  container_wrapper_->Invalidate();
+}
+
 void PdfViewWebPlugin::UpdateSnapshot(sk_sp<SkImage> snapshot) {
   snapshot_ =
       cc::PaintImageBuilder::WithDefault()
@@ -898,6 +885,11 @@ void PdfViewWebPlugin::UpdateScaledValues() {
 }
 
 void PdfViewWebPlugin::UpdateScale(float scale) {
+  if (scale <= 0.0f) {
+    NOTREACHED();
+    return;
+  }
+
   viewport_to_dip_scale_ = scale;
   device_to_css_scale_ = 1.0f;
   UpdateScaledValues();
@@ -951,10 +943,6 @@ void PdfViewWebPlugin::SaveAs() {
 
   service->SaveUrlAs(GURL(GetURL().c_str()),
                      network::mojom::ReferrerPolicy::kDefault);
-}
-
-void PdfViewWebPlugin::InitImageData(const gfx::Size& size) {
-  mutable_image_data() = CreateN32PremulSkBitmap(gfx::SizeToSkISize(size));
 }
 
 void PdfViewWebPlugin::SetFormTextFieldInFocus(bool in_focus) {
@@ -1060,10 +1048,6 @@ void PdfViewWebPlugin::OnViewportChanged(
   // `plugin_rect_in_css_pixel` needs to be converted to device pixels before
   // getting passed into PdfViewPluginBase::UpdateGeometryOnPluginRectChanged().
   UpdateGeometryOnPluginRectChanged(plugin_rect_in_css_pixel, new_device_scale);
-}
-
-void PdfViewWebPlugin::InvalidatePluginContainer() {
-  container_wrapper_->Invalidate();
 }
 
 bool PdfViewWebPlugin::SelectAll() {

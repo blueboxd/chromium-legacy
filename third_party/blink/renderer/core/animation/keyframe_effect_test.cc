@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -478,6 +479,7 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoTarget) {
 TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
   const double animation_playback_rate = 1;
   Timing timing;
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
 
   StringKeyframeVector keyframes(2);
   keyframes[0] = MakeGarbageCollected<StringKeyframe>();
@@ -494,6 +496,8 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
       MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
   auto* keyframe_effect =
       MakeGarbageCollected<KeyframeEffect>(element, effect_model, timing);
+  Animation* animation = GetDocument().Timeline().Play(keyframe_effect);
+  (void)animation;
 
   // If the target has a CSS offset we can't composite it.
   element->SetInlineStyleProperty(CSSPropertyID::kOffsetPosition, "50px 50px");

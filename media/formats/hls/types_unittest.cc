@@ -3,33 +3,32 @@
 // found in the LICENSE file.
 
 #include "media/formats/hls/types.h"
+
+#include <utility>
+
 #include "base/location.h"
+#include "base/strings/string_piece.h"
+#include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/source_string.h"
+#include "media/formats/hls/test_util.h"
+#include "media/formats/hls/variable_dictionary.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media::hls {
 
-namespace {
-
-types::VariableName CreateVarName(base::StringPiece name) {
-  return types::VariableName::Parse(SourceString::CreateForTesting(name))
-      .value();
-}
-
-}  // namespace
-
-TEST(HlsFormatParserTest, ParseDecimalIntegerTest) {
-  auto const error_test = [](base::StringPiece input,
+TEST(HlsTypesTest, ParseDecimalInteger) {
+  const auto error_test = [](base::StringPiece input,
                              const base::Location& from =
                                  base::Location::Current()) {
     auto result =
         types::ParseDecimalInteger(SourceString::CreateForTesting(1, 1, input));
     ASSERT_TRUE(result.has_error()) << from.ToString();
     auto error = std::move(result).error();
-    EXPECT_EQ(error.code(), ParseStatusCode::kFailedToParseDecimalInteger);
+    EXPECT_EQ(error.code(), ParseStatusCode::kFailedToParseDecimalInteger)
+        << from.ToString();
   };
 
-  auto const ok_test = [](base::StringPiece input,
+  const auto ok_test = [](base::StringPiece input,
                           types::DecimalInteger expected,
                           const base::Location& from =
                               base::Location::Current()) {
@@ -37,7 +36,7 @@ TEST(HlsFormatParserTest, ParseDecimalIntegerTest) {
         types::ParseDecimalInteger(SourceString::CreateForTesting(1, 1, input));
     ASSERT_TRUE(result.has_value()) << from.ToString();
     auto value = std::move(result).value();
-    EXPECT_EQ(value, expected);
+    EXPECT_EQ(value, expected) << from.ToString();
   };
 
   // Empty string is not allowed
@@ -72,19 +71,19 @@ TEST(HlsFormatParserTest, ParseDecimalIntegerTest) {
   error_test("18446744073709551616");
 }
 
-TEST(HlsFormatParserTest, ParseDecimalFloatingPointTest) {
-  auto const error_test = [](base::StringPiece input,
+TEST(HlsTypesTest, ParseDecimalFloatingPoint) {
+  const auto error_test = [](base::StringPiece input,
                              const base::Location& from =
                                  base::Location::Current()) {
     auto result = types::ParseDecimalFloatingPoint(
         SourceString::CreateForTesting(1, 1, input));
     ASSERT_TRUE(result.has_error()) << from.ToString();
     auto error = std::move(result).error();
-    EXPECT_EQ(error.code(),
-              ParseStatusCode::kFailedToParseDecimalFloatingPoint);
+    EXPECT_EQ(error.code(), ParseStatusCode::kFailedToParseDecimalFloatingPoint)
+        << from.ToString();
   };
 
-  auto const ok_test = [](base::StringPiece input,
+  const auto ok_test = [](base::StringPiece input,
                           types::DecimalFloatingPoint expected,
                           const base::Location& from =
                               base::Location::Current()) {
@@ -92,7 +91,7 @@ TEST(HlsFormatParserTest, ParseDecimalFloatingPointTest) {
         SourceString::CreateForTesting(1, 1, input));
     ASSERT_TRUE(result.has_value()) << from.ToString();
     auto value = std::move(result).value();
-    EXPECT_DOUBLE_EQ(value, expected);
+    EXPECT_DOUBLE_EQ(value, expected) << from.ToString();
   };
 
   // Empty string is not allowed
@@ -124,8 +123,8 @@ TEST(HlsFormatParserTest, ParseDecimalFloatingPointTest) {
   ok_test("0000000.000001", 0.000001);
 }
 
-TEST(HlsFormatParserTest, ParseSignedDecimalFloatingPointTest) {
-  auto const error_test = [](base::StringPiece input,
+TEST(HlsTypesTest, ParseSignedDecimalFloatingPoint) {
+  const auto error_test = [](base::StringPiece input,
                              const base::Location& from =
                                  base::Location::Current()) {
     auto result = types::ParseSignedDecimalFloatingPoint(
@@ -133,10 +132,11 @@ TEST(HlsFormatParserTest, ParseSignedDecimalFloatingPointTest) {
     ASSERT_TRUE(result.has_error()) << from.ToString();
     auto error = std::move(result).error();
     EXPECT_EQ(error.code(),
-              ParseStatusCode::kFailedToParseSignedDecimalFloatingPoint);
+              ParseStatusCode::kFailedToParseSignedDecimalFloatingPoint)
+        << from.ToString();
   };
 
-  auto const ok_test = [](base::StringPiece input,
+  const auto ok_test = [](base::StringPiece input,
                           types::SignedDecimalFloatingPoint expected,
                           const base::Location& from =
                               base::Location::Current()) {
@@ -144,7 +144,7 @@ TEST(HlsFormatParserTest, ParseSignedDecimalFloatingPointTest) {
         SourceString::CreateForTesting(1, 1, input));
     ASSERT_TRUE(result.has_value()) << from.ToString();
     auto value = std::move(result).value();
-    EXPECT_DOUBLE_EQ(value, expected);
+    EXPECT_DOUBLE_EQ(value, expected) << from.ToString();
   };
 
   // Empty string is not allowed
@@ -178,7 +178,7 @@ TEST(HlsFormatParserTest, ParseSignedDecimalFloatingPointTest) {
   ok_test("0000000.000001", 0.000001);
 }
 
-TEST(HlsFormatParserTest, AttributeListIteratorTest) {
+TEST(HlsTypesTest, AttributeListIterator) {
   using Items =
       std::initializer_list<std::pair<base::StringPiece, base::StringPiece>>;
 
@@ -189,17 +189,17 @@ TEST(HlsFormatParserTest, AttributeListIteratorTest) {
       auto result = iter.Next();
       ASSERT_TRUE(result.has_value()) << from.ToString();
       auto value = std::move(result).value();
-      EXPECT_EQ(value.name.Str(), item.first);
-      EXPECT_EQ(value.value.Str(), item.second);
+      EXPECT_EQ(value.name.Str(), item.first) << from.ToString();
+      EXPECT_EQ(value.value.Str(), item.second) << from.ToString();
     }
 
     // Afterwards, iterator should fail
     auto result = iter.Next();
-    ASSERT_TRUE(result.has_error());
-    EXPECT_EQ(std::move(result).error().code(), error);
+    ASSERT_TRUE(result.has_error()) << from.ToString();
+    EXPECT_EQ(std::move(result).error().code(), error) << from.ToString();
     result = iter.Next();
-    ASSERT_TRUE(result.has_error());
-    EXPECT_EQ(std::move(result).error().code(), error);
+    ASSERT_TRUE(result.has_error()) << from.ToString();
+    EXPECT_EQ(std::move(result).error().code(), error) << from.ToString();
   };
 
   // Checks for valid items, followed by an error
@@ -286,7 +286,7 @@ TEST(HlsFormatParserTest, AttributeListIteratorTest) {
   error_test("FOO=\"as\ndf\"", {});
 }
 
-TEST(HlsFormatParserTest, AttributeMapTest) {
+TEST(HlsTypesTest, AttributeMap) {
   auto make_iter = [](auto str) {
     return types::AttributeListIterator(SourceString::CreateForTesting(str));
   };
@@ -416,24 +416,25 @@ TEST(HlsFormatParserTest, AttributeMapTest) {
   }
 }
 
-TEST(HlsFormatParserTest, ParseVariableNameTest) {
-  auto const ok_test = [](base::StringPiece input,
+TEST(HlsTypesTest, ParseVariableName) {
+  const auto ok_test = [](base::StringPiece input,
                           const base::Location& from =
                               base::Location::Current()) {
     auto result =
         types::VariableName::Parse(SourceString::CreateForTesting(input));
     ASSERT_TRUE(result.has_value()) << from.ToString();
-    EXPECT_EQ(std::move(result).value().GetName(), input);
+    EXPECT_EQ(std::move(result).value().GetName(), input) << from.ToString();
   };
 
-  auto const error_test = [](base::StringPiece input,
+  const auto error_test = [](base::StringPiece input,
                              const base::Location& from =
                                  base::Location::Current()) {
     auto result =
         types::VariableName::Parse(SourceString::CreateForTesting(input));
     ASSERT_TRUE(result.has_error()) << from.ToString();
     EXPECT_EQ(std::move(result).error().code(),
-              ParseStatusCode::kMalformedVariableName);
+              ParseStatusCode::kMalformedVariableName)
+        << from.ToString();
   };
 
   // Variable names may not be empty
@@ -459,21 +460,25 @@ TEST(HlsFormatParserTest, ParseVariableNameTest) {
   ok_test("______-___-__---");
 }
 
-TEST(HlsFormatParserTest, ParseQuotedStringWithoutSubstitutionTest) {
-  const auto ok_test = [](base::StringPiece in,
-                          base::StringPiece expected_out) {
+TEST(HlsTypesTest, ParseQuotedStringWithoutSubstitution) {
+  const auto ok_test = [](base::StringPiece in, base::StringPiece expected_out,
+                          const base::Location& from =
+                              base::Location::Current()) {
     auto in_str = SourceString::CreateForTesting(in);
     auto out = types::ParseQuotedStringWithoutSubstitution(in_str);
-    ASSERT_TRUE(out.has_value());
-    EXPECT_EQ(std::move(out).value().Str(), expected_out);
+    ASSERT_TRUE(out.has_value()) << from.ToString();
+    EXPECT_EQ(std::move(out).value().Str(), expected_out) << from.ToString();
   };
 
-  const auto error_test = [](base::StringPiece in) {
+  const auto error_test = [](base::StringPiece in,
+                             const base::Location& from =
+                                 base::Location::Current()) {
     auto in_str = SourceString::CreateForTesting(in);
     auto out = types::ParseQuotedStringWithoutSubstitution(in_str);
-    ASSERT_TRUE(out.has_error());
+    ASSERT_TRUE(out.has_error()) << from.ToString();
     EXPECT_EQ(std::move(out).error().code(),
-              ParseStatusCode::kFailedToParseQuotedString);
+              ParseStatusCode::kFailedToParseQuotedString)
+        << from.ToString();
   };
 
   // Test some basic examples
@@ -503,27 +508,30 @@ TEST(HlsFormatParserTest, ParseQuotedStringWithoutSubstitutionTest) {
   error_test("");
 }
 
-TEST(HlsFormatParserTest, ParseQuotedStringTest) {
+TEST(HlsTypesTest, ParseQuotedString) {
   VariableDictionary dict;
   EXPECT_TRUE(dict.Insert(CreateVarName("FOO"), "bar"));
   EXPECT_TRUE(dict.Insert(CreateVarName("BAZ"), "\"foo\""));
 
-  const auto ok_test = [&dict](base::StringPiece in,
-                               base::StringPiece expected_out) {
-    auto in_str = SourceString::CreateForTesting(in);
-    VariableDictionary::SubstitutionBuffer sub_buffer;
-    auto out = types::ParseQuotedString(in_str, dict, sub_buffer);
-    ASSERT_TRUE(out.has_value());
-    EXPECT_EQ(std::move(out).value(), expected_out);
-  };
+  const auto ok_test =
+      [&dict](base::StringPiece in, base::StringPiece expected_out,
+              const base::Location& from = base::Location::Current()) {
+        auto in_str = SourceString::CreateForTesting(in);
+        VariableDictionary::SubstitutionBuffer sub_buffer;
+        auto out = types::ParseQuotedString(in_str, dict, sub_buffer);
+        ASSERT_TRUE(out.has_value()) << from.ToString();
+        EXPECT_EQ(std::move(out).value(), expected_out) << from.ToString();
+      };
 
   const auto error_test = [&dict](base::StringPiece in,
-                                  ParseStatusCode expected_error) {
+                                  ParseStatusCode expected_error,
+                                  const base::Location& from =
+                                      base::Location::Current()) {
     auto in_str = SourceString::CreateForTesting(in);
     VariableDictionary::SubstitutionBuffer sub_buffer;
     auto out = types::ParseQuotedString(in_str, dict, sub_buffer);
-    ASSERT_TRUE(out.has_error());
-    EXPECT_EQ(std::move(out).error().code(), expected_error);
+    ASSERT_TRUE(out.has_error()) << from.ToString();
+    EXPECT_EQ(std::move(out).error().code(), expected_error) << from.ToString();
   };
 
   // Test some basic examples
@@ -553,6 +561,81 @@ TEST(HlsFormatParserTest, ParseQuotedStringTest) {
 
   // Empty string is not allowed
   error_test("", ParseStatusCode::kFailedToParseQuotedString);
+}
+
+TEST(HlsTypesTest, ParseDecimalResolution) {
+  const auto error_test = [](base::StringPiece input,
+                             const base::Location& from =
+                                 base::Location::Current()) {
+    auto result = types::DecimalResolution::Parse(
+        SourceString::CreateForTesting(1, 1, input));
+    ASSERT_TRUE(result.has_error()) << from.ToString();
+    auto error = std::move(result).error();
+    EXPECT_EQ(error.code(), ParseStatusCode::kFailedToParseDecimalResolution)
+        << from.ToString();
+  };
+
+  const auto ok_test =
+      [](base::StringPiece input, types::DecimalResolution expected,
+         const base::Location& from = base::Location::Current()) {
+        auto result = types::DecimalResolution::Parse(
+            SourceString::CreateForTesting(1, 1, input));
+        ASSERT_TRUE(result.has_value()) << from.ToString();
+        auto value = std::move(result).value();
+        EXPECT_EQ(value.width, expected.width) << from.ToString();
+        EXPECT_EQ(value.height, expected.height) << from.ToString();
+      };
+
+  // Empty string is not allowed
+  error_test("");
+
+  // Decimal-resolution must have a single lower-case 'x' between two
+  // DecimalIntegers
+  error_test("123");
+  error_test("123X456");
+  error_test("123*456");
+  error_test("123x");
+  error_test("x456");
+  error_test("123x456x");
+  error_test("x123x456");
+  error_test("x123x456x");
+  error_test("0X123");
+
+  // Decimal-resolutions may not be quoted
+  error_test("'123x456'");
+  error_test("\"123x456\"");
+
+  // Decimal-resolutions may not be negative
+  error_test("-123x456");
+  error_test("123x-456");
+  error_test("-123x-456");
+  error_test("-0x456");
+
+  // Decimal-integers may not contain junk or leading/trailing spaces
+  error_test("12.3x456");
+  error_test("  123x456");
+  error_test("123 x456");
+  error_test("123x456 ");
+  error_test("123x 456");
+
+  // Decimal-integers may not exceed 20 characters
+  error_test("000000000000000000001x456");
+  error_test("123x000000000000000000001");
+
+  // Test some valid inputs
+  ok_test("00000000000000000001x456",
+          types::DecimalResolution{.width = 1, .height = 456});
+  ok_test("0x0", types::DecimalResolution{.width = 0, .height = 0});
+  ok_test("1x1", types::DecimalResolution{.width = 1, .height = 1});
+  ok_test("123x456", types::DecimalResolution{.width = 123, .height = 456});
+  ok_test("123x0", types::DecimalResolution{.width = 123, .height = 0});
+  ok_test("0x123", types::DecimalResolution{.width = 0, .height = 123});
+
+  // Test max supported value
+  ok_test("18446744073709551615x18446744073709551615",
+          types::DecimalResolution{.width = 18446744073709551615u,
+                                   .height = 18446744073709551615u});
+  error_test("18446744073709551616x18446744073709551616");
 }
 
 }  // namespace media::hls

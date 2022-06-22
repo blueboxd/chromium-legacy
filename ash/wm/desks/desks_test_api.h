@@ -11,8 +11,14 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace views {
+class LabelButton;
 class ScrollView;
+class View;
 }  // namespace views
+
+namespace ui {
+class SimpleMenuModel;
+}  // namespace ui
 
 namespace ash {
 
@@ -39,7 +45,12 @@ class DesksTestApi {
   static const std::vector<PersistentDesksBarDeskButton*>
   GetPersistentDesksBarDeskButtons();
   static DeskActionContextMenu* GetContextMenuForDesk(int index);
+  static views::LabelButton* GetCloseAllUndoToastDismissButton();
+  static const ui::SimpleMenuModel& GetContextMenuModelForDesk(int index);
+  static views::View* GetHighlightOverlayForDeskPreview(int index);
   static bool HasVerticalDotsButton();
+  static bool DesksControllerHasDesk(Desk* desk);
+  static bool DesksControllerCanUndoDeskRemoval();
 
   static bool IsDesksBarLeftGradientVisible();
   static bool IsDesksBarRightGradientVisible();

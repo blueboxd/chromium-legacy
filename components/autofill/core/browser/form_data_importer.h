@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_DATA_IMPORTER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_DATA_IMPORTER_H_
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -12,6 +13,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile_import_process.h"
@@ -102,6 +104,11 @@ class FormDataImporter {
 
   raw_ptr<VirtualCardEnrollmentManager> GetVirtualCardEnrollmentManager() {
     return virtual_card_enrollment_manager_.get();
+  }
+
+  void ClearMultiStepImportCandidates() {
+    multistep_candidates_.clear();
+    multistep_candidates_origin_.reset();
   }
 
  protected:
@@ -232,6 +239,56 @@ class FormDataImporter {
       const CreditCard* imported_credit_card,
       bool is_credit_card_upload_enabled);
 
+  // If `kAutofillComplementCountryCodeOnImport` is enabled and the `profile`'s
+  // country is not empty, complements it with `predicted_country_code`. To give
+  // users the opportunity to edit, this is only done with explicit save prompts
+  // enabled.
+  // Returns true if the country was complemented.
+  bool ComplementCountry(AutofillProfile& profile,
+                         const std::string& predicted_country_code);
+
+  // Sets the `profile`'s PHONE_HOME_WHOLE_NUMBER to the `combined_phone`, if
+  // possible. Deduces the region based on `predicted_country_code`.
+  // Returns false if the provided `combined_phone` is invalid.
+  // TODO(crbug.com/1297032): Remove `predicted_country_code` when launched.
+  bool SetPhoneNumber(AutofillProfile& profile,
+                      PhoneNumber::PhoneCombineHelper& combined_phone,
+                      const std::string& predicted_country_code);
+
+  // Clears all setting-inaccessible values from `profile` if
+  // `kAutofillRemoveInaccessibleProfileValues` is enabled.
+  // TODO(crbug.com/1297032): Remove `predicted_country_code` when launched.
+  void RemoveInaccessibleProfileValues(
+      AutofillProfile& profile,
+      const std::string& predicted_country_code);
+
+  // Removes updated multi-step candidates, merges |profile| with multi-step
+  // candidates and potentially stores it as a multi-step candidate itself.
+  // |profile| and |import_metadata| are updated accordingly, if the profile can
+  // be merged. See |MergeProfileWithMultiStepCandidates()| for details.
+  // Only applicable when |kAutofillEnableMultiStepImports| is enabled.
+  void ProcessMultiStepImport(AutofillProfile& profile,
+                              ProfileImportMetadata& import_metadata,
+                              const url::Origin& origin);
+
+  // Removes any MultiStepFormProfileCandidate from |multistep_candidates_| that
+  // reached their TTL or have a different |origin|.
+  void RemoveOutdatedMultiStepCandidates(const url::Origin& origin);
+
+  // Merges a given |profile| stepwise with |multistep_candidates_| to
+  // complete it. |profile| is assumed to contain no invalid information.
+  // Returns true if the resulting profile satisfies the minimum address
+  // requirements. |profile| and |import_metadata| are updated in this case with
+  // the result of merging all relevant candidates.
+  // Returns false otherwise and leaves |profile| and |import_metadata|
+  // unchanged.
+  // Any merged or colliding |multistep_candidates_| are cleared.
+  // |origin|: The origin of the form where |profile| was imported from.
+  bool MergeProfileWithMultiStepCandidates(
+      AutofillProfile& profile,
+      ProfileImportMetadata& import_metadata,
+      const url::Origin& origin);
+
   // Whether a dynamic change form is imported.
   bool from_dynamic_change_form_ = false;
 
@@ -276,6 +333,23 @@ class FormDataImporter {
   std::unique_ptr<VirtualCardEnrollmentManager>
       virtual_card_enrollment_manager_;
 
+  // Represents a submitted form, stored to be considered as a merge candidate
+  // for other candidate profiles in future submits in a multi-step import flow.
+  struct MultiStepFormProfileCandidate {
+    // The import candidate.
+    AutofillProfile profile;
+    // Metadata about how |profile| was constructed.
+    ProfileImportMetadata import_metadata;
+    // Timestamp when the submit happened.
+    base::Time timestamp;
+  };
+  // Current multi-step import candidates, in increasing order of their
+  // |timestamp|.
+  std::deque<MultiStepFormProfileCandidate> multistep_candidates_;
+  // All |multistep_candidates_| share the same origin. Has a value iff
+  // |multistep_candidates_| is not empty.
+  absl::optional<url::Origin> multistep_candidates_origin_;
+
   friend class AutofillMergeTest;
   friend class FormDataImporterTest;
   friend class FormDataImporterTestBase;
@@ -284,6 +358,10 @@ class FormDataImporter {
   friend class SaveCardInfobarEGTestHelper;
   friend class ::SaveCardOfferObserver;
   FRIEND_TEST_ALL_PREFIXES(AutofillMergeTest, MergeProfiles);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterNonParameterizedTest,
+                           ProcessCreditCardImportCandidate_EmptyCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterNonParameterizedTest,
+                           ShouldOfferUploadCardOrLocalCardSave);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            AllowDuplicateMaskedServerCardIfFlagEnabled);
   FRIEND_TEST_ALL_PREFIXES(

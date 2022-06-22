@@ -262,7 +262,7 @@ class SingleTestRunner(object):
         # Remove |output_path| if it exists and is not the generic expectation to
         # avoid extra baseline if the new baseline is the same as the fallback baseline.
         generic_dir = fs.join(
-            port.web_tests_dir(),
+            port.generic_baselines_dir(),
             fs.dirname(
                 port.lookup_virtual_test_base(self._test_name)
                 or self._test_name))
@@ -623,7 +623,7 @@ class SingleTestRunner(object):
             use_luci = not gold_properties.local_pixel_tests
             img_path = self._filesystem.join(
                 str(self._port.skia_gold_temp_dir()),
-                '%s.png' % self._test_name.replace(self._filesystem.sep, '_'))
+                '%s.png' % self._test_name.replace('/', '_'))
             self._filesystem.write_binary_file(img_path, driver_output.image)
             status, error = gold_session.RunComparison(name=self._test_name,
                                                        png_file=img_path,

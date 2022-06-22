@@ -162,7 +162,8 @@ class WaylandWindow : public PlatformWindow,
                  mojom::DragEventSource source,
                  gfx::NativeCursor cursor,
                  bool can_grab_pointer,
-                 WmDragHandler::Delegate* delegate) override;
+                 WmDragHandler::DragFinishedCallback drag_finished_callback,
+                 WmDragHandler::LocationDelegate* delegate) override;
   void CancelDrag() override;
 
   // PlatformWindow
@@ -189,8 +190,8 @@ class WaylandWindow : public PlatformWindow,
   void SetCursor(scoped_refptr<PlatformCursor> cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
-  gfx::Rect GetRestoredBoundsInPixels() const override;
+  void SetRestoredBoundsInDIP(const gfx::Rect& bounds) override;
+  gfx::Rect GetRestoredBoundsInDIP() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   bool IsTranslucentWindowOpacitySupported() const override;
@@ -278,13 +279,12 @@ class WaylandWindow : public PlatformWindow,
   WaylandWindow* GetTopMostChildWindow();
 
   // Called by the WaylandSurface attached to this window when that surface
-  // becomes partially or fully within the scanout region of an output that it
-  // wasn't before.
-  void OnEnteredOutput();
+  // becomes partially or fully within the scanout region of |output|.
+  void OnEnteredOutputIdAdded();
 
   // Called by the WaylandSurface attached to this window when that surface
-  // becomes fully outside of one of outputs that it previously resided on.
-  void OnLeftOutput();
+  // becomes fully outside of the scanout region of |output|.
+  void OnEnteredOutputIdRemoved();
 
   // Returns true iff this window is opaque.
   bool IsOpaqueWindow() const;
@@ -326,8 +326,8 @@ class WaylandWindow : public PlatformWindow,
 
   void set_ui_scale(float ui_scale) { ui_scale_ = ui_scale; }
 
-  // Calls set_opaque_region for this window.
-  virtual void UpdateWindowMask();
+  // Updates mask for this window.
+  virtual void UpdateWindowMask() = 0;
 
   // Processes the pending bounds in dip.
   void ProcessPendingBoundsDip(uint32_t serial);
@@ -354,6 +354,10 @@ class WaylandWindow : public PlatformWindow,
   // bounds via |ApplyPendingBounds|. Measured in DIP because updated in the
   // handler that receives DIP from Wayland.
   gfx::Rect pending_bounds_dip_;
+
+  // The size of the platform window before it went maximized or fullscreen in
+  // dip.
+  gfx::Size restored_size_in_dip_;
 
   // Pending xdg-shell configures, once this window is drawn to |bounds_dip|,
   // ack_configure with |serial| will be sent to the Wayland compositor.
@@ -392,8 +396,6 @@ class WaylandWindow : public PlatformWindow,
 
   // Additional initialization of derived classes.
   virtual bool OnInitialize(PlatformWindowInitProperties properties) = 0;
-
-  virtual void UpdateWindowShape();
 
   // WaylandWindowDragController might need to take ownership of the wayland
   // surface whether the window that originated the DND session gets destroyed
@@ -443,8 +445,7 @@ class WaylandWindow : public PlatformWindow,
   // Viz. However, it is not guaranteed that the next arriving frame will match
   // |bounds_px_|.
   gfx::Rect bounds_px_;
-  // The bounds of the platform window before it went maximized or fullscreen.
-  gfx::Rect restored_bounds_px_;
+
   // The size presented by the gpu process. This is the visible size of the
   // window, which can be different from |bounds_px_| due to renderers taking
   // time to produce a compositor frame.
@@ -493,7 +494,7 @@ class WaylandWindow : public PlatformWindow,
   // AcceleratedWidget for this window. This will be unique even over time.
   gfx::AcceleratedWidget accelerated_widget_;
 
-  WmDragHandler::Delegate* drag_handler_delegate_ = nullptr;
+  WmDragHandler::DragFinishedCallback drag_finished_callback_;
 
   base::OnceClosure drag_loop_quit_closure_;
 

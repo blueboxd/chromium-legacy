@@ -11,12 +11,13 @@ import {afterNextRender, PolymerElement} from '//resources/polymer/v3_0/polymer/
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {Events, EventType, kMaximumGooglePhotosPreviews, kMaximumLocalImagePreviews} from '../common/constants.js';
-import {getCountText, getLoadingPlaceholderAnimationDelay, getLoadingPlaceholders, isNonEmptyArray, isNullOrArray, isNullOrNumber, isSelectionEvent} from '../common/utils.js';
+import {DefaultImageSymbol, Events, EventType, kMaximumLocalImagePreviews} from '../common/constants.js';
+import {getCountText, getLoadingPlaceholderAnimationDelay, getLoadingPlaceholders, isNonEmptyArray, isSelectionEvent} from '../common/utils.js';
 import {GooglePhotosEnablementState, WallpaperCollection} from '../trusted/personalization_app.mojom-webui.js';
-import {selectCollection, selectGooglePhotosCollection, selectLocalCollection, validateReceivedData} from '../untrusted/iframe_api.js';
+import {getPathOrSymbol} from '../trusted/utils.js';
 
 import {getTemplate} from './collections_grid.html.js';
+import {selectCollection, selectGooglePhotosCollection, selectLocalCollection, validateReceivedData} from './iframe_api.js';
 
 /**
  * @fileoverview Responds to |SendCollectionsEvent| from trusted. Handles user
@@ -57,8 +58,7 @@ type ImageTile = {
   type: TileType.IMAGE_GOOGLE_PHOTOS|TileType.IMAGE_LOCAL|TileType.IMAGE_ONLINE,
   id: string,
   name: string,
-  count: string,
-  preview: Url[],
+  count?: string, preview: Url[],
 };
 
 type Tile = LoadingTile|FailureTile|ImageTile;
@@ -70,27 +70,25 @@ interface RepeaterEvent extends CustomEvent {
 }
 
 /** Returns the tile to display for the Google Photos collection. */
-function getGooglePhotosTile(
-    googlePhotos: Url[]|null, googlePhotosCount: number|null): ImageTile {
+function getGooglePhotosTile(): ImageTile {
   return {
     name: loadTimeData.getString('googlePhotosLabel'),
     id: kGooglePhotosCollectionId,
-    count: getCountText(googlePhotosCount || 0),
-    preview: Array.isArray(googlePhotos) ?
-        googlePhotos.slice(0, kMaximumGooglePhotosPreviews) :
-        [],
+    preview: [],
     type: TileType.IMAGE_GOOGLE_PHOTOS,
   };
 }
 
 function getImages(
-    localImages: FilePath[], localImageData: Record<string, string>): Url[] {
+    localImages: Array<FilePath|DefaultImageSymbol>,
+    localImageData: Record<string|DefaultImageSymbol, string>): Url[] {
   if (!localImageData || !Array.isArray(localImages)) {
     return [];
   }
   const result = [];
-  for (const {path} of localImages) {
-    const data = {url: localImageData[path]};
+  for (const image of localImages) {
+    const key = getPathOrSymbol(image);
+    const data = {url: localImageData[key]};
     if (!!data.url && data.url.length > 0) {
       result.push(data);
     }
@@ -107,10 +105,11 @@ function getImages(
  * Get the first displayable image with data from the list of possible images.
  */
 function getLocalTile(
-    localImages: FilePath[],
-    localImageData: {[key: string]: string}): ImageTile|LoadingTile {
-  const isMoreToLoad =
-      localImages.some(({path}) => !localImageData.hasOwnProperty(path));
+    localImages: Array<FilePath|DefaultImageSymbol>,
+    localImageData: Record<FilePath['path']|DefaultImageSymbol, string>):
+    ImageTile|LoadingTile {
+  const isMoreToLoad = localImages.some(
+      image => !localImageData.hasOwnProperty(getPathOrSymbol(image)));
 
   const imagesToDisplay = getImages(localImages, localImageData);
 
@@ -150,19 +149,12 @@ export class CollectionsGrid extends PolymerElement {
       collections_: Array,
 
       /**
-       * The list of Google Photos photos.
-       */
-      googlePhotos_: Array,
-
-      /**
-       * The count of Google Photos photos.
-       */
-      googlePhotosCount_: Number,
-
-      /**
        * Whether the user is allowed to access Google Photos.
        */
-      googlePhotosEnabled_: Number,
+      googlePhotosEnabled_: {
+        type: Number,
+        observer: 'onGooglePhotosEnabledChanged_',
+      },
 
       /**
        * Mapping of collection id to number of images. Loads in progressively
@@ -192,11 +184,9 @@ export class CollectionsGrid extends PolymerElement {
   }
 
   private collections_: WallpaperCollection[];
-  private googlePhotos_: unknown[]|null;
-  private googlePhotosCount_: number|null;
-  private googlePhotosEnabled_: GooglePhotosEnablementState;
+  private googlePhotosEnabled_: GooglePhotosEnablementState|undefined;
   private imageCounts_: {[key: string]: number|null};
-  private localImages_: FilePath[];
+  private localImages_: Array<FilePath|DefaultImageSymbol>;
   private localImageData_: {[key: string]: string};
   private tiles_: Tile[];
 
@@ -204,7 +194,6 @@ export class CollectionsGrid extends PolymerElement {
     return [
       'onLocalImagesLoaded_(localImages_, localImageData_)',
       'onCollectionLoaded_(collections_, imageCounts_)',
-      'onGooglePhotosLoaded_(googlePhotos_, googlePhotosCount_)',
     ];
   }
 
@@ -275,12 +264,11 @@ export class CollectionsGrid extends PolymerElement {
     });
   }
 
-  /** Invoked on changes to the list and count of Google Photos photos. */
-  private onGooglePhotosLoaded_(
-      googlePhotos: Url[]|null|undefined,
-      googlePhotosCount: number|null|undefined) {
-    if (isNullOrArray(googlePhotos) && isNullOrNumber(googlePhotosCount)) {
-      const tile = getGooglePhotosTile(googlePhotos, googlePhotosCount);
+  /** Invoked on changes to |googlePhotosEnabled_|. */
+  private onGooglePhotosEnabledChanged_(
+      googlePhotosEnabled: CollectionsGrid['googlePhotosEnabled_']) {
+    if (googlePhotosEnabled !== undefined) {
+      const tile = getGooglePhotosTile();
       this.set('tiles_.1', tile);
     }
   }
@@ -290,8 +278,8 @@ export class CollectionsGrid extends PolymerElement {
    * either of those properties changes.
    */
   private onLocalImagesLoaded_(
-      localImages: FilePath[]|undefined,
-      localImageData: {[key: string]: string}) {
+      localImages: Array<FilePath|DefaultImageSymbol>|undefined,
+      localImageData: Record<FilePath['path']|DefaultImageSymbol, string>) {
     if (!Array.isArray(localImages) || !localImageData) {
       return;
     }
@@ -313,28 +301,9 @@ export class CollectionsGrid extends PolymerElement {
       case EventType.SEND_COLLECTIONS:
         this.collections_ = isValid ? event.collections : [];
         break;
-      case EventType.SEND_GOOGLE_PHOTOS_COUNT:
-        if (isValid) {
-          this.googlePhotosCount_ = event.count;
-        } else {
-          this.googlePhotos_ = null;
-          this.googlePhotosCount_ = null;
-        }
-        break;
       case EventType.SEND_GOOGLE_PHOTOS_ENABLED:
         if (isValid) {
           this.googlePhotosEnabled_ = event.enabled;
-        } else {
-          this.googlePhotos_ = null;
-          this.googlePhotosCount_ = null;
-        }
-        break;
-      case EventType.SEND_GOOGLE_PHOTOS_PHOTOS:
-        if (isValid) {
-          this.googlePhotos_ = event.photos;
-        } else {
-          this.googlePhotos_ = null;
-          this.googlePhotosCount_ = null;
         }
         break;
       case EventType.SEND_IMAGE_COUNTS:

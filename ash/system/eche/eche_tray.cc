@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/components/multidevice/logging/logging.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/ash_web_view.h"
 #include "ash/public/cpp/ash_web_view_factory.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -28,6 +29,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
+#include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/metrics/histogram_functions.h"
@@ -120,6 +122,7 @@ EcheTray::EcheTray(Shelf* shelf)
   shelf_observation_.Observe(shelf);
   tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());
   shell_observer_.Observe(Shell::Get());
+  keyboard_observation_.Observe(keyboard::KeyboardUIController::Get());
 }
 
 EcheTray::~EcheTray() {
@@ -178,6 +181,15 @@ void EcheTray::ShowBubble() {
   bubble_->bubble_view()->SetVisible(true);
   SetIsActive(true);
   web_view_->GetInitiallyFocusedView()->RequestFocus();
+
+  aura::Window* window = bubble_->GetBubbleWidget()->GetNativeWindow();
+  if (!window)
+    return;
+  window = window->GetToplevelWindow();
+  WindowState* window_state = WindowState::Get(window);
+  // We need this as `WorkspaceLayoutManager` conflicts with our resizing.
+  // See b/229111865#comment5
+  window_state->set_ignore_keyboard_bounds_change(true);
 }
 
 bool EcheTray::PerformAction(const ui::Event& event) {
@@ -230,6 +242,18 @@ void EcheTray::OnStreamStatusChanged(eche_app::mojom::StreamStatus status) {
 void EcheTray::OnLockStateChanged(bool locked) {
   if (bubble_ && locked)
     PurgeAndClose();
+}
+
+void EcheTray::OnKeyboardUIDestroyed() {
+  if (!bubble_ || !bubble_->bubble_view()->GetVisible())
+    return;
+  UpdateBubbleBounds();
+}
+
+void EcheTray::OnKeyboardVisibilityChanged(bool visible) {
+  if (visible || !bubble_ || !bubble_->bubble_view()->GetVisible())
+    return;
+  UpdateBubbleBounds();
 }
 
 void EcheTray::SetUrl(const GURL& url) {
@@ -299,6 +323,13 @@ void EcheTray::SetGracefulCloseCallback(
   if (!graceful_close_callback)
     return;
   graceful_close_callback_ = std::move(graceful_close_callback);
+}
+
+void EcheTray::SetGracefulGoBackCallback(
+    GracefulGoBackCallback graceful_go_back_callback) {
+  if (!graceful_go_back_callback)
+    return;
+  graceful_go_back_callback_ = std::move(graceful_go_back_callback);
 }
 
 void EcheTray::StartGracefulClose() {
@@ -388,8 +419,16 @@ gfx::Size EcheTray::CalculateSizeForEche() const {
 }
 
 void EcheTray::OnArrowBackActivated() {
-  if (web_view_)
+  if (web_view_) {
+    // TODO(b/228909439): Call `web_view_` GoBack with
+    // `graceful_go_back_callback_` together to avoid the back button not
+    // working when the stream action GoBack isn’t ready in web content yet.
+    // Remove this when the stream action GoBack is ready in web content.
     web_view_->GoBack();
+
+    if (graceful_go_back_callback_)
+      graceful_go_back_callback_.Run();
+  }
 }
 
 std::unique_ptr<views::View> EcheTray::CreateBubbleHeaderView() {
@@ -402,7 +441,7 @@ std::unique_ptr<views::View> EcheTray::CreateBubbleHeaderView() {
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
   // Add arrowback button
-  header->AddChildView(
+  arrow_back_button_ = header->AddChildView(
       CreateButton(base::BindRepeating(&EcheTray::OnArrowBackActivated,
                                        weak_factory_.GetWeakPtr()),
                    kEcheArrowBackIcon, IDS_APP_ACCNAME_BACK));
@@ -441,6 +480,10 @@ views::Button* EcheTray::GetMinimizeButtonForTesting() const {
 
 views::Button* EcheTray::GetCloseButtonForTesting() const {
   return close_button_;
+}
+
+views::Button* EcheTray::GetArrowBackButtonForTesting() const {
+  return arrow_back_button_;
 }
 
 views::ImageButton* EcheTray::GetIcon() {

@@ -531,6 +531,24 @@ void RuleFeatureSet::UpdateFeaturesFromCombinator(
     descendant_features.invalidation_flags.SetInsertionPointCrossing(true);
 }
 
+// A rule like @scope (.a) { .b {} } needs features equivalent to
+// :is (.a .b, .a.b), because the scope established by @scope *includes* the
+// scoping root. This function provides .a.b, i.e. the second part of the :is().
+// The first part is handled by `AddFeaturesToInvalidationSetsForStyleScope`.
+void RuleFeatureSet::UpdateFeaturesFromStyleScope(
+    const StyleScope& style_scope,
+    InvalidationSetFeatures& descendant_features) {
+  for (const StyleScope* scope = &style_scope; scope; scope = scope->Parent()) {
+    for (const CSSSelector* selector = scope->From().First(); selector;
+         selector = CSSSelectorList::Next(*selector)) {
+      InvalidationSetFeatures scope_features;
+      ExtractInvalidationSetFeaturesFromCompound(*selector, scope_features,
+                                                 kSubject);
+      descendant_features.Add(scope_features);
+    }
+  }
+}
+
 void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSimpleSelector(
     const CSSSelector& selector,
     InvalidationSetFeatures& features) {
@@ -663,18 +681,22 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
 void RuleFeatureSet::UpdateInvalidationSets(const RuleData* rule_data) {
   InvalidationSetFeatures features;
   FeatureInvalidationType feature_invalidation_type =
-      UpdateInvalidationSetsForComplex(rule_data->Selector(), features,
+      UpdateInvalidationSetsForComplex(rule_data->Selector(),
+                                       rule_data->GetStyleScope(), features,
                                        kSubject, CSSSelector::kPseudoUnknown);
   if (feature_invalidation_type ==
       FeatureInvalidationType::kRequiresSubtreeInvalidation) {
     features.invalidation_flags.SetWholeSubtreeInvalid(true);
   }
+  if (const StyleScope* style_scope = rule_data->GetStyleScope())
+    UpdateFeaturesFromStyleScope(*style_scope, features);
   UpdateRuleSetInvalidation(features);
 }
 
 RuleFeatureSet::FeatureInvalidationType
 RuleFeatureSet::UpdateInvalidationSetsForComplex(
     const CSSSelector& complex,
+    const StyleScope* style_scope,
     InvalidationSetFeatures& features,
     PositionType position,
     CSSSelector::PseudoType pseudo_type) {
@@ -712,14 +734,21 @@ RuleFeatureSet::UpdateInvalidationSetsForComplex(
 
   const CSSSelector* next_compound =
       last_in_compound ? last_in_compound->TagHistory() : &complex;
-  if (!next_compound)
-    return kNormalInvalidation;
-  if (last_in_compound) {
-    UpdateFeaturesFromCombinator(*last_in_compound, nullptr, features,
-                                 sibling_features, features);
+
+  if (next_compound) {
+    if (last_in_compound) {
+      UpdateFeaturesFromCombinator(*last_in_compound, nullptr, features,
+                                   sibling_features, features);
+    }
+
+    AddFeaturesToInvalidationSets(*next_compound, sibling_features, features);
   }
 
-  AddFeaturesToInvalidationSets(*next_compound, sibling_features, features);
+  if (style_scope)
+    AddFeaturesToInvalidationSetsForStyleScope(*style_scope, features);
+
+  if (!next_compound)
+    return kNormalInvalidation;
 
   // We need to differentiate between no features (HasFeatures()==false)
   // and RequiresSubtreeInvalidation at the callsite. Hence we reset the flag
@@ -777,9 +806,9 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSelectorList(
 
   for (; sub_selector; sub_selector = CSSSelectorList::Next(*sub_selector)) {
     InvalidationSetFeatures complex_features;
-    if (UpdateInvalidationSetsForComplex(*sub_selector, complex_features,
-                                         position, pseudo_type) ==
-        kRequiresSubtreeInvalidation) {
+    if (UpdateInvalidationSetsForComplex(
+            *sub_selector, nullptr /* style_scope */, complex_features,
+            position, pseudo_type) == kRequiresSubtreeInvalidation) {
       features.invalidation_flags.SetWholeSubtreeInvalid(true);
       continue;
     }
@@ -1002,6 +1031,27 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSelectorList(
       !selector_list_contains_universal;
 }
 
+// See also UpdateFeaturesFromStyleScope.
+void RuleFeatureSet::AddFeaturesToInvalidationSetsForStyleScope(
+    const StyleScope& style_scope,
+    InvalidationSetFeatures& descendant_features) {
+  auto add_features = [this](const CSSSelectorList& selector_list,
+                             InvalidationSetFeatures& features) {
+    for (const CSSSelector* selector = selector_list.First(); selector;
+         selector = CSSSelectorList::Next(*selector)) {
+      AddFeaturesToInvalidationSets(*selector, nullptr /* sibling_features */,
+                                    features);
+    }
+  };
+
+  for (const StyleScope* scope = &style_scope; scope; scope = scope->Parent()) {
+    add_features(scope->From(), descendant_features);
+
+    if (scope->To())
+      add_features(*scope->To(), descendant_features);
+  }
+}
+
 void RuleFeatureSet::AddFeaturesToInvalidationSetsForSimpleSelector(
     const CSSSelector& simple_selector,
     InvalidationSetFeatures* sibling_features,
@@ -1160,6 +1210,24 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromSelector(
           return kSelectorNeverMatches;
         }
         found_host_pseudo = true;
+        // We fall through here to reach the "default" case. Entering the cases
+        // for kPseudoIs/Where has no effect, since :host[-context]() can't
+        // produce empty argument lists.
+        DCHECK(!current->SelectorList() || current->SelectorList()->IsValid());
+        [[fallthrough]];
+      case CSSSelector::kPseudoIs:
+      case CSSSelector::kPseudoWhere:
+        if (const CSSSelectorList* selector_list = current->SelectorList()) {
+          // An empty list (!IsValid) is possible here because of the forgiving
+          // selector list parsing [1], in which empty lists are not syntax
+          // errors, but also don't match anything [2].
+          //
+          // [1]
+          // https://drafts.csswg.org/selectors/#typedef-forgiving-selector-list
+          // [2] https://drafts.csswg.org/selectors/#matches
+          if (!selector_list->IsValid())
+            return kSelectorNeverMatches;
+        }
         [[fallthrough]];
       default:
         if (const CSSSelectorList* selector_list = current->SelectorList()) {
@@ -1557,12 +1625,8 @@ bool RuleFeatureSet::NeedsHasInvalidationForElement(Element& element) const {
     }
   }
 
-  for (const Attribute& attribute : element.Attributes()) {
-    if (NeedsHasInvalidationForAttribute(attribute.GetName()))
-      return true;
-  }
-
-  return NeedsHasInvalidationForTagName(element.LocalNameForSelectorMatching());
+  return !attributes_in_has_argument_.IsEmpty() ||
+         NeedsHasInvalidationForTagName(element.LocalNameForSelectorMatching());
 }
 
 bool RuleFeatureSet::NeedsHasInvalidationForPseudoClass(

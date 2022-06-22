@@ -7,9 +7,39 @@ module blink.mojom;
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 
+// WindowState reflects which of the mutually exclusive states of maximized,
+// minimized, or fullscreen that the CrosWindow is in.
+enum WindowState {
+  kNormal,      // The window is at the default size or user-selected size.
+  kFullscreen,  // The window is running as a full screen application.
+  kMaximized,   // The window fills the screen on which it is displayed not
+                // including any screen areas reserved by the operating system.
+  kMinimized,   // The window is only visible as an icon.
+};
+
+// VisibilityState reflects whether the CrosWindow is rendered.
+// This is intrinsic to the window and separate from occlusion state which
+// refers to visibility relative to other windows.
+enum VisibilityState {
+  kHidden,  // Window is not placed on any screens.
+  kShown,   // Window is placed on a screen.
+};
+
+// CrosWindowManagement methods return status in callback corresponding to
+// state of method call.
+enum CrosWindowManagementStatus {
+  kSuccess,             // Function call executed successfully.
+  kWindowNotFound,      // No window was found with the specified id.
+  kWindowNoWindowState, // Failed to acquire window state for
+                        // maximizing/minimizing. Either no window exists with
+                        // the specified id, or window is not a top level
+                        // window.
+  kWindowNoWidget,      // No widget could be found on window with specified id.
+};
+
 // Represents a Chrome OS window which can be manipulated by a Window Management
 // System Extension.
-struct CrosWindow {
+struct CrosWindowInfo {
   // A unique identifier for this window.
   mojo_base.mojom.UnguessableToken id;
   // The App ID of the App that this window is an instance of.
@@ -19,32 +49,32 @@ struct CrosWindow {
   gfx.mojom.Rect bounds;
 
   string title;
-  bool is_fullscreen;
-  bool is_minimized;
-  bool is_visible;
+  WindowState window_state;
+  bool is_focused;
+  VisibilityState visibility_state;
 };
 
 // Chrome OS Window Management API for System Extensions.
 // Called by System Extensions Renderers and implemented by Ash Chrome.
 interface CrosWindowManagement {
   // Returns all windows visible to a window manager.
-  GetAllWindows() => (array<CrosWindow> result);
+  GetAllWindows() => (array<CrosWindowInfo> result);
 
   // Sets the bounds of a CrosWindow where |hash| is used as the window
   // identifier.
-  SetWindowBounds(mojo_base.mojom.UnguessableToken id, int32 x, int32 y, int32 width, int32 height);
+  SetWindowBounds(mojo_base.mojom.UnguessableToken id, int32 x, int32 y, int32 width, int32 height) => (CrosWindowManagementStatus value);
 
   // Enable/disable fullscreen for window identified by id if one exists, else do nothing.
-  SetFullscreen(mojo_base.mojom.UnguessableToken id, bool fullscreen);
+  SetFullscreen(mojo_base.mojom.UnguessableToken id, bool fullscreen) => (CrosWindowManagementStatus value);
 
   // Maximizes the window identified by id if one exists, else do nothing.
-  Maximize(mojo_base.mojom.UnguessableToken id);
+  Maximize(mojo_base.mojom.UnguessableToken id) => (CrosWindowManagementStatus value);
 
   // Minimizes the window identified by id if one exists, else do nothing.
-  Minimize(mojo_base.mojom.UnguessableToken id);
+  Minimize(mojo_base.mojom.UnguessableToken id) => (CrosWindowManagementStatus value);
 
   // Allocates focus to the CrosWindow identified by id and brings to front.
-  Focus(mojo_base.mojom.UnguessableToken id);
+  Focus(mojo_base.mojom.UnguessableToken id) => (CrosWindowManagementStatus value);
 
   // Closes the window identified by id if it exists, else do nothing.
   Close(mojo_base.mojom.UnguessableToken id);

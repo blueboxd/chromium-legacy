@@ -5,8 +5,10 @@
 #import "ios/chrome/common/ui/promo_style/promo_style_view_controller.h"
 
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
 #import "ios/chrome/common/constants.h"
+#import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/highlight_button.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
@@ -43,6 +45,7 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
 // UIView that wraps the scrollable content.
 @property(nonatomic, strong) UIView* scrollContentView;
 @property(nonatomic, strong) UILabel* subtitleLabel;
+@property(nonatomic, strong) UITextView* disclaimerView;
 @property(nonatomic, strong) HighlightButton* primaryActionButton;
 @property(nonatomic, strong) UIButton* secondaryActionButton;
 @property(nonatomic, strong) UIButton* tertiaryActionButton;
@@ -55,11 +58,6 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
 // label string of the primary button) which corresponds to the moment where the
 // layout reflects the latest updates.
 @property(nonatomic, assign) BOOL canUpdateViewsOnScroll;
-
-// Redefinition to allow write. The property should only be read when
-// -hasTopSpecificContentView returns YES to not create the view when reading
-// it. The view should only be lazily instanciated when read externally.
-@property(nonatomic, strong, readwrite) UIView* topSpecificContentView;
 
 // Whether the image is currently being calculated; used to prevent infinite
 // recursions caused by |viewDidLayoutSubviews|.
@@ -92,12 +90,12 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
   self.scrollContentView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.scrollContentView addSubview:self.imageView];
   [self.scrollContentView addSubview:self.titleLabel];
-  if ([self hasTopSpecificContentView]) {
-    [self.scrollContentView addSubview:self.topSpecificContentView];
-  }
   [self.scrollContentView addSubview:self.subtitleLabel];
   [self.view addLayoutGuide:subtitleMarginLayoutGuide];
   [self.scrollContentView addSubview:self.specificContentView];
+  if (self.disclaimerView) {
+    [self.scrollContentView addSubview:self.disclaimerView];
+  }
 
   // Wrap everything except the action buttons in a scroll view, to support
   // dynamic types.
@@ -137,24 +135,19 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
           ? 0
           : kActionsBottomMargin;
 
-  NSLayoutConstraint* subtitleLabelTopConstraint = [self.subtitleLabel.topAnchor
-      constraintEqualToAnchor:self.titleLabel.bottomAnchor
-                     constant:kDefaultMargin];
-  if ([self hasTopSpecificContentView]) {
-    // When set, put the |topSpecificContentView| view between the title and
-    // subtitle labels.
+  NSLayoutYAxisAnchor* specificContentViewBottomAnchor =
+      self.scrollContentView.bottomAnchor;
+  if (self.disclaimerView) {
+    specificContentViewBottomAnchor = self.disclaimerView.topAnchor;
     [NSLayoutConstraint activateConstraints:@[
-      [self.topSpecificContentView.topAnchor
-          constraintEqualToAnchor:self.titleLabel.bottomAnchor],
-      [self.topSpecificContentView.centerXAnchor
-          constraintEqualToAnchor:self.scrollContentView.centerXAnchor],
-      [self.topSpecificContentView.widthAnchor
-          constraintLessThanOrEqualToAnchor:self.scrollContentView.widthAnchor],
+      [self.disclaimerView.leadingAnchor
+          constraintEqualToAnchor:self.scrollContentView.leadingAnchor],
+      [self.disclaimerView.trailingAnchor
+          constraintEqualToAnchor:self.scrollContentView.trailingAnchor],
+      [self.disclaimerView.bottomAnchor
+          constraintEqualToAnchor:self.scrollContentView.bottomAnchor],
     ]];
-    subtitleLabelTopConstraint = [self.subtitleLabel.topAnchor
-        constraintEqualToAnchor:self.topSpecificContentView.bottomAnchor];
   }
-  subtitleLabelTopConstraint.active = YES;
 
   [NSLayoutConstraint activateConstraints:@[
     // Content width layout guide constraints. Constrain the width to both at
@@ -225,6 +218,9 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
     [self.titleLabel.widthAnchor
         constraintLessThanOrEqualToAnchor:self.scrollContentView.widthAnchor
                                  constant:-2 * kTitleHorizontalMargin],
+    [self.subtitleLabel.topAnchor
+        constraintEqualToAnchor:self.titleLabel.bottomAnchor
+                       constant:kDefaultMargin],
     [self.subtitleLabel.centerXAnchor
         constraintEqualToAnchor:self.scrollContentView.centerXAnchor],
     [self.subtitleLabel.widthAnchor
@@ -243,7 +239,7 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
     [self.specificContentView.trailingAnchor
         constraintEqualToAnchor:self.scrollContentView.trailingAnchor],
     [self.specificContentView.bottomAnchor
-        constraintEqualToAnchor:self.scrollContentView.bottomAnchor],
+        constraintEqualToAnchor:specificContentViewBottomAnchor],
 
     // Action stack view constraints. Constrain the bottom of the action stack
     // view to both the bottom of the screen and the bottom of the safe area, to
@@ -380,7 +376,7 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
   });
 }
 
-#pragma mark - Setter
+#pragma mark - Accessors
 
 - (void)setPrimaryActionString:(NSString*)text {
   _primaryActionString = text;
@@ -393,8 +389,6 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
                           forState:UIControlStateNormal];
   }
 }
-
-#pragma mark - Private
 
 - (UIScrollView*)scrollView {
   if (!_scrollView) {
@@ -417,6 +411,178 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
   }
   return _imageView;
 }
+
+- (UILabel*)titleLabel {
+  if (!_titleLabel) {
+    _titleLabel = [[UILabel alloc] init];
+    _titleLabel.numberOfLines = 0;
+    [self setFontForTitle:_titleLabel];
+    _titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
+    _titleLabel.text = self.titleText;
+    _titleLabel.textAlignment = NSTextAlignmentCenter;
+    _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _titleLabel.adjustsFontForContentSizeCategory = YES;
+    _titleLabel.accessibilityIdentifier =
+        kPromoStyleTitleAccessibilityIdentifier;
+  }
+  return _titleLabel;
+}
+
+- (UILabel*)subtitleLabel {
+  if (!_subtitleLabel) {
+    _subtitleLabel = [[UILabel alloc] init];
+    _subtitleLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _subtitleLabel.numberOfLines = 0;
+    _subtitleLabel.textColor = [UIColor colorNamed:kGrey800Color];
+    _subtitleLabel.text = self.subtitleText;
+    _subtitleLabel.textAlignment = NSTextAlignmentCenter;
+    _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _subtitleLabel.adjustsFontForContentSizeCategory = YES;
+    _subtitleLabel.accessibilityIdentifier =
+        kPromoStyleSubtitleAccessibilityIdentifier;
+  }
+  return _subtitleLabel;
+}
+
+- (UIView*)specificContentView {
+  if (!_specificContentView) {
+    _specificContentView = [[UIView alloc] init];
+    _specificContentView.translatesAutoresizingMaskIntoConstraints = NO;
+  }
+  return _specificContentView;
+}
+
+- (UIButton*)primaryActionButton {
+  if (!_primaryActionButton) {
+    _primaryActionButton = [[HighlightButton alloc] initWithFrame:CGRectZero];
+    _primaryActionButton.contentEdgeInsets =
+        UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+    [_primaryActionButton setBackgroundColor:[UIColor colorNamed:kBlueColor]];
+    UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
+    [_primaryActionButton setTitleColor:titleColor
+                               forState:UIControlStateNormal];
+    [self setPrimaryActionButtonFont:_primaryActionButton];
+    _primaryActionButton.layer.cornerRadius = kPrimaryButtonCornerRadius;
+    _primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
+
+    _primaryActionButton.pointerInteractionEnabled = YES;
+    _primaryActionButton.pointerStyleProvider =
+        CreateOpaqueButtonPointerStyleProvider();
+
+    // Use |primaryActionString| even if scrolling to the end is mandatory
+    // because at the viewDidLoad stage, the scroll view hasn't computed its
+    // content height, so there is no way to know if scrolling is needed. This
+    // label will be updated at the viewDidAppear stage if necessary.
+    [_primaryActionButton setTitle:self.primaryActionString
+                          forState:UIControlStateNormal];
+    UILabel* titleLabel = _primaryActionButton.titleLabel;
+    titleLabel.adjustsFontSizeToFitWidth = YES;
+    titleLabel.minimumScaleFactor = 0.7;
+    _primaryActionButton.titleLabel.adjustsFontForContentSizeCategory = YES;
+    _primaryActionButton.accessibilityIdentifier =
+        kPromoStylePrimaryActionAccessibilityIdentifier;
+    _primaryActionButton.titleEdgeInsets =
+        UIEdgeInsetsMake(0, kMoreArrowMargin, 0, kMoreArrowMargin);
+    _primaryActionButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+    [_primaryActionButton addTarget:self
+                             action:@selector(didTapPrimaryActionButton)
+                   forControlEvents:UIControlEventTouchUpInside];
+  }
+  return _primaryActionButton;
+}
+
+- (UITextView*)disclaimerView {
+  if (!self.disclaimerText) {
+    return nil;
+  }
+  if (!_disclaimerView) {
+    // Set up disclaimer view.
+    _disclaimerView = [[UITextView alloc] init];
+    _disclaimerView.accessibilityIdentifier =
+        kPromoStyleDisclaimerViewAccessibilityIdentifier;
+    _disclaimerView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
+    _disclaimerView.scrollEnabled = NO;
+    _disclaimerView.editable = NO;
+    _disclaimerView.adjustsFontForContentSizeCategory = YES;
+    _disclaimerView.delegate = self;
+    _disclaimerView.backgroundColor = UIColor.clearColor;
+    _disclaimerView.linkTextAttributes =
+        @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
+    _disclaimerView.translatesAutoresizingMaskIntoConstraints = NO;
+    _disclaimerView.attributedText = [self attributedStringForDisclaimer];
+  }
+  return _disclaimerView;
+}
+
+- (void)setDisclaimerText:(NSString*)disclaimerText {
+  _disclaimerText = disclaimerText;
+  NSAttributedString* attributedText = [self attributedStringForDisclaimer];
+  if (attributedText) {
+    self.disclaimerView.attributedText = attributedText;
+  }
+}
+
+- (void)setDisclaimerURLs:(NSArray<NSURL*>*)disclaimerURLs {
+  _disclaimerURLs = disclaimerURLs;
+  NSAttributedString* attributedText = [self attributedStringForDisclaimer];
+  if (attributedText) {
+    self.disclaimerView.attributedText = attributedText;
+  }
+}
+
+- (UIButton*)secondaryActionButton {
+  if (!_secondaryActionButton) {
+    DCHECK(self.secondaryActionString);
+    _secondaryActionButton =
+        [self createButtonWithText:self.secondaryActionString
+            accessibilityIdentifier:
+                kPromoStyleSecondaryActionAccessibilityIdentifier];
+    UILabel* titleLabel = _secondaryActionButton.titleLabel;
+    titleLabel.adjustsFontSizeToFitWidth = YES;
+    titleLabel.minimumScaleFactor = 0.7;
+
+    [_secondaryActionButton addTarget:self
+                               action:@selector(didTapSecondaryActionButton)
+                     forControlEvents:UIControlEventTouchUpInside];
+  }
+
+  return _secondaryActionButton;
+}
+
+- (UIButton*)tertiaryActionButton {
+  if (!_tertiaryActionButton) {
+    DCHECK(self.tertiaryActionString);
+    _tertiaryActionButton =
+        [self createButtonWithText:self.tertiaryActionString
+            accessibilityIdentifier:
+                kPromoStyleTertiaryActionAccessibilityIdentifier];
+    [_tertiaryActionButton addTarget:self
+                              action:@selector(didTapTertiaryActionButton)
+                    forControlEvents:UIControlEventTouchUpInside];
+  }
+
+  return _tertiaryActionButton;
+}
+
+// Helper to create the learn more button.
+- (UIButton*)learnMoreButton {
+  if (!_learnMoreButton) {
+    DCHECK(self.shouldShowLearnMoreButton);
+    _learnMoreButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_learnMoreButton setImage:[UIImage imageNamed:@"help_icon"]
+                      forState:UIControlStateNormal];
+    _learnMoreButton.accessibilityIdentifier =
+        kPromoStyleLearnMoreActionAccessibilityIdentifier;
+    _learnMoreButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [_learnMoreButton addTarget:self
+                         action:@selector(didTapLearnMoreButton)
+               forControlEvents:UIControlEventTouchUpInside];
+  }
+  return _learnMoreButton;
+}
+
+#pragma mark - Private
 
 // Computes banner's image size.
 - (CGSize)computeBannerImageSize {
@@ -459,22 +625,6 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
   return UIFontTextStyleTitle2;
 }
 
-- (UILabel*)titleLabel {
-  if (!_titleLabel) {
-    _titleLabel = [[UILabel alloc] init];
-    _titleLabel.numberOfLines = 0;
-    [self setFontForTitle:_titleLabel];
-    _titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
-    _titleLabel.text = self.titleText;
-    _titleLabel.textAlignment = NSTextAlignmentCenter;
-    _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _titleLabel.adjustsFontForContentSizeCategory = YES;
-    _titleLabel.accessibilityIdentifier =
-        kPromoStyleTitleAccessibilityIdentifier;
-  }
-  return _titleLabel;
-}
-
 - (void)setFontForTitle:(UILabel*)titleLabel {
   UIFontTextStyle textStyle = [self titleLabelFontTextStyle];
 
@@ -484,75 +634,6 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
                                    weight:UIFontWeightBold];
   UIFontMetrics* fontMetrics = [UIFontMetrics metricsForTextStyle:textStyle];
   titleLabel.font = [fontMetrics scaledFontForFont:font];
-}
-
-- (UILabel*)subtitleLabel {
-  if (!_subtitleLabel) {
-    _subtitleLabel = [[UILabel alloc] init];
-    _subtitleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-    _subtitleLabel.numberOfLines = 0;
-    _subtitleLabel.textColor = [UIColor colorNamed:kGrey800Color];
-    _subtitleLabel.text = self.subtitleText;
-    _subtitleLabel.textAlignment = NSTextAlignmentCenter;
-    _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _subtitleLabel.adjustsFontForContentSizeCategory = YES;
-    _subtitleLabel.accessibilityIdentifier =
-        kPromoStyleSubtitleAccessibilityIdentifier;
-  }
-  return _subtitleLabel;
-}
-
-- (UIView*)specificContentView {
-  if (!_specificContentView) {
-    _specificContentView = [[UIView alloc] init];
-    _specificContentView.translatesAutoresizingMaskIntoConstraints = NO;
-  }
-  return _specificContentView;
-}
-
-- (UIView*)topSpecificContentView {
-  if (!_topSpecificContentView) {
-    _topSpecificContentView = [[UIView alloc] init];
-    _topSpecificContentView.translatesAutoresizingMaskIntoConstraints = NO;
-  }
-  return _topSpecificContentView;
-}
-
-- (UIButton*)primaryActionButton {
-  if (!_primaryActionButton) {
-    _primaryActionButton = [[HighlightButton alloc] initWithFrame:CGRectZero];
-    _primaryActionButton.contentEdgeInsets =
-        UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
-    [_primaryActionButton setBackgroundColor:[UIColor colorNamed:kBlueColor]];
-    UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
-    [_primaryActionButton setTitleColor:titleColor
-                               forState:UIControlStateNormal];
-    [self setPrimaryActionButtonFont:_primaryActionButton];
-    _primaryActionButton.layer.cornerRadius = kPrimaryButtonCornerRadius;
-    _primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
-
-    _primaryActionButton.pointerInteractionEnabled = YES;
-    _primaryActionButton.pointerStyleProvider =
-        CreateOpaqueButtonPointerStyleProvider();
-
-    // Use |primaryActionString| even if scrolling to the end is mandatory
-    // because at the viewDidLoad stage, the scroll view hasn't computed its
-    // content height, so there is no way to know if scrolling is needed. This
-    // label will be updated at the viewDidAppear stage if necessary.
-    [_primaryActionButton setTitle:self.primaryActionString
-                          forState:UIControlStateNormal];
-    _primaryActionButton.titleLabel.adjustsFontForContentSizeCategory = YES;
-    _primaryActionButton.accessibilityIdentifier =
-        kPromoStylePrimaryActionAccessibilityIdentifier;
-    _primaryActionButton.titleEdgeInsets =
-        UIEdgeInsetsMake(0, kMoreArrowMargin, 0, kMoreArrowMargin);
-    _primaryActionButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-    [_primaryActionButton addTarget:self
-                             action:@selector(didTapPrimaryActionButton)
-                   forControlEvents:UIControlEventTouchUpInside];
-  }
-  return _primaryActionButton;
 }
 
 - (void)setPrimaryActionButtonFont:(UIButton*)button {
@@ -615,53 +696,6 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
                                             forState:UIControlStateNormal];
     [weakSelf.primaryActionButton layoutIfNeeded];
   }];
-}
-
-- (UIButton*)secondaryActionButton {
-  if (!_secondaryActionButton) {
-    DCHECK(self.secondaryActionString);
-    _secondaryActionButton =
-        [self createButtonWithText:self.secondaryActionString
-            accessibilityIdentifier:
-                kPromoStyleSecondaryActionAccessibilityIdentifier];
-    [_secondaryActionButton addTarget:self
-                               action:@selector(didTapSecondaryActionButton)
-                     forControlEvents:UIControlEventTouchUpInside];
-  }
-
-  return _secondaryActionButton;
-}
-
-- (UIButton*)tertiaryActionButton {
-  if (!_tertiaryActionButton) {
-    DCHECK(self.tertiaryActionString);
-    _tertiaryActionButton =
-        [self createButtonWithText:self.tertiaryActionString
-            accessibilityIdentifier:
-                kPromoStyleTertiaryActionAccessibilityIdentifier];
-    [_tertiaryActionButton addTarget:self
-                              action:@selector(didTapTertiaryActionButton)
-                    forControlEvents:UIControlEventTouchUpInside];
-  }
-
-  return _tertiaryActionButton;
-}
-
-// Helper to create the learn more button.
-- (UIButton*)learnMoreButton {
-  if (!_learnMoreButton) {
-    DCHECK(self.shouldShowLearnMoreButton);
-    _learnMoreButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [_learnMoreButton setImage:[UIImage imageNamed:@"help_icon"]
-                      forState:UIControlStateNormal];
-    _learnMoreButton.accessibilityIdentifier =
-        kPromoStyleLearnMoreActionAccessibilityIdentifier;
-    _learnMoreButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [_learnMoreButton addTarget:self
-                         action:@selector(didTapLearnMoreButton)
-               forControlEvents:UIControlEventTouchUpInside];
-  }
-  return _learnMoreButton;
 }
 
 - (UIButton*)createButtonWithText:(NSString*)buttonText
@@ -777,15 +811,63 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
          traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
 }
 
-// Returns YES if |_topSpecificContentView| is instantiated.
-- (BOOL)hasTopSpecificContentView {
-  return _topSpecificContentView != nil;
+// Helper class that returns the an NSAttributedString generated from the
+// current disclaimer text and URLs.
+- (NSAttributedString*)attributedStringForDisclaimer {
+  StringWithTags parsedString = ParseStringWithLinks(self.disclaimerText);
+  if (parsedString.ranges.size() != [self.disclaimerURLs count]) {
+    return nil;
+  }
+
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+  paragraphStyle.alignment = NSTextAlignmentCenter;
+  NSDictionary* textAttributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2],
+    NSParagraphStyleAttributeName : paragraphStyle
+  };
+  NSMutableAttributedString* attributedText =
+      [[NSMutableAttributedString alloc] initWithString:parsedString.string
+                                             attributes:textAttributes];
+  size_t index = 0;
+  for (NSURL* url in self.disclaimerURLs) {
+    [attributedText addAttribute:NSLinkAttributeName
+                           value:url
+                           range:parsedString.ranges[index]];
+    index += 1;
+  }
+  return attributedText;
 }
 
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   [self updateViewsOnScrollViewUpdate];
+}
+
+#pragma mark - UITextViewDelegate
+
+- (BOOL)textView:(UITextView*)textView
+    shouldInteractWithURL:(NSURL*)URL
+                  inRange:(NSRange)characterRange
+              interaction:(UITextItemInteraction)interaction {
+  if (textView == self.disclaimerView &&
+      [self.delegate respondsToSelector:@selector(didTapURLInDisclaimer:)]) {
+    [self.delegate didTapURLInDisclaimer:URL];
+  }
+  return NO;
+}
+
+- (void)textViewDidChangeSelection:(UITextView*)textView {
+  // Always force the |selectedTextRange| to |nil| to prevent users from
+  // selecting text. Setting the |selectable| property to |NO| doesn't help
+  // since it makes links inside the text view untappable. Another solution is
+  // to subclass |UITextView| and override |canBecomeFirstResponder| to return
+  // NO, but that workaround only works on iOS 13.5+. This is the simplest
+  // approach that works well on iOS 12, 13 & 14.
+  textView.selectedTextRange = nil;
 }
 
 @end

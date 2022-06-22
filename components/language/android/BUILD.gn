@@ -35,6 +35,8 @@ android_library("java") {
   deps = [
     ":ulp_delegate_java",
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 
@@ -47,8 +49,6 @@ android_library("ulp_delegate_java") {
     "java/src/org/chromium/components/language/LanguageProfileDelegateImpl.java",
   ]
 
-  deps = [ "//base:base_java" ]
-
   # Allow downstream targets to provide their own implementations.
   jar_excluded_patterns = [ "*/LanguageProfileDelegateImpl.class" ]
 }
@@ -58,7 +58,7 @@ android_library("ulp_delegate_public_java") {
 
   deps = [
     ":ulp_delegate_java",
-    "//base:base_java",
+    "//build/android:build_java",
   ]
 }
 
@@ -73,6 +73,7 @@ java_library("junit") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//build/android:build_java",
     "//components/browser_ui/widget/android:java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
@@ -92,6 +93,7 @@ android_library("javatests") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//build/android:build_java",
     "//chrome/browser/flags:java",
     "//chrome/test/android:chrome_java_test_support",
     "//content/public/test/android:content_java_test_support",

@@ -105,7 +105,7 @@ TEST_F(IncomingFramesReaderTest, ReadTimedOut) {
 
   base::RunLoop run_loop;
   frames_reader().ReadFrame(
-      sharing::mojom::V1Frame::Tag::INTRODUCTION,
+      sharing::mojom::V1Frame::Tag::kIntroduction,
       base::BindLambdaForTesting(
           [&](absl::optional<sharing::mojom::V1FramePtr> frame) {
             EXPECT_FALSE(frame);
@@ -132,12 +132,11 @@ TEST_F(IncomingFramesReaderTest, ReadAnyFrameSuccessful) {
               ash::nearby::MockNearbySharingDecoder::DecodeFrameCallback
                   callback) {
             sharing::mojom::V1FramePtr mojo_v1frame =
-                sharing::mojom::V1Frame::New();
-            mojo_v1frame->set_introduction(
-                sharing::mojom::IntroductionFrame::New());
+                sharing::mojom::V1Frame::NewIntroduction(
+                    sharing::mojom::IntroductionFrame::New());
 
-            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
-            mojo_frame->set_v1(std::move(mojo_v1frame));
+            sharing::mojom::FramePtr mojo_frame =
+                sharing::mojom::Frame::NewV1(std::move(mojo_v1frame));
             std::move(callback).Run(std::move(mojo_frame));
           }));
 
@@ -161,18 +160,17 @@ TEST_F(IncomingFramesReaderTest, ReadSuccessful) {
               ash::nearby::MockNearbySharingDecoder::DecodeFrameCallback
                   callback) {
             sharing::mojom::V1FramePtr mojo_v1frame =
-                sharing::mojom::V1Frame::New();
-            mojo_v1frame->set_introduction(
-                sharing::mojom::IntroductionFrame::New());
+                sharing::mojom::V1Frame::NewIntroduction(
+                    sharing::mojom::IntroductionFrame::New());
 
-            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
-            mojo_frame->set_v1(std::move(mojo_v1frame));
+            sharing::mojom::FramePtr mojo_frame =
+                sharing::mojom::Frame::NewV1(std::move(mojo_v1frame));
             std::move(callback).Run(std::move(mojo_frame));
           }));
 
   base::RunLoop run_loop;
   frames_reader().ReadFrame(
-      sharing::mojom::V1Frame::Tag::INTRODUCTION,
+      sharing::mojom::V1Frame::Tag::kIntroduction,
       base::BindLambdaForTesting(
           [&](absl::optional<sharing::mojom::V1FramePtr> frame) {
             ExpectIntroductionFrame(frame);
@@ -196,11 +194,11 @@ TEST_F(IncomingFramesReaderTest, ReadSuccessful_JumbledFramesOrdering) {
                   callback) {
             EXPECT_EQ(cancel_frame, data);
             sharing::mojom::V1FramePtr mojo_v1frame =
-                sharing::mojom::V1Frame::New();
-            mojo_v1frame->set_cancel_frame(sharing::mojom::CancelFrame::New());
+                sharing::mojom::V1Frame::NewCancelFrame(
+                    sharing::mojom::CancelFrame::New());
 
-            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
-            mojo_frame->set_v1(std::move(mojo_v1frame));
+            sharing::mojom::FramePtr mojo_frame =
+                sharing::mojom::Frame::NewV1(std::move(mojo_v1frame));
             std::move(callback).Run(std::move(mojo_frame));
           }))
       .WillOnce(testing::Invoke(
@@ -209,18 +207,17 @@ TEST_F(IncomingFramesReaderTest, ReadSuccessful_JumbledFramesOrdering) {
                   callback) {
             EXPECT_EQ(introduction_frame, data);
             sharing::mojom::V1FramePtr mojo_v1frame =
-                sharing::mojom::V1Frame::New();
-            mojo_v1frame->set_introduction(
-                sharing::mojom::IntroductionFrame::New());
+                sharing::mojom::V1Frame::NewIntroduction(
+                    sharing::mojom::IntroductionFrame::New());
 
-            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
-            mojo_frame->set_v1(std::move(mojo_v1frame));
+            sharing::mojom::FramePtr mojo_frame =
+                sharing::mojom::Frame::NewV1(std::move(mojo_v1frame));
             std::move(callback).Run(std::move(mojo_frame));
           }));
 
   base::RunLoop run_loop_introduction;
   frames_reader().ReadFrame(
-      sharing::mojom::V1Frame::Tag::INTRODUCTION,
+      sharing::mojom::V1Frame::Tag::kIntroduction,
       base::BindLambdaForTesting(
           [&](absl::optional<sharing::mojom::V1FramePtr> frame) {
             ExpectIntroductionFrame(frame);
@@ -244,11 +241,11 @@ TEST_F(IncomingFramesReaderTest, JumbledFramesOrdering_ReadFromCache) {
                   callback) {
             EXPECT_EQ(cancel_frame, data);
             sharing::mojom::V1FramePtr mojo_v1frame =
-                sharing::mojom::V1Frame::New();
-            mojo_v1frame->set_cancel_frame(sharing::mojom::CancelFrame::New());
+                sharing::mojom::V1Frame::NewCancelFrame(
+                    sharing::mojom::CancelFrame::New());
 
-            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
-            mojo_frame->set_v1(std::move(mojo_v1frame));
+            sharing::mojom::FramePtr mojo_frame =
+                sharing::mojom::Frame::NewV1(std::move(mojo_v1frame));
             std::move(callback).Run(std::move(mojo_frame));
           }))
       .WillOnce(testing::Invoke(
@@ -257,18 +254,17 @@ TEST_F(IncomingFramesReaderTest, JumbledFramesOrdering_ReadFromCache) {
                   callback) {
             EXPECT_EQ(introduction_frame, data);
             sharing::mojom::V1FramePtr mojo_v1frame =
-                sharing::mojom::V1Frame::New();
-            mojo_v1frame->set_introduction(
-                sharing::mojom::IntroductionFrame::New());
+                sharing::mojom::V1Frame::NewIntroduction(
+                    sharing::mojom::IntroductionFrame::New());
 
-            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
-            mojo_frame->set_v1(std::move(mojo_v1frame));
+            sharing::mojom::FramePtr mojo_frame =
+                sharing::mojom::Frame::NewV1(std::move(mojo_v1frame));
             std::move(callback).Run(std::move(mojo_frame));
           }));
 
   base::RunLoop run_loop_introduction;
   frames_reader().ReadFrame(
-      sharing::mojom::V1Frame::Tag::INTRODUCTION,
+      sharing::mojom::V1Frame::Tag::kIntroduction,
       base::BindLambdaForTesting(
           [&](absl::optional<sharing::mojom::V1FramePtr> frame) {
             ExpectIntroductionFrame(frame);
@@ -292,7 +288,7 @@ TEST_F(IncomingFramesReaderTest, ReadAfterConnectionClosed) {
 
   base::RunLoop run_loop_before_close;
   frames_reader().ReadFrame(
-      sharing::mojom::V1Frame::Tag::INTRODUCTION,
+      sharing::mojom::V1Frame::Tag::kIntroduction,
       base::BindLambdaForTesting(
           [&](absl::optional<sharing::mojom::V1FramePtr> frame) {
             EXPECT_FALSE(frame);

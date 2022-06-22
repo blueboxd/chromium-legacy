@@ -18,6 +18,7 @@
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/app_restore_data.h"
 #include "components/app_restore/window_info.h"
+#include "components/desks_storage/core/desk_template_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -34,8 +35,8 @@ const std::string kTestUuidChromeAndProgressive =
     "7f4b7ff0-970a-41bb-aa91-f6c3e2724207";
 const std::string kBrowserTemplateName = "BrowserTest";
 const std::string kChromePwaTemplateName = "ChromeAppTest";
-const std::string kChromeAppId = "chrome_app_1";
-const std::string kProgressiveAppid = "progressive_app_1";
+const std::string kChromeAppId = "test_chrome_app_1";
+const std::string kProgressiveAppid = "test_pwa_app_1";
 const std::string kValidTemplateBrowser =
     "{\"version\":1,\"uuid\":\"" + kTestUuidBrowser + "\",\"name\":\"" +
     kBrowserTemplateName +
@@ -79,15 +80,6 @@ const std::string kTemplateWithoutType =
     "\"display_id\":\"100\",\"event_flag\":0,\"pre_minimized_window_state\":"
     "\"NORMAL\"}]}}";
 
-apps::AppPtr MakeApp(const char* app_id,
-                     const char* name,
-                     apps::AppType app_type) {
-  apps::AppPtr app = std::make_unique<apps::App>(app_type, app_id);
-  app->readiness = apps::Readiness::kReady;
-  app->name = name;
-  return app;
-}
-
 }  // namespace
 
 class DeskTemplateConversionTest : public testing::Test {
@@ -101,37 +93,9 @@ class DeskTemplateConversionTest : public testing::Test {
       : account_id_(AccountId::FromUserEmail("test@gmail.com")),
         cache_(std::make_unique<apps::AppRegistryCache>()) {}
 
-  void PopulateAppRegistryCache() {
-    std::vector<apps::AppPtr> deltas;
-
-    deltas.push_back(MakeApp(kProgressiveAppid.c_str(), "Test PWA App",
-                             apps::AppType::kWeb));
-    // chromeAppId returns kExtension in the real Apps cache.
-    deltas.push_back(MakeApp(app_constants::kChromeAppId, "Chrome Browser",
-                             apps::AppType::kChromeApp));
-    deltas.push_back(MakeApp(kChromeAppId.c_str(), "Test Chrome App",
-                             apps::AppType::kChromeApp));
-
-    if (base::FeatureList::IsEnabled(
-            apps::kAppServiceOnAppUpdateWithoutMojom)) {
-      cache_->OnApps(std::move(deltas), apps::AppType::kUnknown,
-                     /*should_notify_initialized=*/false);
-    } else {
-      std::vector<apps::mojom::AppPtr> mojom_deltas;
-      for (const auto& delta : deltas) {
-        mojom_deltas.push_back(apps::ConvertAppToMojomApp(delta));
-      }
-      cache_->OnApps(std::move(mojom_deltas), apps::mojom::AppType::kUnknown,
-                     /*should_notify_initialized=*/false);
-    }
-
-    cache_->SetAccountId(account_id_);
-
-    apps::AppRegistryCacheWrapper::Get().AddAppRegistryCache(account_id_,
-                                                             cache_.get());
+  void SetUp() override {
+    desk_template_util::PopulateAppRegistryCache(account_id_, cache_.get());
   }
-
-  void SetUp() override { PopulateAppRegistryCache(); }
 
   AccountId account_id_;
 
@@ -148,8 +112,8 @@ TEST_F(DeskTemplateConversionTest, ParseBrowserTemplate) {
   EXPECT_TRUE(parsed_json.value->is_dict());
 
   std::unique_ptr<ash::DeskTemplate> dt =
-      desk_template_conversion::ParseDeskTemplateFromPolicy(
-          parsed_json.value.value());
+      desk_template_conversion::ParseDeskTemplateFromSource(
+          parsed_json.value.value(), ash::DeskTemplateSource::kPolicy);
 
   EXPECT_TRUE(dt != nullptr);
   EXPECT_EQ(dt->uuid(), base::GUID::ParseCaseInsensitive(kTestUuidBrowser));
@@ -206,8 +170,8 @@ TEST_F(DeskTemplateConversionTest, ParseChromePwaTemplate) {
   EXPECT_TRUE(parsed_json.value->is_dict());
 
   std::unique_ptr<ash::DeskTemplate> dt =
-      desk_template_conversion::ParseDeskTemplateFromPolicy(
-          parsed_json.value.value());
+      desk_template_conversion::ParseDeskTemplateFromSource(
+          parsed_json.value.value(), ash::DeskTemplateSource::kPolicy);
 
   EXPECT_TRUE(dt != nullptr);
   EXPECT_EQ(dt->uuid(),
@@ -293,8 +257,8 @@ TEST_F(DeskTemplateConversionTest, EmptyJsonTest) {
   EXPECT_TRUE(parsed_json.value->is_dict());
 
   std::unique_ptr<ash::DeskTemplate> dt =
-      desk_template_conversion::ParseDeskTemplateFromPolicy(
-          parsed_json.value.value());
+      desk_template_conversion::ParseDeskTemplateFromSource(
+          parsed_json.value.value(), ash::DeskTemplateSource::kPolicy);
   EXPECT_TRUE(dt == nullptr);
 }
 
@@ -307,8 +271,8 @@ TEST_F(DeskTemplateConversionTest, ParsesWithDefaultValueSetToTemplates) {
   EXPECT_TRUE(parsed_json.value->is_dict());
 
   std::unique_ptr<ash::DeskTemplate> dt =
-      desk_template_conversion::ParseDeskTemplateFromPolicy(
-          parsed_json.value.value());
+      desk_template_conversion::ParseDeskTemplateFromSource(
+          parsed_json.value.value(), ash::DeskTemplateSource::kPolicy);
   EXPECT_TRUE(dt);
   EXPECT_EQ(ash::DeskTemplateType::kTemplate, dt->type());
 }
@@ -322,8 +286,8 @@ TEST_F(DeskTemplateConversionTest, DeskTemplateFromJsonBrowserTest) {
   EXPECT_TRUE(parsed_json.value->is_dict());
 
   std::unique_ptr<ash::DeskTemplate> desk_template =
-      desk_template_conversion::ParseDeskTemplateFromPolicy(
-          parsed_json.value.value());
+      desk_template_conversion::ParseDeskTemplateFromSource(
+          parsed_json.value.value(), ash::DeskTemplateSource::kPolicy);
 
   apps::AppRegistryCache* app_cache =
       apps::AppRegistryCacheWrapper::Get().GetAppRegistryCache(account_id_);
@@ -345,8 +309,8 @@ TEST_F(DeskTemplateConversionTest, DeskTemplateFromJsonAppTest) {
   EXPECT_TRUE(parsed_json.value->is_dict());
 
   std::unique_ptr<ash::DeskTemplate> desk_template =
-      desk_template_conversion::ParseDeskTemplateFromPolicy(
-          parsed_json.value.value());
+      desk_template_conversion::ParseDeskTemplateFromSource(
+          parsed_json.value.value(), ash::DeskTemplateSource::kPolicy);
 
   apps::AppRegistryCache* app_cache =
       apps::AppRegistryCacheWrapper::Get().GetAppRegistryCache(account_id_);

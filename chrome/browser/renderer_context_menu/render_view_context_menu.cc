@@ -24,6 +24,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
@@ -44,6 +45,8 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_stats.h"
+#include "chrome/browser/feed/web_feed_tab_helper.h"
+#include "chrome/browser/feed/web_feed_ui_util.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -93,6 +96,7 @@
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -112,6 +116,7 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/custom_handlers/protocol_handler.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/language/core/browser/language_model_manager.h"
@@ -138,7 +143,6 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -160,7 +164,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "net/base/escape.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -249,6 +252,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
@@ -432,13 +436,15 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH, 116},
        {IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT, 117},
        {IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING, 118},
+       {IDC_FOLLOW, 119},
+       {IDC_UNFOLLOW, 120},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 119}});
+       {0, 121}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -639,8 +645,7 @@ absl::optional<web_app::SystemAppType> GetLinkSystemAppType(Profile* profile,
   return web_app::GetSystemWebAppTypeForAppId(profile, *link_app_id);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
-    BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 ui::MenuSourceType GetMenuSourceType(int event_flags) {
   if (event_flags & ui::EF_MOUSE_BUTTON)
     return ui::MENU_SOURCE_MOUSE;
@@ -867,18 +872,18 @@ std::u16string RenderViewContextMenu::FormatURLForClipboard(const GURL& url) {
 
   GURL url_to_format = url;
   url_formatter::FormatUrlTypes format_types;
-  net::UnescapeRule::Type unescape_rules;
+  base::UnescapeRule::Type unescape_rules;
   if (url.SchemeIs(url::kMailToScheme)) {
     GURL::Replacements replacements;
     replacements.ClearQuery();
     url_to_format = url.ReplaceComponents(replacements);
     format_types = url_formatter::kFormatUrlOmitMailToScheme;
     unescape_rules =
-        net::UnescapeRule::PATH_SEPARATORS |
-        net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
+        base::UnescapeRule::PATH_SEPARATORS |
+        base::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
   } else {
     format_types = url_formatter::kFormatUrlOmitNothing;
-    unescape_rules = net::UnescapeRule::NONE;
+    unescape_rules = base::UnescapeRule::NONE;
   }
 
   return url_formatter::FormatUrl(url_to_format, format_types, unescape_rules,
@@ -997,7 +1002,7 @@ void RenderViewContextMenu::InitMenu() {
   }
 
   // Show Read Anything option if text is selected.
-  if (base::FeatureList::IsEnabled(features::kReadAnything)) {
+  if (features::IsReadAnythingEnabled()) {
     if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY) ||
         content_type_->SupportsGroup(
             ContextMenuContentType::ITEM_GROUP_EDITABLE)) {
@@ -1046,10 +1051,13 @@ void RenderViewContextMenu::InitMenu() {
     AppendCurrentExtensionItems();
   }
 
-  // Accessibility label items are appended to all menus when a screen reader
-  // is enabled. It can be difficult to open a specific context menu with a
-  // screen reader, so this is a UX approved solution.
-  bool added_accessibility_labels_items = AppendAccessibilityLabelsItems();
+  // Accessibility label items are appended to all menus (with the exception of
+  // within the dev tools) when a screen reader is enabled. It can be difficult
+  // to open a specific context menu with a screen reader, so this is a UX
+  // approved solution.
+  bool added_accessibility_labels_items = false;
+  if (!IsDevToolsURL(params_.page_url))
+    added_accessibility_labels_items = AppendAccessibilityLabelsItems();
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_DEVELOPER)) {
@@ -1150,7 +1158,7 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
        lens::features::GetEnableUKMLoggingForImageSearch())) {
     // Enum id should correspond to the RenderViewContextMenuItem enum.
     ukm::SourceId source_id =
-        ukm::GetSourceIdForWebContentsDocument(source_web_contents_);
+        source_web_contents_->GetMainFrame()->GetPageUkmSourceId();
     ukm::builders::RenderViewContextMenu_Used(source_id)
         .SetSelectedMenuItem(enum_id)
         .Record(ukm::UkmRecorder::Get());
@@ -1442,8 +1450,10 @@ void RenderViewContextMenu::AppendLinkItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
     // Place QR Generator close to send-tab-to-self feature for link images.
-    if (params_.has_image_contents)
-      AppendQRCodeGeneratorItem(/*for_image=*/true, /*draw_icon=*/true);
+    if (params_.has_image_contents) {
+      AppendQRCodeGeneratorItem(/*for_image=*/true, /*draw_icon=*/true,
+                                /*add_separator*/ false);
+    }
 
 #if !BUILDFLAG(IS_FUCHSIA)
     AppendClickToCallItem();
@@ -1533,7 +1543,7 @@ void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
 
   // Only applies to apps that open in an app window.
   if (provider->registrar().GetAppUserDisplayMode(*link_app_id) ==
-      web_app::DisplayMode::kBrowser) {
+      web_app::UserDisplayMode::kBrowser) {
     return;
   }
 
@@ -1574,8 +1584,10 @@ void RenderViewContextMenu::AppendImageItems() {
                                   IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
 
   // Don't double-add for linked images, which also add the item.
-  if (params_.link_url.is_empty())
-    AppendQRCodeGeneratorItem(/*for_image=*/true, /*draw_icon=*/false);
+  if (params_.link_url.is_empty()) {
+    AppendQRCodeGeneratorItem(/*for_image=*/true, /*draw_icon=*/false,
+                              /*add_separator=*/false);
+  }
 }
 
 void RenderViewContextMenu::AppendSearchWebForImageItems() {
@@ -1692,40 +1704,28 @@ void RenderViewContextMenu::AppendPageItems() {
   }
 #endif
 
+  // Note: `has_sharing_menu_items = true` also implies a separator was added
+  // for sharing section.
+  bool has_sharing_menu_items = false;
+  if (base::FeatureList::IsEnabled(feed::kWebUiFeed)) {
+    has_sharing_menu_items |= AppendFollowUnfollowItem();
+  }
+
   // Send-Tab-To-Self (user's other devices), page level.
-  bool send_tab_to_self_menu_present = false;
   if (GetBrowser() &&
-      send_tab_to_self::ShouldOfferFeature(embedder_web_contents_)) {
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    send_tab_to_self_menu_present = true;
-#if BUILDFLAG(IS_MAC)
-    menu_model_.AddItem(
-        IDC_SEND_TAB_TO_SELF,
-        l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF));
-#else
-    menu_model_.AddItemWithIcon(
-        IDC_SEND_TAB_TO_SELF,
-        l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF),
-        ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
-#endif
+      send_tab_to_self::ShouldDisplayEntryPoint(embedder_web_contents_)) {
+    AppendSendTabToSelfItem(/*add_separator=*/!has_sharing_menu_items);
+    has_sharing_menu_items = true;
   }
 
   // Context menu item for QR Code Generator.
-  if (IsQRCodeGeneratorEnabled()) {
-    // This is presented alongside the send-tab-to-self items, though each may
-    // be present without the other due to feature experimentation. Therefore we
-    // may or may not need to create a new separator.
-    if (!send_tab_to_self_menu_present)
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  has_sharing_menu_items |=
+      AppendQRCodeGeneratorItem(/*for_image=*/false, /*draw_icon=*/true,
+                                /*add_separator=*/!has_sharing_menu_items);
 
-    AppendQRCodeGeneratorItem(/*for_image=*/false, /*draw_icon=*/true);
-
+  // Close out sharing section if appropriate.
+  if (has_sharing_menu_items)
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-  } else if (send_tab_to_self_menu_present) {
-    // Close out sharing section if send-tab-to-self was present but QR
-    // generator was not.
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-  }
 
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(embedder_web_contents_);
@@ -2417,6 +2417,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       NOTREACHED();
       return false;
 #endif
+
+    case IDC_FOLLOW:
+    case IDC_UNFOLLOW:
+      return !GetProfile()->IsOffTheRecord();
+
     default:
       NOTREACHED();
       return false;
@@ -2719,10 +2724,16 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+          selection_navigation_url_,
+          ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
+#else
       OpenURL(selection_navigation_url_, GURL(),
               ui::DispositionFromEventFlags(
                   event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB),
               ui::PAGE_TRANSITION_LINK);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       break;
 
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
@@ -2769,7 +2780,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CONTENT_CLIPBOARD_HISTORY_MENU: {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
       auto* host_native_view = GetRenderFrameHost()
                                    ? GetRenderFrameHost()->GetNativeView()
                                    : nullptr;
@@ -2806,6 +2817,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 #endif
       break;
     }
+
+    case IDC_FOLLOW:
+      feed::FollowSite(source_web_contents_);
+      break;
+
+    case IDC_UNFOLLOW:
+      feed::UnfollowSite(source_web_contents_);
+      break;
 
     default:
       NOTREACHED();
@@ -3081,11 +3100,15 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
   if (!GetBrowser())
     return false;
 
+  if (params_.media_type == ContextMenuDataMediaType::kImage) {
+    return qrcode_generator::QRCodeGeneratorBubbleController::
+        IsGeneratorAvailable(params_.src_url);
+  }
+
   NavigationEntry* entry =
       embedder_web_contents_->GetController().GetLastCommittedEntry();
   if (!entry)
     return false;
-
   return qrcode_generator::QRCodeGeneratorBubbleController::
       IsGeneratorAvailable(entry->GetURL());
 }
@@ -3116,10 +3139,16 @@ bool RenderViewContextMenu::IsRegionSearchEnabled() const {
 #endif
 }
 
-void RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
-                                                      bool draw_icon) {
+// Returns true if the item was appended.
+bool RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
+                                                      bool draw_icon,
+                                                      bool add_separator) {
   if (!IsQRCodeGeneratorEnabled())
-    return;
+    return false;
+
+  if (add_separator)
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+
   auto string_id = for_image ? IDS_CONTEXT_MENU_GENERATE_QR_CODE_IMAGE
                              : IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE;
 #if BUILDFLAG(IS_MAC)
@@ -3133,6 +3162,42 @@ void RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATE_QR_CODE,
                                     string_id);
   }
+
+  return true;
+}
+
+void RenderViewContextMenu::AppendSendTabToSelfItem(bool add_separator) {
+  if (add_separator)
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+#if BUILDFLAG(IS_MAC)
+  menu_model_.AddItem(
+      IDC_SEND_TAB_TO_SELF,
+      l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF));
+#else
+  menu_model_.AddItemWithIcon(
+      IDC_SEND_TAB_TO_SELF,
+      l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF),
+      ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
+#endif
+}
+
+// Returns true if the item was appended (along with a SEPARATOR).
+bool RenderViewContextMenu::AppendFollowUnfollowItem() {
+  TabWebFeedFollowState follow_state =
+      feed::WebFeedTabHelper::GetFollowState(source_web_contents_);
+  if (follow_state == TabWebFeedFollowState::kNotFollowed) {
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddItem(IDC_FOLLOW,
+                        l10n_util::GetStringUTF16(IDS_TAB_CXMENU_FOLLOW_SITE));
+    return true;
+  }
+  if (follow_state == TabWebFeedFollowState::kFollowed) {
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddItem(
+        IDC_UNFOLLOW, l10n_util::GetStringUTF16(IDS_TAB_CXMENU_UNFOLLOW_SITE));
+    return true;
+  }
+  return false;
 }
 
 std::unique_ptr<ui::DataTransferEndpoint>

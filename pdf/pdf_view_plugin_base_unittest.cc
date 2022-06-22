@@ -23,7 +23,6 @@
 #include "pdf/document_metadata.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
-#include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/test/test_pdfium_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,6 +31,7 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -119,12 +119,13 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
 
   MOCK_METHOD(bool, IsValidLink, (const std::string&), (override));
 
-  MOCK_METHOD(std::unique_ptr<Graphics>,
-              CreatePaintGraphics,
-              (const gfx::Size&),
+  MOCK_METHOD(void, InvalidatePluginContainer, (), (override));
+  MOCK_METHOD(void, UpdateSnapshot, (sk_sp<SkImage>), (override));
+  MOCK_METHOD(void, UpdateScale, (float), (override));
+  MOCK_METHOD(void,
+              UpdateLayerTransform,
+              (float, const gfx::Vector2dF&),
               (override));
-
-  MOCK_METHOD(bool, BindPaintGraphics, (Graphics&), (override));
 
   MOCK_METHOD(std::unique_ptr<PDFiumEngine>,
               CreateEngine,
@@ -147,8 +148,6 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
   }
 
   MOCK_METHOD(void, SaveAs, (), (override));
-
-  MOCK_METHOD(void, InitImageData, (const gfx::Size&), (override));
 
   MOCK_METHOD(void, SetFormTextFieldInFocus, (bool), (override));
 

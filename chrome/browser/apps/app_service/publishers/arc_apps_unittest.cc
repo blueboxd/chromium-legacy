@@ -36,6 +36,7 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/utility/utility.h"
 
 namespace {
 
@@ -147,8 +148,6 @@ class ArcAppsPublisherTest : public testing::Test {
     arc_bridge_service->file_system()->SetInstance(file_system_instance());
     arc::WaitForInstanceReady(arc_bridge_service->file_system());
 
-    auto* const provider = web_app::FakeWebAppProvider::Get(&profile_);
-    provider->SkipAwaitingExtensionSystem();
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
 
     app_service_test_.SetUp(&profile_);
@@ -233,7 +232,7 @@ TEST_F(ArcAppsPublisherTest, SetSupportedLinksFromArc) {
       package_name, CreateFilterList(package_name, {kTestAuthority}));
   VerifyIntentFilters(app_id, {kTestAuthority});
   std::vector<arc::mojom::SupportedLinksPtr> added_links;
-  added_links.emplace_back(base::in_place, package_name,
+  added_links.emplace_back(absl::in_place, package_name,
                            CreateFilterList(package_name, {kTestAuthority}));
   intent_helper()->OnSupportedLinksChanged(
       std::move(added_links), {},
@@ -286,7 +285,7 @@ TEST_F(ArcAppsPublisherTest, SetSupportedLinksDefaultBrowserBehavior) {
       package_name, CreateFilterList(package_name, {kTestAuthority}));
   VerifyIntentFilters(app_id, {kTestAuthority});
   std::vector<arc::mojom::SupportedLinksPtr> added_links;
-  added_links.emplace_back(base::in_place, package_name,
+  added_links.emplace_back(absl::in_place, package_name,
                            CreateFilterList(package_name, {kTestAuthority}));
   intent_helper()->OnSupportedLinksChanged(
       std::move(added_links), {},
@@ -316,7 +315,7 @@ TEST_F(ArcAppsPublisherTest,
       package_name, CreateFilterList(package_name, {kTestAuthority}));
   VerifyIntentFilters(app_id, {kTestAuthority});
   std::vector<arc::mojom::SupportedLinksPtr> added_links;
-  added_links.emplace_back(base::in_place, package_name,
+  added_links.emplace_back(absl::in_place, package_name,
                            CreateFilterList(package_name, {kTestAuthority}));
   intent_helper()->OnSupportedLinksChanged(
       std::move(added_links), {},
@@ -333,7 +332,7 @@ TEST_F(ArcAppsPublisherTest,
   VerifyIntentFilters(app_id, {kTestAuthority, kTestAuthority2});
   std::vector<arc::mojom::SupportedLinksPtr> added_links2;
   added_links2.emplace_back(
-      base::in_place, package_name,
+      absl::in_place, package_name,
       CreateFilterList(package_name, {kTestAuthority, kTestAuthority2}));
   intent_helper()->OnSupportedLinksChanged(
       std::move(added_links2), {},
@@ -363,7 +362,7 @@ TEST_F(ArcAppsPublisherTest,
   intent_helper()->OnIntentFiltersUpdatedForPackage(
       package_name, CreateFilterList(package_name, {kTestAuthority}));
   std::vector<arc::mojom::SupportedLinksPtr> added_links;
-  added_links.emplace_back(base::in_place, package_name,
+  added_links.emplace_back(absl::in_place, package_name,
                            CreateFilterList(package_name, {kTestAuthority}));
   intent_helper()->OnSupportedLinksChanged(
       std::move(added_links), {},

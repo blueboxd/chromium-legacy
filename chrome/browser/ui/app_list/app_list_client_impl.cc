@@ -357,18 +357,18 @@ void AppListClientImpl::ActivateItem(int profile_id,
     // the type of apps launched from the grid in SearchController::Train.
     launch_data.ranking_item_type =
         app_list::RankingItemTypeFromChromeAppListItem(*item);
-    launch_data.launched_from = ash::AppListLaunchedFrom::kLaunchedFromGrid;
+    launch_data.launched_from = launched_from;
     search_controller_->Train(std::move(launch_data));
   }
 
-  MaybeRecordLauncherAction(ash::AppListLaunchedFrom::kLaunchedFromGrid);
+  MaybeRecordLauncherAction(launched_from);
   requested_model_updater->ActivateChromeItem(id, event_flags);
 }
 
 void AppListClientImpl::GetContextMenuModel(
     int profile_id,
     const std::string& id,
-    bool add_sort_options,
+    ash::AppListItemContext item_context,
     GetContextMenuModelCallback callback) {
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (requested_model_updater != current_model_updater_ ||
@@ -377,7 +377,7 @@ void AppListClientImpl::GetContextMenuModel(
     return;
   }
   requested_model_updater->GetContextMenuModel(
-      id, add_sort_options,
+      id, item_context,
       base::BindOnce(
           [](GetContextMenuModelCallback callback,
              std::unique_ptr<ui::SimpleMenuModel> menu_model) {
@@ -401,8 +401,6 @@ void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
   app_list_visible_ = visible;
   if (visible) {
-    if (search_controller_)
-      search_controller_->AppListShown();
     MaybeRecordViewShown();
   } else if (current_model_updater_) {
     current_model_updater_->OnAppListHidden();
@@ -710,6 +708,11 @@ ash::AppListSortOrder AppListClientImpl::GetPermanentSortingOrder() const {
       ->GetPermanentSortingOrder();
 }
 
+void AppListClientImpl::CommitTemporarySortOrder() {
+  DCHECK(current_model_updater_);
+  current_model_updater_->CommitTemporarySortOrder();
+}
+
 void AppListClientImpl::MaybeRecordViewShown() {
   // Record the time duration between session activation and the first launcher
   // showing if the current user is new.
@@ -815,6 +818,7 @@ void AppListClientImpl::MaybeRecordLauncherAction(
   DCHECK(launched_from == ash::AppListLaunchedFrom::kLaunchedFromGrid ||
          launched_from ==
              ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip ||
+         launched_from == ash::AppListLaunchedFrom::kLaunchedFromRecentApps ||
          launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox ||
          launched_from == ash::AppListLaunchedFrom::kLaunchedFromContinueTask);
 
@@ -829,14 +833,12 @@ void AppListClientImpl::MaybeRecordLauncherAction(
     return;
 
   state_for_new_user_->action_recorded = true;
-  base::UmaHistogramEnumeration("Apps.FirstLauncherActionByNewUsers",
-                                launched_from);
   if (IsTabletMode()) {
-    base::UmaHistogramEnumeration(
-        "Apps.FirstLauncherActionByNewUsers.TabletMode", launched_from);
+    base::UmaHistogramEnumeration("Apps.NewUserFirstLauncherAction.TabletMode",
+                                  launched_from);
   } else {
     base::UmaHistogramEnumeration(
-        "Apps.FirstLauncherActionByNewUsers.ClamshellMode", launched_from);
+        "Apps.NewUserFirstLauncherAction.ClamshellMode", launched_from);
   }
 
   DCHECK(new_user_session_activation_time_.has_value());

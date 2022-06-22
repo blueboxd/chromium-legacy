@@ -1116,7 +1116,7 @@ class BASE_EXPORT GSL_OWNER Value {
     //       SomeFunction(member);
     //     }
     //   });
-    operator double() const { return bit_cast<double>(v_); }
+    operator double() const { return base::bit_cast<double>(v_); }
 
    private:
     friend bool operator==(const DoubleStorage& lhs, const DoubleStorage& rhs) {
@@ -1350,6 +1350,11 @@ class BASE_EXPORT ListValue : public Value {
   using Value::Append;
   // DEPRECATED: prefer `Value::List::Append()`.
   void Append(std::unique_ptr<Value> in_value);
+  // DEPRECATED: prefer `Value::List::Append()`. Provided to simplify
+  // incremental migration and intentionally only defined on ListValue and not
+  // Value.
+  void Append(base::Value::Dict in_dict);
+  void Append(base::Value::List in_list);
 
   // Swaps contents with the `other` list.
   //

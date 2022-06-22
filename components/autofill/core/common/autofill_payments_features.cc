@@ -19,8 +19,7 @@
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace autofill {
-namespace features {
+namespace autofill::features {
 
 // Features
 
@@ -170,6 +169,17 @@ const base::Feature kAutofillSaveCardDismissOnNavigation{
 const base::Feature kAutofillSaveCardInfobarEditSupport{
     "AutofillSaveCardInfobarEditSupport", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, Chrome will display experimental UI variants to the user
+// during the upload save card process.
+const base::Feature kAutofillSaveCardUiExperiment{
+    "AutofillSaveCardUiExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// This will select one of the options for the save card UI bubble which we
+// want to display to the user. The value will be an integer(number).
+const base::FeatureParam<int> kAutofillSaveCardUiExperimentSelectorInNumber{
+    &kAutofillSaveCardUiExperiment,
+    "autofill_save_card_ui_experiment_selector_in_number", 0};
+
 // When enabled, the entire PAN and the CVC details of the unmasked cached card
 // will be shown in the manual filling view.
 const base::Feature kAutofillShowUnmaskedCachedCardInManualFillingView{
@@ -195,8 +205,24 @@ const base::Feature kAutofillSuggestVirtualCardsOnIncompleteForm{
 const base::Feature kAutofillUpstream{"AutofillUpstream",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, Chrome allows credit card upload to Google Payments if the
+// user's email domain is from a common email provider (thus unlikely to be an
+// enterprise or education user).
+const base::Feature kAutofillUpstreamAllowAdditionalEmailDomains{
+    "AutofillUpstreamAllowAdditionalEmailDomains",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, Chrome allows credit card upload to Google Payments, no matter
+// the user's email domain.
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The delay required since the last strike before offering another virtual card
+// enrollment attempt.
+const base::FeatureParam<int>
+    kAutofillVirtualCardEnrollDelayInStrikeDatabaseInDays{
+        &kAutofillEnforceDelaysInStrikeDatabase,
+        "autofill_virtual_card_enroll_delay_in_strike_database_in_days", 7};
 
 bool ShouldShowImprovedUserConsentForCreditCardSave() {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -211,5 +237,4 @@ bool ShouldShowImprovedUserConsentForCreditCardSave() {
 #endif
 }
 
-}  // namespace features
-}  // namespace autofill
+}  // namespace autofill::features

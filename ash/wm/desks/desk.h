@@ -74,6 +74,9 @@ class ASH_EXPORT Desk {
   bool is_name_set_by_user() const { return is_name_set_by_user_; }
 
   bool is_desk_being_removed() const { return is_desk_being_removed_; }
+  void set_is_desk_being_removed(bool is_desk_being_removed) {
+    is_desk_being_removed_ = is_desk_being_removed;
+  }
 
   const base::Time& creation_time() const { return creation_time_; }
   void set_creation_time(base::Time creation_time) {
@@ -106,6 +109,8 @@ class ASH_EXPORT Desk {
 
   base::AutoReset<bool> GetScopedNotifyContentChangedDisabler();
 
+  bool ContainsAppWindows() const;
+
   // Sets the desk's name to |new_name| and updates the observers.
   // |set_by_user| should be true if this name was given to the desk by the user
   // from its mini view in overview mode.
@@ -128,6 +133,13 @@ class ASH_EXPORT Desk {
   // If |update_window_activation| is true, the currently active window
   // on this desk will be deactivated.
   void Deactivate(bool update_window_activation);
+
+  // Moves non-app overview windows (such as the Desks Bar, the Save Desk
+  // button, and the "No Windows" label) from this desk to `target_desk`. This
+  // allows us to keep the app windows in a closing desk until it is either
+  // restored or destroyed, and also to move these windows back to the desk if
+  // it is being restored in an active state.
+  void MoveNonAppOverviewWindowsToDesk(Desk* target_desk);
 
   // In preparation for removing this desk, moves all the windows on this desk
   // to `target_desk` such that they become last in MRU order across all desks,
@@ -157,13 +169,9 @@ class ASH_EXPORT Desk {
   // visibility on the containers (on all roots) associated with this desk.
   void UpdateDeskBackdrops();
 
-  // Set desk being removed to avoid unwanted action such as `GetDeskIndex()`
-  // when desk is already removed from |desks_| in DesksController.
-  void SetDeskBeingRemoved();
-
-  // Records the lifetime of the desk based on its desk index. Should be called
-  // when this desk is removed by the user.
-  void RecordLifetimeHistogram();
+  // Records the lifetime of the desk based on its desk `index`. Should be
+  // called when this desk is removed by the user.
+  void RecordLifetimeHistogram(int index);
 
   // Returns whether the difference between |last_day_visited_| and the current
   // day is less than or equal to 1 or |last_day_visited_| is not set.
@@ -176,10 +184,7 @@ class ASH_EXPORT Desk {
   // accounts for cases where the user removes the active desk.
   void RecordAndResetConsecutiveDailyVisits(bool being_removed);
 
-  // Closes all app windows associated with this desk. If we are removing the
-  // active desk in overview, we do not want to close the non-app windows, but
-  // rather move them to the new active desk. So, we can close all of the app
-  // windows before moving the leftover windows.
+  // Closes all app windows associated with this desk.
   void CloseAllAppWindows();
 
  private:

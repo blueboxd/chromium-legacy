@@ -48,10 +48,10 @@ rsync -c --delete --delete-excluded -r -v --prune-empty-dirs \
     "node_modules/" \
     "components-chromium/node_modules/"
 
-# Rewrite imports to relative paths for rollup.
+# Resolve imports as relative paths so we can load them in chrome://resources/.
 find components-chromium/ \
-   \( -name "*.js" -or -name "*.d.ts" \) \
-   -exec node rewrite_imports.js {} +
+   \( -name "*.js"  \) \
+   -exec node resolve_imports.js {} +
 
 new=$(git status --porcelain components-chromium | grep '^??' | \
       cut -d' ' -f2 | egrep '\.(js|css)$' || true)

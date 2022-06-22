@@ -99,12 +99,6 @@ void LogScreenOnBubbleClose(Screen screen);
 // Logs the |screen| when the settings button is clicked.
 void LogScreenOnSettingsButtonClicked(Screen screen);
 
-// Logs an |event| for the notification opt-in prompt.
-void LogNotificationOptInEvent(InterstitialScreenEvent event);
-
-// Logs an |event| for the camera roll opt-in dialog in phone hub view.
-void LogCameraRollOptInEvent(InterstitialScreenEvent event);
-
 // Logs the |tab_index| of the tab continuation chip that was clicked.
 void LogTabContinuationChipClicked(int tab_index);
 
@@ -128,6 +122,9 @@ void LogCameraRollContentClicked(int index, CameraRollMediaType mediaType);
 
 // Logs a download of item at |index| from the Camera Roll context menu.
 void LogCameraRollContextMenuDownload(int index, CameraRollMediaType mediaType);
+
+// Logs the display of any Camera Roll item. Emits once per opening of bubble.
+void LogCameraRollContentPresent();
 
 }  // namespace phone_hub_metrics
 }  // namespace ash

@@ -28,6 +28,7 @@ group("resources") {
       "access_code_cast:resources",
       "app_service_internals:resources",
       "bookmarks:resources",
+      "browsing_topics:resources",
       "commander:resources",
       "download_shelf:resources",
       "downloads:resources",
@@ -42,11 +43,13 @@ group("resources") {
       "new_tab_page_instant:resources",
       "new_tab_page_third_party:resources",
       "privacy_sandbox:resources",
+      "profile_internals:resources",
       "settings:resources",
       "side_panel:resources",
       "signin:resources",
       "support_tool:resources",
       "tab_search:resources",
+      "webui_gallery:resources",
       "whats_new:resources",
     ]
     if (is_chrome_branded) {
@@ -121,9 +124,7 @@ if (enable_js_type_check) {
       "components:closure_compile",
       "domain_reliability_internals:closure_compile",
       "engagement:closure_compile",
-      "media:closure_compile",
       "memory_internals:closure_compile",
-      "predictors:closure_compile",
       "reset_password:closure_compile",
     ]
     if (is_linux || is_chromeos || is_win || is_mac) {
@@ -138,7 +139,6 @@ if (enable_js_type_check) {
         "ntp4:closure_compile",
         "omnibox:closure_compile",
         "settings:closure_compile",
-        "sync_file_system_internals:closure_compile",
         "usb_internals:closure_compile",
       ]
     }
@@ -167,7 +167,6 @@ if (enable_js_type_check) {
         "internals/query_tiles:closure_compile",
         "offline_pages:closure_compile",
         "video_tutorials:closure_compile",
-        "webapks:closure_compile",
       ]
     }
 
@@ -181,6 +180,9 @@ if (enable_js_type_check) {
     if (is_linux || is_chromeos) {
       deps += [ "certificate_viewer:closure_compile" ]
     }
+    if (is_chromeos) {
+      deps += [ "chromeos/contact_center_insights:closure_compile" ]
+    }
   }
 }
 
@@ -191,6 +193,12 @@ if (!is_android) {
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {
       defines += [ "enable_hangout_services_extension" ]
+    }
+
+    # Some resources within component_extension_resources.grd are generated at
+    # build time so we include them as explicit dependencies here
+    if (is_chromeos) {
+      deps = [ "chromeos/contact_center_insights:generate_ccaas_deps" ]
     }
 
     outputs = [
@@ -298,13 +306,14 @@ repack("dev_ui_paks") {
 
   sources = [
     "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
+    "$root_gen_dir/chrome/browsing_topics_internals_resources.pak",
     "$root_gen_dir/chrome/dev_ui_browser_resources.pak",
     "$root_gen_dir/chrome/internals_resources.pak",
     "$root_gen_dir/chrome/invalidations_resources.pak",
+    "$root_gen_dir/chrome/media_resources.pak",
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/omnibox_resources.pak",
     "$root_gen_dir/chrome/usb_internals_resources.pak",
-    "$root_gen_dir/chrome/webrtc_logs_resources.pak",
     "$root_gen_dir/components/dev_ui_components_resources.pak",
     "$root_gen_dir/components/download_internals_resources.pak",
     "$root_gen_dir/components/history_clusters_internals_resources.pak",
@@ -317,9 +326,10 @@ repack("dev_ui_paks") {
   deps = [
     "//chrome/browser:dev_ui_browser_resources",
     "//chrome/browser/resources/bluetooth_internals:resources",
+    "//chrome/browser/resources/browsing_topics:resources",
     "//chrome/browser/resources/internals:resources",
     "//chrome/browser/resources/invalidations:resources",
-    "//chrome/browser/resources/media:webrtc_logs_resources",
+    "//chrome/browser/resources/media:resources",
     "//chrome/browser/resources/net_internals:resources",
     "//chrome/browser/resources/omnibox:resources",
     "//chrome/browser/resources/usb_internals:resources",

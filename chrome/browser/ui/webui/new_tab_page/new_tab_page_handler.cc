@@ -691,13 +691,6 @@ void NewTabPageHandler::UpdateModulesFreVisibility() {
   auto ntp_modules_fre_visible =
       profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesFreVisible);
 
-  if (ntp_modules_fre_visible &&
-      (ntp_modules_shown_count == kMaxModuleFreImpressions ||
-       (!ntp_modules_first_shown_time.is_null() &&
-        (base::Time::Now() - ntp_modules_first_shown_time) == base::Days(1)))) {
-    LogModulesFreOptInStatus(new_tab_page::mojom::OptInStatus::kImplicitOptIn);
-  }
-
   // Hide Modular NTP Desktop v1 First Run Experience after
   // |kMaxModuleFreImpressions| impressions or 1 day, whichever comes first.
   if (ntp_modules_shown_count >= kMaxModuleFreImpressions ||
@@ -707,6 +700,12 @@ void NewTabPageHandler::UpdateModulesFreVisibility() {
     SetModulesFreVisible(ntp_modules_fre_visible);
   } else {
     page_->SetModulesFreVisibility(ntp_modules_fre_visible);
+  }
+
+  if (ntp_modules_shown_count == kMaxModuleFreImpressions ||
+      (!ntp_modules_first_shown_time.is_null() &&
+       (base::Time::Now() - ntp_modules_first_shown_time) == base::Days(1))) {
+    LogModulesFreOptInStatus(new_tab_page::mojom::OptInStatus::kImplicitOptIn);
   }
 }
 

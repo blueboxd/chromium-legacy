@@ -29,7 +29,6 @@
 #include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/browser/password_change_success_tracker_impl.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -193,6 +192,10 @@ bool Controller::ShouldShowWarning() {
 
 ProcessedActionStatusDetailsProto& Controller::GetLogInfo() {
   return log_info_;
+}
+
+bool Controller::MustUseBackendData() const {
+  return client_->MustUseBackendData();
 }
 
 void Controller::AddNavigationListener(
@@ -737,11 +740,21 @@ void Controller::InitFromParameters() {
     DCHECK(GetDeeplinkURL().is_valid());  // |deeplink_url_| must be set.
     user_data_.selected_login_.emplace(
         GetDeeplinkURL().DeprecatedGetOriginAsURL(), *password_change_username);
-    GetPasswordChangeSuccessTracker()->OnChangePasswordFlowStarted(
-        user_data_.selected_login_->origin,
-        user_data_.selected_login_->username,
-        password_manager::PasswordChangeSuccessTracker::StartEvent::
-            kAutomatedFlow);
+
+    // We only start password change success tracking here if the run was
+    // started from the Google Password Manager. The other cases are
+    // handled directly in the UI.
+    if (trigger_context_->GetScriptParameters().GetCaller().value_or(0) ==
+        static_cast<int>(
+            Metrics::AutofillAssistantCaller::GOOGLE_PASSWORD_MANAGER)) {
+      GetPasswordChangeSuccessTracker()->OnChangePasswordFlowStarted(
+          user_data_.selected_login_->origin,
+          user_data_.selected_login_->username,
+          password_manager::PasswordChangeSuccessTracker::StartEvent::
+              kAutomatedFlow,
+          password_manager::PasswordChangeSuccessTracker::EntryPoint::
+              kLeakCheckInSettings);
+    }
   }
 
   user_model_.SetCurrentURL(GetCurrentURL());

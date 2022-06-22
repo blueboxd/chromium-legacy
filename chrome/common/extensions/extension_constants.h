@@ -160,12 +160,16 @@ enum AppLaunchBucket {
 #if BUILDFLAG(IS_CHROMEOS)
 // The extension id of the Assessment Assistant extension.
 extern const char kAssessmentAssistantExtensionId[];
+// The extension id of the extension responsible for providing chromeos perks.
+extern const char kEchoExtensionId[];
 // The extension id of the Gnubby chrome app.
 extern const char kGnubbyAppId[];
 // The extension id of the new v3 Gnubby extension.
 extern const char kGnubbyV3ExtensionId[];
 // The extension id of the GCSE.
 extern const char kGCSEExtensionId[];
+// The extension id of the Contact Center Insights chrome component extension.
+extern const char kContactCenterInsightsExtensionId[];
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // The extension id of the Accessibility Common extension.
@@ -228,7 +232,6 @@ extern const char kEspeakSpeechSynthesisExtensionId[];
 extern const char kWallpaperManagerId[];
 // The extension id of official HelpApp extension.
 extern const char kHelpAppExtensionId[];
-extern const char kEchoExtensionId[];
 #endif
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 // The extension id of the Hangout Service extnsion.

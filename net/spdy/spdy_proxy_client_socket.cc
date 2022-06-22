@@ -176,11 +176,6 @@ bool SpdyProxyClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   return false;
 }
 
-void SpdyProxyClientSocket::GetConnectionAttempts(
-    ConnectionAttempts* out) const {
-  out->clear();
-}
-
 int64_t SpdyProxyClientSocket::GetTotalReceivedBytes() const {
   NOTIMPLEMENTED();
   return 0;
@@ -250,6 +245,8 @@ int SpdyProxyClientSocket::Write(
   DCHECK(write_callback_.is_null());
   if (next_state_ != STATE_OPEN)
     return ERR_SOCKET_NOT_CONNECTED;
+  if (end_stream_state_ == EndStreamState::kEndStreamSent)
+    return ERR_CONNECTION_CLOSED;
 
   DCHECK(spdy_stream_.get());
   spdy_stream_->SendData(buf, buf_len, MORE_DATA_TO_SEND);

@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -214,7 +215,6 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_ReopenTab) {
   ShowAndVerifyUi();
 }
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
 // Need a separate fixture to override the feature flag.
 class FeaturePromoDialogSideSearchTest : public FeaturePromoDialogTest {
  public:
@@ -243,7 +243,6 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoDialogSideSearchTest,
   set_baseline("3187662");
   ShowAndVerifyUi();
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_TabSearch) {
   set_baseline("2991858");
@@ -296,7 +295,7 @@ class FeaturePromoDialogIntentChipTest : public FeaturePromoDialogTest {
     web_app_info->title = base::UTF8ToUTF16(app_name);
     web_app_info->start_url = url;
     web_app_info->scope = url;
-    web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
+    web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
     auto app_id = web_app::test::InstallWebApp(browser()->profile(),
                                                std::move(web_app_info));
     return app_id;

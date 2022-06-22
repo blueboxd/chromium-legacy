@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {InstanceChecker} from '../../common/instance_checker.js';
-
-import {BrailleCommandHandler} from './braille/braille_command_handler.js';
-import {ChromeVoxBackground} from './classic_background.js';
-import {CommandHandler} from './command_handler.js';
-import {DesktopAutomationHandler} from './desktop_automation_handler.js';
-import {DesktopAutomationInterface} from './desktop_automation_interface.js';
-import {DownloadHandler} from './download_handler.js';
-import {Earcons} from './earcons.js';
-import {FindHandler} from './find_handler.js';
-import {FocusAutomationHandler} from './focus_automation_handler.js';
-import {GestureCommandHandler} from './gesture_command_handler.js';
-import {BackgroundKeyboardHandler} from './keyboard_handler.js';
-import {LiveRegions} from './live_regions.js';
-import {MathHandler} from './math_handler.js';
-import {MediaAutomationHandler} from './media_automation_handler.js';
-import {PageLoadSoundHandler} from './page_load_sound_handler.js';
-import {RangeAutomationHandler} from './range_automation_handler.js';
+import {BrailleCommandHandler} from '/chromevox/background/braille/braille_command_handler.js';
+import {ChromeVoxBackground} from '/chromevox/background/classic_background.js';
+import {CommandHandler} from '/chromevox/background/command_handler.js';
+import {DesktopAutomationHandler} from '/chromevox/background/desktop_automation_handler.js';
+import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
+import {DownloadHandler} from '/chromevox/background/download_handler.js';
+import {Earcons} from '/chromevox/background/earcons.js';
+import {FindHandler} from '/chromevox/background/find_handler.js';
+import {FocusAutomationHandler} from '/chromevox/background/focus_automation_handler.js';
+import {GestureCommandHandler} from '/chromevox/background/gesture_command_handler.js';
+import {BackgroundKeyboardHandler} from '/chromevox/background/keyboard_handler.js';
+import {LiveRegions} from '/chromevox/background/live_regions.js';
+import {MathHandler} from '/chromevox/background/math_handler.js';
+import {MediaAutomationHandler} from '/chromevox/background/media_automation_handler.js';
+import {PageLoadSoundHandler} from '/chromevox/background/page_load_sound_handler.js';
+import {PanelBackground} from '/chromevox/background/panel/panel_background.js';
+import {RangeAutomationHandler} from '/chromevox/background/range_automation_handler.js';
+import {ExtensionBridge} from '/chromevox/common/extension_bridge.js';
+import {InstanceChecker} from '/common/instance_checker.js';
 
 /**
- * @fileoverview The entry point for all ChromeVox2 related code for the
+ * @fileoverview The entry point for all ChromeVox related code for the
  * background page.
  */
 
@@ -32,9 +33,7 @@ const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
 
-/**
- * ChromeVox2 background page.
- */
+/** ChromeVox background page. */
 export class Background extends ChromeVoxState {
   constructor() {
     super();
@@ -59,24 +58,12 @@ export class Background extends ChromeVoxState {
 
     Object.defineProperty(ChromeVox, 'typingEcho', {
       get() {
-        return parseInt(localStorage['typingEcho'], 10);
-      },
-      set(v) {
-        localStorage['typingEcho'] = v;
-      }
-    });
-
-    Object.defineProperty(ChromeVox, 'typingEcho', {
-      get() {
-        const typingEcho = parseInt(localStorage['typingEcho'], 10) || 0;
-        return typingEcho;
+        return parseInt(localStorage['typingEcho'], 10) || 0;
       },
       set(value) {
         localStorage['typingEcho'] = value;
       }
     });
-
-    ExtensionBridge.addMessageListener(this.onMessage_);
 
     /** @type {!BackgroundKeyboardHandler} @private */
     this.keyboardHandler_ = new BackgroundKeyboardHandler();
@@ -114,15 +101,14 @@ export class Background extends ChromeVoxState {
     FindHandler.init();
     DownloadHandler.init();
     JaPhoneticData.init(JaPhoneticMap.MAP);
+    PanelBackground.init();
 
     chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
         (announceText) => {
           ChromeVox.tts.speak(announceText.join(' '), QueueMode.FLUSH);
         });
     chrome.accessibilityPrivate.onCustomSpokenFeedbackToggled.addListener(
-        (enabled) => {
-          this.talkBackEnabled = enabled;
-        });
+        (enabled) => this.talkBackEnabled = enabled);
     chrome.accessibilityPrivate.onShowChromeVoxTutorial.addListener(() => {
       (new PanelCommand(PanelCommandType.TUTORIAL)).send();
     });
@@ -132,9 +118,7 @@ export class Background extends ChromeVoxState {
     sessionStorage.setItem('darkScreen', 'false');
   }
 
-  /**
-   * @override
-   */
+  /** @override */
   getCurrentRange() {
     if (this.currentRange_ && this.currentRange_.isValid()) {
       return this.currentRange_;
@@ -142,9 +126,7 @@ export class Background extends ChromeVoxState {
     return null;
   }
 
-  /**
-   * @override
-   */
+  /** @override */
   getCurrentRangeWithoutRecovery() {
     return this.currentRange_;
   }
@@ -297,55 +279,18 @@ export class Background extends ChromeVoxState {
     }
   }
 
-  /**
-   * Open the options page in a new tab.
-   */
-  showOptionsPage() {
-    const optionsPage = {url: '/chromevox/options/options.html'};
-    chrome.tabs.create(optionsPage);
-  }
-
-  /**
-   * @override
-   */
+  /** @override */
   onBrailleKeyEvent(evt, content) {
     return BrailleCommandHandler.onBrailleKeyEvent(evt, content);
   }
 
-  /**
-   * @param {Object} msg A message sent from a content script.
-   * @param {Port} port
-   * @private
-   */
-  onMessage_(msg, port) {
-    const target = msg['target'];
-    const action = msg['action'];
-
-    switch (target) {
-      case 'next':
-        if (action === 'getIsClassicEnabled') {
-          const url = msg['url'];
-          const isClassicEnabled = false;
-          port.postMessage({target: 'next', isClassicEnabled});
-        } else if (action === 'onCommand') {
-          CommandHandlerInterface.instance.onCommand(msg['command']);
-        } else if (action === 'flushNextUtterance') {
-          Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
-        }
-        break;
-    }
-  }
-
-  /**
-   * @override
-   */
+  /** @override */
   restoreLastValidRangeIfNeeded() {
     // Never restore range when TalkBack is enabled as commands such as
     // Search+Left, go directly to TalkBack.
     if (this.talkBackEnabled) {
       return;
     }
-
 
     if (!this.currentRange_ || !this.currentRange_.isValid()) {
       this.setCurrentRange(this.previousRange_);

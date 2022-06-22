@@ -1,16 +1,9 @@
-<link rel="stylesheet"
-    href="chrome://resources/chromeos/colors/cros_styles.css">
-<link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
-<link rel="stylesheet" href="chrome://resources/css/md_colors.css">
-<link rel="stylesheet" href="chrome://resources/cr_elements/md_select_css.html">
-
 <template>
   <style include="cr-shared-style md-select shimless-fonts">
     :host {
       --cr-dialog-width: 320px;
       --cr-dialog-button-container-padding-horizontal: 24px;
-      --footer-height: 80px;
-      --page-left-margin: 40px;
+      --content-container-padding: 40px;
       --radio-button-top-padding: 20px;
       --title-bottom-margin: 16px;
     }
@@ -23,7 +16,12 @@
       color: var(--shimless-instructions-text-color);
       padding: 0; /* specify all to override */
       padding-inline-start: 60px;
-      width: 375px;
+      width: 512px;
+    }
+
+    .icon-message {
+      display: grid;
+      grid-template-columns: 28px 1fr;
     }
 
     .large-icon {
@@ -32,9 +30,14 @@
     }
 
     .small-icon {
-      height: 16px;
+      height: 20px;
       padding-inline-end: 8px;
-      width: 16px;
+      width: 20px;
+    }
+
+    .small-icon-base {
+      height: 20px;
+      width: 20px;
     }
 
     .large-spinner {
@@ -55,6 +58,7 @@
       font-weight: var(--shimless-medium-font-weight);
       line-height: var(--shimless-title-line-height);
       margin-bottom: var(--title-bottom-margin);
+      margin-top: 0;
     }
 
     .instructions {
@@ -102,7 +106,6 @@
       flex-direction: row;
       justify-content: flex-end;
       padding-bottom: 20px;
-      padding-inline-start: 0;
       padding-top: 32px;
     }
 
@@ -130,8 +133,6 @@
 
     .warning-icon {
       fill: var(--cros-icon-color-warning);
-      height: 32px;
-      width: 32px;
     }
 
     .component-grid {
@@ -155,10 +156,6 @@
       border-radius: 15px;
     }
 
-    cr-button .small-icon {
-      padding-inline-start: 8px;
-    }
-
     .illustration-wrapper {
       align-items: center;
       display: flex;
@@ -171,11 +168,16 @@
       width: 320px;
     }
 
-    [slot=optional-icon] {
-      height: 32px;
-      margin-bottom: 40px;
-      margin-top: 40px;
-      width: 32px;
+    .input-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: center;
+    }
+
+    .scroll-container {
+      height: var(--content-container-height);
+      overflow: auto;
     }
 
     [slot=right-pane] {

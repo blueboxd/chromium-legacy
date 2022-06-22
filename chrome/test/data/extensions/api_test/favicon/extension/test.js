@@ -2,37 +2,87 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-let url;
+class Favicon {
+  constructor(obj) {
+    // Page of the favicon. page_ or icon_ must be provided. page_ wins.
+    this.pageUrl;
+
+    // Optional. Favicon size in pixels. Backend default: 16.
+    this.size;
+
+    // Update this favicon object from constructor parameter object.
+    obj && Object.keys(obj).forEach(key => this[key] = obj[key]);
+  }
+
+  // Returns a constructed URL with properties set as query parameters.
+  getUrl(baseUrl) {
+    let result = [];
+    Object.keys(this).forEach(key => {
+      // The backend expects snake_case query parameters.
+      const snakeCase = key.replace(/[A-Z]/g, c => `_${c.toLowerCase()}`);
+      result.push(`${snakeCase}=${this[key]}`);
+    });
+    const url =
+        baseUrl ? baseUrl : `chrome-extension://${chrome.runtime.id}/_favicon/`;
+    return `${url}?${result.join('&')}`;
+  }
+};
 
 window.onload = function() {
   chrome.test.runTests([
-    async function init() {
+    // Asynchronously fetch favicon.
+    async function all() {
       const config = await chrome.test.getConfig();
       const port = config.testServer.port;
-      const id = chrome.runtime.id;
-      const pageUrl =
-          `http://chromium.org:${port}/extensions/favicon/test_file.html`;
-      url = `chrome-extension://${id}/_favicon/?page_url=${pageUrl}`;
-      chrome.test.succeed();
-    },
-    function image() {
-      const img = document.createElement('img');
-      document.body.appendChild(img);
-      // TODO(solomonkinard): Currently, fetching favicons in this way isn't
-      // supported. Adjust this test once it is. In the meantime, we verify that
-      // the load fails as expected.
-      img.onload = () => chrome.test.fail('Image loaded unexpectedly!');
-      img.onerror = () => chrome.test.succeed();
-      img.src = url;
-    },
-    async function path() {
-      const response = await fetch(url);
-      const text = await response.text();
-      // TODO(solomonkinard): This case extension can be removed once the
-      // _favicon endpoint returns the image bits. This test exists for now
-      // to prove that the _favicon endpoint is being reached.
-      chrome.test.assertEq('Favicon', text);
-      chrome.test.succeed();
+      const testCases = [
+        [
+          'Load favicon using only pageUrl', true, new Favicon({
+            pageUrl: `http://www.example.com:${
+                port}/extensions/favicon/test_file.html`
+          })
+        ],
+        [
+          'Load favicon using multiple arguments', true, new Favicon({
+            pageUrl: `http://www.example.com:${
+                port}/extensions/favicon/test_file.html`,
+            size: 16,
+            scaleFactor: '1x'
+          })
+        ],
+        [
+          'A cached favicon doesn\'t exist for this site', false, new Favicon({
+            pageUrl:
+                `http://www.error.com:${port}/extensions/favicon/test_file.html`
+          })
+        ],
+        [
+          'Incorrect baseUrl', false, new Favicon({
+            pageUrl: `http://www.example.com:${
+                port}/extensions/favicon/test_file.html`
+          }),
+          `chrome-extension://${chrome.runtime.id}/_faviconbutnotreally/`
+        ],
+        [
+          'Slash not required before question mark query params', true,
+          new Favicon({
+            pageUrl: `http://www.example.com:${
+                port}/extensions/favicon/test_file.html`
+          }),
+          `chrome-extension://${chrome.runtime.id}/_favicon`
+        ],
+      ];
+      let promises = [];
+      testCases.forEach(testCase => {
+        promises.push(new Promise(resolve => {
+          const [title, isOk, favicon, baseUrl = null] = testCase;
+          const img = document.createElement('img');
+          document.body.appendChild(img);
+          img.onload = () => isOk ? resolve() : chrome.test.fail(title);
+          img.onerror = () => isOk ? chrome.test.fail(title) : resolve();
+          img.src = favicon.getUrl(baseUrl);
+        }));
+      });
+      Promise.all(promises).then(() => chrome.test.succeed());
     }
   ]);
-};
+}

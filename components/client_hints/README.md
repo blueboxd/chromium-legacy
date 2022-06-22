@@ -62,7 +62,7 @@ The full explanation is outside of the scope of this document and can be found i
 
 Client Hint preferences are stored in the preferences service as a content setting (`ContentSettingsType::CLIENT_HINTS`), keyed to the origin. This storage is accessed through the [content::ClientHintsControllerDelegate] interface, with the principle implementation being [client_hints::ClientHints] in //components (to share across multiple platforms). The delegate is accessible in the browser process as a property of the [content::BrowserContext] (in //chrome land, this is implemented as the Profile and “Off The Record” Profile. An important note is that there is an “incognito profile” that gets its own client hints storage).
 
-This storage is marked as `content_settings::SessionModel::UserSession`. This means that when settings are read in from disk (on browser start up) there’s also a check for a flag that’s set on graceful shutdown. (This is to exclude crashes and browser updates). If that flag is set, the settings are cleared. Practically, this means that the settings are cleared after closing the browser.
+This storage is marked as `content_settings::SessionModel::Durable`. This means that the client hint settings are read in from disk on browser start up and loaded into memory. Practically, this means that the client hint settings persist until the user clears site data or cookies for the origin.
 
 The code for reading from and writing to the client hint preferences in content is in [/content/browser/client_hints/client_hints.cc]
 
@@ -138,9 +138,21 @@ TODO(crbug.com/1176808): There should be UseCounters measuring usage, but there 
 
 Client Hints are populated in [BaseFetchContext::AddClientHintsIfNecessary](/third_party/blink/renderer/core/loader/base_fetch_context.cc). If you need frame-based information, this should be added to [ClientHintsImageInfo](/third_party/blink/renderer/core/loader/base_fetch_context.cc), which is populated in [FrameFetchContext::AddClientHintsIfNecessary](/third_party/blink/renderer/core/loader/frame_fetch_context.cc)
 
+### Web platform tests
+* Add the new client hint to [/third_party/blink/web_tests/external/wpt/client-hints/resources/export.js], [/third_party/blink/web_tests/external/wpt/client-hints/resources/clienthintslist.py], [/third_party/blink/web_tests/external/wpt/client-hints/accept-ch/feature-policy-navigation/\_\_dir\_\_.headers], [/third_party/blink/web_tests/external/wpt/client-hints/sandbox/\_\_dir\_\_.headers], and [/third_party/blink/web_tests/external/wpt/client-hints/accept-ch/\_\_dir\_\_.headers]
+
 ### Devtools Backend
 
-Any addition to [blink::UserAgentMetadata](/third_party/blink/public/common/user_agent/user_agent_metadata.h) also needs to extend the related Chrome Devtools Protocol API calls, namely `setUserAgentOverride`. The backend implementation can be found in [third_party/blink/renderer/core/inspector/inspector_emulation_agent.h](/third_party/blink/renderer/core/inspector/inspector_emulation_agent.h), and the UserAgentMetadata type in [third_party/blink/public/devtools_protocol/browser_protocol.pdl](/third_party/blink/public/devtools_protocol/browser_protocol.pdl) will also need to be extended.
+* Any addition to [blink::UserAgentMetadata](/third_party/blink/public/common/user_agent/user_agent_metadata.h) also needs to extend the related Chrome Devtools Protocol API calls, namely `setUserAgentOverride`. The backend implementation can be found in [/third_party/blink/renderer/core/inspector/inspector_emulation_agent.h], and the UserAgentMetadata type in [/third_party/blink/public/devtools_protocol/browser_protocol.pdl] will also need to be extended.
+* Update overridden function `SetUserAgentOverride` in [/third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc], and [/content/browser/devtools/protocol/emulation_handler.cc].
+* Add the new client hint to [/third_party/blink/web_tests/http/tests/inspector-protocol/emulation/resources/set-accept-ch.php] and update tests in [/third_party/blink/web_tests/http/tests/inspector-protocol/emulation/emulation-user-agent-metadata-override.js].
+
+### Devtools Frontend
+
+Devtools frontend source code is in a different branch [devtools/devtools-frontend](https://chromium.googlesource.com/devtools/devtools-frontend).
+
+* Any addition to [blink::UserAgentMetadata] also needs to extend the related type `UserAgentMetadata` in [/third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.pdl], [/third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.json], and [/third_party/devtools-frontend/src/front_end/generated/protocol.d.ts].
+* Add the permission policy token to the `PermissionsPolicyFeature` enum in [/third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.pdl], and [/third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.json].
 
 <!-- links -->
 [/components/client_hints/]: /components/client_hints/
@@ -165,7 +177,18 @@ Any addition to [blink::UserAgentMetadata](/third_party/blink/public/common/user
 [/third_party/blink/renderer/core/permissions_policy/permissions_policy_features.json5]: /third_party/blink/renderer/core/permissions_policy/permissions_policy_features.json5
 [/third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom]: /third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom
 [/third_party/blink/public/devtools_protocol/browser_protocol.pdl]: /third_party/blink/public/devtools_protocol/browser_protocol.pdl
-[/third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.pdl]: /third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.pdl
-[/third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.json]: /third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.json
+[/third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.pdl]: https://chromium.googlesource.com/devtools/devtools-frontend/+/main/third_party/blink/public/devtools_protocol/browser_protocol.pdl
+[/third_party/devtools-frontend/src/third_party/blink/public/devtools_protocol/browser_protocol.json]: https://chromium.googlesource.com/devtools/devtools-frontend/+/main/third_party/blink/public/devtools_protocol/browser_protocol.json
+[/third_party/devtools-frontend/src/front_end/generated/InspectorBackendCommands.js]: https://chromium.googlesource.com/devtools/devtools-frontend/+/main/front_end/generated/InspectorBackendCommands.js
 [/third_party/blink/web_tests/webexposed/feature-policy-features-expected.txt]: /third_party/blink/web_tests/webexposed/feature-policy-features-expected.txt
 [/third_party/blink/web_tests/virtual/stable/webexposed/feature-policy-features-expected.txt]: /third_party/blink/web_tests/virtual/stable/webexposed/feature-policy-features-expected.txt
+[/third_party/blink/renderer/core/inspector/inspector_emulation_agent.h]: /third_party/blink/renderer/core/inspector/inspector_emulation_agent.h
+[/third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc]: /third_party/blink/renderer/core/inspector/inspector_emulation_agent.cc
+[/content/browser/devtools/protocol/emulation_handler.cc]: /content/browser/devtools/protocol/emulation_handler.cc
+[/third_party/blink/web_tests/http/tests/inspector-protocol/emulation/resources/set-accept-ch.php]: /third_party/blink/web_tests/http/tests/inspector-protocol/emulation/resources/set-accept-ch.php
+[/third_party/blink/web_tests/http/tests/inspector-protocol/emulation/emulation-user-agent-metadata-override.js]: /third_party/blink/web_tests/http/tests/inspector-protocol/emulation/emulation-user-agent-metadata-override.js
+[/third_party/blink/web_tests/external/wpt/client-hints/resources/export.js]: /third_party/blink/web_tests/external/wpt/client-hints/resources/export.js
+[/third_party/blink/web_tests/external/wpt/client-hints/resources/clienthintslist.py]: /third_party/blink/web_tests/external/wpt/client-hints/resources/clienthintslist.py
+[/third_party/blink/web_tests/external/wpt/client-hints/accept-ch/feature-policy-navigation/\_\_dir\_\_.headers]: /third_party/blink/web_tests/external/wpt/client-hints/accept-ch/feature-policy-navigation/__dir__.headers
+[/third_party/blink/web_tests/external/wpt/client-hints/sandbox/\_\_dir\_\_.headers]: /third_party/blink/web_tests/external/wpt/client-hints/sandbox/__dir__.headers
+[/third_party/blink/web_tests/external/wpt/client-hints/accept-ch/\_\_dir\_\_.headers]: /third_party/blink/web_tests/external/wpt/client-hints/accept-ch/__dir__.headers

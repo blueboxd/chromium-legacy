@@ -1,3 +1,7 @@
+// Copyright 2022 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import {$} from 'chrome://resources/js/util.m.js';
 
 export class Page {
@@ -33,7 +37,7 @@ export class PageNavigator {
 
   showPage(pageName: string) {
     if (this.storedPages.has(pageName)) {
-      let page: Page = this.storedPages.get(pageName) as Page;
+      const page: Page = this.storedPages.get(pageName) as Page;
       if (pageName != this.activePage?.pageName) {
         page.showPage();
         history.pushState({}, '', ('#' + page.pageName));

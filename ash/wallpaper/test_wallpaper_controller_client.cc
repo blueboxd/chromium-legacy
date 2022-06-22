@@ -37,6 +37,12 @@ TestWallpaperControllerClient::TestWallpaperControllerClient() {
 
 TestWallpaperControllerClient::~TestWallpaperControllerClient() = default;
 
+void TestWallpaperControllerClient::AddCollection(
+    const std::string& collection_id,
+    const std::vector<backdrop::Image>& images) {
+  variations_[collection_id] = images;
+}
+
 void TestWallpaperControllerClient::ResetCounts() {
   open_count_ = 0;
   close_preview_count_ = 0;
@@ -61,8 +67,10 @@ void TestWallpaperControllerClient::MaybeClosePreviewWallpaper() {
 
 void TestWallpaperControllerClient::SetDefaultWallpaper(
     const AccountId& account_id,
-    bool show_wallpaper) {
+    bool show_wallpaper,
+    base::OnceCallback<void(bool success)> callback) {
   set_default_wallpaper_count_++;
+  std::move(callback).Run(/*success=*/true);
 }
 
 void TestWallpaperControllerClient::MigrateCollectionIdFromChromeApp(
@@ -81,13 +89,15 @@ void TestWallpaperControllerClient::FetchDailyRefreshWallpaper(
     return;
   }
 
-  backdrop::Image image(iter->second.back());
+  image_index_ = ++image_index_ % iter->second.size();
+  backdrop::Image image(iter->second.at(image_index_));
   std::move(callback).Run(/*success=*/true, std::move(image));
 }
 
 void TestWallpaperControllerClient::FetchImagesForCollection(
     const std::string& collection_id,
     FetchImagesForCollectionCallback callback) {
+  fetch_images_for_collection_count_++;
   auto iter = variations_.find(collection_id);
   if (fetch_images_for_collection_fails_ || iter == variations_.end()) {
     std::move(callback).Run(/*success=*/false, std::vector<backdrop::Image>());
@@ -115,6 +125,22 @@ void TestWallpaperControllerClient::FetchGooglePhotosPhoto(
             GURL("https://google.com/picture.png"), "home"),
         /*success=*/true);
   }
+}
+
+void TestWallpaperControllerClient::FetchDailyGooglePhotosPhoto(
+    const AccountId& account_id,
+    const std::string& album_id,
+    const absl::optional<std::string>& current_photo_id,
+    FetchGooglePhotosPhotoCallback callback) {
+  std::string photo_id = album_id;
+  std::reverse(photo_id.begin(), photo_id.end());
+  FetchGooglePhotosPhoto(account_id, photo_id, std::move(callback));
+}
+
+void TestWallpaperControllerClient::FetchGooglePhotosAccessToken(
+    const AccountId& account_id,
+    FetchGooglePhotosAccessTokenCallback callback) {
+  std::move(callback).Run(absl::nullopt);
 }
 
 void TestWallpaperControllerClient::SaveWallpaperToDriveFs(

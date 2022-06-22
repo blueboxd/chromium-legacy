@@ -5,9 +5,9 @@
 /**
  * @fileoverview Handles automation from ChromeVox's current range.
  */
-import {BaseAutomationHandler} from './base_automation_handler.js';
-import {ChromeVoxEvent, CustomAutomationEvent} from './custom_automation_event.js';
-import {DesktopAutomationHandler} from './desktop_automation_handler.js';
+import {BaseAutomationHandler} from '/chromevox/background/base_automation_handler.js';
+import {DesktopAutomationHandler} from '/chromevox/background/desktop_automation_handler.js';
+import {ChromeVoxEvent, CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
 
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -21,7 +21,7 @@ const StateType = chrome.automation.StateType;
  */
 export class RangeAutomationHandler extends BaseAutomationHandler {
   constructor() {
-    super(undefined);
+    super(null);
 
     /** @private {AutomationNode} */
     this.lastAttributeTarget_;

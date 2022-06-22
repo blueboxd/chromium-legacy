@@ -1,20 +1,30 @@
 <style include="cr-shared-style shimless-rma-shared">
-  .small-icon {
-    height: 30px;
-    width: 30px;
-  }
-
   #nextButtonCaret {
     margin-inline-start: 5px;
   }
 
   #navigationButtonWrapper {
-    bottom: var(--footer-height);
+    bottom: var(--header-footer-height);
     position: absolute;
   }
 
   #getStartedButton {
     margin-inline-end: 8px;
+  }
+
+  #unqualifiedComponentsLink {
+    color: var(--cros-link-color);
+    text-decoration: none;
+  }
+
+  .button-spinner {
+    height: 20px;
+    margin-inline-start: 5px;
+    width: 20px;
+  }
+
+  iron-icon[icon='shimless-icon:warning'] {
+    fill: var(--cros-icon-color-warning);
   }
 </style>
 
@@ -22,19 +32,19 @@
   <div slot="left-pane">
     <h1>[[i18n('welcomeTitleText')]]</h1>
     <div class="instructions">[[i18n('beginRmaWarningText')]]</div>
-    <div id="verificationMessage">
-      <paper-spinner-lite id="busyIcon" hidden$="[[!verificationInProgress_]]"
-        active>
+    <div id="verificationMessage" class="icon-message">
+      <paper-spinner-lite id="busyIcon" class="small-spinner"
+          hidden$="[[!verificationInProgress_]]" active>
       </paper-spinner-lite>
       <iron-icon id="verificationIcon"
-        icon="[[getVerificationIcon_(isCompliant_)]]"
+        icon$="[[getVerificationIcon_(isCompliant_)]]"
         hidden$="[[verificationInProgress_]]" class="small-icon">
       </iron-icon>
       <span hidden$="[[!verificationInProgress_]]" class="instructions">
         [[i18n('validatingComponentsText')]]
       </span>
-      <span hidden$="[[verificationInProgress_]]">
-        <span hidden$="[[!isCompliant_]]" class="instructions">
+      <span hidden$="[[verificationInProgress_]]" class="instructions">
+        <span hidden$="[[!isCompliant_]]">
           [[i18n('validatedComponentsSuccessText')]]
         </span>
         <span inner-h-t-m-l="[[verificationFailedMessage_]]"
@@ -48,7 +58,9 @@
           disabled="[[isGetStartedButtonDisabled_(verificationInProgress_,
           allButtonsDisabled)]]">
         [[i18n('getStartedButtonLabel')]]
-        <span id="nextButtonCaret">&#62;</span>
+        <paper-spinner-lite class="button-spinner"
+            hidden$="[[!getStartedButtonClicked]]" active>
+        </paper-spinner-lite>
       </cr-button>
       <cr-button id="landingCancel" class="pill"
           on-click="onLandingCancelButtonClicked_"
@@ -56,6 +68,9 @@
         <span id="cancelButtonLabel">
           [[i18n('cancelButtonLabel')]]
         </span>
+        <paper-spinner-lite class="button-spinner"
+            hidden$="[[!landingCancelButtonClicked]]" active>
+        </paper-spinner-lite>
       </cr-button>
     </div>
   </div>

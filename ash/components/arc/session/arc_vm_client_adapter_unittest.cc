@@ -48,8 +48,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
-#include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -201,6 +201,16 @@ class TestConciergeClient : public chromeos::FakeConciergeClient {
     chromeos::FakeConciergeClient::StartArcVm(request, std::move(callback));
   }
 
+  void ReclaimVmMemory(
+      const vm_tools::concierge::ReclaimVmMemoryRequest& request,
+      chromeos::DBusMethodCallback<vm_tools::concierge::ReclaimVmMemoryResponse>
+          callback) override {
+    ++reclaim_vm_count_;
+    reclaim_vm_request_ = request;
+    chromeos::FakeConciergeClient::ReclaimVmMemory(request,
+                                                   std::move(callback));
+  }
+
   int stop_vm_call_count() const { return stop_vm_call_count_; }
 
   const vm_tools::concierge::StartArcVmRequest& start_arc_vm_request() const {
@@ -210,6 +220,13 @@ class TestConciergeClient : public chromeos::FakeConciergeClient {
   const vm_tools::concierge::StopVmRequest& stop_vm_request() const {
     return stop_vm_request_;
   }
+
+  const vm_tools::concierge::ReclaimVmMemoryRequest& reclaim_vm_request()
+      const {
+    return reclaim_vm_request_;
+  }
+
+  int reclaim_vm_call_count() const { return reclaim_vm_count_; }
 
   // Set a callback to be run when stop_vm_call_count() == count.
   void set_on_stop_vm_callback(base::OnceClosure callback, int count) {
@@ -227,6 +244,8 @@ class TestConciergeClient : public chromeos::FakeConciergeClient {
   int callback_count_ = 0;
   vm_tools::concierge::StartArcVmRequest start_arc_vm_request_;
   vm_tools::concierge::StopVmRequest stop_vm_request_;
+  vm_tools::concierge::ReclaimVmMemoryRequest reclaim_vm_request_;
+  int reclaim_vm_count_ = 0;
   base::OnceClosure on_stop_vm_callback_;
 };
 
@@ -2026,14 +2045,50 @@ TEST_F(ArcVmClientAdapterTest, TrimVmMemory_Success) {
 
   bool result = false;
   std::string reason("non empty");
-  adapter()->TrimVmMemory(base::BindLambdaForTesting(
-      [&result, &reason](bool success, const std::string& failure_reason) {
-        result = success;
-        reason = failure_reason;
-      }));
+  adapter()->TrimVmMemory(
+      base::BindLambdaForTesting(
+          [&result, &reason](bool success, const std::string& failure_reason) {
+            result = success;
+            reason = failure_reason;
+          }),
+      0);
   run_loop()->RunUntilIdle();
   EXPECT_TRUE(result);
   EXPECT_TRUE(reason.empty());
+  EXPECT_EQ(GetTestConciergeClient()->reclaim_vm_call_count(), 1);
+  EXPECT_EQ(GetTestConciergeClient()->reclaim_vm_request().page_limit(), 0);
+}
+
+TEST_F(ArcVmClientAdapterTest, TrimVmMemory_LimitPagesHonored) {
+  SetValidUserInfo();
+  StartMiniArc();
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  UpgradeArc(true);
+
+  vm_tools::concierge::ReclaimVmMemoryResponse response;
+  response.set_success(true);
+  GetTestConciergeClient()->set_reclaim_vm_memory_response(response);
+
+  bool result = false;
+  std::string reason("non empty");
+  adapter()->TrimVmMemory(
+      base::BindLambdaForTesting(
+          [&result, &reason](bool success, const std::string& failure_reason) {
+            result = success;
+            reason = failure_reason;
+          }),
+      1234);
+  run_loop()->RunUntilIdle();
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(reason.empty());
+
+  // Verify that exactly one call was done to underlying layer, and that
+  // the specified parameter value was passed in.
+  EXPECT_EQ(GetTestConciergeClient()->reclaim_vm_call_count(), 1);
+  EXPECT_EQ(GetTestConciergeClient()->reclaim_vm_request().page_limit(), 1234);
+
+  StopArcInstance(/*arc_upgraded=*/true);
 }
 
 TEST_F(ArcVmClientAdapterTest, TrimVmMemory_Failure) {
@@ -2047,11 +2102,13 @@ TEST_F(ArcVmClientAdapterTest, TrimVmMemory_Failure) {
 
   bool result = true;
   std::string reason;
-  adapter()->TrimVmMemory(base::BindLambdaForTesting(
-      [&result, &reason](bool success, const std::string& failure_reason) {
-        result = success;
-        reason = failure_reason;
-      }));
+  adapter()->TrimVmMemory(
+      base::BindLambdaForTesting(
+          [&result, &reason](bool success, const std::string& failure_reason) {
+            result = success;
+            reason = failure_reason;
+          }),
+      0);
   run_loop()->RunUntilIdle();
   EXPECT_FALSE(result);
   EXPECT_EQ(kReason, reason);
@@ -2064,11 +2121,13 @@ TEST_F(ArcVmClientAdapterTest, TrimVmMemory_EmptyResponse) {
   // This is to make sure TrimMemoty() can handle such a response.
   bool result = true;
   std::string reason;
-  adapter()->TrimVmMemory(base::BindLambdaForTesting(
-      [&result, &reason](bool success, const std::string& failure_reason) {
-        result = success;
-        reason = failure_reason;
-      }));
+  adapter()->TrimVmMemory(
+      base::BindLambdaForTesting(
+          [&result, &reason](bool success, const std::string& failure_reason) {
+            result = success;
+            reason = failure_reason;
+          }),
+      0);
   run_loop()->RunUntilIdle();
   EXPECT_FALSE(result);
   EXPECT_FALSE(reason.empty());
@@ -2086,11 +2145,13 @@ TEST_F(ArcVmClientAdapterTest, TrimVmMemory_EmptyUserIdHash) {
 
   bool result = true;
   std::string reason;
-  adapter()->TrimVmMemory(base::BindLambdaForTesting(
-      [&result, &reason](bool success, const std::string& failure_reason) {
-        result = success;
-        reason = failure_reason;
-      }));
+  adapter()->TrimVmMemory(
+      base::BindLambdaForTesting(
+          [&result, &reason](bool success, const std::string& failure_reason) {
+            result = success;
+            reason = failure_reason;
+          }),
+      0);
   run_loop()->RunUntilIdle();
   EXPECT_FALSE(result);
   // When |user_id_hash_| is empty, the call will fail without talking to

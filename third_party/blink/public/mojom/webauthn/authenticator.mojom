@@ -43,6 +43,7 @@ enum AuthenticatorStatus {
   CANNOT_READ_AND_WRITE_LARGE_BLOB,
   INVALID_ALLOW_CREDENTIALS_FOR_LARGE_BLOB,
   FAILED_TO_SAVE_CREDENTIAL_ID_FOR_PAYMENT_EXTENSION,
+  REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED,
 
   // ERROR_WITH_DOM_EXCEPTION_DETAILS indicates that the error will be
   // described in a `WebAuthnDOMExceptionDetails` structure.
@@ -197,11 +198,8 @@ struct GetAssertionAuthenticatorResponse {
   bool echo_large_blob_written;
   bool large_blob_written;
 
-  // True if getClientExtensionResults() called on the returned
-  // PublicKeyCredential instance should contain a `getCredBlob` extension
-  // output.
-  bool echo_get_cred_blob;
-  // The value of the `getCredBlob` extension output, or empty if none.
+  // The value of the `getCredBlob` extension output, which maybe empty, or
+  // null if none.
   array<uint8>? get_cred_blob;
 };
 
@@ -272,6 +270,10 @@ struct CableAuthentication {
   // device.
   // (Present iff version == 2.)
   array<uint8>? server_link_data;
+
+  // caBLEv2 experiment numbers.
+  // (Present iff version == 2.)
+  array<uint8>? experiments;
 };
 
 // Cloud-assisted BLE extension data for makeCredential.

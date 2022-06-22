@@ -37,10 +37,11 @@ enum class AppTypeName {
   kStandaloneBrowserChromeApp = 13,
   kExtension = 14,
   kStandaloneBrowserExtension = 15,
+  kStandaloneBrowserWebApp = 16,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kStandaloneBrowserExtension,
+  kMaxValue = kStandaloneBrowserWebApp,
 };
 
 // This is used for logging, so do not remove or reorder existing entries.
@@ -65,13 +66,19 @@ enum class AppTypeNameV2 {
   kBorealis = 12,
   kSystemWeb = 13,
   kChromeBrowser = 14,
+  // Deprecated. Replaced by kStandaloneBrowserChromeAppWindow and
+  // kStandaloneBrowserChromeAppTab.
   kStandaloneBrowserChromeApp = 15,
   kExtension = 16,
   kStandaloneBrowserExtension = 17,
+  kStandaloneBrowserChromeAppWindow = 18,
+  kStandaloneBrowserChromeAppTab = 19,
+  kStandaloneBrowserWebAppWindow = 20,
+  kStandaloneBrowserWebAppTab = 21,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kStandaloneBrowserExtension,
+  kMaxValue = kStandaloneBrowserWebAppTab,
 };
 
 extern const base::TimeDelta kMinDuration;
@@ -96,6 +103,16 @@ constexpr char kStandaloneBrowserChromeAppHistogramName[] =
 constexpr char kExtensionHistogramName[] = "Extension";
 constexpr char kStandaloneBrowserExtensionHistogramName[] =
     "StandaloneBrowserExtension";
+constexpr char kStandaloneBrowserChromeAppWindowHistogramName[] =
+    "StandaloneBrowserChromeAppWindow";
+constexpr char kStandaloneBrowserChromeAppTabHistogramName[] =
+    "StandaloneBrowserChromeAppTab";
+constexpr char kStandaloneBrowserWebAppHistogramName[] =
+    "StandaloneBrowserWebApp";
+constexpr char kStandaloneBrowserWebAppWindowHistogramName[] =
+    "StandaloneBrowserWebAppWindow";
+constexpr char kStandaloneBrowserWebAppTabHistogramName[] =
+    "StandaloneBrowserWebAppTab";
 
 // Determines what app type a web app should be logged as based on its launch
 // container and app id. In particular, web apps in tabs are logged as part of
@@ -104,9 +121,24 @@ AppTypeName GetAppTypeNameForWebApp(Profile* profile,
                                     const std::string& app_id,
                                     apps::mojom::LaunchContainer container);
 
+// Determines what app type a chrome app in Lacros should be logged as based on
+// its launch container and app id. In particular, chrome apps in Lacros tabs
+// are logged as part of Lacros browser.
+AppTypeName GetAppTypeNameForStandaloneBrowserChromeApp(
+    Profile* profile,
+    const std::string& app_id,
+    apps::mojom::LaunchContainer container);
+
 // Returns false if |window| is a Chrome app window or a standalone web app
 // window. Otherwise, return true.
-bool IsBrowser(aura::Window* window);
+bool IsAshBrowserWindow(aura::Window* window);
+
+// Returns true if `window` is a lacros browser window. Otherwise, returns false
+// for non Lacros windows, or Lacros standalone app windows.
+bool IsLacrosBrowserWindow(Profile* profile, aura::Window* window);
+
+// Returns true if `window` is a lacros window. Otherwise, returns false.
+bool IsLacrosWindow(aura::Window* window);
 
 // Returns true if the app with |app_id| is opened as a tab in a browser window.
 // Otherwise, return false.

@@ -22,6 +22,7 @@
 #include "base/files/file.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/page_size.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_annotations.h"
 #include "base/values.h"
@@ -69,8 +70,8 @@ absl::optional<PageMapEntry> EntryAtAddress(int pagemap_fd, uintptr_t address) {
 
 class HeapDumper {
  public:
-  HeapDumper(pid_t pid, int mem_fd, int pagemap_fd)
-      : pid_(pid), mem_fd_(mem_fd), pagemap_fd_(pagemap_fd) {}
+  HeapDumper(pid_t pid, int pagemap_fd)
+      : pagemap_fd_(pagemap_fd), reader_(pid) {}
   ~HeapDumper() {
     for (const auto& p : super_pages_) {
       munmap(p.second, kSuperPageSize);
@@ -81,10 +82,10 @@ class HeapDumper {
   }
 
   bool FindRoot() {
-    root_address_ = FindRootAddress(pid_, mem_fd_);
+    root_address_ = FindRootAddress(reader_);
     CHECK(root_address_);
-    auto root = RawBuffer<PartitionRoot<ThreadSafe>>::ReadFromMemFd(
-        mem_fd_, root_address_);
+    auto root = RawBuffer<PartitionRoot<ThreadSafe>>::ReadFromProcessMemory(
+        reader_, root_address_);
     CHECK(root);
     root_ = *root;
 
@@ -128,9 +129,8 @@ class HeapDumper {
     uintptr_t extent_address =
         reinterpret_cast<uintptr_t>(root_.get()->first_extent);
     while (extent_address) {
-      auto extent =
-          RawBuffer<PartitionSuperPageExtentEntry<ThreadSafe>>::ReadFromMemFd(
-              mem_fd_, extent_address);
+      auto extent = RawBuffer<PartitionSuperPageExtentEntry<ThreadSafe>>::
+          ReadFromProcessMemory(reader_, extent_address);
       uintptr_t first_super_page_address = SuperPagesBeginFromExtent(
           reinterpret_cast<PartitionSuperPageExtentEntry<ThreadSafe>*>(
               extent_address));
@@ -148,7 +148,7 @@ class HeapDumper {
                  << " super pages.";
     for (uintptr_t super_page : super_pages) {
       char* local_super_page =
-          ReadAtSameAddressInLocalMemory(mem_fd_, super_page, kSuperPageSize);
+          reader_.ReadAtSameAddressInLocalMemory(super_page, kSuperPageSize);
       if (!local_super_page) {
         LOG(WARNING) << base::StringPrintf("Cannot read from super page 0x%lx",
                                            super_page);
@@ -228,44 +228,51 @@ class HeapDumper {
 
       auto page_sizes = base::Value(base::Value::Type::LIST);
       // Looking at how well the heap would compress.
-      constexpr size_t kPageSize = 1 << 12;
+      const size_t page_size = base::GetPageSize();
       for (uintptr_t page_address = address;
            page_address < address + partition_alloc::internal::kSuperPageSize;
-           page_address += kPageSize) {
+           page_address += page_size) {
         auto maybe_pagemap_entry = EntryAtAddress(pagemap_fd_, page_address);
         size_t uncompressed_size = 0, compressed_size = 0;
 
         bool all_zeros = true;
-        for (size_t i = 0; i < kPageSize; i++) {
+        for (size_t i = 0; i < page_size; i++) {
           if (reinterpret_cast<unsigned char*>(page_address)[i]) {
             all_zeros = false;
             break;
           }
         }
 
-        if (maybe_pagemap_entry && !all_zeros) {
+        bool should_report;
+        if (!maybe_pagemap_entry) {
+          // We cannot tell whether a page has been decommitted, but all-zero
+          // likely indicates that. Only report data for pages that the other
+          // pages.
+          should_report = !all_zeros;
+        } else {
           // If it's not in memory and not in swap, only the PTE exists.
-          bool populated =
+          should_report =
               maybe_pagemap_entry->present || maybe_pagemap_entry->swapped;
-          if (populated) {
-            std::string compressed;
-            uncompressed_size = kPageSize;
-            // Use snappy to approximate what a fast compression algorithm
-            // operating with a page granularity would do. This is not the
-            // algorithm used in either Linux or macOS, but should give some
-            // indication.
-            compressed_size =
-                snappy::Compress(reinterpret_cast<const char*>(page_address),
-                                 kPageSize, &compressed);
-          }
         }
 
-        auto page_size = base::Value(base::Value::Type::DICTIONARY);
-        page_size.SetKey("uncompressed",
-                         base::Value{static_cast<int>(uncompressed_size)});
-        page_size.SetKey("compressed",
-                         base::Value{static_cast<int>(compressed_size)});
-        page_sizes.Append(std::move(page_size));
+        if (should_report) {
+          std::string compressed;
+          uncompressed_size = page_size;
+          // Use snappy to approximate what a fast compression algorithm
+          // operating with a page granularity would do. This is not the
+          // algorithm used in either Linux or macOS, but should give some
+          // indication.
+          compressed_size =
+              snappy::Compress(reinterpret_cast<const char*>(page_address),
+                               page_size, &compressed);
+        }
+
+        auto page_size_dict = base::Value(base::Value::Type::DICTIONARY);
+        page_size_dict.SetKey("uncompressed",
+                              base::Value{static_cast<int>(uncompressed_size)});
+        page_size_dict.SetKey("compressed",
+                              base::Value{static_cast<int>(compressed_size)});
+        page_sizes.Append(std::move(page_size_dict));
       }
       ret.SetKey("page_sizes", std::move(page_sizes));
 
@@ -387,12 +394,11 @@ class HeapDumper {
   }
 
  private:
-  static uintptr_t FindRootAddress(pid_t pid,
-                                   int mem_fd) NO_THREAD_SAFETY_ANALYSIS {
-    uintptr_t tcache_registry_address =
-        IndexThreadCacheNeedleArray(pid, mem_fd, 1);
-    auto registry = RawBuffer<ThreadCacheRegistry>::ReadFromMemFd(
-        mem_fd, tcache_registry_address);
+  static uintptr_t FindRootAddress(RemoteProcessMemoryReader& reader)
+      NO_THREAD_SAFETY_ANALYSIS {
+    uintptr_t tcache_registry_address = IndexThreadCacheNeedleArray(reader, 1);
+    auto registry = RawBuffer<ThreadCacheRegistry>::ReadFromProcessMemory(
+        reader, tcache_registry_address);
     if (!registry)
       return 0;
 
@@ -401,7 +407,8 @@ class HeapDumper {
     if (!tcache_address)
       return 0;
 
-    auto tcache = RawBuffer<ThreadCache>::ReadFromMemFd(mem_fd, tcache_address);
+    auto tcache =
+        RawBuffer<ThreadCache>::ReadFromProcessMemory(reader, tcache_address);
     if (!tcache)
       return 0;
 
@@ -409,10 +416,9 @@ class HeapDumper {
     return root_address;
   }
 
-  const pid_t pid_;
-  const int mem_fd_;
   const int pagemap_fd_;
   uintptr_t root_address_ = 0;
+  RemoteProcessMemoryReader reader_;
   RawBuffer<PartitionRoot<ThreadSafe>> root_ = {};
   std::map<uintptr_t, char*> super_pages_ = {};
 
@@ -436,10 +442,8 @@ int main(int argc, char** argv) {
   int pid = atoi(command_line->GetSwitchValueASCII("pid").c_str());
   LOG(WARNING) << "PID = " << pid;
 
-  auto mem_fd = partition_alloc::tools::OpenProcMem(pid);
   auto pagemap_fd = partition_alloc::tools::OpenPagemap(pid);
-  partition_alloc::tools::HeapDumper dumper{pid, mem_fd.get(),
-                                            pagemap_fd.get()};
+  partition_alloc::tools::HeapDumper dumper{pid, pagemap_fd.get()};
 
   {
     partition_alloc::tools::ScopedSigStopper stopper{pid};

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 
@@ -20,9 +21,10 @@ MediaStreamComponent* CreateMediaStreamComponent(
       String::FromUTF8(id), MediaStreamSource::kTypeAudio,
       String::FromUTF8("audio_track"), false, std::move(audio_source));
 
-  auto* component =
-      MakeGarbageCollected<MediaStreamComponent>(source->Id(), source);
-  audio_source_ptr->ConnectToTrack(component);
+  auto* component = MakeGarbageCollected<MediaStreamComponent>(
+      source->Id(), source,
+      std::make_unique<MediaStreamAudioTrack>(true /* is_local_track */));
+  audio_source_ptr->ConnectToInitializedTrack(component);
   return component;
 }
 
@@ -191,13 +193,11 @@ FakeRTCRtpTransceiverImpl::FakeRTCRtpTransceiverImpl(
     absl::optional<std::string> mid,
     FakeRTCRtpSenderImpl sender,
     FakeRTCRtpReceiverImpl receiver,
-    bool stopped,
     webrtc::RtpTransceiverDirection direction,
     absl::optional<webrtc::RtpTransceiverDirection> current_direction)
     : mid_(std::move(mid)),
       sender_(std::move(sender)),
       receiver_(std::move(receiver)),
-      stopped_(stopped),
       direction_(std::move(direction)),
       current_direction_(std::move(current_direction)) {}
 
@@ -225,10 +225,6 @@ std::unique_ptr<blink::RTCRtpSenderPlatform> FakeRTCRtpTransceiverImpl::Sender()
 std::unique_ptr<RTCRtpReceiverPlatform> FakeRTCRtpTransceiverImpl::Receiver()
     const {
   return receiver_.ShallowCopy();
-}
-
-bool FakeRTCRtpTransceiverImpl::Stopped() const {
-  return stopped_;
 }
 
 webrtc::RtpTransceiverDirection FakeRTCRtpTransceiverImpl::Direction() const {

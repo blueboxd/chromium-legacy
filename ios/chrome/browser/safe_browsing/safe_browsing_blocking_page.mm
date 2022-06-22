@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
@@ -19,9 +20,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
 #include "ios/components/security_interstitials/ios_blocking_page_metrics_helper.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_tab_helper.h"
 #import "ios/components/security_interstitials/safe_browsing/unsafe_resource_util.h"
 #import "ios/web/public/web_state.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -37,13 +38,6 @@ using security_interstitials::IOSBlockingPageMetricsHelper;
 using security_interstitials::SafeBrowsingLoudErrorUI;
 
 namespace {
-// Retrieves the main frame URL for |resource| in |web_state|.
-const GURL GetMainFrameUrl(const UnsafeResource& resource) {
-  if (resource.request_destination ==
-      network::mojom::RequestDestination::kDocument)
-    return resource.url;
-  return resource.weak_web_state.get()->GetLastCommittedURL();
-}
 // Creates a metrics helper for |resource|.
 std::unique_ptr<IOSBlockingPageMetricsHelper> CreateMetricsHelper(
     const UnsafeResource& resource) {
@@ -72,11 +66,11 @@ BaseSafeBrowsingErrorUI::SBErrorDisplayOptions GetDefaultDisplayOptions(
       /*is_off_the_record=*/false,
       /*is_extended_reporting=*/false,
       /*is_sber_policy_managed=*/false,
-      /*is_enhanced_protection_enabled=*/false,
+      safe_browsing::IsEnhancedProtectionEnabled(*prefs),
       prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled),
       /*should_open_links_in_new_tab=*/false,
       /*always_show_back_to_safety=*/true,
-      /*is_enhanced_protection_message_enabled=*/false,
+      base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection),
       /*is_safe_browsing_managed=*/false, "cpn_safe_browsing");
 }
 }  // namespace
@@ -137,7 +131,8 @@ void SafeBrowsingBlockingPage::HandleCommand(
     web::WebFrame* sender_frame) {
   error_ui_->HandleCommand(command);
   if (command == security_interstitials::CMD_DONT_PROCEED) {
-    // |error_ui_| handles recording PROCEED decisions.
+    // |error_ui_| handles recording PROCEED and
+    // OPEN_ENHANCED_PROTECTION_SETTINGS decisions.
     client_->metrics_helper()->RecordUserDecision(
         security_interstitials::MetricsHelper::DONT_PROCEED);
   }
@@ -201,4 +196,14 @@ void SafeBrowsingBlockingPage::SafeBrowsingControllerClient::
   // Safe browsing blocking pages are always committed, and should use
   // consistent "Return to safety" behavior.
   GoBack();
+}
+
+void SafeBrowsingBlockingPage::SafeBrowsingControllerClient::
+    OpenEnhancedProtectionSettings() {
+  if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
+    if (web_state()) {
+      SafeBrowsingTabHelper::FromWebState(web_state())
+          ->OpenSafeBrowsingSettings();
+    }
+  }
 }

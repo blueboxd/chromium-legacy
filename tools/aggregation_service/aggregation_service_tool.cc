@@ -99,24 +99,11 @@ bool AggregationServiceTool::SetPublicKeysFromFile(
   base::FilePath json_file(json_file_path);
 #endif
 
-  if (!base::PathExists(json_file)) {
-    LOG(ERROR) << "aggregation_service_tool failed to open file: "
-               << json_file.value() << ".";
-    return false;
-  }
-
-  std::string json_string;
-  if (!base::ReadFileToString(json_file, &json_string)) {
-    LOG(ERROR) << "aggregation_service_tool failed to read file: "
-               << json_file.value() << ".";
-    return false;
-  }
-
   bool succeeded = false;
 
   base::RunLoop run_loop;
   agg_service_->SetPublicKeys(
-      url, json_string,
+      url, json_file,
       base::BindOnce(
           [](base::OnceClosure quit, bool& succeeded_out, bool succeeded_in) {
             succeeded_out = succeeded_in;
@@ -128,7 +115,7 @@ bool AggregationServiceTool::SetPublicKeysFromFile(
   return succeeded;
 }
 
-base::Value::DictStorage AggregationServiceTool::AssembleReport(
+base::Value::Dict AggregationServiceTool::AssembleReport(
     std::string operation_str,
     std::string bucket_str,
     std::string value_str,
@@ -137,7 +124,7 @@ base::Value::DictStorage AggregationServiceTool::AssembleReport(
     std::string privacy_budget_key,
     std::vector<GURL> processing_urls,
     bool is_debug_mode_enabled) {
-  base::Value::DictStorage result;
+  base::Value::Dict result;
 
   absl::optional<content::TestAggregationService::Operation> operation =
       ConvertToOperation(operation_str);
@@ -179,8 +166,8 @@ base::Value::DictStorage AggregationServiceTool::AssembleReport(
   agg_service_->AssembleReport(
       std::move(request),
       base::BindOnce(
-          [](base::OnceClosure quit, base::Value::DictStorage& result_out,
-             base::Value::DictStorage result_in) {
+          [](base::OnceClosure quit, base::Value::Dict& result_out,
+             base::Value::Dict result_in) {
             result_out = std::move(result_in);
             std::move(quit).Run();
           },

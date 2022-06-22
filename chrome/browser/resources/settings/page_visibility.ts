@@ -21,6 +21,7 @@ export type PageVisibility = {
   privacy?: boolean|PrivacyPageVisibility,
   reset?: boolean,
   safetyCheck?: boolean,
+  system?: boolean,
 };
 
 export type AppearancePageVisibility = {
@@ -45,17 +46,20 @@ if (loadTimeData.getBoolean('isGuest')) {
   // to work around closure compiler.
   // <if expr="not (chromeos_ash or chromeos_lacros)">
   pageVisibility = {
-    autofill: false,
-    people: false,
-    privacy: false,
-    onStartup: false,
-    reset: false,
-    safetyCheck: false,
-    appearance: false,
-    defaultBrowser: false,
+    a11y: false,
     advancedSettings: false,
+    appearance: false,
+    autofill: false,
+    defaultBrowser: false,
+    downloads: false,
     extensions: false,
     languages: false,
+    onStartup: false,
+    people: false,
+    privacy: false,
+    reset: false,
+    safetyCheck: false,
+    system: false,
   };
   // </if>
   // <if expr="chromeos_ash or chromeos_lacros">
@@ -79,33 +83,6 @@ if (loadTimeData.getBoolean('isGuest')) {
     downloads: true,
     a11y: true,
     extensions: false,
-    languages: true,
-  };
-  // </if>
-} else {
-  // All pages are visible when not in chromeos. Since polymer only notifies
-  // after a property is set.
-  // <if expr="chromeos_ash">
-  pageVisibility = {
-    autofill: true,
-    people: true,
-    onStartup: true,
-    reset: true,
-    safetyCheck: true,
-    appearance: {
-      setTheme: true,
-      homeButton: true,
-      bookmarksBar: true,
-      pageZoom: true,
-    },
-    advancedSettings: true,
-    privacy: {
-      searchPrediction: true,
-      networkPrediction: true,
-    },
-    downloads: true,
-    a11y: true,
-    extensions: true,
     languages: true,
   };
   // </if>

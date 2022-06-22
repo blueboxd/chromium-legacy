@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/macros.h"
@@ -55,7 +54,6 @@ bool VideoFrameValidator::Initialize() {
 
 void VideoFrameValidator::CleanUpOnValidatorThread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
-  corrupt_frame_processor_.reset();
   video_frame_mapper_.reset();
 }
 
@@ -73,6 +71,8 @@ void VideoFrameValidator::Destroy() {
   frame_validator_thread_.Stop();
   base::AutoLock auto_lock(frame_validator_lock_);
   DCHECK_EQ(0u, num_frames_validating_);
+
+  corrupt_frame_processor_.reset();
 }
 
 void VideoFrameValidator::PrintMismatchedFramesInfo() const {
@@ -185,8 +185,10 @@ void VideoFrameValidator::ProcessVideoFrameTask(
   if (mismatched_info) {
     mismatched_frames_.push_back(std::move(mismatched_info));
     // Perform additional processing on the corrupt video frame if requested.
+    // Pass |video_frame|, not |frame|, so that |frame| is destroyed in
+    // |frame_validator_thread_|.
     if (corrupt_frame_processor_)
-      corrupt_frame_processor_->ProcessVideoFrame(frame, frame_index);
+      corrupt_frame_processor_->ProcessVideoFrame(video_frame, frame_index);
   }
 
   num_frames_validating_--;
@@ -242,7 +244,7 @@ std::unique_ptr<VideoFrameValidator::MismatchedFrameInfo>
 MD5VideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
                                  size_t frame_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   // b/149808895: There is a bug in the synchronization on mapped buffers, which
   // causes the frame validation failure. The bug is due to some missing i915
   // patches in kernel v3.18. The bug will be fixed if the kernel is upreved to
@@ -262,7 +264,7 @@ MD5VideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
     if (is_skylake)
       usleep(10);
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
   if (frame->format() != validation_format_) {
     frame = ConvertVideoFrame(frame.get(), validation_format_);
   }

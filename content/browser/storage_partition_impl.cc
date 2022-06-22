@@ -34,11 +34,11 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_impl.h"
 #include "components/services/storage/public/mojom/filesystem/directory.mojom.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "components/services/storage/shared_storage/shared_storage_manager.h"
 #include "components/services/storage/storage_service_impl.h"
@@ -127,6 +127,7 @@
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -1829,9 +1830,21 @@ void StoragePartitionImpl::OnAuthRequired(
     // OnAuthCredentials() with a nullopt that triggers CancelAuth().
     process_id = network::mojom::kInvalidProcessId;
 
-    auto* render_frame_host = context.navigation_or_document()->GetDocument();
-    if (render_frame_host)
-      process_id = render_frame_host->GetGlobalId().child_id;
+    // `navigation_or_document_` can be null when `context` is created with
+    // an invalid render frame host after a page is destroyed.
+    // It is currently possible for the ServiceWorker case above to use
+    // kRenderFrameHostContext for the auth request, after the RenderFrameHost
+    // has been deleted. Treating this as an invalid process ID will cancel the
+    // auth, which is the same outcome as if the ServiceWorker's process were
+    // used.
+    // TODO(https://crbug.com/1322751): Update the ServiceWorker code to
+    // recognize when the RenderFrameHost goes away and not use
+    // CreateForRenderFrameHost above.
+    if (context.navigation_or_document()) {
+      auto* render_frame_host = context.navigation_or_document()->GetDocument();
+      if (render_frame_host)
+        process_id = render_frame_host->GetGlobalId().child_id;
+    }
   }
   OnAuthRequiredContinuation(
       process_id, request_id, url, *is_primary_main_frame, first_auth_attempt,
@@ -2012,7 +2025,7 @@ void StoragePartitionImpl::OnCanSendReportingReports(
   for (auto& origin : origins) {
     bool allowed =
         permission_controller->GetPermissionStatusForOriginWithoutContext(
-            PermissionType::BACKGROUND_SYNC, origin) ==
+            blink::PermissionType::BACKGROUND_SYNC, origin) ==
         blink::mojom::PermissionStatus::GRANTED;
     if (allowed)
       origins_out.push_back(origin);
@@ -2029,7 +2042,7 @@ void StoragePartitionImpl::OnCanSendDomainReliabilityUpload(
       browser_context_->GetPermissionController();
   std::move(callback).Run(
       permission_controller->GetPermissionStatusForOriginWithoutContext(
-          content::PermissionType::BACKGROUND_SYNC,
+          blink::PermissionType::BACKGROUND_SYNC,
           url::Origin::Create(origin)) ==
       blink::mojom::PermissionStatus::GRANTED);
 }
@@ -2830,15 +2843,6 @@ void StoragePartitionImpl::InitNetworkContext() {
       network_context_client_receiver_.BindNewPipeAndPassRemote());
   network_context_.set_disconnect_handler(base::BindOnce(
       &StoragePartitionImpl::InitNetworkContext, weak_factory_.GetWeakPtr()));
-
-  if (base::FeatureList::IsEnabled(features::kPreloadCookies)) {
-    mojo::Remote<::network::mojom::CookieManager> cookie_manager;
-    mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager_remote;
-    network_context_->GetCookieManager(
-        cookie_manager_remote.InitWithNewPipeAndPassReceiver());
-    cookie_manager.Bind(std::move(cookie_manager_remote));
-    cookie_manager->GetAllCookies(base::NullCallback());
-  }
 }
 
 network::mojom::URLLoaderFactory*

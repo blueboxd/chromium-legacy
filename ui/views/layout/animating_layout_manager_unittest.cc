@@ -19,6 +19,7 @@
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/normalized_geometry.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -74,6 +75,9 @@ class TestView : public View {
 // AnimatingLayoutManager.
 class TestLayoutManager : public LayoutManagerBase {
  public:
+  TestLayoutManager() = default;
+  ~TestLayoutManager() override = default;
+
   void SetLayout(const ProposedLayout& layout) {
     layout_ = layout;
     InvalidateHost(true);
@@ -141,6 +145,7 @@ class AnimatingLayoutManagerTest : public testing::Test {
  public:
   explicit AnimatingLayoutManagerTest(bool enable_animations = true)
       : enable_animations_(enable_animations) {}
+  ~AnimatingLayoutManagerTest() override = default;
 
   void SetUp() override {
     render_mode_lock_ = gfx::AnimationTestApi::SetRichAnimationRenderMode(
@@ -3052,6 +3057,8 @@ class ImmediateLayoutManager : public LayoutManagerBase {
         orientation_(orientation),
         size_bounds_(std::move(size_bounds)) {}
 
+  ~ImmediateLayoutManager() override = default;
+
   // LayoutManager:
 
   void OnLayoutChanged() override {
@@ -3114,6 +3121,7 @@ class AnimationWatcher : public AnimatingLayoutManager::Observer {
       : layout_manager_(layout_manager) {
     observation_.Observe(layout_manager);
   }
+  ~AnimationWatcher() override = default;
 
   void OnLayoutIsAnimatingChanged(AnimatingLayoutManager*,
                                   bool is_animating) override {
@@ -3147,6 +3155,10 @@ class AnimationWatcher : public AnimatingLayoutManager::Observer {
 // changes.
 class AnimatingLayoutManagerRootViewTest : public AnimatingLayoutManagerTest {
  public:
+  explicit AnimatingLayoutManagerRootViewTest(bool enable_animations = true)
+      : AnimatingLayoutManagerTest(enable_animations) {}
+  ~AnimatingLayoutManagerRootViewTest() override = default;
+
   void SetUp() override {
     AnimatingLayoutManagerTest::SetUp();
     root_view_ = std::make_unique<View>();
@@ -4155,6 +4167,9 @@ TEST_F(AnimatingLayoutManagerAvailableSizeTest,
 
 class AnimatingLayoutManagerFlexRuleTest : public AnimatingLayoutManagerTest {
  public:
+  AnimatingLayoutManagerFlexRuleTest() = default;
+  ~AnimatingLayoutManagerFlexRuleTest() override = default;
+
   void InitLayout(LayoutOrientation orientation,
                   const FlexSpecification& default_flex,
                   const absl::optional<gfx::Size>& minimum_size,
@@ -4342,6 +4357,10 @@ TEST_F(AnimatingLayoutManagerFlexRuleTest, VerticalMinimumSize) {
 class AnimatingLayoutManagerInFlexLayoutTest
     : public AnimatingLayoutManagerRootViewTest {
  protected:
+  explicit AnimatingLayoutManagerInFlexLayoutTest(bool enable_animations = true)
+      : AnimatingLayoutManagerRootViewTest(enable_animations) {}
+  ~AnimatingLayoutManagerInFlexLayoutTest() override = default;
+
   void SetUp() override {
     AnimatingLayoutManagerRootViewTest::SetUp();
     layout()->SetBoundsAnimationMode(
@@ -4454,7 +4473,7 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest, NoAnimationRestart) {
 }
 
 TEST_F(AnimatingLayoutManagerInFlexLayoutTest, GrowWithinConstrainedSpace) {
-  other_view()->SetPreferredSize({5, 5});
+  other_view()->SetPreferredSize(gfx::Size(5, 5));
   const gfx::Size preferred = target_layout()->GetPreferredSize(view());
   root_view()->SetSize(preferred);
   layout()->ResetLayout();
@@ -4490,7 +4509,7 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest, GrowWithinConstrainedSpace) {
 
 TEST_F(AnimatingLayoutManagerInFlexLayoutTest,
        GrowWithinConstrainedSpace_NoAnimationRestart) {
-  other_view()->SetPreferredSize({5, 5});
+  other_view()->SetPreferredSize(gfx::Size(5, 5));
   const gfx::Size preferred = target_layout()->GetPreferredSize(view());
   root_view()->SetSize(preferred);
   layout()->ResetLayout();
@@ -4545,7 +4564,7 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest,
   animation_api()->IncrementTime(base::Milliseconds(500));
 
   // Constrain the layout before continuing.
-  other_view()->SetPreferredSize({5, 5});
+  other_view()->SetPreferredSize(gfx::Size(5, 5));
   root_view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
 
@@ -4586,7 +4605,7 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest,
   animation_api()->IncrementTime(base::Milliseconds(500));
 
   // Constrain the layout before continuing, killing the animation.
-  other_view()->SetPreferredSize({20, 5});
+  other_view()->SetPreferredSize(gfx::Size(20, 5));
   root_view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EXPECT_EQ(gfx::Size(20, 20), view()->size());
@@ -4616,7 +4635,7 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest,
 
   // Constrain the layout before continuing, but not enough to affect the
   // current frame or target layout.
-  other_view()->SetPreferredSize({5, 5});
+  other_view()->SetPreferredSize(gfx::Size(5, 5));
   root_view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
 
@@ -4683,7 +4702,7 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest,
   animation_api()->IncrementTime(base::Milliseconds(500));
 
   // Constrain the layout before continuing.
-  other_view()->SetPreferredSize({20, 5});
+  other_view()->SetPreferredSize(gfx::Size(20, 5));
   root_view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EXPECT_EQ(gfx::Size(20, 20), view()->size());
@@ -4711,7 +4730,7 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest,
   animation_api()->IncrementTime(base::Milliseconds(500));
 
   // Constrain the layout before continuing.
-  other_view()->SetPreferredSize({20, 5});
+  other_view()->SetPreferredSize(gfx::Size(20, 5));
   root_view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EXPECT_EQ(gfx::Size(20, 20), view()->size());
@@ -4740,7 +4759,7 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest,
   animation_api()->IncrementTime(base::Milliseconds(750));
 
   // Constrain the layout before continuing.
-  other_view()->SetPreferredSize({20, 5});
+  other_view()->SetPreferredSize(gfx::Size(20, 5));
   child(1)->SetVisible(true);
   root_view()->Layout();
   EXPECT_TRUE(layout()->is_animating());
@@ -4759,6 +4778,53 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest,
   EXPECT_EQ(expected_events, logger.events());
 }
 
+// Test without animation.
+class AnimatingLayoutManagerInFlexLayoutNoAnimationTest
+    : public AnimatingLayoutManagerInFlexLayoutTest {
+ public:
+  AnimatingLayoutManagerInFlexLayoutNoAnimationTest()
+      : AnimatingLayoutManagerInFlexLayoutTest(false) {}
+};
+
+// Regression test for crbug.com/1311708
+// This test will fail without the fix made to
+// AnimatingLayoutManager::GetPreferredSize().
+TEST_F(AnimatingLayoutManagerInFlexLayoutNoAnimationTest, ShrinkAndGrow) {
+  other_view()->SetProperty(kFlexBehaviorKey,
+                            FlexSpecification(LayoutOrientation::kHorizontal,
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded)
+                                .WithOrder(3));
+  other_view()->SetPreferredSize(kChildViewSize);
+
+  constexpr gfx::Size kFullSize = {60, 20};
+  constexpr gfx::Size kReducedSize = {59, 20};
+  EXPECT_EQ(kFullSize, root_view()->GetPreferredSize());
+
+  root_view()->SetSize(kFullSize);
+  layout()->ResetLayout();
+  root_view()->Layout();
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 20), view()->bounds());
+  EXPECT_EQ(gfx::Rect(50, 0, 10, 10), other_view()->bounds());
+  EXPECT_TRUE(child(0)->GetVisible());
+  EXPECT_TRUE(child(1)->GetVisible());
+  EXPECT_TRUE(child(2)->GetVisible());
+
+  root_view()->SetSize(kReducedSize);
+  EXPECT_EQ(gfx::Rect(0, 0, 35, 20), view()->bounds());
+  EXPECT_EQ(gfx::Rect(35, 0, 24, 10), other_view()->bounds());
+  EXPECT_TRUE(child(0)->GetVisible());
+  EXPECT_TRUE(child(1)->GetVisible());
+  EXPECT_FALSE(child(2)->GetVisible());
+
+  root_view()->SetSize(kFullSize);
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 20), view()->bounds());
+  EXPECT_EQ(gfx::Rect(50, 0, 10, 10), other_view()->bounds());
+  EXPECT_TRUE(child(0)->GetVisible());
+  EXPECT_TRUE(child(1)->GetVisible());
+  EXPECT_TRUE(child(2)->GetVisible());
+}
+
 // Realtime Tests --------------------------------------------------------------
 
 // Test fixture for testing animations in realtime. Provides a parent view with
@@ -4768,6 +4834,9 @@ TEST_F(AnimatingLayoutManagerInFlexLayoutTest,
 class AnimatingLayoutManagerRealtimeTest
     : public AnimatingLayoutManagerRootViewTest {
  public:
+  AnimatingLayoutManagerRealtimeTest() = default;
+  ~AnimatingLayoutManagerRealtimeTest() override = default;
+
   void SetUp() override {
     AnimatingLayoutManagerRootViewTest::SetUp();
     animation_watcher_ = std::make_unique<AnimationWatcher>(layout());
@@ -5035,6 +5104,9 @@ TEST_F(AnimatingLayoutManagerRealtimeTest,
 // see and (b) hit most possible code paths.
 class AnimatingLayoutManagerSequenceTest : public ViewsTestBase {
  public:
+  AnimatingLayoutManagerSequenceTest() = default;
+  ~AnimatingLayoutManagerSequenceTest() override = default;
+
   void SetUp() override {
     render_mode_lock_ = gfx::AnimationTestApi::SetRichAnimationRenderMode(
         gfx::Animation::RichAnimationRenderMode::FORCE_ENABLED);

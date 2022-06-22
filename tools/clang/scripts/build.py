@@ -787,11 +787,7 @@ def main():
                msvc_arch='x64')
     RunCommand(['ninja'], msvc_arch='x64')
     if args.run_tests:
-      test_targets = ['check-all']
-      if sys.platform == 'darwin' and platform.machine() == 'arm64':
-        # TODO(llvm.org/PR49918): Run check-all on mac/arm too.
-        test_targets = ['check-llvm', 'check-clang']
-      RunCommand(['ninja'] + test_targets, msvc_arch='x64')
+      RunCommand(['ninja', 'check-all'], msvc_arch='x64')
     RunCommand(['ninja', 'install'], msvc_arch='x64')
 
     if sys.platform == 'win32':
@@ -1130,9 +1126,12 @@ def main():
       ]
 
       # First build the builtins and copy to the main build tree.
-      RunCommand(['cmake'] +
-                 android_args +
-                 [os.path.join(COMPILER_RT_DIR, 'lib', 'builtins')])
+      RunCommand(
+          ['cmake'] + android_args +
+          # On Android, we want DWARF info for the builtins for
+          # unwinding. See crbug.com/1311807.
+          ['-DCMAKE_BUILD_TYPE=RelWithDebInfo'] +
+          [os.path.join(COMPILER_RT_DIR, 'lib', 'builtins')])
       builtins_a = 'lib/linux/libclang_rt.builtins-%s-android.a' % target_arch
       RunCommand(['ninja', builtins_a])
       shutil.copy(builtins_a, rt_lib_dst_dir)

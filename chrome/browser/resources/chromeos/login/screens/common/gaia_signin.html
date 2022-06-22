@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
 <link rel="import" href="../../../../gaia_auth_host/authenticator.html">
@@ -122,7 +123,7 @@
         for-step="loading, gaia-loading">
       <throbber-notice text-key="gaiaLoading"></throbber-notice>
     </div>
-    <notification-card id="gaia-allowlist-error" type="fail" class="fit"
+    <notification-card id="gaia-allowlist-error" class="fit"
         for-step="allowlist-error"
         on-buttonclick="onAllowlistErrorTryAgainClick_"
         on-linkclick="onAllowlistErrorLinkClick_"

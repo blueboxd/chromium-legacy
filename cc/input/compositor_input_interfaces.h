@@ -57,6 +57,10 @@ class InputDelegateForCompositor {
   virtual void RootLayerStateMayHaveChanged() = 0;
 
   // Called to let the input handler know that a scrollbar for the given
+  // elementId has been added.
+  virtual void DidRegisterScrollbar(ElementId scroll_element_id,
+                                    ScrollbarOrientation orientation) = 0;
+  // Called to let the input handler know that a scrollbar for the given
   // elementId has been removed.
   virtual void DidUnregisterScrollbar(ElementId scroll_element_id,
                                       ScrollbarOrientation orientation) = 0;
@@ -98,6 +102,7 @@ class CompositorDelegateForInput {
   virtual bool HasAnimatedScrollbars() const = 0;
   virtual void SetNeedsCommit() = 0;
   virtual void SetNeedsFullViewportRedraw() = 0;
+  virtual void SetDeferBeginMainFrame(bool defer_begin_main_frame) const = 0;
   virtual void DidUpdateScrollAnimationCurve() = 0;
   virtual void AccumulateScrollDeltaForTracing(const gfx::Vector2dF& delta) = 0;
   virtual void DidStartPinchZoom() = 0;

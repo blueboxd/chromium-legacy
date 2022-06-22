@@ -45,7 +45,7 @@
 <translation id="2424073332829844142">Ativar e desativar a tecla Caps Lock</translation>
 <translation id="2441202986792279177">Alternar rapidamente entre janelas</translation>
 <translation id="2454251766545114447">Diminuir zoom da tela</translation>
-<translation id="2478303094958140141">Ativar ou desativar o ChromeVox (resposta falada)</translation>
+<translation id="2478303094958140141">Ativar ou desativar o ChromeVox (feedback falado)</translation>
 <translation id="2480851840841871861">Abrir o Google Assistente</translation>
 <translation id="2488661730534396940">Ativar o espaço de trabalho à esquerda</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -71,6 +71,7 @@
 <translation id="3140353188828248647">Foco na barra de endereço</translation>
 <translation id="3256109297135787951">Remover o destaque de um item na estante</translation>
 <translation id="3288816184963444640">Fechar a janela atual</translation>
+<translation id="3322797428033495633">Focar na janela picture-in-picture</translation>
 <translation id="3350805006883559974">Criar ponto flutuante da janela ativa na parte superior</translation>
 <translation id="3407560819924487926">Abrir o gerenciador de tarefas</translation>
 <translation id="3417835166382867856">Pesquisar guias</translation>

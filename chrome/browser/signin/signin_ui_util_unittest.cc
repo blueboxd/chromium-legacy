@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/signin/signin_ui_delegate.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -31,14 +32,12 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "base/test/gmock_move_support.h"
-#include "base/test/mock_callback.h"
-#include "components/account_manager_core/mock_account_manager_facade.h"
-#endif
-
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/signin/signin_ui_delegate_impl_dice.h"
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 namespace signin_ui_util {
 
 namespace {
@@ -47,6 +46,8 @@ const char kMainGaiaID[] = "main_gaia_id";
 const char kSecondaryEmail[] = "secondary_email@example.com";
 const char kSecondaryGaiaID[] = "secondary_gaia_id";
 }  // namespace
+
+using testing::_;
 
 class GetAllowedDomainTest : public ::testing::Test {};
 
@@ -107,68 +108,64 @@ class SigninUiUtilTestBrowserWindow : public TestBrowserWindow {
   raw_ptr<Browser> browser_ = nullptr;
 };
 
-class MockCreateTurnSyncOnHelper {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+class MockSigninUiDelegate : public SigninUiDelegate {
  public:
-  struct CreateTurnSyncOnHelperParams {
-   public:
-    raw_ptr<Profile> profile = nullptr;
-    raw_ptr<Browser> browser = nullptr;
-    signin_metrics::AccessPoint signin_access_point =
-        signin_metrics::AccessPoint::ACCESS_POINT_MAX;
-    signin_metrics::PromoAction signin_promo_action =
-        signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
-    signin_metrics::Reason signin_reason =
-        signin_metrics::Reason::kUnknownReason;
-    CoreAccountId account_id;
-    TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode =
-        TurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT;
-  };
-
-  MockCreateTurnSyncOnHelper() = default;
-  ~MockCreateTurnSyncOnHelper() = default;
-
-  internal::CreateTurnSyncOnHelperCallback GetCallback() {
-    return base::BindOnce(&MockCreateTurnSyncOnHelper::CreateTurnSyncOnHelper,
-                          base::Unretained(this));
-  }
-
-  bool WasCalled() { return create_turn_sync_on_helper_called_; }
-
-  const CreateTurnSyncOnHelperParams& Params() {
-    return create_turn_sync_on_helper_params_;
-  }
-
- private:
-  void CreateTurnSyncOnHelper(
-      Profile* profile,
-      Browser* browser,
-      signin_metrics::AccessPoint signin_access_point,
-      signin_metrics::PromoAction signin_promo_action,
-      signin_metrics::Reason signin_reason,
-      const CoreAccountId& account_id,
-      TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
-    create_turn_sync_on_helper_called_ = true;
-    create_turn_sync_on_helper_params_.profile = profile;
-    create_turn_sync_on_helper_params_.browser = browser;
-    create_turn_sync_on_helper_params_.signin_access_point =
-        signin_access_point;
-    create_turn_sync_on_helper_params_.signin_promo_action =
-        signin_promo_action;
-    create_turn_sync_on_helper_params_.signin_reason = signin_reason;
-    create_turn_sync_on_helper_params_.account_id = account_id;
-    create_turn_sync_on_helper_params_.signin_aborted_mode =
-        signin_aborted_mode;
-  }
-
-  bool create_turn_sync_on_helper_called_ = false;
-  CreateTurnSyncOnHelperParams create_turn_sync_on_helper_params_;
+  MOCK_METHOD(void,
+              ShowSigninUI,
+              (Browser * browser,
+               Profile* profile,
+               bool enable_sync,
+               signin_metrics::AccessPoint access_point,
+               signin_metrics::PromoAction promo_action),
+              ());
+  MOCK_METHOD(void,
+              ShowReauthUI,
+              (Browser * browser,
+               Profile* profile,
+               const std::string& email,
+               bool enable_sync,
+               signin_metrics::AccessPoint access_point,
+               signin_metrics::PromoAction promo_action),
+              ());
+  MOCK_METHOD(void,
+              ShowTurnSyncOnUI,
+              (Browser * browser,
+               Profile* profile,
+               signin_metrics::AccessPoint access_point,
+               signin_metrics::PromoAction promo_action,
+               signin_metrics::Reason signin_reason,
+               const CoreAccountId& account_id,
+               TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode),
+              ());
 };
+#elif BUILDFLAG(ENABLE_DICE_SUPPORT)
+// TODO(https://crbug.com/1316608): move out testing of SigninUiDelegateImplDice
+// in a separate file.
+class MockSigninUiDelegate : public SigninUiDelegateImplDice {
+ public:
+  MOCK_METHOD(void,
+              ShowTurnSyncOnUI,
+              (Browser * browser,
+               Profile* profile,
+               signin_metrics::AccessPoint access_point,
+               signin_metrics::PromoAction promo_action,
+               signin_metrics::Reason signin_reason,
+               const CoreAccountId& account_id,
+               TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode),
+              ());
+};
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
 
+// TODO(https://crbug.com/1316608): merge SigninUiUtilTest with
+// MirrorSigninUiUtilTest.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 class SigninUiUtilTest : public BrowserWithTestWindowTest {
  public:
-  SigninUiUtilTest() = default;
+  SigninUiUtilTest()
+      : delegate_auto_reset_(SetSigninUiDelegateForTesting(&mock_delegate_)) {}
   ~SigninUiUtilTest() override = default;
 
  protected:
@@ -195,11 +192,22 @@ class SigninUiUtilTest : public BrowserWithTestWindowTest {
     return IdentityManagerFactory::GetForProfile(profile());
   }
 
-  void EnableSync(const AccountInfo& account_info,
+  void EnableSync(const CoreAccountInfo& account_info,
                   bool is_default_promo_account) {
-    signin_ui_util::internal::EnableSyncFromPromo(
-        browser(), account_info, access_point_, is_default_promo_account,
-        mock_create_turn_sync_on_helper_.GetCallback());
+    EnableSyncFromMultiAccountPromo(browser(), account_info, access_point_,
+                                    is_default_promo_account);
+  }
+
+  void ExpectTurnSyncOn(
+      signin_metrics::AccessPoint access_point,
+      signin_metrics::PromoAction promo_action,
+      signin_metrics::Reason signin_reason,
+      const CoreAccountId& account_id,
+      TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
+    EXPECT_CALL(
+        mock_delegate_,
+        ShowTurnSyncOnUI(_, profile(), access_point, promo_action,
+                         signin_reason, account_id, signin_aborted_mode));
   }
 
   void ExpectNoSigninStartedHistograms(
@@ -280,7 +288,9 @@ class SigninUiUtilTest : public BrowserWithTestWindowTest {
 
   signin_metrics::AccessPoint access_point_ =
       signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE;
-  MockCreateTurnSyncOnHelper mock_create_turn_sync_on_helper_;
+
+  testing::StrictMock<MockSigninUiDelegate> mock_delegate_;
+  base::AutoReset<SigninUiDelegate*> delegate_auto_reset_;
 };
 
 TEST_F(SigninUiUtilTest, EnableSyncWithExistingAccount) {
@@ -297,16 +307,19 @@ TEST_F(SigninUiUtilTest, EnableSyncWithExistingAccount) {
     EXPECT_EQ(0, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
 
-    EnableSync(
-        GetIdentityManager()->FindExtendedAccountInfoByAccountId(account_id),
-        is_default_promo_account);
     signin_metrics::PromoAction expected_promo_action =
         is_default_promo_account
             ? signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
             : signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
-    ASSERT_TRUE(mock_create_turn_sync_on_helper_.WasCalled());
-    ExpectOneSigninStartedHistograms(histogram_tester, expected_promo_action);
+    ExpectTurnSyncOn(signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
+                     expected_promo_action,
+                     signin_metrics::Reason::kSigninPrimaryAccount, account_id,
+                     TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
+    EnableSync(
+        GetIdentityManager()->FindExtendedAccountInfoByAccountId(account_id),
+        is_default_promo_account);
 
+    ExpectOneSigninStartedHistograms(histogram_tester, expected_promo_action);
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
     if (is_default_promo_account) {
@@ -316,25 +329,8 @@ TEST_F(SigninUiUtilTest, EnableSyncWithExistingAccount) {
       EXPECT_EQ(1, user_action_tester.GetActionCount(
                        "Signin_SigninNotDefault_FromBookmarkBubble"));
     }
-
-    // Verify that the helper to enable sync is created with the expected
-    // params.
-    EXPECT_EQ(profile(), mock_create_turn_sync_on_helper_.Params().profile);
-    EXPECT_EQ(browser(), mock_create_turn_sync_on_helper_.Params().browser);
-    EXPECT_EQ(account_id, mock_create_turn_sync_on_helper_.Params().account_id);
-    EXPECT_EQ(signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
-              mock_create_turn_sync_on_helper_.Params().signin_access_point);
-    EXPECT_EQ(expected_promo_action,
-              mock_create_turn_sync_on_helper_.Params().signin_promo_action);
-    EXPECT_EQ(signin_metrics::Reason::kSigninPrimaryAccount,
-              mock_create_turn_sync_on_helper_.Params().signin_reason);
-    EXPECT_EQ(TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
-              mock_create_turn_sync_on_helper_.Params().signin_aborted_mode);
   }
 }
-
-// TODO(https://crbug.com/1260291): add support for signed out profiles.
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 TEST_F(SigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
   AddTab(browser(), GURL("http://example.com"));
@@ -360,7 +356,6 @@ TEST_F(SigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     EnableSync(
         GetIdentityManager()->FindExtendedAccountInfoByAccountId(account_id),
         is_default_promo_account);
-    ASSERT_FALSE(mock_create_turn_sync_on_helper_.WasCalled());
 
     ExpectOneSigninStartedHistograms(
         histogram_tester,
@@ -399,8 +394,7 @@ TEST_F(SigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
   EXPECT_EQ(
       0, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
 
-  EnableSync(AccountInfo(), false /* is_default_promo_account (not used)*/);
-  ASSERT_FALSE(mock_create_turn_sync_on_helper_.WasCalled());
+  EnableSync(CoreAccountInfo(), false /* is_default_promo_account (not used)*/);
 
   ExpectOneSigninStartedHistograms(
       histogram_tester, signin_metrics::PromoAction::
@@ -432,8 +426,7 @@ TEST_F(SigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
   EXPECT_EQ(
       0, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
 
-  EnableSync(AccountInfo(), false /* is_default_promo_account (not used)*/);
-  ASSERT_FALSE(mock_create_turn_sync_on_helper_.WasCalled());
+  EnableSync(CoreAccountInfo(), false /* is_default_promo_account (not used)*/);
 
   ExpectOneSigninStartedHistograms(
       histogram_tester,
@@ -454,8 +447,7 @@ TEST_F(SigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
   EXPECT_EQ(
       0, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
 
-  EnableSync(AccountInfo(), false /* is_default_promo_account (not used)*/);
-  ASSERT_FALSE(mock_create_turn_sync_on_helper_.WasCalled());
+  EnableSync(CoreAccountInfo(), false /* is_default_promo_account (not used)*/);
 
   ExpectOneSigninStartedHistograms(
       histogram_tester, signin_metrics::PromoAction::
@@ -486,12 +478,12 @@ TEST_F(SigninUiUtilTest, GetOrderedAccountsForDisplay) {
 
 TEST_F(SigninUiUtilTest, MergeDiceSigninTab) {
   base::UserActionTester user_action_tester;
-  EnableSync(AccountInfo(), false);
+  EnableSync(CoreAccountInfo(), false);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
 
   // Signin tab is reused.
-  EnableSync(AccountInfo(), false);
+  EnableSync(CoreAccountInfo(), false);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
 
@@ -506,14 +498,14 @@ TEST_F(SigninUiUtilTest, MergeDiceSigninTab) {
 
   // Extensions re-use the tab but do not take focus.
   access_point_ = signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS;
-  EnableSync(AccountInfo(), false);
+  EnableSync(CoreAccountInfo(), false);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
   EXPECT_EQ(0, tab_strip->active_index());
 
   // Other access points re-use the tab and take focus.
   access_point_ = signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS;
-  EnableSync(AccountInfo(), false);
+  EnableSync(CoreAccountInfo(), false);
   EXPECT_EQ(
       1, user_action_tester.GetActionCount("Signin_Signin_FromBookmarkBubble"));
   EXPECT_EQ(1, tab_strip->active_index());
@@ -646,7 +638,8 @@ TEST_F(SigninUiUtilTest, ShowExtensionSigninPrompt_AsLockedProfile) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 class MirrorSigninUiUtilTest : public BrowserWithTestWindowTest {
  public:
-  MirrorSigninUiUtilTest() = default;
+  MirrorSigninUiUtilTest()
+      : delegate_auto_reset_(SetSigninUiDelegateForTesting(&mock_delegate_)) {}
   ~MirrorSigninUiUtilTest() override = default;
 
   // BrowserWithTestWindowTest:
@@ -654,14 +647,71 @@ class MirrorSigninUiUtilTest : public BrowserWithTestWindowTest {
     return IdentityTestEnvironmentProfileAdaptor::
         GetIdentityTestEnvironmentFactories();
   }
+
+  void ExpectReauth(const std::string& email,
+                    bool enable_sync,
+                    signin_metrics::AccessPoint access_point,
+                    signin_metrics::PromoAction promo_action) {
+    EXPECT_CALL(mock_delegate_, ShowReauthUI(_, profile(), email, enable_sync,
+                                             access_point, promo_action));
+  }
+
+  void ExpectAddAccount(bool enable_sync,
+                        signin_metrics::AccessPoint access_point,
+                        signin_metrics::PromoAction promo_action) {
+    EXPECT_CALL(mock_delegate_, ShowSigninUI(_, profile(), enable_sync,
+                                             access_point, promo_action));
+  }
+
+  void ExpectTurnSyncOn(
+      signin_metrics::AccessPoint access_point,
+      signin_metrics::PromoAction promo_action,
+      signin_metrics::Reason signin_reason,
+      const CoreAccountId& account_id,
+      TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
+    EXPECT_CALL(
+        mock_delegate_,
+        ShowTurnSyncOnUI(_, profile(), access_point, promo_action,
+                         signin_reason, account_id, signin_aborted_mode));
+  }
+
+ protected:
+  Profile* profile() { return browser()->profile(); }
+
+ private:
+  testing::StrictMock<MockSigninUiDelegate> mock_delegate_;
+  base::AutoReset<SigninUiDelegate*> delegate_auto_reset_;
 };
 
-TEST_F(MirrorSigninUiUtilTest, ShowReauthDialog) {
+TEST_F(MirrorSigninUiUtilTest, EnableSyncWithExistingAccount) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile());
-  const std::string kEmail = "foo@example.com";
   AccountInfo account_info = signin::MakePrimaryAccountAvailable(
-      identity_manager, kEmail, signin::ConsentLevel::kSync);
+      identity_manager, kMainEmail, signin::ConsentLevel::kSignin);
+
+  for (bool is_default_promo_account : {true, false}) {
+    signin_metrics::PromoAction expected_promo_action =
+        is_default_promo_account
+            ? signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
+            : signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
+
+    ExpectTurnSyncOn(
+        signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+        expected_promo_action, signin_metrics::Reason::kSigninPrimaryAccount,
+        account_info.account_id,
+        TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
+    EnableSyncFromMultiAccountPromo(
+        browser(), account_info,
+        signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+        is_default_promo_account);
+  }
+}
+
+TEST_F(MirrorSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
+  AccountInfo account_info = signin::MakePrimaryAccountAvailable(
+      identity_manager, kMainEmail, signin::ConsentLevel::kSignin);
 
   // Add an account and then put its refresh token into an error state to
   // require a reauth before enabling sync.
@@ -669,244 +719,92 @@ TEST_F(MirrorSigninUiUtilTest, ShowReauthDialog) {
       identity_manager, account_info.account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
-  account_manager::MockAccountManagerFacade mock_facade;
+  ExpectReauth(kMainEmail, /*enable_sync=*/true,
+               signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+               signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT);
+  EnableSyncFromSingleAccountPromo(
+      browser(), account_info,
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+}
 
-  EXPECT_CALL(mock_facade,
-              ShowReauthAccountDialog(
-                  account_manager::AccountManagerFacade::AccountAdditionSource::
-                      kAvatarBubbleReauthAccountButton,
-                  kEmail));
-  internal::ShowReauthForPrimaryAccountWithAuthErrorLacros(
-      browser(),
+TEST_F(MirrorSigninUiUtilTest, EnableSyncForNewAccount) {
+  ExpectAddAccount(
+      /*enable_sync=*/true,
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
-      &mock_facade);
+      signin_metrics::PromoAction::
+          PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT);
+  EnableSyncFromMultiAccountPromo(
+      browser(), CoreAccountInfo(),
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+      /*is_default_promo_account=*/false);
+}
+
+TEST_F(MirrorSigninUiUtilTest, EnableSyncForNewAccountExisting) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
+  AccountInfo account_info = signin::MakePrimaryAccountAvailable(
+      identity_manager, kMainEmail, signin::ConsentLevel::kSignin);
+
+  ExpectAddAccount(
+      /*enable_sync=*/true,
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+      signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT);
+  EnableSyncFromMultiAccountPromo(
+      browser(), CoreAccountInfo(),
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+      /*is_default_promo_account=*/false);
+}
+
+TEST_F(MirrorSigninUiUtilTest, ShowReauthDialog) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
+  AccountInfo account_info = signin::MakePrimaryAccountAvailable(
+      identity_manager, kMainEmail, signin::ConsentLevel::kSync);
+
+  // Add an account and then put its refresh token into an error state to
+  // require a reauth before enabling sync.
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager, account_info.account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+
+  ExpectReauth(kMainEmail, /*enable_sync=*/true,
+               signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+               signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+  ShowReauthForPrimaryAccountWithAuthError(
+      browser(),
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
 }
 
 TEST_F(MirrorSigninUiUtilTest, ShowExtensionSigninPrompt_Signin) {
-  account_manager::MockAccountManagerFacade mock_facade;
-  base::MockOnceCallback<void(internal::OnAccountAddedCallback)>
-      mock_add_account_callback;
-  MockCreateTurnSyncOnHelper mock_create_turn_sync_on_helper;
-  internal::OnAccountAddedCallback on_account_added_callback;
-
-  EXPECT_CALL(mock_facade, ShowReauthAccountDialog(testing::_, testing::_))
-      .Times(0);
-  EXPECT_CALL(mock_add_account_callback, Run(testing::_))
-      .WillOnce(MoveArg<0>(&on_account_added_callback));
-  internal::ShowExtensionSigninPrompt(
-      browser()->profile(), &mock_facade, mock_add_account_callback.Get(),
-      mock_create_turn_sync_on_helper.GetCallback(),
-      /*enable_sync=*/false, std::string());
-  // No tabs should be opened.
-  EXPECT_EQ(0, browser()->tab_strip_model()->count());
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-
-  std::move(on_account_added_callback).Run(CoreAccountId("test"));
-  // TurnSyncOnHelper is not created because `enable_sync` is false.
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-}
-
-TEST_F(MirrorSigninUiUtilTest, ShowExtensionSigninPrompt_SigninCanceled) {
-  account_manager::MockAccountManagerFacade mock_facade;
-  base::MockOnceCallback<void(internal::OnAccountAddedCallback)>
-      mock_add_account_callback;
-  MockCreateTurnSyncOnHelper mock_create_turn_sync_on_helper;
-  internal::OnAccountAddedCallback on_account_added_callback;
-
-  EXPECT_CALL(mock_facade, ShowReauthAccountDialog(testing::_, testing::_))
-      .Times(0);
-  EXPECT_CALL(mock_add_account_callback, Run(testing::_))
-      .WillOnce(MoveArg<0>(&on_account_added_callback));
-  internal::ShowExtensionSigninPrompt(
-      browser()->profile(), &mock_facade, mock_add_account_callback.Get(),
-      mock_create_turn_sync_on_helper.GetCallback(),
-      /*enable_sync=*/true, std::string());
-  // No tabs should be opened.
-  EXPECT_EQ(0, browser()->tab_strip_model()->count());
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-
-  std::move(on_account_added_callback).Run(CoreAccountId());
-  // TurnSyncOnHelper is not created because an account wasn't added.
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-}
-
-TEST_F(MirrorSigninUiUtilTest, ShowExtensionSigninPrompt_Signin_EnableSync) {
-  account_manager::MockAccountManagerFacade mock_facade;
-  base::MockOnceCallback<void(internal::OnAccountAddedCallback)>
-      mock_add_account_callback;
-  MockCreateTurnSyncOnHelper mock_create_turn_sync_on_helper;
-  internal::OnAccountAddedCallback on_account_added_callback;
-
-  EXPECT_CALL(mock_facade, ShowReauthAccountDialog(testing::_, testing::_))
-      .Times(0);
-  EXPECT_CALL(mock_add_account_callback, Run(testing::_))
-      .WillOnce(MoveArg<0>(&on_account_added_callback));
-  internal::ShowExtensionSigninPrompt(
-      browser()->profile(), &mock_facade, mock_add_account_callback.Get(),
-      mock_create_turn_sync_on_helper.GetCallback(),
-      /*enable_sync=*/true, std::string());
-  // No tabs should be opened.
-  EXPECT_EQ(0, browser()->tab_strip_model()->count());
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-
-  CoreAccountId account_id("test");
-  std::move(on_account_added_callback).Run(account_id);
-
-  // Verify that the helper to enable sync is created with the expected
-  // params.
-  EXPECT_TRUE(mock_create_turn_sync_on_helper.WasCalled());
-  EXPECT_EQ(browser(), mock_create_turn_sync_on_helper.Params().browser);
-  EXPECT_EQ(browser()->profile(),
-            mock_create_turn_sync_on_helper.Params().profile);
-  EXPECT_EQ(account_id, mock_create_turn_sync_on_helper.Params().account_id);
-  EXPECT_EQ(signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS,
-            mock_create_turn_sync_on_helper.Params().signin_access_point);
-  EXPECT_EQ(signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
-            mock_create_turn_sync_on_helper.Params().signin_promo_action);
-  EXPECT_EQ(signin_metrics::Reason::kSigninPrimaryAccount,
-            mock_create_turn_sync_on_helper.Params().signin_reason);
-  EXPECT_EQ(TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
-            mock_create_turn_sync_on_helper.Params().signin_aborted_mode);
+  for (bool enable_sync : {true, false}) {
+    ExpectAddAccount(enable_sync,
+                     signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS,
+                     signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+    ShowExtensionSigninPrompt(profile(), enable_sync,
+                              /*email_hint=*/std::string());
+  }
 }
 
 TEST_F(MirrorSigninUiUtilTest, ShowExtensionSigninPrompt_Reauth) {
-  const std::string kEmail = "foo@example.com";
-  account_manager::MockAccountManagerFacade mock_facade;
-  base::MockOnceCallback<void(internal::OnAccountAddedCallback)>
-      mock_add_account_callback;
-  MockCreateTurnSyncOnHelper mock_create_turn_sync_on_helper;
-
-  EXPECT_CALL(
-      mock_facade,
-      ShowReauthAccountDialog(account_manager::AccountManagerFacade::
-                                  AccountAdditionSource::kChromeExtensionReauth,
-                              kEmail));
-  EXPECT_CALL(mock_add_account_callback, Run(testing::_)).Times(0);
-  internal::ShowExtensionSigninPrompt(
-      browser()->profile(), &mock_facade, mock_add_account_callback.Get(),
-      mock_create_turn_sync_on_helper.GetCallback(),
-      /*enable_sync=*/true, kEmail);
-  // No tabs should be opened.
-  EXPECT_EQ(0, browser()->tab_strip_model()->count());
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
+  for (bool enable_sync : {true, false}) {
+    ExpectReauth(kMainEmail, enable_sync,
+                 signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS,
+                 signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+    ShowExtensionSigninPrompt(profile(), enable_sync, kMainEmail);
+  }
 }
 
 TEST_F(MirrorSigninUiUtilTest,
        ShowExtensionSigninPrompt_Reauth_AsLockedProfile) {
   signin_util::ScopedForceSigninSetterForTesting force_signin_setter(true);
-  Profile* profile = browser()->profile();
   ProfileAttributesEntry* entry =
       g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile->GetPath());
+          .GetProfileAttributesWithPath(profile()->GetPath());
   ASSERT_NE(entry, nullptr);
   entry->LockForceSigninProfile(true);
 
-  const std::string kEmail = "foo@example.com";
-  TabStripModel* tab_strip = browser()->tab_strip_model();
-  account_manager::MockAccountManagerFacade mock_facade;
-  base::MockOnceCallback<void(internal::OnAccountAddedCallback)>
-      mock_add_account_callback;
-  MockCreateTurnSyncOnHelper mock_create_turn_sync_on_helper;
-
-  EXPECT_CALL(mock_facade, ShowReauthAccountDialog(testing::_, testing::_))
-      .Times(0);
-  EXPECT_CALL(mock_add_account_callback, Run(testing::_)).Times(0);
-  internal::ShowExtensionSigninPrompt(
-      browser()->profile(), &mock_facade, mock_add_account_callback.Get(),
-      mock_create_turn_sync_on_helper.GetCallback(),
-      /*enable_sync=*/true, kEmail);
-  // No dialogs and tabs should be opened.
-  EXPECT_EQ(0, tab_strip->count());
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-}
-
-TEST_F(MirrorSigninUiUtilTest, ShowSigninPromptAndMaybeEnableSync_Signin) {
-  base::MockOnceCallback<void(internal::OnAccountAddedCallback)>
-      mock_add_account_callback;
-  MockCreateTurnSyncOnHelper mock_create_turn_sync_on_helper;
-  internal::OnAccountAddedCallback on_account_added_callback;
-
-  auto access_point = signin_metrics::AccessPoint::ACCESS_POINT_MENU;
-  auto promo_action = signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
-
-  EXPECT_CALL(mock_add_account_callback, Run(testing::_))
-      .WillOnce(MoveArg<0>(&on_account_added_callback));
-  internal::ShowSigninPromptAndMaybeEnableSync(
-      browser(), browser()->profile(), mock_add_account_callback.Get(),
-      mock_create_turn_sync_on_helper.GetCallback(),
-      /*enable_sync=*/false, access_point, promo_action);
-  // No tabs should be opened.
-  EXPECT_EQ(0, browser()->tab_strip_model()->count());
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-
-  std::move(on_account_added_callback).Run(CoreAccountId("test"));
-  // TurnSyncOnHelper is not created because `enable_sync` is false.
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-}
-
-TEST_F(MirrorSigninUiUtilTest,
-       ShowSigninPromptAndMaybeEnableSync_SigninFailed) {
-  base::MockOnceCallback<void(internal::OnAccountAddedCallback)>
-      mock_add_account_callback;
-  MockCreateTurnSyncOnHelper mock_create_turn_sync_on_helper;
-  internal::OnAccountAddedCallback on_account_added_callback;
-
-  auto access_point = signin_metrics::AccessPoint::ACCESS_POINT_MENU;
-  auto promo_action = signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
-
-  EXPECT_CALL(mock_add_account_callback, Run(testing::_))
-      .WillOnce(MoveArg<0>(&on_account_added_callback));
-  internal::ShowSigninPromptAndMaybeEnableSync(
-      browser(), browser()->profile(), mock_add_account_callback.Get(),
-      mock_create_turn_sync_on_helper.GetCallback(),
-      /*enable_sync=*/false, access_point, promo_action);
-  // No tabs should be opened.
-  EXPECT_EQ(0, browser()->tab_strip_model()->count());
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-
-  std::move(on_account_added_callback).Run(CoreAccountId());
-  // TurnSyncOnHelper is not created because an account wasn't added.
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-}
-
-TEST_F(MirrorSigninUiUtilTest, ShowSigninPromptAndMaybeEnableSync_Sync) {
-  base::MockOnceCallback<void(internal::OnAccountAddedCallback)>
-      mock_add_account_callback;
-  MockCreateTurnSyncOnHelper mock_create_turn_sync_on_helper;
-  internal::OnAccountAddedCallback on_account_added_callback;
-
-  auto access_point = signin_metrics::AccessPoint::ACCESS_POINT_MENU;
-  auto promo_action = signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
-
-  EXPECT_CALL(mock_add_account_callback, Run(testing::_))
-      .WillOnce(MoveArg<0>(&on_account_added_callback));
-  internal::ShowSigninPromptAndMaybeEnableSync(
-      browser(), browser()->profile(), mock_add_account_callback.Get(),
-      mock_create_turn_sync_on_helper.GetCallback(),
-      /*enable_sync=*/true, access_point, promo_action);
-  // No tabs should be opened.
-  EXPECT_EQ(0, browser()->tab_strip_model()->count());
-  EXPECT_FALSE(mock_create_turn_sync_on_helper.WasCalled());
-
-  CoreAccountId account_id("test");
-  std::move(on_account_added_callback).Run(account_id);
-
-  // Verify that the helper to enable sync is created with the expected
-  // params.
-  EXPECT_TRUE(mock_create_turn_sync_on_helper.WasCalled());
-  EXPECT_EQ(browser(), mock_create_turn_sync_on_helper.Params().browser);
-  EXPECT_EQ(browser()->profile(),
-            mock_create_turn_sync_on_helper.Params().profile);
-  EXPECT_EQ(account_id, mock_create_turn_sync_on_helper.Params().account_id);
-  EXPECT_EQ(access_point,
-            mock_create_turn_sync_on_helper.Params().signin_access_point);
-  EXPECT_EQ(promo_action,
-            mock_create_turn_sync_on_helper.Params().signin_promo_action);
-  EXPECT_EQ(signin_metrics::Reason::kSigninPrimaryAccount,
-            mock_create_turn_sync_on_helper.Params().signin_reason);
-  EXPECT_EQ(TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
-            mock_create_turn_sync_on_helper.Params().signin_aborted_mode);
+  ShowExtensionSigninPrompt(profile(), /*enable_sync=*/true, kMainEmail);
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)

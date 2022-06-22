@@ -143,11 +143,15 @@ struct App {
   bool hide_pin_to_shelf;
   bool is_preferred_app;
   WindowMode window_mode;
+  bool hide_window_mode;
   bool resize_locked;
   bool hide_resize_locked;
   array<string> supported_links;
   RunOnOsLogin? run_on_os_login;
   FileHandlingState? file_handling_state;
+  string? app_size;
+  string? data_size;
+  string publisher_id;
 };
 
 // Extension-based apps primarily use install-time permissions that cannot be

@@ -94,6 +94,8 @@
 <translation id="1742316578210444689">Hebrew Transliteration</translation>
 <translation id="1747761757048858544">Dutch (Netherlands)</translation>
 <translation id="174937106936716857">Kabuuang bilang ng file</translation>
+<translation id="1755345808328621801">Idinisenyo ang file na ito para sa isang PC na gumagamit ng Windows software. Hindi ito compatible sa iyong device na nagpapatakbo ng ChromeOS. Maghanap sa Chrome Web Store ng naaangkop na pamalit na app.</translation>
+<translation id="1757915090001272240">Wide Latin</translation>
 <translation id="1773212559869067373">Lokal na tinanggihan ang certificate ng pagpapatunay</translation>
 <translation id="1775381402323441512">Impormasyon ng video</translation>
 <translation id="180035236176489073">Kailangan kang mag-online upang ma-access ang mga file na ito.</translation>
@@ -103,6 +105,7 @@
 <translation id="1813278315230285598">Mga Serbisyo</translation>
 <translation id="1829129547161959350">Penguin</translation>
 <translation id="183183971458492120">Nilo-load ang impormasyon...</translation>
+<translation id="1832073788765803750">Half width katakana</translation>
 <translation id="1834290891154666894">Invalid na entry ng pagtugma ng alternatibong pangalan</translation>
 <translation id="1838709767668011582">Site ng Google</translation>
 <translation id="1844692022597038441">Hindi available offline ang file na ito.</translation>
@@ -117,7 +120,6 @@
 <translation id="1936717151811561466">Finnish</translation>
 <translation id="1942765061641586207">Resolution ng larawan</translation>
 <translation id="1972984168337863910">I-expand ang mga panel ng feedback ng mga file</translation>
-<translation id="1984456723671657197">Hindi sinusuportahan ang ganitong uri ng file. <ph name="BEGIN_LINK_HELP" />Matuto Pa<ph name="END_LINK_HELP" /> tungkol sa pagbubukas ng mga file sa Chrome OS.</translation>
 <translation id="1995337122023280937">Pumunta sa lokasyon ng file</translation>
 <translation id="2001796770603320721">Pamahalaan sa Drive</translation>
 <translation id="2009067268969781306">Kapag nag-format ng drive, made-delete ang lahat ng data na naka-store doon. Hindi puwedeng i-undo ang pagkilos na ito.</translation>
@@ -199,8 +201,6 @@
 <translation id="2649120831653069427">Rainbowfish</translation>
 <translation id="2663066752008346276">Burmese/Myanmar na may Myansan keyboard</translation>
 <translation id="2664412712123763093">Lokasyon ng file</translation>
-<translation id="2672394958563893062">May naganap na error. I-click upang magsimulang muli.</translation>
-<translation id="2676946222714718093">Nagpe-play sa</translation>
 <translation id="2718540689505416944">I-install ang app gamit ang Linux</translation>
 <translation id="2719020180254996569">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Mga Detalye</translation>
 <translation id="2724954091494693138">Turkish na may F-keyboard</translation>
@@ -226,6 +226,7 @@
 <translation id="2943503720238418293">Gumamit ng mas maikling pangalan</translation>
 <translation id="2949781154072577687">Fino-format ang <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Jellyfish</translation>
+<translation id="2977940621473452797">Idinisenyo ang file na ito para sa isang computer na gumagamit ng Macintosh software. Hindi ito compatible sa iyong device na nagpapatakbo ng ChromeOS. Maghanap sa Chrome Web Store ng naaangkop na pamalit na app.</translation>
 <translation id="2984337792991268709">Ngayon <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2994320653639462337">Nire-restore ang <ph name="COUNT" /> (na) item...</translation>
 <translation id="2994669386200004489">Hindi ma-back up ang <ph name="FILE_NAME" /></translation>
@@ -341,7 +342,6 @@
 <translation id="3901991538546252627">Kumokonekta sa <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Ini-install ang profile ng mobile, Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3930521966936686665">I-play sa</translation>
 <translation id="3943857333388298514">I-paste</translation>
 <translation id="3952872973865944257">Telugu Phonetic</translation>
 <translation id="3958548648197196644">Kiwi</translation>
@@ -413,7 +413,6 @@
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4642769377300286600">Ini-install ang profile ng mobile, Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">Czech na may Qwerty keyboard</translation>
-<translation id="4656293982926141856">Sa computer na ito</translation>
 <translation id="4656777537938206294">Gawing available offline ang mga file</translation>
 <translation id="4658782175094886150">Tao sa snow</translation>
 <translation id="4669606053856530811">Mawawalan ng access ang mga miyembro ng '<ph name="SOURCE_NAME" />' maliban na lang kung ibinahagi sa kanila ang mga item na ito.</translation>
@@ -423,13 +422,13 @@
 <translation id="4694604912444486114">Unggoy</translation>
 <translation id="469612310041132144">Chinese Quick</translation>
 <translation id="4697043402264950621">Nakabukud-bukod ang listahan ng file ayon sa <ph name="COLUMN_NAME" /> sa pataas na pagkakasunud-sunod.</translation>
+<translation id="469897186246626197">Idinisenyo ang file na ito para sa isang PC na gumagamit ng Windows software. Hindi ito compatible sa iyong device na gumagamit ng ChromeOS. <ph name="BEGIN_LINK_HELP" />Matuto Pa<ph name="END_LINK_HELP" /> tungkol sa pagbubukas ng mga file sa ChromeOS.</translation>
 <translation id="4706042980341760088">Tamil na may Typewriter keyboard</translation>
 <translation id="4711094779914110278">Turkish</translation>
 <translation id="4712283082407695269">Binubuksan ang "<ph name="PATH" />"</translation>
 <translation id="4720185134442950733">Network ng mobile data</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> (na) larawan ang na-back up</translation>
 <translation id="4725511304875193254">Corgi</translation>
-<translation id="4732760563705710320">Paumanhin, hindi sinusuportahan ang video na ito ng iyong cast device.</translation>
 <translation id="4737050008115666127">Landing</translation>
 <translation id="4747271164117300400">Macedonian</translation>
 <translation id="4759238208242260848">Mga Download </translation>
@@ -520,6 +519,7 @@
 <translation id="5335458522276292100">Bina-back up ang <ph name="FILE_COUNT" /> sa <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="535792325654997756">Taong may mga pusa</translation>
 <translation id="5358764674931277">Frame rate</translation>
+<translation id="5363339716524495120">Chinese ang wika sa pag-input</translation>
 <translation id="5368191757080475556">Ibahagi ang folder sa Linux</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5411472733320185105">Huwag gumamit ng mga setting ng proxy para sa mga host at domain na ito:</translation>
@@ -542,8 +542,10 @@
 <translation id="5534520101572674276">Kinakalkula ang laki</translation>
 <translation id="554153475311314364">Greek Transliteration</translation>
 <translation id="5583640892426849032">Backspace</translation>
+<translation id="5583664733673201137">Puno na ang lapad ng bantas</translation>
 <translation id="5602622065581044566">Bulgarian na may Phonetic keyboard</translation>
 <translation id="5605830556594064952">US Dvorak</translation>
+<translation id="5618330573454123917">Idinisenyo ang file na ito para sa isang computer na gumagamit ng Macintosh software. Hindi ito compatible sa iyong device na gumagamit ng ChromeOS. <ph name="BEGIN_LINK_HELP" />Matuto Pa<ph name="END_LINK_HELP" /> tungkol sa pagbubukas ng mga file sa ChromeOS.</translation>
 <translation id="5625294776298156701">Tamil na may Tamil99 keyboard</translation>
 <translation id="5633226425545095130">Kapag inilipat ang item na ito, ibabahagi ito sa lahat ng nakakakita sa nakabahaging folder na '<ph name="DESTINATION_NAME" />.'</translation>
 <translation id="5649768706273821470">Pakinggan</translation>
@@ -619,7 +621,6 @@
 <translation id="6224253798271602650">I-format ang <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Hindi ma-play ang file na ito.</translation>
 <translation id="6241349547798190358">Dutch (Belgium)</translation>
-<translation id="6248400709929739064">I-enable ang mga subtitle</translation>
 <translation id="6267547857941397424">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Baterya ng Telepono <ph name="BATTERY_STATUS" />%, Kumonekta</translation>
 <translation id="6269630227984243955">Malay</translation>
 <translation id="6287852322318138013">Pumili ng isang app upang buksan ang file na ito</translation>
@@ -637,7 +638,6 @@
 <translation id="637062427944097960">Ang file na ito na binuksan sa ibang desktop. Ilipat sa <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) upang tingnan ito.</translation>
 <translation id="6394388407447716302">Read-only</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> (na) item</translation>
-<translation id="6398765197997659313">Lumabas sa buong screen</translation>
 <translation id="642282551015776456">Hindi maaaring gamitin ang pangalang ito bilang isang pangalan ng file o folder</translation>
 <translation id="6423031066725912715">Vietnamese na may TCVN keyboard</translation>
 <translation id="6485131920355264772">Nabigong kunin ang impormasyon ng espasyo</translation>
@@ -673,7 +673,6 @@
 <translation id="6820687829547641339">Archive na tar na Gzip compressed</translation>
 <translation id="6823166707458800069">Awtomatikong na-back up online ang lahat ng file na na-save sa folder na ito.</translation>
 <translation id="6825883775269213504">Russian</translation>
-<translation id="6827236167376090743">Magpe-play ang video na ito nang paulit-ulit sa napakahabang panahon.</translation>
 <translation id="6847101934483209767">Inalis ang <ph name="ENTRY_NAME" /> sa pagpipilian.</translation>
 <translation id="6856459657722366306">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Mga Detalye</translation>
 <translation id="6861394552169064235">Persian</translation>
@@ -702,7 +701,6 @@
 <translation id="6970230597523682626">Bulgarian</translation>
 <translation id="6973630695168034713">Mga Folder</translation>
 <translation id="6976795442547527108">Leon</translation>
-<translation id="6978611942794658017">Idinisenyo ang file na ito para sa isang PC na gumagamit ng Windows software. Hindi ito tugma sa iyong device na nagpapatakbo ng Chrome OS. Mangyaring maghanap sa Chrome Web Store ng naaangkop na pamalit na app.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6989942356279143254">Swedish</translation>
 <translation id="6990081529015358884">Naubusan ka na ng espasyo</translation>
@@ -713,6 +711,7 @@
 <translation id="7037472120706603960">Tamil Transliteration</translation>
 <translation id="7040138676081995583">Buksan gamit ang...</translation>
 <translation id="7048024426273850086">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Baterya ng Telepono <ph name="BATTERY_STATUS" />%, Kumonekta</translation>
+<translation id="7070804685954057874">Direktang pag-input</translation>
 <translation id="7075931588889865715">Thai na may TIS 820-2531 keyboard</translation>
 <translation id="708278670402572152">Idiskonekta upang i-enable ang pag-scan</translation>
 <translation id="7086590977277044826">Tamil na may InScript keyboard</translation>
@@ -740,6 +739,7 @@
 <translation id="7309413087278791451">German (Belgium)</translation>
 <translation id="7339898014177206373">Bagong window</translation>
 <translation id="7343393116438664539">Vietnamese Telex</translation>
+<translation id="7357762654218998920">Hindi sinusuportahan ang ganitong uri ng file. <ph name="BEGIN_LINK_HELP" />Matuto Pa<ph name="END_LINK_HELP" /> tungkol sa pagbubukas ng mga file sa ChromeOS.</translation>
 <translation id="7359359531237882347">Kinokopya ang <ph name="NUMBER_OF_ITEMS" /> (na) item...</translation>
 <translation id="7375951387215729722">Nakabukud-bukod ang listahan ng file ayon sa <ph name="COLUMN_NAME" /> sa pababang pagkakasunud-sunod.</translation>
 <translation id="7402503521691663770">Mga ChromeOS Flex device</translation>
@@ -752,6 +752,7 @@
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> ang nakita
     <ph name="LINE_BREAK1" />
     Handa nang i-back up sa <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
+<translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam Phonetic</translation>
 <translation id="7505167922889582512">Magpakita ng mga natatagong file</translation>
 <translation id="7514365320538308">I-download</translation>
@@ -811,8 +812,8 @@
 <translation id="7857117644404132472">Magdagdag ng exception</translation>
 <translation id="7868774406711971383">Polish</translation>
 <translation id="7874321682039004450">Filipino</translation>
-<translation id="7881969471599061635">I-disable ang mga subtitle</translation>
 <translation id="78946041517601018">Mga shared drive</translation>
+<translation id="7903984238293908205">Katakana</translation>
 <translation id="7908793776359722643">Kapag nag-format ng partition, mabubura ang lahat ng data na naka-store dito. Hindi maa-undo ang pagkilos na ito.</translation>
 <translation id="7925247922861151263">Nabigo ang pagsusuri sa AAA</translation>
 <translation id="7925686952655276919">Huwag gumamit ng data sa mobile para sa pag-sync</translation>
@@ -824,7 +825,6 @@
 <translation id="7972920761225148017">French (Switzerland)</translation>
 <translation id="7973962044839454485">Nabigo ang pagpapatotoo sa PPP dahil sa hindi tamang username o password</translation>
 <translation id="7980421588063892270">English (US) na may Colemak keyboard</translation>
-<translation id="79907182588096956">Idinisenyo ang file na ito para sa isang PC na gumagamit ng Windows software. Hindi ito compatible sa iyong device na gumagamit ng Chrome OS. <ph name="BEGIN_LINK_HELP" />Matuto Pa<ph name="END_LINK_HELP" /> tungkol sa pagbubukas ng mga file sa Chrome OS.</translation>
 <translation id="8000066093800657092">Walang network</translation>
 <translation id="8008366997883261463">Aso</translation>
 <translation id="8028993641010258682">Laki</translation>
@@ -841,6 +841,7 @@
 <translation id="8128733386027980860">English (UK) na may Dvorak keyboard</translation>
 <translation id="8137331602592933310">Ibinahagi sa iyo ang "<ph name="FILENAME" />." Hindi mo ito matatanggal dahil hindi mo ito pagmamay-ari.</translation>
 <translation id="813913629614996137">Sinisimulan...</translation>
+<translation id="8147028810663464959">Puno na ang lapad ng character</translation>
 <translation id="8151638057146502721">I-configure</translation>
 <translation id="8154842056504218462">Pinili ang lahat ng entry.</translation>
 <translation id="8157684860301034423">Hindi na-retrieve ang impormasyon ng app.</translation>
@@ -850,6 +851,7 @@
 <translation id="8208580316430297579">Artwork</translation>
 <translation id="8223479393428528563">Upang i-save ang mga file na ito para sa offline na paggamit, mag-online muli, i-right click ang mga file at piliin ang opsyong <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">I-abort</translation>
+<translation id="8250690786522693009">Latin</translation>
 <translation id="8250920743982581267">Mga Dokumento</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8261561378965667560">Chinese Array</translation>
@@ -889,7 +891,6 @@
 <translation id="8492972329130824181">Hindi available ang network sa bahay. Dapat naka-enable ang mobile data roaming para kumonekta.</translation>
 <translation id="8499098729323186194">Ine-extract ang <ph name="NUMBER_OF_ITEMS" /> (na) item...</translation>
 <translation id="8521441079177373948">UK</translation>
-<translation id="8525306231823319788">Buong screen</translation>
 <translation id="853494022971700746">French (France)</translation>
 <translation id="8540608333167683902">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Mga Detalye</translation>
 <translation id="8545476925160229291">English (US)</translation>
@@ -935,7 +936,6 @@
 <translation id="8912078710089354287">Asong kumakawag-kawag ang buntot</translation>
 <translation id="8919081441417203123">Danish</translation>
 <translation id="8965697826696209160">Walang sapat na espasyo.</translation>
-<translation id="8970501467542182729">Idinisenyo ang file na ito para sa isang computer na gumagamit ng Macintosh software. Hindi ito compatible sa iyong device na gumagamit ng Chrome OS. <ph name="BEGIN_LINK_HELP" />Matuto Pa<ph name="END_LINK_HELP" /> tungkol sa pagbubukas ng mga file sa Chrome OS.</translation>
 <translation id="8997962250644902079">Chinese (Traditional) Pinyin</translation>
 <translation id="9003940392834790328">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Pinapamahalaan ng iyong Administrator, Mga Detalye</translation>
 <translation id="9017798300203431059">Russian phonetic</translation>
@@ -954,7 +954,6 @@
 <translation id="9130775360844693113">Magkakaroon ng access ang mga miyembro ng '<ph name="DESTINATION_NAME" />' sa mga item na ito.</translation>
 <translation id="9131598836763251128">Pumili ng isa o higit pang mga file</translation>
 <translation id="9133055936679483811">Nabigo ang pag-zip. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">Idinisenyo ang file na ito para sa isang computer na gumagamit ng Macintosh software. Hindi ito tugma sa iyong device na nagpapatakbo ng Chrome OS. Mangyaring maghanap sa Chrome Web Store ng naaangkop na pamalit na app.</translation>
 <translation id="9144340019284012223">Catalan</translation>
 <translation id="914873105831852105">Invalid ang PIN. Mayroon ka na lang 1 natitirang pagsubok.</translation>
 <translation id="9153934054460603056">I-save ang pagkakakilanlan at password</translation>

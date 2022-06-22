@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/rand_util.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,7 +40,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -1212,18 +1212,19 @@ SearchProvider::ScoreHistoryResultsHelper(const HistoryResults& results,
           input_.current_page_classification());
   const std::u16string& trimmed_input =
       base::CollapseWhitespace(input_text, false);
-  for (auto i(results.begin()); i != results.end(); ++i) {
+  for (const auto& result : results) {
     const std::u16string& trimmed_suggestion =
-        base::CollapseWhitespace(i->term, false);
+        base::CollapseWhitespace(result.term, false);
 
     // Don't autocomplete multi-word queries that have only been seen once
     // unless the user has typed more than one word.
-    bool prevent_inline_autocomplete = base_prevent_inline_autocomplete ||
-        (!input_multiple_words && (i->visits < 2) &&
+    bool prevent_inline_autocomplete =
+        base_prevent_inline_autocomplete ||
+        (!input_multiple_words && (result.visit_count < 2) &&
          HasMultipleWords(trimmed_suggestion));
 
     int relevance = CalculateRelevanceForHistory(
-        i->time, is_keyword, !prevent_inline_autocomplete,
+        result.last_visit_time, is_keyword, !prevent_inline_autocomplete,
         prevent_search_history_inlining);
     // Add the match to |scored_results| by putting the what-you-typed match
     // on the front and appending all other matches.  We want the what-you-
@@ -1509,7 +1510,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           navigation.url(),
           url_formatter::FormatUrl(navigation.url(), format_types,
-                                   net::UnescapeRule::SPACES, nullptr, nullptr,
+                                   base::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier(), &inline_autocomplete_offset);
   if (inline_autocomplete_offset != std::u16string::npos) {

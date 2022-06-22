@@ -27,31 +27,6 @@ gaia::ListedAccount BuildListedAccount(const std::string& gaia_id) {
 }  // namespace
 
 TEST(MirrorLandingAccountReconcilorDelegateTest,
-     GetFirstGaiaAccountForReconcile) {
-  gaia::ListedAccount gaia_account = BuildListedAccount("gaia");
-  CoreAccountId kPrimaryAccountId = CoreAccountId::FromGaiaId("primary");
-  CoreAccountId kOtherAccountId = CoreAccountId::FromGaiaId("other");
-  MirrorLandingAccountReconcilorDelegate delegate;
-  // No primary account.
-  EXPECT_TRUE(delegate
-                  .GetFirstGaiaAccountForReconcile(
-                      /*chrome_accounts=*/{},
-                      /*gaia_accounts=*/{gaia_account},
-                      /*primary_account=*/CoreAccountId(),
-                      /*first_execution=*/true,
-                      /*will_logout=*/false)
-                  .empty());
-  // With primary account.
-  EXPECT_EQ(delegate.GetFirstGaiaAccountForReconcile(
-                /*chrome_accounts=*/{{kOtherAccountId, kPrimaryAccountId}},
-                /*gaia_accounts=*/{gaia_account},
-                /*primary_account=*/kPrimaryAccountId,
-                /*first_execution=*/true,
-                /*will_logout=*/false),
-            kPrimaryAccountId);
-}
-
-TEST(MirrorLandingAccountReconcilorDelegateTest,
      GetChromeAccountsForReconcile) {
   CoreAccountId kPrimaryAccountId = CoreAccountId::FromGaiaId("primary");
   CoreAccountId kOtherAccountId1 = CoreAccountId::FromGaiaId("1");
@@ -85,6 +60,17 @@ TEST(MirrorLandingAccountReconcilorDelegateTest,
                 gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER),
             (std::vector<CoreAccountId>{kPrimaryAccountId, kOtherAccountId2,
                                         kOtherAccountId1}));
+  // Primary account error causes a logout.
+  EXPECT_TRUE(
+      delegate
+          .GetChromeAccountsForReconcile(
+              /*chrome_accounts=*/{kPrimaryAccountId, kOtherAccountId1},
+              /*primary_account=*/kPrimaryAccountId,
+              /*gaia_accounts=*/{gaia_account_primary, gaia_account_1},
+              /*first_execution=*/true,
+              /*primary_has_error=*/true,
+              gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER)
+          .empty());
 }
 
 }  // namespace signin

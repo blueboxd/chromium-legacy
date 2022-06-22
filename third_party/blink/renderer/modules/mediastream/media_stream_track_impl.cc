@@ -71,13 +71,6 @@ namespace blink {
 
 namespace {
 
-static const char kContentHintStringNone[] = "";
-static const char kContentHintStringAudioSpeech[] = "speech";
-static const char kContentHintStringAudioMusic[] = "music";
-static const char kContentHintStringVideoMotion[] = "motion";
-static const char kContentHintStringVideoDetail[] = "detail";
-static const char kContentHintStringVideoText[] = "text";
-
 // The set of constrainable properties for image capture is available at
 // https://w3c.github.io/mediacapture-image/#constrainable-properties
 // TODO(guidou): Integrate image-capture constraints processing with the
@@ -206,9 +199,7 @@ void DidCloneMediaStreamTrack(MediaStreamComponent* original,
 
   switch (clone->Source()->GetType()) {
     case MediaStreamSource::kTypeAudio:
-      // TODO(crbug.com/704136): Use per thread task runner.
-      MediaStreamUtils::CreateNativeAudioMediaStreamTrack(
-          clone, Thread::MainThread()->GetTaskRunner());
+      MediaStreamAudioSource::From(clone->Source())->ConnectToTrack(clone);
       break;
     case MediaStreamSource::kTypeVideo:
       CloneNativeVideoMediaStreamTrack(original, clone);
@@ -375,24 +366,7 @@ bool MediaStreamTrackImpl::muted() const {
 }
 
 String MediaStreamTrackImpl::ContentHint() const {
-  WebMediaStreamTrack::ContentHintType hint = component_->ContentHint();
-  switch (hint) {
-    case WebMediaStreamTrack::ContentHintType::kNone:
-      return kContentHintStringNone;
-    case WebMediaStreamTrack::ContentHintType::kAudioSpeech:
-      return kContentHintStringAudioSpeech;
-    case WebMediaStreamTrack::ContentHintType::kAudioMusic:
-      return kContentHintStringAudioMusic;
-    case WebMediaStreamTrack::ContentHintType::kVideoMotion:
-      return kContentHintStringVideoMotion;
-    case WebMediaStreamTrack::ContentHintType::kVideoDetail:
-      return kContentHintStringVideoDetail;
-    case WebMediaStreamTrack::ContentHintType::kVideoText:
-      return kContentHintStringVideoText;
-  }
-
-  NOTREACHED();
-  return String();
+  return ContentHintToString(component_->ContentHint());
 }
 
 void MediaStreamTrackImpl::SetContentHint(const String& hint) {
@@ -438,19 +412,7 @@ void MediaStreamTrackImpl::SetContentHint(const String& hint) {
 String MediaStreamTrackImpl::readyState() const {
   if (Ended())
     return "ended";
-
-  // Although muted is tracked as a ReadyState, only "live" and "ended" are
-  // visible externally.
-  switch (ready_state_) {
-    case MediaStreamSource::kReadyStateLive:
-    case MediaStreamSource::kReadyStateMuted:
-      return "live";
-    case MediaStreamSource::kReadyStateEnded:
-      return "ended";
-  }
-
-  NOTREACHED();
-  return String();
+  return ReadyStateToString(ready_state_);
 }
 
 void MediaStreamTrackImpl::setReadyState(
@@ -474,6 +436,13 @@ void MediaStreamTrackImpl::stopTrack(ExecutionContext* execution_context) {
   SendLogMessage(String::Format("%s()", __func__));
   if (Ended())
     return;
+
+  if (auto* track = Component()->GetPlatformTrack()) {
+    // Synchronously disable the platform track to prevent media from flowing,
+    // even if the stopTrack() below is completed asynchronously.
+    // See https://crbug.com/1320312.
+    track->SetEnabled(false);
+  }
 
   setReadyState(MediaStreamSource::kReadyStateEnded);
   feature_handle_for_scheduler_.reset();
@@ -970,7 +939,8 @@ void MediaStreamTrackImpl::EnsureFeatureHandleForScheduler() {
   feature_handle_for_scheduler_ =
       window->GetFrame()->GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
-          SchedulingPolicy::DisableAggressiveThrottling());
+          {SchedulingPolicy::DisableAggressiveThrottling(),
+           SchedulingPolicy::DisableAlignWakeUps()});
 }
 
 void MediaStreamTrackImpl::AddObserver(MediaStreamTrack::Observer* observer) {

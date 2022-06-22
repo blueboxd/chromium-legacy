@@ -56,9 +56,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/exported/web_page_popup_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
-#include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
@@ -86,13 +84,13 @@ class AnimationWorkletMutatorDispatcherImpl;
 class HitTestResult;
 class HTMLPlugInElement;
 class Page;
-class PageWidgetEventHandler;
 class PaintWorkletPaintDispatcher;
 class RemoteFrame;
 class WebLocalFrameImpl;
 class WebPlugin;
 class WebViewImpl;
 class WidgetBase;
+class WidgetEventHandler;
 class ScreenMetricsEmulator;
 
 // Implements WebFrameWidget for both main frames and child local root frame
@@ -105,7 +103,7 @@ class CORE_EXPORT WebFrameWidgetImpl
       public viz::mojom::blink::InputTargetClient,
       public mojom::blink::FrameWidgetInputHandler,
       public FrameWidget,
-      public PageWidgetEventHandler {
+      public WidgetEventHandler {
  public:
   struct PromiseCallbacks {
     base::OnceCallback<void(base::TimeTicks)> swap_time_callback;
@@ -568,10 +566,6 @@ class CORE_EXPORT WebFrameWidgetImpl
                                   float maximum);
   void UpdateViewportDescription(
       const ViewportDescription& viewport_description);
-
-  // The value of the applied battery-savings META element in the document
-  // changed.
-  void BatterySavingsChanged(BatterySavingsFlags savings);
 
   const viz::LocalSurfaceId& LocalSurfaceIdFromParent();
 

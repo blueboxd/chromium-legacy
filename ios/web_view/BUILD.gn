@@ -9,7 +9,7 @@ import("//build/config/locales.gni")
 import("//components/cronet/native/include/headers.gni")
 import("//components/grpc_support/include/headers.gni")
 import("//ios/build/config.gni")
-import("//ios/web/js_compile.gni")
+import("//ios/web/public/js_messaging/optimize_js.gni")
 import("//ios/web_view/features.gni")
 import("//ios/web_view/repack.gni")
 import("//testing/test.gni")
@@ -84,6 +84,7 @@ ios_web_view_public_headers = [
   "public/cwv_user_script.h",
   "public/cwv_web_view.h",
   "public/cwv_web_view_configuration.h",
+  "public/cwv_x509_certificate.h",
 ]
 
 source_set("web_view_sources") {
@@ -159,6 +160,8 @@ source_set("web_view_sources") {
     "internal/cwv_web_view_configuration.mm",
     "internal/cwv_web_view_configuration_internal.h",
     "internal/cwv_web_view_internal.h",
+    "internal/cwv_x509_certificate.mm",
+    "internal/cwv_x509_certificate_internal.h",
     "internal/ios_global_state_web_view_configuration.mm",
     "internal/language/web_view_language_model_manager_factory.h",
     "internal/language/web_view_language_model_manager_factory.mm",
@@ -187,6 +190,12 @@ source_set("web_view_sources") {
     "internal/passwords/web_view_password_reuse_manager_factory.mm",
     "internal/passwords/web_view_password_store_factory.h",
     "internal/passwords/web_view_password_store_factory.mm",
+    "internal/safe_browsing/cwv_unsafe_url_handler.mm",
+    "internal/safe_browsing/cwv_unsafe_url_handler_internal.h",
+    "internal/safe_browsing/web_view_safe_browsing_client.h",
+    "internal/safe_browsing/web_view_safe_browsing_client.mm",
+    "internal/safe_browsing/web_view_safe_browsing_client_factory.h",
+    "internal/safe_browsing/web_view_safe_browsing_client_factory.mm",
     "internal/signin/cwv_identity.mm",
     "internal/signin/ios_web_view_signin_client.h",
     "internal/signin/ios_web_view_signin_client.mm",
@@ -306,6 +315,8 @@ source_set("web_view_sources") {
     "//components/profile_metrics",
     "//components/proxy_config",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/safe_browsing/ios/browser:allow_list",
+    "//components/security_interstitials/core:unsafe_resource",
     "//components/security_state/ios",
     "//components/services/patch:in_process",
     "//components/services/unzip:in_process",
@@ -336,6 +347,8 @@ source_set("web_view_sources") {
     "//ios/components/credential_provider_extension:password_util",
     "//ios/components/io_thread",
     "//ios/components/security_interstitials/lookalikes",
+    "//ios/components/security_interstitials/safe_browsing",
+    "//ios/components/security_interstitials/safe_browsing:util",
     "//ios/components/webui:provider",
     "//ios/components/webui:url_constants",
     "//ios/components/webui/sync_internals",
@@ -456,10 +469,12 @@ test("ios_web_view_unittests") {
     "internal/cwv_ssl_status_unittest.mm",
     "internal/cwv_web_view_configuration_unittest.mm",
     "internal/cwv_web_view_unittest.mm",
+    "internal/cwv_x509_certificate_unittest.mm",
     "internal/metrics/cwv_metrics_provider_unittest.mm",
     "internal/passwords/cwv_credential_provider_extension_utils_unittest.mm",
     "internal/passwords/cwv_password_unittest.mm",
     "internal/passwords/web_view_password_manager_client_unittest.mm",
+    "internal/safe_browsing/cwv_unsafe_url_handler_unittest.mm",
     "internal/signin/cwv_identity_unittest.mm",
     "internal/signin/web_view_device_accounts_provider_impl_unittest.mm",
     "internal/signin/web_view_gaia_auth_fetcher_unittest.mm",
@@ -496,6 +511,7 @@ test("ios_web_view_unittests") {
     "//ios/web/public/security",
     "//ios/web/public/test",
     "//ios/web/public/test:test_fixture",
+    "//net:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
   ]
@@ -517,12 +533,11 @@ test("ios_web_view_inttests") {
   assert_no_deps = ios_assert_no_deps
 }
 
-js_compile_bundle("web_view_main_frame") {
-  closure_entry_point = "__crWeb.webViewMainFrame"
-  sources = [
-    "//components/translate/ios/browser/resources/language_detection.js",
-    "resources/web_view_main_frame.js",
-  ]
+optimize_js("web_view_main_frame") {
+  primary_script =
+      "//components/translate/ios/browser/resources/language_detection.js"
+  sources =
+      [ "//components/translate/ios/browser/resources/language_detection.js" ]
 }
 
 repack_locales("repack_locales") {

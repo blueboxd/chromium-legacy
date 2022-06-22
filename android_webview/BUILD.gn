@@ -14,7 +14,11 @@ import("//build/config/locales.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/trichrome.gni")
+import("//components/safe_browsing/buildflags.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
+import("//device/vr/buildflags/buildflags.gni")
+import("//pdf/features.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_allowlist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
@@ -646,6 +650,8 @@ android_library("browser_java") {
     "//android_webview/nonembedded:system_webview_manifest",
     "//android_webview/proto:metrics_bridge_records_proto_java",
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//components/android_autofill/browser:java",
     "//components/autofill/android:autofill_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
@@ -749,6 +755,7 @@ android_library("common_crash_java") {
   deps = [
     ":common_java",
     "//base:base_java",
+    "//base:jni_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
@@ -784,6 +791,8 @@ android_library("common_java") {
   ]
   deps = [
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//cc/base:cc_base_java",
     "//components/autofill/android:autofill_features_java",
     "//components/feature_engagement/public:public_java",
@@ -877,13 +886,11 @@ repack("repack_pack") {
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
-    "$target_gen_dir/aw_resources.pak",
     "$target_gen_dir/components_resources.pak",
     "$target_gen_dir/mojo_bindings_resources.pak",
     "$target_gen_dir/webui_generated_resources.pak",
   ]
   deps = [
-    ":generate_aw_resources",
     ":generate_components_resources",
     ":generate_mojo_resources",
     ":generate_webui_resources",
@@ -1027,22 +1034,6 @@ android_resources("resources") {
   deps = [ ":strings_grd" ]
 }
 
-grit("generate_aw_resources") {
-  source = "ui/aw_resources.grd"
-  outputs = [
-    "grit/aw_resources.h",
-    "aw_resources.pak",
-  ]
-}
-
-grit("generate_aw_strings") {
-  source = "ui/aw_strings.grd"
-  outputs = [ "grit/aw_strings.h" ]
-  foreach(_locale, all_chrome_locales) {
-    outputs += [ "aw_strings_${_locale}.pak" ]
-  }
-}
-
 grit("generate_webui_resources") {
   enable_input_discovery_for_gn_analyze = false
   defines =
@@ -1113,6 +1104,11 @@ grit("generate_components_resources") {
 
   use_brotli = true
 
+  defines = [
+    "enable_basic_printing=$enable_basic_printing",
+    "safe_browsing_mode=$safe_browsing_mode",
+  ]
+
   # See :generate_webui_resources for an explanation of the allowlist
   _allowlist = rebase_path("$target_gen_dir/grit_resources_allowlist.txt",
                            root_build_dir)
@@ -1135,6 +1131,12 @@ grit("generate_components_resources") {
     "//components/resources:about_credits",
     "//components/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
   ]
+
+  if (safe_browsing_mode != 0) {
+    deps += [
+      "//components/safe_browsing/content/resources:make_file_types_protobuf",
+    ]
+  }
 }
 
 grit("generate_components_scaled_resources") {
@@ -1162,6 +1164,13 @@ grit("generate_components_scaled_resources") {
 
 grit("generate_components_strings") {
   source = "../components/components_strings.grd"
+
+  defines = [
+    "enable_arcore=$enable_arcore",
+    "enable_pdf=$enable_pdf",
+    "enable_print_preview=$enable_print_preview",
+    "enable_vr=$enable_vr",
+  ]
 
   # components_strings contains strings from all components. WebView
   # will never display most of them, so we try to limit the included

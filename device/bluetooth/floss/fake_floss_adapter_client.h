@@ -26,6 +26,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeFlossAdapterClient
   static const char kPhoneAddress[];
   static const char kOldDeviceAddress[];
   static const uint32_t kPasskey;
+  static const uint32_t kHeadsetClassOfDevice;
 
   // Fake overrides.
   void Init(dbus::Bus* bus,
@@ -38,12 +39,21 @@ class DEVICE_BLUETOOTH_EXPORT FakeFlossAdapterClient
                   BluetoothTransport transport) override;
   void RemoveBond(ResponseCallback<bool> callback,
                   FlossDeviceId device) override;
+  void GetRemoteType(ResponseCallback<BluetoothDeviceType> callback,
+                     FlossDeviceId device) override;
+  void GetRemoteClass(ResponseCallback<uint32_t> callback,
+                      FlossDeviceId device) override;
   void GetConnectionState(ResponseCallback<uint32_t> callback,
                           const FlossDeviceId& device) override;
+  void GetRemoteUuids(
+      ResponseCallback<device::BluetoothDevice::UUIDList> callback,
+      FlossDeviceId device) override;
   void GetBondState(ResponseCallback<uint32_t> callback,
                     const FlossDeviceId& device) override;
   void ConnectAllEnabledProfiles(ResponseCallback<Void> callback,
                                  const FlossDeviceId& device) override;
+  void DisconnectAllEnabledProfiles(ResponseCallback<Void> callback,
+                                    const FlossDeviceId& device) override;
   void SetPairingConfirmation(ResponseCallback<Void> callback,
                               const FlossDeviceId& device,
                               bool accept) override;
@@ -61,7 +71,11 @@ class DEVICE_BLUETOOTH_EXPORT FakeFlossAdapterClient
   void NotifyObservers(
       const base::RepeatingCallback<void(Observer*)>& notify) const;
 
+  // Fake discovery failure on next call.
+  void FailNextDiscovery();
+
  private:
+  absl::optional<bool> fail_discovery_;
   base::WeakPtrFactory<FakeFlossAdapterClient> weak_ptr_factory_{this};
 };
 

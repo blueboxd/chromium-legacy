@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/network_utils.h"
@@ -56,8 +55,12 @@ void WorkerModuleScriptFetcher::Fetch(
   if (worker_main_script_load_params) {
     DCHECK_EQ(level_, ModuleGraphLevel::kTopLevelModuleFetch);
 
-    fetch_params.MutableResourceRequest().SetInspectorId(
-        CreateUniqueIdentifier());
+    auto identifier = CreateUniqueIdentifier();
+    if (global_scope_->IsServiceWorkerGlobalScope()) {
+      global_scope_->SetMainResoureIdentifier(identifier);
+    }
+
+    fetch_params.MutableResourceRequest().SetInspectorId(identifier);
     worker_main_script_loader_ = MakeGarbageCollected<WorkerMainScriptLoader>();
     worker_main_script_loader_->Start(
         fetch_params, std::move(worker_main_script_load_params),
@@ -171,7 +174,7 @@ void WorkerModuleScriptFetcher::NotifyClient(
 
     // Step 12.3-12.6 are implemented in Initialize().
     global_scope_->Initialize(
-        response_url, response_referrer_policy, response.AddressSpace(),
+        response_url, response_referrer_policy,
         ParseContentSecurityPolicyHeaders(
             ContentSecurityPolicyResponseHeaders(response)),
         response_origin_trial_tokens.get());

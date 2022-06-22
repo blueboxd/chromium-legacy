@@ -4,8 +4,10 @@
 
 #include "content/browser/site_info.h"
 
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -20,7 +22,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace content {
@@ -91,7 +92,7 @@ constexpr char kOnDiskFallback[] = "ondiskfallback";
 GURL GetSiteURLForGuestPartitionConfig(
     const StoragePartitionConfig& storage_partition_config) {
   DCHECK(!storage_partition_config.is_default());
-  std::string url_encoded_partition = net::EscapeQueryParamValue(
+  std::string url_encoded_partition = base::EscapeQueryParamValue(
       storage_partition_config.partition_name(), false);
   const char* fallback = "";
   switch (
@@ -128,9 +129,9 @@ bool GetGuestPartitionConfigForSite(
   // EscapeQueryParamValue(), it should have no path separators or control codes
   // when unescaped, but safest to check for that and fail if it does.
   std::string partition_name;
-  if (!net::UnescapeBinaryURLComponentSafe(site.query_piece(),
-                                           true /* fail_on_path_separators */,
-                                           &partition_name)) {
+  if (!base::UnescapeBinaryURLComponentSafe(site.query_piece(),
+                                            true /* fail_on_path_separators */,
+                                            &partition_name)) {
     return false;
   }
 
@@ -772,23 +773,28 @@ GURL SiteInfo::GetSiteForURLInternal(const IsolationContext& isolation_context,
                        real_url)
                  : real_url;
 
-  // Navigations to uuid-in-package: URLs served from Web Bundles [1] require
-  // special care to use the origin of the bundle rather than the
-  // uuid-in-package: URL, which lacks any origin information.
+  // Figure out the origin to use for computing the site URL. In most cases,
+  // this should just be `url`'s origin. However, there are some exceptions
+  // where an alternate origin must be used. Namely, for navigations to URLs
+  // served from Web Bundles [1], this should be the origin of the web bundle
+  // rather than the uuid-in-package: URL, which lacks any origin information.
+  // For LoadDataWithBaseURL navigations, this should be the origin of the base
+  // URL rather than the data URL. In these cases, we should use the alternate
+  // origin which will be passed through UrlInfo, ensuring to use its precursor
+  // if the origin is opaque (as will be the case for Web Bundles) to still
+  // compute a meaningful site URL.
+  //
   // [1] bit.ly/subresource-web-bundles-doc
-  // TODO(acolwell): Update this so we can use url::Origin::Resolve() for all
-  // cases.
   url::Origin origin;
-  if (url.SchemeIs(url::kUuidInPackageScheme) &&
-      real_url_info.origin.opaque()) {
-    auto precursor = real_url_info.origin.GetTupleOrPrecursorTupleIfOpaque();
+  bool scheme_allows_origin_override =
+      url.SchemeIs(url::kUuidInPackageScheme) || url.SchemeIs(url::kDataScheme);
+  if (real_url_info.origin.has_value() && scheme_allows_origin_override) {
+    auto precursor = real_url_info.origin->GetTupleOrPrecursorTupleIfOpaque();
     if (precursor.IsValid()) {
-      // Use the precursor as the origin. This should be the origin of the
-      // bundle.
       origin = url::Origin::CreateFromNormalizedTuple(
           precursor.scheme(), precursor.host(), precursor.port());
     } else {
-      origin = url::Origin::Resolve(url, real_url_info.origin);
+      origin = url::Origin::Resolve(url, real_url_info.origin.value());
     }
   } else {
     origin = url::Origin::Create(url);

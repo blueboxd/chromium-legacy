@@ -299,7 +299,7 @@ void LoginScreenController::ShowKioskAppError(const std::string& message) {
   ToastData toast_data("KioskAppError", ToastCatalogName::kKioskAppError,
                        base::UTF8ToUTF16(message), ToastData::kInfiniteDuration,
                        /*visible_on_lock_screen=*/true,
-                       /*dismiss_text=*/std::u16string());
+                       /*has_dismiss_button=*/true);
   Shell::Get()->toast_manager()->Show(toast_data);
 }
 
@@ -430,13 +430,20 @@ void LoginScreenController::ShowLoginScreen() {
 }
 
 void LoginScreenController::SetKioskApps(
-    const std::vector<KioskAppMenuEntry>& kiosk_apps,
+    const std::vector<KioskAppMenuEntry>& kiosk_apps) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetKioskApps(kiosk_apps);
+}
+
+void LoginScreenController::ConfigureKioskCallbacks(
     const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
     const base::RepeatingClosure& on_show_menu) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
-      ->SetKioskApps(kiosk_apps, launch_app, on_show_menu);
+      ->ConfigureKioskCallbacks(launch_app, on_show_menu);
 }
 
 void LoginScreenController::HandleAccelerator(

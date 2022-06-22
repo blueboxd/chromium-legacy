@@ -15,8 +15,9 @@ var I18nMenuItem;
  * @polymer
  */
 class OobeI18nDropdown extends Polymer.Element {
-
-  static get is() { return 'oobe-i18n-dropdown'; }
+  static get is() {
+    return 'oobe-i18n-dropdown';
+  }
 
   /* #html_template_placeholder */
 
@@ -70,7 +71,7 @@ class OobeI18nDropdown extends Polymer.Element {
     // Otherwise, given that setupSelect does not remove previously registered
     // listeners, each new item list change would cause additional 'select-item'
     // events when selection changes.
-    let selectionCallback =
+    const selectionCallback =
         !this.idToItem_ ? this.onSelected_.bind(this) : null;
     this.idToItem_ = new Map();
     for (var i = 0; i < items.length; ++i) {

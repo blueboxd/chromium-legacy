@@ -18,6 +18,7 @@ import androidx.annotation.StringDef;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Promise;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -34,7 +35,10 @@ import org.chromium.components.browser_ui.widget.impression.OneShotImpressionLis
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
+import org.chromium.components.signin.Tribool;
+import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -210,10 +214,16 @@ public class SigninPromoController {
             return false;
         }
         final @Nullable Account visibleAccount = getVisibleAccount();
-        final AccountManagerFacade accountManagerFacade =
-                AccountManagerFacadeProvider.getInstance();
-        return visibleAccount == null
-                || accountManagerFacade.canOfferExtendedSyncPromos(visibleAccount).or(false);
+        if (visibleAccount == null) {
+            return true;
+        }
+        final Promise<AccountInfo> visibleAccountPromise =
+                AccountInfoServiceProvider.get().getAccountInfoByEmail(visibleAccount.name);
+        return visibleAccountPromise.isFulfilled()
+                && visibleAccountPromise.getResult()
+                           .getAccountCapabilities()
+                           .canOfferExtendedSyncPromos()
+                == Tribool.TRUE;
     }
 
     private static boolean canShowSettingsPromo() {
@@ -496,7 +506,11 @@ public class SigninPromoController {
 
         view.getDescription().setText(mDescriptionStringIdNoAccount);
 
-        view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON)) {
+            view.getPrimaryButton().setText(R.string.sync_promo_continue);
+        } else {
+            view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
+        }
         view.getPrimaryButton().setOnClickListener(v -> signinWithNewAccount(context));
 
         view.getSecondaryButton().setVisibility(View.GONE);
@@ -511,19 +525,24 @@ public class SigninPromoController {
         view.getDescription().setText(mDescriptionStringId);
 
         view.getPrimaryButton().setOnClickListener(v -> signinWithDefaultAccount(context));
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON)) {
+            view.getPrimaryButton().setText(R.string.sync_promo_continue);
+            view.getSecondaryButton().setVisibility(View.GONE);
+            return;
+        }
         if (IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
                         .hasPrimaryAccount(ConsentLevel.SIGNIN)) {
             view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
             view.getSecondaryButton().setVisibility(View.GONE);
-        } else {
-            view.getPrimaryButton().setText(context.getString(R.string.signin_promo_continue_as,
-                    mProfileData.getGivenNameOrFullNameOrEmail()));
-
-            view.getSecondaryButton().setText(R.string.signin_promo_choose_another_account);
-            view.getSecondaryButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
-            view.getSecondaryButton().setVisibility(View.VISIBLE);
+            return;
         }
+        view.getPrimaryButton().setText(context.getString(
+                R.string.signin_promo_continue_as, mProfileData.getGivenNameOrFullNameOrEmail()));
+
+        view.getSecondaryButton().setText(R.string.signin_promo_choose_another_account);
+        view.getSecondaryButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
+        view.getSecondaryButton().setVisibility(View.VISIBLE);
     }
 
     private int getNumImpressions() {

@@ -68,7 +68,7 @@ android_library("public_java") {
 
 android_library("public_ui_java") {
   deps = [
-    "//base:base_java",
+    "//base:jni_java",
     "//url:gurl_java",
   ]
   sources = [
@@ -90,6 +90,7 @@ junit_binary("password_check_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//build/android:build_java",
     "//chrome/browser/device_reauth/android:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/password_check/android:password_check_java_enums",
@@ -121,8 +122,8 @@ android_library("test_java") {
     ":public_ui_java",
     "internal:internal_java",
     "internal:internal_ui_factory_java",
-    "//base:base_java",
     "//base:base_java_test_support",
+    "//build/android:build_java",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_java",
     "//chrome/android:chrome_test_util_java",

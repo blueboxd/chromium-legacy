@@ -14,6 +14,7 @@ preprocessed_files = [
   "downloads_page_test.ts",
   "password_check_test.ts",
   "password_edit_dialog_test.ts",
+  "password_view_test.ts",
   "people_page_test.ts",
   "people_page_sync_page_test.ts",
   "personalization_options_test.ts",

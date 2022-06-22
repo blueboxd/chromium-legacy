@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "base/strings/escape.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -13,6 +15,7 @@
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -23,7 +26,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/render_document_feature.h"
-#include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -3399,8 +3401,14 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 }
 
 // This test is a reproducer for https://crbug.com/1305394.
+// This test is flaky on Mac: https://crbug.com/1319301
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CrossOriginIframeCoopBypass DISABLED_CrossOriginIframeCoopBypass
+#else
+#define MAYBE_CrossOriginIframeCoopBypass CrossOriginIframeCoopBypass
+#endif
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
-                       CrossOriginIframeCoopBypass) {
+                       MAYBE_CrossOriginIframeCoopBypass) {
   // This test requires that a cross-origin iframe be placed in its own
   // process. It is irrelevant without strict site isolation.
   if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites())

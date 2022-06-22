@@ -44,12 +44,19 @@ export const ButtonState = {
   HIDDEN: 'hidden'
 };
 
+/** @type {number} */
+const HEADER_FOOTER_HEIGHT_PX = 80;
+
+/** @type {number} */
+const OOBE_LARGE_SCREEN_WIDTH_PX = 80;
+
 /**
  * @typedef {{
  *  componentIs: string,
  *  requiresReloadWhenShown: boolean,
  *  buttonNext: !ButtonState,
  *  buttonNextLabelKey: ?string,
+ *  buttonCancelLabelKey: ?string,
  *  buttonCancel: !ButtonState,
  *  buttonBack: !ButtonState,
  * }}
@@ -130,7 +137,7 @@ export const StateComponentMapping = {
   [State.kWaitForManualWPDisable]: {
     componentIs: 'onboarding-wait-for-manual-wp-disable-page',
     requiresReloadWhenShown: true,
-    buttonNext: ButtonState.DISABLED,
+    buttonNext: ButtonState.HIDDEN,
     buttonCancel: ButtonState.VISIBLE,
     buttonBack: ButtonState.VISIBLE,
   },
@@ -159,8 +166,8 @@ export const StateComponentMapping = {
     componentIs: 'reimaging-calibration-failed-page',
     requiresReloadWhenShown: true,
     buttonNext: ButtonState.DISABLED,
-    buttonNextLabelKey: 'skipButtonLabel',
-    buttonCancel: ButtonState.HIDDEN,
+    buttonCancelLabelKey: 'calibrationFailedSkipCalibrationButtonLabel',
+    buttonCancel: ButtonState.VISIBLE,
     buttonBack: ButtonState.VISIBLE,
   },
   [State.kRunCalibration]: {
@@ -187,8 +194,8 @@ export const StateComponentMapping = {
   [State.kWaitForManualWPEnable]: {
     componentIs: 'wrapup-wait-for-manual-wp-enable-page',
     requiresReloadWhenShown: true,
-    buttonNext: ButtonState.DISABLED,
-    buttonCancel: ButtonState.VISIBLE,
+    buttonNext: ButtonState.HIDDEN,
+    buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.VISIBLE,
   },
   [State.kRestock]: {
@@ -200,7 +207,7 @@ export const StateComponentMapping = {
   },
   [State.kFinalize]: {
     componentIs: 'wrapup-finalize-page',
-    buttonNext: ButtonState.VISIBLE,
+    buttonNext: ButtonState.HIDDEN,
     buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.VISIBLE,
   },
@@ -388,6 +395,15 @@ export class ShimlessRma extends ShimlessRmaBase {
     };
 
     /**
+     * The nextButtonCallback_ callback is used by the landing page to simulate
+     * the next button being clicked.
+     * @private {?Function}
+     */
+    this.nextButtonCallback_ = (e) => {
+      this.onNextButtonClicked_();
+    };
+
+    /**
      * The setNextButtonLabelCallback callback is used by page elements to set
      * the text label for the 'Next' button.
      * @private {?Function}
@@ -411,6 +427,7 @@ export class ShimlessRma extends ShimlessRmaBase {
     window.addEventListener(
         'enable-all-buttons', this.enableAllButtonsCallback_);
     window.addEventListener('click-cancel-button', this.cancelButtonCallback_);
+    window.addEventListener('click-next-button', this.nextButtonCallback_);
   }
 
   /** @override */
@@ -427,11 +444,32 @@ export class ShimlessRma extends ShimlessRmaBase {
         'enable-all-buttons', this.enableAllButtonsCallback_);
     window.removeEventListener(
         'click-cancel-button', this.cancelButtonCallback_);
+    window.removeEventListener('click-next-button', this.nextButtonCallback_);
   }
 
   /** @override */
   ready() {
     super.ready();
+
+    this.style.setProperty(
+        '--header-footer-height', `${HEADER_FOOTER_HEIGHT_PX}px`);
+
+    const screenWidth = window.innerWidth;
+    const containerHorizontalPadding =
+        screenWidth > OOBE_LARGE_SCREEN_WIDTH_PX ? ((screenWidth - 1040) / 2) :
+                                                   (screenWidth * .08);
+    this.style.setProperty(
+        '--container-horizontal-padding', `${containerHorizontalPadding}px`);
+
+    const screenHeight = window.innerHeight;
+    const containerVerticalPadding = screenHeight * .06;
+    this.style.setProperty(
+        '--container-vertical-padding', `${containerVerticalPadding}px`);
+
+    const contentContainerHeight = screenHeight -
+        (containerVerticalPadding * 2) - (HEADER_FOOTER_HEIGHT_PX * 2);
+    this.style.setProperty(
+        '--content-container-height', `${contentContainerHeight}px`);
 
     const splashComponent = this.loadComponent_(this.currentPage_.componentIs);
     splashComponent.hidden = false;
@@ -443,16 +481,15 @@ export class ShimlessRma extends ShimlessRmaBase {
   }
 
   /**
-   * @private
    * @param {!StateResult} stateResult
+   * @private
    */
   processStateResult_(stateResult) {
     // Do not show the state screen if the critical error screen was shown.
     if (this.handleStandardAndCriticalError_(stateResult.error)) {
       return;
     }
-    this.showState_(
-        stateResult.state, stateResult.canCancel, stateResult.canGoBack);
+    this.showState_(stateResult);
   }
 
   /** @param {!RmadErrorCode} error */
@@ -461,15 +498,21 @@ export class ShimlessRma extends ShimlessRmaBase {
   }
 
   /**
-   * @private
    * @param {!RmadErrorCode} error
    * @return {boolean}
+   * @private
    * Returns true if the critical error screen was displayed.
    */
   handleStandardAndCriticalError_(error) {
     // Critical error - expected to be in RMA.
     if (error === RmadErrorCode.kRmaNotRequired) {
-      this.showState_(State.kUnknown, false, false);
+      const errorState = {
+        state: State.kUnknown,
+        canCancel: false,
+        canGoBack: false,
+        error: RmadErrorCode.kRmaNotRequired
+      };
+      this.showState_(errorState);
       return true;
     }
 
@@ -477,51 +520,49 @@ export class ShimlessRma extends ShimlessRmaBase {
   }
 
   /**
+   * @param {!StateResult} stateResult
    * @private
-   * @param {!State} state
-   * @param {boolean} canCancel
-   * @param {boolean} canGoBack
    */
-  showState_(state, canCancel, canGoBack) {
-    const pageInfo = StateComponentMapping[state];
-    assert(pageInfo);
+  showState_(stateResult) {
+    // Reset clicked variables to hide the spinners.
     this.nextButtonClicked_ = false;
     this.backButtonClicked_ = false;
     this.cancelButtonClicked_ = false;
-    if (!canCancel) {
-      pageInfo.buttonCancel = ButtonState.HIDDEN;
+
+    const nextStatePageInfo = StateComponentMapping[stateResult.state];
+    assert(nextStatePageInfo);
+
+    if (this.currentPage_.requiresReloadWhenShown) {
+      this.removeComponent_(this.currentPage_.componentIs);
     }
 
-    if (!canGoBack) {
-      pageInfo.buttonBack = ButtonState.HIDDEN;
-    }
+    // Only perform the below actions if the page needs to change or reload.
+    const shouldLoadNextPage = this.currentPage_ !== nextStatePageInfo ||
+        this.currentPage_.requiresReloadWhenShown;
+    if (shouldLoadNextPage) {
+      this.hideAllComponents_();
 
-    // TODO(gavindodd): Replace this with 'dom-if' in html.
-    if (!!this.currentPage_ && this.currentPage_.requiresReloadWhenShown) {
-      let component =
-          this.shadowRoot.querySelector(`#${this.currentPage_.componentIs}`);
-      if (component !== null) {
-        component.remove();
-        component = null;
+      // Set the next page as the current page.
+      this.currentPage_ = nextStatePageInfo;
+      if (!stateResult.canCancel) {
+        this.currentPage_.buttonCancel = ButtonState.HIDDEN;
       }
-    } else if (pageInfo == this.currentPage_) {
-      this.setAllButtonsState_(
-          /* shouldDisableButtons= */ false, /* showBusyStateOverlay= */ false);
-      // Make sure all button states are correct.
-      this.notifyPath('currentPage_.buttonNext');
-      this.notifyPath('currentPage_.buttonBack');
-      this.notifyPath('currentPage_.buttonCancel');
-      return;
-    }
-    this.currentPage_ = pageInfo;
-    let component =
-        this.shadowRoot.querySelector(`#${this.currentPage_.componentIs}`);
-    if (component === null) {
-      component = this.loadComponent_(this.currentPage_.componentIs);
+      if (!stateResult.canGoBack) {
+        this.currentPage_.buttonBack = ButtonState.HIDDEN;
+      }
+
+      // Load the next page so it's visible.
+      const currentPageComponent =
+          this.loadComponent_(this.currentPage_.componentIs);
+      currentPageComponent.hidden = false;
+      currentPageComponent.errorCode = stateResult.error;
+
+      // A special case for the landing page, which has its own navigation
+      // buttons.
+      currentPageComponent.getStartedButtonClicked = false;
+      currentPageComponent.landingCancelButtonClicked = false;
     }
 
-    this.hideAllComponents_();
-    component.hidden = false;
     this.setAllButtonsState_(
         /* shouldDisableButtons= */ false, /* showBusyStateOverlay= */ false);
   }
@@ -536,10 +577,27 @@ export class ShimlessRma extends ShimlessRmaBase {
 
   /**
    * @param {string} componentIs
+   * @private
+   */
+  removeComponent_(componentIs) {
+    const currentPageComponent =
+        this.shadowRoot.querySelector(`#${componentIs}`);
+    assert(!!currentPageComponent);
+    currentPageComponent.remove();
+  }
+
+  /**
+   * @param {string} componentIs
    * @return {!Element}
    * @private
    */
   loadComponent_(componentIs) {
+    const alreadyLoadedComponent =
+        this.shadowRoot.querySelector(`#${componentIs}`);
+    if (alreadyLoadedComponent) {
+      return alreadyLoadedComponent;
+    }
+
     const shimlessBody = this.shadowRoot.querySelector('#contentContainer');
 
     /** @type {!Element} */
@@ -558,17 +616,17 @@ export class ShimlessRma extends ShimlessRmaBase {
   }
 
   /**
-   * @protected
    * @param {ButtonState} button
+   * @protected
    */
   isButtonDisabled_(button) {
     return (button === ButtonState.DISABLED) || this.allButtonsDisabled_;
   }
 
   /**
-   * @protected
    * @param {boolean} shouldDisableButtons
    * @param {boolean} showBusyStateOverlay
+   * @protected
    */
   setAllButtonsState_(shouldDisableButtons, showBusyStateOverlay) {
     // `showBusyStateOverlay` should only be true when disabling all buttons.
@@ -635,10 +693,27 @@ export class ShimlessRma extends ShimlessRmaBase {
     this.cancelButtonClicked_ = true;
     this.setAllButtonsState_(
         /* shouldDisableButtons= */ true, /* showBusyStateOverlay= */ true);
-    this.shimlessRmaService_.abortRma().then((result) => {
-      this.cancelButtonClicked_ = false;
-      this.handleStandardAndCriticalError_(result.error);
-    });
+    const page = this.shadowRoot.querySelector(this.currentPage_.componentIs);
+    if (page.onCancelButtonClick) {
+      // A special case for the calibration failed page, where the skip button
+      // replaces the cancel button.
+      // TODO(swifton): find a more straightforward solution for this case.
+      page.onCancelButtonClick()
+          .then((stateResult) => {
+            this.processStateResult_(stateResult);
+          })
+          .catch((err) => {
+            this.cancelButtonClicked_ = false;
+            this.setAllButtonsState_(
+                /* shouldDisableButtons= */ false,
+                /* showBusyStateOverlay= */ false);
+          });
+    } else {
+      this.shimlessRmaService_.abortRma().then((result) => {
+        this.cancelButtonClicked_ = false;
+        this.handleStandardAndCriticalError_(result.error);
+      });
+    }
   }
 
   /**
@@ -650,6 +725,17 @@ export class ShimlessRma extends ShimlessRmaBase {
         this.currentPage_.buttonNextLabelKey ?
             this.currentPage_.buttonNextLabelKey :
             'nextButtonLabel');
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getCancelButtonLabel_() {
+    return this.i18n(
+        this.currentPage_.buttonCancelLabelKey ?
+            this.currentPage_.buttonCancelLabelKey :
+            'cancelButtonLabel');
   }
 }
 

@@ -16,6 +16,7 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//build/android:build_java",
     "//chrome/android/features/start_surface:public_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/profiles/android:java",
@@ -60,7 +61,6 @@ android_library("javatests") {
 
   deps = [
     ":java",
-    "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/browser/search_engines/android:java",
     "//chrome/test/android:chrome_java_test_support",
@@ -88,6 +88,7 @@ android_library("junit") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//build/android:build_java",
     "//chrome/android:chrome_java",
     "//chrome/android/features/start_surface:public_java",
     "//chrome/browser/flags:java",

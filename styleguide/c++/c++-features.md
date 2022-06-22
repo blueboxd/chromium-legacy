@@ -11,8 +11,9 @@ support._
 The C++ language has in recent years received an updated standard every three
 years (C++11, C++14, etc.). For various reasons, Chromium does not immediately
 allow new features on the publication of such a standard. Instead, once
-toolchain support is sufficient, a standard is declared "initially supported",
-with new language/library features banned pending discussion.
+Chromium supports the toolchain to a certain extent (e.g., build support is
+ready), a standard is declared "_initially supported_", with new
+language/library features banned pending discussion but not yet allowed.
 
 You can propose changing the status of a feature by sending an email to
 [cxx@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/cxx).
@@ -692,6 +693,44 @@ Prefer range-based for loops over `std::size()`: range-based for loops work even
 for regular arrays.
 ***
 
+### std::is_invocable <sup>[allowed]</sup>
+
+```c++
+std::is_invocable_v<Fn, 1, "Hello">
+```
+
+**Description:** Checks whether a function may be invoked with the given
+argument types.  The `_r` variant also evaluates whether the result is
+convertible to a given type.
+
+**Documentation:**
+[std::is_invocable](https://en.cppreference.com/w/cpp/types/is_invocable)
+
+**Notes:**
+*** promo
+[Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/YhlF_sTDSc0/m/QMzf42BtAAAJ)
+***
+
+### std::conjunction/std::disjunction/std::negation <sup>[allowed]</sup>
+
+```c++
+template<typename T, typename... Ts>
+std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>
+func(T, Ts...) { ...
+```
+
+**Description:** Performs logical operations on type traits.
+
+**Documentation:**
+[std::conjunction](https://en.cppreference.com/w/cpp/types/conjunction),
+[std::disjunction](https://en.cppreference.com/w/cpp/types/disjunction),
+[std::negation](https://en.cppreference.com/w/cpp/types/negation)
+
+**Notes:**
+*** promo
+[Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/YhlF_sTDSc0/m/QMzf42BtAAAJ)
+***
+
 ## C++17 Banned Library Features {#library-blocklist-17}
 
 The following C++17 library features are not allowed in the Chromium codebase.
@@ -861,6 +900,29 @@ Banned for now because it does not provide safety guarantees in the case of
 misuse. The Chromium C++ team is investigating the possibility of hardening the
 C++ library so that the standard version can be used. In the meanwhile, use
 `absl::optional` instead.
+***
+
+### std::in_place/in_place_type/in_place_index/in_place_t/in_place_type_t/in_place_index_t <sup>[banned]</sup>
+
+```c++
+std::optional<std::complex<double>> opt{std::in_place, 0, 1};
+std::variant<int, float> v{std::in_place_type<int>, 1.4};
+```
+
+**Description:** The `std::in_place` are disambiguation tags for
+`std::optional`, `std::variant`, and `std::any` to indicate that the object
+should be constructed in-place.
+
+**Documentation:**
+[std::in_place](https://en.cppreference.com/w/cpp/utility/in_place)
+
+**Notes:**
+*** promo
+Banned for now because `std::optional`, `std::variant`, and `std::any` are all
+banned for now. Because `absl::optional` and `absl::variant` are used instead,
+and they require `absl::in_place`, use `absl::in_place` for non-Abseil Chromium
+code. See the
+[discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/ZspmuJPpv6s/m/wYYTCiRwAAAJ).
 ***
 
 ### std::clamp <sup>[banned]</sup>
@@ -1258,26 +1320,6 @@ int* p2 = static_cast<int*>(std::aligned_alloc(1024, 1024));
 None
 ***
 
-### std::conjunction/std::disjunction/std::negation <sup>[tbd]</sup>
-
-```c++
-template<typename T, typename... Ts>
-std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>
-func(T, Ts...) { ...
-```
-
-**Description:** Performs logical operations on type traits.
-
-**Documentation:**
-[std::conjunction](https://en.cppreference.com/w/cpp/types/conjunction),
-[std::disjunction](https://en.cppreference.com/w/cpp/types/disjunction),
-[std::negation](https://en.cppreference.com/w/cpp/types/negation)
-
-**Notes:**
-*** promo
-None
-***
-
 ### std::is_swappable <sup>[tbd]</sup>
 
 ```c++
@@ -1289,24 +1331,6 @@ std::is_swappable_with_v<T, U>
 
 **Documentation:**
 [std::is_swappable](https://en.cppreference.com/w/cpp/types/is_swappable)
-
-**Notes:**
-*** promo
-None
-***
-
-### std::is_invocable <sup>[tbd]</sup>
-
-```c++
-std::is_invocable_v<Fn, 1, "Hello">
-```
-
-**Description:** Checks whether a function may be invoked with the given
-argument types.  The `_r` variant also evaluates whether the result is
-convertible to a given type.
-
-**Documentation:**
-[std::is_invocable](https://en.cppreference.com/w/cpp/types/is_invocable)
 
 **Notes:**
 *** promo
@@ -1674,6 +1698,24 @@ absl::variant
 **Notes:**
 *** promo
 [Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/DqvG-TpvMyU)
+***
+
+### in_place <sup>[allowed]</sup>
+
+```c++
+absl::in_place
+```
+
+**Description:** Early adaptation of C++17 `std::in_place`.
+
+**Documentation:**
+[std::in_place](https://en.cppreference.com/w/cpp/utility/in_place)
+
+**Notes:**
+*** promo
+Because the Abseil versions of `optional` and `variant` are used, the Abseil
+version of `in_place` is used in Chromium. See the
+[discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/ZspmuJPpv6s/m/wYYTCiRwAAAJ).
 ***
 
 ## Abseil Banned Library Features {#absl-blocklist}

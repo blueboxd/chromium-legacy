@@ -24,6 +24,17 @@
 #include "net/cert/x509_util.h"
 #include "net/test/cert_builder.h"
 
+// NOTE: Some tests in this file modify the certificate store. That is
+// potentially a lasting side effect that can affect other tests.
+// * To prevent interference with tests that are run in parallel, these tests
+// are a part of lacros_chrome_browsertests_run_in_series test suite.
+// * To prevent interference with following tests, they try to clean up all the
+// side effects themself, e.g. if a test adds a cert, it is also responsible for
+// deleting it.
+// Subsequent runs of lacros browser tests share the same ash-chrome instance
+// and thus also the same user certificate database. The certificate database is
+// not cleaned automatically between tests because of performance concerns.
+
 namespace {
 
 namespace is_cert_in_nss {
@@ -189,12 +200,11 @@ IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest,
   crosapi::mojom::DEPRECATED_ExtensionKeystoreBinaryResultPtr result;
   crosapi::mojom::KeystoreServiceAsyncWaiter async_waiter(
       keystore_service_remote().get());
-  crosapi::mojom::KeystoreSigningAlgorithmPtr algo =
-      crosapi::mojom::KeystoreSigningAlgorithm::New();
   crosapi::mojom::KeystorePKCS115ParamsPtr params =
       crosapi::mojom::KeystorePKCS115Params::New();
   params->modulus_length = 1024;
-  algo->set_pkcs115(std::move(params));
+  crosapi::mojom::KeystoreSigningAlgorithmPtr algo =
+      crosapi::mojom::KeystoreSigningAlgorithm::NewPkcs115(std::move(params));
   async_waiter.DEPRECATED_ExtensionGenerateKey(
       crosapi::mojom::KeystoreType::kUser, std::move(algo),
       /*extension_id=*/"123", &result);
@@ -214,12 +224,11 @@ IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest,
   crosapi::mojom::DEPRECATED_ExtensionKeystoreBinaryResultPtr result;
   crosapi::mojom::KeystoreServiceAsyncWaiter async_waiter(
       keystore_service_remote().get());
-  crosapi::mojom::KeystoreSigningAlgorithmPtr algo =
-      crosapi::mojom::KeystoreSigningAlgorithm::New();
   crosapi::mojom::KeystoreECDSAParamsPtr params =
       crosapi::mojom::KeystoreECDSAParams::New();
   params->named_curve = "P-256";
-  algo->set_ecdsa(std::move(params));
+  crosapi::mojom::KeystoreSigningAlgorithmPtr algo =
+      crosapi::mojom::KeystoreSigningAlgorithm::NewEcdsa(std::move(params));
   async_waiter.DEPRECATED_ExtensionGenerateKey(
       crosapi::mojom::KeystoreType::kUser, std::move(algo),
       /*extension_id=*/"123", &result);
@@ -265,13 +274,9 @@ IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest, CertificateBadFormat) {
   EXPECT_EQ(result, expected_error);
 }
 
-// TODO(b/219968355): Enable the test when it user directory in Ash is cleaned
-// in between tests (otherwise side effects of this test are leaking into the
-// other ones).
 // Tests that importing a correct certificate works and that it becomes visible
-// in both Ash and Lacros.
-IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest,
-                       DISABLED_AddCertificate) {
+// in both Ash and Lacros. Tests that removing a certificate works.
+IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest, AddRemoveCertificate) {
   crosapi::mojom::KeystoreServiceAsyncWaiter async_waiter(
       keystore_service_remote().get());
 
@@ -291,11 +296,11 @@ IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest,
   std::vector<uint8_t> cert_der = CertToDer(cert);
 
   // Make Ash import the certificate.
-  bool add_cert_is_error = false;
-  crosapi::mojom::KeystoreError add_cert_error;
+  bool result_is_error = false;
+  crosapi::mojom::KeystoreError result_error;
   async_waiter.AddCertificate(crosapi::mojom::KeystoreType::kUser, cert_der,
-                              &add_cert_is_error, &add_cert_error);
-  ASSERT_FALSE(add_cert_is_error) << "Error: " << add_cert_error;
+                              &result_is_error, &result_error);
+  ASSERT_FALSE(result_is_error) << "Error: " << result_error;
 
   // Test that Lacros can see the certificate that was imported by Ash.
   EXPECT_TRUE(
@@ -307,6 +312,21 @@ IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest,
                                &get_certs_result);
   ASSERT_FALSE(get_certs_result->is_error());
   EXPECT_TRUE(base::Contains(get_certs_result->get_certificates(), cert_der));
+
+  // Make Ash remove the certificate.
+  async_waiter.RemoveCertificate(crosapi::mojom::KeystoreType::kUser, cert_der,
+                                 &result_is_error, &result_error);
+  ASSERT_FALSE(result_is_error) << "Error: " << result_error;
+
+  // Test that Lacros cannot see the certificate anymore.
+  EXPECT_FALSE(
+      is_cert_in_nss::IsCertInNSSDatabase(browser()->profile(), cert_der));
+
+  // Test that Ash doesn't return the imported certificate anymore.
+  async_waiter.GetCertificates(crosapi::mojom::KeystoreType::kUser,
+                               &get_certs_result);
+  ASSERT_FALSE(get_certs_result->is_error());
+  EXPECT_FALSE(base::Contains(get_certs_result->get_certificates(), cert_der));
 }
 
 }  // namespace

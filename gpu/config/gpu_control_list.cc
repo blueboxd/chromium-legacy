@@ -17,6 +17,7 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 #include "gpu/config/gpu_util.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -102,6 +103,9 @@ int CompareLexicalNumberStrings(
 bool StringMismatch(const std::string& input, const std::string& pattern) {
   if (input.empty() || pattern.empty())
     return false;
+  static crash_reporter::CrashKeyString<128> crash_key(
+      "StringMismatch::pattern");
+  crash_reporter::ScopedCrashKeyString scoped_crash_key(&crash_key, pattern);
   return !RE2::FullMatch(input, pattern);
 }
 
@@ -110,6 +114,43 @@ bool StringMismatch(const std::string& input, const char* pattern) {
     return false;
   std::string pattern_string(pattern);
   return StringMismatch(input, pattern_string);
+}
+
+bool ProcessANGLEGLRenderer(const std::string& gl_renderer,
+                            std::string* vendor,
+                            std::string* renderer,
+                            std::string* version) {
+  constexpr char kANGLEPrefix[] = "ANGLE (";
+  if (!base::StartsWith(gl_renderer, kANGLEPrefix))
+    return false;
+
+  std::vector<std::string> segments;
+  // ANGLE GL_RENDERER string:
+  // ANGLE (vendor,renderer,version)
+  size_t len = gl_renderer.size();
+  std::string vendor_renderer_version =
+      gl_renderer.substr(sizeof(kANGLEPrefix) - 1, len - sizeof(kANGLEPrefix));
+  segments = base::SplitString(vendor_renderer_version, ",",
+                               base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (segments.size() != 3) {
+    LOG(DFATAL) << "Cannot parse ANGLE GL_RENDERER: " << gl_renderer;
+    return false;
+  }
+
+  // Check ANGLE backend.
+  // It could be `OpenGL, D3D, Vulkan, etc`
+  if (!base::StartsWith(segments[2], "OpenGL")) {
+    return false;
+  }
+
+  if (vendor)
+    *vendor = segments[0];
+  if (renderer)
+    *renderer = segments[1];
+  if (version)
+    *version = segments[2];
+
+  return true;
 }
 
 }  // namespace
@@ -298,14 +339,24 @@ bool GpuControlList::DriverInfo::Contains(
 }
 
 bool GpuControlList::GLStrings::Contains(const GPUInfo& gpu_info) const {
-  if (StringMismatch(gpu_info.gl_version, gl_version))
-    return false;
-  if (StringMismatch(gpu_info.gl_vendor, gl_vendor))
-    return false;
-  if (StringMismatch(gpu_info.gl_renderer, gl_renderer))
-    return false;
   if (StringMismatch(gpu_info.gl_extensions, gl_extensions))
     return false;
+
+  std::string vendor;
+  std::string renderer;
+  std::string version;
+  bool is_angle_gl = ProcessANGLEGLRenderer(gpu_info.gl_renderer, &vendor,
+                                            &renderer, &version);
+  if (StringMismatch(is_angle_gl ? vendor : gpu_info.gl_vendor, gl_vendor)) {
+    return false;
+  }
+  if (StringMismatch(is_angle_gl ? renderer : gpu_info.gl_renderer,
+                     gl_renderer)) {
+    return false;
+  }
+  if (StringMismatch(is_angle_gl ? version : gpu_info.gl_version, gl_version)) {
+    return false;
+  }
   return true;
 }
 
@@ -333,9 +384,14 @@ bool GpuControlList::MachineModelInfo::Contains(const GPUInfo& gpu_info) const {
 }
 
 bool GpuControlList::More::Contains(const GPUInfo& gpu_info) const {
-  if (GLVersionInfoMismatch(gpu_info.gl_version)) {
+  std::string gl_version_string;
+  bool is_angle_gl = ProcessANGLEGLRenderer(gpu_info.gl_renderer, nullptr,
+                                            nullptr, &gl_version_string);
+  if (GLVersionInfoMismatch(is_angle_gl ? gl_version_string
+                                        : gpu_info.gl_version)) {
     return false;
   }
+
   if (gl_reset_notification_strategy != 0 &&
       gl_reset_notification_strategy !=
           gpu_info.gl_reset_notification_strategy) {
@@ -537,6 +593,10 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
 bool GpuControlList::Entry::Contains(OsType target_os_type,
                                      const std::string& target_os_version,
                                      const GPUInfo& gpu_info) const {
+  static crash_reporter::CrashKeyString<8> crash_key(
+      "GpuControlList::Entry::id");
+  crash_reporter::ScopedCrashKeyString scoped_crash_key(
+      &crash_key, base::StringPrintf("%d", id));
   if (!conditions.Contains(target_os_type, target_os_version, gpu_info)) {
     return false;
   }

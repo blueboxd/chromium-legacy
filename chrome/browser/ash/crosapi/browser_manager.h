@@ -27,9 +27,12 @@
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler_observer.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_service_observer.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/values_util.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -48,6 +51,10 @@ namespace ash {
 class ApkWebAppService;
 }
 
+namespace policy {
+class CloudPolicyCore;
+}
+
 namespace crosapi {
 namespace mojom {
 class Crosapi;
@@ -64,8 +71,10 @@ using component_updater::ComponentUpdateService;
 // component updater for future updates. This class is a part of ash-chrome.
 class BrowserManager : public session_manager::SessionManagerObserver,
                        public BrowserServiceHostObserver,
+                       public policy::CloudPolicyCore::Observer,
                        public policy::CloudPolicyStore::Observer,
                        public policy::ComponentCloudPolicyServiceObserver,
+                       public policy::CloudPolicyRefreshSchedulerObserver,
                        public ComponentUpdateService::Observer {
  public:
   // Static getter of BrowserManager instance. In real use cases,
@@ -201,6 +210,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // enters the session. This method should be called at the appropriate time.
   void InitializeAndStart();
 
+  // Returns true if keep-alive is enabled.
+  bool IsKeepAliveEnabled() const;
+
   // Returns true if crosapi interface supports GetFeedbackData API.
   bool GetFeedbackDataSupported() const;
 
@@ -268,9 +280,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
     // An fd for a log file.
     base::ScopedFD logfd;
-
-    // Whether this version of Lacros supports the new account manager.
-    bool use_new_account_manager = false;
   };
 
  protected:
@@ -435,6 +444,12 @@ class BrowserManager : public session_manager::SessionManagerObserver,
                                     mojo::RemoteSetElementId mojo_id) override;
   void OnBrowserRelaunchRequested(CrosapiId id) override;
 
+  // CloudPolicyCore::Observer:
+  void OnCoreConnected(policy::CloudPolicyCore* core) override;
+  void OnRefreshSchedulerStarted(policy::CloudPolicyCore* core) override;
+  void OnCoreDisconnecting(policy::CloudPolicyCore* core) override;
+  void OnCoreDestruction(policy::CloudPolicyCore* core) override;
+
   // Called when the Mojo connection to lacros-chrome is disconnected. It may be
   // "just a Mojo error" or "lacros-chrome crash". This method posts a
   // shutdown-blocking async task that waits lacros-chrome to exit, giving it a
@@ -452,6 +467,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Sets user policy to be propagated to Lacros and subsribes to the user
   // policy updates in Ash.
   void PrepareLacrosPolicies();
+  policy::CloudPolicyCore* GetDeviceAccountPolicyCore();
 
   // policy::CloudPolicyStore::Observer:
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;
@@ -459,14 +475,18 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   void OnStoreDestruction(policy::CloudPolicyStore* store) override;
 
   // policy::ComponentCloudPolicyService::Observer:
-  // Updates the component policy for given namespace. The policy blob is
-  // serialized PolicyFetchResponse received from the server, or parsed from the
-  // file after is was validated.
+  // Updates the component policy for given namespace. The policy blob is JSON
+  // value received from the server, or parsed from the file after is was
+  // validated.
   void OnComponentPolicyUpdated(
-      const policy::ComponentCloudPolicyServiceObserver::ComponentPolicyMap&
-          serialized_policy) override;
+      const policy::ComponentPolicyMap& component_policy) override;
   void OnComponentPolicyServiceDestruction(
       policy::ComponentCloudPolicyService* service) override;
+
+  // policy::CloudPolicyRefreshScheduler::Observer:
+  void OnFetchAttempt(policy::CloudPolicyRefreshScheduler* scheduler) override;
+  void OnRefreshSchedulerDestruction(
+      policy::CloudPolicyRefreshScheduler* scheduler) override;
 
   // component_updater::ComponentUpdateService::Observer:
   void OnEvent(Events event, const std::string& id) override;

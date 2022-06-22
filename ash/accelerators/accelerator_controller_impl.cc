@@ -20,6 +20,8 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/capture_mode/capture_mode_camera_controller.h"
+#include "ash/capture_mode/capture_mode_camera_preview_view.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
@@ -112,6 +114,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -368,7 +371,7 @@ void HandleRemoveCurrentDesk() {
   // UX. https://crbug.com/977434.
   desks_controller->RemoveDesk(desks_controller->active_desk(),
                                DesksCreationRemovalSource::kKeyboard,
-                               /*close_windows=*/false);
+                               DeskCloseType::kCombineDesks);
   base::RecordAction(base::UserMetricsAction("Accel_Desks_RemoveDesk"));
 }
 
@@ -461,6 +464,26 @@ views::Widget* FindPipWidget() {
       }));
 }
 
+bool CanHandleFocusCameraPreview() {
+  auto* controller = CaptureModeController::Get();
+  // Only use the shortcut to focus the camera preview while video recording is
+  // in progress. As focus traversal of the camera preview in the capture
+  // session will be handled by CaptureModeSessionFocusCycler instead.
+  if (controller->IsActive() || !controller->is_recording_in_progress())
+    return false;
+
+  auto* camera_controller = controller->camera_controller();
+  auto* preview_widget =
+      camera_controller ? camera_controller->camera_preview_widget() : nullptr;
+  return preview_widget && preview_widget->IsVisible();
+}
+
+void HandleFocusCameraPreview() {
+  auto* camera_controller = CaptureModeController::Get()->camera_controller();
+  DCHECK(camera_controller);
+  camera_controller->PseudoFocusCameraPreview();
+}
+
 void HandleToggleMirrorMode() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Mirror_Mode"));
   bool mirror = !Shell::Get()->display_manager()->IsInMirrorMode();
@@ -537,7 +560,7 @@ display::Display::Rotation GetNextRotationInTabletMode(
   Shell* shell = Shell::Get();
   DCHECK(shell->tablet_mode_controller()->InTabletMode());
 
-  if (!display::Display::HasInternalDisplay() ||
+  if (!display::HasInternalDisplay() ||
       display_id != display::Display::InternalDisplayId()) {
     return GetNextRotationInClamshell(current);
   }
@@ -587,7 +610,7 @@ display::Display::Rotation GetNextRotationInTabletMode(
 }
 
 bool ShouldLockRotation(int64_t display_id) {
-  return display::Display::HasInternalDisplay() &&
+  return display::HasInternalDisplay() &&
          display_id == display::Display::InternalDisplayId() &&
          Shell::Get()->screen_orientation_controller()->IsAutoRotationAllowed();
 }
@@ -1149,7 +1172,7 @@ bool CanHandleToggleClipboardHistory() {
 
 void HandleToggleClipboardHistory() {
   DCHECK(Shell::Get()->clipboard_history_controller());
-  Shell::Get()->clipboard_history_controller()->ShowMenuByAccelerator();
+  Shell::Get()->clipboard_history_controller()->ToggleMenuShownByAccelerator();
 }
 
 bool CanHandleToggleDictation() {
@@ -1962,6 +1985,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
       return CanHandleWindowSnap();
     case FOCUS_PIP:
       return !!FindPipWidget();
+    case FOCUS_CAMERA_PREVIEW:
+      return CanHandleFocusCameraPreview();
     case MINIMIZE_TOP_WINDOW_ON_BACK:
       return window_util::ShouldMinimizeTopWindowOnBack();
     case TAKE_PARTIAL_SCREENSHOT:
@@ -2157,6 +2182,9 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case FOCUS_SHELF:
       HandleFocusShelf();
+      break;
+    case FOCUS_CAMERA_PREVIEW:
+      HandleFocusCameraPreview();
       break;
     case FOCUS_PIP:
       base::RecordAction(base::UserMetricsAction("Accel_Focus_Pip"));

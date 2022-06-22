@@ -136,7 +136,8 @@ js2gtest("switch_access_extjs_tests") {
     "//ash",
     "//ash/keyboard/ui",
     "//base",
-    "//chrome/browser/chromeos",
+    "//chrome/browser/ash",
+    "//chrome/browser/ash/crosapi",
     "//chrome/common",
     "//chromeos",
   ]
@@ -185,6 +186,7 @@ js_type_check("closure_compile") {
     "../common:repeated_tree_change_handler",
     "../common:tree_walker",
   ]
+  closure_flags = [ "js_module_root=../" ]
 }
 
 js_library("action_manager") {

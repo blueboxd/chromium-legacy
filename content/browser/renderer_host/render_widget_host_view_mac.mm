@@ -21,6 +21,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/typed_macros.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "components/viz/common/features.h"
@@ -191,10 +192,12 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
       accessibility_focus_overrider_(this),
+      ns_view_id_(remote_cocoa::GetNewNSViewId()),
       weak_factory_(this) {
   // The NSView is on the other side of |ns_view_|.
   in_process_ns_view_bridge_ =
-      std::make_unique<remote_cocoa::RenderWidgetHostNSViewBridge>(this, this);
+      std::make_unique<remote_cocoa::RenderWidgetHostNSViewBridge>(this, this,
+                                                                   ns_view_id_);
   ns_view_ = in_process_ns_view_bridge_.get();
 
   // Guess that the initial screen we will be on is the screen of the current
@@ -297,7 +300,7 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   mojo::PendingAssociatedReceiver<remote_cocoa::mojom::StubInterface>
       stub_bridge_receiver(view_receiver.PassHandle());
   remote_cocoa_application->CreateRenderWidgetHostNSView(
-      std::move(stub_client), std::move(stub_bridge_receiver));
+      ns_view_id_, std::move(stub_client), std::move(stub_bridge_receiver));
 
   ns_view_ = remote_ns_view_.get();
 
@@ -399,7 +402,7 @@ void RenderWidgetHostViewMac::InitAsPopup(
   SetContentBackgroundColor(SK_ColorTRANSPARENT);
 
   // This path is used by the time/date picker.
-  ns_view_->InitAsPopup(pos);
+  ns_view_->InitAsPopup(pos, popup_parent_host_view_->ns_view_id_);
 }
 
 RenderWidgetHostViewBase*
@@ -471,12 +474,18 @@ void RenderWidgetHostViewMac::NotifyHostAndDelegateOnWasShown(
       browser_compositor_->GetDelegatedFrameHost();
   DCHECK(delegated_frame_host);
   const bool record_presentation_time = has_saved_frame;
+  // TODO(https://crbug.com/1164477): Remove these trace events when the
+  // investigation is done.
+  if (record_presentation_time)
+    TRACE_EVENT_BEGIN("cc", "RWHVMac::WasShown with saved frame");
   delegated_frame_host->WasShown(
       browser_compositor_->GetRendererLocalSurfaceId(),
       browser_compositor_->GetRendererSize(),
       record_presentation_time
           ? std::move(tab_switch_start_state)
           : blink::mojom::RecordContentToVisibleTimeRequestPtr());
+  if (record_presentation_time)
+    TRACE_EVENT_END("cc");
 }
 
 void RenderWidgetHostViewMac::RequestPresentationTimeFromHostOrDelegate(
@@ -489,6 +498,7 @@ void RenderWidgetHostViewMac::RequestPresentationTimeFromHostOrDelegate(
   if (browser_compositor_->GetDelegatedFrameHost()->HasSavedFrame()) {
     // If the frame for the renderer is already available, then the
     // tab-switching time is the presentation time for the browser-compositor.
+    TRACE_EVENT("cc", "RHWVMac::RequestPresentationTime with saved frame");
     browser_compositor_->GetDelegatedFrameHost()
         ->RequestPresentationTimeForNextFrame(std::move(visible_time_request));
   } else {
@@ -501,7 +511,13 @@ void RenderWidgetHostViewMac::
     CancelPresentationTimeRequestForHostAndDelegate() {
   DCHECK(!host_->is_hidden());
   host()->CancelPresentationTimeRequest();
+  const bool has_saved_frame =
+      browser_compositor_->GetDelegatedFrameHost()->HasSavedFrame();
+  if (has_saved_frame)
+    TRACE_EVENT_BEGIN("cc", "RWHVMac::CancelPresentationTime with saved frame");
   browser_compositor_->GetDelegatedFrameHost()->CancelPresentationTimeRequest();
+  if (has_saved_frame)
+    TRACE_EVENT_END("cc");
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
@@ -509,7 +525,13 @@ void RenderWidgetHostViewMac::WasOccluded() {
     return;
 
   host()->WasHidden();
+  const bool has_saved_frame =
+      browser_compositor_->GetDelegatedFrameHost()->HasSavedFrame();
+  if (has_saved_frame)
+    TRACE_EVENT_BEGIN("cc", "RWHVMac::WasOccluded with saved frame");
   browser_compositor_->SetRenderWidgetHostIsHidden(true);
+  if (has_saved_frame)
+    TRACE_EVENT_END("cc");
 }
 
 void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {

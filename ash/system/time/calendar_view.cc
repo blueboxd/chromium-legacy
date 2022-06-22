@@ -16,6 +16,7 @@
 #include "ash/system/time/calendar_month_view.h"
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/calendar_view_controller.h"
+#include "ash/system/time/date_helper.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/bind.h"
@@ -80,12 +81,6 @@ constexpr base::TimeDelta kAnimationDurationForClosingEvents =
 // The cool-down time for enabling animation.
 constexpr base::TimeDelta kAnimationDisablingTimeout = base::Milliseconds(500);
 
-// TODO(https://crbug.com/1236276): for some language it may start from "M".
-constexpr int kDefaultWeekTitles[] = {
-    IDS_ASH_CALENDAR_SUN, IDS_ASH_CALENDAR_MON, IDS_ASH_CALENDAR_TUE,
-    IDS_ASH_CALENDAR_WED, IDS_ASH_CALENDAR_THU, IDS_ASH_CALENDAR_FRI,
-    IDS_ASH_CALENDAR_SAT};
-
 constexpr char kMonthViewScrollOneMonthAnimationHistogram[] =
     "Ash.CalendarView.ScrollOneMonth.MonthView.AnimationSmoothness";
 
@@ -149,9 +144,9 @@ class MonthHeaderView : public views::View {
     calendar_utils::SetUpWeekColumns(layout);
     layout->AddRows(1, views::TableLayout::kFixedSize);
 
-    for (int week_day : kDefaultWeekTitles) {
-      auto label =
-          std::make_unique<CalendarLabel>(l10n_util::GetStringUTF16(week_day));
+    for (const std::u16string& week_day :
+         DateHelper::GetInstance()->week_titles()) {
+      auto label = std::make_unique<CalendarLabel>(week_day);
       label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
       label->SetBorder((views::CreateEmptyBorder(
           gfx::Insets::VH(calendar_utils::kDateVerticalPadding, 0))));
@@ -444,6 +439,10 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   content_view_->GetViewAccessibility().OverrideName(GetClassName());
   content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
 
+  // Set up layer for animations.
+  content_view_->SetPaintToLayer();
+  content_view_->layer()->SetFillsBoundsOpaquely(false);
+
   SetMonthViews();
 
   scoped_calendar_model_observer_.Observe(
@@ -456,6 +455,9 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
 }
 
 CalendarView::~CalendarView() {
+  RestoreHeadersStatus();
+  RestoreMonthStatus();
+
   // Removes child views including month views and event list to remove their
   // dependency from `CalendarViewController`, since these views are destructed
   // after the controller.
@@ -563,9 +565,6 @@ void CalendarView::ResetToTodayWithAnimation() {
   if (!should_months_animate_)
     return;
   SetShouldMonthsAnimateAndScrollEnabled(/*enabled=*/false);
-
-  content_view_->SetPaintToLayer();
-  content_view_->layer()->SetFillsBoundsOpaquely(false);
 
   auto content_reporter = calendar_metrics::CreateAnimationReporter(
       content_view_, kContentViewResetToTodayAnimationHistogram);

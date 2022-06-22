@@ -9,12 +9,13 @@
 #include <string>
 
 #include "ash/app_list/views/app_list_nudge_controller.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/views/view.h"
 
 namespace views {
 class Button;
 class LabelButton;
-}
+}  // namespace views
 
 namespace ash {
 
@@ -22,7 +23,9 @@ class AppListA11yAnnouncer;
 class AppListNudgeController;
 class AppListToastView;
 class AppsGridContextMenu;
+class AppListViewDelegate;
 enum class AppListSortOrder;
+enum class AppListToastType;
 
 // A container view accommodating a toast view with type `ToastType`. See
 // `ToastType` for more detail.
@@ -37,18 +40,6 @@ class AppListToastContainerView : public views::View {
     kShownInBackground,
     // The toast container is hidden.
     kHidden
-  };
-
-  // The type of toast that the container is currently showing.
-  enum class ToastType {
-    // The container is not showing any toast.
-    kNone,
-    // Shows the nudge to guide the users to use apps reordering using context
-    // menu.
-    kReorderNudge,
-    // Shows the notification that the apps are temporarily sorted and allows
-    // users to undo the sorting actions.
-    kReorderUndo,
   };
 
   class Delegate {
@@ -73,6 +64,7 @@ class AppListToastContainerView : public views::View {
 
   AppListToastContainerView(AppListNudgeController* nudge_controller_,
                             AppListA11yAnnouncer* a11y_announcer,
+                            AppListViewDelegate* view_delegate,
                             Delegate* delegate,
                             bool tablet_mode);
   AppListToastContainerView(const AppListToastContainerView&) = delete;
@@ -92,9 +84,6 @@ class AppListToastContainerView : public views::View {
 
   // Creates a reorder nudge view in the container.
   void CreateReorderNudgeView();
-
-  // Dismisses the reorder nudge view and ensures it will no longer be shown.
-  void DismissReorderNudgeView();
 
   // Removes the reorder nudge view if the nudge view is showing.
   void RemoveReorderNudgeView();
@@ -129,12 +118,12 @@ class AppListToastContainerView : public views::View {
 
   AppListToastView* toast_view() { return toast_view_; }
   bool is_toast_visible() const { return toast_view_; }
-  ToastType current_toast() const { return current_toast_; }
+  AppListToastType current_toast() const { return current_toast_; }
 
   AppListA11yAnnouncer* a11y_announcer_for_test() { return a11y_announcer_; }
 
  private:
-  // Called when the `toast_view_`'s dismiss button is clicked.
+  // Called when the `toast_view_`'s reorder undo button is clicked.
   void OnReorderUndoButtonClicked();
 
   // Called when the `toast_view_`'s close button is clicked.
@@ -145,6 +134,13 @@ class AppListToastContainerView : public views::View {
       AppListSortOrder order) const;
 
   std::u16string GetA11yTextOnUndoButtonFromOrder(AppListSortOrder order) const;
+
+  // Animates the opacity of `toast_view_` to fade out, then calls
+  // OnFadeOutToastViewComplete().
+  void FadeOutToastView();
+
+  // Called when the fade out animation for the `toast_view_` is finished.
+  void OnFadeOutToastViewComplete();
 
   AppListA11yAnnouncer* const a11y_announcer_;
 
@@ -157,19 +153,25 @@ class AppListToastContainerView : public views::View {
 
   AppListToastView* toast_view_ = nullptr;
 
+  AppListViewDelegate* const view_delegate_;
   Delegate* const delegate_;
   AppListNudgeController* const nudge_controller_;
+
+  // Caches the current toast type.
+  AppListToastType current_toast_;
 
   // Caches the current visibility state which is used to help tracking the
   // status of reorder nudge..
   VisibilityState visibility_state_ = VisibilityState::kHidden;
 
-  // Caches the current toast type.
-  ToastType current_toast_ = ToastType::kNone;
-
   // Caches the column of previously focused app. Used when passing focus
   // between apps grid view and recent apps.
   int focused_app_column_ = 0;
+
+  // True if committing the sort order via the close button is in progress.
+  bool committing_sort_order_ = false;
+
+  base::WeakPtrFactory<AppListToastContainerView> weak_factory_{this};
 };
 
 }  // namespace ash

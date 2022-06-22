@@ -177,8 +177,8 @@ Polymer({
    */
   loadAuthenticator(data) {
     this.authenticator_.setWebviewPartition(data.webviewPartitionName);
-    let params = {};
-    for (let i in cr.login.Authenticator.SUPPORTED_PARAMS) {
+    const params = {};
+    for (const i in cr.login.Authenticator.SUPPORTED_PARAMS) {
       const name = cr.login.Authenticator.SUPPORTED_PARAMS[i];
       if (data[name]) {
         params[name] = data[name];
@@ -206,6 +206,15 @@ Polymer({
   },
 
   /**
+   * Reloads the page.
+   */
+  reloadAuthenticator() {
+    this.signinFrame_.clearData({since: 0}, clearDataType, () => {
+      this.authenticator_.resetStates();
+    });
+  },
+
+  /**
    * @return {!Element}
    * @private
    */
@@ -219,7 +228,7 @@ Polymer({
   },
 
   onAuthCompletedMessage_(e) {
-    let credentials = e.detail;
+    const credentials = e.detail;
     chrome.send('completeAuthentication', [
       credentials.gaiaId, credentials.email, credentials.password,
       credentials.usingSAML, credentials.services,
@@ -311,13 +320,15 @@ Polymer({
 
   /** @private */
   onConfirm_() {
-    if (!this.$.passwordInput.validate())
+    if (!this.$.passwordInput.validate()) {
       return;
+    }
     if (this.isManualInput_) {
       // When using manual password entry, both passwords must match.
-      let confirmPasswordInput = this.$$('#confirmPasswordInput');
-      if (!confirmPasswordInput.validate())
+      const confirmPasswordInput = this.$$('#confirmPasswordInput');
+      if (!confirmPasswordInput.validate()) {
         return;
+      }
 
       if (confirmPasswordInput.value != this.$.passwordInput.value) {
         this.$.passwordInput.invalid = true;

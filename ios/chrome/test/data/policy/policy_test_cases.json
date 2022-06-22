@@ -212,6 +212,23 @@
   "CloudPolicyOverridesPlatformPolicy": {
     "reason_for_missing_test": "This policy has no pref as it is only directly read by the policy system."
   },
+  "ComponentUpdatesEnabled": {
+    "os": [
+      "ios"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "ComponentUpdatesEnabled": true
+        },
+        "prefs": {
+          "component_updates.component_updates_enabled": {
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
   "DefaultPopupsSetting": {
     "os": [
       "ios"
@@ -361,11 +378,21 @@
     "policy_pref_mapping_tests": [
       {
         "policies": {
-            "NewTabPageLocation": "not_a_url"
+            "NewTabPageLocation": ""
         },
         "prefs": {
           "ios.ntp.location_override": {
               "default_value": ""
+          }
+        }
+      },
+      {
+        "policies": {
+            "NewTabPageLocation": "m.youtube.com"
+        },
+        "prefs": {
+          "ios.ntp.location_override": {
+              "value": "https://m.youtube.com"
           }
         }
       },
@@ -395,6 +422,9 @@
         }
       }
     ]
+  },
+  "OptimizationGuideFetchingEnabled": {
+    "reason_for_missing_test": "Policy was removed"
   },
   "PasswordManagerEnabled": {
     "os": [
@@ -813,36 +843,6 @@
                 ]
               }
             ]
-          }
-        }
-      }
-    ]
-  },
-
-  "OptimizationGuideFetchingEnabled": {
-    "os": [
-      "ios"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "OptimizationGuideFetchingEnabled": true
-        },
-        "prefs": {
-          "optimization_guide.fetching_enabled": {
-            "location": "user_profile",
-            "value": true
-          }
-        }
-      },
-      {
-        "policies": {
-          "OptimizationGuideFetchingEnabled": false
-        },
-        "prefs": {
-          "optimization_guide.fetching_enabled": {
-            "location": "user_profile",
-            "value": false
           }
         }
       }

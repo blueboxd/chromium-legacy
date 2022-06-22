@@ -253,6 +253,11 @@
           }
         ],
       },
+      # This cache dir doesn't actually contain anything. Rather, its presence
+      # merely signals to the fleet that the a CrOS VM test recently ran on the
+      # bot and that its large VM image is likely still present in the bot's
+      # isolated cache. So by optionally targeting bots with that magic dir,
+      # CrOS VM tests can naturally have higher cache hit rates.
       'named_caches': [
         {
           'name': 'cros_vm',
@@ -279,6 +284,8 @@
           }
         ],
       },
+      # See the 'chromeos-amd64-generic' mixin above for the purpose of this
+      # cache.
       'named_caches': [
         {
           'name': 'cros_vm',
@@ -312,6 +319,34 @@
       },
     },
   },
+  'chromeos-reven': {
+    'swarming': {
+      'dimension_sets': [
+        {
+          'cpu': 'x86',
+          'kvm': '1',
+          'gce': '1',
+          'os': 'Ubuntu-18.04',
+          'pool': 'chrome.tests',
+        }
+      ],
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'cros_reven_vm',
+          }
+        ],
+      },
+      # See the 'chromeos-amd64-generic' mixin above for the purpose of this
+      # cache.
+      'named_caches': [
+        {
+          'name': 'cros_reven_vm',
+          'path': 'magic_cros_reven_vm_cache',
+        },
+      ],
+    },
+  },
   'chromeos-zork': {
     'swarming': {
       'dimensions': {
@@ -329,9 +364,6 @@
     'swarming': {
       'service_account': 'chromium-tester@chops-service-accounts.iam.gserviceaccount.com',
     },
-  },
-  'chromium-webrtc-rel-7': {
-    'perf_builder_name_alias': 'chromium-webrtc-rel-7',
   },
   'chromium-webrtc-rel-linux': {
     'perf_builder_name_alias': 'chromium-webrtc-rel-linux',
@@ -415,11 +447,12 @@
       ],
     },
   },
-  'fuchsia-femu': {
-    '$mixin_append': {
-      'args': [
-        '--device=aemu',
-      ],
+  'fuchsia-test-pool': {
+    # This pool is dedicated to test the test infra of fuchsia in chromium.
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.tests.fuchsia',
+      },
     },
   },
   'fuchsia_logs': {
@@ -757,23 +790,6 @@
       'dimensions': {
         'cpu': 'arm64',
         'os': 'Mac-11',
-      },
-    },
-  },
-  # TODO(crbug.com/1325185) Remove Mac11 once testers have been upgraded to Mac12
-  'mac_11_or_12_arm64': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'arm64',
-        'os': 'Mac-11|Mac-12',
-      },
-    },
-  },
-  'mac_11_or_12_x64': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'os': 'Mac-11|Mac-10.16|Mac-12',
       },
     },
   },
@@ -1272,24 +1288,6 @@
       },
     },
   },
-  'win7_amd_r7_240': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '1002:6613',
-        'os': 'Windows-2008ServerR2-SP1',
-        'pool': 'chromium.tests.gpu',
-      },
-    },
-  },
-  'win7_nvidia_quadro_p400': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '10de:1cb3-24.21.14.1195',
-        'os': 'Windows-2008ServerR2-SP1',
-        'pool': 'chromium.tests.gpu',
-      },
-    },
-  },
   'x86-32': {
     'swarming': {
       'dimensions': {
@@ -1327,13 +1325,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '13e5104i'
+        '13e113'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_13e5104i',
+          'name': 'xcode_ios_13e113',
           'path': 'Xcode.app',
         },
       ],

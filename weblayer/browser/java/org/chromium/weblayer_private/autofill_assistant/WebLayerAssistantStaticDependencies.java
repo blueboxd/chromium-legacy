@@ -6,10 +6,12 @@ package org.chromium.weblayer_private.autofill_assistant;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.RemoteException;
 
 import androidx.annotation.DimenRes;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.autofill_assistant.AssistantAccessTokenUtil;
@@ -22,27 +24,42 @@ import org.chromium.components.autofill_assistant.AssistantSettingsUtil;
 import org.chromium.components.autofill_assistant.AssistantStaticDependencies;
 import org.chromium.components.autofill_assistant.AssistantTabObscuringUtil;
 import org.chromium.components.autofill_assistant.AssistantTabUtil;
+import org.chromium.components.embedder_support.simple_factory_key.SimpleFactoryKeyHandle;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.image_fetcher.ImageFetcher;
+import org.chromium.components.image_fetcher.ImageFetcherConfig;
+import org.chromium.components.image_fetcher.ImageFetcherFactory;
 import org.chromium.content_public.browser.BrowserContextHandle;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.AccessibilityUtil;
+import org.chromium.weblayer_private.ProfileImpl;
 import org.chromium.weblayer_private.WebLayerAccessibilityUtil;
+import org.chromium.weblayer_private.interfaces.IUserIdentityCallbackClient;
 
 /**
  * Provides default implementations of {@link AssistantStaticDependencies} for WebLayer.
  */
 @JNINamespace("weblayer")
-public class WebLayerAssistantStaticDependencies implements AssistantStaticDependencies {
+public class WebLayerAssistantStaticDependencies
+        implements AssistantStaticDependencies, SimpleFactoryKeyHandle {
+    private final WebContents mWebContents;
+
+    WebLayerAssistantStaticDependencies(WebContents webContents) {
+        mWebContents = webContents;
+    }
+
+    // AssistantStaticDependencies implementation:
+
     @Override
     public long createNative() {
         return WebLayerAssistantStaticDependenciesJni.get().init(
-                new WebLayerAssistantStaticDependencies());
+                new WebLayerAssistantStaticDependencies(mWebContents));
     }
 
     @Override
     public AssistantDependencies createDependencies(Activity activity) {
-        return new WebLayerAssistantDependencies(activity);
+        return new WebLayerAssistantDependencies(activity, mWebContents);
     }
 
     @Override
@@ -89,27 +106,29 @@ public class WebLayerAssistantStaticDependencies implements AssistantStaticDepen
 
     @Override
     public BrowserContextHandle getBrowserContext() {
-        // TODO(b/222671580): Implement
-        return null;
+        return WebLayerAssistantStaticDependenciesJni.get().getJavaProfile(mWebContents);
     }
 
     @Override
     public ImageFetcher createImageFetcher() {
-        // TODO(b/222671580): Implement
-        return null;
+        return ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY, this);
     }
 
     @Override
     public LargeIconBridge createIconBridge() {
-        // TODO(b/222671580): Implement
-        return null;
+        BrowserContextHandle browserContext = getBrowserContext();
+        if (browserContext == null) return null;
+
+        return new LargeIconBridge(getBrowserContext());
     }
 
-    @Override
     @Nullable
-    public String getSignedInAccountEmailOrNull() {
-        // TODO(b/222671580): Implement
-        return null;
+    @CalledByNative
+    private String getEmailOrNull(ProfileImpl profile) throws RemoteException {
+        IUserIdentityCallbackClient userIdentityCallback = profile.getUserIdentityCallbackClient();
+        if (userIdentityCallback == null) return null;
+
+        return userIdentityCallback.getEmail();
     }
 
     @Override
@@ -121,13 +140,32 @@ public class WebLayerAssistantStaticDependencies implements AssistantStaticDepen
     }
 
     @Override
+    @Nullable
     public AssistantEditorFactory createEditorFactory() {
-        // TODO(b/222671580): Implement
+        // This factory should not be used in a WebLayer context. All code paths leading to the
+        // use of this factory point to a misconfiguration. For WebLayer, the external editors
+        // should be used.
         return null;
+    }
+
+    // SimpleFactoryKeyHandle implementation:
+
+    @Override
+    public long getNativeSimpleFactoryKeyPointer() {
+        BrowserContextHandle browserContext = getBrowserContext();
+        if (browserContext == null) return 0;
+        long nativeBrowserContextPointer = browserContext.getNativeBrowserContextPointer();
+        if (nativeBrowserContextPointer == 0) return 0;
+        return WebLayerAssistantStaticDependenciesJni.get().getSimpleFactoryKey(
+                nativeBrowserContextPointer);
     }
 
     @NativeMethods
     interface Natives {
         long init(AssistantStaticDependencies staticDependencies);
+
+        ProfileImpl getJavaProfile(WebContents webContents);
+
+        long getSimpleFactoryKey(long browserContext);
     }
 }

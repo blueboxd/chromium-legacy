@@ -137,7 +137,7 @@ test("blink_unittests") {
 
   if (is_android) {
     deps += [
-      "//base:base_java",
+      "//build/android:build_java",
       "//content/public/android:content_java",
       "//content/shell/android:content_shell_assets",
       "//net/android:net_java",
@@ -168,7 +168,7 @@ source_set("blink_perf_tests_sources") {
   visibility = [ "*" ]
   testonly = true
 
-  sources = [ "tests/run_all_tests.cc" ]
+  sources = [ "tests/run_all_perftests.cc" ]
 
   deps = [
     ":controller",

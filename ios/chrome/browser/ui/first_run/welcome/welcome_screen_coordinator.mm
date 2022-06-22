@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #include "ios/chrome/browser/ui/commands/tos_commands.h"
+#import "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #include "ios/chrome/browser/ui/first_run/uma/uma_coordinator.h"
 #include "ios/chrome/browser/ui/first_run/welcome/tos_coordinator.h"
 #include "ios/chrome/browser/ui/first_run/welcome/welcome_screen_mediator.h"
@@ -31,6 +32,9 @@
 
 // Whether the user tapped on the TOS link.
 @property(nonatomic, assign) BOOL TOSLinkWasTapped;
+
+// Whether the user tapped on the UMA link.
+@property(nonatomic, assign) BOOL UMALinkWasTapped;
 
 // Coordinator used to manage the TOS page.
 @property(nonatomic, strong) TOSCoordinator* TOSCoordinator;
@@ -91,10 +95,19 @@
 - (void)didTapPrimaryActionButton {
   // TODO(crbug.com/1189815): Remember that the welcome screen has been shown in
   // NSUserDefaults.
-  [self.mediator
-      setMetricsReportingEnabled:self.viewController.checkBoxSelected];
+  if (fre_field_trial::GetNewMobileIdentityConsistencyFRE() ==
+      NewMobileIdentityConsistencyFRE::kOld) {
+    [self.mediator
+        setMetricsReportingEnabled:self.viewController.checkBoxSelected];
+  } else {
+    [self.mediator
+        setMetricsReportingEnabled:self.mediator.UMAReportingUserChoice];
+  }
   if (self.TOSLinkWasTapped) {
     base::RecordAction(base::UserMetricsAction("MobileFreTOSLinkTapped"));
+  }
+  if (self.UMALinkWasTapped) {
+    base::RecordAction(base::UserMetricsAction("MobileFreUMALinkTapped"));
   }
 
   [self.delegate willFinishPresenting];
@@ -130,6 +143,7 @@
 
 - (void)showUMADialog {
   DCHECK(!self.UMACoordinator);
+  self.UMALinkWasTapped = YES;
   self.UMACoordinator = [[UMACoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser

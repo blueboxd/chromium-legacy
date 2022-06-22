@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
 #include "components/optimization_guide/proto/models.pb.h"
-#include "components/segmentation_platform/internal/execution/feature_list_query_processor.h"
+#include "components/segmentation_platform/internal/execution/processing/feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/segmentation_ukm_helper.h"
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/model_provider.h"
@@ -19,7 +19,7 @@
 namespace segmentation_platform {
 namespace {
 using optimization_guide::proto::OptimizationTarget;
-
+using processing::FeatureListQueryProcessor;
 }
 
 struct ModelExecutorImpl::ModelExecutionTraceEvent {
@@ -79,7 +79,7 @@ ModelExecutorImpl::ModelExecutionTraceEvent::~ModelExecutionTraceEvent() {
 
 ModelExecutorImpl::ModelExecutorImpl(
     base::Clock* clock,
-    FeatureListQueryProcessor* feature_list_query_processor)
+    processing::FeatureListQueryProcessor* feature_list_query_processor)
     : clock_(clock),
       feature_list_query_processor_(feature_list_query_processor) {}
 
@@ -122,6 +122,7 @@ void ModelExecutorImpl::ExecuteModel(const proto::SegmentInfo& segment_info,
   state->model_version = segment_info.model_version();
   feature_list_query_processor_->ProcessFeatureList(
       segment_info.model_metadata(), segment_id, clock_->Now(),
+      FeatureListQueryProcessor::ProcessOption::kInputsOnly,
       base::BindOnce(&ModelExecutorImpl::OnProcessingFeatureListComplete,
                      weak_ptr_factory_.GetWeakPtr(), std::move(state)));
 }
@@ -129,7 +130,8 @@ void ModelExecutorImpl::ExecuteModel(const proto::SegmentInfo& segment_info,
 void ModelExecutorImpl::OnProcessingFeatureListComplete(
     std::unique_ptr<ExecutionState> state,
     bool error,
-    const std::vector<float>& input_tensor) {
+    const std::vector<float>& input_tensor,
+    const std::vector<float>& output_tensor) {
   if (error) {
     // Validation error occurred on model's metadata.
     RunModelExecutionCallback(std::move(state), 0,

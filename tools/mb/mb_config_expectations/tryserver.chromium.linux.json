@@ -100,29 +100,6 @@
       "use_goma": true
     }
   },
-  "fuchsia-fyi-arm64-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "fuchsia",
-      "test_host_cpu": "arm64",
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-arm64-femu": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 0,
-      "target_cpu": "arm64",
-      "target_os": "fuchsia",
-      "test_host_cpu": "arm64",
-      "use_goma": true
-    }
-  },
   "fuchsia-fyi-arm64-rel": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -132,15 +109,6 @@
       "target_cpu": "arm64",
       "target_os": "fuchsia",
       "test_host_cpu": "arm64",
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-x64-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_os": "fuchsia",
       "use_goma": true
     }
   },
@@ -224,7 +192,6 @@
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -237,7 +204,6 @@
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -250,7 +216,6 @@
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -262,7 +227,6 @@
       "ffmpeg_branding": "Chrome",
       "is_component_build": true,
       "is_debug": true,
-      "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -275,7 +239,6 @@
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -288,7 +251,6 @@
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -301,7 +263,6 @@
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "is_gpu_fyi_bot": true,
       "is_tsan": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
@@ -639,6 +600,7 @@
       "ozone_platform_headless": true,
       "ozone_platform_wayland": true,
       "proprietary_codecs": true,
+      "remoting_use_wayland": true,
       "symbol_level": 0,
       "use_bundled_weston": true,
       "use_dummy_lastchange": true,
@@ -726,6 +688,17 @@
       "use_goma": true
     }
   },
+  "linux_chromium_chromeos_msan_focal": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_msan": true,
+      "msan_track_origins": 2,
+      "target_os": "chromeos",
+      "use_goma": true
+    }
+  },
   "linux_chromium_chromeos_msan_rel_ng": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -782,6 +755,16 @@
       "use_goma": true
     }
   },
+  "linux_chromium_msan_focal": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_msan": true,
+      "msan_track_origins": 2,
+      "use_goma": true
+    }
+  },
   "linux_chromium_msan_rel_ng": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -829,7 +812,6 @@
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true

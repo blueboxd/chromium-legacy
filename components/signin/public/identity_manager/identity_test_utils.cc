@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/internal/identity_manager/account_fetcher_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
@@ -22,7 +23,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_facade.h"
 #endif
@@ -83,7 +84,7 @@ void UpdateRefreshTokenForAccount(
       run_loop.QuitClosure());
 
   // TODO(crbug.com/1226041): simplify this when all Lacros Profiles use Mirror.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   if (ShouldUseAccountManagerFacade(identity_manager)) {
     const AccountInfo& account_info =
         account_tracker_service->GetAccountInfo(account_id);
@@ -94,7 +95,7 @@ void UpdateRefreshTokenForAccount(
     GetAccountManagerFacade(identity_manager)
         ->UpsertAccountForTesting(account, new_token);
   } else
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
   {
     token_service->UpdateCredentials(account_id, new_token);
   }
@@ -273,6 +274,25 @@ void ClearPrimaryAccount(IdentityManager* identity_manager) {
 #endif
 }
 
+void WaitForPrimaryAccount(IdentityManager* identity_manager,
+                           ConsentLevel consent_level,
+                           const CoreAccountId& account_id) {
+  if (identity_manager->GetPrimaryAccountId(consent_level) == account_id)
+    return;
+
+  base::RunLoop run_loop;
+  TestIdentityManagerObserver primary_account_observer(identity_manager);
+  primary_account_observer.SetOnPrimaryAccountChangedCallback(base::BindOnce(
+      [](IdentityManager* identity_manager, ConsentLevel consent_level,
+         const CoreAccountId& account_id, base::RunLoop* run_loop,
+         PrimaryAccountChangeEvent event) {
+        if (identity_manager->GetPrimaryAccountId(consent_level) == account_id)
+          run_loop->Quit();
+      },
+      identity_manager, consent_level, account_id, &run_loop));
+  run_loop.Run();
+}
+
 AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
                                  const std::string& email) {
   AccountTrackerService* account_tracker_service =
@@ -358,7 +378,7 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
       run_loop.QuitClosure());
 
   // TODO(crbug.com/1226041): simplify this when all Lacros Profiles use Mirror.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   if (ShouldUseAccountManagerFacade(identity_manager)) {
     const AccountInfo& account_info =
         identity_manager->GetAccountTrackerService()->GetAccountInfo(
@@ -367,7 +387,7 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
         ->RemoveAccountForTesting(account_manager::AccountKey{
             account_info.gaia, account_manager::AccountType::kGaia});
   } else
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
   {
     identity_manager->GetTokenService()->RevokeCredentials(account_id);
   }
@@ -514,7 +534,7 @@ void SimulateSuccessfulFetchOfAccountInfo(IdentityManager* identity_manager,
   account_tracker_service->SetAccountInfoFromUserInfo(account_id, &user_info);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 account_manager::AccountManagerFacade* GetAccountManagerFacade(
     IdentityManager* identity_manager) {
   return identity_manager->GetAccountManagerFacade();

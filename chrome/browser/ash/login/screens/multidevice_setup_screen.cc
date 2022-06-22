@@ -15,6 +15,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace ash {
 namespace {
 
@@ -56,9 +60,10 @@ void MultiDeviceSetupScreen::TryInitSetupClient() {
   }
 }
 
-bool MultiDeviceSetupScreen::MaybeSkip(WizardContext* /*context*/) {
+bool MultiDeviceSetupScreen::MaybeSkip(WizardContext* context) {
   // Only attempt the setup flow for non-guest users.
-  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+  if (context->skip_post_login_screens_for_tests ||
+      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }

@@ -62,31 +62,7 @@ void DownloadManagerMediator::StartDowloading() {
   // "Start Download" button.
   [consumer_ setState:kDownloadManagerStateInProgress];
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&base::CreateDirectory, download_dir),
-      base::BindOnce(&DownloadManagerMediator::DownloadWithDestinationDir,
-                     weak_ptr_factory_.GetWeakPtr(), download_dir, task_));
-}
-
-void DownloadManagerMediator::DownloadWithDestinationDir(
-    const base::FilePath& destination_dir,
-    web::DownloadTask* task,
-    bool directory_created) {
-  if (!directory_created) {
-    [consumer_ setState:kDownloadManagerStateFailed];
-    return;
-  }
-
-  if (task_ != task) {
-    // Download task has been replaced, so simply ignore the old download.
-    return;
-  }
-
-  std::u16string file_name = task_->GetSuggestedFilename();
-  DCHECK(!file_name.empty());
-  base::FilePath path = destination_dir.Append(base::UTF16ToUTF8(file_name));
-  task->Start(path, web::DownloadTask::Destination::kToDisk);
+  task_->Start(download_dir.Append(task_->GenerateFileName()));
 }
 
 void DownloadManagerMediator::OnDownloadUpdated(web::DownloadTask* task) {
@@ -119,8 +95,9 @@ void DownloadManagerMediator::UpdateConsumer() {
   [consumer_ setCountOfBytesReceived:task_->GetReceivedBytes()];
   [consumer_ setCountOfBytesExpectedToReceive:task_->GetTotalBytes()];
   [consumer_ setProgress:GetDownloadManagerProgress()];
-  [consumer_
-      setFileName:base::SysUTF16ToNSString(task_->GetSuggestedFilename())];
+
+  base::FilePath filename = task_->GenerateFileName();
+  [consumer_ setFileName:base::SysUTF8ToNSString(filename.AsUTF8Unsafe())];
 
   int a11y_announcement = GetDownloadManagerA11yAnnouncement();
   if (a11y_announcement != -1) {
@@ -137,8 +114,7 @@ void DownloadManagerMediator::MoveToUserDocumentsIfFileExists(
 
   base::FilePath user_download_path;
   GetDownloadsDirectory(&user_download_path);
-  user_download_path = user_download_path.Append(
-      base::UTF16ToUTF8(task_->GetSuggestedFilename()));
+  user_download_path = user_download_path.Append(task_->GenerateFileName());
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,

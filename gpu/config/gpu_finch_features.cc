@@ -175,6 +175,11 @@ const base::Feature kGpuUseDisplayThreadPriority{
 #if BUILDFLAG(IS_MAC)
 // Enable use of Metal for OOP rasterization.
 const base::Feature kMetal{"Metal", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(ARCH_CPU_ARM64)
+const base::Feature kDisableFlushWorkaroundForMacCrash{
+    "DisableFlushWorkaroundForMacCrash", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 #endif
 
 // Causes us to use the SharedImageManager, removing support for the old
@@ -212,11 +217,6 @@ const base::Feature kVulkan {
 
 const base::Feature kEnableDrDc{"EnableDrDc",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_ANDROID)
-const base::Feature kEnableDrDcVulkan{"EnableDrDcVulkan",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_ANDROID)
 
 // Enable WebGPU on gpu service side only. This is used with origin trial
 // before gpu service is enabled by default.
@@ -346,11 +346,7 @@ bool IsDrDcEnabled() {
   if (IsDeviceBlocked(build_info->device(), kDrDcBlockListByDevice.Get()))
     return false;
 
-  if (!base::FeatureList::IsEnabled(kEnableDrDc))
-    return false;
-
-  return IsUsingVulkan() ? base::FeatureList::IsEnabled(kEnableDrDcVulkan)
-                         : true;
+  return base::FeatureList::IsEnabled(kEnableDrDc);
 #else
   return false;
 #endif

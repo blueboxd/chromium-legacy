@@ -64,6 +64,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.page_info.PageInfoAction;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.proto.AboutThisSiteMetadataProto.Hyperlink;
+import org.chromium.components.page_info.proto.AboutThisSiteMetadataProto.MoreAbout;
 import org.chromium.components.page_info.proto.AboutThisSiteMetadataProto.SiteDescription;
 import org.chromium.components.page_info.proto.AboutThisSiteMetadataProto.SiteInfo;
 import org.chromium.content_public.browser.BrowserContextHandle;
@@ -81,7 +82,8 @@ import java.util.concurrent.TimeoutException;
  * Tests for PageInfoAboutThisSite.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Features.EnableFeatures(ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE)
+@Features.EnableFeatures({ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_EN,
+        ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_NON_EN})
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_STARTUP_PROMOS,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
@@ -89,6 +91,7 @@ Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_STARTUP
 @SuppressLint("VisibleForTests")
 public class PageInfoAboutThisSiteTest {
     private static final String sSimpleHtml = "/chrome/test/data/android/simple.html";
+    private static final String sAboutHtml = "/chrome/test/data/android/about.html";
     private static final String sBannerText = "This is an example website";
 
     @ClassRule
@@ -120,6 +123,7 @@ public class PageInfoAboutThisSiteTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        doReturn(true).when(mMockAboutThisSiteJni).isFeatureEnabled();
         mMocker.mock(PageInfoAboutThisSiteControllerJni.TEST_HOOKS, mMockAboutThisSiteJni);
         mTestServerRule.setServerUsesHttps(true);
         sActivityTestRule.loadUrl(mTestServerRule.getServer().getURL(sSimpleHtml));
@@ -130,7 +134,7 @@ public class PageInfoAboutThisSiteTest {
         Tab tab = activity.getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             new ChromePageInfo(activity.getModalDialogManagerSupplier(), null,
-                    PageInfoController.OpenedFromSource.TOOLBAR, null)
+                    PageInfoController.OpenedFromSource.TOOLBAR, null, null)
                     .show(tab, ChromePageInfoHighlight.noHighlight());
         });
         onViewWaiting(allOf(withId(org.chromium.chrome.R.id.page_info_url_wrapper), isDisplayed()));
@@ -167,11 +171,17 @@ public class PageInfoAboutThisSiteTest {
 
     private byte[] createDescription() {
         String url = mTestServerRule.getServer().getURL(sSimpleHtml);
+        String moreAboutUrl = mTestServerRule.getServer().getURL(sAboutHtml);
         SiteDescription.Builder description =
                 SiteDescription.newBuilder()
                         .setDescription("Some description about example.com for testing purposes")
                         .setSource(Hyperlink.newBuilder().setUrl(url).setLabel("Example Source"));
-        return SiteInfo.newBuilder().setDescription(description).build().toByteArray();
+        MoreAbout.Builder moreAbout = MoreAbout.newBuilder().setUrl(moreAboutUrl);
+        return SiteInfo.newBuilder()
+                .setDescription(description)
+                .setMoreAbout(moreAbout)
+                .build()
+                .toByteArray();
     }
 
     @Test
@@ -181,14 +191,7 @@ public class PageInfoAboutThisSiteTest {
         openPageInfo();
         onView(withId(PageInfoAboutThisSiteController.ROW_ID)).check(matches(isDisplayed()));
         onView(withText(containsString("Some description"))).check(matches(isDisplayed()));
-
         dismissPageInfo();
-        assertEquals(1,
-                mHistogramTester.getHistogramTotalCount(
-                        "Security.PageInfo.TimeOpen.AboutThisSiteShown"));
-        assertEquals(0,
-                mHistogramTester.getHistogramTotalCount(
-                        "Security.PageInfo.TimeOpen.AboutThisSiteNotShown"));
     }
 
     @Test
@@ -207,14 +210,7 @@ public class PageInfoAboutThisSiteTest {
         mockResponse(null);
         openPageInfo();
         onView(withId(PageInfoAboutThisSiteController.ROW_ID)).check(matches(not(isDisplayed())));
-
         dismissPageInfo();
-        assertEquals(0,
-                mHistogramTester.getHistogramTotalCount(
-                        "Security.PageInfo.TimeOpen.AboutThisSiteShown"));
-        assertEquals(1,
-                mHistogramTester.getHistogramTotalCount(
-                        "Security.PageInfo.TimeOpen.AboutThisSiteNotShown"));
     }
 
     @Test
@@ -277,8 +273,22 @@ public class PageInfoAboutThisSiteTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(
-            {ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE, ChromeFeatureList.ABOUT_THIS_SITE_BANNER})
+    @Features.EnableFeatures({ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_EN,
+            ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_NON_EN,
+            ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_MORE_INFO})
+    public void
+    testAboutThisSiteMoreInfoShown() {
+        mockResponse(createDescription());
+        openPageInfo();
+        onView(withId(PageInfoAboutThisSiteController.ROW_ID)).perform(click());
+        onView(withText(R.string.page_info_more_about_this_page)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_EN,
+            ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_NON_EN,
+            ChromeFeatureList.ABOUT_THIS_SITE_BANNER})
     @DisabledTest(message = "https://crbug.com/1311192")
     public void
     testAboutThisSiteBanner() throws Exception {
@@ -302,8 +312,9 @@ public class PageInfoAboutThisSiteTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(
-            {ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE, ChromeFeatureList.ABOUT_THIS_SITE_BANNER})
+    @Features.EnableFeatures({ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_EN,
+            ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_NON_EN,
+            ChromeFeatureList.ABOUT_THIS_SITE_BANNER})
     @DisabledTest(message = "https://crbug.com/1311192")
     public void
     testAboutThisSiteBannerDismissed() {

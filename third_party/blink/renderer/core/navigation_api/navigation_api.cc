@@ -238,7 +238,14 @@ void NavigationApi::InitializeForNewWindow(
       (current.Url() == BlankURL() && !IsBackForwardLoadType(load_type)) ||
       (current.Url().IsAboutSrcdocURL() && !IsBackForwardLoadType(load_type))) {
     if (previous && !previous->entries_.IsEmpty()) {
-      CloneFromPrevious(*previous);
+      DCHECK(entries_.IsEmpty());
+      entries_.ReserveCapacity(previous->entries_.size());
+      for (wtf_size_t i = 0; i < previous->entries_.size(); i++) {
+        entries_.emplace_back(
+            previous->entries_[i]->Clone(GetSupplementable()));
+      }
+      current_entry_index_ = previous->current_entry_index_;
+      PopulateKeySet();
       UpdateForNavigation(current, load_type);
       return;
     }
@@ -248,42 +255,14 @@ void NavigationApi::InitializeForNewWindow(
   // entry, then any forward entries.
   entries_.ReserveCapacity(base::checked_cast<wtf_size_t>(
       back_entries.size() + forward_entries.size() + 1));
-  for (const auto& entry : back_entries) {
-    entries_.emplace_back(MakeGarbageCollected<NavigationHistoryEntry>(
-        GetSupplementable(), entry));
-  }
+  for (const auto& entry : back_entries)
+    entries_.emplace_back(MakeEntryFromItem(*entry));
 
   current_entry_index_ = base::checked_cast<wtf_size_t>(back_entries.size());
-  entries_.emplace_back(MakeGarbageCollected<NavigationHistoryEntry>(
-      GetSupplementable(), &current));
+  entries_.emplace_back(MakeEntryFromItem(current));
 
-  for (const auto& entry : forward_entries) {
-    entries_.emplace_back(MakeGarbageCollected<NavigationHistoryEntry>(
-        GetSupplementable(), entry));
-  }
-  PopulateKeySet();
-}
-
-void NavigationApi::CloneFromPrevious(NavigationApi& previous) {
-  DCHECK(entries_.IsEmpty());
-  entries_.ReserveCapacity(previous.entries_.size());
-  for (wtf_size_t i = 0; i < previous.entries_.size(); i++) {
-    // It's possible that |old_item| is indirectly holding a reference to
-    // the old Document. Also, it has a bunch of state we don't need for a
-    // non-current entry. Clone a subset of its state to a |new_item|.
-    // NOTE: values copied here should also be copied in GetEntryForRestore().
-    HistoryItem* old_item = previous.entries_[i]->GetItem();
-    HistoryItem* new_item = MakeGarbageCollected<HistoryItem>();
-    new_item->SetItemSequenceNumber(old_item->ItemSequenceNumber());
-    new_item->SetDocumentSequenceNumber(old_item->DocumentSequenceNumber());
-    new_item->SetURL(old_item->Url());
-    new_item->SetNavigationApiKey(old_item->GetNavigationApiKey());
-    new_item->SetNavigationApiId(old_item->GetNavigationApiId());
-    new_item->SetNavigationApiState(old_item->GetNavigationApiState());
-    entries_.emplace_back(MakeGarbageCollected<NavigationHistoryEntry>(
-        GetSupplementable(), new_item));
-  }
-  current_entry_index_ = previous.current_entry_index_;
+  for (const auto& entry : forward_entries)
+    entries_.emplace_back(MakeEntryFromItem(*entry));
   PopulateKeySet();
 }
 
@@ -323,9 +302,7 @@ void NavigationApi::UpdateForNavigation(HistoryItem& item,
     // current_index_ is now correctly set (for type of
     // WebFrameLoadType::kReplaceCurrentItem, it didn't change). Create the new
     // current entry.
-    entries_[current_entry_index_] =
-        MakeGarbageCollected<NavigationHistoryEntry>(GetSupplementable(),
-                                                     &item);
+    entries_[current_entry_index_] = MakeEntryFromItem(item);
     keys_to_indices_.insert(entries_[current_entry_index_]->key(),
                             current_entry_index_);
   }
@@ -360,18 +337,10 @@ NavigationHistoryEntry* NavigationApi::GetEntryForRestore(
     if (existing_entry->id() == entry->id)
       return existing_entry;
   }
-  // NOTE: values copied here should also be copied in CloneFromPrevious().
-  // TODO(japhet): Figure out if there's a way to better share logic with
-  // CloneFromPrevious().
-  HistoryItem* item = MakeGarbageCollected<HistoryItem>();
-  item->SetItemSequenceNumber(entry->item_sequence_number);
-  item->SetDocumentSequenceNumber(entry->document_sequence_number);
-  item->SetURLString(entry->url);
-  item->SetNavigationApiKey(entry->key);
-  item->SetNavigationApiId(entry->id);
-  item->SetNavigationApiState(SerializedScriptValue::Create(entry->state));
-  return MakeGarbageCollected<NavigationHistoryEntry>(GetSupplementable(),
-                                                      item);
+  return MakeGarbageCollected<NavigationHistoryEntry>(
+      GetSupplementable(), entry->key, entry->id, KURL(entry->url),
+      entry->document_sequence_number,
+      SerializedScriptValue::Create(entry->state));
 }
 
 // static
@@ -452,7 +421,7 @@ void NavigationApi::updateCurrentEntry(
   if (exception_state.HadException())
     return;
 
-  current_entry->GetItem()->SetNavigationApiState(std::move(serialized_state));
+  current_entry->SetAndSaveState(serialized_state.get());
 
   auto* init = NavigationCurrentEntryChangeEventInit::Create();
   init->setFrom(current_entry);
@@ -560,7 +529,7 @@ NavigationResult* NavigationApi::reload(ScriptState* script_state,
         return result;
       }
     } else if (NavigationHistoryEntry* current_entry = currentEntry()) {
-      serialized_state = current_entry->GetItem()->GetNavigationApiState();
+      serialized_state = current_entry->GetSerializedState();
     }
   }
 
@@ -606,9 +575,8 @@ NavigationResult* NavigationApi::PerformNonTraverseNavigation(
                             "Navigation was aborted");
   }
 
-  if (SerializedScriptValue* state = navigation->TakeSerializedState()) {
-    currentEntry()->GetItem()->SetNavigationApiState(state);
-  }
+  if (SerializedScriptValue* state = navigation->TakeSerializedState())
+    currentEntry()->SetAndSaveState(state);
   return navigation->GetNavigationResult();
 }
 
@@ -722,6 +690,13 @@ bool NavigationApi::HasEntriesAndEventsDisabled() const {
   return !frame || GetSupplementable()->IsContextDestroyed() ||
          !frame->Loader().HasLoadedNonInitialEmptyDocument() ||
          GetSupplementable()->GetSecurityOrigin()->IsOpaque();
+}
+
+NavigationHistoryEntry* NavigationApi::MakeEntryFromItem(HistoryItem& item) {
+  return MakeGarbageCollected<NavigationHistoryEntry>(
+      GetSupplementable(), item.GetNavigationApiKey(),
+      item.GetNavigationApiId(), item.Url(), item.DocumentSequenceNumber(),
+      item.GetNavigationApiState());
 }
 
 NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(

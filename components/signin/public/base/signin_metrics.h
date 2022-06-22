@@ -63,6 +63,15 @@ enum ProfileSignout : int {
   // User clicked to 'Turn off sync' from the settings page.
   // Currently only available for Android Unicorn users.
   USER_CLICKED_REVOKE_SYNC_CONSENT_SETTINGS = 16,
+  // User clicked to signout from the settings page.
+  USER_CLICKED_SIGNOUT_PROFILE_MENU = 17,
+  // User retriggered signin from the Android web sign-in bottomsheet.
+  SIGNIN_RETRIGGERD_FROM_WEB_SIGNIN = 18,
+  // User clicked on sign-out from the notification dialog for User Policy. The
+  // notification informs the user that from now on user policies may be
+  // effective on their browser if they Sync with their managed account. The
+  // user has the option to sign out to avoid user policies.
+  USER_CLICKED_SIGNOUT_FROM_USER_POLICY_NOTIFICATION_DIALOG = 19,
   // Keep this as the last enum.
   NUM_PROFILE_SIGNOUT_METRICS,
 };
@@ -159,9 +168,9 @@ enum class AccessPoint : int {
   ACCESS_POINT_NTP_CONTENT_SUGGESTIONS = 20,
   ACCESS_POINT_RESIGNIN_INFOBAR = 21,
   ACCESS_POINT_TAB_SWITCHER = 22,
-  // ACCESS_POINT_FORCE_SIGNIN_WARNING is no longer used.
-  ACCESS_POINT_SAVE_CARD_BUBBLE = 24,
-  ACCESS_POINT_MANAGE_CARDS_BUBBLE = 25,
+  // ACCESS_POINT_FORCE_SIGNIN_WARNING = 23, no longer used.
+  // ACCESS_POINT_SAVE_CARD_BUBBLE = 24, no longer used
+  // ACCESS_POINT_MANAGE_CARDS_BUBBLE = 25, no longer used
   ACCESS_POINT_MACHINE_LOGON = 26,
   ACCESS_POINT_GOOGLE_SERVICES_SETTINGS = 27,
   ACCESS_POINT_SYNC_ERROR_CARD = 28,

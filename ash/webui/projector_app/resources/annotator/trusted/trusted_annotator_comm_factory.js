@@ -64,7 +64,7 @@ class TrustedAnnotatorRequestHandler extends RequestHandler {
    *     be used to handle the messages.
    */
   constructor(iframeElement, browserProxy) {
-    super(iframeElement.contentWindow, TARGET_URL, TARGET_URL);
+    super(iframeElement, TARGET_URL, TARGET_URL);
     this.browserProxy_ = browserProxy;
 
     this.registerMethod('onUndoRedoAvailabilityChanged', (values) => {
@@ -73,6 +73,13 @@ class TrustedAnnotatorRequestHandler extends RequestHandler {
       }
       return this.browserProxy_.onUndoRedoAvailabilityChanged(
           values[0], values[1]);
+    });
+
+    this.registerMethod('onCanvasInitialized', (values) => {
+      if (!values || values.length != 1) {
+        return;
+      }
+      return this.browserProxy_.onCanvasInitialized(values[0]);
     });
   }
 }

@@ -8,7 +8,9 @@
 #include "base/files/file_util.h"
 #include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/disk_cache/cache_util.h"
 #include "net/disk_cache/simple/simple_file_enumerator.h"
+#include "net/disk_cache/simple/simple_util.h"
 
 namespace content {
 
@@ -21,6 +23,27 @@ static_assert(static_cast<uint32_t>(OpenFileFlags::kOpenAndRead) ==
 static_assert(static_cast<uint32_t>(OpenFileFlags::kCreateAndWrite) ==
                   (base::File::FLAG_CREATE | base::File::FLAG_WRITE),
               "kCreateAndWrite");
+static_assert(
+    static_cast<uint32_t>(OpenFileFlags::kOpenReadWriteWinShareDelete) ==
+        (base::File::FLAG_OPEN | base::File::FLAG_READ |
+         base::File::FLAG_WRITE | base::File::FLAG_WIN_SHARE_DELETE),
+    "kOpenReadWriteWinShareDelete");
+static_assert(
+    static_cast<uint32_t>(OpenFileFlags::kCreateReadWriteWinShareDelete) ==
+        (base::File::FLAG_CREATE | base::File::FLAG_READ |
+         base::File::FLAG_WRITE | base::File::FLAG_WIN_SHARE_DELETE),
+    "kCreateReadWriteWinShareDelete");
+static_assert(
+    static_cast<uint32_t>(OpenFileFlags::kCreateAlwaysWriteWinShareDelete) ==
+        (base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
+         base::File::FLAG_WIN_SHARE_DELETE),
+    "kCreateReadWriteWinShareDelete");
+static_assert(static_cast<uint32_t>(
+                  OpenFileFlags::kOpenReadWinShareDeleteWinSequentialScan) ==
+                  (base::File::FLAG_OPEN | base::File::FLAG_READ |
+                   base::File::FLAG_WIN_SHARE_DELETE |
+                   base::File::FLAG_WIN_SEQUENTIAL_SCAN),
+              "kOpenReadWinShareDeleteWinSequentialScan");
 
 class FileEnumerator final : public network::mojom::FileEnumerator {
  public:
@@ -80,6 +103,18 @@ class HttpCacheBackendFileOperations final
     std::move(callback).Run(result);
   }
 
+  void DirectoryExists(const base::FilePath& path,
+                       DirectoryExistsCallback callback) override {
+    if (!IsValid(path, "DirectoryExists")) {
+      std::move(callback).Run(false);
+      return;
+    }
+
+    bool result = base::DirectoryExists(path);
+    DVLOG(1) << "DirectoryExists: path = " << path << " => " << result;
+    std::move(callback).Run(result);
+  }
+
   void OpenFile(const base::FilePath& path,
                 network::mojom::HttpCacheBackendOpenFileFlags flags,
                 OpenFileCallback callback) override {
@@ -99,13 +134,23 @@ class HttpCacheBackendFileOperations final
   }
 
   void DeleteFile(const base::FilePath& path,
+                  network::mojom::HttpCacheBackendDeleteFileMode mode,
                   DeleteFileCallback callback) override {
+    using network::mojom::HttpCacheBackendDeleteFileMode;
     if (!IsValid(path, "DeleteFile")) {
       std::move(callback).Run(false);
       return;
     }
 
-    bool result = base::DeleteFile(path);
+    bool result = false;
+    switch (mode) {
+      case HttpCacheBackendDeleteFileMode::kDefault:
+        result = base::DeleteFile(path);
+        break;
+      case HttpCacheBackendDeleteFileMode::kEnsureImmediateAvailability:
+        result = disk_cache::simple_util::SimpleCacheDeleteFile(path);
+        break;
+    }
     DVLOG(1) << "DeleteFile: path = " << path << " => " << result;
     std::move(callback).Run(result);
   }
@@ -122,7 +167,7 @@ class HttpCacheBackendFileOperations final
       return;
     }
 
-    base::File::Error error;
+    base::File::Error error = base::File::FILE_OK;
     base::ReplaceFile(from_path, to_path, &error);
     DVLOG(1) << "DeleteFile: from_path = " << from_path
              << ", to_path = " << to_path << " => " << error;
@@ -155,6 +200,15 @@ class HttpCacheBackendFileOperations final
                                 std::move(receiver));
   }
 
+  void CleanupDirectory(const base::FilePath& path,
+                        CleanupDirectoryCallback callback) override {
+    if (!IsValid(path, "CleanupDirectory")) {
+      std::move(callback).Run(false);
+      return;
+    }
+    disk_cache::CleanupDirectory(path, std::move(callback));
+  }
+
  private:
   bool IsValid(const base::FilePath& path, base::StringPiece tag) const {
     if (!path.IsAbsolute()) {
@@ -162,7 +216,7 @@ class HttpCacheBackendFileOperations final
                              ": The path is not an absolute path.");
       return false;
     }
-    if (!path_.IsParent(path)) {
+    if (path_ != path && !path_.IsParent(path)) {
       mojo::ReportBadMessage(static_cast<std::string>(tag) +
                              ": The path is not in the specified area.");
       return false;
@@ -182,10 +236,8 @@ class HttpCacheBackendFileOperations final
 }  // namespace
 
 HttpCacheBackendFileOperationsFactory::HttpCacheBackendFileOperationsFactory(
-    mojo::PendingReceiver<network::mojom::HttpCacheBackendFileOperationsFactory>
-        receiver,
     const base::FilePath& path)
-    : receiver_(this, std::move(receiver)), path_(path) {}
+    : path_(path) {}
 HttpCacheBackendFileOperationsFactory::
     ~HttpCacheBackendFileOperationsFactory() = default;
 

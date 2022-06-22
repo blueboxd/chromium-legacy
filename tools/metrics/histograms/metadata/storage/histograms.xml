@@ -224,17 +224,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Storage.Blob.BlobUrlLoader.FailureType" enum="NetErrorCodes"
-    expires_after="M95">
-  <owner>mek@chromium.org</owner>
-  <owner>dmurph@chromium.org</owner>
-  <owner>enne@chromium.org</owner>
-  <summary>
-    Recorded when an error occurs in the BlobUrlLoader, which is used to load
-    blobs from urls in the Renderer.
-  </summary>
-</histogram>
-
 <histogram name="Storage.Blob.Broken" enum="BooleanBroken" expires_after="M95">
   <owner>mek@chromium.org</owner>
   <owner>dmurph@chromium.org</owner>
@@ -252,15 +241,6 @@ chromium-metrics-reviews@google.com.
     The reason a blob is broken, reported only for broken blobs upon
     construction. See Storage.Blob.Broken for the breakdown of blobs broken vs
     unbroken.
-  </summary>
-</histogram>
-
-<histogram name="Storage.Blob.BuildFromStreamResult"
-    enum="BlobBuildFromStreamResult" expires_after="M87">
-  <owner>mek@chromium.org</owner>
-  <summary>
-    The result of constructing a blob using the BlobRegistry.RegisterFromStream
-    API.
   </summary>
 </histogram>
 
@@ -456,28 +436,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Storage.Blob.TotalUnsharedSize" units="KB" expires_after="M95">
-  <owner>mek@chromium.org</owner>
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    The total amount of unique memory used to create a blob. Recorded in
-    BlobStorageContext when the blob is finished being created. This does not
-    include memory that is shared with other blobs. If multiple of the same blob
-    item is present, then this number will reflect the size of the single item.
-  </summary>
-</histogram>
-
-<histogram name="Storage.BlobItemSize.File.Unknown" enum="BooleanUnknown"
-    expires_after="M87">
-  <owner>mek@chromium.org</owner>
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    True if the file size on blob append is unknown (which means the full file),
-    or false if a specific file length was populated. Recorded in
-    BlobStorageContext when we are adding a file item to a blob.
-  </summary>
-</histogram>
-
 <histogram name="Storage.FileSystemAccess.PersistedPermissions.Age.{Type}"
     units="ms" expires_after="2023-01-01">
   <owner>asully@chromium.org</owner>
@@ -652,7 +610,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.DBMaintenanceTime" units="microseconds"
-    expires_after="M105">
+    expires_after="2022-10-23">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -664,7 +622,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Storage.InterestGroup.DBSize" units="KB" expires_after="M105">
+<histogram name="Storage.InterestGroup.DBSize" units="KB"
+    expires_after="2022-10-23">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -674,7 +633,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.PerSiteCount" units="groups"
-    expires_after="M105">
+    expires_after="2022-10-23">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>

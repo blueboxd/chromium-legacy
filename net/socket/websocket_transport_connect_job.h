@@ -27,7 +27,7 @@ class WebSocketTransportConnectSubJob;
 // logic for IPv6 connect() timeouts (which may happen due to networks / routers
 // with broken IPv6 support). Those timeouts take 20s, so rather than make the
 // user wait 20s for the timeout to fire, we use a fallback timer
-// (kIPv6FallbackTimerInMs) and start a connect() to an IPv4 address if the
+// (kIPv6FallbackTime) and start a connect() to an IPv4 address if the
 // timer fires. Then we race the IPv4 connect(s) against the IPv6 connect(s) and
 // use the socket that completes successfully first or fails last.
 //
@@ -68,6 +68,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
   // ConnectJob methods.
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
+  ConnectionAttempts GetConnectionAttempts() const override;
   ResolveErrorInfo GetResolveErrorInfo() const override;
 
  private:
@@ -95,6 +96,10 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
 
   // Called back from a SubJob when it completes.
   void OnSubJobComplete(int result, WebSocketTransportConnectSubJob* job);
+  // Called when a SubJob completes, synchronously or asynchronously. Returns
+  // |ERR_IO_PENDING| if there is more work to do and another error if
+  // completed.
+  int HandleSubJobComplete(int result, WebSocketTransportConnectSubJob* job);
 
   // Called from |fallback_timer_|.
   void StartIPv4JobAsync();
@@ -113,14 +118,15 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
 
   // The addresses are divided into IPv4 and IPv6, which are performed partially
   // in parallel. If the list of IPv6 addresses is non-empty, then the IPv6 jobs
-  // go first, followed after |kIPv6FallbackTimerInMs| by the IPv4
-  // addresses. First sub-job to establish a connection wins.
+  // go first, followed after |kIPv6FallbackTime| by the IPv4 addresses. First
+  // sub-job to establish a connection wins.
   std::unique_ptr<WebSocketTransportConnectSubJob> ipv4_job_;
   std::unique_ptr<WebSocketTransportConnectSubJob> ipv6_job_;
 
   base::OneShotTimer fallback_timer_;
 
   ResolveErrorInfo resolve_error_info_;
+  ConnectionAttempts connection_attempts_;
 
   base::WeakPtrFactory<WebSocketTransportConnectJob> weak_ptr_factory_{this};
 };

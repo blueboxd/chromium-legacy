@@ -147,7 +147,14 @@ base::Time AttributionStorageDelegateImpl::GetAggregatableReportTime(
 
   switch (delay_mode_) {
     case AttributionDelayMode::kDefault:
-      return trigger_time + rng_->RandDouble() * base::Hours(1);
+      switch (noise_mode_) {
+        case AttributionNoiseMode::kDefault:
+          return trigger_time + base::Minutes(10) +
+                 rng_->RandDouble() * base::Minutes(50);
+        case AttributionNoiseMode::kNone:
+          return trigger_time + base::Hours(1);
+      }
+
     case AttributionDelayMode::kNone:
       return trigger_time;
   }

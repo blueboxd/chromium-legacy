@@ -14,6 +14,8 @@ a Chromium checkout to access functions from other scripts.
 import argparse
 import os
 import sys
+import tempfile
+import urllib
 
 from pathlib import Path
 
@@ -23,15 +25,19 @@ sys.path.append(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'clang',
                  'scripts'))
 
-# Trunk on 4/1/2022
-RUST_REVISION = '79f178b7'
-RUST_SUB_REVISION = 1
+RUST_REVISION = '1f631e8e'
+RUST_SUB_REVISION = 2
 
 # Hash of src/stage0.json, which itself contains the stage0 toolchain hashes.
 # We trust the Rust build system checks, but to ensure it is not tampered with
 # itself check the hash.
 STAGE0_JSON_SHA256 = (
-    'a38b7ea8b8cbdb592b1a7ae8b97fa31746a2bda309597de111be4893a035070d')
+    '6b1c61d494ad447f41c8ae3b9b3239626eecac00e0f0b793b844e0761133dc37')
+
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..'))
+THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
+RUST_TOOLCHAIN_OUT_DIR = os.path.join(THIRD_PARTY_DIR, 'rust-toolchain')
 
 
 def GetPackageVersion():
@@ -44,12 +50,12 @@ def main():
   parser = argparse.ArgumentParser(description='Update Rust package')
   parser.add_argument('--print-rust-revision',
                       action='store_true',
-                      help='Print Rust revision (without Clang revision). Can '
-                      'be run outside of a Chromium checkout.')
+                      help='Print Rust revision (without Clang revision) and '
+                      'quit. Can be run outside of a Chromium checkout.')
   parser.add_argument('--print-package-version',
                       action='store_true',
                       help='Print Rust package version (including both the '
-                      'Rust and Clang revisions)')
+                      'Rust and Clang revisions) and quit.')
   args = parser.parse_args()
 
   if args.print_rust_revision:
@@ -59,6 +65,21 @@ def main():
   if args.print_package_version:
     print(GetPackageVersion())
     return 0
+
+  from update import (DownloadAndUnpack, GetDefaultHostOs, GetPlatformUrlPrefix)
+
+  try:
+    with tempfile.TemporaryFile() as f:
+      url = '%srust-toolchain-%s.tgz' % (GetPlatformUrlPrefix(
+          GetDefaultHostOs()), GetPackageVersion())
+      DownloadAndUnpack(url, THIRD_PARTY_DIR)
+  except urllib.error.HTTPError as e:
+    # Fail softly for now. This can happen if a Rust package was not produced,
+    # e.g. if the Rust build failed upon a Clang update, or if a Rust roll and
+    # a Clang roll raced against each other.
+    #
+    # TODO(https://crbug.com/1245714): reconsider how to handle this.
+    print(f'warning: could not download Rust package')
 
 
 if __name__ == '__main__':

@@ -88,7 +88,7 @@ ci.builder(
         category = "viz",
     ),
     goma_backend = None,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
 )
@@ -100,7 +100,7 @@ ci.builder(
     ),
     notifies = ["Site Isolation Android"],
     goma_backend = None,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
 )
@@ -108,31 +108,11 @@ ci.builder(
 ci.builder(
     name = "VR Linux",
     branch_selector = branches.STANDARD_MILESTONE,
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "enable_reclient",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
     cq_mirrors_console_view = "mirrors",
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
@@ -146,7 +126,7 @@ ci.builder(
         short_name = "32rel",
     ),
     notifies = ["chrome-memory-safety"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -160,40 +140,46 @@ ci.builder(
         short_name = "64rel",
     ),
     notifies = ["chrome-memory-safety"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
-    name = "fuchsia-fyi-arm64-dbg",
+    name = "fuchsia-fyi-arm64-emu-arg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "fuchsia_arm64",
+                "fuchsia_arm64_host",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.ARM,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.FUCHSIA,
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+        build_gs_bucket = "chromium-fuchsia-archive",
+        run_tests_serially = True,
+    ),
     console_view_entry = [
         consoles.console_view_entry(
             category = "fuchsia|a64",
-            short_name = "dbg",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "fyi",
-            short_name = "a64-dbg",
+            short_name = "emu-arg",
         ),
     ],
-    notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
-)
-
-ci.builder(
-    name = "fuchsia-fyi-arm64-femu",
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "fuchsia|a64",
-            short_name = "femu",
-        ),
-    ],
-    notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
+    notifies = ["cr-fuchsia-engprod"],
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -211,43 +197,7 @@ ci.builder(
         ),
     ],
     notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
-)
-
-ci.builder(
-    name = "fuchsia-fyi-x64-asan",
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "fuchsia|x64",
-            short_name = "asan",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "fyi",
-            short_name = "asan",
-        ),
-    ],
-    notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
-)
-
-ci.builder(
-    name = "fuchsia-fyi-x64-dbg",
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "fuchsia|x64",
-            short_name = "dbg",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "fyi",
-            short_name = "x64-dbg",
-        ),
-    ],
-    notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -265,7 +215,7 @@ ci.builder(
         ),
     ],
     notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -297,7 +247,7 @@ ci.builder(
         ),
     ],
     notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -315,7 +265,7 @@ ci.builder(
         ),
     ],
     notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -324,7 +274,10 @@ ci.builder(
         category = "lacros",
         short_name = "lcr",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -333,7 +286,7 @@ ci.builder(
         category = "lacros",
         short_name = "lsf",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -343,7 +296,7 @@ ci.builder(
         short_name = "lnx",
     ),
     notifies = ["annotator-rel"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
@@ -358,8 +311,10 @@ ci.builder(
         short_name = "rel",
     ),
     execution_timeout = 3 * time.hour,
-    os = os.LINUX_DEFAULT,
-    goma_enable_ats = True,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -368,7 +323,7 @@ ci.builder(
         category = "default",
         short_name = "lcr",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     properties = {
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {
@@ -408,7 +363,10 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "default",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -417,7 +375,7 @@ ci.builder(
         category = "linux|blink",
         short_name = "TD",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -427,23 +385,34 @@ ci.builder(
         short_name = "VF",
     ),
     notifies = ["linux-blink-fyi-bots"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
-    name = "linux-blink-v8-sandbox-future-dbg",
+    name = "linux-blink-v8-sandbox-future-rel",
     console_view_entry = consoles.console_view_entry(
         category = "linux|blink",
         short_name = "SB",
     ),
     notifies = ["v8-sandbox-fyi-bots"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
 )
 
 ci.builder(
@@ -451,7 +420,7 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     schedule = "with 12h interval",
     triggered_by = [],
     goma_backend = None,
@@ -464,7 +433,7 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -516,15 +485,17 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
-ci.builder(
+ci.thin_tester(
     name = "linux-lacros-tester-fyi-rel",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
-    os = os.LINUX_DEFAULT,
     triggered_by = ["linux-lacros-builder-fyi-rel"],
 )
 
@@ -533,15 +504,17 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
-ci.builder(
+ci.thin_tester(
     name = "linux-lacros-dbg-tests-fyi",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
-    os = os.LINUX_DEFAULT,
     triggered_by = ["linux-lacros-dbg-fyi"],
 )
 
@@ -553,7 +526,7 @@ ci.builder(
         short_name = "64rel",
     ),
     notifies = ["chrome-memory-safety"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -564,7 +537,7 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -576,7 +549,7 @@ ci.builder(
         category = "linux",
     ),
     experimental = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -588,7 +561,7 @@ ci.builder(
         category = "linux",
     ),
     experimental = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -600,7 +573,7 @@ ci.builder(
         category = "linux",
     ),
     experimental = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -608,7 +581,7 @@ ci.builder(
 
 # This is launching & collecting entirely isolated tests.
 # OS shouldn't matter.
-ci.builder(
+ci.thin_tester(
     name = "mac-osxbeta-rel",
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
@@ -634,9 +607,7 @@ ci.builder(
         category = "mac",
         short_name = "beta",
     ),
-    goma_backend = goma.backend.RBE_PROD,
     main_console_view = None,
-    os = os.LINUX_DEFAULT,
     triggered_by = ["ci/Mac Builder"],
 )
 
@@ -647,7 +618,7 @@ ci.builder(
         short_name = "hdls",
     ),
     notifies = ["headless-owners"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -716,12 +687,11 @@ ci.builder(
     reclient_instance = rbe_instance.DEFAULT,
 )
 
-ci.builder(
+ci.thin_tester(
     name = "win-pixel-tester-rel",
     console_view_entry = consoles.console_view_entry(
         category = "win10",
     ),
-    os = os.LINUX_DEFAULT,
     triggered_by = ["win-pixel-builder-rel"],
 )
 
@@ -731,7 +701,7 @@ ci.builder(
         category = "perfetto",
         short_name = "lnx",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -777,7 +747,7 @@ ci.builder(
     reclient_cache_silo = "Comparison Android - cache siloed",
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 250,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -792,7 +762,7 @@ ci.builder(
     reclient_cache_silo = "Comparison Linux - cache siloed",
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 250,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -841,7 +811,7 @@ ci.builder(
     reclient_cache_silo = "Comparison Simple Chrome - cache siloed",
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 250,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -856,7 +826,7 @@ ci.builder(
     },
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 500,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     schedule = "triggered",
 )
 
@@ -871,37 +841,11 @@ ci.builder(
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
     execution_timeout = 5 * time.hour,
     goma_backend = None,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     reclient_jobs = 400,
     reclient_instance = rbe_instance.DEFAULT,
 )
 # End - Reclient migration, phase 2, block 1 shadow builders
-
-ci.builder(
-    name = "Win ASan Release (reclient shadow)",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "win asan",
-        short_name = "rel",
-    ),
-    os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
-    reclient_jobs = 80,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "Win ASan Release Media (reclient shadow)",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "win asan",
-        short_name = "med",
-    ),
-    os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
-    reclient_jobs = 80,
-    reclient_instance = rbe_instance.DEFAULT,
-)
 
 ci.builder(
     name = "Win x64 Builder (reclient)",
@@ -1009,7 +953,7 @@ ci.builder(
         category = "cros x64",
         short_name = "cgc",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -1019,7 +963,7 @@ ci.builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     reclient_rewrapper_env = {"RBE_cache_silo": "chromeos-amd64-generic-rel (reclient)"},
 )
 
@@ -1032,7 +976,7 @@ ci.builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     reclient_rewrapper_env = {"RBE_compare": "true"},
     reclient_ensure_verified = True,
     description_html = "verify artifacts. should be removed after the migration. crbug.com/1235218",
@@ -1044,7 +988,7 @@ ci.builder(
         category = "lacros x64",
         short_name = "cgc",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -1054,7 +998,7 @@ ci.builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     reclient_rewrapper_env = {"RBE_cache_silo": "lacros-amd64-generic-rel (reclient)"},
 )
 
@@ -1064,7 +1008,7 @@ ci.builder(
         category = "lacros rel",
         short_name = "cgc",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -1074,7 +1018,7 @@ ci.builder(
     ),
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     reclient_rewrapper_env = {"RBE_cache_silo": "linux-lacros-builder-rel (reclient)"},
 )
 
@@ -1104,7 +1048,7 @@ fyi_coverage_builder(
         category = "code_coverage",
         short_name = "and",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     coverage_test_types = ["overall", "unit"],
     schedule = "triggered",
     triggered_by = [],
@@ -1120,7 +1064,7 @@ fyi_coverage_builder(
         category = "code_coverage",
         short_name = "ann",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
     goma_backend = None,
@@ -1142,7 +1086,7 @@ fyi_coverage_builder(
             short_name = "cov",
         ),
     ],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     coverage_test_types = ["overall", "unit"],
     use_clang_coverage = True,
     schedule = "triggered",
@@ -1169,11 +1113,14 @@ fyi_coverage_builder(
         category = "code_coverage",
         short_name = "lcr",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
     schedule = "triggered",
     triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 fyi_coverage_builder(
@@ -1182,10 +1129,13 @@ fyi_coverage_builder(
         category = "code_coverage",
         short_name = "jcr",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     use_javascript_coverage = True,
     schedule = "triggered",
     triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 fyi_coverage_builder(
@@ -1194,7 +1144,7 @@ fyi_coverage_builder(
         category = "code_coverage",
         short_name = "lnx",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
     export_coverage_to_zoss = True,
@@ -1207,9 +1157,12 @@ fyi_coverage_builder(
         category = "code_coverage",
         short_name = "lac",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 fyi_coverage_builder(
@@ -1287,22 +1240,6 @@ fyi_ios_builder(
 fyi_ios_builder(
     name = "ios-simulator-cronet",
     branch_selector = branches.STANDARD_MILESTONE,
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "ios",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-                "mac_toolchain",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.IOS,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
     console_view_entry = consoles.console_view_entry(
         category = "cronet",
         short_name = "intel",
@@ -1410,6 +1347,61 @@ fyi_ios_builder(
     xcode = xcode.x13betabots,
 )
 
+ci.builder(
+    # An FYI version of the following builders that runs on Focal:
+    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20MSan%20Builder
+    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20MSan%20Tests
+    # TODO(crbug.com/1260217): Remove this builder when the main MSAN builder
+    # has migrated to focal.
+    name = "Linux MSan Focal",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_msan",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "msan",
+        short_name = "lin",
+    ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
+    os = os.LINUX_FOCAL,
+    execution_timeout = 16 * time.hour,
+)
+
+ci.builder(
+    # An FYI version of the following builders that runs on Focal:
+    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20ChromiumOS%20MSan%20Builder
+    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20ChromiumOS%20MSan%20Tests
+    # TODO(crbug.com/1260217): Remove this builder when the main MSAN builder
+    # has migrated to focal.
+    name = "Linux ChromiumOS MSan Focal",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["chromeos"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_msan",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "msan",
+        short_name = "crs",
+    ),
+    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
+    os = os.LINUX_FOCAL,
+    execution_timeout = 16 * time.hour,
+)
+
 fyi_mac_builder(
     name = "Mac Builder Next",
     console_view_entry = consoles.console_view_entry(
@@ -1491,6 +1483,8 @@ ci.builder(
     ),
     goma_backend = None,
     main_console_view = None,
+    # TODO(gbeaty) Investigate if this needs to run on windows, if not switch to
+    # ci.thin_tester
     os = os.WINDOWS_10,
     triggered_by = ["ci/Win x64 Builder"],
 )
@@ -1504,6 +1498,31 @@ ci.builder(
     os = os.WINDOWS_DEFAULT,
     goma_backend = None,
     reclient_jobs = 150,
+    reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.builder(
+    name = "win-fieldtrial-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "win",
+    ),
+    os = os.WINDOWS_DEFAULT,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
 )
 

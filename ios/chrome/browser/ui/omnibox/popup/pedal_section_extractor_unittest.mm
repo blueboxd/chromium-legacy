@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
 
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion_group_impl.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_pedal.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_match_preview_delegate.h"
@@ -17,6 +18,14 @@
 #endif
 
 namespace {
+
+// Waits without blocking the runloop.
+void Wait(NSTimeInterval timeout) {
+  NSDate* deadline = [NSDate dateWithTimeIntervalSinceNow:timeout];
+  while ([[NSDate date] compare:deadline] != NSOrderedDescending) {
+    base::test::ios::SpinRunLoopWithMaxDelay(base::Seconds(0.01));
+  }
+}
 
 class PedalSectionExtractorTest : public PlatformTest {
  protected:
@@ -51,9 +60,9 @@ TEST_F(PedalSectionExtractorTest, ForwardsWhenNoPedals) {
       [AutocompleteSuggestionGroupImpl groupWithTitle:@""
                                           suggestions:@[ mockSuggestion ]];
 
-  [[data_sink_ expect] updateMatches:@[ group ] withAnimation:NO];
+  [[data_sink_ expect] updateMatches:@[ group ] preselectedMatchGroupIndex:0];
 
-  [extractor_ updateMatches:@[ group ] withAnimation:NO];
+  [extractor_ updateMatches:@[ group ] preselectedMatchGroupIndex:0];
 
   [data_sink_ verify];
 }
@@ -78,7 +87,10 @@ TEST_F(PedalSectionExtractorTest, ExtractsPedalsIntoSeparateSection) {
   void (^verifyGroups)(NSInvocation*) = ^(NSInvocation* invocation) {
     __unsafe_unretained NSArray<id<AutocompleteSuggestionGroup>>* groups = nil;
     [invocation getArgument:&groups atIndex:2];
+    NSInteger preselectedMatchGroupIndex = -1;
+    [invocation getArgument:&preselectedMatchGroupIndex atIndex:3];
 
+    EXPECT_EQ(preselectedMatchGroupIndex, 1);
     EXPECT_EQ(groups.count, 2u);
     EXPECT_EQ(groups[0].suggestions.count, 1u);
 
@@ -87,16 +99,16 @@ TEST_F(PedalSectionExtractorTest, ExtractsPedalsIntoSeparateSection) {
   };
 
   [[[data_sink_ stub] andDo:verifyGroups] updateMatches:[OCMArg any]
-                                          withAnimation:NO];
+                             preselectedMatchGroupIndex:1];
 
-  [extractor_ updateMatches:@[ group ] withAnimation:NO];
+  [extractor_ updateMatches:@[ group ] preselectedMatchGroupIndex:0];
 
   [data_sink_ verify];
 }
 
-// After showing a pedal, the extractor will forget it exists when a fresh
-// result with no pedals comes in.
-TEST_F(PedalSectionExtractorTest, ResetsOnEachRun) {
+// When a pedal disappears from the result list, the extractor prevents
+// its disappearance for a short time to reduce UI updates.
+TEST_F(PedalSectionExtractorTest, Debounce) {
   id mockSuggestionNoPedal =
       [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
   [[[mockSuggestionNoPedal stub] andReturn:nil] pedal];
@@ -111,8 +123,10 @@ TEST_F(PedalSectionExtractorTest, ResetsOnEachRun) {
       groupWithTitle:@""
          suggestions:@[ mockSuggestionNoPedal, mockSuggestionWithPedal ]];
 
-  [[data_sink_ expect] updateMatches:[OCMArg any] withAnimation:NO];
-  [extractor_ updateMatches:@[ group ] withAnimation:NO];
+  // Showing a result with pedals passes a pedal to the sink.
+
+  [[data_sink_ expect] updateMatches:[OCMArg any] preselectedMatchGroupIndex:1];
+  [extractor_ updateMatches:@[ group ] preselectedMatchGroupIndex:0];
   [data_sink_ verify];
 
   AutocompleteSuggestionGroupImpl* groupNoPedals =
@@ -120,8 +134,88 @@ TEST_F(PedalSectionExtractorTest, ResetsOnEachRun) {
           groupWithTitle:@""
              suggestions:@[ mockSuggestionNoPedal ]];
 
-  [[data_sink_ expect] updateMatches:@[ groupNoPedals ] withAnimation:NO];
-  [extractor_ updateMatches:@[ groupNoPedals ] withAnimation:NO];
+  // Updating with no pedals continues to pass a pedal to the sink.
+
+  [[data_sink_ expect] updateMatches:[OCMArg any] preselectedMatchGroupIndex:1];
+  [extractor_ updateMatches:@[ groupNoPedals ] preselectedMatchGroupIndex:0];
+
+  [data_sink_ verify];
+
+  // Expect pedal removal when debounce timer expires
+  [[data_sink_ expect] updateMatches:@[ groupNoPedals ]
+          preselectedMatchGroupIndex:0];
+
+  // Wait for debounce to happen
+  Wait(1);
+  [data_sink_ verify];
+
+  // Now updating from no pedals to no pedals, nothing happens
+  [[data_sink_ expect] updateMatches:@[ groupNoPedals ]
+          preselectedMatchGroupIndex:0];
+  [extractor_ updateMatches:@[ groupNoPedals ] preselectedMatchGroupIndex:0];
+
+  [data_sink_ verify];
+
+  // Since there's no update, nothing happens after the debounce timer expires
+  // again.
+  Wait(1);
+  [data_sink_ verify];
+}
+
+// When the list of suggestions is completely empty, prevent the pedal from
+// sticking around. This should only happen when the popup is being closed,
+// otherwise there's at least a what-you-type suggestion.
+TEST_F(PedalSectionExtractorTest, DontDebounceEmptyList) {
+  id mockSuggestionNoPedal =
+      [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
+  [[[mockSuggestionNoPedal stub] andReturn:nil] pedal];
+
+  id mockPedal = [OCMockObject mockForProtocol:@protocol(OmniboxPedal)];
+  [[[mockPedal stub] andReturn:@"pedal title"] title];
+  id mockSuggestionWithPedal =
+      [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
+  [[[mockSuggestionWithPedal stub] andReturn:mockPedal] pedal];
+
+  AutocompleteSuggestionGroupImpl* group = [AutocompleteSuggestionGroupImpl
+      groupWithTitle:@""
+         suggestions:@[ mockSuggestionNoPedal, mockSuggestionWithPedal ]];
+
+  // Showing a result with pedals passes a pedal to the sink.
+
+  [[data_sink_ expect] updateMatches:[OCMArg any] preselectedMatchGroupIndex:1];
+  [extractor_ updateMatches:@[ group ] preselectedMatchGroupIndex:0];
+  [data_sink_ verify];
+
+  AutocompleteSuggestionGroupImpl* groupNoPedals =
+      [AutocompleteSuggestionGroupImpl
+          groupWithTitle:@""
+             suggestions:@[ mockSuggestionNoPedal ]];
+
+  // Updating with no pedals continues to pass a pedal to the sink.
+
+  [[data_sink_ expect] updateMatches:[OCMArg any] preselectedMatchGroupIndex:1];
+  [extractor_ updateMatches:@[ groupNoPedals ] preselectedMatchGroupIndex:0];
+
+  [data_sink_ verify];
+
+  // Expect pedal removal when debounce timer expires
+  [[data_sink_ expect] updateMatches:@[ groupNoPedals ]
+          preselectedMatchGroupIndex:0];
+
+  // Wait for debounce to happen
+  Wait(1);
+  [data_sink_ verify];
+
+  // Now updating from no pedals to no suggestions at all, the update goes
+  // through.
+  [[data_sink_ expect] updateMatches:@[] preselectedMatchGroupIndex:0];
+  [extractor_ updateMatches:@[] preselectedMatchGroupIndex:0];
+
+  [data_sink_ verify];
+
+  // Since there's no update, nothing happens after the debounce timer expires
+  // again.
+  Wait(1);
   [data_sink_ verify];
 }
 
@@ -141,87 +235,6 @@ TEST_F(PedalSectionExtractorTest, ForwardsIrrelevantMethods) {
   [[delegate_ expect] autocompleteResultConsumerDidScroll:extractor_];
   [extractor_ autocompleteResultConsumerDidScroll:nil];
   [delegate_ verify];
-}
-
-// Only the first 3 suggestions are considered for pedal extraction.
-TEST_F(PedalSectionExtractorTest, OnlyExtractFirstFewRows) {
-  id mockSuggestionNoPedal0 =
-      [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
-  [[[mockSuggestionNoPedal0 stub] andReturn:nil] pedal];
-  id mockSuggestionNoPedal1 =
-      [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
-  [[[mockSuggestionNoPedal1 stub] andReturn:nil] pedal];
-  id mockSuggestionNoPedal2 =
-      [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
-  [[[mockSuggestionNoPedal2 stub] andReturn:nil] pedal];
-
-  id mockPedal = [OCMockObject mockForProtocol:@protocol(OmniboxPedal)];
-  [[[mockPedal stub] andReturn:@"pedal title"] title];
-  id mockSuggestionWithPedal =
-      [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
-  [[[mockSuggestionWithPedal stub] andReturn:mockPedal] pedal];
-
-  AutocompleteSuggestionGroupImpl* group = [AutocompleteSuggestionGroupImpl
-      groupWithTitle:@""
-         suggestions:@[
-           mockSuggestionNoPedal0, mockSuggestionNoPedal1,
-           mockSuggestionNoPedal2, mockSuggestionWithPedal
-         ]];
-
-  void (^verifyGroups)(NSInvocation*) = ^(NSInvocation* invocation) {
-    __unsafe_unretained NSArray<id<AutocompleteSuggestionGroup>>* groups = nil;
-    [invocation getArgument:&groups atIndex:2];
-
-    EXPECT_EQ(groups.count, 1u);
-    EXPECT_EQ(groups[0].suggestions.count, 4u);
-  };
-
-  [[[data_sink_ stub] andDo:verifyGroups] updateMatches:[OCMArg any]
-                                          withAnimation:NO];
-
-  [extractor_ updateMatches:@[ group ] withAnimation:NO];
-
-  [data_sink_ verify];
-}
-
-// Only extract one pedal when there are multiple.
-TEST_F(PedalSectionExtractorTest, OnlyExtractOnePedal) {
-  id mockSuggestionNoPedal =
-      [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
-  [[[mockSuggestionNoPedal stub] andReturn:nil] pedal];
-
-  id mockPedal = [OCMockObject mockForProtocol:@protocol(OmniboxPedal)];
-  [[[mockPedal stub] andReturn:@"pedal title"] title];
-  id mockSuggestionWithPedal0 =
-      [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
-  [[[mockSuggestionWithPedal0 stub] andReturn:mockPedal] pedal];
-
-  id mockSuggestionWithPedal1 =
-      [OCMockObject mockForProtocol:@protocol(AutocompleteSuggestion)];
-  [[[mockSuggestionWithPedal1 stub] andReturn:mockPedal] pedal];
-
-  AutocompleteSuggestionGroupImpl* group = [AutocompleteSuggestionGroupImpl
-      groupWithTitle:@""
-         suggestions:@[
-           mockSuggestionNoPedal, mockSuggestionWithPedal0,
-           mockSuggestionWithPedal1
-         ]];
-
-  void (^verifyGroups)(NSInvocation*) = ^(NSInvocation* invocation) {
-    __unsafe_unretained NSArray<id<AutocompleteSuggestionGroup>>* groups = nil;
-    [invocation getArgument:&groups atIndex:2];
-
-    EXPECT_EQ(groups.count, 2u);
-    EXPECT_EQ(groups[0].suggestions.count, 1u);
-    EXPECT_EQ(groups[1].suggestions.count, 3u);
-  };
-
-  [[[data_sink_ stub] andDo:verifyGroups] updateMatches:[OCMArg any]
-                                          withAnimation:NO];
-
-  [extractor_ updateMatches:@[ group ] withAnimation:NO];
-
-  [data_sink_ verify];
 }
 
 #pragma mark - highlight tests
@@ -250,8 +263,9 @@ class PedalSectionExtractorHighlightTest : public PedalSectionExtractorTest {
         groupWithTitle:@""
            suggestions:@[ mockSuggestionNoPedal, mockSuggestionWithPedal ]];
 
-    [[data_sink_ expect] updateMatches:[OCMArg any] withAnimation:NO];
-    [extractor_ updateMatches:@[ group ] withAnimation:NO];
+    [[data_sink_ expect] updateMatches:[OCMArg any]
+            preselectedMatchGroupIndex:1];
+    [extractor_ updateMatches:@[ group ] preselectedMatchGroupIndex:0];
   }
 
   OCMockObject<OmniboxPedal>* mock_pedal_;

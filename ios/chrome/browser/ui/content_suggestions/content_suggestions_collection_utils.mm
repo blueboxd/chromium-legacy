@@ -7,10 +7,12 @@
 #include "base/i18n/rtl.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -59,6 +61,10 @@ const CGFloat kGoogleSearchDoodleShrunkHeight = 68;
 // Height for the shrunk logo frame.
 // TODO(crbug.com/1170491): clean up post-launch.
 const CGFloat kGoogleSearchLogoShrunkHeight = 36;
+
+// The size of the symbol image.
+NSInteger kSymbolContentSuggestionsPointSize = 18;
+
 }
 
 namespace content_suggestions {
@@ -178,8 +184,13 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
 
   [voiceSearchButton setAdjustsImageWhenHighlighted:NO];
 
-  UIImage* micImage = [[UIImage imageNamed:@"location_bar_voice"]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  UIImage* micImage = UseSymbols() ? DefaultSymbolWithPointSize(
+                                         kMicrophoneFillSymbol,
+                                         kSymbolContentSuggestionsPointSize)
+                                   : [UIImage imageNamed:@"location_bar_voice"];
+  micImage =
+      [micImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
   [voiceSearchButton setImage:micImage forState:UIControlStateNormal];
   voiceSearchButton.tintColor = [UIColor colorNamed:kGrey500Color];
   [voiceSearchButton setAccessibilityLabel:l10n_util::GetNSString(

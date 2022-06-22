@@ -221,8 +221,7 @@ class ManagePasswordsUIController
   bool IsShowingBubbleForTest() const { return IsShowingBubble(); }
 
   // content::WebContentsObserver:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void PrimaryPageChanged(content::Page& page) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
 
  private:
@@ -231,6 +230,7 @@ class ManagePasswordsUIController
   // PasswordsLeakDialogDelegate:
   void NavigateToPasswordCheckup(
       password_manager::PasswordCheckReferrer referrer) override;
+  void StartAutomatedPasswordChange() override;
   void OnLeakDialogHidden() override;
 
   enum class BubbleStatus {

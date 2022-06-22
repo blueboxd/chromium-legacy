@@ -7,10 +7,16 @@
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "pdf/ppapi_migration/bitmap.h"
+#include "cc/test/pixel_comparator.h"
+#include "cc/test/pixel_test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/geometry/skia_conversions.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
 
@@ -25,10 +31,30 @@ base::FilePath GetTestDataFilePath(const base::FilePath& path) {
       .Append(path);
 }
 
-SkBitmap CreateSkiaImageForTesting(const gfx::Size& size, SkColor color) {
-  SkBitmap bitmap = CreateN32PremulSkBitmap(gfx::SizeToSkISize(size));
-  bitmap.eraseColor(color);
-  return bitmap;
+testing::AssertionResult MatchesPngFile(
+    const SkImage* actual_image,
+    const base::FilePath& expected_png_file) {
+  SkBitmap actual_bitmap;
+  if (!actual_image->asLegacyBitmap(&actual_bitmap))
+    return testing::AssertionFailure() << "Reference: " << expected_png_file;
+
+  if (!cc::MatchesPNGFile(actual_bitmap, GetTestDataFilePath(expected_png_file),
+                          cc::ExactPixelComparator(/*discard_alpha=*/false))) {
+    return testing::AssertionFailure() << "Reference: " << expected_png_file;
+  }
+
+  return testing::AssertionSuccess();
+}
+
+sk_sp<SkSurface> CreateSkiaSurfaceForTesting(const gfx::Size& size,
+                                             SkColor color) {
+  auto surface = SkSurface::MakeRasterN32Premul(size.width(), size.height());
+  surface->getCanvas()->clear(color);
+  return surface;
+}
+
+sk_sp<SkImage> CreateSkiaImageForTesting(const gfx::Size& size, SkColor color) {
+  return CreateSkiaSurfaceForTesting(size, color)->makeImageSnapshot();
 }
 
 }  // namespace chrome_pdf

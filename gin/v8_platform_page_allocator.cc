@@ -9,6 +9,7 @@
 #include "base/allocator/partition_allocator/random.h"
 #include "base/check_op.h"
 #include "base/cpu.h"
+#include "base/memory/page_size.h"
 #include "build/build_config.h"
 
 namespace {
@@ -54,11 +55,11 @@ namespace gin {
 PageAllocator::~PageAllocator() = default;
 
 size_t PageAllocator::AllocatePageSize() {
-  return base::PageAllocationGranularity();
+  return partition_alloc::internal::PageAllocationGranularity();
 }
 
 size_t PageAllocator::CommitPageSize() {
-  return base::SystemPageSize();
+  return base::GetPageSize();
 }
 
 void PageAllocator::SetRandomMmapSeed(int64_t seed) {
@@ -122,6 +123,15 @@ bool PageAllocator::SetPermissions(void* address,
     return base::TrySetSystemPagesAccess(address, length,
                                          GetPageConfig(permissions));
   }
+}
+
+bool PageAllocator::RecommitPages(void* address,
+                                  size_t length,
+                                  Permission permissions) {
+  base::RecommitSystemPages(
+      reinterpret_cast<uintptr_t>(address), length, GetPageConfig(permissions),
+      base::PageAccessibilityDisposition::kAllowKeepForPerf);
+  return true;
 }
 
 bool PageAllocator::DiscardSystemPages(void* address, size_t size) {

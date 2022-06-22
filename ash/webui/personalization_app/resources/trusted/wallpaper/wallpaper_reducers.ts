@@ -5,13 +5,16 @@
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 
+import {DefaultImageSymbol, kDefaultImageSymbol} from '../../common/constants.js';
+import {isNonEmptyArray} from '../../common/utils.js';
 import {Actions} from '../personalization_actions.js';
 import {WallpaperCollection} from '../personalization_app.mojom-webui.js';
 import {ReducerFunction} from '../personalization_reducers.js';
 import {PersonalizationState} from '../personalization_state.js';
+import {isDefaultImage, isFilePath} from '../utils.js';
 
 import {WallpaperActionName} from './wallpaper_actions.js';
-import {WallpaperState} from './wallpaper_state.js';
+import {DailyRefreshType, WallpaperState} from './wallpaper_state.js';
 
 function backdropReducer(
     state: WallpaperState['backdrop'], action: Actions,
@@ -75,6 +78,17 @@ function loadingReducer(
         ...state,
         images: {...state.images, [action.collectionId]: false},
       };
+    case WallpaperActionName.BEGIN_LOAD_DEFAULT_IMAGE_THUMBNAIL:
+      return {
+        ...state,
+        local: {
+          ...state.local,
+          data: {
+            ...state.local.data,
+            [kDefaultImageSymbol]: true,
+          },
+        },
+      };
     case WallpaperActionName.BEGIN_LOAD_LOCAL_IMAGES:
       return {
         ...state,
@@ -83,20 +97,34 @@ function loadingReducer(
           images: true,
         },
       };
-    case WallpaperActionName.SET_LOCAL_IMAGES:
+    case WallpaperActionName.SET_DEFAULT_IMAGE_THUMBNAIL:
       return {
         ...state,
         local: {
-          // Only keep loading state for most recent local images.
-          data: (action.images || [])
-                    .reduce(
-                        (result, {path}) => {
-                          if (state.local.data.hasOwnProperty(path)) {
-                            result[path] = state.local.data[path];
-                          }
-                          return result;
-                        },
-                        {} as Record<FilePath['path'], boolean>),
+          ...state.local,
+          data: {
+            ...state.local.data,
+            [kDefaultImageSymbol]: false,
+          },
+        },
+      };
+    case WallpaperActionName.SET_LOCAL_IMAGES:
+      // Only keep loading state for most recent local images and the default
+      // image.
+      const imagesToKeep: Array<DefaultImageSymbol|FilePath> =
+          [kDefaultImageSymbol, ...(action.images || [])];
+      return {
+        ...state,
+        local: {
+          data: imagesToKeep.reduce(
+              (result, next) => {
+                const path = isFilePath(next) ? next.path : next;
+                if (state.local.data.hasOwnProperty(path)) {
+                  result[path] = state.local.data[path];
+                }
+                return result;
+              },
+              {} as Record<FilePath['path']|DefaultImageSymbol, boolean>),
           // Image list is done loading.
           images: false,
         },
@@ -163,24 +191,6 @@ function loadingReducer(
           albums: false,
         },
       };
-    case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_COUNT:
-      assert(state.googlePhotos.count === false);
-      return {
-        ...state,
-        googlePhotos: {
-          ...state.googlePhotos,
-          count: true,
-        },
-      };
-    case WallpaperActionName.SET_GOOGLE_PHOTOS_COUNT:
-      assert(state.googlePhotos.count === true);
-      return {
-        ...state,
-        googlePhotos: {
-          ...state.googlePhotos,
-          count: false,
-        },
-      };
     case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ENABLED:
       assert(state.googlePhotos.enabled === false);
       return {
@@ -226,21 +236,57 @@ function localReducer(
     state: WallpaperState['local'], action: Actions,
     _: PersonalizationState): WallpaperState['local'] {
   switch (action.name) {
-    case WallpaperActionName.SET_LOCAL_IMAGES:
+    case WallpaperActionName.SET_DEFAULT_IMAGE_THUMBNAIL:
+      if (action.thumbnail) {
+        return {
+          images: [
+            kDefaultImageSymbol,
+            ...(state.images || []).filter(img => isFilePath(img))
+          ],
+          data: {
+            ...state.data,
+            [kDefaultImageSymbol]: action.thumbnail,
+          },
+        };
+      }
       return {
-        ...state,
-        images: action.images,
-        // Only keep image thumbnails if the image is still in |images|.
-        data: (action.images || [])
-                  .reduce(
-                      (result, {path}) => {
-                        if (state.data.hasOwnProperty(path)) {
-                          result[path] = state.data[path];
-                        }
-                        return result;
-                      },
-                      {} as Record<FilePath['path'], string>),
+        images: Array.isArray(state.images) ?
+            state.images.filter(img => isFilePath(img)) :
+            null,
+        data: {...state.data, [kDefaultImageSymbol]: ''},
       };
+
+    case WallpaperActionName.SET_LOCAL_IMAGES: {
+      const hasDefaultImageWithData = isNonEmptyArray(state.images) &&
+          isDefaultImage(state.images[0]) && !!state.data[kDefaultImageSymbol];
+
+      if (!Array.isArray(action.images)) {
+        return {
+          // Keep the default image in image list if it is present.
+          images: hasDefaultImageWithData ? [kDefaultImageSymbol] : null,
+          data: {[kDefaultImageSymbol]: state.data[kDefaultImageSymbol]},
+        };
+      }
+      // If the first image from prior state is the device default image, keep
+      // it.
+      const newImages: Array<DefaultImageSymbol|FilePath> =
+          hasDefaultImageWithData ? [kDefaultImageSymbol, ...action.images] :
+                                    action.images;
+      return {
+        images: newImages,
+        // Only keep image thumbnails if the image is still in |images|.
+        data: newImages.reduce(
+            (result, next) => {
+              const key = isFilePath(next) ? next.path : next;
+              if (state.data.hasOwnProperty(key)) {
+                result[key] = state.data[key];
+              }
+              return result;
+            },
+            // Set the default value for |kDefaultImageSymbol| here.
+            {[kDefaultImageSymbol]: ''} as typeof state.data),
+      };
+    }
     case WallpaperActionName.SET_LOCAL_IMAGE_DATA:
       return {
         ...state,
@@ -318,9 +364,16 @@ function dailyRefreshReducer(
   switch (action.name) {
     case WallpaperActionName.SET_DAILY_REFRESH_COLLECTION_ID:
       return {
-        ...state,
-        collectionId: action.collectionId,
+        id: action.collectionId,
+        type: DailyRefreshType.BACKDROP,
       };
+    case WallpaperActionName.SET_GOOGLE_PHOTOS_DAILY_REFRESH_ALBUM_ID:
+      return {
+        id: action.albumId,
+        type: DailyRefreshType.GOOGLE_PHOTOS,
+      };
+    case WallpaperActionName.CLEAR_DAILY_REFRESH_ACTION:
+      return null;
     default:
       return state;
   }
@@ -348,7 +401,7 @@ function googlePhotosReducer(
       assert(!!state.albums);
       assert(state.albums.some(album => album.id === action.albumId));
       assert(
-          state.photosByAlbumId[action.albumId] === undefined ||
+          !state.photosByAlbumId[action.albumId] ||
           state.resumeTokens.photosByAlbumId[action.albumId]);
       return state;
     case WallpaperActionName.APPEND_GOOGLE_PHOTOS_ALBUM:
@@ -404,7 +457,7 @@ function googlePhotosReducer(
       };
     case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS:
       // The list of albums should be loaded only while additional albums exist.
-      assert(state.albums === undefined || state.resumeTokens.albums);
+      assert(!state.albums || state.resumeTokens.albums);
       return state;
     case WallpaperActionName.APPEND_GOOGLE_PHOTOS_ALBUMS:
       assert(action.albums !== undefined);
@@ -438,16 +491,6 @@ function googlePhotosReducer(
           albums: action.resumeToken,
         },
       };
-    case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_COUNT:
-      // The total count of photos should be loaded only once.
-      assert(state.count === undefined);
-      return state;
-    case WallpaperActionName.SET_GOOGLE_PHOTOS_COUNT:
-      assert(action.count !== undefined);
-      return {
-        ...state,
-        count: action.count,
-      };
     case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ENABLED:
       // Whether the user is allowed to access Google Photos should be loaded
       // only once.
@@ -461,7 +504,7 @@ function googlePhotosReducer(
       };
     case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS:
       // The list of photos should be loaded only while additional photos exist.
-      assert(state.photos === undefined || state.resumeTokens.photos);
+      assert(!state.photos || state.resumeTokens.photos);
       return state;
     case WallpaperActionName.APPEND_GOOGLE_PHOTOS_PHOTOS:
       assert(action.photos !== undefined);

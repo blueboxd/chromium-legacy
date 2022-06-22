@@ -44,6 +44,10 @@ GPU_EXPORT extern const base::Feature kGpuUseDisplayThreadPriority;
 
 #if BUILDFLAG(IS_MAC)
 GPU_EXPORT extern const base::Feature kMetal;
+
+#if defined(ARCH_CPU_ARM64)
+GPU_EXPORT extern const base::Feature kDisableFlushWorkaroundForMacCrash;
+#endif
 #endif
 
 GPU_EXPORT extern const base::Feature kSharedImageManager;
@@ -63,12 +67,6 @@ GPU_EXPORT extern const base::Feature kEnableVkPipelineCache;
 GPU_EXPORT extern const base::Feature kReduceOpsTaskSplitting;
 
 GPU_EXPORT extern const base::Feature kEnableDrDc;
-
-#if BUILDFLAG(IS_ANDROID)
-// This flag is use additionally with kEnableDrDc to enable the feature for
-// vulkan enabled android devices.
-GPU_EXPORT extern const base::Feature kEnableDrDcVulkan;
-#endif  // BUILDFLAG(IS_ANDROID)
 
 GPU_EXPORT extern const base::Feature kWebGPUService;
 

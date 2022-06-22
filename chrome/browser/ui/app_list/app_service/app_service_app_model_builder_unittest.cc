@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/files/file_path.h"
@@ -17,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -47,6 +49,7 @@
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -57,10 +60,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -341,7 +344,7 @@ class WebAppBuilderTest : public AppServiceAppModelBuilderTest {
     web_app_info->title = base::UTF8ToUTF16(app_name);
     web_app_info->start_url = kAppUrl;
     web_app_info->scope = kAppUrl;
-    web_app_info->user_display_mode = web_app::DisplayMode::kStandalone;
+    web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
 
     return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
   }
@@ -723,7 +726,9 @@ TEST_F(WebAppBuilderDemoModeTest, WebAppListOffline) {
 
 class CrostiniAppTest : public AppServiceAppModelBuilderTest {
  public:
-  CrostiniAppTest() = default;
+  CrostiniAppTest() {
+    features_.InitWithFeatures({ash::features::kTerminalSSH}, {});
+  }
 
   ~CrostiniAppTest() override {}
 
@@ -734,7 +739,7 @@ class CrostiniAppTest : public AppServiceAppModelBuilderTest {
     chromeos::DBusThreadManager::Initialize();
     chromeos::CiceroneClient::InitializeFake();
     chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
     AppServiceAppModelBuilderTest::SetUp();
     test_helper_ = std::make_unique<CrostiniTestHelper>(testing_profile());
     test_helper_->ReInitializeAppServiceIntegration();
@@ -751,7 +756,7 @@ class CrostiniAppTest : public AppServiceAppModelBuilderTest {
     // DBusThreadManager to ensure all keyed services that might rely on DBus
     // clients are destroyed.
     profile_.reset();
-    chromeos::SeneschalClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
     chromeos::ConciergeClient::Shutdown();
     chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -823,6 +828,7 @@ class CrostiniAppTest : public AppServiceAppModelBuilderTest {
 
   std::unique_ptr<app_list::AppListSyncableService> sync_service_;
   std::unique_ptr<CrostiniTestHelper> test_helper_;
+  base::test::ScopedFeatureList features_;
 
  private:
   std::unique_ptr<
@@ -842,26 +848,18 @@ TEST_F(CrostiniAppTest, EnableAndDisableCrostini) {
   EXPECT_EQ(0u, GetModelItemCount());
 
   CrostiniTestHelper::EnableCrostini(testing_profile());
-  EXPECT_THAT(GetAllApps(),
-              testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
-                              TerminalAppName(), ash::kCrostiniFolderId),
-                  IsChromeApp(ash::kCrostiniFolderId, _, "")));
-
+  EXPECT_THAT(GetAllApps(), testing::IsEmpty());
   CrostiniTestHelper::DisableCrostini(testing_profile());
   EXPECT_THAT(GetAllApps(), testing::IsEmpty());
 }
 
 TEST_F(CrostiniAppTest, AppInstallation) {
-  // Terminal app and the Crostini folder.
-  EXPECT_EQ(2u, GetModelItemCount());
+  EXPECT_EQ(0u, GetModelItemCount());
 
   test_helper_->SetupDummyApps();
 
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
-                              TerminalAppName(), ash::kCrostiniFolderId),
                   IsChromeApp(_, kDummyApp1Name, ash::kCrostiniFolderId),
                   IsChromeApp(_, kDummyApp2Name, ash::kCrostiniFolderId),
                   IsChromeApp(ash::kCrostiniFolderId, _, "")));
@@ -870,8 +868,6 @@ TEST_F(CrostiniAppTest, AppInstallation) {
       CrostiniTestHelper::BasicApp(kBananaAppId, kBananaAppName));
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
-                              TerminalAppName(), ash::kCrostiniFolderId),
                   IsChromeApp(_, kDummyApp1Name, ash::kCrostiniFolderId),
                   IsChromeApp(_, kDummyApp2Name, ash::kCrostiniFolderId),
                   IsChromeApp(_, kBananaAppName, ash::kCrostiniFolderId),
@@ -882,8 +878,8 @@ TEST_F(CrostiniAppTest, AppInstallation) {
 TEST_F(CrostiniAppTest, UpdateApps) {
   test_helper_->SetupDummyApps();
 
-  // 4 items: Terminal, two dummy apps and the Crostini folder.
-  EXPECT_EQ(4u, GetModelItemCount());
+  // 3 items: two dummy apps and the Crostini folder.
+  EXPECT_EQ(3u, GetModelItemCount());
 
   // Setting NoDisplay to true should hide an app.
   vm_tools::apps::App dummy1 = test_helper_->GetApp(0);
@@ -892,7 +888,6 @@ TEST_F(CrostiniAppTest, UpdateApps) {
   EXPECT_THAT(
       GetAllApps(),
       testing::UnorderedElementsAre(
-          IsChromeApp(crostini::kCrostiniTerminalSystemAppId, _, _),
           IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp2Name), _, _),
           IsChromeApp(ash::kCrostiniFolderId, _, "")));
 
@@ -902,7 +897,6 @@ TEST_F(CrostiniAppTest, UpdateApps) {
   EXPECT_THAT(
       GetAllApps(),
       testing::UnorderedElementsAre(
-          IsChromeApp(crostini::kCrostiniTerminalSystemAppId, _, _),
           IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp1Name), _, _),
           IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp2Name), _, _),
           IsChromeApp(ash::kCrostiniFolderId, _, "")));
@@ -913,7 +907,6 @@ TEST_F(CrostiniAppTest, UpdateApps) {
   test_helper_->AddApp(dummy2);
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId, _, _),
                   IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp1Name),
                               kDummyApp1Name, _),
                   IsChromeApp(CrostiniTestHelper::GenerateAppId(kDummyApp2Name),
@@ -924,24 +917,25 @@ TEST_F(CrostiniAppTest, UpdateApps) {
 // Test that the app model builder handles removed apps
 TEST_F(CrostiniAppTest, RemoveApps) {
   test_helper_->SetupDummyApps();
-  // 4 items: Terminal, two dummy apps and the Crostini folder.
-  EXPECT_EQ(4u, GetModelItemCount());
+  // 3 items: two dummy apps and the Crostini folder.
+  EXPECT_EQ(3u, GetModelItemCount());
 
   // Remove dummy1
   test_helper_->RemoveApp(0);
-  EXPECT_EQ(3u, GetModelItemCount());
+  EXPECT_EQ(2u, GetModelItemCount());
 
   // Remove dummy2
   test_helper_->RemoveApp(0);
-  EXPECT_EQ(2u, GetModelItemCount());
+  EXPECT_EQ(0u, GetModelItemCount());
 }
 
 // Tests that the crostini folder is created with the correct parameters.
 TEST_F(CrostiniAppTest, CreatesFolder) {
+  test_helper_->SetupDummyApps();
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(
-                  IsChromeApp(crostini::kCrostiniTerminalSystemAppId,
-                              TerminalAppName(), ash::kCrostiniFolderId),
+                  IsChromeApp(_, kDummyApp1Name, ash::kCrostiniFolderId),
+                  IsChromeApp(_, kDummyApp2Name, ash::kCrostiniFolderId),
                   testing::AllOf(
                       IsChromeApp(ash::kCrostiniFolderId, kRootFolderName, ""),
                       IsPersistentApp())));
@@ -950,8 +944,8 @@ TEST_F(CrostiniAppTest, CreatesFolder) {
 // Test that the Terminal app is removed when Crostini is disabled.
 TEST_F(CrostiniAppTest, DisableCrostini) {
   test_helper_->SetupDummyApps();
-  // 4 items: one termnial, two dummy apps and the Crostini folder.
-  EXPECT_EQ(4u, GetModelItemCount());
+  // 3 items: two dummy apps and the Crostini folder.
+  EXPECT_EQ(3u, GetModelItemCount());
 
   // The uninstall flow removes all apps before setting the CrostiniEnabled pref
   // to false, so we need to do that explicitly too.
@@ -985,10 +979,10 @@ class PluginVmAppTest : public testing::Test {
       chromeos::DBusThreadManager::Initialize();
       chromeos::CiceroneClient::InitializeFake();
       chromeos::ConciergeClient::InitializeFake();
-      chromeos::SeneschalClient::InitializeFake();
+      ash::SeneschalClient::InitializeFake();
     }
     ~ScopedDBusThreadManager() {
-      chromeos::SeneschalClient::Shutdown();
+      ash::SeneschalClient::Shutdown();
       chromeos::ConciergeClient::Shutdown();
       chromeos::CiceroneClient::Shutdown();
       chromeos::DBusThreadManager::Shutdown();

@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
-#include "ash/services/ime/associated_rule_based_engine.h"
 #include "ash/services/ime/public/mojom/connection_factory.mojom.h"
 #include "ash/services/ime/public/mojom/input_method.mojom.h"
 #include "ash/services/ime/public/mojom/input_method_host.mojom.h"
+#include "ash/services/ime/rule_based_engine.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -37,6 +37,7 @@ class ConnectionFactory : public mojom::ConnectionFactory {
       mojo::PendingAssociatedReceiver<mojom::InputMethod> pending_input_method,
       mojo::PendingAssociatedRemote<mojom::InputMethodHost>
           pending_input_method_host,
+      mojom::InputMethodSettingsPtr settings,
       ConnectToInputMethodCallback callback) override;
 
   // Is the current connection factory connected to a rule based engine?
@@ -47,7 +48,7 @@ class ConnectionFactory : public mojom::ConnectionFactory {
 
   // This connection factory is only ever used to connect to a rule based
   // engine.
-  std::unique_ptr<AssociatedRuleBasedEngine> rule_based_engine_;
+  std::unique_ptr<RuleBasedEngine> rule_based_engine_;
 };
 
 }  // namespace ime

@@ -135,6 +135,7 @@ exec("./try/tryserver.chromium.android.star")
 exec("./try/tryserver.chromium.angle.star")
 exec("./try/tryserver.chromium.chromiumos.star")
 exec("./try/tryserver.chromium.dawn.star")
+exec("./try/tryserver.chromium.fuchsia.star")
 exec("./try/tryserver.chromium.linux.star")
 exec("./try/tryserver.chromium.mac.star")
 exec("./try/tryserver.chromium.packager.star")
@@ -220,6 +221,10 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = "chromeos-octopus-compile-chrome",
+)
+
+chrome_internal_verifier(
+    builder = "chromeos-reven-chrome",
 )
 
 chrome_internal_verifier(

@@ -9,10 +9,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.IntentUtils;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -21,9 +25,11 @@ import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTabsFragment;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.history.HistoryActivity;
+import org.chromium.chrome.browser.history_clusters.HistoryClustersCoordinator;
 import org.chromium.chrome.browser.omnibox.action.OmniboxActionType;
 import org.chromium.chrome.browser.omnibox.action.OmniboxPedalType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxPedalDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.omnibox.suggestions.pedal.PedalSuggestionViewProperties.PedalIcon;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
@@ -33,34 +39,47 @@ import org.chromium.components.browser_ui.accessibility.AccessibilitySettings;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.SiteSettings;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.omnibox.action.HistoryClustersAction;
+import org.chromium.components.omnibox.action.OmniboxPedal;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /**
  * Handle the clicks on the {@link OmniboxPedal}.
  */
 public class OmniboxPedalDelegateImpl implements OmniboxPedalDelegate {
     private final @NonNull Activity mActivity;
+    private @Nullable HistoryClustersCoordinator mHistoryClustersCoordinator;
+    private final ObservableSupplier<ModalDialogManager> mModalDialogManagerSupplier;
 
-    public OmniboxPedalDelegateImpl(@NonNull Activity activity) {
+    public OmniboxPedalDelegateImpl(@NonNull Activity activity,
+            OneshotSupplier<HistoryClustersCoordinator> historyClustersCoordinatorSupplier,
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
         mActivity = activity;
+        historyClustersCoordinatorSupplier.onAvailable(
+                coordinator -> mHistoryClustersCoordinator = coordinator);
+        mModalDialogManagerSupplier = modalDialogManagerSupplier;
     }
 
     @Override
-    public void executeAction(int omniboxActionType) {
-        assert (omniboxActionType >= OmniboxPedalType.NONE
-                && omniboxActionType < OmniboxPedalType.TOTAL_COUNT)
-                || (omniboxActionType >= OmniboxActionType.FIRST
-                        && omniboxActionType < OmniboxActionType.LAST);
+    public void execute(OmniboxPedal omniboxPedal) {
+        if (omniboxPedal.hasActionId()) {
+            executeNonPedalAction(omniboxPedal);
+            return;
+        }
+
+        @OmniboxPedalType
+        int omniboxPedalType = omniboxPedal.getPedalID();
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        switch (omniboxActionType) {
+        switch (omniboxPedalType) {
             case OmniboxPedalType.CLEAR_BROWSING_DATA:
                 settingsLauncher.launchSettingsActivity(
                         mActivity, ClearBrowsingDataTabsFragment.class);
                 break;
             case OmniboxPedalType.MANAGE_PASSWORDS:
-                PasswordManagerLauncher.showPasswordSettings(
-                        mActivity, ManagePasswordsReferrer.CHROME_SETTINGS);
+                PasswordManagerLauncher.showPasswordSettings(mActivity,
+                        ManagePasswordsReferrer.CHROME_SETTINGS, mModalDialogManagerSupplier);
                 break;
             case OmniboxPedalType.UPDATE_CREDIT_CARD:
                 settingsLauncher.launchSettingsActivity(
@@ -116,7 +135,21 @@ public class OmniboxPedalDelegateImpl implements OmniboxPedalDelegate {
                 }
                 break;
         }
+        SuggestionsMetrics.recordPedalUsed(omniboxPedalType);
         return;
+    }
+
+    private void executeNonPedalAction(OmniboxPedal omniboxPedal) {
+        switch (omniboxPedal.getActionID()) {
+            case OmniboxActionType.HISTORY_CLUSTERS:
+                if (mHistoryClustersCoordinator != null) {
+                    assert omniboxPedal instanceof HistoryClustersAction;
+                    String query = ((HistoryClustersAction) omniboxPedal).getQuery();
+                    assert !TextUtils.isEmpty(query);
+                    mHistoryClustersCoordinator.showBottomSheet(query);
+                }
+                break;
+        }
     }
 
     /**
@@ -142,7 +175,7 @@ public class OmniboxPedalDelegateImpl implements OmniboxPedalDelegate {
     }
 
     /**
-     * Start the actrivty by mActivity.
+     * Start the activity via mActivity.
      *
      * @param intent The intent to launch the activity.
      */
@@ -152,8 +185,15 @@ public class OmniboxPedalDelegateImpl implements OmniboxPedalDelegate {
     }
 
     @Override
-    public @NonNull PedalIcon getPedalIcon(int omniboxActionType) {
-        switch (omniboxActionType) {
+    public @NonNull PedalIcon getIcon(OmniboxPedal omniboxPedal) {
+        if (!omniboxPedal.hasPedalId()) {
+            return new PedalIcon(R.drawable.fre_product_logo, /*tintWithTextColor=*/false);
+        }
+
+        @OmniboxPedalType
+        int omniboxPedalType = omniboxPedal.getPedalID();
+
+        switch (omniboxPedalType) {
             case OmniboxPedalType.CLEAR_BROWSING_DATA:
             case OmniboxPedalType.MANAGE_PASSWORDS:
             case OmniboxPedalType.UPDATE_CREDIT_CARD:
@@ -168,8 +208,8 @@ public class OmniboxPedalDelegateImpl implements OmniboxPedalDelegate {
                 return new PedalIcon(R.drawable.ic_dino, /*tintWithTextColor=*/true);
             default:
                 // Please confirm the icon for the new pedals in
-                // chrome/browser/ui/omnibox/omnibox_pedal_implementations.cc, if the new pedals use
-                // a spicial icon.
+                // chrome/browser/ui/omnibox/omnibox_pedal_implementations.cc, if the new pedal uses
+                // a special icon.
                 assert false : "New pedals need to confirm the icon and add the list above.";
                 break;
         }

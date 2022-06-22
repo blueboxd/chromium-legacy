@@ -291,16 +291,12 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, AppNameWebNotification);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, AppNameWebAppNotification);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, CreateOrUpdateTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest,
-                           ManuallyExpandedOrCollapsed);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, InlineSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest,
                            InlineSettingsInkDropAnimation);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, NotificationWithoutIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, ShowProgress);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, ShowTimestamp);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest,
-                           TestAccentColorTextFlagAffectsActionButtons);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, TestActionButtonClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, TestClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, TestClickExpanded);
@@ -321,6 +317,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UseImageAsIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestIconSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, LeftContentResizeForIcon);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, ManuallyExpandedOrCollapsed);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, InlineSettingsNotBlock);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, InlineSettingsBlockAll);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestAccentColor);
@@ -336,10 +333,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   void CreateOrUpdateIconView(const Notification& notification);
   void CreateOrUpdateImageView(const Notification& notification);
   void CreateOrUpdateActionButtonViews(const Notification& notification);
-
-  void HeaderRowPressed();
-
-  void ToggleExpanded();
 
   // View containing close and settings buttons
   NotificationControlButtonsView* control_buttons_view_ = nullptr;

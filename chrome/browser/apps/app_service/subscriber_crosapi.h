@@ -14,7 +14,7 @@
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
-#include "components/services/app_service/public/cpp/preferred_apps_list.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -44,7 +44,10 @@ class SubscriberCrosapi : public KeyedService,
   void RegisterAppServiceProxyFromCrosapi(
       mojo::PendingReceiver<crosapi::mojom::AppServiceProxy> receiver);
 
-  void OnApps(const std::vector<apps::AppPtr>& deltas);
+  void OnApps(const std::vector<AppPtr>& deltas);
+
+  void InitializePreferredApps(PreferredApps preferred_apps);
+  void OnPreferredAppsChanged(PreferredAppChangesPtr changes);
 
  protected:
   // apps::mojom::Subscriber overrides.
@@ -57,7 +60,7 @@ class SubscriberCrosapi : public KeyedService,
   void OnPreferredAppsChanged(
       apps::mojom::PreferredAppChangesPtr changes) override;
   void InitializePreferredApps(
-      PreferredAppsList::PreferredApps preferred_apps) override;
+      std::vector<apps::mojom::PreferredAppPtr> preferred_apps) override;
   void OnCrosapiDisconnected();
 
   // crosapi::mojom::AppServiceProxy overrides.

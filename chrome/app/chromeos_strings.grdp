@@ -405,8 +405,14 @@
   <message name="IDS_UPDATE_SLIDE_UPDATE_TITLE" desc="Title of educative slide.">
     After this, no waiting for updates
   </message>
+  <message name="IDS_UPDATE_SLIDE_UPDATE_ADDITIONAL_SETTINGS_TITLE" desc="Title of educative slide.">
+    From here on out, no waiting required
+  </message>
   <message name="IDS_UPDATE_SLIDE_UPDATE_TEXT" desc="Text of educative slide.">
     This is the only time you’ll wait for an update. On Chromebooks, software updates happen in the background.
+  </message>
+  <message name="IDS_UPDATE_SLIDE_UPDATE_ADDITIONAL_SETTINGS_TEXT" desc="Text of educative slide.">
+    After this, software updates will happen in the background. You can review update preferences in Settings.
   </message>
   <message name="IDS_UPDATE_SLIDE_ANTIVIRUS_TITLE" desc="Title of educative slide.">
     Built-in virus protection
@@ -431,6 +437,12 @@
   </message>
   <message name="IDS_UPDATE_BATTERY_WARNING_TEXT" desc="Text of battery warning which is shown during update process if battery is running out.">
     Looks like your Chromebook will run out of power before the update is complete. Make sure it's charging correctly to avoid interruption.
+  </message>
+  <message name="IDS_UPDATE_NO_UPDATE_AVAILABLE_TITLE" desc="Title of the screen that is shown when there is no update available.">
+    Your device is up to date
+  </message>
+  <message name="IDS_UPDATE_NO_UPDATE_AVAILABLE_TEXT" desc="Text of the screen that is shown when there is no update available.">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> updates automatically in the background to give you the latest features and security improvements. You can review update preferences in Settings.
   </message>
   <message name="IDS_UPDATE_SLIDE_LABEL" desc="Text of slide label for accessibility.">
     Extra content <ph name="CURRENT_ELEMENT">$1<ex>1</ex></ph> out of <ph name="TOTAL_ELEMENTS">$2<ex>2</ex></ph>
@@ -512,9 +524,6 @@
   </message>
   <message name="IDS_NETWORK_ADD_WI_FI_LIST_ITEM_NAME" desc="OOBE network screen list entry that opens 'Add New WiFi Network' dialog">
     Add other WiFi network
-  </message>
-  <message name="IDS_NETWORK_OFFLINE_DEMO_SETUP_LIST_ITEM_NAME" desc="OOBE network screen list entry that starts offline demo mode setup">
-    Offline demo mode
   </message>
   <message name="IDS_AUTOSTART_WARNING_TITLE" desc="Title of the kiosk autostart screen">
     Auto-launch permission requested
@@ -2925,6 +2934,9 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
     Enterprise enrollment
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_PROGRESS_LABEL" desc="The a11y label for enrollment in progress dialog with spinner.">
+    Enterprise enrollment in progress
+  </message>
   <message name="IDS_ENTERPRISE_ACCOUNT_CHECK_TITLE" desc="The title of spinner dialog shown during account check.">
     Checking eligibility
   </message>
@@ -2974,10 +2986,13 @@
     Confirm kiosk and signage device enrollment?
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_CONFIRM_MESSAGE" desc="Message of kiosk confirm enrollment screen.">
-    You will use a Kiosk &amp; Signage Upgrade which only allows the device to run in kiosk or signage mode. If you would like users to sign into the device, please go back and enroll using Chrome Enterpirse Upgrade.
+    You will use a Kiosk &amp; Signage Upgrade which only allows the device to run in kiosk or signage mode. If you would like users to sign into the device, please go back and enroll using Chrome Enterprise Upgrade.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_CONFIRM_POWERWASH_MESSAGE" desc="Message of kiosk confirm enrollment screen.">
     If you want to switch after enrollment, you will need to factory reset (powerwash) your device.
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_CANCEL_BUTTON" desc="Label for the decline button on the cofirm kiosk enrollment screen in the enterprise enrollment dialog.">
+    Decline
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_KIOSK_CONFIRM_BUTTON" desc="Label for the confirm button on the cofirm kiosk enrollment screen in the enterprise enrollment dialog.">
     Confirm
@@ -4238,9 +4253,8 @@
   </message>
 
   <!-- Lacros data migration screen. -->
-  <!-- TODO(crbug.com/1266669): Remove translateable tag when the string is finalized. -->
   <message translateable="false" name="IDS_LACROS_DATA_MIGRATION_SCREEN_TITLE" desc="Title of the data migration screen.">
-    Updating Chrome browser (alpha)
+    Updating Chrome browser
   </message>
   <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_SUBTITLE" desc="Shows the % of progress.">
     <ph name="PERCENT">$1<ex>100</ex></ph>% completed
@@ -4731,13 +4745,13 @@
     Configuring Linux
   </message>
   <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_SUBTEXT" desc="Description for dialog warning user of unavailable Linux container until software configurations are applied.">
-    Linux is being configured by your administrator. Configuration will take a few minutes.
+    Linux is currently being configured. Configuration will take a few minutes.
   </message>
   <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_LABEL" desc="Label for Crostini software config dialog when there is an error in Ansible playbook application or installation.">
     Error configuring Linux
   </message>
   <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_SUBTEXT" desc="Text shown for Crostini software config dialog when there is an error in Ansible playbook application or installation.">
-    There was an error while configuring Linux. Please contact your administrator.
+    There was an error while configuring Linux.
   </message>
   <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_OFFLINE_LABEL" desc="Label for dialog warning user of missing internet connection required for container configuration.">
     <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is offline
@@ -5037,6 +5051,12 @@
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_DISABLED" desc="Tooltip for an icon on user's sign-in screen pod shown by EasyUnlock when the feature is only enabled for unlock, not sign-in.">
     To use Smart Lock to sign in to your Google Account, go to Settings &gt; Connected devices &gt; Your phone &gt; Smart Lock.
   </message>
+  <message name="IDS_SMART_LOCK_SIGN_IN_REMOVED_NOTIFICATION_TITLE" desc="Title for notification shown to users who had Sign in with Smart Lock enabled after the Sign in with Smart Lock subfeature is deprecated.">
+    Smart Lock has changed
+  </message>
+  <message name="IDS_SMART_LOCK_SIGN_IN_REMOVED_NOTIFICATION_MESSAGE" desc="Message for notification shown to users who had Sign in with Smart Lock enabled after the Sign in with Smart Lock subfeature is deprecated.">
+    Signing in with Smart Lock is no longer available. You can still unlock with Smart Lock.
+  </message>
   <message name="IDS_SMART_LOCK_SCREENLOCK_TOOLTIP_HARDLOCK_REAUTH_USER" desc="Tooltip text shown on a user's lock screen pod to reauthenticate the user before setting up Smart Lock. A password has to be entered to unlock the device.">
     To set up Smart Lock for Chromebook, Google needs to make sure it’s you—type your password to get started.
   </message>
@@ -5067,10 +5087,10 @@
     Help
   </message>
   <message name="IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_TITLE" desc="Title for notification shown when screen lock is not enabled while using app stream of EcheApp.">
-    Couldn’t open <ph name="APP_NAME">$1<ex>the app</ex></ph>
+    Can't open app
   </message>
   <message name="IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_MESSAGE" desc="Message for the notification shown when screen lock is not enabled while using app stream of EcheApp.">
-    Set a pin or password on this Chromebook to protect access to your phone’s apps.
+    To open <ph name="APP_NAME">$1<ex>the app</ex></ph>, enable "Show lock screen when waking from sleep"
   </message>
   <message name="IDS_ECHE_APP_NOTIFICATION_OPEN_AGAIN_BUTTON" desc="Label for the inactivity notification button of EcheApp to open open.">
     Open again
@@ -5595,15 +5615,6 @@
   </message>
 
   <!-- Strings for Account Manager screens -->
-  <message name="IDS_ACCOUNT_MANAGER_WELCOME_TITLE" desc="Title for the ChromeOS Account Manager Welcome screen.">
-    Sign-in has changed
-  </message>
-  <message name="IDS_ACCOUNT_MANAGER_WELCOME_TEXT" desc="Text body for the ChromeOS Account Manager Welcome screen.">
-    You can now manage all of your Google Accounts in one place. Access and permissions you've granted to apps, websites, and extensions in Chrome and Google Play may now apply to all of your signed-in accounts. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://support.google.com/chromebook/?p=google_accounts</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_ACCOUNT_MANAGER_WELCOME_BUTTON" desc="Label for the button to view accounts on the ChromeOS Account Manager Welcome screen.">
-    View accounts
-  </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_TITLE" desc="Title for the ChromeOS 'Add account' dialog.">
     Sign in to add a Google account
   </message>
@@ -5664,6 +5675,12 @@ Permissions you've already given to apps may apply to this account. You can cont
   </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_SIGNIN_BLOCKED_BY_POLICY_IMAGE_ALT" desc="Alternate text for image on the sign-in blocked by policy screen in ChromeOS 'Add account' dialog.">
    Restriction image
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_SIGNIN_ERROR_TITLE" desc="Title for the sign-in error screen in ChromeOS 'Add account' dialog.">
+    Something went wrong
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_SIGNIN_ERROR_BODY" desc="Text body for the sign-in error screen in ChromeOS 'Add account' dialog.">
+    Sorry, your email or password could not be verified. Please try again.
   </message>
 
   <!-- Strings for per-account Migration welcome screen -->
@@ -5828,6 +5845,9 @@ Permissions you've already given to apps may apply to this account. You can cont
   </message>
   <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_SOURCE" desc="Source of notification that prompts users for feedback">
     Chromebook Gaming
+  </message>
+  <message name="IDS_BOREALIS_SPLASHSCREEN_MESSAGE" desc="Message on splashscreen when starting Steam on Chrome OS.">
+    starting up...
   </message>
 
   <!-- TPM firmware auto-update notifications -->
@@ -6163,19 +6183,7 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     You can restore your previous apps
   </message>
 
-   <!-- Strings for Projector-->
-  <message name="IDS_SELFIE_CAM_TITLE" desc="The title for the selfie camera dialog.">
-    Selfie Camera
-  </message>
-
-  <message name="IDS_SELFIE_CAMERA_BUBBLE_EXPANDED" desc="Tooltip for the selfie camera resize button in expanded state">
-    2x
-  </message>
-
-  <message name="IDS_SELFIE_CAMERA_BUBBLE_COLLAPSED" desc="Tooltip for the selfie camera resize button in collapsed state">
-    1x
-  </message>
-
+  <!-- Strings for Projector-->
   <message name="IDS_PROJECTOR_APP_NAME" desc="Name for the Projector app in the launcher">
     Screencast
   </message>

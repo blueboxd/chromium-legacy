@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
 #include "chrome/browser/ui/quick_answers/ui/quick_answers_pre_target_handler.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/browser/speech/tts_controller_impl.h"
@@ -78,8 +79,10 @@ constexpr int kDefaultLineHeightDip = 20;
 // Spacing between labels in the horizontal elements view.
 constexpr int kLabelSpacingDip = 2;
 
-// Settings button.
-constexpr int kSettingsButtonMarginDip = 4;
+// Buttons view.
+constexpr int kButtonsViewMarginDip = 4;
+constexpr int kButtonsSpacingDip = 4;
+constexpr int kDogfoodButtonSizeDip = 20;
 constexpr int kSettingsButtonSizeDip = 14;
 constexpr int kSettingsButtonBorderDip = 3;
 
@@ -286,6 +289,54 @@ class ReportQueryView : public views::Button {
 BEGIN_METADATA(ReportQueryView, views::Button)
 END_METADATA
 
+// The lifetime of instances of this class is manually bound to the lifetime of
+// the associated TtsUtterance. See OnTtsEvent.
+class QuickAnswersUtteranceEventDelegate
+    : public content::UtteranceEventDelegate {
+ public:
+  QuickAnswersUtteranceEventDelegate() = default;
+  ~QuickAnswersUtteranceEventDelegate() override = default;
+
+  // UtteranceEventDelegate methods:
+  void OnTtsEvent(content::TtsUtterance* utterance,
+                  content::TtsEventType event_type,
+                  int char_index,
+                  int char_length,
+                  const std::string& error_message) override {
+    // For quick answers, the TTS events of interest are START, END, and ERROR.
+    switch (event_type) {
+      case content::TTS_EVENT_START:
+        quick_answers::RecordTtsEngineEvent(
+            quick_answers::TtsEngineEvent::TTS_EVENT_START);
+        break;
+      case content::TTS_EVENT_END:
+        quick_answers::RecordTtsEngineEvent(
+            quick_answers::TtsEngineEvent::TTS_EVENT_END);
+        break;
+      case content::TTS_EVENT_ERROR:
+        VLOG(1) << __func__ << ": " << error_message;
+        quick_answers::RecordTtsEngineEvent(
+            quick_answers::TtsEngineEvent::TTS_EVENT_ERROR);
+        break;
+      case content::TTS_EVENT_WORD:
+      case content::TTS_EVENT_SENTENCE:
+      case content::TTS_EVENT_MARKER:
+      case content::TTS_EVENT_INTERRUPTED:
+      case content::TTS_EVENT_CANCELLED:
+      case content::TTS_EVENT_PAUSE:
+      case content::TTS_EVENT_RESUME:
+        // Group the remaining TTS events that aren't of interest together
+        // into an unspecified "other" category.
+        quick_answers::RecordTtsEngineEvent(
+            quick_answers::TtsEngineEvent::TTS_EVENT_OTHER);
+        break;
+    }
+
+    if (utterance->IsFinished())
+      delete this;
+  }
+};
+
 }  // namespace
 
 // QuickAnswersView -----------------------------------------------------------
@@ -346,6 +397,14 @@ void QuickAnswersView::OnThemeChanged() {
         views::Button::ButtonState::STATE_NORMAL,
         gfx::CreateVectorIcon(
             vector_icons::kSettingsOutlineIcon, kSettingsButtonSizeDip,
+            GetColorProvider()->GetColor(ui::kColorIconSecondary)));
+  }
+
+  if (dogfood_feedback_button_) {
+    dogfood_feedback_button_->SetImage(
+        views::Button::ButtonState::STATE_NORMAL,
+        gfx::CreateVectorIcon(
+            vector_icons::kDogfoodIcon, kDogfoodButtonSizeDip,
             GetColorProvider()->GetColor(ui::kColorIconSecondary)));
   }
 }
@@ -449,7 +508,8 @@ void QuickAnswersView::InitLayout() {
 
   AddContentView();
 
-  AddSettingsButton();
+  // Add util buttons in the top-right corner.
+  AddFrameButtons();
 }
 
 void QuickAnswersView::InitWidget() {
@@ -489,14 +549,27 @@ void QuickAnswersView::AddContentView() {
       std::make_unique<QuickAnswersTextLabel>(QuickAnswerResultText(loading)));
 }
 
-void QuickAnswersView::AddSettingsButton() {
-  auto* settings_view = AddChildView(std::make_unique<views::View>());
+void QuickAnswersView::AddFrameButtons() {
+  auto* buttons_view = AddChildView(std::make_unique<views::View>());
   auto* layout =
-      settings_view->SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetInteriorMargin(gfx::Insets(kSettingsButtonMarginDip))
-      .SetCrossAxisAlignment(views::LayoutAlignment::kEnd);
-  settings_button_ = settings_view->AddChildView(
+      buttons_view->SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetMainAxisAlignment(views::LayoutAlignment::kEnd)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+      .SetInteriorMargin(gfx::Insets(kButtonsViewMarginDip))
+      .SetDefault(views::kMarginsKey,
+                  gfx::Insets::TLBR(0, kButtonsSpacingDip, 0, 0));
+
+  if (is_internal_) {
+    dogfood_feedback_button_ = buttons_view->AddChildView(
+        std::make_unique<views::ImageButton>(base::BindRepeating(
+            &QuickAnswersUiController::OnReportQueryButtonPressed,
+            controller_)));
+    dogfood_feedback_button_->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_ASH_QUICK_ANSWERS_SETTINGS_BUTTON_TOOLTIP_TEXT));
+  }
+
+  settings_button_ = buttons_view->AddChildView(
       std::make_unique<views::ImageButton>(base::BindRepeating(
           &QuickAnswersUiController::OnSettingsButtonPressed, controller_)));
   settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
@@ -660,6 +733,8 @@ std::vector<views::View*> QuickAnswersView::GetFocusableViews() {
   // retry-label, and so is not included when this is the case.
   if (!retry_label_)
     focusable_views.push_back(this);
+  if (dogfood_feedback_button_ && dogfood_feedback_button_->GetVisible())
+    focusable_views.push_back(dogfood_feedback_button_);
   if (settings_button_ && settings_button_->GetVisible())
     focusable_views.push_back(settings_button_);
   if (phonetics_audio_button_ && phonetics_audio_button_->GetVisible())
@@ -693,6 +768,7 @@ void QuickAnswersView::OnPhoneticsAudioButtonPressed(
   // TtsController will use the default TTS engine if the Google TTS engine
   // is not available.
   tts_utterance->SetEngineId(kGoogleTtsEngineId);
+  tts_utterance->SetEventDelegate(new QuickAnswersUtteranceEventDelegate());
 
   tts_controller->SpeakOrEnqueue(std::move(tts_utterance));
 }

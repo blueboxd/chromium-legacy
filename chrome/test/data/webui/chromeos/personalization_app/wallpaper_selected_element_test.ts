@@ -7,7 +7,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {Paths, WallpaperLayout, WallpaperSelected, WallpaperType} from 'chrome://personalization/trusted/personalization_app.js';
+import {CurrentWallpaper, DailyRefreshType, Paths, WallpaperLayout, WallpaperSelected, WallpaperType} from 'chrome://personalization/trusted/personalization_app.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
@@ -223,7 +223,7 @@ suite('WallpaperSelectedTest', function() {
     personalizationStore.data.wallpaper.loading.selected = false;
 
     wallpaperSelectedElement =
-        initElement(WallpaperSelected, {'path': Paths.CollectionImages});
+        initElement(WallpaperSelected, {'path': Paths.COLLECTION_IMAGES});
     await waitAfterNextRender(wallpaperSelectedElement);
 
     const dailyRefresh =
@@ -236,6 +236,32 @@ suite('WallpaperSelectedTest', function() {
   });
 
   test(
+      'shows daily refresh option on the google photos album view',
+      async () => {
+        personalizationStore.data.wallpaper.currentSelected = {
+          url: {url: 'data:image/png;base64,abc='},
+          attribution: [],
+          assetId: BigInt(100),
+        };
+        personalizationStore.data.wallpaper.loading.selected = false;
+
+        wallpaperSelectedElement = initElement(WallpaperSelected, {
+          'path': Paths.GOOGLE_PHOTOS_COLLECTION,
+          'googlePhotosAlbumId': ''
+        });
+        await waitAfterNextRender(wallpaperSelectedElement);
+
+        const dailyRefresh =
+            wallpaperSelectedElement.shadowRoot!.getElementById('dailyRefresh');
+        assertTrue(!!dailyRefresh);
+
+        const refreshWallpaper =
+            wallpaperSelectedElement.shadowRoot!.getElementById(
+                'refreshWallpaper');
+        assertTrue(refreshWallpaper!.hidden);
+      });
+
+  test(
       'shows refresh button only on collection with daily refresh enabled',
       async () => {
         personalizationStore.data.wallpaper.currentSelected = {
@@ -246,12 +272,43 @@ suite('WallpaperSelectedTest', function() {
         personalizationStore.data.wallpaper.loading.selected = false;
         const collection_id = wallpaperProvider.collections![0]!.id;
         personalizationStore.data.wallpaper.dailyRefresh = {
-          collectionId: collection_id,
+          id: collection_id,
+          type: DailyRefreshType.BACKDROP,
         };
 
         wallpaperSelectedElement = initElement(
             WallpaperSelected,
-            {'path': Paths.CollectionImages, 'collectionId': collection_id});
+            {'path': Paths.COLLECTION_IMAGES, 'collectionId': collection_id});
+        personalizationStore.notifyObservers();
+
+        await waitAfterNextRender(wallpaperSelectedElement);
+
+        const newRefreshWallpaper =
+            wallpaperSelectedElement.shadowRoot!.getElementById(
+                'refreshWallpaper');
+        assertFalse(newRefreshWallpaper!.hidden);
+      });
+
+  test(
+      'shows refresh button only on google photos album with daily refresh enabled',
+      async () => {
+        personalizationStore.data.wallpaper.currentSelected = {
+          url: {url: 'data:image/png;base64,abc='},
+          attribution: [],
+          assetId: BigInt(100),
+        };
+        personalizationStore.data.wallpaper.loading.selected = false;
+
+        const album_id = 'test_album_id';
+        personalizationStore.data.wallpaper.dailyRefresh = {
+          id: album_id,
+          type: DailyRefreshType.GOOGLE_PHOTOS,
+        };
+
+        wallpaperSelectedElement = initElement(WallpaperSelected, {
+          'path': Paths.GOOGLE_PHOTOS_COLLECTION,
+          'googlePhotosAlbumId': album_id
+        });
         personalizationStore.notifyObservers();
 
         await waitAfterNextRender(wallpaperSelectedElement);
@@ -268,13 +325,13 @@ suite('WallpaperSelectedTest', function() {
       url: {url: 'url'},
       attribution: [],
       layout: WallpaperLayout.kStretch,
-      type: WallpaperType.kGooglePhotos,
+      type: WallpaperType.kOnceGooglePhotos,
       key: 'key',
     };
 
     // Initialize |wallpaperSelectedElement|.
     wallpaperSelectedElement =
-        initElement(WallpaperSelected, {'path': Paths.CollectionImages});
+        initElement(WallpaperSelected, {'path': Paths.COLLECTION_IMAGES});
     await waitAfterNextRender(wallpaperSelectedElement);
 
     // Verify layout options are *not* shown when not on Google Photos path.
@@ -283,7 +340,7 @@ suite('WallpaperSelectedTest', function() {
     assertEquals(shadowRoot?.querySelector(selector), null);
 
     // Set Google Photos path and verify layout options *are* shown.
-    wallpaperSelectedElement.path = Paths.GooglePhotosCollection;
+    wallpaperSelectedElement.path = Paths.GOOGLE_PHOTOS_COLLECTION;
     await waitAfterNextRender(wallpaperSelectedElement);
     assertNotEquals(shadowRoot?.querySelector(selector), null);
 
@@ -293,5 +350,26 @@ suite('WallpaperSelectedTest', function() {
     assertDeepEquals(
         await wallpaperProvider.whenCalled('setCurrentWallpaperLayout'),
         WallpaperLayout.kCenter);
+  });
+
+  test('shows attribution for device default wallpaper', async () => {
+    const currentSelected: CurrentWallpaper = {
+      url: {url: 'url'},
+      attribution: ['testing attribution'],
+      layout: WallpaperLayout.kStretch,
+      type: WallpaperType.kDefault,
+      key: 'key',
+    };
+    personalizationStore.data.wallpaper.currentSelected = currentSelected;
+
+    wallpaperSelectedElement =
+        initElement(WallpaperSelected, {path: Paths.COLLECTION_IMAGES});
+    await waitAfterNextRender(wallpaperSelectedElement);
+
+    assertEquals(
+        wallpaperSelectedElement.i18n('defaultWallpaper'),
+        wallpaperSelectedElement.shadowRoot!.getElementById(
+                                                'imageTitle')!.innerText,
+        'default wallpaper attribution is shown');
   });
 });

@@ -49,26 +49,6 @@ bool WebAppExposed(const WebApp& web_app) {
   return true;
 }
 
-UserDisplayMode CreateUserDisplayModeFromDisplayMode(
-    blink::mojom::DisplayMode display_mode) {
-  using DisplayMode = blink::mojom::DisplayMode;
-  switch (display_mode) {
-    case DisplayMode::kBrowser:
-      return UserDisplayMode::kBrowser;
-    case DisplayMode::kTabbed:
-      return UserDisplayMode::kTabbed;
-    case DisplayMode::kStandalone:
-      return UserDisplayMode::kStandalone;
-
-    case DisplayMode::kFullscreen:
-    case DisplayMode::kWindowControlsOverlay:
-    case DisplayMode::kMinimalUi:
-    case DisplayMode::kUndefined:
-      NOTREACHED();
-      return UserDisplayMode::kBrowser;
-  }
-}
-
 }  // namespace
 
 WebAppRegistrar::WebAppRegistrar(Profile* profile) : profile_(profile) {}
@@ -165,7 +145,7 @@ void WebAppRegistrar::NotifyWebAppProfileWillBeDeleted(const AppId& app_id) {
 
 void WebAppRegistrar::NotifyWebAppUserDisplayModeChanged(
     const AppId& app_id,
-    DisplayMode user_display_mode) {
+    UserDisplayMode user_display_mode) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppUserDisplayModeChanged(app_id, user_display_mode);
 }
@@ -372,18 +352,17 @@ DisplayMode WebAppRegistrar::GetAppEffectiveDisplayMode(
     return DisplayMode::kBrowser;
 
   auto app_display_mode = GetAppDisplayMode(app_id);
-  auto user_display_mode = GetAppUserDisplayMode(app_id);
+  absl::optional<UserDisplayMode> user_display_mode =
+      GetAppUserDisplayMode(app_id);
   if (app_display_mode == DisplayMode::kUndefined ||
-      user_display_mode == DisplayMode::kUndefined) {
+      !user_display_mode.has_value()) {
     return DisplayMode::kUndefined;
   }
 
   std::vector<DisplayMode> display_mode_overrides =
       GetAppDisplayModeOverride(app_id);
-  return ResolveEffectiveDisplayMode(
-      app_display_mode, display_mode_overrides,
-      CreateUserDisplayModeFromDisplayMode(user_display_mode),
-      IsIsolated(app_id));
+  return ResolveEffectiveDisplayMode(app_display_mode, display_mode_overrides,
+                                     *user_display_mode, IsIsolated(app_id));
 }
 
 DisplayMode WebAppRegistrar::GetEffectiveDisplayModeFromManifest(
@@ -433,7 +412,8 @@ const WebApp* WebAppRegistrar::GetAppByStartUrl(const GURL& start_url) const {
   return nullptr;
 }
 
-std::vector<AppId> WebAppRegistrar::GetAppsFromSyncAndPendingInstallation() {
+std::vector<AppId> WebAppRegistrar::GetAppsFromSyncAndPendingInstallation()
+    const {
   AppSet apps_in_sync_install = AppSet(
       this,
       [](const WebApp& web_app) {
@@ -484,6 +464,16 @@ bool WebAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
              : false;
 }
 
+bool WebAppRegistrar::IsActivelyInstalled(const AppId& app_id) const {
+  if (!IsInstalled(app_id) || !IsLocallyInstalled(app_id))
+    return false;
+
+  auto* web_app = GetAppById(app_id);
+  DCHECK(web_app);
+  return !web_app->HasOnlySource(web_app::WebAppManagement::kDefault) ||
+         GetAppEffectiveDisplayMode(app_id) != web_app::DisplayMode::kBrowser;
+}
+
 bool WebAppRegistrar::IsIsolated(const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->IsStorageIsolated() : false;
@@ -524,6 +514,17 @@ bool WebAppRegistrar::IsDisallowedLaunchProtocol(
   const WebApp* web_app = GetAppById(app_id);
   return web_app && base::Contains(web_app->disallowed_launch_protocols(),
                                    protocol_scheme);
+}
+
+bool WebAppRegistrar::IsRegisteredLaunchProtocol(
+    const AppId& app_id,
+    const std::string& protocol_scheme) const {
+  const WebApp* web_app = GetAppById(app_id);
+  if (!web_app)
+    return false;
+
+  return base::Contains(web_app->protocol_handlers(), protocol_scheme,
+                        [](const auto& info) { return info.protocol; });
 }
 
 base::flat_set<std::string> WebAppRegistrar::GetAllAllowedLaunchProtocols()
@@ -644,12 +645,6 @@ const apps::FileHandlers* WebAppRegistrar::GetAppFileHandlers(
   return web_app ? &web_app->file_handlers() : nullptr;
 }
 
-const apps::ProtocolHandlers* WebAppRegistrar::GetAppProtocolHandlers(
-    const AppId& app_id) const {
-  auto* web_app = GetAppById(app_id);
-  return web_app ? &web_app->protocol_handlers() : nullptr;
-}
-
 bool WebAppRegistrar::IsAppFileHandlerPermissionBlocked(
     const web_app::AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
@@ -702,9 +697,14 @@ DisplayMode WebAppRegistrar::GetAppDisplayMode(const AppId& app_id) const {
   return web_app ? web_app->display_mode() : DisplayMode::kUndefined;
 }
 
-DisplayMode WebAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
+absl::optional<UserDisplayMode> WebAppRegistrar::GetAppUserDisplayMode(
+    const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->user_display_mode() : DisplayMode::kUndefined;
+  if (web_app == nullptr) {
+    return absl::nullopt;
+  }
+
+  return web_app->user_display_mode();
 }
 
 std::vector<DisplayMode> WebAppRegistrar::GetAppDisplayModeOverride(
@@ -962,14 +962,20 @@ WebAppRegistrar::AppSet WebAppRegistrarMutable::GetAppsMutable() {
 }
 
 bool IsRegistryEqual(const Registry& registry, const Registry& registry2) {
-  if (registry.size() != registry2.size())
+  if (registry.size() != registry2.size()) {
+    LOG(ERROR) << registry.size() << " != " << registry2.size();
     return false;
+  }
 
   for (auto& kv : registry) {
     const WebApp* web_app = kv.second.get();
     const WebApp* web_app2 = registry2.at(web_app->app_id()).get();
-    if (*web_app != *web_app2)
+    if (*web_app != *web_app2) {
+      LOG(ERROR) << "Web apps are not equal:\n"
+                 << *web_app << "\n"
+                 << *web_app2;
       return false;
+    }
   }
 
   return true;

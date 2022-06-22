@@ -33,6 +33,10 @@
 #include "base/mac/mac_util.h"
 #endif
 
+#if BUILDFLAG(IS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using testing::ElementsAre;
 
 namespace blink {
@@ -457,7 +461,7 @@ TEST_F(HarfBuzzShaperTest, MAYBE_ShapeArabicWithContext) {
 }
 
 TEST_F(HarfBuzzShaperTest, ShapeTabulationCharacters) {
-  const unsigned length = HarfBuzzRunGlyphData::kMaxGlyphs * 2 + 1;
+  const unsigned length = HarfBuzzRunGlyphData::kMaxCharacters * 2 + 1;
   scoped_refptr<ShapeResult> result =
       ShapeResult::CreateForTabulationCharacters(&font, TextDirection::kLtr,
                                                  TabSize(8), 0.f, 0, length);
@@ -600,65 +604,74 @@ TEST_P(ShapeStringTest, MissingGlyph) {
 // Test splitting runs by kMaxCharacterIndex using a simple string that has code
 // point:glyph:cluster are all 1:1.
 TEST_P(ShapeParameterTest, MaxGlyphsSimple) {
-  const unsigned length = HarfBuzzRunGlyphData::kMaxCharacterIndex + 2;
+  const unsigned length = HarfBuzzRunGlyphData::kMaxCharacters + 1;
   String string = CreateStringOf('X', length);
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(length, result->NumCharacters());
   EXPECT_EQ(length, result->NumGlyphs());
   Vector<ShapeResultRunData> runs = ShapeResultRunData::Get(result);
-  if (IsRtl(GetParam()))
-    runs.Reverse();
   EXPECT_THAT(
-      runs, testing::ElementsAre(
+      runs,
+      IsLtr(GetParam())
+          ? testing::ElementsAre(
                 ShapeResultRunData{0, length - 1, length - 1, HB_SCRIPT_LATIN},
-                ShapeResultRunData{length - 1, 1, 1, HB_SCRIPT_LATIN}));
+                ShapeResultRunData{length - 1, 1, 1, HB_SCRIPT_LATIN})
+          : testing::ElementsAre(
+                ShapeResultRunData{1, length - 1, length - 1, HB_SCRIPT_LATIN},
+                ShapeResultRunData{0, 1, 1, HB_SCRIPT_LATIN}));
 }
 
 // 'X' + U+0300 COMBINING GRAVE ACCENT is a cluster, but most fonts do not have
 // a pre-composed glyph for it, so code points and glyphs are 1:1. Because the
 // length is "+1" and the last character is combining, this string does not hit
-// kMaxCharacterIndex but hits kMaxGlyphs.
+// kMaxCharacterIndex but hits kMaxCharacters.
 TEST_P(ShapeParameterTest, MaxGlyphsClusterLatin) {
-  const unsigned length = HarfBuzzRunGlyphData::kMaxGlyphs + 1;
+  const unsigned length = HarfBuzzRunGlyphData::kMaxCharacters + 1;
   String string = CreateStringOf('X', length);
-  string.replace(1, 1, u"\u0300");
+  string.replace(1, 1, u"\u0300");  // U+0300 COMBINING GRAVE ACCENT
   string.replace(length - 2, 2, u"Z\u0300");
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(length, result->NumCharacters());
   EXPECT_EQ(length, result->NumGlyphs());
   Vector<ShapeResultRunData> runs = ShapeResultRunData::Get(result);
-  if (IsRtl(GetParam()))
-    runs.Reverse();
   EXPECT_THAT(
-      runs, testing::ElementsAre(
+      runs,
+      IsLtr(GetParam())
+          ? testing::ElementsAre(
                 ShapeResultRunData{0, length - 2, length - 2, HB_SCRIPT_LATIN},
-                ShapeResultRunData{length - 2, 2u, 2u, HB_SCRIPT_LATIN}));
+                ShapeResultRunData{length - 2, 2u, 2u, HB_SCRIPT_LATIN})
+          : testing::ElementsAre(
+                ShapeResultRunData{2, length - 2, length - 2, HB_SCRIPT_LATIN},
+                ShapeResultRunData{0, 2, 2, HB_SCRIPT_LATIN}));
 }
 
 // Same as MaxGlyphsClusterLatin, but by making the length "+2", this string
 // hits kMaxCharacterIndex.
 TEST_P(ShapeParameterTest, MaxGlyphsClusterLatin2) {
-  const unsigned length = HarfBuzzRunGlyphData::kMaxGlyphs + 2;
+  const unsigned length = HarfBuzzRunGlyphData::kMaxCharacters + 2;
   String string = CreateStringOf('X', length);
-  string.replace(1, 1, u"\u0300");
+  string.replace(1, 1, u"\u0300");  // U+0300 COMBINING GRAVE ACCENT
   string.replace(length - 2, 2, u"Z\u0300");
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(length, result->NumCharacters());
   EXPECT_EQ(length, result->NumGlyphs());
   Vector<ShapeResultRunData> runs = ShapeResultRunData::Get(result);
-  if (IsRtl(GetParam()))
-    runs.Reverse();
   EXPECT_THAT(
-      runs, testing::ElementsAre(
+      runs,
+      IsLtr(GetParam())
+          ? testing::ElementsAre(
                 ShapeResultRunData{0, length - 2, length - 2, HB_SCRIPT_LATIN},
-                ShapeResultRunData{length - 2, 2u, 2u, HB_SCRIPT_LATIN}));
+                ShapeResultRunData{length - 2, 2u, 2u, HB_SCRIPT_LATIN})
+          : testing::ElementsAre(
+                ShapeResultRunData{2, length - 2, length - 2, HB_SCRIPT_LATIN},
+                ShapeResultRunData{0, 2u, 2u, HB_SCRIPT_LATIN}));
 }
 
 TEST_P(ShapeParameterTest, MaxGlyphsClusterDevanagari) {
-  const unsigned length = HarfBuzzRunGlyphData::kMaxCharacterIndex + 2;
+  const unsigned length = HarfBuzzRunGlyphData::kMaxCharacters + 1;
   String string = CreateStringOf(0x930, length);
   string.replace(0, 3, u"\u0930\u093F\u0902");
   string.replace(length - 3, 3, u"\u0930\u093F\u0902");
@@ -675,13 +688,17 @@ TEST_P(ShapeParameterTest, MaxGlyphsClusterDevanagari) {
 #endif
   EXPECT_EQ(length, result->NumGlyphs());
   Vector<ShapeResultRunData> runs = ShapeResultRunData::Get(result);
-  if (IsRtl(GetParam()))
-    runs.Reverse();
   EXPECT_THAT(
       runs,
-      testing::ElementsAre(
-          ShapeResultRunData{0, length - 3, length - 3, HB_SCRIPT_DEVANAGARI},
-          ShapeResultRunData{length - 3, 3u, 3u, HB_SCRIPT_DEVANAGARI}));
+      IsLtr(GetParam())
+          ? testing::ElementsAre(
+                ShapeResultRunData{0, length - 3, length - 3,
+                                   HB_SCRIPT_DEVANAGARI},
+                ShapeResultRunData{length - 3, 3u, 3u, HB_SCRIPT_DEVANAGARI})
+          : testing::ElementsAre(
+                ShapeResultRunData{3, length - 3, length - 3,
+                                   HB_SCRIPT_DEVANAGARI},
+                ShapeResultRunData{0, 3u, 3u, HB_SCRIPT_DEVANAGARI}));
 }
 
 TEST_P(ShapeParameterTest, ZeroWidthSpace) {
@@ -1858,6 +1875,12 @@ TEST_F(HarfBuzzShaperTest, EmojiPercentage) {
   if (base::mac::IsAtLeastOS11())
     GTEST_SKIP() << "Broken on macOS >= 11: https://crbug.com/1194323";
 #endif
+#if BUILDFLAG(IS_WIN)
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN11) {
+    GTEST_SKIP() << "Broken on WIN11 and greater: https://crbug.com/1286133";
+  }
+#endif
   // This test relies on Noto Color Emoji from the third_party directory to not
   // contain sequences and single codepoint emoji from Unicode 13 and 13.1 such
   // as:
@@ -1927,6 +1950,36 @@ TEST_F(HarfBuzzShaperTest, OverlyLongGraphemeCluster) {
   EXPECT_EQ(35001u, runs[1].start_index);
   EXPECT_EQ(1u, runs[1].num_characters);
   EXPECT_EQ(1u, runs[1].num_glyphs);
+}
+
+// HarfBuzz should not swap the ordering for some fonts.
+//
+// In general, for cluster levels 0 and 1, if clusters are not in ascending
+// order (either LTR or RTL based on buffer direction), then it is a bug that
+// needs to be fixed.
+// https://github.com/harfbuzz/harfbuzz/issues/3553 crbug.com/1319078
+TEST_F(HarfBuzzShaperTest, UnorderedClusterIndex) {
+  // The first two characters may be swapped, producing [1, 0].
+  // U+1DDE COMBINING LATIN LETTER SMALL CAPITAL L
+  // U+A74A LATIN CAPITAL LETTER O WITH LONG STROKE OVERLAY
+  String string(u"\u1DDE\uA74A");
+
+  // The symptom was found on Mac, but it may occur on other platforms.
+  // Setting the font family is not strictly necessary as fonts automatically
+  // fallback, but it helps keeping the whole string in a run (i.e., shapes
+  // surrounding characters with the same font.)
+  FontFamily family;
+  family.SetFamily("Geneva", FontFamily::Type::kFamilyName);
+  font_description.SetFamily(family);
+  font = Font(font_description);
+
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+#if DCHECK_IS_ON()
+  result->CheckConsistency();
+#endif
+  Vector<ShapeResultRunData> runs = ShapeResultRunData::Get(result);
+  EXPECT_GE(runs.size(), 1u);
 }
 
 }  // namespace blink

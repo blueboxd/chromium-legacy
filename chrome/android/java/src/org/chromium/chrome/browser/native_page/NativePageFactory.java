@@ -188,11 +188,11 @@ public class NativePageFactory {
                     mTabModelSelector);
         }
 
-        protected NativePage buildHistoryPage(Tab tab) {
+        protected NativePage buildHistoryPage(Tab tab, String url) {
             return new HistoryPage(mActivity,
                     new TabShim(tab, mBrowserControlsManager, mTabModelSelector),
                     mSnackbarManagerSupplier.get(), mTabModelSelector.isIncognitoSelected(),
-                    mCurrentTabSupplier);
+                    mCurrentTabSupplier, url);
         }
 
         protected NativePage buildRecentTabsPage(Tab tab) {
@@ -258,7 +258,7 @@ public class NativePageFactory {
                 page = getBuilder().buildDownloadsPage(tab);
                 break;
             case NativePageType.HISTORY:
-                page = getBuilder().buildHistoryPage(tab);
+                page = getBuilder().buildHistoryPage(tab, url);
                 break;
             case NativePageType.RECENT_TABS:
                 page = getBuilder().buildRecentTabsPage(tab);
@@ -270,10 +270,6 @@ public class NativePageFactory {
                 page = getBuilder().buildLaunchpadPage(tab);
                 break;
             case NativePageType.MANAGEMENT:
-                if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MANAGEMENT_PAGE)) {
-                    return null;
-                }
-
                 page = getBuilder().buildManagementPage(tab);
                 break;
             default:

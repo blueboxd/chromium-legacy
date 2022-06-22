@@ -6,6 +6,7 @@
 #define REMOTING_HOST_CLIENT_SESSION_H_
 
 #include <cstdint>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -46,6 +47,7 @@
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/video_stream.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_metadata.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
@@ -263,6 +265,11 @@ class ClientSession : public protocol::HostStub,
 
   void CreatePerMonitorVideoStreams();
 
+#if defined(WEBRTC_USE_GIO)
+  void ExtractAndSetInputInjectorMetadata(
+      webrtc::DesktopCaptureMetadata capture_metadata);
+#endif
+
   raw_ptr<EventHandler> event_handler_;
 
   // Used to create a DesktopEnvironment instance for this session.
@@ -317,7 +324,7 @@ class ClientSession : public protocol::HostStub,
   base::OneShotTimer max_duration_timer_;
 
   // Objects responsible for sending video, audio.
-  std::vector<VideoStreamWithComposer> video_streams_;
+  std::map<webrtc::ScreenId, VideoStreamWithComposer> video_streams_;
   std::unique_ptr<protocol::AudioStream> audio_stream_;
 
   // The set of all capabilities supported by the client.

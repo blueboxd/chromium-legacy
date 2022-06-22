@@ -5,18 +5,27 @@
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {GooglePhotosEnablementState, WallpaperCollection} from '../trusted/personalization_app.mojom-webui.js';
+import {GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperImage} from '../trusted/personalization_app.mojom-webui.js';
+
+// A special unique symbol that represents the device default image, normally
+// not accessible by the user.
+// Warning: symbols as object keys are not iterated by normal methods, but can
+// be iterated by |getOwnPropertySymbols|.
+export const kDefaultImageSymbol: unique symbol =
+    Symbol.for('chromeos_default_wallpaper');
+
+export type DefaultImageSymbol = typeof kDefaultImageSymbol;
+
+export type DisplayableImage =
+    FilePath|GooglePhotosPhoto|WallpaperImage|DefaultImageSymbol;
 
 export const trustedOrigin = 'chrome://personalization';
 
-export const kMaximumGooglePhotosPreviews = 4;
 export const kMaximumLocalImagePreviews = 3;
 
 export enum EventType {
   SEND_COLLECTIONS = 'send_collections',
-  SEND_GOOGLE_PHOTOS_COUNT = 'send_google_photos_count',
   SEND_GOOGLE_PHOTOS_ENABLED = 'send_google_photos_enabled',
-  SEND_GOOGLE_PHOTOS_PHOTOS = 'send_google_photos_photos',
   SELECT_COLLECTION = 'select_collection',
   SELECT_GOOGLE_PHOTOS_COLLECTION = 'select_google_photos_collection',
   SELECT_LOCAL_COLLECTION = 'select_local_collection',
@@ -36,19 +45,9 @@ export type SendCollectionsEvent = {
   collections: WallpaperCollection[],
 };
 
-export type SendGooglePhotosCountEvent = {
-  type: EventType.SEND_GOOGLE_PHOTOS_COUNT,
-  count: number|null,
-};
-
 export type SendGooglePhotosEnabledEvent = {
   type: EventType.SEND_GOOGLE_PHOTOS_ENABLED,
   enabled: GooglePhotosEnablementState,
-};
-
-export type SendGooglePhotosPhotosEvent = {
-  type: EventType.SEND_GOOGLE_PHOTOS_PHOTOS,
-  photos: unknown[]|null,
 };
 
 export type SelectCollectionEvent = {
@@ -86,7 +85,7 @@ export type SendImageTilesEvent = {
 
 export type SendLocalImagesEvent = {
   type: EventType.SEND_LOCAL_IMAGES,
-  images: FilePath[],
+  images: Array<FilePath|DefaultImageSymbol>,
 };
 
 /**
@@ -94,7 +93,7 @@ export type SendLocalImagesEvent = {
  */
 export type SendLocalImageDataEvent = {
   type: EventType.SEND_LOCAL_IMAGE_DATA,
-  data: {[key: string]: string},
+  data: Record<string|DefaultImageSymbol, string>,
 };
 
 export type SendCurrentWallpaperAssetIdEvent = {
@@ -120,10 +119,9 @@ export type SendVisibleEvent = {
   visible: boolean,
 };
 
-export type Events = SendCollectionsEvent|SendGooglePhotosCountEvent|
-    SendGooglePhotosEnabledEvent|SendGooglePhotosPhotosEvent|
-    SelectCollectionEvent|SelectGooglePhotosCollectionEvent|
-    SelectLocalCollectionEvent|SendImageCountsEvent|SendImageTilesEvent|
-    SendLocalImagesEvent|SendLocalImageDataEvent|
-    SendCurrentWallpaperAssetIdEvent|SendPendingWallpaperAssetIdEvent|
-    SelectImageEvent|SendVisibleEvent;
+export type Events =
+    SendCollectionsEvent|SendGooglePhotosEnabledEvent|SelectCollectionEvent|
+    SelectGooglePhotosCollectionEvent|SelectLocalCollectionEvent|
+    SendImageCountsEvent|SendImageTilesEvent|SendLocalImagesEvent|
+    SendLocalImageDataEvent|SendCurrentWallpaperAssetIdEvent|
+    SendPendingWallpaperAssetIdEvent|SelectImageEvent|SendVisibleEvent;

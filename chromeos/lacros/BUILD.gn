@@ -18,9 +18,11 @@ assert(!use_gtk)
 component("lacros") {
   defines = [ "IS_CHROMEOS_LACROS_IMPL" ]
   deps = [
+    ":lacros_paths",
     "//base",
     "//build:chromeos_buildflags",
     "//chromeos/crosapi/cpp",
+    "//chromeos/crosapi/cpp:crosapi_constants",
     "//chromeos/crosapi/mojom",
     "//chromeos/process_proxy",
     "//chromeos/startup",
@@ -42,12 +44,24 @@ component("lacros") {
   ]
 }
 
+static_library("lacros_paths") {
+  deps = [
+    "//base",
+    "//chromeos/crosapi/cpp:crosapi_constants",
+  ]
+  sources = [
+    "lacros_paths.cc",
+    "lacros_paths.h",
+  ]
+}
+
 source_set("test_support") {
   testonly = true
   deps = [
     "//base",
     "//chromeos/crosapi/mojom",
     "//chromeos/lacros",
+    "//chromeos/startup",
   ]
   sources = [
     "lacros_test_helper.cc",
@@ -95,5 +109,9 @@ if (is_chromeos_device) {
       "lacros.ShelfLaunch",
       "lacros.ShelfLaunch.unstable",
     ]
+  }
+
+  lacros_tast_tests("lacros_variations_tast_tests") {
+    tast_tests = [ "lacros.VariationSmoke" ]
   }
 }

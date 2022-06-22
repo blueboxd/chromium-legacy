@@ -7,16 +7,23 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_memory_region_wrapper.h"
+#include "third_party/skia/include/core/SkAlphaType.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkColorType.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -29,11 +36,14 @@ size_t EstimatedSize(viz::ResourceFormat format, const gfx::Size& size) {
   return estimated_size;
 }
 
-SkImageInfo MakeSkImageInfo(const gfx::Size& size, viz::ResourceFormat format) {
+SkImageInfo MakeSkImageInfo(const gfx::Size& size,
+                            viz::ResourceFormat format,
+                            SkAlphaType alpha_type,
+                            const gfx::ColorSpace& color_space) {
   return SkImageInfo::Make(size.width(), size.height(),
                            ResourceFormatToClosestSkColorType(
                                /*gpu_compositing=*/true, format),
-                           kOpaque_SkAlphaType);
+                           alpha_type, color_space.ToSkColorSpace());
 }
 
 class SharedImageRepresentationMemorySharedMemory
@@ -46,8 +56,11 @@ class SharedImageRepresentationMemorySharedMemory
 
  protected:
   SkPixmap BeginReadAccess() override {
-    SkImageInfo info = MakeSkImageInfo(shared_image_shared_memory()->size(),
-                                       shared_image_shared_memory()->format());
+    SkImageInfo info =
+        MakeSkImageInfo(shared_image_shared_memory()->size(),
+                        shared_image_shared_memory()->format(),
+                        shared_image_shared_memory()->alpha_type(),
+                        shared_image_shared_memory()->color_space());
     return SkPixmap(
         info, shared_image_shared_memory()->shared_memory_wrapper().GetMemory(),
         shared_image_shared_memory()->shared_memory_wrapper().GetStride());
@@ -146,6 +159,21 @@ SharedImageBackingSharedMemory::ProduceMemory(SharedImageManager* manager,
 
   return std::make_unique<SharedImageRepresentationMemorySharedMemory>(
       manager, this, tracker);
+}
+
+void SharedImageBackingSharedMemory::OnMemoryDump(
+    const std::string& dump_name,
+    base::trace_event::MemoryAllocatorDump* dump,
+    base::trace_event::ProcessMemoryDump* pmd,
+    uint64_t client_tracing_id) {
+  // Add a |shared_memory_guid| which expresses shared ownership between the
+  // various GPU dumps.
+  auto shared_memory_guid = shared_memory_wrapper_.GetMappingGuid();
+  if (!shared_memory_guid.is_empty()) {
+    auto client_guid = GetSharedImageGUIDForTracing(mailbox());
+    pmd->CreateSharedMemoryOwnershipEdge(client_guid, shared_memory_guid,
+                                         0 /* importance */);
+  }
 }
 
 SharedImageBackingSharedMemory::SharedImageBackingSharedMemory(

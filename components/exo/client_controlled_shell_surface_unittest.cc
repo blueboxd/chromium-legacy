@@ -66,6 +66,7 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/test/event_generator.h"
@@ -298,6 +299,25 @@ TEST_F(ClientControlledShellSurfaceTest,
   // Now widget is created and setting modal state should be applied
   // immediately.
   shell_surface->SetSystemModal(false);
+  EXPECT_FALSE(ash::Shell::IsSystemModalWindowOpen());
+}
+
+TEST_F(ClientControlledShellSurfaceTest,
+       NonSystemModalContainerCantChangeModality) {
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface = exo_test_helper()->CreateClientControlledShellSurface(
+      surface.get(), /*is_modal=*/false);
+  gfx::Size desktop_size(640, 480);
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(desktop_size)));
+  surface->Attach(desktop_buffer.get());
+  surface->SetInputRegion(cc::Region());
+
+  shell_surface->SetSystemModal(true);
+  surface->Commit();
+
+  // It is expected that a non system modal container is unable to set a system
+  // modal.
   EXPECT_FALSE(ash::Shell::IsSystemModalWindowOpen());
 }
 
@@ -944,7 +964,7 @@ TEST_F(ClientControlledShellSurfaceTest,
   display::Display::SetForceDeviceScaleFactor(scale);
 
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::Display::SetInternalDisplayId(display_id);
+  display::SetInternalDisplayIds({display_id});
 
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
@@ -966,7 +986,7 @@ TEST_F(ClientControlledShellSurfaceTest,
 TEST_F(ClientControlledShellSurfaceTest,
        DefaultDeviceScaleFactorFromDisplayManager) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::Display::SetInternalDisplayId(display_id);
+  display::SetInternalDisplayIds({display_id});
   gfx::Size size(1920, 1080);
 
   display::DisplayManager* display_manager =

@@ -7,6 +7,7 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -16,7 +17,6 @@
 namespace blink {
 
 class LocalDOMWindow;
-class WorkerOrWorkletGlobalScope;
 
 // https://html.spec.whatwg.org/C/#concept-script
 class CORE_EXPORT Script : public GarbageCollected<Script> {
@@ -32,21 +32,43 @@ class CORE_EXPORT Script : public GarbageCollected<Script> {
   // https://html.spec.whatwg.org/C/#run-a-classic-script
   // or
   // https://html.spec.whatwg.org/C/#run-a-module-script,
-  // depending on the script type,
-  // on Window or on WorkerGlobalScope, respectively.
-  // RunScriptOnWorkerOrWorklet returns true if evaluated successfully.
-  virtual void RunScript(LocalDOMWindow*) = 0;
-  virtual bool RunScriptOnWorkerOrWorklet(WorkerOrWorkletGlobalScope&) = 0;
+  // depending on the script type.
+  // - Callers of `RunScript*AndReturnValue()` must enter a v8::HandleScope
+  //   before calling.
+  // - `ScriptState` == the script's modulator's `ScriptState` for modules.
+  // - `ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled` is allowed only
+  //   for classic scripts with clear or historical reasons.
+  //
+  // On a ScriptState:
+  void RunScriptOnScriptState(
+      ScriptState*,
+      ExecuteScriptPolicy =
+          ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled,
+      V8ScriptRunner::RethrowErrorsOption =
+          V8ScriptRunner::RethrowErrorsOption::DoNotRethrow());
+  [[nodiscard]] virtual ScriptEvaluationResult
+  RunScriptOnScriptStateAndReturnValue(
+      ScriptState*,
+      ExecuteScriptPolicy =
+          ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled,
+      V8ScriptRunner::RethrowErrorsOption =
+          V8ScriptRunner::RethrowErrorsOption::DoNotRethrow()) = 0;
+  // On the main world of LocalDOMWindow:
+  void RunScript(
+      LocalDOMWindow*,
+      ExecuteScriptPolicy =
+          ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled,
+      V8ScriptRunner::RethrowErrorsOption =
+          V8ScriptRunner::RethrowErrorsOption::DoNotRethrow());
+  [[nodiscard]] ScriptEvaluationResult RunScriptAndReturnValue(
+      LocalDOMWindow*,
+      ExecuteScriptPolicy =
+          ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled,
+      V8ScriptRunner::RethrowErrorsOption =
+          V8ScriptRunner::RethrowErrorsOption::DoNotRethrow());
 
   const ScriptFetchOptions& FetchOptions() const { return fetch_options_; }
   const KURL& BaseURL() const { return base_url_; }
-
-  // Returns a pair of (script's size, cached metadata's size) only for classic
-  // scripts. This is used only for metrics via
-  // ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript().
-  // TODO(asamidoi, hiroshige): Remove this once the metrics are no longer
-  // referenced.
-  virtual std::pair<size_t, size_t> GetClassicScriptSizes() const = 0;
 
  protected:
   explicit Script(const ScriptFetchOptions& fetch_options, const KURL& base_url)

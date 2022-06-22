@@ -211,6 +211,8 @@ struct PaintPropertyTreeBuilderContext final {
   // fragment where the object first appears.
   const LayoutNGTableSectionInterface* repeating_table_section = nullptr;
 
+  gfx::Vector2dF old_scroll_offset;
+
   // Specifies the reason the subtree update was forced. For simplicity, this
   // only categorizes it into two categories:
   // - Isolation piercing, meaning that the update is required for subtrees
@@ -238,10 +240,6 @@ struct PaintPropertyTreeBuilderContext final {
   // ancestor.
   unsigned has_svg_hidden_container_ancestor : 1;
 
-  // Whether composited raster invalidation is supported for this object.
-  // If not, subtree invalidations occur on every property tree change.
-  unsigned supports_composited_raster_invalidation : 1;
-
   // Whether this object was a layout shift root during the previous render
   // (not this one).
   unsigned was_layout_shift_root : 1;
@@ -258,11 +256,10 @@ class VisualViewportPaintPropertyTreeBuilder {
 
  public:
   // Update the paint properties for the visual viewport and ensure the context
-  // is up to date. Returns the maximum paint property change type for any of
-  // the viewport nodes.
-  static PaintPropertyChangeType Update(LocalFrameView& main_frame_view,
-                                        VisualViewport&,
-                                        PaintPropertyTreeBuilderContext&);
+  // is up to date.
+  static void Update(LocalFrameView& main_frame_view,
+                     VisualViewport&,
+                     PaintPropertyTreeBuilderContext&);
 };
 
 struct NGPrePaintInfo {
@@ -298,6 +295,26 @@ struct NGPrePaintInfo {
   bool is_inside_fragment_child;
 };
 
+struct PaintPropertiesChangeInfo {
+  PaintPropertyChangeType transform_changed =
+      PaintPropertyChangeType::kUnchanged;
+  PaintPropertyChangeType clip_changed = PaintPropertyChangeType::kUnchanged;
+  PaintPropertyChangeType effect_changed = PaintPropertyChangeType::kUnchanged;
+  PaintPropertyChangeType scroll_changed = PaintPropertyChangeType::kUnchanged;
+
+  void Merge(const PaintPropertiesChangeInfo& other) {
+    transform_changed = std::max(transform_changed, other.transform_changed);
+    clip_changed = std::max(clip_changed, other.clip_changed);
+    effect_changed = std::max(effect_changed, other.effect_changed);
+    scroll_changed = std::max(scroll_changed, other.scroll_changed);
+  }
+
+  PaintPropertyChangeType Max() const {
+    return std::max(
+        {transform_changed, clip_changed, effect_changed, scroll_changed});
+  }
+};
+
 // Creates paint property tree nodes for non-local effects in the layout tree.
 // Non-local effects include but are not limited to: overflow clip, transform,
 // fixed-pos, animation, mask, filters, etc. It expects to be invoked for each
@@ -317,13 +334,17 @@ class PaintPropertyTreeBuilder {
   // Update the paint properties that affect this object (e.g., properties like
   // paint offset translation) and ensure the context is up to date. Also
   // handles updating the object's paintOffset.
-  // Returns whether any paint property of the object has changed.
-  PaintPropertyChangeType UpdateForSelf();
+  void UpdateForSelf();
 
   // Update the paint properties that affect children of this object (e.g.,
   // scroll offset transform) and ensure the context is up to date.
-  // Returns whether any paint property of the object has changed.
-  PaintPropertyChangeType UpdateForChildren();
+  void UpdateForChildren();
+
+  void IssueInvalidationsAfterUpdate();
+
+  bool PropertiesChanged() const {
+    return properties_changed_.Max() > PaintPropertyChangeType::kUnchanged;
+  }
 
  private:
   ALWAYS_INLINE void InitFragmentPaintProperties(
@@ -353,8 +374,7 @@ class PaintPropertyTreeBuilder {
   CreateFragmentContextsForRepeatingTableSectionInPagedMedia();
   ALWAYS_INLINE void CreateFragmentDataForRepeatingInPagedMedia(
       bool needs_paint_properties);
-  // Returns whether ObjectPaintProperties were allocated or deleted.
-  ALWAYS_INLINE bool UpdateFragments();
+  ALWAYS_INLINE void UpdateFragments();
   ALWAYS_INLINE void UpdatePaintingLayer();
   ALWAYS_INLINE void UpdateRepeatingTableSectionPaintOffsetAdjustment();
   ALWAYS_INLINE void UpdateRepeatingTableHeaderPaintOffsetAdjustment();
@@ -365,8 +385,8 @@ class PaintPropertyTreeBuilder {
 
   const LayoutObject& object_;
   NGPrePaintInfo* pre_paint_info_;
-
   PaintPropertyTreeBuilderContext& context_;
+  PaintPropertiesChangeInfo properties_changed_;
 };
 
 }  // namespace blink

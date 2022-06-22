@@ -174,6 +174,15 @@ void ContinueTaskContainerView::VisibilityChanged(views::View* starting_from,
   } else {
     animations_timer_.Start(FROM_HERE, base::Seconds(2), base::DoNothing());
   }
+
+  auto* notifier = view_delegate_->GetNotifier();
+  if (notifier) {
+    // NOTE: Use `IsDrawn()` instead of `is_visible` to account for parent
+    // container visibility - `IsDrawn()` will return false if this view is
+    // visible but its parent is not.
+    notifier->NotifyContinueSectionVisibilityChanged(
+        SearchResultDisplayType::kContinue, IsDrawn());
+  }
 }
 
 bool ContinueTaskContainerView::OnKeyPressed(const ui::KeyEvent &event) {
@@ -270,6 +279,16 @@ void ContinueTaskContainerView::Update() {
   suggestion_tasks_views_.clear();
 
   num_results_ = std::min(kMaxFilesForContinueSection, tasks.size());
+
+  num_file_results_ = 0;
+  for (size_t i = 0; i < num_results_; ++i) {
+    if (tasks[i]->result_type() == AppListSearchResultType::kZeroStateFile ||
+        tasks[i]->result_type() == AppListSearchResultType::kFileChip ||
+        tasks[i]->result_type() == AppListSearchResultType::kZeroStateDrive ||
+        tasks[i]->result_type() == AppListSearchResultType::kDriveChip) {
+      ++num_file_results_;
+    }
+  }
 
   // Create new result views.
   for (size_t i = 0; i < num_results_; ++i) {
@@ -409,6 +428,8 @@ void ContinueTaskContainerView::ClearAnimatingViews() {
   views_to_remove_after_animation_.swap(views_to_remove);
   for (auto* view : views_to_remove)
     RemoveChildViewT(view);
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, true);
 }
 
 void ContinueTaskContainerView::SetResults(

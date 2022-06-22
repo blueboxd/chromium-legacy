@@ -24,8 +24,8 @@
 
 namespace content {
 
-using NotStoredReasons =
-    BackForwardCacheCanStoreDocumentResult::NotStoredReasons;
+using NotRestoredReasons =
+    BackForwardCacheCanStoreDocumentResult::NotRestoredReasons;
 using NotRestoredReason = BackForwardCacheMetrics::NotRestoredReason;
 
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
@@ -183,7 +183,7 @@ class BackForwardCacheBrowserTest
   void NavigateAndBlock(GURL url, int history_offset);
 
   static testing::Matcher<BackForwardCacheCanStoreDocumentResult>
-  MatchesDocumentResult(testing::Matcher<NotStoredReasons> not_stored,
+  MatchesDocumentResult(testing::Matcher<NotRestoredReasons> not_stored,
                         BlockListedFeatures block_listed);
 
   // Access the tree result of NotRestoredReason for the last main frame
@@ -192,11 +192,16 @@ class BackForwardCacheBrowserTest
     return tree_result_.get();
   }
 
+  void InstallUnloadHandlerOnMainFrame();
+  void InstallUnloadHandlerOnSubFrame();
+  EvalJsResult GetUnloadRunCount();
+
+  bool IsUnloadAllowedToEnterBackForwardCache();
+
   base::HistogramTester histogram_tester_;
 
   bool same_site_back_forward_cache_enabled_ = true;
   bool skip_same_site_if_unload_exists_ = false;
-  std::string unload_support_ = "always";
 
   const int kMaxBufferedBytesPerProcess = 10000;
   const base::TimeDelta kGracePeriodToFinishLoading = base::Seconds(5);

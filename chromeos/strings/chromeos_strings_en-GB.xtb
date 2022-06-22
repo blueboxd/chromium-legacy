@@ -25,6 +25,7 @@
 <translation id="1204296502688602597">DNS latency</translation>
 <translation id="123124571410524056">Portal suspected</translation>
 <translation id="1238612778414822719">HTTPS latency</translation>
+<translation id="1264116747675686718">Updating OS version</translation>
 <translation id="1264369926465113395">Take a look at Chromebook's new digital magazine for creators</translation>
 <translation id="1270369111467284986">Captive portal suspected</translation>
 <translation id="1290331692326790741">Weak signal</translation>
@@ -42,6 +43,7 @@
 <translation id="1394661041439318933">Device has <ph name="BATTERY_PERCENTAGE" />% case battery.</translation>
 <translation id="1397738625398125236">Gateway can be pinged</translation>
 <translation id="1398634363027580500">Very high HTTPS latency</translation>
+<translation id="1407069428457324124">Dark theme</translation>
 <translation id="1413240736185167732">Failed – Filter failed</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">I have a keypair</translation>
@@ -63,6 +65,7 @@
 <translation id="1565038567006703504">Can't update <ph name="DEVICE_NAME" /></translation>
 <translation id="1567064801249837505">Albums</translation>
 <translation id="1572585716423026576">Set as wallpaper</translation>
+<translation id="1578784163189013834">Choose screensaver background</translation>
 <translation id="1615335640928990664">Data usage since <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Run charge test</translation>
 <translation id="1639239467298939599">Loading</translation>
@@ -77,6 +80,7 @@
 <translation id="1717874160321062422">Managed by <ph name="FIRST_MANAGER" /> and <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Name servers</translation>
 <translation id="1731082422893354635">Bluetooth touchpad</translation>
+<translation id="1751249301761991853">Personal</translation>
 <translation id="1753496554272155572">Exit wallpaper preview</translation>
 <translation id="175763766237925754">Good (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -84,12 +88,16 @@
 <translation id="1768959921651994223">Authentication type</translation>
 <translation id="1782199038061388045">translation</translation>
 <translation id="1792647875738159689">Cancelling scanning</translation>
+<translation id="1801418420130173017">Disable Dark theme</translation>
 <translation id="1807246157184219062">Light</translation>
 <translation id="1827738518074806965">Art gallery</translation>
+<translation id="1840835860961531162">Turn off write-protect</translation>
 <translation id="1851218745569890714">Video conferencing</translation>
 <translation id="1852934301711881861">Install Chrome OS Flex</translation>
 <translation id="1856388568474281774">Down arrow</translation>
+<translation id="1871569928317311284">Turn Dark theme off</translation>
 <translation id="1874612839560830905">MTU</translation>
+<translation id="188114911237521550">Turn dark mode off</translation>
 <translation id="1887850431809612466">Hardware revision</translation>
 <translation id="1905710495812624430">Maximum allowed attempts exceeded.</translation>
 <translation id="1908234395526491708">UDP request failures</translation>
@@ -106,6 +114,7 @@
 <translation id="2085089206770112532">Display brightness down</translation>
 <translation id="2104796393919810494">Repair completed</translation>
 <translation id="2105810540595158374">Device is a game controller.</translation>
+<translation id="2115956742084455574">Incorrect code</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, version <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB of <ph name="TOTAL_MEMORY" /> GB available</translation>
 <translation id="2138109643290557664">Float on by</translation>
@@ -114,6 +123,8 @@
 <translation id="2157959690810728433">QUEUED</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Retry</translation>
 <translation id="2161394479394250669">Cancel print job</translation>
+<translation id="2163937499206714165">Turn dark mode on</translation>
+<translation id="2177831236093724629"><ph name="LINK_BEGIN" />Unqualified components<ph name="LINK_END" /> found. To make sure that all qualified components are identified, update your Chrome OS to the latest version.</translation>
 <translation id="2180197493692062006">Something went wrong. Try reopening the app.</translation>
 <translation id="2209788852729124853">Reset traffic counters</translation>
 <translation id="2212733584906323460">Name resolution</translation>
@@ -125,12 +136,16 @@
 <translation id="2236746079896696523">Keyboard backlight toggle</translation>
 <translation id="2240366984605217732">Layout switch</translation>
 <translation id="225692081236532131">Activation status</translation>
+<translation id="2271469253353559191">Dark mode schedule</translation>
 <translation id="2287186687001756809">No image available. To add photos, go to <ph name="LINK" /></translation>
 <translation id="2307344026739914387">Use current keypair</translation>
+<translation id="2320295602967756579">Enable Light theme</translation>
 <translation id="2323506179655536734">SKIPPED</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
+<translation id="2336381494582898602">Powerwash</translation>
 <translation id="2338501278241028356">Turn on Bluetooth to discover nearby devices</translation>
 <translation id="2346474577291266260">Excellent (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2360257214555822463"><ph name="LINK_BEGIN" />Unqualified components<ph name="LINK_END" /> detected. If you choose to confirm this has been installed, please do so now.</translation>
 <translation id="2363636958541445404">Turn the feature on to select screensaver options</translation>
 <translation id="2364498172489649528">Passed</translation>
 <translation id="2380886658946992094">Legal</translation>
@@ -146,13 +161,16 @@
 <translation id="2493126929778606526">Your best photos, selected automatically</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Refresh the current wallpaper image</translation>
+<translation id="2513396635448525189">Login image</translation>
 <translation id="2517472476991765520">Scan</translation>
+<translation id="2526590354069164005">Desktop</translation>
 <translation id="253029298928638905">Restarting...</translation>
 <translation id="2536159006530886390">Cannot connect to Internet.</translation>
 <translation id="2570743873672969996">Running <ph name="TEST_NAME" /> test…</translation>
 <translation id="2584559707064218956">To set up, go to Settings</translation>
 <translation id="2619761439309613843">Daily Refresh</translation>
 <translation id="2620436844016719705">System</translation>
+<translation id="2638662041295312666">Sign-in image</translation>
 <translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> selected</translation>
 <translation id="2695514675076754339">Enter the 8-character unlock code</translation>
 <translation id="2712812801627182647">TLS authentication key</translation>
@@ -172,11 +190,14 @@
 <translation id="2926057806159140518">Enter your username and password or scan your QR code</translation>
 <translation id="3008341117444806826">REFRESH</translation>
 <translation id="3009958530611748826">Select a folder to save to</translation>
+<translation id="3017079585324758401">Background</translation>
 <translation id="3031560714565892478">Device is a video camera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">Endpoint</translation>
 <translation id="3069085583900247081">Test failed</translation>
+<translation id="3076243757415932261">Validating components…</translation>
 <translation id="3083667275341675831">Connectivity diagnostics</translation>
+<translation id="3084958266922136097">Disable screensaver</translation>
 <translation id="3091839911843451378">Failed – Stopped</translation>
 <translation id="3102119246920354026">Cache</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -189,6 +210,7 @@
 <translation id="3188257591659621405">My files</translation>
 <translation id="3192947282887913208">Audio Files</translation>
 <translation id="3199982728237701504">Document feeder (two-sided)</translation>
+<translation id="320091191259649613">If you still see the issue after the update, it's possible that the component is newly qualified and hasn't made it to the database yet.</translation>
 <translation id="3226405216343213872">Looking for scanners</translation>
 <translation id="3246869037381808805">Print jobs older than 1 day will be removed</translation>
 <translation id="3268178239013324452">Failed – Door open</translation>
@@ -197,9 +219,12 @@
 <translation id="3291996639387199448">Key direction</translation>
 <translation id="3310640316857623290">DNS latency significantly above allowable threshold</translation>
 <translation id="3328783797891415197">Test running</translation>
+<translation id="3336855445806447827">Not sure</translation>
 <translation id="3340011300870565703">Device has <ph name="BATTERY_PERCENTAGE" />% right bud battery.</translation>
 <translation id="3368922792935385530">Connected</translation>
 <translation id="3369013195428705271">Are you sure you want to clear all print history? Your ongoing print jobs will not be cleared.</translation>
+<translation id="3404249063913988450">Enable screensaver</translation>
+<translation id="3404770484521709967">Components are installed correctly.</translation>
 <translation id="3413935475507503304">To proceed with the update, click Next.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Security</translation>
@@ -210,10 +235,12 @@
 <translation id="3484914941826596830">While the firmware is updating, do not unplug this external device or shut down your computer. You can minimise this window. This update may take a few minutes and your external device may not work during this time.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3488065109653206955">Partially activated</translation>
+<translation id="3517001332549868749">ChromeOS update</translation>
 <translation id="3527036260304016759">Failed – Unknown error</translation>
 <translation id="3532980081107202182">About <ph name="MIN_REMAINING" /> minutes remaining</translation>
 <translation id="3557205324756024651">Local identity (optional)</translation>
 <translation id="3565064564551103223">Allowed IPs</translation>
+<translation id="3569407787324516067">Screensaver</translation>
 <translation id="3577473026931028326">Something went wrong. Try again.</translation>
 <translation id="357889014807611375">metered Wi-Fi</translation>
 <translation id="3583278742022654445">Weak signal strength. Try moving closer to the Wi-Fi signal source.</translation>
@@ -246,6 +273,7 @@
 <translation id="3941014780699102620">Failed to resolve host</translation>
 <translation id="3942420633017001071">Diagnostics</translation>
 <translation id="3954678691475912818">Device type is unknown.</translation>
+<translation id="3958703339436883942">Preparing for restart…</translation>
 <translation id="3966286471246132217">For more accurate results, close all apps until the test is complete.</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="3969602104473960991">Chrome OS password updated</translation>
@@ -257,9 +285,11 @@
 <translation id="4044093238444069296">Can't contact gateway</translation>
 <translation id="4046123991198612571">Next track</translation>
 <translation id="404928562651467259">WARNING</translation>
+<translation id="4093865285251893588">Profile image</translation>
 <translation id="409427325554347132">Save test details</translation>
 <translation id="4110686435123617899">Select album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB touchpad</translation>
+<translation id="4117637339509843559">Dark mode</translation>
 <translation id="4131410914670010031">Black and white</translation>
 <translation id="4140251671072434548">Perform RMA server unlock</translation>
 <translation id="4145784616224233563">HTTP firewall</translation>
@@ -269,6 +299,7 @@
 <translation id="4170700058716978431">FAILED</translation>
 <translation id="4176463684765177261">Disabled</translation>
 <translation id="4176659219503619100">Control panel</translation>
+<translation id="420283545744377356">Turn off screensaver</translation>
 <translation id="4213104098953699324">USB keyboard</translation>
 <translation id="4227825898293920515">Password expires in <ph name="TIME" /></translation>
 <translation id="4238516577297848345">No print jobs in progress</translation>
@@ -297,7 +328,6 @@
 <translation id="4472575034687746823">Get started</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Failed to ping the non-default network gateway</translation>
-<translation id="4485626319513081846">Select this option if the device is being restocked or refurbished for distribution to a new customer.</translation>
 <translation id="4503223151711056411">Left arrow</translation>
 <translation id="4511264077854731334">Portal</translation>
 <translation id="4521826082652183069">Subject alternative name match</translation>
@@ -331,6 +361,7 @@
 <translation id="4793756956024303490">Compression algorithm</translation>
 <translation id="4794140124556169553">Running a CPU test may affect your system performance</translation>
 <translation id="4808449224298348341">Cancelled print job <ph name="DOCUMENT_TITLE" /></translation>
+<translation id="4809927044794281115">Light theme</translation>
 <translation id="4813136279048157860">My Images</translation>
 <translation id="4813345808229079766">Connection</translation>
 <translation id="4832079907277790330">Select folder in the Files app…</translation>
@@ -347,6 +378,7 @@
 <translation id="4890353053343094602">Choose a new one immediately</translation>
 <translation id="4891842000192098784">Stress</translation>
 <translation id="4897058166682006107">Device has <ph name="BATTERY_PERCENTAGE" />% left bud battery.</translation>
+<translation id="4915052247106771211">This will reset the device to factory settings (Powerwash).</translation>
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4917889632206600977">Stopped – out of paper</translation>
 <translation id="4921665434385737356">Charged <ph name="RATE" /> in <ph name="NUM_SECONDS" /> seconds.</translation>
@@ -357,6 +389,7 @@
 <translation id="4985509611418653372">Run</translation>
 <translation id="4987769320337599931">Firewall</translation>
 <translation id="4999333166442584738">Hide report</translation>
+<translation id="5008611843832219958">Update to the latest version of Chrome OS for an optimised repair process</translation>
 <translation id="500920857929044050">Stop test</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">When your screen is idle, show photos, time, weather and media info.</translation>
@@ -378,6 +411,7 @@
 Try tapping the mic to ask me anything.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Sign out</translation>
+<translation id="5227902338748591677">Dark theme schedule</translation>
 <translation id="5234764350956374838">Dismiss</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="5257811368506016604">Enable light colour mode</translation>
@@ -386,6 +420,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="5275828089655680674">Rerun routines</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">Version <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5298334025463010990">Disable write-protect to continue to the next screen. Go to the device manufacturer's support page for instructions.</translation>
 <translation id="5300814202279832142">Move window to desk</translation>
 <translation id="5304899856529773394">EVDO</translation>
 <translation id="5308380583665731573">Connect</translation>
@@ -398,6 +433,8 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="5346687412805619883">Local network</translation>
 <translation id="5358174242040570474">Something went wrong. Try choosing a wallpaper again or reopen the app.</translation>
 <translation id="5372659122375744710">Wi-Fi network is not secure</translation>
+<translation id="5376354385557966694">Automatic light mode</translation>
+<translation id="537872351913703572">Device will go to a different user or organisation</translation>
 <translation id="5400907029458559844">Device is connecting.</translation>
 <translation id="5401938042319910061">Run all routines</translation>
 <translation id="5423849171846380976">Activated</translation>
@@ -409,6 +446,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Couldn't complete scan</translation>
 <translation id="5502931783115429516">Android not running</translation>
+<translation id="5507300744274596613">Make sure that Chrome OS is up to date</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
@@ -433,6 +471,8 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="583281660410589416">Unknown</translation>
 <translation id="5843706793424741864">Fahrenheit</translation>
 <translation id="5849570051105887917">Home provider code</translation>
+<translation id="5856532218727053281">System will restart after verifying write protection status</translation>
+<translation id="5859603669299126575">Art gallery album</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5860491529813859533">Turn on</translation>
 <translation id="5866840822086176774">Very strong</translation>
@@ -446,6 +486,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="594552776027197022">Generate random keypair</translation>
 <translation id="5972388717451707488">Update engine</translation>
+<translation id="5984145644188835034">Default wallpaper</translation>
 <translation id="6034694447310538551">Enable automatic monthly reset</translation>
 <translation id="6037291330010597344">The scanner’s document feeder is empty. Add documents and try again.</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -479,11 +520,15 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6275224645089671689">Right arrow</translation>
 <translation id="6278428485366576908">Theme</translation>
 <translation id="6280912520669706465">ARC</translation>
+<translation id="6284632978374966585">Turn Dark theme on</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> test has been cancelled</translation>
 <translation id="6319207335391420837">Update firmware on <ph name="DEVICE_NAME" /></translation>
+<translation id="6321407676395378991">Turn on screensaver</translation>
 <translation id="6325525973963619867">Failed</translation>
+<translation id="6331191339300272798">Automatic Dark theme</translation>
 <translation id="6340526405444716530">Personalisation</translation>
 <translation id="6348738456043757611">Username and password</translation>
+<translation id="6359706544163531585">Disable Light theme</translation>
 <translation id="636850387210749493">Enterprise enrolment</translation>
 <translation id="6379086450106841622">Touchscreen</translation>
 <translation id="6381741036071372448">Test your keyboard</translation>
@@ -498,6 +543,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">Managed by <ph name="MANAGER" /></translation>
 <translation id="649050271426829538">Stopped – paper jam</translation>
+<translation id="6494974875566443634">Customisation</translation>
 <translation id="6500818810472529210">See result in Google Search</translation>
 <translation id="650266656685499220">To create albums, go to Google Photos</translation>
 <translation id="6516990319416533844">To test battery charging rate, let your battery drain for a short period</translation>
@@ -520,6 +566,8 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6692996468359469499">Get info related to your selection</translation>
 <translation id="6704062477274546131">DNS resolution</translation>
 <translation id="6723839937902243910">Power</translation>
+<translation id="6723847290197874913">Keyboard backlight</translation>
+<translation id="672609503628871915">See what's new</translation>
 <translation id="6747215703636344499">Stopped – output full</translation>
 <translation id="6749473226660745022">Photos</translation>
 <translation id="6753452347192452143">Device is a computer.</translation>
@@ -529,6 +577,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6768237774506518020">High DNS resolution failure rate</translation>
 <translation id="680983167891198932">Key</translation>
 <translation id="6816797338148849397">Info related to your selection available. Use the up arrow key to access.</translation>
+<translation id="6840315122969944400"><ph name="DEVICE_TYPE" /> repair</translation>
 <translation id="6853312040151791195">Discharging rate</translation>
 <translation id="6889786074662672253">While restarting, do not unplug this external device or shut down your computer. You can minimise this window. This may take a few minutes and your external device may not work during this time.</translation>
 <translation id="6905724422583748843">Back to <ph name="PAGE_NAME" /></translation>
@@ -540,7 +589,6 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6961170852793647506">To get started, place your document on the scanner</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Firmware revision</translation>
-<translation id="6992266763844448459">Select this option if the ownership of the device isn't changing. For example, the device is being transferred to a different person within an organisation.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> manages this device and has access to all user activity, including web pages visited, passwords and email.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7041549558901442110">Device is not connected.</translation>
@@ -557,6 +605,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="714876143603641390">LAN connectivity</translation>
 <translation id="7155171745945906037">Existing photo from camera or file</translation>
 <translation id="7162487448488904999">Gallery</translation>
+<translation id="7170236477717446850">Profile picture</translation>
 <translation id="7172721935181587524">1 image</translation>
 <translation id="7175037578838465313">Configure <ph name="NAME" /></translation>
 <translation id="7177485034254901881">This <ph name="DEVICE_TYPE" /> is managed by <ph name="MANAGER" />. Administrators may remotely configure the device.</translation>
@@ -571,13 +620,13 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="7297226631177386107">Can't connect through firewall to HTTPS websites</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
-<translation id="7309920310754476121">Device will go to a different owner</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; press Search plus Space to see the result in Google Search.</translation>
 <translation id="7343649194310845056">Network devices</translation>
 <translation id="7359657277149375382">File type</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378886533986123738">Change screensaver</translation>
+<translation id="7397270852490618635">Turn Light theme off</translation>
 <translation id="741244894080940828">conversion</translation>
 <translation id="7415801143053185905">Very high HTTP latency</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -589,6 +638,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="7497215489070763236">Server CA certificate</translation>
 <translation id="7502658306369382406">IPv6 address</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7535791657097741517">Turn Light theme on</translation>
 <translation id="7550715992156305117">Diagnostic routines</translation>
 <translation id="7551123448725492271">Device is an audio device.</translation>
 <translation id="7561454561030345039">This action is managed by your administrator</translation>
@@ -610,11 +660,14 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="7763470514545477072">Domain suffix match</translation>
 <translation id="7769672763586021400">Model ID</translation>
 <translation id="7784116172884276937">No DNS servers are set up</translation>
+<translation id="7799817062559422778">Light mode</translation>
 <translation id="780301667611848630">No, thanks</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7819857487979277519">PSK (WPA or RSN)</translation>
+<translation id="7841134249932030522">Enable dark mode</translation>
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7856267634822906833">Bluetooth touchscreen</translation>
+<translation id="7869143217755017858">Disable dark mode</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Provider type</translation>
 <translation id="7882501334836096755">Public key</translation>
@@ -633,6 +686,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8045012663542226664">Microphone mute</translation>
 <translation id="8075838845814659848">Remaining charge</translation>
 <translation id="8082366717211101304">Can't resolve DNS from Android apps</translation>
+<translation id="8083281199617904460">This repair process is intended for a trained repair technician. Start only after replacing the malfunctioning components.</translation>
 <translation id="808894953321890993">Change password</translation>
 <translation id="8104083085214006426">You are using an open and unsecure network</translation>
 <translation id="811820734797650957">(Android) Gateway can be pinged</translation>
@@ -654,6 +708,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8297006494302853456">Weak</translation>
 <translation id="8302368968391049045">HTTPS Firewall</translation>
 <translation id="8318753676953949627">No images</translation>
+<translation id="8336739000755212683">Change device account image</translation>
 <translation id="8347227221149377169">Print jobs</translation>
 <translation id="8352772353338965963">Add an account to multiple sign-in. All signed-in accounts can be accessed without a password, so this feature should only be used with trusted accounts.</translation>
 <translation id="8364946094152050673">Empty name servers</translation>
@@ -665,6 +720,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8431300646573772016">What's new with Chrome OS</translation>
 <translation id="843568408673868420">Internet connectivity</translation>
 <translation id="844521431886043384">DNS isn't set up</translation>
+<translation id="8456761643544401578">Automatic dark mode</translation>
 <translation id="8461329675984532579">Home provider name</translation>
 <translation id="8475690821716466388">Wi-Fi network is secured with weak protocol WEP PSK</translation>
 <translation id="8477551185774834963">DNS latency slightly above allowable threshold</translation>
@@ -673,7 +729,6 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8498220429738806196">Traffic counters</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8503836310948963452">Just a few more minutes…</translation>
-<translation id="8521021929829989041">Use as personal device</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">Your operator may require this option to connect to their network. Contact your operator for details.</translation>
 <translation id="8576249514688522074">Uninitialised</translation>
@@ -681,8 +736,10 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8655295600908251630">Channel</translation>
 <translation id="8660881923941176839">pounds</translation>
 <translation id="8662671328352114214">Join <ph name="TYPE" /> network</translation>
+<translation id="8671972493856476349">Update to <ph name="VERSION_NUMBER" /> and restart</translation>
 <translation id="8675354002693747642">Pre-shared key</translation>
 <translation id="8677859815076891398">No albums. Create an album in <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />.</translation>
+<translation id="8680431479333800907">Device will go to the same user</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Use the left or right arrow keys to manage this feature.</translation>
 <translation id="8712637175834984815">Got it</translation>
 <translation id="871560550817059752">Failed – Out of ink</translation>
@@ -691,6 +748,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8730621377337864115">Done</translation>
 <translation id="8747900814994928677">Confirm change</translation>
 <translation id="8764414543112028321">WireGuard</translation>
+<translation id="87646919272181953">Google Photos album</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="879568662008399081">This network may have a captive portal</translation>
 <translation id="8798099450830957504">Default</translation>
@@ -700,6 +758,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8834539327799336565">Currently connected</translation>
 <translation id="8845001906332463065">Get help</translation>
 <translation id="8855781559874488009">Can't connect through firewall to HTTP websites</translation>
+<translation id="8863170912498892583">Enable Dark theme</translation>
 <translation id="8863888432376731307">Get the <ph name="INTENT" /> for '<ph name="QUERY" />' and more</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Device is a tablet.</translation>
@@ -717,6 +776,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="894617464444543719">Device is a phone.</translation>
 <translation id="8968751544471797276">Charging rate</translation>
 <translation id="8970109610781093811">Run again</translation>
+<translation id="8970887620466824814">Something went wrong.</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Scan}=1{Scan page {NUMBER_OF_PAGES}}other{Scan page {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">Device has <ph name="BATTERY_PERCENTAGE" />% battery.</translation>
@@ -728,7 +788,6 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="9082718469794970195">Use this video</translation>
 <translation id="9087578468327036362">Report this query</translation>
 <translation id="9088306295921699330">Current usage</translation>
-<translation id="9095415590198785865">Device will go to the same owner</translation>
 <translation id="9095775724867566971">PluginVm</translation>
 <translation id="910415269708673980">Refresh ticket for <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Scanning page <ph name="PAGE_NUMBER" /></translation>
@@ -742,6 +801,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="917720651393141712">Test</translation>
 <translation id="9204237731135241582">Can't contact the gateway from Android apps</translation>
 <translation id="9211490828691860325">All desks</translation>
+<translation id="922179502584117429">Current version <ph name="VERSION_NUMBER" /> is out of date</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Not activated</translation>

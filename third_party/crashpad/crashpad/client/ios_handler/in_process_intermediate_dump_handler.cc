@@ -963,12 +963,10 @@ void InProcessIntermediateDumpHandler::WriteModuleInfo(
       return;
     }
 
-    if (image->imageFilePath) {
-      WriteProperty(writer,
-                    IntermediateDumpKey::kName,
-                    image->imageFilePath,
-                    strlen(image->imageFilePath));
-    }
+    WriteProperty(writer,
+                  IntermediateDumpKey::kName,
+                  image->imageFilePath,
+                  strlen(image->imageFilePath));
     uint64_t address = FromPointerCast<uint64_t>(image->imageLoadAddress);
     WriteProperty(writer, IntermediateDumpKey::kAddress, &address);
     WriteProperty(
@@ -978,12 +976,7 @@ void InProcessIntermediateDumpHandler::WriteModuleInfo(
 
   {
     IOSIntermediateDumpWriter::ScopedArrayMap modules(writer);
-    if (image_infos->dyldPath) {
-      WriteProperty(writer,
-                    IntermediateDumpKey::kName,
-                    image_infos->dyldPath,
-                    strlen(image_infos->dyldPath));
-    }
+    WriteProperty(writer, IntermediateDumpKey::kName, image_infos->dyldPath);
     uint64_t address =
         FromPointerCast<uint64_t>(image_infos->dyldImageLoadAddress);
     WriteProperty(writer, IntermediateDumpKey::kAddress, &address);

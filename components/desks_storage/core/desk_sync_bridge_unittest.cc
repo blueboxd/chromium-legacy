@@ -24,9 +24,8 @@
 #include "components/app_restore/app_launch_info.h"
 #include "components/desks_storage/core/desk_model_observer.h"
 #include "components/desks_storage/core/desk_template_conversion.h"
+#include "components/desks_storage/core/desk_template_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
-#include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
-#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/in_memory_metadata_change_list.h"
@@ -59,6 +58,7 @@ namespace {
 
 using ash::DeskTemplate;
 using ash::DeskTemplateSource;
+using ash::DeskTemplateType;
 using sync_pb::ModelTypeState;
 using sync_pb::WorkspaceDeskSpecifics;
 using syncer::EntityChange;
@@ -285,7 +285,8 @@ std::unique_ptr<ash::DeskTemplate> CreateTemplateWithBrowserFromScratch(
   const std::string template_name =
       base::StringPrintf(kNameFormat, template_index);
   auto desk_template = std::make_unique<ash::DeskTemplate>(
-      template_uuid, DeskTemplateSource::kUser, template_name, created_time);
+      template_uuid, DeskTemplateSource::kUser, template_name, created_time,
+      DeskTemplateType::kTemplate);
 
   auto restore_data = std::make_unique<app_restore::RestoreData>();
   auto browser_info = std::make_unique<app_restore::AppLaunchInfo>(
@@ -329,15 +330,6 @@ ModelTypeState StateWithEncryption(const std::string& encryption_key_name) {
   ModelTypeState state;
   state.set_encryption_key_name(encryption_key_name);
   return state;
-}
-
-apps::AppPtr MakeApp(const char* app_id,
-                     const char* name,
-                     apps::AppType app_type) {
-  apps::AppPtr app = std::make_unique<apps::App>(app_type, app_id);
-  app->readiness = apps::Readiness::kReady;
-  app->name = name;
-  return app;
 }
 
 class MockDeskModelObserver : public DeskModelObserver {
@@ -405,39 +397,6 @@ class DeskSyncBridgeTest : public testing::Test {
     ShutdownBridge();
     InitializeBridge();
   }
-
-  void PopulateAppRegistryCache() {
-    std::vector<apps::AppPtr> deltas;
-
-    deltas.push_back(
-        MakeApp(kTestPwaAppId, "Test PWA App", apps::AppType::kWeb));
-    // chromeAppId returns kExtension in the real Apps cache.
-    deltas.push_back(MakeApp(app_constants::kChromeAppId, "Chrome Browser",
-                             apps::AppType::kChromeApp));
-    deltas.push_back(MakeApp(kTestChromeAppId, "Test Chrome App",
-                             apps::AppType::kChromeApp));
-    deltas.push_back(MakeApp(kTestArcAppId, "Arc app", apps::AppType::kArc));
-
-    if (base::FeatureList::IsEnabled(
-            apps::kAppServiceOnAppUpdateWithoutMojom)) {
-      cache_->OnApps(std::move(deltas), apps::AppType::kUnknown,
-                     /*should_notify_initialized=*/false);
-    } else {
-      std::vector<apps::mojom::AppPtr> mojom_deltas;
-      for (const auto& delta : deltas) {
-        mojom_deltas.push_back(apps::ConvertAppToMojomApp(delta));
-      }
-      cache_->OnApps(std::move(mojom_deltas), apps::mojom::AppType::kUnknown,
-                     /*should_notify_initialized=*/false);
-    }
-
-    cache_->SetAccountId(account_id_);
-
-    apps::AppRegistryCacheWrapper::Get().AddAppRegistryCache(account_id_,
-                                                             cache_.get());
-  }
-
-  void SetUp() override { PopulateAppRegistryCache(); }
 
   void WriteToStoreWithMetadata(
       const std::vector<WorkspaceDeskSpecifics>& specifics_list,
@@ -574,6 +533,11 @@ class DeskSyncBridgeTest : public testing::Test {
     bridge()->SetPolicyDeskTemplates(policy_json);
   }
 
+  // testing::test.
+  void SetUp() override {
+    desk_template_util::PopulateAppRegistryCache(account_id_, cache_.get());
+  }
+
   MockModelTypeChangeProcessor* processor() { return &mock_processor_; }
 
   DeskSyncBridge* bridge() { return bridge_.get(); }
@@ -631,7 +595,8 @@ TEST_F(DeskSyncBridgeTest, DeskTemplateJsonConversionShouldBeLossless) {
           desk_template.get(), app_cache());
 
   std::unique_ptr<ash::DeskTemplate> converted_desk_template =
-      desk_template_conversion::ParseDeskTemplateFromPolicy(template_value);
+      desk_template_conversion::ParseDeskTemplateFromSource(
+          template_value, ash::DeskTemplateSource::kPolicy);
 
   EXPECT_EQ(desk_template->desk_restore_data()->ConvertToValue(),
             converted_desk_template->desk_restore_data()->ConvertToValue());
@@ -833,7 +798,7 @@ TEST_F(DeskSyncBridgeTest, GetAllEntriesIncludesPolicyEntries) {
   base::RunLoop loop;
   bridge()->GetAllEntries(base::BindLambdaForTesting(
       [&](DeskModel::GetAllEntriesStatus status,
-          const std::vector<ash::DeskTemplate*>& entries) {
+          const std::vector<const ash::DeskTemplate*>& entries) {
         EXPECT_EQ(status, DeskModel::GetAllEntriesStatus::kOk);
         EXPECT_EQ(entries.size(), 4ul);
 
@@ -935,9 +900,9 @@ TEST_F(DeskSyncBridgeTest, AddEntryShouldSucceedWheSyncIsDisabled) {
 
   base::RunLoop loop;
   bridge()->AddOrUpdateEntry(
-      std::make_unique<DeskTemplate>(kTestUuid1.AsLowercaseString(),
-                                     DeskTemplateSource::kUser, "template 1",
-                                     AdvanceAndGetTime()),
+      std::make_unique<DeskTemplate>(
+          kTestUuid1.AsLowercaseString(), DeskTemplateSource::kUser,
+          "template 1", AdvanceAndGetTime(), DeskTemplateType::kTemplate),
       base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
         EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
         loop.Quit();
@@ -957,9 +922,9 @@ TEST_F(DeskSyncBridgeTest, AddEntryShouldFailWhenBridgeIsNotReady) {
 
   base::RunLoop loop;
   bridge()->AddOrUpdateEntry(
-      std::make_unique<DeskTemplate>(kTestUuid1.AsLowercaseString(),
-                                     DeskTemplateSource::kUser, "template 1",
-                                     AdvanceAndGetTime()),
+      std::make_unique<DeskTemplate>(
+          kTestUuid1.AsLowercaseString(), DeskTemplateSource::kUser,
+          "template 1", AdvanceAndGetTime(), DeskTemplateType::kTemplate),
       base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
         EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kFailure);
         loop.Quit();
@@ -1113,7 +1078,8 @@ TEST_F(DeskSyncBridgeTest, UpdateEntryLocally) {
   bridge()->AddOrUpdateEntry(
       std::make_unique<DeskTemplate>(kTestUuid1.AsLowercaseString(),
                                      DeskTemplateSource::kUser,
-                                     "updated template 1", AdvanceAndGetTime()),
+                                     "updated template 1", AdvanceAndGetTime(),
+                                     DeskTemplateType::kTemplate),
       base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
         EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
         loop.Quit();

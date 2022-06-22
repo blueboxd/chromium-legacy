@@ -64,6 +64,17 @@ export function onboardingEnterRsuWpDisableCodePageTest() {
     return flushTasks();
   }
 
+  /**
+   * @param {string} inputSelector
+   * @return {!Promise}
+   */
+  function pressEnter(inputSelector) {
+    const rsuCodeInput = component.shadowRoot.querySelector(inputSelector);
+    rsuCodeInput.value = '12345678';
+    rsuCodeInput.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+    return flushTasks();
+  }
+
   test('EnterRsuWpDisableCodePageInitializes', async () => {
     await initializeEnterRsuWpDisableCodePage('rsu challenge', '');
     const rsuCodeComponent = component.shadowRoot.querySelector('#rsuCode');
@@ -91,16 +102,16 @@ export function onboardingEnterRsuWpDisableCodePageTest() {
       async () => {
         const resolver = new PromiseResolver();
         await initializeEnterRsuWpDisableCodePage('', '');
-        let expectedCode = 'rsu code';
+        const expectedCode = 'RSU CODE';
         let savedCode = '';
         service.setRsuDisableWriteProtectCode = (code) => {
           savedCode = code;
           return resolver.promise;
         };
         const rsuCodeComponent = component.shadowRoot.querySelector('#rsuCode');
-        rsuCodeComponent.value = expectedCode;
+        rsuCodeComponent.value = expectedCode.toLowerCase();
 
-        let expectedResult = {foo: 'bar'};
+        const expectedResult = {foo: 'bar'};
         let savedResult;
         component.onNextButtonClick().then((result) => savedResult = result);
         // Resolve to a distinct result to confirm it was not modified.
@@ -163,5 +174,18 @@ export function onboardingEnterRsuWpDisableCodePageTest() {
 
     await flushTasks();
     assertFalse(rsuCodeInput.invalid);
+  });
+
+  test('EnterRsuWpDisableCodePagePressEnterkey', async () => {
+    await initializeEnterRsuWpDisableCodePage(
+        /*challenge=*/ '', /*hwid=*/ '');
+
+    let nextButtonEventFired = false;
+    component.addEventListener('click-next-button', (e) => {
+      nextButtonEventFired = true;
+    });
+    await pressEnter('#rsuCode');
+
+    assertTrue(nextButtonEventFired);
   });
 }

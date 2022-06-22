@@ -394,6 +394,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // If set, the widget was created in headless mode.
     bool headless_mode = false;
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    int32_t restore_session_id = 0;
+    int32_t restore_window_id = 0;
+#endif
+
     // Contains any properties with which the native widget should be
     // initialized prior to adding it to the window hierarchy. All the
     // properties in |init_properties_container| will be moved to the native
@@ -711,15 +716,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool IsMinimized() const;
 
   // Accessors for fullscreen state.
-  // If `delay` is given, some underlying implementations will set their target
-  // fullscreen state and then post a delayed task to request the actual window
-  // transition, in order to handle some platform-specific quirks in specific
-  // fullscreen scenarios. See crbug.com/1210548 and crbug.com/1034783.
   // The `target_display_id` may only be specified if `fullscreen` is true, and
   // indicates a specific display to become fullscreen on (note that this may
   // move a fullscreen widget from one display to another).
   void SetFullscreen(bool fullscreen,
-                     base::TimeDelta delay = {},
                      int64_t target_display_id = display::kInvalidDisplayId);
   bool IsFullscreen() const;
 

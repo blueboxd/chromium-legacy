@@ -6,11 +6,9 @@ package org.chromium.chrome.browser.share.send_tab_to_self;
 
 import static org.mockito.AdditionalAnswers.answerVoid;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import androidx.test.filters.SmallTest;
 
@@ -50,7 +48,6 @@ public class SendTabToSelfAndroidBridgeTest {
     private static final String TITLE = "Come try Tanya's famous tacos";
     private static final String DEVICE_NAME = "Macbook Pro";
     private static final String TARGET_DEVICE_SYNC_CACHE_GUID = "randomguid2";
-    private static final long NAVIGATION_TIME_MS = 123L;
     private static final long SHARE_TIME_MS = 456L;
 
     @Before
@@ -62,11 +59,9 @@ public class SendTabToSelfAndroidBridgeTest {
     @Test
     @SmallTest
     public void testAddEntry() {
-        SendTabToSelfAndroidBridge.addEntry(
-                mProfile, URL, TITLE, NAVIGATION_TIME_MS, TARGET_DEVICE_SYNC_CACHE_GUID);
+        SendTabToSelfAndroidBridge.addEntry(mProfile, URL, TITLE, TARGET_DEVICE_SYNC_CACHE_GUID);
         verify(mNativeMock)
-                .addEntry(eq(mProfile), eq(URL), eq(TITLE), eq(NAVIGATION_TIME_MS),
-                        eq(TARGET_DEVICE_SYNC_CACHE_GUID));
+                .addEntry(eq(mProfile), eq(URL), eq(TITLE), eq(TARGET_DEVICE_SYNC_CACHE_GUID));
     }
 
     @Test
@@ -120,26 +115,6 @@ public class SendTabToSelfAndroidBridgeTest {
 
     @Test
     @SmallTest
-    public void testGetEntryByGUID() {
-        SendTabToSelfEntry expected = new SendTabToSelfEntry(GUID, URL, TITLE, SHARE_TIME_MS,
-                NAVIGATION_TIME_MS, DEVICE_NAME, TARGET_DEVICE_SYNC_CACHE_GUID);
-        when(mNativeMock.getEntryByGUID(eq(mProfile), anyString())).thenReturn(expected);
-        // Note that the GUID passed in this function does not match the GUID of the returned entry.
-        // This is okay because the purpose of the test is to make sure that the JNI layer passes
-        // the entry returned by the native code. The native code does the actual matching of
-        // the GUID but since that is mocked out and not the purpose of the test, this is fine.
-        SendTabToSelfEntry actual = SendTabToSelfAndroidBridge.getEntryByGUID(mProfile, "guid");
-        Assert.assertEquals(expected.guid, actual.guid);
-        Assert.assertEquals(expected.url, actual.url);
-        Assert.assertEquals(expected.title, actual.title);
-        Assert.assertEquals(expected.sharedTime, actual.sharedTime);
-        Assert.assertEquals(expected.originalNavigationTime, actual.originalNavigationTime);
-        Assert.assertEquals(expected.deviceName, actual.deviceName);
-        Assert.assertEquals(expected.targetDeviceSyncCacheGuid, actual.targetDeviceSyncCacheGuid);
-    }
-
-    @Test
-    @SmallTest
     public void testDeleteAllEntries() {
         SendTabToSelfAndroidBridge.deleteAllEntries(mProfile);
         verify(mNativeMock).deleteAllEntries(eq(mProfile));
@@ -171,15 +146,5 @@ public class SendTabToSelfAndroidBridgeTest {
     public void testUpdateActiveWebContents() {
         SendTabToSelfAndroidBridge.updateActiveWebContents(mWebContents);
         verify(mNativeMock).updateActiveWebContents(eq(mWebContents));
-    }
-
-    @Test
-    @SmallTest
-    public void testIsFeatureAvailable() {
-        boolean expected = true;
-        when(mNativeMock.isFeatureAvailable(eq(mWebContents))).thenReturn(expected);
-
-        boolean actual = SendTabToSelfAndroidBridge.isFeatureAvailable(mWebContents);
-        Assert.assertEquals(expected, actual);
     }
 }

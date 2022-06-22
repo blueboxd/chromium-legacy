@@ -13,7 +13,6 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "ui/accessibility/accessibility_features.h"
 
 namespace ash {
 
@@ -27,8 +26,6 @@ class DictationBubbleControllerTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        ::features::kExperimentalAccessibilityDictationCommands);
     AshTestBase::SetUp();
     Shell::Get()->accessibility_controller()->dictation().SetEnabled(true);
   }
@@ -95,9 +92,6 @@ class DictationBubbleControllerTest : public AshTestBase {
   std::vector<std::u16string> GetVisibleHints() {
     return GetView()->GetVisibleHintsForTesting();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(DictationBubbleControllerTest, ShowText) {
@@ -182,6 +176,7 @@ TEST_F(DictationBubbleControllerTest, DarkMode) {
   AshColorProvider* color_provider = AshColorProvider::Get();
   color_provider->OnActiveUserPrefServiceChanged(
       Shell::Get()->session_controller()->GetPrimaryUserPrefService());
+  const bool initial_dark_mode_status = color_provider->IsDarkModeEnabled();
 
   // Show bubble UI.
   EXPECT_FALSE(GetView());
@@ -191,21 +186,31 @@ TEST_F(DictationBubbleControllerTest, DarkMode) {
   EXPECT_TRUE(GetView());
   EXPECT_TRUE(IsBubbleVisible());
   EXPECT_EQ(u"Testing", GetBubbleText());
-  EXPECT_FALSE(color_provider->IsDarkModeEnabled());
-  SkColor initial_color = GetLabelTextColor();
-  EXPECT_EQ(initial_color,
+  const SkColor initial_text_color = GetLabelTextColor();
+  const SkColor initial_background_color = GetLabelBackgroundColor();
+  EXPECT_EQ(initial_text_color,
             color_provider->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kTextColorPrimary));
-  EXPECT_EQ(SK_ColorWHITE, GetLabelBackgroundColor());
+  EXPECT_EQ(initial_background_color, GetView()->GetColorProvider()->GetColor(
+                                          ui::kColorDialogBackground));
 
-  // Enable dark mode.
-  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
-      prefs::kDarkModeEnabled, true);
-  EXPECT_TRUE(color_provider->IsDarkModeEnabled());
+  // Switch the color mode.
+  color_provider->ToggleColorMode();
+  const bool dark_mode_status = color_provider->IsDarkModeEnabled();
+  ASSERT_NE(initial_dark_mode_status, dark_mode_status);
 
-  // Verify that the text and background colors changed.
-  EXPECT_NE(initial_color, GetLabelTextColor());
-  EXPECT_NE(SK_ColorWHITE, GetLabelBackgroundColor());
+  // Verify that the text and background colors changed and still have the
+  // right colors according to the color modes.
+  const SkColor text_color = GetLabelTextColor();
+  const SkColor background_color = GetLabelBackgroundColor();
+  EXPECT_NE(text_color, initial_text_color);
+  EXPECT_EQ(text_color,
+            color_provider->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kTextColorPrimary));
+  EXPECT_NE(background_color, initial_background_color);
+  EXPECT_EQ(background_color, GetView()->GetColorProvider()->GetColor(
+                                  ui::kColorDialogBackground));
+
   HideAndCheckExpectations();
 }
 

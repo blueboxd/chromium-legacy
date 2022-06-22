@@ -64,6 +64,7 @@
 #include "chrome/browser/ash/login/chrome_restart_request.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/ash/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/helper.h"
@@ -457,11 +458,6 @@ bool IsHwDataUsageDeviceSettingSet() {
 // Returns value of the kOobeRevenUpdatedToFlex pref.
 bool IsRevenUpdatedToFlex() {
   CHECK(switches::IsRevenBranding());
-  // This flow breaks tast tests for the reven board, as an essential screen
-  // that should be shown for the device owner is skipped in tests.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableOobeTestAPI))
-    return false;
   PrefService* local_state = g_browser_process->local_state();
   if (local_state->GetBoolean(prefs::kOobeRevenUpdatedToFlex))
     return true;
@@ -491,13 +487,14 @@ bool MaybeShowNewTermsAfterUpdateToFlex(Profile* profile) {
       is_device_managed) {
     return false;
   }
+  if (!IsRevenUpdatedToFlex())
+    return false;
   const bool should_show_new_terms =
-      IsRevenUpdatedToFlex() &&
-      ((user_manager->IsCurrentUserOwner() &&
-        !IsHwDataUsageDeviceSettingSet()) ||
-       (features::IsOobeConsolidatedConsentEnabled() &&
-        !profile->GetPrefs()->GetBoolean(
-            prefs::kRevenOobeConsolidatedConsentAccepted)));
+      (user_manager->IsCurrentUserOwner() &&
+       !IsHwDataUsageDeviceSettingSet()) ||
+      (features::IsOobeConsolidatedConsentEnabled() &&
+       !profile->GetPrefs()->GetBoolean(
+           prefs::kRevenOobeConsolidatedConsentAccepted));
   if (should_show_new_terms) {
     LoginDisplayHost::default_host()->GetSigninUI()->ShowNewTermsForFlexUsers();
     return true;
@@ -1816,16 +1813,18 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   arc::RecordPlayStoreLaunchWithinAWeek(prefs, /*launched=*/false);
 
   if (start_session_type_ == StartSessionType::kPrimary) {
-    base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-    bool skip_post_login_screens =
-        WizardController::skip_post_login_screens() ||
-        cmdline->HasSwitch(switches::kOobeSkipPostLogin);
-
     user_manager::KnownUser known_user(g_browser_process->local_state());
     const user_manager::User* user =
         ProfileHelper::Get()->GetUserByProfile(profile);
     std::string pending_screen =
         known_user.GetPendingOnboardingScreen(user->GetAccountId());
+    if (!pending_screen.empty() &&
+        !WizardController::IsResumablePostLoginScreen(
+            OobeScreenId(pending_screen))) {
+      pending_screen.clear();
+      known_user.RemovePendingOnboardingScreen(user->GetAccountId());
+    }
+
     absl::optional<base::Version> onboarding_completed_version =
         known_user.GetOnboardingCompletedVersion(user->GetAccountId());
 
@@ -1839,7 +1838,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
     }
 
     // TODO(https://crbug.com/1313844): better structure different user flows
-    if (user_manager->IsCurrentUserNew() && !skip_post_login_screens) {
+    if (user_manager->IsCurrentUserNew()) {
       prefs->SetTime(prefs::kOobeOnboardingTime, base::Time::Now());
       prefs->SetBoolean(arc::prefs::kArcPlayStoreLaunchMetricCanBeRecorded,
                         true);
@@ -1992,6 +1991,13 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
       ->browser_policy_connector_ash()
       ->GetAdbSideloadingAllowanceModePolicyHandler()
       ->ShowAdbSideloadingPolicyChangeNotificationIfNeeded();
+
+  if (EasyUnlockNotificationController::ShouldShowSignInRemovedNotification(
+          profile)) {
+    easy_unlock_notification_controller_ =
+        std::make_unique<EasyUnlockNotificationController>(profile);
+    easy_unlock_notification_controller_->ShowSignInRemovedNotification();
+  }
 }
 
 void UserSessionManager::MaybeLaunchSettings(Profile* profile) {
@@ -2424,6 +2430,7 @@ void UserSessionManager::Shutdown() {
   token_observers_.clear();
   always_on_vpn_manager_.reset();
   u2f_notification_.reset();
+  easy_unlock_notification_controller_.reset();
   help_app_notification_controller_.reset();
   password_service_voted_.reset();
   password_was_saved_ = false;

@@ -72,9 +72,6 @@
 #include "net/socket/stream_socket.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_fetcher_response_writer.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -897,8 +894,6 @@ class DnsTCPAttempt : public DnsAttempt {
 
 // ----------------------------------------------------------------------------
 
-const char kDoHProbeHostname[] = "www.gstatic.com";
-
 const net::BackoffEntry::Policy kProbeBackoffPolicy = {
     // Apply exponential backoff rules after the first error.
     0,
@@ -933,7 +928,7 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
     DCHECK(!session_->config().doh_config.servers().empty());
     DCHECK(context_);
 
-    DNSDomainFromDot(kDoHProbeHostname, &formatted_probe_hostname_);
+    DNSDomainFromDot(kDohProbeHostname, &formatted_probe_hostname_);
 
     for (size_t i = 0; i < session_->config().doh_config.servers().size();
          i++) {
@@ -1053,7 +1048,7 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
         DnsResponseResultExtractor::ExtractionError extraction_error =
             extractor.ExtractDnsResults(
                 DnsQueryType::A,
-                /*original_domain_name=*/kDoHProbeHostname,
+                /*original_domain_name=*/kDohProbeHostname,
                 /*request_port=*/0, &results);
 
         if (extraction_error ==

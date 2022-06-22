@@ -924,10 +924,11 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
   }
 
   void InvokeReportWinCallback(
-      absl::optional<GURL> report_url = absl::nullopt) {
+      absl::optional<GURL> report_url = absl::nullopt,
+      base::flat_map<std::string, GURL> ad_beacon_map = {}) {
     DCHECK(report_win_callback_);
     std::move(report_win_callback_)
-        .Run(report_url, /*ad_beacon_map=*/{},
+        .Run(report_url, ad_beacon_map,
              /*errors=*/std::vector<std::string>());
   }
 
@@ -1085,11 +1086,12 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
   // the provided score. WaitForReportResult() must have been invoked first.
   void InvokeReportResultCallback(
       absl::optional<GURL> report_url = absl::nullopt,
+      base::flat_map<std::string, GURL> ad_beacon_map = {},
       std::vector<std::string> errors = {}) {
     DCHECK(report_result_callback_);
     std::move(report_result_callback_)
         .Run(/*signals_for_winner=*/absl::nullopt, std::move(report_url),
-             /*ad_beacon_map=*/{}, errors);
+             ad_beacon_map, errors);
   }
 
   void Flush() { receiver_.FlushForTesting(); }
@@ -1165,7 +1167,9 @@ class MockAuctionProcessManager
       const GURL& script_source_url,
       const absl::optional<GURL>& bidding_wasm_helper_url,
       const absl::optional<GURL>& trusted_bidding_signals_url,
-      const url::Origin& top_window_origin) override {
+      const url::Origin& top_window_origin,
+      bool has_experiment_group_id,
+      uint16_t experiment_group_id) override {
     // Make sure this request came over the right pipe.
     url::Origin owner = url::Origin::Create(script_source_url);
     EXPECT_EQ(receiver_display_name_map_[receiver_set_.current_receiver()],
@@ -1195,7 +1199,9 @@ class MockAuctionProcessManager
           pending_url_loader_factory,
       const GURL& script_source_url,
       const absl::optional<GURL>& trusted_scoring_signals_url,
-      const url::Origin& top_window_origin) override {
+      const url::Origin& top_window_origin,
+      bool has_experiment_group_id,
+      uint16_t experiment_group_id) override {
     EXPECT_EQ(0u, seller_worklets_.count(script_source_url));
 
     // Make sure this request came over the right pipe.
@@ -1460,6 +1466,22 @@ class AuctionRunnerTest : public testing::Test,
     auction_config->auction_ad_config_non_shared_params->auction_signals =
         base::StringPrintf(R"("auctionSignalsFor %s")",
                            auction_config->seller.Serialize().c_str());
+
+    if (seller_experiment_group_id_.has_value()) {
+      auction_config->has_seller_experiment_group_id = true;
+      auction_config->seller_experiment_group_id =
+          seller_experiment_group_id_.value();
+    }
+
+    if (all_buyer_experiment_group_id_.has_value()) {
+      auction_config->has_all_buyer_experiment_group_id = true;
+      auction_config->all_buyer_experiment_group_id =
+          all_buyer_experiment_group_id_.value();
+    }
+
+    for (const auto& kv : per_buyer_experiment_group_id_) {
+      auction_config->per_buyer_experiment_group_ids[kv.first] = kv.second;
+    }
 
     return auction_config;
   }
@@ -1895,6 +1917,9 @@ class AuctionRunnerTest : public testing::Test,
             bid_from_component_auction_wins, report_post_auction_signals));
   }
 
+  absl::optional<uint16_t> seller_experiment_group_id_;
+  absl::optional<uint16_t> all_buyer_experiment_group_id_;
+  std::map<url::Origin, uint16_t> per_buyer_experiment_group_id_;
   const url::Origin top_frame_origin_ =
       url::Origin::Create(GURL("https://publisher1.com"));
   const url::Origin frame_origin_ =
@@ -2220,6 +2245,88 @@ TEST_F(AuctionRunnerTest, OneInterestGroup) {
                   "Destroy https://adstuff.publisher1.com/auction.js",
                   "Create https://adplatform.com/offers.js",
                   "Destroy https://adplatform.com/offers.js"));
+}
+
+// An auction specifying buyer and seller experiment IDs.
+TEST_F(AuctionRunnerTest, ExperimentId) {
+  trusted_scoring_signals_url_ =
+      GURL("https://adstuff.publisher1.com/seller_signals");
+  seller_experiment_group_id_ = 498u;
+  all_buyer_experiment_group_id_ = 940u;
+
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kBidder1Url,
+      MakeBidScript(kSeller, "1", "https://ad1.com/", /*num_ad_components=*/0,
+                    kBidder1, kBidder1Name,
+                    /*has_signals=*/true, "k1", "a"));
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         MakeAuctionScript());
+  auction_worklet::AddJsonResponse(&url_loader_factory_,
+                                   GURL(kBidder1TrustedSignalsUrl.spec() +
+                                        "?hostname=publisher1.com&keys=k1,k2"
+                                        "&experimentGroupId=940"),
+                                   R"({"k1":"a", "k2": "b", "extra": "c"})");
+  auction_worklet::AddJsonResponse(
+      &url_loader_factory_,
+      GURL(trusted_scoring_signals_url_->spec() +
+           "?hostname=publisher1.com&renderUrls=https%3A%2F%2Fad1.com%2F" +
+           "&experimentGroupId=498"),
+      R"({"renderUrls":{"https://ad1.com/":"accept",
+          "https://ad2.com/":"reject"}}
+       )");
+
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, kBidder1Name, kBidder1Url, kBidder1TrustedSignalsUrl,
+      {"k1", "k2"}, GURL("https://ad1.com")));
+
+  RunAuctionAndWait(kSellerUrl, std::move(bidders));
+
+  EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_url);
+  EXPECT_THAT(result_.errors, testing::ElementsAre());
+}
+
+// An auction specifying a per-buyer experiment ID as well as fallback all-buyer
+// experiment id.
+TEST_F(AuctionRunnerTest, ExperimentIdPerBuyer) {
+  all_buyer_experiment_group_id_ = 940u;
+  per_buyer_experiment_group_id_[kBidder2] = 93u;
+
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kBidder1Url,
+      MakeBidScript(kSeller, "1", "https://ad1.com/", /*num_ad_components=*/0,
+                    kBidder1, kBidder1Name,
+                    /*has_signals=*/true, "k1", "a"));
+  auction_worklet::AddJavascriptResponse(
+      &url_loader_factory_, kBidder2Url,
+      MakeBidScript(kSeller, "2", "https://ad2.com/", /*num_ad_components=*/0,
+                    kBidder2, kBidder2Name,
+                    /*has_signals=*/true, "l2", "b"));
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         MakeAuctionScript());
+  auction_worklet::AddJsonResponse(&url_loader_factory_,
+                                   GURL(kBidder1TrustedSignalsUrl.spec() +
+                                        "?hostname=publisher1.com&keys=k1,k2"
+                                        "&experimentGroupId=940"),
+                                   R"({"k1":"a", "k2": "b", "extra": "c"})");
+  auction_worklet::AddJsonResponse(&url_loader_factory_,
+                                   GURL(kBidder2TrustedSignalsUrl.spec() +
+                                        "?hostname=publisher1.com&keys=l1,l2"
+                                        "&experimentGroupId=93"),
+                                   R"({"l1":"a", "l2": "b", "extra": "c"})");
+
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, kBidder1Name, kBidder1Url, kBidder1TrustedSignalsUrl,
+      {"k1", "k2"}, GURL("https://ad1.com")));
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder2, kBidder2Name, kBidder2Url, kBidder2TrustedSignalsUrl,
+      {"l1", "l2"}, GURL("https://ad2.com")));
+
+  RunAuctionAndWait(kSellerUrl, std::move(bidders));
+
+  EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_url);
+  EXPECT_THAT(result_.errors, testing::ElementsAre());
 }
 
 // An auction with two successful bids.
@@ -2910,6 +3017,66 @@ TEST_F(AuctionRunnerTest, ComponentAuctionSharedBuyer) {
   CheckHistograms(AuctionRunner::AuctionResult::kSuccess,
                   /*expected_interest_groups=*/3, /*expected_owners=*/3,
                   /*expected_sellers=*/3);
+}
+
+// Test case where a single component auction accepts one bid and rejects
+// another. This is a regression test for https://crbug.com/1321941, where a
+// rejected bid from a component auction would be treated as a security error,
+// and result in bidding in the component auction being aborted, and all
+// previous bids being thrown out.
+TEST_F(AuctionRunnerTest, ComponentAuctionAcceptsBidRejectsBid) {
+  // Script used by the winning bidder. It makes the lower bid.
+  const char kBidder1Script[] = R"(
+      function generateBid(interestGroup, auctionSignals, perBuyerSignals,
+                           trustedBiddingSignals, browserSignals) {
+        return {bid: 1, render: interestGroup.ads[0].renderUrl,
+                allowComponentAuction: true};
+      }
+
+    function reportWin() {}
+  )";
+
+  // Script used by the losing bidder. It makes the higher bid.
+  const char kBidder2Script[] = R"(
+      function generateBid(interestGroup, auctionSignals, perBuyerSignals,
+                           trustedBiddingSignals, browserSignals) {
+        return {bid: 2, render: interestGroup.ads[0].renderUrl,
+                allowComponentAuction: true};
+      }
+  )";
+
+  // Script used for both sellers. It rejects bids over 1.
+  const std::string kSellerScript = R"(
+    function scoreAd(adMetadata, bid, auctionConfig, browserSignals) {
+      if (bid > 1)
+        return {desirability: 0, allowComponentAuction: true};
+      return {desirability: bid, allowComponentAuction: true};
+    }
+
+    function reportResult() {}
+  )";
+
+  // Set up a component auction using the normal helper function, but then
+  // overwrite the scripts.
+  SetUpComponentAuctionAndResponses(/*bidder1_seller=*/kComponentSeller1,
+                                    /*bidder2_seller=*/kComponentSeller1,
+                                    /*bid_from_component_auction_wins=*/false);
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kBidder1Url,
+                                         kBidder1Script);
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kBidder2Url,
+                                         kBidder2Script);
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         kSellerScript);
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_,
+                                         kComponentSeller1Url, kSellerScript);
+
+  RunStandardAuction();
+  EXPECT_THAT(result_.errors, testing::ElementsAre());
+
+  EXPECT_EQ("https://ad1.com/", result_.ad_url);
+  CheckHistograms(AuctionRunner::AuctionResult::kSuccess,
+                  /*expected_interest_groups=*/2, /*expected_owners=*/2,
+                  /*expected_sellers=*/2);
 }
 
 // A component auction with one component that has two buyers. In this auction,
@@ -5450,7 +5617,7 @@ TEST_F(AuctionRunnerTest, ComponentAuctionComponentSellersReportResultFails) {
       const char kScriptError[] = "Script error";
 
       component_seller_worklet->InvokeReportResultCallback(
-          /*report_url=*/absl::nullopt, {kScriptError});
+          /*report_url=*/absl::nullopt, /*ad_beacon_map=*/{}, {kScriptError});
 
       // Winning bidder worklet should be reloaded and ReportWin() invoked.
       mock_auction_process_manager_->WaitForWinningBidderReload();
@@ -6002,7 +6169,7 @@ TEST_F(AuctionRunnerTest, BadBid) {
   }
 }
 
-// Test cases where bad a report URL is received over Mojo from the seller
+// Test cases where a bad report URL is received over Mojo from the seller
 // worklet. Bad report URLs should be rejected in the Mojo process, so these are
 // treated as security errors.
 TEST_F(AuctionRunnerTest, BadSellerReportUrl) {
@@ -6056,7 +6223,63 @@ TEST_F(AuctionRunnerTest, BadSellerReportUrl) {
                   /*expected_sellers=*/1);
 }
 
-// Test cases where bad a report URL is received over Mojo from the winning
+// Test cases where a bad report URL is received over Mojo from the seller
+// worklet. Bad report URLs should be rejected in the Mojo process, so these are
+// treated as security errors.
+TEST_F(AuctionRunnerTest, BadSellerBeaconUrl) {
+  StartStandardAuctionWithMockService();
+
+  auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
+  ASSERT_TRUE(seller_worklet);
+  auto bidder1_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+  ASSERT_TRUE(bidder1_worklet);
+  auto bidder2_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
+  ASSERT_TRUE(bidder2_worklet);
+
+  // Only Bidder1 bids, to keep things simple.
+  bidder1_worklet->InvokeGenerateBidCallback(/*bid=*/5,
+                                             GURL("https://ad1.com/"));
+  bidder2_worklet->InvokeGenerateBidCallback(/*bid=*/absl::nullopt);
+
+  auto score_ad_params = seller_worklet->WaitForScoreAd();
+  EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+  EXPECT_EQ(5, score_ad_params.bid);
+  std::move(score_ad_params.callback)
+      .Run(/*score=*/10,
+           auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr(),
+           /*data_version=*/0, /*has_data_version=*/false,
+           /*debug_loss_report_url=*/absl::nullopt,
+           /*debug_win_report_url=*/absl::nullopt, /*errors=*/{});
+
+  // Bidder1 never gets to report anything, since the seller providing a bad
+  // report URL aborts the auction.
+  seller_worklet->WaitForReportResult();
+  seller_worklet->InvokeReportResultCallback(
+      /*report_url=*/absl::nullopt,
+      {{"click", GURL("http://not.https.test/")}});
+  auction_run_loop_->Run();
+
+  EXPECT_EQ("Invalid seller beacon URL for 'click'", TakeBadMessage());
+
+  // No bidder won.
+  EXPECT_FALSE(result_.winning_group_id);
+  EXPECT_FALSE(result_.ad_url);
+  EXPECT_TRUE(result_.ad_component_urls.empty());
+  EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
+  EXPECT_TRUE(result_.ad_beacon_map.metadata.empty());
+  EXPECT_EQ(6, result_.bidder1_bid_count);
+  EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
+  EXPECT_EQ(5, result_.bidder2_bid_count);
+  EXPECT_EQ(3u, result_.bidder2_prev_wins.size());
+  EXPECT_THAT(result_.errors, testing::ElementsAre());
+  CheckHistograms(AuctionRunner::AuctionResult::kBadMojoMessage,
+                  /*expected_interest_groups=*/2, /*expected_owners=*/2,
+                  /*expected_sellers=*/1);
+}
+
+// Test cases where a bad report URL is received over Mojo from the winning
 // component seller worklet. Bad report URLs should be rejected in the Mojo
 // process, so these are treated as security errors.
 TEST_F(AuctionRunnerTest, BadComponentSellerReportUrl) {
@@ -6142,7 +6365,7 @@ TEST_F(AuctionRunnerTest, BadComponentSellerReportUrl) {
                   /*expected_sellers=*/2);
 }
 
-// Test cases where bad a report URL is received over Mojo from the bidder
+// Test cases where a bad report URL is received over Mojo from the bidder
 // worklet. Bad report URLs should be rejected in the Mojo process, so these are
 // treated as security errors.
 TEST_F(AuctionRunnerTest, BadBidderReportUrl) {
@@ -6183,6 +6406,66 @@ TEST_F(AuctionRunnerTest, BadBidderReportUrl) {
   auction_run_loop_->Run();
 
   EXPECT_EQ("Invalid bidder report URL", TakeBadMessage());
+
+  // No bidder won.
+  EXPECT_FALSE(result_.winning_group_id);
+  EXPECT_FALSE(result_.ad_url);
+  EXPECT_TRUE(result_.ad_component_urls.empty());
+  EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
+  EXPECT_TRUE(result_.ad_beacon_map.metadata.empty());
+  EXPECT_EQ(6, result_.bidder1_bid_count);
+  EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
+  EXPECT_EQ(5, result_.bidder2_bid_count);
+  EXPECT_EQ(3u, result_.bidder2_prev_wins.size());
+  EXPECT_THAT(result_.errors, testing::ElementsAre());
+  CheckHistograms(AuctionRunner::AuctionResult::kBadMojoMessage,
+                  /*expected_interest_groups=*/2, /*expected_owners=*/2,
+                  /*expected_sellers=*/1);
+}
+
+// Test cases where a bad URL is present in the beacon mapping received over
+// Mojo from the bidder worklet. Bad report URLs should be rejected in the Mojo
+// process, so these are treated as security errors.
+TEST_F(AuctionRunnerTest, BadBidderBeaconUrl) {
+  StartStandardAuctionWithMockService();
+
+  auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
+  ASSERT_TRUE(seller_worklet);
+  auto bidder1_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+  ASSERT_TRUE(bidder1_worklet);
+  auto bidder2_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
+  ASSERT_TRUE(bidder2_worklet);
+
+  // Only Bidder1 bids, to keep things simple.
+  bidder1_worklet->InvokeGenerateBidCallback(/*bid=*/5,
+                                             GURL("https://ad1.com/"));
+  bidder2_worklet->InvokeGenerateBidCallback(/*bid=*/absl::nullopt);
+
+  auto score_ad_params = seller_worklet->WaitForScoreAd();
+  EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+  EXPECT_EQ(5, score_ad_params.bid);
+  std::move(score_ad_params.callback)
+      .Run(/*score=*/10,
+           auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr(),
+           /*data_version=*/0, /*has_data_version=*/false,
+           /*debug_loss_report_url=*/absl::nullopt,
+           /*debug_win_report_url=*/absl::nullopt, /*errors=*/{});
+
+  seller_worklet->WaitForReportResult();
+  seller_worklet->InvokeReportResultCallback(
+      GURL("https://valid.url.that.is.thrown.out.test/"));
+  mock_auction_process_manager_->WaitForWinningBidderReload();
+  bidder1_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+  bidder1_worklet->WaitForReportWin();
+  bidder1_worklet->InvokeReportWinCallback(
+      /*report_url=*/absl::nullopt,
+      {{"click", GURL("http://not.https.test/")}});
+  auction_run_loop_->Run();
+
+  EXPECT_EQ("Invalid bidder beacon URL for 'click'", TakeBadMessage());
 
   // No bidder won.
   EXPECT_FALSE(result_.winning_group_id);

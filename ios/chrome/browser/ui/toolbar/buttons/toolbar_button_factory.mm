@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_actions_handler.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
@@ -13,7 +14,6 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -28,12 +28,12 @@
 
 namespace {
 
-// Returns the default configuration for Symbols.
-UIImageConfiguration* SymbolConfiguration() {
-  return [UIImageSymbolConfiguration
-      configurationWithPointSize:22
-                          weight:UIImageSymbolWeightMedium];
-}
+// The size of the symbol image.
+NSInteger kSymbolToolbarPointSize = 24;
+
+// Specific symbols used in the toolbar.
+NSString* kToolbarArrowBackwardSymbol = @"arrow.backward";
+NSString* kToolbarArrowForwardSymbol = @"arrow.forward";
 
 }  // namespace
 
@@ -52,12 +52,10 @@ UIImageConfiguration* SymbolConfiguration() {
 
 - (ToolbarButton*)backButton {
   UIImage* backImage;
-  if (base::FeatureList::IsEnabled(kUseSFSymbolsSamples)) {
-    backImage = [UIImage systemImageNamed:@"arrow.backward"
-                        withConfiguration:SymbolConfiguration()];
-  } else {
-    backImage = [UIImage imageNamed:@"toolbar_back"];
-  }
+  backImage = UseSymbols()
+                  ? DefaultSymbolWithPointSize(kToolbarArrowBackwardSymbol,
+                                               kSymbolToolbarPointSize)
+                  : [UIImage imageNamed:@"toolbar_back"];
   ToolbarButton* backButton = [ToolbarButton
       toolbarButtonWithImage:[backImage
                                  imageFlippedForRightToLeftLayoutDirection]];
@@ -72,13 +70,10 @@ UIImageConfiguration* SymbolConfiguration() {
 
 // Returns a forward button without visibility mask configured.
 - (ToolbarButton*)forwardButton {
-  UIImage* forwardImage;
-  if (base::FeatureList::IsEnabled(kUseSFSymbolsSamples)) {
-    forwardImage = [UIImage systemImageNamed:@"arrow.forward"
-                           withConfiguration:SymbolConfiguration()];
-  } else {
-    forwardImage = [UIImage imageNamed:@"toolbar_forward"];
-  }
+  UIImage* forwardImage =
+      UseSymbols() ? DefaultSymbolWithPointSize(kToolbarArrowForwardSymbol,
+                                                kSymbolToolbarPointSize)
+                   : [UIImage imageNamed:@"toolbar_forward"];
   ToolbarButton* forwardButton = [ToolbarButton
       toolbarButtonWithImage:[forwardImage
                                  imageFlippedForRightToLeftLayoutDirection]];
@@ -94,14 +89,10 @@ UIImageConfiguration* SymbolConfiguration() {
 }
 
 - (ToolbarTabGridButton*)tabGridButton {
-  UIImage* tabGridImage;
-  if (base::FeatureList::IsEnabled(kUseSFSymbolsSamples)) {
-    tabGridImage = [UIImage systemImageNamed:@"square"
-                           withConfiguration:SymbolConfiguration()];
-  } else {
-    tabGridImage = [UIImage imageNamed:@"toolbar_switcher"];
-  }
-
+  UIImage* tabGridImage =
+      UseSymbols() ? CustomSymbolWithPointSize(kSquareNumberSymbol,
+                                               kSymbolToolbarPointSize)
+                   : tabGridImage = [UIImage imageNamed:@"toolbar_switcher"];
   ToolbarTabGridButton* tabGridButton =
       [ToolbarTabGridButton toolbarButtonWithImage:tabGridImage];
   [self configureButton:tabGridButton width:kAdaptiveToolbarButtonWidth];
@@ -137,14 +128,10 @@ UIImageConfiguration* SymbolConfiguration() {
 }
 
 - (ToolbarButton*)shareButton {
-  UIImage* shareImage;
-  if (base::FeatureList::IsEnabled(kUseSFSymbolsSamples)) {
-    shareImage = [UIImage systemImageNamed:@"square.and.arrow.up"
-                         withConfiguration:SymbolConfiguration()];
-  } else {
-    shareImage = [UIImage imageNamed:@"toolbar_share"];
-  }
-
+  UIImage* shareImage =
+      UseSymbols()
+          ? DefaultSymbolWithPointSize(kShareSymbol, kSymbolToolbarPointSize)
+          : [UIImage imageNamed:@"toolbar_share"];
   ToolbarButton* shareButton =
       [ToolbarButton toolbarButtonWithImage:shareImage];
   [self configureButton:shareButton width:kAdaptiveToolbarButtonWidth];
@@ -160,14 +147,10 @@ UIImageConfiguration* SymbolConfiguration() {
 }
 
 - (ToolbarButton*)reloadButton {
-  UIImage* reloadImage;
-  if (base::FeatureList::IsEnabled(kUseSFSymbolsSamples)) {
-    reloadImage = [UIImage systemImageNamed:@"arrow.clockwise"
-                          withConfiguration:SymbolConfiguration()];
-  } else {
-    reloadImage = [UIImage imageNamed:@"toolbar_reload"];
-  }
-
+  UIImage* reloadImage =
+      UseSymbols() ? CustomSymbolWithPointSize(kArrowClockWiseSymbol,
+                                               kSymbolToolbarPointSize)
+                   : [UIImage imageNamed:@"toolbar_reload"];
   ToolbarButton* reloadButton = [ToolbarButton
       toolbarButtonWithImage:[reloadImage
                                  imageFlippedForRightToLeftLayoutDirection]];
@@ -183,14 +166,9 @@ UIImageConfiguration* SymbolConfiguration() {
 }
 
 - (ToolbarButton*)stopButton {
-  UIImage* stopImage;
-  if (base::FeatureList::IsEnabled(kUseSFSymbolsSamples)) {
-    stopImage = [UIImage systemImageNamed:@"xmark"
-                        withConfiguration:SymbolConfiguration()];
-  } else {
-    stopImage = [UIImage imageNamed:@"toolbar_stop"];
-  }
-
+  UIImage* stopImage = UseSymbols() ? DefaultSymbolWithPointSize(
+                                          kXMarkSymbol, kSymbolToolbarPointSize)
+                                    : [UIImage imageNamed:@"toolbar_stop"];
   ToolbarButton* stopButton = [ToolbarButton toolbarButtonWithImage:stopImage];
   [self configureButton:stopButton width:kAdaptiveToolbarButtonWidth];
   stopButton.accessibilityLabel = l10n_util::GetNSString(IDS_IOS_ACCNAME_STOP);
@@ -202,13 +180,10 @@ UIImageConfiguration* SymbolConfiguration() {
 }
 
 - (ToolbarButton*)openNewTabButton {
-  UIImage* newTabImage;
-  if (base::FeatureList::IsEnabled(kUseSFSymbolsSamples)) {
-    newTabImage = [UIImage systemImageNamed:@"plus"
-                          withConfiguration:SymbolConfiguration()];
-  } else {
-    newTabImage = [UIImage imageNamed:@"toolbar_new_tab_page"];
-  }
+  UIImage* newTabImage =
+      UseSymbols() ? CustomSymbolWithPointSize(kPlusCircleFillSymbol,
+                                               kSymbolToolbarPointSize)
+                   : [UIImage imageNamed:@"toolbar_new_tab_page"];
   ToolbarNewTabButton* newTabButton =
       [ToolbarNewTabButton toolbarButtonWithImage:newTabImage];
 

@@ -21,7 +21,6 @@
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom-forward.h"
 #include "components/paint_preview/common/proto_validator.h"
 #include "components/paint_preview/common/version.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
@@ -197,15 +196,13 @@ PaintPreviewClient::InProgressDocumentCaptureState::
     for (const auto& subframe_guid : awaiting_subframes) {
       base::ThreadPool::PostTask(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::BindOnce(base::GetDeleteFileCallback(),
-                         FilePathForFrame(subframe_guid)));
+          base::GetDeleteFileCallback(FilePathForFrame(subframe_guid)));
     }
 
     for (const auto& subframe_guid : finished_subframes) {
       base::ThreadPool::PostTask(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::BindOnce(base::GetDeleteFileCallback(),
-                         FilePathForFrame(subframe_guid)));
+          base::GetDeleteFileCallback(FilePathForFrame(subframe_guid)));
     }
   }
 }
@@ -317,8 +314,7 @@ void PaintPreviewClient::CapturePaintPreview(
   chromeVersion->set_build(CHROME_VERSION_BUILD);
   chromeVersion->set_patch(CHROME_VERSION_PATCH);
   document_data.callback = std::move(callback);
-  document_data.source_id =
-      ukm::GetSourceIdForWebContentsDocument(web_contents());
+  document_data.source_id = render_frame_host->GetPageUkmSourceId();
   document_data.accepted_tokens = CreateAcceptedTokenList(render_frame_host);
   auto token = render_frame_host->GetEmbeddingToken();
   if (token.has_value()) {
@@ -373,7 +369,7 @@ void PaintPreviewClient::RenderFrameDeleted(
   if (!maybe_token.has_value())
     return;
 
-  bool is_main_frame = render_frame_host->GetParent() == nullptr;
+  bool is_main_frame = render_frame_host->GetParentOrOuterDocument() == nullptr;
   base::UnguessableToken frame_guid = maybe_token.value();
   auto it = pending_previews_on_subframe_.find(frame_guid);
   if (it == pending_previews_on_subframe_.end())
@@ -469,6 +465,7 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
   // If the render frame host navigated or is no longer around treat this as a
   // failure as a navigation occurring during capture is bad.
   auto* render_frame_host = content::RenderFrameHost::FromID(render_frame_id);
+
   if (!render_frame_host ||
       render_frame_host->GetEmbeddingToken().value_or(
           base::UnguessableToken::Null()) != frame_guid ||

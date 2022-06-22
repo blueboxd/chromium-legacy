@@ -4,6 +4,7 @@
 
 #include "content/browser/back_forward_cache_browsertest.h"
 
+#include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/bind.h"
@@ -791,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EvictPageWithInfiniteLoop) {
   // Make sure that the tree reasons match the flattened reasons.
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
-                  NotStoredReasons(NotRestoredReason::kTimeoutPuttingInCache),
+                  NotRestoredReasons(NotRestoredReason::kTimeoutPuttingInCache),
                   BlockListedFeatures()));
 }
 
@@ -1201,7 +1202,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
   // Make sure that the tree reasons match the flattened reasons.
   EXPECT_THAT(
       GetTreeResult()->GetDocumentResult(),
-      MatchesDocumentResult(NotStoredReasons(NotRestoredReason::kTimeout),
+      MatchesDocumentResult(NotRestoredReasons(NotRestoredReason::kTimeout),
                             BlockListedFeatures()));
 }
 

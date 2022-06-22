@@ -69,33 +69,29 @@ KeyedService* SegmentationPlatformServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   OptimizationGuideKeyedService* optimization_guide =
       OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::IMPLICIT_ACCESS);
-  // If optimization guide feature is disabled, then disable segmentation.
-  if (!optimization_guide)
-    return new DummySegmentationPlatformService();
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-  base::FilePath storage_dir =
+  auto params = std::make_unique<SegmentationPlatformServiceImpl::InitParams>();
+
+  params->history_service = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
+  params->task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  params->storage_dir =
       profile->GetPath().Append(chrome::kSegmentationPlatformStorageDirName);
-  leveldb_proto::ProtoDatabaseProvider* db_provider =
+  params->db_provider =
       profile->GetDefaultStoragePartition()->GetProtoDatabaseProvider();
-  base::DefaultClock* clock = base::DefaultClock::GetInstance();
+  params->clock = base::DefaultClock::GetInstance();
 
-  auto model_provider_factory = std::make_unique<ModelProviderFactoryImpl>(
-      optimization_guide, task_runner);
-  auto* ukm_data_manager = UkmDatabaseClient::GetInstance().GetUkmDataManager();
-  ukm_data_manager->OnUkmAllowedStateChanged(
-      g_browser_process->GetMetricsServicesManager()
-          ->IsUkmAllowedForAllProfiles());
+  params->model_provider = std::make_unique<ModelProviderFactoryImpl>(
+      optimization_guide, params->task_runner);
+  params->ukm_data_manager =
+      UkmDatabaseClient::GetInstance().GetUkmDataManager();
+  params->profile_prefs = profile->GetPrefs();
+  params->local_state = g_browser_process->local_state();
+  params->configs = GetSegmentationPlatformConfig();
+  params->field_trial_register = std::make_unique<FieldTrialRegisterImpl>();
 
-  auto* service = new SegmentationPlatformServiceImpl(
-      std::move(model_provider_factory), db_provider, storage_dir,
-      ukm_data_manager, profile->GetPrefs(), history_service, task_runner,
-      clock, GetSegmentationPlatformConfig());
+  auto* service = new SegmentationPlatformServiceImpl(std::move(params));
 
   service->SetUserData(kSegmentationPlatformProfileObserverKey,
                        std::make_unique<SegmentationPlatformProfileObserver>(

@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/highlight_border.h"
 #include "ash/style/pill_button.h"
 #include "ash/system/toast/toast_overlay.h"
 #include "ash/wm/work_area_insets.h"
@@ -25,6 +24,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -105,11 +105,10 @@ bool FormatDisplayLabelText(views::Label* label,
 
 }  // namespace
 
-SystemToastStyle::SystemToastStyle(
-    base::RepeatingClosure dismiss_callback,
-    const std::u16string& text,
-    const absl::optional<std::u16string>& dismiss_text,
-    const bool is_managed) {
+SystemToastStyle::SystemToastStyle(base::RepeatingClosure dismiss_callback,
+                                   const std::u16string& text,
+                                   const std::u16string& dismiss_text,
+                                   const bool is_managed) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
@@ -126,14 +125,11 @@ SystemToastStyle::SystemToastStyle(
   const bool two_line = FormatDisplayLabelText(label_, display_text);
   label_->SetText(display_text);
 
-  if (dismiss_text.has_value()) {
-    button_ = AddChildView(std::make_unique<PillButton>(
-        std::move(dismiss_callback),
-        dismiss_text.value().empty()
-            ? l10n_util::GetStringUTF16(IDS_ASH_TOAST_DISMISS_BUTTON)
-            : dismiss_text.value(),
-        PillButton::Type::kIconlessAccentFloating,
-        /*icon=*/nullptr));
+  if (!dismiss_text.empty()) {
+    button_ = AddChildView(
+        std::make_unique<PillButton>(std::move(dismiss_callback), dismiss_text,
+                                     PillButton::Type::kIconlessAccentFloating,
+                                     /*icon=*/nullptr));
     button_->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
   }
 
@@ -167,8 +163,8 @@ SystemToastStyle::SystemToastStyle(
   SetBackground(views::CreateRoundedRectBackground(GetBackgroundColor(),
                                                    toast_corner_radius));
   if (features::IsDarkLightModeEnabled()) {
-    SetBorder(std::make_unique<HighlightBorder>(
-        toast_corner_radius, HighlightBorder::Type::kHighlightBorder1,
+    SetBorder(std::make_unique<views::HighlightBorder>(
+        toast_corner_radius, views::HighlightBorder::Type::kHighlightBorder1,
         /*use_light_colors=*/false));
   }
 }

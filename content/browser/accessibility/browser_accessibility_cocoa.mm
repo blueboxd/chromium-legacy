@@ -621,11 +621,10 @@ bool content::IsNSRange(id value) {
       {NSAccessibilityRoleAttribute, @"role"},
       {NSAccessibilityRowHeaderUIElementsAttribute, @"rowHeaders"},
       {NSAccessibilityRowIndexRangeAttribute, @"rowIndexRange"},
-      {NSAccessibilityRowsAttribute, @"rows"},
+      {NSAccessibilityRowsAttribute, @"accessibilityRows"},
       // TODO(aboxhall): expose
       // NSAccessibilityServesAsTitleForUIElementsAttribute
       {NSAccessibilityStartTextMarkerAttribute, @"startTextMarker"},
-      {NSAccessibilitySelectedAttribute, @"selected"},
       {NSAccessibilitySelectedChildrenAttribute, @"selectedChildren"},
       {NSAccessibilitySelectedTextAttribute, @"selectedText"},
       {NSAccessibilitySelectedTextRangeAttribute, @"selectedTextRange"},
@@ -1290,7 +1289,7 @@ bool content::IsNSRange(id value) {
   return nil;
 }
 
-- (NSArray*)rows {
+- (NSArray*)accessibilityRows {
   if (![self instanceActive])
     return nil;
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
@@ -1313,12 +1312,6 @@ bool content::IsNSRange(id value) {
   }
 
   return ret;
-}
-
-- (NSNumber*)selected {
-  if (![self instanceActive])
-    return nil;
-  return @(_owner->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
 }
 
 - (NSArray*)selectedChildren {
@@ -1672,7 +1665,7 @@ bool content::IsNSRange(id value) {
 - (NSArray*)visibleRows {
   if (![self instanceActive])
     return nil;
-  return [self rows];
+  return [self accessibilityRows];
 }
 
 - (id)window {
@@ -2450,7 +2443,6 @@ bool content::IsNSRange(id value) {
                        NSAccessibilityPositionAttribute,
                        NSAccessibilityRoleAttribute,
                        NSAccessibilityRoleDescriptionAttribute,
-                       NSAccessibilitySelectedAttribute,
                        NSAccessibilitySelectedTextMarkerRangeAttribute,
                        NSAccessibilitySizeAttribute,
                        NSAccessibilityStartTextMarkerAttribute,
@@ -2522,8 +2514,8 @@ bool content::IsNSRange(id value) {
     ]];
   } else if ([role isEqualToString:NSAccessibilityOutlineRole]) {
     [ret addObjectsFromArray:@[
-      NSAccessibilitySelectedRowsAttribute, NSAccessibilityRowsAttribute,
-      NSAccessibilityColumnsAttribute, NSAccessibilityOrientationAttribute
+      NSAccessibilityRowsAttribute, NSAccessibilityColumnsAttribute,
+      NSAccessibilityOrientationAttribute
     ]];
   }
 
@@ -2542,9 +2534,6 @@ bool content::IsNSRange(id value) {
       // NSAccessibilityValueAutofillTypeAttribute
     ]];
   }
-
-  if (_owner->HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-    [ret addObject:NSAccessibilitySelectedAttribute];
 
   if (GetState(_owner, ax::mojom::State::kExpanded) ||
       GetState(_owner, ax::mojom::State::kCollapsed)) {

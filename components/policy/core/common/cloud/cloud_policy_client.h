@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <map>
 #include <memory>
 #include <set>
@@ -106,6 +107,8 @@ class POLICY_EXPORT CloudPolicyClient {
       absl::optional<int64_t> try_later,
       const std::string& pem_encoded_certificate)>;
 
+  using MacAddress = std::array<uint8_t, 6>;
+
   // Observer interface for state and policy changes.
   class POLICY_EXPORT Observer {
    public:
@@ -196,8 +199,8 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& machine_model,
       const std::string& brand_code,
       const std::string& attested_device_id,
-      const std::string& ethernet_mac_address,
-      const std::string& dock_mac_address,
+      absl::optional<MacAddress> ethernet_mac_address,
+      absl::optional<MacAddress> dock_mac_address,
       const std::string& manufacture_date,
       DeviceManagementService* service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -235,21 +238,23 @@ class POLICY_EXPORT CloudPolicyClient {
   // |OnRegistrationStateChanged| or |OnClientError|.
   // TODO(crbug.com/1236148): Remove SigningService from CloudPolicyClient and
   // make callees sign their data themselves.
-  virtual void RegisterWithCertificate(const RegistrationParameters& parameters,
-                                       const std::string& client_id,
-                                       const std::string& pem_certificate_chain,
-                                       const std::string& sub_organization,
-                                       SigningService* signing_service);
+  virtual void RegisterWithCertificate(
+      const RegistrationParameters& parameters,
+      const std::string& client_id,
+      const std::string& pem_certificate_chain,
+      const std::string& sub_organization,
+      std::unique_ptr<SigningService> signing_service);
 
   // Attempts to enroll with the device management service using an enrollment
   // token. Results in a registration change or error notification.
   // This method is used to register browser (e.g. for machine-level policies).
   // Device registration with enrollment token should be performed using
-  // RegisterWithCertificate method.
-  virtual void RegisterWithToken(
-      const std::string& token,
-      const std::string& client_id,
-      const ClientDataDelegate& client_data_delegate);
+  // RegisterWithCertificate method, and this request will timeout after 30
+  // seconds if the enrollment is not mandatory.
+  virtual void RegisterWithToken(const std::string& token,
+                                 const std::string& client_id,
+                                 const ClientDataDelegate& client_data_delegate,
+                                 bool is_mandatory);
 
   // Sets information about a policy invalidation. Subsequent fetch operations
   // will use the given info, and callers can use fetched_invalidation_version
@@ -646,6 +651,7 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // This is called when a RegisterWithCertiifcate request has been signed.
   void OnRegisterWithCertificateRequestSigned(
+      std::unique_ptr<SigningService> signing_service,
       bool success,
       enterprise_management::SignedData signed_data);
 

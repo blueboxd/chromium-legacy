@@ -20,12 +20,14 @@
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -45,6 +47,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
@@ -56,6 +59,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -68,6 +73,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/screen.h"
 #include "url/gurl.h"
@@ -570,9 +577,10 @@ bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
   if (!sync_service)
     return false;
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    // If in client use profile otherwise use GetUserPrefServiceSyncable.
-    return profile->GetPrefs()->GetBoolean(
-        chromeos::settings::prefs::kSyncOsWallpaper);
+    syncer::SyncUserSettings* user_settings = sync_service->GetUserSettings();
+    return user_settings->IsSyncAllOsTypesEnabled() ||
+           profile->GetPrefs()->GetBoolean(
+               chromeos::settings::prefs::kSyncOsWallpaper);
   }
   return sync_service->CanSyncFeatureStart() &&
          sync_service->GetUserSettings()->GetSelectedTypes().Has(
@@ -660,8 +668,9 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
   DCHECK(profile);
   if (ash::features::IsWallpaperWebUIEnabled()) {
     web_app::SystemAppLaunchParams params;
-    params.url = GURL(ash::personalization_app::
-                          kChromeUIPersonalizationAppWallpaperSubpageURL);
+    params.url = GURL(
+        std::string(ash::personalization_app::kChromeUIPersonalizationAppURL) +
+        ash::personalization_app::kWallpaperSubpageRelativeUrl);
     params.launch_source = apps::mojom::LaunchSource::kFromShelf;
     web_app::LaunchSystemWebAppAsync(
         profile, web_app::SystemAppType::PERSONALIZATION, params);
@@ -698,11 +707,13 @@ void WallpaperControllerClientImpl::MaybeClosePreviewWallpaper() {
 
 void WallpaperControllerClientImpl::SetDefaultWallpaper(
     const AccountId& account_id,
-    bool show_wallpaper) {
+    bool show_wallpaper,
+    ash::WallpaperController::SetWallpaperCallback callback) {
   if (!IsKnownUser(account_id))
     return;
 
-  wallpaper_controller_->SetDefaultWallpaper(account_id, show_wallpaper);
+  wallpaper_controller_->SetDefaultWallpaper(account_id, show_wallpaper,
+                                             std::move(callback));
 }
 
 void WallpaperControllerClientImpl::MigrateCollectionIdFromChromeApp(
@@ -777,6 +788,43 @@ void WallpaperControllerClientImpl::FetchGooglePhotosPhoto(
       /*resume_token=*/absl::nullopt, std::move(fetched_callback));
 }
 
+void WallpaperControllerClientImpl::FetchDailyGooglePhotosPhoto(
+    const AccountId& account_id,
+    const std::string& album_id,
+    const absl::optional<std::string>& current_photo_id,
+    FetchGooglePhotosPhotoCallback callback) {
+  if (google_photos_photos_fetchers_.find(account_id) ==
+      google_photos_photos_fetchers_.end()) {
+    Profile* profile = ProfileHelper::Get()->GetProfileByAccountId(account_id);
+    google_photos_photos_fetchers_.insert(
+        {account_id,
+         std::make_unique<wallpaper_handlers::GooglePhotosPhotosFetcher>(
+             profile)});
+  }
+  auto fetched_callback = base::BindOnce(
+      &WallpaperControllerClientImpl::OnGooglePhotosDailyAlbumFetched,
+      weak_factory_.GetWeakPtr(), current_photo_id, std::move(callback));
+  google_photos_photos_fetchers_[account_id]->AddRequestAndStartIfNecessary(
+      /*item_id=*/absl::nullopt, album_id,
+      /*resume_token=*/absl::nullopt, std::move(fetched_callback));
+}
+
+void WallpaperControllerClientImpl::FetchGooglePhotosAccessToken(
+    const AccountId& account_id,
+    FetchGooglePhotosAccessTokenCallback callback) {
+  Profile* profile = ProfileHelper::Get()->GetProfileByAccountId(account_id);
+  auto fetcher = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
+      "wallpaper_controller_client",
+      IdentityManagerFactory::GetForProfile(profile),
+      signin::ScopeSet({GaiaConstants::kPhotosModuleImageOAuth2Scope}),
+      signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+      signin::ConsentLevel::kSignin);
+  auto* fetcher_ptr = fetcher.get();
+  fetcher_ptr->Start(base::BindOnce(
+      &WallpaperControllerClientImpl::OnGooglePhotosTokenFetched,
+      weak_factory_.GetWeakPtr(), std::move(callback), std::move(fetcher)));
+}
+
 bool WallpaperControllerClientImpl::ShouldShowUserNamesOnLogin() const {
   bool show_user_names = true;
   ash::CrosSettings::Get()->GetBoolean(ash::kAccountsPrefShowUserNamesOnSignIn,
@@ -840,6 +888,54 @@ void WallpaperControllerClientImpl::OnGooglePhotosPhotoFetched(
   } else {
     std::move(callback).Run(nullptr, /*success=*/response->photos.has_value());
   }
+}
+
+void WallpaperControllerClientImpl::OnGooglePhotosDailyAlbumFetched(
+    const absl::optional<std::string>& current_photo_id,
+    FetchGooglePhotosPhotoCallback callback,
+    ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
+        response) {
+  if (!response->photos.has_value() || response->photos.value().size() == 0) {
+    std::move(callback).Run(nullptr, /*success=*/response->photos.has_value());
+    return;
+  }
+
+  if (response->photos.value().size() == 1) {
+    std::move(callback).Run(std::move(response->photos.value()[0]),
+                            /*success=*/true);
+    return;
+  }
+
+  // TODO(b/229146895): Revist the random selection approach, specifically for
+  // large albums and to prevent repeateding the same subset of pictures in the
+  // event of unlucky randomness.
+
+  // To avoid re-selecting the currently selected photo if one exists:
+  // * Reduce range to [0, size - 1) to prevent selecting of the last photo.
+  // * Treat selecting of the current photo as selecting of the last photo.
+  size_t selected_index = base::RandGenerator(response->photos.value().size() -
+                                              (current_photo_id ? 1u : 0u));
+  if (current_photo_id &&
+      response->photos.value()[selected_index]->id == current_photo_id)
+    selected_index = response->photos.value().size() - 1u;
+
+  std::move(callback).Run(std::move(response->photos.value()[selected_index]),
+                          /*success=*/true);
+}
+
+void WallpaperControllerClientImpl::OnGooglePhotosTokenFetched(
+    FetchGooglePhotosAccessTokenCallback callback,
+    std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> fetcher,
+    GoogleServiceAuthError error,
+    signin::AccessTokenInfo access_token_info) {
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    LOG(ERROR) << "Failed to fetch auth token to download Google Photos photo:"
+               << error.error_message();
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
+  std::move(callback).Run(access_token_info.token);
+  return;
 }
 
 void WallpaperControllerClientImpl::ObserveVolumeManagerForAccountId(

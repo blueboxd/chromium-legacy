@@ -17,6 +17,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -1108,6 +1109,46 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   WaitForPickerClosedAndReopenedImmediately();
 }
 
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest, ReShow) {
+  // Open the picker.
+  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+      ProfilePicker::EntryPoint::kProfileMenuManageProfiles));
+  WaitForLoadStop(GURL("chrome://profile-picker"));
+  EXPECT_TRUE(ProfilePicker::IsOpen());
+
+  // Show the picker with a different entry point, the picker is reused.
+  base::WeakPtr<views::Widget> widget_weak = widget()->GetWeakPtr();
+  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+      ProfilePicker::EntryPoint::kProfileLocked));
+  EXPECT_FALSE(widget_weak->IsClosed());
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Show the account selection.
+  base::test::TestFuture<const std::string&> account_future_1;
+  ProfilePicker::Show(ProfilePicker::Params::ForLacrosSelectAvailableAccount(
+      base::FilePath(), account_future_1.GetCallback()));
+  // The picker is not reused
+  EXPECT_TRUE(widget_weak->IsClosed());
+  WaitForPickerClosedAndReopenedImmediately();
+
+  // Show the account selection again.
+  base::test::TestFuture<const std::string&> account_future_2;
+  EXPECT_FALSE(account_future_1.IsReady());
+  widget_weak = widget()->GetWeakPtr();
+  ProfilePicker::Show(ProfilePicker::Params::ForLacrosSelectAvailableAccount(
+      base::FilePath(), account_future_2.GetCallback()));
+  // The picker is reused, and the previous callback is called.
+  EXPECT_FALSE(widget_weak->IsClosed());
+  EXPECT_TRUE(account_future_1.Get().empty());
+  EXPECT_FALSE(account_future_2.IsReady());
+
+  // Hide the picker. The callback is called.
+  ProfilePicker::Hide();
+  EXPECT_TRUE(widget_weak->IsClosed());
+  EXPECT_TRUE(account_future_2.Get().empty());
+#endif
+}
+
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest, OpenProfile) {
   base::HistogramTester histogram_tester;
 
@@ -1306,7 +1347,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   profiles::testing::ExpectPickerWelcomeScreenTypeAndProceed(
       /*expected_type=*/
       EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncEnabled,
-      /*choice=*/signin::SIGNIN_CHOICE_NEW_PROFILE);
+      /*choice=*/signin::SIGNIN_CHOICE_CONTINUE);
 
   WaitForLoadStop(GetSyncConfirmationURL());
   // Simulate finishing the flow with "No, thanks".
@@ -1363,7 +1404,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   profiles::testing::ExpectPickerWelcomeScreenTypeAndProceed(
       /*expected_type=*/
       EnterpriseProfileWelcomeUI::ScreenType::kConsumerAccountSyncDisabled,
-      /*choice=*/signin::SIGNIN_CHOICE_NEW_PROFILE);
+      /*choice=*/signin::SIGNIN_CHOICE_CONTINUE);
 
   Browser* new_browser = BrowserAddedWaiter(2u).Wait();
   WaitForLoadStop(GURL("chrome://newtab/"),
@@ -1415,7 +1456,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   profiles::testing::ExpectPickerWelcomeScreenTypeAndProceed(
       /*expected_type=*/
       EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncEnabled,
-      /*choice=*/signin::SIGNIN_CHOICE_NEW_PROFILE);
+      /*choice=*/signin::SIGNIN_CHOICE_CONTINUE);
 
   WaitForLoadStop(GetSyncConfirmationURL());
   // Simulate finishing the flow with "Configure sync".
@@ -1804,7 +1845,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest,
   // Dummy case to set up the primary profile.
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitEarly) {
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun());
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile =
+      profile_manager->GetProfile(profile_manager->GetPrimaryUserProfilePath());
+  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile));
 
   // The profile picker should be open on start to show the FRE.
   ASSERT_EQ(0u, BrowserList::GetInstance()->size());
@@ -1821,12 +1865,14 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitEarly) {
   // No browser window should open because we closed the FRE UI early.
   WaitForPickerClosed();
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun());
+  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile));
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, QuitEarly) {
   // On the second run, the FRE is still not marked finished and we should
   // reopen it.
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun());
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile_manager->GetProfile(
+      profile_manager->GetPrimaryUserProfilePath())));
   EXPECT_TRUE(ProfilePicker::IsOpen());
 }
 
@@ -1837,7 +1883,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest,
   // Dummy case to set up the primary profile.
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitAtEnd) {
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun());
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile =
+      profile_manager->GetProfile(profile_manager->GetPrimaryUserProfilePath());
+  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile));
 
   // The profile picker should be open on start to show the FRE.
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
@@ -1848,10 +1897,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitAtEnd) {
   WaitForLoadStop(GURL("chrome://enterprise-profile-welcome/"));
 
   // Proceed to the sync confirmation page.
-  profiles::testing::ExpectPickerWelcomeScreenTypeAndProceed(
-      /*expected_type=*/
-      EnterpriseProfileWelcomeUI::ScreenType::kLacrosConsumerWelcome,
-      /*choice=*/signin::SIGNIN_CHOICE_NEW_PROFILE);
+  EnterpriseProfileWelcomeHandler* handler =
+      profiles::testing::ExpectPickerWelcomeScreenType(
+          EnterpriseProfileWelcomeUI::ScreenType::kLacrosConsumerWelcome);
+  handler->HandleProceedForTesting(/*should_link_data=*/false);
   WaitForLoadStop(GetSyncConfirmationURL(absl::optional<SkColor>()));
 
   // Exit the FRE.
@@ -1859,12 +1908,14 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_QuitAtEnd) {
   WaitForPickerClosed();
 
   // Because we quit, we should also quit chrome, but mark the FRE finished.
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun());
+  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile));
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, QuitAtEnd) {
   // On the second run, the FRE is marked finished and we should skip it.
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun());
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile_manager->GetProfile(
+      profile_manager->GetPrimaryUserProfilePath())));
   EXPECT_FALSE(ProfilePicker::IsOpen());
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
 }
@@ -1875,7 +1926,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_PRE_OptIn) {
   // Dummy case to set up the primary profile.
 }
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_OptIn) {
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun());
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile = profiles::testing::CreateProfileSync(
+      profile_manager, profile_manager->GetPrimaryUserProfilePath());
+  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile));
 
   // The profile picker should be open on start to show the FRE.
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
@@ -1886,28 +1940,27 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, PRE_OptIn) {
   WaitForLoadStop(GURL("chrome://enterprise-profile-welcome/"));
 
   // Proceed to the sync confirmation page.
-  profiles::testing::ExpectPickerWelcomeScreenTypeAndProceed(
-      /*expected_type=*/
-      EnterpriseProfileWelcomeUI::ScreenType::kLacrosConsumerWelcome,
-      /*choice=*/signin::SIGNIN_CHOICE_NEW_PROFILE);
+  EnterpriseProfileWelcomeHandler* handler =
+      profiles::testing::ExpectPickerWelcomeScreenType(
+          EnterpriseProfileWelcomeUI::ScreenType::kLacrosConsumerWelcome);
+  handler->HandleProceedForTesting(/*should_link_data=*/false);
   WaitForLoadStop(GetSyncConfirmationURL(absl::optional<SkColor>()));
 
   // Opt-in to sync
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profiles::testing::CreateProfileSync(
-      profile_manager, profile_manager->GetPrimaryUserProfilePath());
   LoginUIServiceFactory::GetForProfile(profile)->SyncConfirmationUIClosed(
       LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
 
   // The FRE should close and a browser should open.
   WaitForPickerClosed();
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun());
+  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile));
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
 }
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerLacrosFirstRunBrowserTest, OptIn) {
   // On the second run, the FRE is marked finished and we should skip it.
-  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun());
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  EXPECT_FALSE(ShouldOpenPrimaryProfileFirstRun(profile_manager->GetProfile(
+      profile_manager->GetPrimaryUserProfilePath())));
   EXPECT_FALSE(ProfilePicker::IsOpen());
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
 }

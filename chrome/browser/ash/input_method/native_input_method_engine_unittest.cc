@@ -106,6 +106,10 @@ class MockInputMethod : public ime::mojom::InputMethod {
               (uint32_t selected_candidate_index),
               (override));
   MOCK_METHOD(void, OnCompositionCanceledBySystem, (), (override));
+  MOCK_METHOD(void,
+              OnQuickSettingsUpdated,
+              (ime::mojom::InputMethodQuickSettingsPtr quick_settings),
+              (override));
 
   mojo::AssociatedRemote<ime::mojom::InputMethodHost> host;
 
@@ -145,6 +149,7 @@ class FakeConnectionFactory : public ime::mojom::ConnectionFactory {
       mojo::PendingAssociatedReceiver<ime::mojom::InputMethod> input_method,
       mojo::PendingAssociatedRemote<ime::mojom::InputMethodHost>
           input_method_host,
+      ime::mojom::InputMethodSettingsPtr settings,
       ConnectToInputMethodCallback callback) override {
     mock_input_method_->Bind(std::move(input_method),
                              std::move(input_method_host));
@@ -987,8 +992,7 @@ TEST_F(NativeInputMethodEngineWithRenderViewHostTest,
   engine.FlushForTesting();
 
   ui::FakeTextInputClient fake_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
-  fake_text_input_client.set_source_id(
-      ukm::GetSourceIdForWebContentsDocument(web_contents()));
+  fake_text_input_client.set_source_id(main_rfh()->GetPageUkmSourceId());
 
   ui::InputMethodAsh ime(nullptr);
   ime.SetFocusedTextInputClient(&fake_text_input_client);
@@ -998,11 +1002,10 @@ TEST_F(NativeInputMethodEngineWithRenderViewHostTest,
   test_recorder.EnableRecording(false /* extensions */);
   ASSERT_EQ(0u, test_recorder.entries_count());
 
-  auto entry = ime::mojom::UkmEntry::New();
   auto metric = ime::mojom::NonCompliantApiMetric::New();
   metric->non_compliant_operation =
       ime::mojom::InputMethodApiOperation::kSetCompositionText;
-  entry->set_non_compliant_api(std::move(metric));
+  auto entry = ime::mojom::UkmEntry::NewNonCompliantApi(std::move(metric));
   mock_input_method.host->RecordUkm(std::move(entry));
   mock_input_method.host.FlushForTesting();
 
@@ -1031,8 +1034,7 @@ TEST_F(NativeInputMethodEngineWithRenderViewHostTest,
                     /*extension_id=*/"", testing_profile);
 
   ui::FakeTextInputClient fake_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
-  fake_text_input_client.set_source_id(
-      ukm::GetSourceIdForWebContentsDocument(web_contents()));
+  fake_text_input_client.set_source_id(main_rfh()->GetPageUkmSourceId());
 
   ui::InputMethodAsh ime(nullptr);
   ime.SetFocusedTextInputClient(&fake_text_input_client);

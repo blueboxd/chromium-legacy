@@ -223,6 +223,17 @@ fuzzer_test("speech_audio_encoder_fuzzer") {
   ]
 }
 
+fuzzer_test("attribution_simulator_fuzzer") {
+  sources = [ "attribution_simulator_fuzzer.cc" ]
+  deps = [
+    "//content/test:test_support",
+    "//testing/libfuzzer/proto:json_proto",
+    "//testing/libfuzzer/proto:json_proto_converter",
+    "//third_party/libprotobuf-mutator",
+  ]
+  seed_corpus = "//content/test/data/fuzzer_corpus/attribution_simulator/"
+}
+
 fuzzer_test("browser_accessibility_fuzzer") {
   sources = [ "browser_accessibility_fuzzer.cc" ]
   deps = [
@@ -380,6 +391,21 @@ mojolpm_fuzzer_test("presentation_service_mojolpm_fuzzer") {
     ":controller_presentation_service_delegate_for_fuzzing_proto",
     "//third_party/blink/public/mojom:mojom_platform_mojolpm",
   ]
+}
+
+mojolpm_fuzzer_test("clipboard_host_mojolpm_fuzzer") {
+  sources = [ "clipboard_host_mojolpm_fuzzer.cc" ]
+
+  proto_source = "clipboard_host_mojolpm_fuzzer.proto"
+
+  deps = [
+    ":mojolpm_fuzzer_support",
+    "//content/browser:browser",
+    "//content/browser:for_content_tests",
+    "//content/public/browser:browser_sources",
+  ]
+
+  proto_deps = [ "//third_party/blink/public/mojom:mojom_platform_mojolpm" ]
 }
 
 if (enable_mojom_fuzzer) {

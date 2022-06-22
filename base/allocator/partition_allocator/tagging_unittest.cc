@@ -7,7 +7,7 @@
 #include <cstdint>
 
 #include "base/allocator/partition_allocator/page_allocator.h"
-#include "base/cpu.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/cpu.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -29,6 +29,7 @@
 #include "components/autofill_assistant/browser/wait_for_dom_operation.h"
 #include "components/autofill_assistant/browser/web/element_action_util.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
+#include "components/autofill_assistant/browser/web/element_finder_result.h"
 #include "components/autofill_assistant/browser/web/element_store.h"
 #include "components/autofill_assistant/browser/web/web_controller.h"
 #include "components/strings/grit/components_strings.h"
@@ -453,11 +454,13 @@ void ScriptExecutor::Prompt(
   }
 }
 
-void ScriptExecutor::CleanUpAfterPrompt() {
+void ScriptExecutor::CleanUpAfterPrompt(bool consume_touchable_area) {
   ui_delegate_->SetUserActions(nullptr);
-  // Mark touchable_elements_ as consumed, so that it won't affect the next
-  // prompt or the end of the script.
-  touchable_element_area_.reset();
+  if (consume_touchable_area) {
+    // Mark touchable_elements_ as consumed, so that it won't affect the next
+    // prompt or the end of the script.
+    touchable_element_area_.reset();
+  }
 
   delegate_->ClearTouchableElementArea();
   ui_delegate_->SetExpandSheetForPromptAction(true);
@@ -1080,8 +1083,9 @@ void ScriptExecutor::RequestUserData(
   auto* service = delegate_->GetService();
   DCHECK(service);
 
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
   service->GetUserData(
-      options, run_id_,
+      options, run_id_, user_data_,
       base::BindOnce(&ScriptExecutor::OnRequestUserData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1099,6 +1103,48 @@ void ScriptExecutor::OnRequestUserData(
   GetUserDataResponseProto response_proto;
   bool success = response_proto.ParseFromString(response);
   std::move(callback).Run(success, response_proto);
+}
+
+bool ScriptExecutor::SupportsExternalActions() {
+  return ui_delegate_->SupportsExternalActions();
+}
+
+void ScriptExecutor::RequestExternalAction(
+    const ExternalActionProto& external_action,
+    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+        callback) {
+  bool prompt = external_action.allow_interrupt() ||
+                external_action.show_touchable_area();
+  if (prompt && delegate_->EnterState(AutofillAssistantState::PROMPT)) {
+    if (external_action.show_touchable_area() && touchable_element_area_) {
+      delegate_->SetTouchableElementArea(*touchable_element_area_);
+
+      // The touchable element and overlays are cleared by calling
+      // ScriptExecutor::CleanUpAfterPrompt
+    }
+  }
+  external::Action action;
+  *action.mutable_info() = external_action.info();
+  ui_delegate_->ExecuteExternalAction(
+      action, base::BindOnce(&ScriptExecutor::OnExternalActionFinished,
+                             weak_ptr_factory_.GetWeakPtr(), external_action,
+                             prompt, std::move(callback)));
+}
+
+void ScriptExecutor::OnExternalActionFinished(
+    const ExternalActionProto& external_action,
+    const bool prompt,
+    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+        callback,
+    ExternalActionDelegate::ActionResult result) {
+  if (prompt) {
+    CleanUpAfterPrompt(external_action.show_touchable_area());
+  }
+  std::move(callback).Run(result);
+}
+
+bool ScriptExecutor::MustUseBackendData() const {
+  return delegate_->MustUseBackendData();
 }
 
 }  // namespace autofill_assistant

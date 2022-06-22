@@ -41,7 +41,6 @@
 #include "components/permissions/features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
-#include "components/security_state/core/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
@@ -109,7 +108,7 @@ int SetSSLCipherSuite(int connection_status, int cipher_suite) {
 
 class MockPageInfoUI : public PageInfoUI {
  public:
-  ~MockPageInfoUI() override {}
+  ~MockPageInfoUI() override = default;
   MOCK_METHOD1(SetCookieInfo, void(const CookieInfoList& cookie_info_list));
   MOCK_METHOD0(SetPermissionInfoStub, void());
   MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));
@@ -151,7 +150,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     SetURL("http://www.example.com");
   }
 
-  ~PageInfoTest() override {}
+  ~PageInfoTest() override = default;
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -365,7 +364,7 @@ TEST_F(PageInfoTest, PermissionStringsHaveMidSentenceVersion) {
 #endif
         EXPECT_EQ(normal, mid_sentence);
         break;
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
       case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
         EXPECT_NE(normal, mid_sentence);
         EXPECT_EQ(base::ToLowerASCII(normal), base::ToLowerASCII(mid_sentence));
@@ -1151,11 +1150,11 @@ TEST_F(PageInfoTest, TimeOpenMetrics) {
   const std::string kHistogramPrefix("Security.PageInfo.TimeOpen.");
 
   const TestCase kTestCases[] = {
-      // PAGE_INFO_COUNT used as shorthand for "take no action".
+      // PAGE_INFO_OPENED used as shorthand for "take no action".
       {"https://example.test", security_state::SECURE, "SECURE",
-       PageInfo::PAGE_INFO_COUNT},
+       PageInfo::PAGE_INFO_OPENED},
       {"http://example.test", security_state::NONE, "NONE",
-       PageInfo::PAGE_INFO_COUNT},
+       PageInfo::PAGE_INFO_OPENED},
       {"https://example.test", security_state::SECURE, "SECURE",
        PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
       {"http://example.test", security_state::NONE, "NONE",
@@ -1177,14 +1176,14 @@ TEST_F(PageInfoTest, TimeOpenMetrics) {
         kHistogramPrefix + "NoAction." + test.security_level_name, 0);
 
     PageInfo* test_page_info = page_info();
-    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+    if (test.action != PageInfo::PAGE_INFO_OPENED) {
       test_page_info->RecordPageInfoAction(test.action);
     }
     ClearPageInfo();
 
     histograms.ExpectTotalCount(kHistogramPrefix + test.security_level_name, 1);
 
-    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+    if (test.action != PageInfo::PAGE_INFO_OPENED) {
       histograms.ExpectTotalCount(
           kHistogramPrefix + "Action." + test.security_level_name, 1);
     } else {
@@ -1236,9 +1235,6 @@ TEST_F(PageInfoTest, AdPersonalization) {
 #define MAYBE_SafetyTipMetrics SafetyTipMetrics
 #endif
 TEST_F(PageInfoTest, MAYBE_SafetyTipMetrics) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      security_state::features::kSafetyTipUI);
   struct TestCase {
     const security_state::SafetyTipInfo safety_tip_info;
     const std::string histogram_name;
@@ -1294,11 +1290,11 @@ TEST_F(PageInfoTest, SafetyTipTimeOpenMetrics) {
   const TestCase kTestCases[] = {
       // PAGE_INFO_COUNT used as shorthand for "take no action".
       {security_state::SafetyTipStatus::kNone, "SafetyTip_None",
-       PageInfo::PAGE_INFO_COUNT},
+       PageInfo::PAGE_INFO_OPENED},
       {security_state::SafetyTipStatus::kLookalike, "SafetyTip_Lookalike",
-       PageInfo::PAGE_INFO_COUNT},
+       PageInfo::PAGE_INFO_OPENED},
       {security_state::SafetyTipStatus::kBadReputation,
-       "SafetyTip_BadReputation", PageInfo::PAGE_INFO_COUNT},
+       "SafetyTip_BadReputation", PageInfo::PAGE_INFO_OPENED},
       {security_state::SafetyTipStatus::kNone, "SafetyTip_None",
        PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
       {security_state::SafetyTipStatus::kLookalike, "SafetyTip_Lookalike",
@@ -1323,7 +1319,7 @@ TEST_F(PageInfoTest, SafetyTipTimeOpenMetrics) {
         kHistogramPrefix + "NoAction." + test.safety_tip_status_name, 0);
 
     PageInfo* test_page_info = page_info();
-    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+    if (test.action != PageInfo::PAGE_INFO_OPENED) {
       test_page_info->RecordPageInfoAction(test.action);
     }
     ClearPageInfo();
@@ -1331,7 +1327,7 @@ TEST_F(PageInfoTest, SafetyTipTimeOpenMetrics) {
     histograms.ExpectTotalCount(kHistogramPrefix + test.safety_tip_status_name,
                                 1);
 
-    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+    if (test.action != PageInfo::PAGE_INFO_OPENED) {
       histograms.ExpectTotalCount(
           kHistogramPrefix + "Action." + test.safety_tip_status_name, 1);
     } else {

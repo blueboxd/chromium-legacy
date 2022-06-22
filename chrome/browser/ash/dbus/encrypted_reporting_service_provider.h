@@ -14,10 +14,11 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/policy/messaging_layer/upload/network_condition_service.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_provider.h"
+#include "chromeos/ash/components/dbus/services/cros_dbus_service.h"
 #include "chromeos/dbus/missive/missive_client.h"
-#include "chromeos/dbus/services/cros_dbus_service.h"
 #include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/storage_selector/storage_selector.h"
 #include "dbus/exported_object.h"
@@ -79,6 +80,9 @@ class EncryptedReportingServiceProvider
   // Upload Provider.
   const std::unique_ptr<::reporting::EncryptedReportingUploadProvider>
       upload_provider_;
+
+  // Network condition service.
+  ::reporting::NetworkConditionService network_condition_service_;
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.

@@ -7,11 +7,14 @@
 #include "base/base64.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -22,9 +25,12 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/component_updater/pref_names.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
+#include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
@@ -301,20 +307,24 @@ class PredictionManagerBrowserTest : public PredictionManagerBrowserTestBase {
 
  private:
   void InitializeFeatureList() override {
-    scoped_feature_list_.InitWithFeatures(
-        {optimization_guide::features::kOptimizationHints,
-         optimization_guide::features::kRemoteOptimizationGuideFetching,
-         optimization_guide::features::kOptimizationTargetPrediction},
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {
+            {optimization_guide::features::kOptimizationHints, {}},
+            {optimization_guide::features::kRemoteOptimizationGuideFetching,
+             {}},
+            {optimization_guide::features::kOptimizationTargetPrediction,
+             {{"fetch_startup_delay_ms", "2000"}}},
+        },
         {});
   }
 };
 
 IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserTest,
-                       RemoteFetchingPrefDisabled) {
+                       ComponentUpdatesPrefDisabled) {
   ModelFileObserver model_file_observer;
   SetResponseType(PredictionModelsFetcherRemoteResponseType::kUnsuccessful);
-  browser()->profile()->GetPrefs()->SetBoolean(
-      optimization_guide::prefs::kOptimizationGuideFetchingEnabled, false);
+  g_browser_process->local_state()->SetBoolean(
+      ::prefs::kComponentUpdatesEnabled, false);
   base::HistogramTester histogram_tester;
 
   RegisterWithKeyedService(&model_file_observer);
@@ -409,7 +419,8 @@ class PredictionManagerNoUserPermissionsTest
         {
             {features::kOptimizationHints, {}},
             {features::kRemoteOptimizationGuideFetching, {}},
-            {features::kOptimizationTargetPrediction, {}},
+            {features::kOptimizationTargetPrediction,
+             {{"fetch_startup_delay_ms", "2000"}}},
             {features::kOptimizationHintsFieldTrials,
              {{"allowed_field_trial_names",
                "scoped_feature_list_trial_for_OptimizationHints,scoped_feature_"
@@ -651,12 +662,6 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerModelDownloadingBrowserTest,
          const ModelInfo& model_info) {
         EXPECT_EQ(optimization_target,
                   proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-
-        // Regression test for crbug/1327975.
-        // Make sure model file path downloaded into profile dir.
-        base::FilePath profile_dir =
-            g_browser_process->profile_manager()->GetLastUsedProfileDir();
-        EXPECT_TRUE(profile_dir.IsParent(model_info.GetModelFilePath()));
         run_loop->Quit();
       },
       run_loop.get()));
@@ -911,5 +916,61 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerModelDownloadingBrowserTest,
   }
 }
 #endif
+
+class PredictionManagerModelPackageOverrideTest : public InProcessBrowserTest {
+ public:
+  PredictionManagerModelPackageOverrideTest() = default;
+  ~PredictionManagerModelPackageOverrideTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* cmd_line) override {
+    InProcessBrowserTest::SetUpCommandLine(cmd_line);
+
+    base::FilePath src_dir;
+    base::PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
+
+    cmd_line->AppendSwitchASCII(
+        switches::kModelOverride,
+        base::StrCat({
+            "OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD",
+            ModelOverrideSeparator(),
+            FilePathToString(src_dir.AppendASCII("optimization_guide")
+                                 .AppendASCII("additional_file_exists.crx3")),
+        }));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PredictionManagerModelPackageOverrideTest, TestE2E) {
+  base::RunLoop run_loop;
+  ModelFileObserver model_file_observer;
+
+  model_file_observer.set_model_file_received_callback(base::BindOnce(
+      [](base::RunLoop* run_loop, proto::OptimizationTarget optimization_target,
+         const ModelInfo& model_info) {
+        base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+
+        EXPECT_EQ(optimization_target,
+                  proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+
+        EXPECT_EQ(123, model_info.GetVersion());
+        EXPECT_TRUE(model_info.GetModelFilePath().IsAbsolute());
+        EXPECT_TRUE(base::PathExists(model_info.GetModelFilePath()));
+
+        EXPECT_EQ(1U, model_info.GetAdditionalFiles().size());
+        for (const base::FilePath& add_file : model_info.GetAdditionalFiles()) {
+          EXPECT_TRUE(add_file.IsAbsolute());
+          EXPECT_TRUE(base::PathExists(add_file));
+        }
+
+        run_loop->Quit();
+      },
+      &run_loop));
+
+  OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+      ->AddObserverForOptimizationTargetModel(
+          proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+          /*model_metadata=*/absl::nullopt, &model_file_observer);
+
+  run_loop.Run();
+}
 
 }  // namespace optimization_guide

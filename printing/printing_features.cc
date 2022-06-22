@@ -7,8 +7,7 @@
 #include "build/build_config.h"
 #include "printing/buildflags/buildflags.h"
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "base/metrics/field_trial_params.h"
 #endif
 
@@ -66,6 +65,9 @@ const base::Feature kEnableOopPrintDrivers{"EnableOopPrintDrivers",
 
 const base::FeatureParam<bool> kEnableOopPrintDriversJobPrint{
     &kEnableOopPrintDrivers, "JobPrint", false};
+
+const base::FeatureParam<bool> kEnableOopPrintDriversSandbox{
+    &kEnableOopPrintDrivers, "Sandbox", false};
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)

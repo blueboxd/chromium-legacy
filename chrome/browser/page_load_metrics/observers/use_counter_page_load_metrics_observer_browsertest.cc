@@ -10,6 +10,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 
 namespace {
@@ -23,11 +24,8 @@ class UseCounterPageLoadMetricsObserverBrowserTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     feature_list_.InitWithFeaturesAndParameters(
-        {{features::kBackForwardCache,
-          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
-        // Allow BackForwardCache for all devices regardless of their memory.
-        {features::kBackForwardCacheMemoryControls});
-
+        content::DefaultEnabledBackForwardCacheParametersForTests(),
+        content::DefaultDisabledBackForwardCacheParametersForTests());
     MetricIntegrationTest::SetUpCommandLine(command_line);
   }
 
@@ -102,18 +100,18 @@ IN_PROC_BROWSER_TEST_F(UseCounterPageLoadMetricsObserverBrowserTest,
 
   for (auto feature : features_0) {
     histogram_tester().ExpectBucketCount(
-        internal::kFeaturesHistogramName,
+        "Blink.UseCounter.Features",
         static_cast<base::Histogram::Sample>(feature), 1);
     histogram_tester().ExpectBucketCount(
-        internal::kFeaturesHistogramMainFrameName,
+        "Blink.UseCounter.MainFrame.Features",
         static_cast<base::Histogram::Sample>(feature), 1);
   }
   for (auto feature : features_1) {
     histogram_tester().ExpectBucketCount(
-        internal::kFeaturesHistogramName,
+        "Blink.UseCounter.Features",
         static_cast<base::Histogram::Sample>(feature), 1);
     histogram_tester().ExpectBucketCount(
-        internal::kFeaturesHistogramMainFrameName,
+        "Blink.UseCounter.MainFrame.Features",
         static_cast<base::Histogram::Sample>(feature), 1);
   }
 }

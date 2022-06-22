@@ -98,11 +98,16 @@ void ParseOptions(const base::Value& dict,
     if (*report_time_format == "iso8601") {
       options.report_time_format = AttributionReportTimeFormat::kISO8601;
     } else {
-      ASSERT_EQ(*report_time_format, "seconds_since_unix_epoch")
+      ASSERT_EQ(*report_time_format, "milliseconds_since_unix_epoch")
           << "unknown report time format: " << *report_time_format;
       options.report_time_format =
-          AttributionReportTimeFormat::kSecondsSinceUnixEpoch;
+          AttributionReportTimeFormat::kMillisecondsSinceUnixEpoch;
     }
+  }
+
+  if (absl::optional<bool> skip_debug_cookie_checks =
+          dict.FindBoolKey("skip_debug_cookie_checks")) {
+    options.skip_debug_cookie_checks = *skip_debug_cookie_checks;
   }
 }
 
@@ -118,7 +123,8 @@ TEST_P(AttributionSimulatorImplTest, HasExpectedOutput) {
       .noise_mode = AttributionNoiseMode::kNone,
       .delay_mode = AttributionDelayMode::kDefault,
       .remove_report_ids = true,
-      .report_time_format = AttributionReportTimeFormat::kSecondsSinceUnixEpoch,
+      .report_time_format =
+          AttributionReportTimeFormat::kMillisecondsSinceUnixEpoch,
       .remove_assembled_report = true,
   };
 
@@ -128,7 +134,7 @@ TEST_P(AttributionSimulatorImplTest, HasExpectedOutput) {
 
   const base::Value expected_output = ReadJsonFromFile(OutputPath(input_path));
 
-  std::stringstream error_stream;
+  std::ostringstream error_stream;
   EXPECT_THAT(RunAttributionSimulation(std::move(input), options, error_stream),
               base::test::IsJson(expected_output));
   EXPECT_EQ(error_stream.str(), "");

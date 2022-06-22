@@ -4,33 +4,39 @@
 
 #include "content/shell/browser/shell_federated_permission_context.h"
 
+#include "base/feature_list.h"
+#include "content/public/common/content_features.h"
+
 namespace content {
 
 ShellFederatedPermissionContext::ShellFederatedPermissionContext() = default;
 
 ShellFederatedPermissionContext::~ShellFederatedPermissionContext() = default;
 
-// FederatedIdentityRequestPermissionContextDelegate
-bool ShellFederatedPermissionContext::HasRequestPermission(
-    const url::Origin& relying_party,
-    const url::Origin& identity_provider) {
-  return request_permissions_.find(std::make_pair(
-             relying_party.Serialize(), identity_provider.Serialize())) !=
-         request_permissions_.end();
+content::FederatedIdentityApiPermissionContextDelegate::PermissionStatus
+ShellFederatedPermissionContext::GetApiPermissionStatus(
+    const url::Origin& rp_origin) {
+  return base::FeatureList::IsEnabled(features::kFedCm)
+             ? PermissionStatus::GRANTED
+             : PermissionStatus::BLOCKED_VARIATIONS;
 }
 
-void ShellFederatedPermissionContext::GrantRequestPermission(
-    const url::Origin& relying_party,
-    const url::Origin& identity_provider) {
-  request_permissions_.insert(
-      std::make_pair(relying_party.Serialize(), identity_provider.Serialize()));
-}
+void ShellFederatedPermissionContext::RecordDismissAndEmbargo(
+    const url::Origin& rp_origin) {}
 
-void ShellFederatedPermissionContext::RevokeRequestPermission(
+void ShellFederatedPermissionContext::RemoveEmbargoAndResetCounts(
+    const url::Origin& rp_origin) {}
+
+bool ShellFederatedPermissionContext::HasSharingPermissionForAnyAccount(
     const url::Origin& relying_party,
     const url::Origin& identity_provider) {
-  request_permissions_.erase(
-      std::make_pair(relying_party.Serialize(), identity_provider.Serialize()));
+  for (const std::tuple<std::string, std::string, std::string>& permission :
+       sharing_permissions_) {
+    if (std::get<0>(permission) == relying_party.Serialize() &&
+        std::get<1>(permission) == identity_provider.Serialize())
+      return true;
+  }
+  return false;
 }
 
 bool ShellFederatedPermissionContext::HasSharingPermission(

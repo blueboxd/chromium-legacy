@@ -120,7 +120,6 @@ ShelfConfig::ShelfConfig()
       shelf_status_area_hit_region_padding_dense_(2),
       app_icon_group_margin_tablet_(16),
       app_icon_group_margin_clamshell_(12),
-      shelf_focus_border_color_(gfx::kGoogleBlue300),
       workspace_area_visible_inset_(2),
       workspace_area_auto_hide_inset_(5),
       hidden_shelf_in_screen_portion_(3),
@@ -418,7 +417,8 @@ SkColor ShelfConfig::GetShelfControlButtonColor() const {
       session_state == session_manager::SessionState::ACTIVE) {
     return is_in_app() ? SK_ColorTRANSPARENT : GetDefaultShelfColor();
   }
-  if (session_state == session_manager::SessionState::OOBE) {
+  if (!features::IsDarkLightModeEnabled() &&
+      session_state == session_manager::SessionState::OOBE) {
     return SkColorSetA(SK_ColorBLACK, 16);  // 6% opacity
   }
   return AshColorProvider::Get()->GetControlsLayerColor(

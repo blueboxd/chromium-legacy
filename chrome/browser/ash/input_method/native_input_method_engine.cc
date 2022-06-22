@@ -27,8 +27,10 @@
 #include "chrome/browser/ash/input_method/diacritics_checker.h"
 #include "chrome/browser/ash/input_method/get_browser_url.h"
 #include "chrome/browser/ash/input_method/grammar_service_client.h"
+#include "chrome/browser/ash/input_method/input_method_quick_settings_helpers.h"
 #include "chrome/browser/ash/input_method/input_method_settings.h"
 #include "chrome/browser/ash/input_method/suggestions_service_client.h"
+#include "chrome/browser/ash/input_method/ui/input_method_menu_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
@@ -474,8 +476,14 @@ InputFieldContext CreateInputFieldContext(
 }
 
 mojom::TextPredictionMode GetTextPredictionMode(
-    const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions) {
-  return enabled_suggestions.multi_word_suggestions
+    const std::string& engine_id,
+    const InputFieldContext& context,
+    const PrefService& prefs) {
+  // TODO(crbug.com/1263335): Enable text prediction for Lacros.
+  return context.multiword_enabled && context.multiword_allowed &&
+                 !context.lacros_enabled &&
+                 prefs.GetBoolean(prefs::kAssistPredictiveWritingEnabled) &&
+                 IsUsEnglishEngine(engine_id)
              ? mojom::TextPredictionMode::kEnabled
              : mojom::TextPredictionMode::kDisabled;
 }
@@ -492,8 +500,10 @@ std::string MojomLayoutToXkbLayout(mojom::PinyinLayout layout) {
 }
 
 mojom::InputFieldInfoPtr CreateInputFieldInfo(
+    const std::string& engine_id,
     const ui::IMEEngineHandlerInterface::InputContext& context,
-    const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions,
+    const InputFieldContext& input_field_context,
+    const PrefService& prefs,
     bool is_normal_screen) {
   // Disable most features on the login screen.
   if (!is_normal_screen) {
@@ -506,12 +516,12 @@ mojom::InputFieldInfoPtr CreateInputFieldInfo(
         mojom::TextPredictionMode::kDisabled);
   }
 
-  return mojom::InputFieldInfo::New(TextInputTypeToMojoType(context.type),
-                                    AutocorrectFlagsToMojoType(context.flags),
-                                    context.should_do_learning
-                                        ? mojom::PersonalizationMode::kEnabled
-                                        : mojom::PersonalizationMode::kDisabled,
-                                    GetTextPredictionMode(enabled_suggestions));
+  return mojom::InputFieldInfo::New(
+      TextInputTypeToMojoType(context.type),
+      AutocorrectFlagsToMojoType(context.flags),
+      context.should_do_learning ? mojom::PersonalizationMode::kEnabled
+                                 : mojom::PersonalizationMode::kDisabled,
+      GetTextPredictionMode(engine_id, input_field_context, prefs));
 }
 
 void OverrideXkbLayoutIfNeeded(ImeKeyboard* keyboard,
@@ -699,9 +709,12 @@ void NativeInputMethodEngine::ImeObserver::ConnectToImeService(
   mojo::PendingAssociatedRemote<ime::mojom::InputMethodHost> input_method_host;
   host_receiver_.Bind(input_method_host.InitWithNewEndpointAndPassReceiver());
 
+  ime::mojom::InputMethodSettingsPtr settings =
+      CreateSettingsFromPrefs(*prefs_, engine_id, InputFieldContext{});
   connection_factory_->ConnectToInputMethod(
       engine_id, input_method_.BindNewEndpointAndPassReceiver(),
-      std::move(input_method_host), base::BindOnce(&OnConnected));
+      std::move(input_method_host), std::move(settings),
+      base::BindOnce(&OnConnected));
 }
 
 void NativeInputMethodEngine::ImeObserver::ActivateTextClient(
@@ -713,6 +726,12 @@ void NativeInputMethodEngine::ImeObserver::ActivateTextClient(
 
 void NativeInputMethodEngine::ImeObserver::OnActivate(
     const std::string& engine_id) {
+  // Always hide the candidates window and clear the quick settings menu when
+  // switching input methods.
+  UpdateCandidatesWindow(nullptr);
+  ui::ime::InputMethodMenuManager::GetInstance()
+      ->SetCurrentInputMethodMenuItemList({});
+
   // TODO(b/181077907): Always launch the IME service and let IME service decide
   // whether it should shutdown or not.
   if (IsFstEngine(engine_id) && ShouldRouteToNativeMojoEngine(engine_id) &&
@@ -819,8 +838,8 @@ void NativeInputMethodEngine::ImeObserver::
   const bool is_normal_screen =
       InputMethodManager::Get()->GetActiveIMEState()->GetUIStyle() ==
       InputMethodManager::UIStyle::kNormal;
-  mojom::InputFieldInfoPtr input_field_info =
-      CreateInputFieldInfo(context, enabled_suggestions, is_normal_screen);
+  mojom::InputFieldInfoPtr input_field_info = CreateInputFieldInfo(
+      engine_id, context, input_field_context, *prefs_, is_normal_screen);
 
   base::OnceCallback<void(bool)> on_focus_callback =
       base::BindOnce(&NativeInputMethodEngine::ImeObserver::ActivateTextClient,
@@ -1045,7 +1064,19 @@ void NativeInputMethodEngine::ImeObserver::OnAssistiveWindowButtonClicked(
 void NativeInputMethodEngine::ImeObserver::OnMenuItemActivated(
     const std::string& component_id,
     const std::string& menu_id) {
-  ime_base_observer_->OnMenuItemActivated(component_id, menu_id);
+  if (ShouldRouteToNativeMojoEngine(component_id)) {
+    if (input_method_.is_bound()) {
+      mojom::InputMethodQuickSettingsPtr settings = GetQuickSettingsAfterToggle(
+          ui::ime::InputMethodMenuManager::GetInstance()
+              ->GetCurrentInputMethodMenuItemList(),
+          menu_id);
+      // Notify the IME of the change and then update the menu.
+      input_method_->OnQuickSettingsUpdated(settings.Clone());
+      UpdateQuickSettings(std::move(settings));
+    }
+  } else {
+    ime_base_observer_->OnMenuItemActivated(component_id, menu_id);
+  }
 }
 
 void NativeInputMethodEngine::ImeObserver::OnScreenProjectionChanged(
@@ -1203,13 +1234,12 @@ void NativeInputMethodEngine::ImeObserver::UpdateCandidatesWindow(
     return;
   }
 
-  ui::CandidateWindow candidate_window;
   if (!window) {
-    candidate_window_handler->UpdateLookupTable(candidate_window,
-                                                /*visible=*/false);
+    candidate_window_handler->HideLookupTable();
     return;
   }
 
+  ui::CandidateWindow candidate_window;
   for (const auto& candidate : window->candidates) {
     ui::CandidateWindow::Entry entry;
     entry.value = base::UTF8ToUTF16(candidate->text);
@@ -1229,8 +1259,7 @@ void NativeInputMethodEngine::ImeObserver::UpdateCandidatesWindow(
   property.auxiliary_text = window->auxiliary_text.value_or("");
   candidate_window.SetProperty(property);
 
-  candidate_window_handler->UpdateLookupTable(candidate_window,
-                                              /*visible=*/true);
+  candidate_window_handler->UpdateLookupTable(candidate_window);
 }
 
 void NativeInputMethodEngine::ImeObserver::RecordUkm(mojom::UkmEntryPtr entry) {
@@ -1255,6 +1284,13 @@ void NativeInputMethodEngine::ImeObserver::ReportKoreanSettings(
                         settings->input_multiple_syllables);
   UMA_HISTOGRAM_ENUMERATION("InputMethod.PhysicalKeyboard.Korean.Layout",
                             settings->layout);
+}
+
+void NativeInputMethodEngine::ImeObserver::UpdateQuickSettings(
+    mojom::InputMethodQuickSettingsPtr quick_settings) {
+  ui::ime::InputMethodMenuManager::GetInstance()
+      ->SetCurrentInputMethodMenuItemList(
+          CreateMenuItemsFromQuickSettings(*quick_settings));
 }
 
 void NativeInputMethodEngine::ImeObserver::FlushForTesting() {
@@ -1301,6 +1337,22 @@ void NativeInputMethodEngine::ImeObserver::
 
   input_method_->OnSurroundingTextChanged(
       std::move(utf8_text), surrounding_text.offset_pos, std::move(selection));
+}
+
+bool NativeInputMethodEngine::UpdateMenuItems(
+    const std::vector<InputMethodManager::MenuItem>& items,
+    std::string* error) {
+  // Ignore calls to UpdateMenuItems when the native Mojo engine is active.
+  // The menu items are stored in a singleton that is shared between the native
+  // Mojo engine and the extension. This method is called when the extension
+  // wants to update the menu items.
+  // Ignore this if the native Mojo engine is active to prevent the extension
+  // from overriding the menu items set by the native Mojo engine.
+  if (ShouldRouteToNativeMojoEngine(GetActiveComponentId())) {
+    return true;
+  }
+
+  return InputMethodEngine::UpdateMenuItems(items, error);
 }
 
 void NativeInputMethodEngine::OnInputMethodOptionsChanged() {

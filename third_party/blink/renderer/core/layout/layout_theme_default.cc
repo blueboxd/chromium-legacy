@@ -45,13 +45,22 @@ static const float kDefaultCancelButtonSize = 9;
 static const float kMinCancelButtonSize = 5;
 static const float kMaxCancelButtonSize = 21;
 
-Color LayoutThemeDefault::active_selection_background_color_ = 0xff1e90ff;
+Color LayoutThemeDefault::active_selection_background_color_ = 0xFF1E90FF;
 Color LayoutThemeDefault::active_selection_foreground_color_ = Color::kBlack;
-Color LayoutThemeDefault::inactive_selection_background_color_ = 0xffc8c8c8;
-Color LayoutThemeDefault::inactive_selection_foreground_color_ = 0xff323232;
+Color LayoutThemeDefault::inactive_selection_background_color_ = 0xFFC8C8C8;
+Color LayoutThemeDefault::inactive_selection_foreground_color_ = 0xFF323232;
+Color
+    LayoutThemeDefault::active_list_box_selection_background_color_dark_mode_ =
+        0xFF99C8FF;
+Color
+    LayoutThemeDefault::active_list_box_selection_foreground_color_dark_mode_ =
+        0xFF3B3B3B;
+Color LayoutThemeDefault::
+    inactive_list_box_selection_background_color_dark_mode_ = 0x4D3B3B3B;
+Color LayoutThemeDefault::
+    inactive_list_box_selection_foreground_color_dark_mode_ = 0xFF323232;
 
-LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
-}
+LayoutThemeDefault::LayoutThemeDefault() : painter_(*this) {}
 
 LayoutThemeDefault::~LayoutThemeDefault() = default;
 
@@ -89,6 +98,34 @@ Color LayoutThemeDefault::PlatformActiveSelectionForegroundColor(
 Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor(
     mojom::blink::ColorScheme color_scheme) const {
   return inactive_selection_foreground_color_;
+}
+
+Color LayoutThemeDefault::PlatformActiveListBoxSelectionBackgroundColor(
+    mojom::blink::ColorScheme color_scheme) const {
+  return color_scheme == mojom::blink::ColorScheme::kDark
+             ? active_list_box_selection_background_color_dark_mode_
+             : PlatformActiveSelectionBackgroundColor(color_scheme);
+}
+
+Color LayoutThemeDefault::PlatformInactiveListBoxSelectionBackgroundColor(
+    mojom::blink::ColorScheme color_scheme) const {
+  return color_scheme == mojom::blink::ColorScheme::kDark
+             ? inactive_list_box_selection_background_color_dark_mode_
+             : PlatformInactiveSelectionBackgroundColor(color_scheme);
+}
+
+Color LayoutThemeDefault::PlatformActiveListBoxSelectionForegroundColor(
+    mojom::blink::ColorScheme color_scheme) const {
+  return color_scheme == mojom::blink::ColorScheme::kDark
+             ? active_list_box_selection_foreground_color_dark_mode_
+             : PlatformActiveSelectionForegroundColor(color_scheme);
+}
+
+Color LayoutThemeDefault::PlatformInactiveListBoxSelectionForegroundColor(
+    mojom::blink::ColorScheme color_scheme) const {
+  return color_scheme == mojom::blink::ColorScheme::kDark
+             ? inactive_list_box_selection_foreground_color_dark_mode_
+             : PlatformInactiveSelectionForegroundColor(color_scheme);
 }
 
 gfx::Size LayoutThemeDefault::SliderTickSize() const {
@@ -129,58 +166,6 @@ void LayoutThemeDefault::SetSelectionColors(Color active_background_color,
   inactive_selection_background_color_ = inactive_background_color;
   inactive_selection_foreground_color_ = inactive_foreground_color;
   PlatformColorsDidChange();
-}
-
-namespace {
-
-void SetSizeIfAuto(const gfx::Size& size, ComputedStyle& style) {
-  if (style.Width().IsAutoOrContentOrIntrinsic())
-    style.SetWidth(Length::Fixed(size.width()));
-  if (style.Height().IsAutoOrContentOrIntrinsic())
-    style.SetHeight(Length::Fixed(size.height()));
-}
-
-void SetMinimumSizeIfAuto(const gfx::Size& size, ComputedStyle& style) {
-  // We only want to set a minimum size if no explicit size is specified, to
-  // avoid overriding author intentions.
-  if (style.MinWidth().IsAutoOrContentOrIntrinsic() &&
-      style.Width().IsAutoOrContentOrIntrinsic())
-    style.SetMinWidth(Length::Fixed(size.width()));
-  if (style.MinHeight().IsAutoOrContentOrIntrinsic() &&
-      style.Height().IsAutoOrContentOrIntrinsic())
-    style.SetMinHeight(Length::Fixed(size.height()));
-}
-
-}  // namespace
-
-void LayoutThemeDefault::SetCheckboxSize(ComputedStyle& style) const {
-  // If the width and height are both specified, then we have nothing to do.
-  if (!style.Width().IsAutoOrContentOrIntrinsic() &&
-      !style.Height().IsAutoOrContentOrIntrinsic())
-    return;
-
-  gfx::Size size = Platform::Current()->ThemeEngine()->GetSize(
-      WebThemeEngine::kPartCheckbox);
-  float zoom_level = style.EffectiveZoom();
-  size.set_width(size.width() * zoom_level);
-  size.set_height(size.height() * zoom_level);
-  SetMinimumSizeIfAuto(size, style);
-  SetSizeIfAuto(size, style);
-}
-
-void LayoutThemeDefault::SetRadioSize(ComputedStyle& style) const {
-  // If the width and height are both specified, then we have nothing to do.
-  if (!style.Width().IsAutoOrContentOrIntrinsic() &&
-      !style.Height().IsAutoOrContentOrIntrinsic())
-    return;
-
-  gfx::Size size =
-      Platform::Current()->ThemeEngine()->GetSize(WebThemeEngine::kPartRadio);
-  float zoom_level = style.EffectiveZoom();
-  size.set_width(size.width() * zoom_level);
-  size.set_height(size.height() * zoom_level);
-  SetMinimumSizeIfAuto(size, style);
-  SetSizeIfAuto(size, style);
 }
 
 void LayoutThemeDefault::AdjustInnerSpinButtonStyle(

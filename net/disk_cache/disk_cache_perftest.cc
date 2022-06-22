@@ -485,7 +485,7 @@ void DiskCachePerfTest::CacheBackendPerformance(const std::string& story) {
   InitCache();
   EXPECT_TRUE(TimeWrites(story));
 
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
@@ -494,7 +494,7 @@ void DiskCachePerfTest::CacheBackendPerformance(const std::string& story) {
   EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_ONLY,
                         kMetricCacheHeadersReadTimeWarmMs, story));
 
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
@@ -503,15 +503,28 @@ void DiskCachePerfTest::CacheBackendPerformance(const std::string& story) {
   EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_AND_BODY,
                         kMetricCacheEntriesReadTimeWarmMs, story));
 
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(DiskCachePerfTest, CacheBackendPerformance) {
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/851083): Fix this test on Fuchsia and re-enable.
+#define MAYBE_CacheBackendPerformance DISABLED_CacheBackendPerformance
+#else
+#define MAYBE_CacheBackendPerformance CacheBackendPerformance
+#endif
+TEST_F(DiskCachePerfTest, MAYBE_CacheBackendPerformance) {
   CacheBackendPerformance("blockfile_cache");
 }
 
-TEST_F(DiskCachePerfTest, SimpleCacheBackendPerformance) {
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/851083): Fix this test on Fuchsia and re-enable.
+#define MAYBE_SimpleCacheBackendPerformance \
+  DISABLED_SimpleCacheBackendPerformance
+#else
+#define MAYBE_SimpleCacheBackendPerformance SimpleCacheBackendPerformance
+#endif
+TEST_F(DiskCachePerfTest, MAYBE_SimpleCacheBackendPerformance) {
   SetSimpleCacheMode();
   CacheBackendPerformance("simple_cache");
 }
@@ -635,7 +648,7 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
   for (int i = 0; i < kBatchSize; ++i)
     cache_entry[i]->Close();
 
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
   auto reporter = SetUpDiskCacheReporter("early_portion");
   reporter.AddResult(kMetricSimpleCacheInitTotalTimeMs, elapsed_early);
@@ -647,8 +660,14 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
                      1000 * (elapsed_late / (kIterations * kBatchSize)));
 }
 
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1318120): Fix this test on Fuchsia and re-enable.
+#define MAYBE_EvictionPerformance DISABLED_EvictionPerformance
+#else
+#define MAYBE_EvictionPerformance EvictionPerformance
+#endif
 // Measures how quickly SimpleIndex can compute which entries to evict.
-TEST(SimpleIndexPerfTest, EvictionPerformance) {
+TEST(SimpleIndexPerfTest, MAYBE_EvictionPerformance) {
   const int kEntries = 10000;
 
   class NoOpDelegate : public disk_cache::SimpleIndexDelegate {

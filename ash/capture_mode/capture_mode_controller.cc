@@ -800,7 +800,12 @@ void CaptureModeController::OnSessionStateChanged(
 }
 
 void CaptureModeController::OnChromeTerminating() {
+  // Order here matters. We end the recording first before we inform the camera
+  // controller, so that ending the recording will destroy any camera previews
+  // first.
   EndSessionOrRecording(EndRecordingReason::kShuttingDown);
+  if (camera_controller_)
+    camera_controller_->OnShuttingDown();
 }
 
 void CaptureModeController::SuspendImminent(
@@ -1357,6 +1362,11 @@ void CaptureModeController::RecordAndResetConsecutiveScreenshots() {
 }
 
 void CaptureModeController::OnVideoRecordCountDownFinished() {
+  // Ensure `on_countdown_finished_callback_for_test_` is run after this
+  // function.
+  base::ScopedClosureRunner scoped_closure(
+      std::move(on_countdown_finished_callback_for_test_));
+
   // If this event is dispatched after the capture session was cancelled or
   // destroyed, this should be a no-op.
   if (!IsActive())

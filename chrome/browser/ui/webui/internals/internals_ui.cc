@@ -121,9 +121,10 @@ void InternalsUI::BindInterface(
     mojo::PendingReceiver<
         mojom::user_education_internals::UserEducationInternalsPageHandler>
         receiver) {
-  user_education_handler_ =
-      std::make_unique<UserEducationInternalsPageHandlerImpl>(
-          web_ui(), profile_, std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<UserEducationInternalsPageHandlerImpl>(web_ui(),
+                                                              profile_),
+      std::move(receiver));
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 

@@ -22,8 +22,12 @@
 //   class MyClass {
 //    public:
 //     void StartDoingStuff() {
-//       timer_.Start(FROM_HERE, Seconds(1),
+//       timer_.Start(FROM_HERE, base::Seconds(1),
 //                    this, &MyClass::DoStuff);
+//       // Alternative form if the callback is not bound to `this` or
+//       // requires arguments:
+//       //    timer_.Start(FROM_HERE, base::Seconds(1),
+//       //                 base::BindRepeating(&MyFunction, 42));
 //     }
 //     void StopDoingStuff() {
 //       timer_.Stop();
@@ -137,7 +141,7 @@ class BASE_EXPORT TimerBase {
   // there is no scheduled task.
   // `task_destruction_detector_` is not a raw_ptr<...> for performance reasons
   // (based on analysis of sampling profiler data).
-  TaskDestructionDetector* task_destruction_detector_
+  RAW_PTR_EXCLUSION TaskDestructionDetector* task_destruction_detector_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // If true, |user_task_| is scheduled to run sometime in the future.

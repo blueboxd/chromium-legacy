@@ -37,12 +37,6 @@ namespace app_list {
 // Search results for the Help App (aka Explore).
 class HelpAppResult : public ChromeSearchResult {
  public:
-  // Constructor for the What's new chip.
-  HelpAppResult(Profile* profile,
-                const std::string& id,
-                const std::u16string& title,
-                const gfx::ImageSkia& icon);
-  // Constructor for a list result.
   HelpAppResult(const float& relevance,
                 Profile* profile,
                 const ash::help_app::mojom::SearchResultPtr& result,
@@ -63,8 +57,7 @@ class HelpAppResult : public ChromeSearchResult {
   const std::string help_app_content_id_;
 };
 
-// Provides results from the Help App based on the search query. Also provides
-// zero-state results.
+// Provides results from the Help App based on the search query.
 class HelpAppProvider : public SearchProvider,
                         public apps::AppRegistryCache::Observer,
                         public ash::help_app::mojom::SearchResultsObserver {
@@ -79,9 +72,7 @@ class HelpAppProvider : public SearchProvider,
   void Start(const std::u16string& query) override;
   void StartZeroState() override;
   void ViewClosing() override;
-  void AppListShown() override;
   ash::AppListSearchResultType ResultType() const override;
-  bool ShouldBlockZeroState() const override;
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
@@ -100,6 +91,7 @@ class HelpAppProvider : public SearchProvider,
   void LoadIcon();
 
   Profile* const profile_;
+
   ash::help_app::SearchHandler* search_handler_;
   apps::AppServiceProxy* app_service_proxy_;
   gfx::ImageSkia icon_;

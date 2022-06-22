@@ -72,6 +72,8 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   void SetRequestContext(URLRequestContext* request_context) override;
   HostResolverManager* GetManagerForTesting() override;
   const URLRequestContext* GetContextForTesting() const override;
+  NetworkChangeNotifier::NetworkHandle GetTargetNetworkForTesting()
+      const override;
 
   // Returns the number of host cache entries that were restored, or 0 if there
   // is no cache.
@@ -81,6 +83,9 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
 
   void SetProcParamsForTesting(const ProcTaskParams& proc_params);
   void SetTickClockForTesting(const base::TickClock* tick_clock);
+  ResolveContext* resolve_context_for_testing() {
+    return resolve_context_.get();
+  }
 
  private:
   const raw_ptr<HostResolverManager> manager_;

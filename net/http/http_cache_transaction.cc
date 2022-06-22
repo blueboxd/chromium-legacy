@@ -180,7 +180,6 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       cache_entry_status_(CacheEntryStatus::ENTRY_UNDEFINED),
       validation_cause_(VALIDATION_CAUSE_UNDEFINED),
       recorded_histograms_(false),
-      parallel_writing_pattern_(PARALLEL_WRITING_NONE),
       moved_network_transaction_to_writers_(false),
       websocket_handshake_stream_base_create_helper_(nullptr),
       in_do_loop_(false) {
@@ -655,15 +654,6 @@ void HttpCache::Transaction::WriteModeTransactionAboutToBecomeReader() {
       entry_->writers->network_transaction()) {
     SaveNetworkTransactionInfo(*(entry_->writers->network_transaction()));
   }
-}
-
-void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
-    HttpCache::ParallelWritingPattern pattern) {
-  // It's possible a transaction could not join existing writers and then
-  // creates a new writers. In that case the original reason for not being able
-  // to join writers should be logged.
-  if (parallel_writing_pattern_ == PARALLEL_WRITING_NONE)
-    parallel_writing_pattern_ = pattern;
 }
 
 //-----------------------------------------------------------------------------
@@ -2059,13 +2049,13 @@ int HttpCache::Transaction::DoCacheWriteResponse() {
   TRACE_EVENT_WITH_FLOW0("io", "HttpCacheTransaction::DoCacheWriteResponse",
                          net_log().source().id,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  DCHECK(response_.headers);
   // Invalidate any current entry with a successful response if this transaction
   // cannot write to this entry. This transaction then continues to read from
   // the network without writing to the backend.
   bool is_match = response_.headers->response_code() == 304;
-  if (entry_ && response_.headers &&
-      !cache_->CanTransactionWriteResponseHeaders(
-          entry_, this, partial_ != nullptr, is_match)) {
+  if (entry_ && !cache_->CanTransactionWriteResponseHeaders(
+                    entry_, this, partial_ != nullptr, is_match)) {
     done_headers_create_new_entry_ = true;
 
     // The transaction needs to overwrite this response. Doom the current entry,
@@ -3228,6 +3218,8 @@ int HttpCache::Transaction::WriteToEntry(int index,
 int HttpCache::Transaction::WriteResponseInfoToEntry(
     const HttpResponseInfo& response,
     bool truncated) {
+  DCHECK(response.headers);
+
   if (!entry_)
     return OK;
 
@@ -3529,9 +3521,6 @@ void HttpCache::Transaction::RecordHistograms() {
   web_fonts_histogram::MaybeRecordCacheStatus(
       cache_entry_status_,
       HttpCache::GetResourceURLFromHttpCacheKey(cache_key_));
-
-  UMA_HISTOGRAM_ENUMERATION("HttpCache.ParallelWritingPattern",
-                            parallel_writing_pattern_, PARALLEL_WRITING_MAX);
 
   if (CacheEntryStatus::ENTRY_UNDEFINED == cache_entry_status_)
     return;

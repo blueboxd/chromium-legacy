@@ -147,11 +147,14 @@ class MODULES_EXPORT UserMediaProcessor
   class RequestInfo;
   using LocalStreamSources = HeapVector<Member<MediaStreamSource>>;
 
+  void GotOpenDevice(int32_t request_id,
+                     blink::mojom::blink::MediaStreamRequestResult result,
+                     blink::mojom::blink::GetOpenDeviceResponsePtr response);
+
   void OnStreamGenerated(int32_t request_id,
                          blink::mojom::blink::MediaStreamRequestResult result,
                          const String& label,
-                         const Vector<blink::MediaStreamDevice>& audio_devices,
-                         const Vector<blink::MediaStreamDevice>& video_devices,
+                         blink::mojom::blink::StreamDevicesPtr stream_devices,
                          bool pan_tilt_zoom_allowed);
 
   void GotAllVideoInputFormatsForDevice(
@@ -207,8 +210,7 @@ class MODULES_EXPORT UserMediaProcessor
       const String& result_name);
 
   void OnStreamGeneratedForCancelledRequest(
-      const Vector<blink::MediaStreamDevice>& audio_devices,
-      const Vector<blink::MediaStreamDevice>& video_devices);
+      const blink::mojom::blink::StreamDevices& stream_devices);
 
   static void OnAudioSourceStartedOnAudioThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,

@@ -131,7 +131,8 @@ BidderWorklet::BidderWorklet(
     const GURL& script_source_url,
     const absl::optional<GURL>& wasm_helper_url,
     const absl::optional<GURL>& trusted_bidding_signals_url,
-    const url::Origin& top_window_origin)
+    const url::Origin& top_window_origin,
+    absl::optional<uint16_t> experiment_group_id)
     : v8_runner_(v8_helper->v8_runner()),
       v8_helper_(v8_helper),
       debug_id_(
@@ -147,6 +148,7 @@ BidderWorklet::BidderWorklet(
                     /*automatically_send_requests=*/false,
                     top_window_origin,
                     *trusted_bidding_signals_url,
+                    experiment_group_id,
                     v8_helper_.get())
               : nullptr),
       top_window_origin_(top_window_origin),
@@ -350,8 +352,8 @@ void BidderWorklet::V8State::ReportWin(
                              &args) ||
       !v8_helper_->AppendJsonValue(context, seller_signals_json, &args)) {
     PostReportWinCallbackToUserThread(
-        std::move(callback), absl::nullopt /* report_url */,
-        /*ad_beacon_map=*/{}, std::vector<std::string>() /* errors */);
+        std::move(callback), /*report_url=*/absl::nullopt,
+        /*ad_beacon_map=*/{}, /*errors=*/std::vector<std::string>());
     return;
   }
 
@@ -381,8 +383,8 @@ void BidderWorklet::V8State::ReportWin(
        !browser_signals_dict.Set("dataVersion",
                                  bidding_signals_data_version.value()))) {
     PostReportWinCallbackToUserThread(
-        std::move(callback), absl::nullopt /* report_url */,
-        /*ad_beacon_map=*/{}, std::vector<std::string>() /* errors */);
+        std::move(callback), /*report_url=*/absl::nullopt,
+        /*ad_beacon_map=*/{}, /*errors=*/std::vector<std::string>());
     return;
   }
   args.push_back(browser_signals);
@@ -398,7 +400,7 @@ void BidderWorklet::V8State::ReportWin(
                       errors_out)
           .IsEmpty()) {
     PostReportWinCallbackToUserThread(
-        std::move(callback), absl::nullopt /* report_url */,
+        std::move(callback), /*report_url=*/absl::nullopt,
         /*ad_beacon_map=*/{}, std::move(errors_out));
     return;
   }

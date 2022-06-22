@@ -49,13 +49,14 @@
 #include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/display_change_observer.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager_util.h"
 #include "ui/display/manager/display_manager_utilities.h"
-#include "ui/display/manager/display_util.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/manager/test/touch_device_manager_test_api.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font_render_params.h"
@@ -2806,6 +2807,8 @@ TEST_F(DisplayManagerTest, UnifiedDesktopVerticalLayout2x1) {
     display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                            list[1]);
     display_manager()->OnNativeDisplaysChanged(display_info_list);
+    // Run loop to create mirroring displays.
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(gfx::Size(300, 574), screen->GetPrimaryDisplay().size());
     // Display in bottom-left cell is considered primary.
     EXPECT_EQ(list[1], Shell::Get()
@@ -4178,9 +4181,10 @@ TEST_F(DisplayManagerTest, SourceAndDestinationInSoftwareMirrorMode) {
 
   // Set the second display as internal display.
   SetSoftwareMirrorMode(false);
-
   display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                          second_display_id);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
   SetSoftwareMirrorMode(true);
   EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
   EXPECT_EQ(second_display_id, display_manager()->mirroring_source_id());

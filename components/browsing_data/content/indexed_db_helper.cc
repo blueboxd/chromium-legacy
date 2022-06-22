@@ -13,7 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -45,7 +45,7 @@ void IndexedDBHelper::StartFetching(FetchCallback callback) {
 void IndexedDBHelper::DeleteIndexedDB(const blink::StorageKey& storage_key,
                                       base::OnceCallback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  storage_partition_->GetIndexedDBControl().DeleteForStorageKey(
+  storage_partition_->GetIndexedDBControl().DeleteForBucket(
       storage_key, std::move(callback));
 }
 

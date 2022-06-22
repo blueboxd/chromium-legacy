@@ -6,8 +6,8 @@ import("//base/allocator/allocator.gni")
 
 # Only support x86_64 Linux as the system calls used are Linux-specific. No
 # point in building this if PartitionAlloc is not the allocator used.
-_tcache_tool_supported =
-    target_cpu == "x64" && target_os == "linux" && use_allocator == "partition"
+_tcache_tool_supported = ((target_cpu == "x64" && is_linux) || is_mac) &&
+                         use_allocator == "partition"
 
 if (_tcache_tool_supported) {
   source_set("pa_tool_utils") {
@@ -15,6 +15,13 @@ if (_tcache_tool_supported) {
       "inspect_utils.cc",
       "inspect_utils.h",
     ]
+
+    if (is_linux) {
+      sources += [ "inspect_utils_linux.cc" ]
+    } else if (is_mac) {
+      sources += [ "inspect_utils_mac.cc" ]
+    }
+
     deps = [ "//base" ]
   }
   executable("pa_tcache_inspect") {
@@ -23,6 +30,16 @@ if (_tcache_tool_supported) {
       ":pa_tool_utils",
       "//base",
     ]
+
+    if (target_os == "mac") {
+      inputs = [ "sectaskaccess_info.plist" ]
+      ldflags = [
+        "-sectcreate",
+        "__TEXT",
+        "__info_plist",
+        rebase_path(inputs[0], root_build_dir),
+      ]
+    }
   }
   executable("pa_buckets_inspect") {
     sources = [ "pa_buckets_inspect.cc" ]
@@ -38,6 +55,16 @@ if (_tcache_tool_supported) {
       "//base",
       "//third_party/snappy:snappy",
     ]
+
+    if (target_os == "mac") {
+      inputs = [ "sectaskaccess_info.plist" ]
+      ldflags = [
+        "-sectcreate",
+        "__TEXT",
+        "__info_plist",
+        rebase_path(inputs[0], root_build_dir),
+      ]
+    }
   }
 }
 

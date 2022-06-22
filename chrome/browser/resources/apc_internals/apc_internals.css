@@ -15,3 +15,12 @@ html {
 .info-table {
   width: 100%;
 }
+
+#script-cache-header {
+  font-weight: bold;
+  text-align: center;
+}
+
+#script-fetching-table {
+  padding-bottom: 10px;
+}

@@ -93,7 +93,7 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
         active_browser_->tab_strip_model()->GetActiveWebContents();
     ContentAutofillDriverFactory::FromWebContents(web_contents)
         ->DriverForFrame(web_contents->GetMainFrame())
-        ->browser_autofill_manager()
+        ->autofill_manager()
         ->client()
         ->HideAutofillPopup(PopupHidingReason::kTabGone);
     test::ReenableSystemServices();
@@ -159,9 +159,11 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
     MockSuggestionsHandler handler;
     GetAutocompleteSuggestions(kDefaultAutocompleteInputId, prefix, handler);
 
-    EXPECT_THAT(
-        handler.last_suggestions(),
-        ElementsAre(Field(&Suggestion::value, ASCIIToUTF16(expected_value))));
+    EXPECT_THAT(handler.last_suggestions(),
+                ElementsAre(Field(
+                    &Suggestion::main_text,
+                    Suggestion::Text(ASCIIToUTF16(expected_value),
+                                     Suggestion::Text::IsPrimary(true)))));
   }
 
   void ValidateNoValue() {
@@ -200,7 +202,7 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
  private:
   void GetAutocompleteSuggestions(const std::string& input_name,
                                   const std::string& prefix,
-                                  autofill::MockSuggestionsHandler& handler) {
+                                  MockSuggestionsHandler& handler) {
     autocomplete_history_manager()->OnGetSingleFieldSuggestions(
         1, true, false, ASCIIToUTF16(input_name), ASCIIToUTF16(prefix), "input",
         handler.GetWeakPtr());
@@ -217,7 +219,7 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
     return active_browser_->tab_strip_model()->GetActiveWebContents();
   }
 
-  scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() {
+  scoped_refptr<AutofillWebDataService> GetWebDataService() {
     return WebDataServiceFactory::GetAutofillWebDataForProfile(
         current_profile(), ServiceAccessType::EXPLICIT_ACCESS);
   }

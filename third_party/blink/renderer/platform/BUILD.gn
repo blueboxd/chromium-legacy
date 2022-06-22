@@ -261,8 +261,6 @@ component("platform") {
     "animation/compositor_animation_client.cc",
     "animation/compositor_animation_client.h",
     "animation/compositor_animation_delegate.h",
-    "animation/compositor_animation_timeline.cc",
-    "animation/compositor_animation_timeline.h",
     "animation/timing_function.cc",
     "animation/timing_function.h",
     "audio/audio_array.h",
@@ -378,6 +376,7 @@ component("platform") {
     "bindings/callback_interface_base.h",
     "bindings/callback_method_retriever.cc",
     "bindings/callback_method_retriever.h",
+    "bindings/cross_thread_copier.h",
     "bindings/custom_wrappable.h",
     "bindings/dictionary_base.cc",
     "bindings/dictionary_base.h",
@@ -620,6 +619,7 @@ component("platform") {
     "fonts/generic_font_family_settings.cc",
     "fonts/generic_font_family_settings.h",
     "fonts/glyph_metrics_map.h",
+    "fonts/lock_for_parallel_text_shaping.h",
     "fonts/ng_text_fragment_paint_info.h",
     "fonts/opentype/font_format_check.cc",
     "fonts/opentype/font_format_check.h",
@@ -633,6 +633,8 @@ component("platform") {
     "fonts/opentype/open_type_math_stretch_data.h",
     "fonts/opentype/open_type_math_support.cc",
     "fonts/opentype/open_type_math_support.h",
+    "fonts/opentype/open_type_math_test_fonts.cc",
+    "fonts/opentype/open_type_math_test_fonts.h",
     "fonts/opentype/open_type_types.h",
     "fonts/opentype/open_type_vertical_data.cc",
     "fonts/opentype/open_type_vertical_data.h",
@@ -1077,8 +1079,6 @@ component("platform") {
     "graphics/scoped_interpolation_quality.h",
     "graphics/scrollbar_theme_settings.cc",
     "graphics/scrollbar_theme_settings.h",
-    "graphics/skia/image_pixel_locker.cc",
-    "graphics/skia/image_pixel_locker.h",
     "graphics/skia/sk_size_hash.h",
     "graphics/skia/skia_utils.cc",
     "graphics/skia/skia_utils.h",
@@ -1958,7 +1958,6 @@ source_set("blink_platform_unittests_sources") {
   sources = [
     "animation/animation_translation_util_test.cc",
     "animation/compositor_animation_test.cc",
-    "animation/compositor_animation_timeline_test.cc",
     "animation/timing_function_test.cc",
     "audio/audio_destination_test.cc",
     "audio/push_pull_fifo_multithread_test.cc",
@@ -1980,6 +1979,7 @@ source_set("blink_platform_unittests_sources") {
     "fonts/font_cache_test.cc",
     "fonts/font_description_test.cc",
     "fonts/font_family_test.cc",
+    "fonts/font_global_context_test.cc",
     "fonts/font_palette_test.cc",
     "fonts/font_platform_data_test.cc",
     "fonts/font_selection_types_test.cc",
@@ -2384,10 +2384,16 @@ test("blink_fuzzer_unittests") {
 
   sources = [ "testing/run_all_tests.cc" ]
 
-  if (is_linux || is_chromeos) {
+  if (is_linux || is_chromeos || is_fuchsia) {
     deps += [
       "//third_party/blink/renderer/platform/scheduler:scheduler_fuzzer_tests",
     ]
+  }
+
+  if (is_fuchsia) {
+    use_cfv2 = false
+    additional_manifest_fragments =
+        [ "//build/config/fuchsia/test/jit_capabilities.test-cmx" ]
   }
 }
 

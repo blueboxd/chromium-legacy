@@ -13,12 +13,14 @@ namespace blink {
 class DOMPoint;
 class DOMRect;
 class CrosWindowManagement;
+class ScriptPromise;
 
 class CrosWindow : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  CrosWindow(CrosWindowManagement* manager, mojom::blink::CrosWindowPtr window);
+  CrosWindow(CrosWindowManagement* manager,
+             mojom::blink::CrosWindowInfoPtr window);
 
   void Trace(Visitor*) const override;
 
@@ -26,25 +28,28 @@ class CrosWindow : public ScriptWrappable {
 
   String title();
   String appId();
-  bool isFullscreen();
-  bool isMinimised();
-  bool isVisible();
+  String windowState();
+  bool isFocused();
+  String visibilityState();
   DOMPoint* origin();
   DOMRect* bounds();
 
-  bool setOrigin(double x, double y);
-  bool setBounds(double x, double y, double width, double height);
-  void setFullscreen(bool fullscreen);
-  void maximize();
-  void minimize();
-  bool raise();
-  void focus();
+  ScriptPromise setOrigin(ScriptState* script_state, double x, double y);
+  ScriptPromise setBounds(ScriptState* script_state,
+                          double x,
+                          double y,
+                          double width,
+                          double height);
+  ScriptPromise setFullscreen(ScriptState* script_state, bool fullscreen);
+  ScriptPromise maximize(ScriptState* script_state);
+  ScriptPromise minimize(ScriptState* script_state);
+  ScriptPromise focus(ScriptState* script_state);
   void close();
 
  private:
   Member<CrosWindowManagement> window_management_;
 
-  mojom::blink::CrosWindowPtr window_;
+  mojom::blink::CrosWindowInfoPtr window_;
 };
 
 }  // namespace blink

@@ -3,6 +3,8 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
@@ -48,7 +50,10 @@
   <template>
     <style include="cr-icons cr-shared-style oobe-common-styles">
       cr-button {
-        --border-color: var(--oobe-button-border-color);
+        /*
+          TODO(https://crbug.com/1320715) Revise the color
+          --border-color: var(--oobe-button-border-color);
+        */
         --cr-button-height: var(--oobe-button-height);
         border-radius: var(--oobe-button-radius);
         margin: 0 4px;

@@ -54,6 +54,7 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -144,7 +145,6 @@ bool ProfileMenuView::close_on_deactivate_for_testing_ = true;
 
 ProfileMenuView::ProfileMenuView(views::Button* anchor_button, Browser* browser)
     : ProfileMenuViewBase(anchor_button, browser) {
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
   set_close_on_deactivate(close_on_deactivate_for_testing_);
 }
 
@@ -288,21 +288,23 @@ void ProfileMenuView::OnSyncErrorButtonClicked(AvatarSyncErrorType error) {
     case AvatarSyncErrorType::kManagedUserUnrecoverableError:
       chrome::ShowSettingsSubPage(browser(), chrome::kSignOutSubPage);
       break;
-    case AvatarSyncErrorType::kUnrecoverableError:
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      IdentityManagerFactory::GetForProfile(browser()->profile())
-          ->GetPrimaryAccountMutator()
-          ->RevokeSyncConsent(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-                              signin_metrics::SignoutDelete::kIgnoreMetric);
+    case AvatarSyncErrorType::kUnrecoverableError: {
+      signin::IdentityManager* identity_manager =
+          IdentityManagerFactory::GetForProfile(browser()->profile());
+      // This error means that the Sync engine failed to initialize. Shutdown
+      // Sync engine by revoking sync consent.
+      identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
+          signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+          signin_metrics::SignoutDelete::kIgnoreMetric);
       Hide();
-      browser()->signin_view_controller()->ShowSignin(
-          profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
+      // Re-enable sync with the same primary account.
+      signin_ui_util::EnableSyncFromSingleAccountPromo(
+          browser(),
+          identity_manager->GetPrimaryAccountInfo(
+              signin::ConsentLevel::kSignin),
           signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
-#else
-      // TODO(https://crbug.com/1260291): Add support for Lacros.
-      NOTIMPLEMENTED();
-#endif
       break;
+    }
     case AvatarSyncErrorType::kAuthError:
       Hide();
       signin_ui_util::ShowReauthForPrimaryAccountWithAuthError(
@@ -332,7 +334,7 @@ void ProfileMenuView::OnSyncErrorButtonClicked(AvatarSyncErrorType error) {
 #endif
 }
 
-void ProfileMenuView::OnSigninAccountButtonClicked(AccountInfo account) {
+void ProfileMenuView::OnSigninAccountButtonClicked(CoreAccountInfo account) {
   RecordClick(ActionableItem::kSigninAccountButton);
   if (!perform_menu_actions())
     return;
@@ -342,36 +344,37 @@ void ProfileMenuView::OnSigninAccountButtonClicked(AccountInfo account) {
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
 }
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void ProfileMenuView::OnSignoutButtonClicked() {
   RecordClick(ActionableItem::kSignoutButton);
   if (!perform_menu_actions())
     return;
   Hide();
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Sign out from all accounts.
   browser()->signin_view_controller()->ShowGaiaLogoutTab(
       signin_metrics::SourceForRefreshTokenOperation::
           kUserMenu_SignOutAllAccounts);
-}
+#else
+  CHECK(!browser()->profile()->IsMainProfile());
+  IdentityManagerFactory::GetForProfile(browser()->profile())
+      ->GetPrimaryAccountMutator()
+      ->ClearPrimaryAccount(signin_metrics::USER_CLICKED_SIGNOUT_PROFILE_MENU,
+                            signin_metrics::SignoutDelete::kIgnoreMetric);
 #endif
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 void ProfileMenuView::OnSigninButtonClicked() {
   RecordClick(ActionableItem::kSigninButton);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  signin_ui_util::ShowSigninPromptAndMaybeEnableSync(
-      browser(), browser()->profile(), /*enable_sync=*/true,
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
-      signin_metrics::PromoAction::
-          PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT);
-#else
   if (!perform_menu_actions())
     return;
   Hide();
-  browser()->signin_view_controller()->ShowSignin(
-      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
+
+  signin_ui_util::EnableSyncFromSingleAccountPromo(
+      browser(), AccountInfo(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
-#endif
 }
 
 void ProfileMenuView::OnOtherProfileSelected(
@@ -549,8 +552,8 @@ void ProfileMenuView::BuildSyncInfo() {
   // If there's no error and sync-the-feature is disabled, show a sync promo.
   // For a signed-in user, the promo just opens the "turn on sync" dialog.
   // For a signed-out user, it prompts for sign-in first.
-  AccountInfo account_info = identity_manager->FindExtendedAccountInfo(
-      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
+  CoreAccountInfo account_info =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   if (!account_info.IsEmpty()) {
     BuildSyncInfoWithCallToAction(
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE),
@@ -622,19 +625,27 @@ void ProfileMenuView::BuildFeatureButtons() {
     }
   }
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   const bool has_primary_account =
       !profile->IsGuestSession() &&
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
+
+  bool add_sign_out_button = has_unconsented_account && !has_primary_account;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Clearing the primary account is not allowed in the main profile.
+  add_sign_out_button &=
+      (!profile->IsMainProfile() &&
+       base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles));
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   // The sign-out button is always at the bottom.
-  if (has_unconsented_account && !has_primary_account) {
+  if (add_sign_out_button) {
     AddFeatureButton(
         l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT),
         base::BindRepeating(&ProfileMenuView::OnSignoutButtonClicked,
                             base::Unretained(this)),
         kSignOutIcon);
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)

@@ -89,6 +89,7 @@ group("absl_component_deps") {
     "//third_party/abseil-cpp/absl/types:optional",
     "//third_party/abseil-cpp/absl/types:span",
     "//third_party/abseil-cpp/absl/types:variant",
+    "//third_party/abseil-cpp/absl/utility",
   ]
 
   # The following dependencies currently don't build with NaCl.
@@ -184,6 +185,7 @@ if (build_with_chromium) {
         "absl/algorithm:algorithm_test",
         "absl/algorithm:container_test",
         "absl/base:config_test",
+        "absl/base:prefetch_test",
         "absl/cleanup:cleanup_test",
         "absl/container:inlined_vector_test",
         "absl/container:node_slot_policy_test",

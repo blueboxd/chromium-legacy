@@ -184,6 +184,8 @@ class MockInputHandler : public cc::InputHandler {
 
   bool ScrollbarScrollIsActive() override { return false; }
 
+  void SetDeferBeginMainFrame(bool defer_begin_main_frame) const override {}
+
  private:
   bool is_scrolling_root_ = true;
 
@@ -234,6 +236,7 @@ class MockInputHandlerProxyClient : public InputHandlerProxyClient {
                void(cc::TouchAction touch_action,
                     uint32_t unique_touch_event_id,
                     InputHandlerProxy::EventDisposition event_disposition));
+  bool AllowsScrollResampling() override { return true; }
 };
 
 class MockInputHandlerProxyClientWithDidAnimateForInput

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -147,6 +148,12 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
     static StatusOr<scoped_refptr<SingleFile>> Create(
         const base::FilePath& filename,
         int64_t size);
+
+    // Returns the file sequence ID (the first sequence ID in the file) if the
+    // sequence ID can be extracted from the extension. Otherwise, returns an
+    // error status.
+    static StatusOr<int64_t> GetFileSequenceIdFromPath(
+        const base::FilePath& file_name);
 
     Status Open(bool read_only);  // No-op if already opened.
     void Close();                 // No-op if not opened.

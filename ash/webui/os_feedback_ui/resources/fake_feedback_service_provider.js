@@ -4,7 +4,7 @@
 
 import {FakeMethodResolver} from 'chrome://resources/ash/common/fake_method_resolver.js';
 
-import {FeedbackContext, FeedbackServiceProviderInterface} from './feedback_types.js';
+import {FeedbackContext, FeedbackServiceProviderInterface, Report, SendReportStatus} from './feedback_types.js';
 
 /**
  * @fileoverview
@@ -18,19 +18,27 @@ export class FakeFeedbackServiceProvider {
 
     // Setup method resolvers.
     this.methods_.register('getFeedbackContext');
+    this.methods_.register('sendReport');
+    // Let sendReport return success by default.
+    this.methods_.setResult('sendReport', {status: SendReportStatus.kSuccess});
 
     /**
-     * Use to track how many times getFeedbackContext has been called.
-     * @private {number}
+     * Used to track how many times each method is being called.
+     * @private
      */
-    this.getFeedbackContextCallCount_ = 0;
+    this.callCounts_ = {
+      /** @type {number} */
+      getFeedbackContext: 0,
+      /** @type {number} */
+      sendReport: 0,
+    };
   }
 
   /**
-   * @returns {number}
+   * @return {number}
    */
   getFeedbackContextCallCount() {
-    return this.getFeedbackContextCallCount_;
+    return this.callCounts_.getFeedbackContext;
   }
 
   /**
@@ -39,8 +47,26 @@ export class FakeFeedbackServiceProvider {
    *  }>}
    */
   getFeedbackContext() {
-    this.getFeedbackContextCallCount_++;
+    this.callCounts_.getFeedbackContext++;
     return this.methods_.resolveMethod('getFeedbackContext');
+  }
+
+  /**
+   * @return {number}
+   */
+  getSendReportCallCount() {
+    return this.callCounts_.sendReport;
+  }
+
+  /**
+   * @param {!Report} report
+   * @return {!Promise<{
+   *    status: !SendReportStatus,
+   *  }>}
+   */
+  sendReport(report) {
+    this.callCounts_.sendReport++;
+    return this.methods_.resolveMethod('sendReport');
   }
 
   /**
@@ -50,5 +76,12 @@ export class FakeFeedbackServiceProvider {
   setFakeFeedbackContext(feedbackContext) {
     this.methods_.setResult(
         'getFeedbackContext', {feedbackContext: feedbackContext});
+  }
+  /**
+   * Sets the value that will be returned when calling sendReport().
+   * @param {!SendReportStatus} status
+   */
+  setFakeSendFeedbackStatus(status) {
+    this.methods_.setResult('sendReport', {status: status});
   }
 }

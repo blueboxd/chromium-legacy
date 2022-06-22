@@ -146,6 +146,14 @@
         android:theme="@style/Theme.Chromium.DialogWhenLarge"
         android:windowSoftInputMode="stateAlwaysHidden">
     </activity>  # DIFF-ANCHOR: 0a21ad35
+    <activity  # DIFF-ANCHOR: be2dce69
+        android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"
+        android:excludeFromRecents="true"
+        android:exported="false"
+        android:noHistory="true"
+        android:taskAffinity=""
+        android:theme="@style/Theme.BrowserUI.NoDisplay">
+    </activity>  # DIFF-ANCHOR: be2dce69
     <activity  # DIFF-ANCHOR: 209b5ded
         android:name="org.chromium.chrome.browser.browserservices.ClearDataDialogActivity"
         android:exported="false"
@@ -319,24 +327,6 @@
         android:noHistory="true"
         android:theme="@style/Theme.BrowserUI.NoDisplay">
     </activity>  # DIFF-ANCHOR: 24aedc77
-    <activity  # DIFF-ANCHOR: bec48e1f
-        android:name="org.chromium.chrome.browser.printing.PrintShareActivity"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:enabled="false"
-        android:excludeFromRecents="true"
-        android:exported="true"
-        android:icon="@drawable/sharing_print_baseline"
-        android:label="@string/print_share_activity_title"
-        android:noHistory="true"
-        android:theme="@style/Theme.BrowserUI.NoDisplay">
-      <intent-filter>  # DIFF-ANCHOR: 4ee601b7
-        <action android:name="android.intent.action.SEND"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <data android:mimeType="message/rfc822"/>
-        <data android:mimeType="multipart/related"/>
-        <data android:mimeType="text/plain"/>
-      </intent-filter>  # DIFF-ANCHOR: 4ee601b7
-    </activity>  # DIFF-ANCHOR: bec48e1f
     <activity  # DIFF-ANCHOR: 7468a722
         android:name="org.chromium.chrome.browser.searchwidget.SearchActivity"
         android:clearTaskOnLaunch="true"
@@ -350,22 +340,6 @@
         android:theme="@style/Theme.Chromium.SearchActivity"
         android:windowSoftInputMode="adjustResize">
     </activity>  # DIFF-ANCHOR: 7468a722
-    <activity  # DIFF-ANCHOR: f1aedff1
-        android:name="org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:enabled="false"
-        android:excludeFromRecents="true"
-        android:exported="true"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/send_tab_to_self_share_activity_title"
-        android:noHistory="true"
-        android:theme="@style/Theme.BrowserUI.NoDisplay">
-      <intent-filter>  # DIFF-ANCHOR: 4ee601b7
-        <action android:name="android.intent.action.SEND"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <data android:mimeType="text/plain"/>
-      </intent-filter>  # DIFF-ANCHOR: 4ee601b7
-    </activity>  # DIFF-ANCHOR: f1aedff1
     <activity  # DIFF-ANCHOR: d32b85df
         android:name="org.chromium.chrome.browser.settings.SettingsActivity"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
@@ -772,10 +746,6 @@
         android:name="org.chromium.chrome.browser.app.send_tab_to_self.SendTabToSelfNotificationReceiver"
         android:exported="false">
     </receiver>  # DIFF-ANCHOR: f6d77f5a
-    <receiver  # DIFF-ANCHOR: be2dce69
-        android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"
-        android:exported="false">
-    </receiver>  # DIFF-ANCHOR: be2dce69
     <receiver  # DIFF-ANCHOR: 31a8399a
         android:name="org.chromium.chrome.browser.browserservices.ClientAppBroadcastReceiver"
         android:exported="true">
@@ -917,6 +887,10 @@
         <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
       </intent-filter>  # DIFF-ANCHOR: 99686c45
     </service>  # DIFF-ANCHOR: c34d99ad
+    <service  # DIFF-ANCHOR: b56e4a55
+        android:name="org.chromium.chrome.browser.app.bluetooth.BluetoothNotificationService"
+        android:exported="false">
+    </service>  # DIFF-ANCHOR: b56e4a55
     <service  # DIFF-ANCHOR: ac44dbad
         android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetService"
         android:exported="false"

@@ -35,9 +35,11 @@
 #import "ios/chrome/browser/download/vcard_tab_helper.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/follow/follow_tab_helper.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
+#import "ios/chrome/browser/https_upgrades/https_only_mode_upgrade_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
@@ -48,6 +50,7 @@
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_tab_helper.h"
 #import "ios/chrome/browser/metrics/pageload_foreground_duration_tab_helper.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_tab_helper.h"
@@ -60,8 +63,7 @@
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_query_manager.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_tab_helper.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_client_factory.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -84,14 +86,15 @@
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/chrome/browser/web/web_performance_metrics/web_performance_metrics_tab_helper.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper.h"
-#import "ios/components/security_interstitials/https_only_mode/feature.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_allowlist.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
-#import "ios/components/security_interstitials/https_only_mode/https_only_mode_upgrade_tab_helper.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_client.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_query_manager.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_tab_helper.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
 #include "ios/web/common/features.h"
@@ -141,8 +144,10 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     BreadcrumbManagerTabHelper::CreateForWebState(web_state);
   }
 
-  SafeBrowsingQueryManager::CreateForWebState(web_state);
-  SafeBrowsingTabHelper::CreateForWebState(web_state);
+  SafeBrowsingClient* client =
+      SafeBrowsingClientFactory::GetForBrowserState(browser_state);
+  SafeBrowsingQueryManager::CreateForWebState(web_state, client);
+  SafeBrowsingTabHelper::CreateForWebState(web_state, client);
   SafeBrowsingUrlAllowList::CreateForWebState(web_state);
   SafeBrowsingUnsafeResourceContainer::CreateForWebState(web_state);
 
@@ -231,10 +236,12 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   RepostFormTabHelper::CreateForWebState(web_state);
   NetExportTabHelper::CreateForWebState(web_state);
 
-  if (base::FeatureList::IsEnabled(
-          security_interstitials::features::kHttpsOnlyMode)) {
-    HttpsOnlyModeUpgradeTabHelper::CreateForWebState(web_state);
-    HttpsOnlyModeContainer::CreateForWebState(web_state);
-    HttpsOnlyModeAllowlist::CreateForWebState(web_state);
+  HttpsOnlyModeUpgradeTabHelper::CreateForWebState(web_state,
+                                                   browser_state->GetPrefs());
+  HttpsOnlyModeContainer::CreateForWebState(web_state);
+  HttpsOnlyModeAllowlist::CreateForWebState(web_state);
+
+  if (IsWebChannelsEnabled()) {
+    FollowTabHelper::CreateForWebState(web_state);
   }
 }

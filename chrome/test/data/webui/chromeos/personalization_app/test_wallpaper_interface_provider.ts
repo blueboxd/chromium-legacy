@@ -18,14 +18,17 @@ export class TestWallpaperProvider extends
       'fetchCollections',
       'fetchImagesForCollection',
       'fetchGooglePhotosAlbums',
-      'fetchGooglePhotosCount',
       'fetchGooglePhotosEnabled',
       'fetchGooglePhotosPhotos',
+      'getDefaultImageThumbnail',
       'getLocalImages',
       'getLocalImageThumbnail',
       'setWallpaperObserver',
       'selectGooglePhotosPhoto',
+      'selectGooglePhotosAlbum',
+      'getGooglePhotosDailyRefreshAlbumId',
       'selectWallpaper',
+      'selectDefaultImage',
       'selectLocalImage',
       'setCurrentWallpaperLayout',
       'setDailyRefreshCollectionId',
@@ -107,7 +110,6 @@ export class TestWallpaperProvider extends
   private images_: WallpaperImage[]|null;
   private googlePhotosAlbums_: GooglePhotosAlbum[]|undefined = [];
   private googlePhotosAlbumsResumeToken_: string|undefined;
-  private googlePhotosCount_: number = 0;
   private googlePhotosEnabled_: GooglePhotosEnablementState =
       GooglePhotosEnablementState.kEnabled;
   private googlePhotosPhotos_: GooglePhotosPhoto[]|undefined = [];
@@ -118,8 +120,11 @@ export class TestWallpaperProvider extends
       Record<string, string|undefined> = {};
   localImages: FilePath[]|null;
   localImageData: Record<string, string>;
+  defaultImageThumbnail: string = 'data://default_image_thumbnail';
   currentWallpaper: CurrentWallpaper;
   selectWallpaperResponse = true;
+  selectGooglePhotosPhotoResponse = true;
+  selectDefaultImageResponse = true;
   selectLocalImageResponse = true;
   updateDailyRefreshWallpaperResponse = true;
   isInTabletModeResponse = true;
@@ -168,14 +173,6 @@ export class TestWallpaperProvider extends
     return Promise.resolve({response});
   }
 
-  fetchGooglePhotosCount() {
-    this.methodCalled('fetchGooglePhotosCount');
-    const count = loadTimeData.getBoolean('isGooglePhotosIntegrationEnabled') ?
-        this.googlePhotosCount_ :
-        -1;
-    return Promise.resolve({count});
-  }
-
   fetchGooglePhotosEnabled() {
     this.methodCalled('fetchGooglePhotosEnabled');
     const state = loadTimeData.getBoolean('isGooglePhotosIntegrationEnabled') ?
@@ -197,6 +194,11 @@ export class TestWallpaperProvider extends
         this.googlePhotosPhotosByAlbumIdResumeTokens_[albumId] :
         this.googlePhotosPhotosResumeToken_;
     return Promise.resolve({response});
+  }
+
+  getDefaultImageThumbnail(): Promise<{data: string}> {
+    this.methodCalled('getDefaultImageThumbnail');
+    return Promise.resolve({data: this.defaultImageThumbnail});
   }
 
   getLocalImages() {
@@ -222,9 +224,24 @@ export class TestWallpaperProvider extends
     return Promise.resolve({success: this.selectWallpaperResponse});
   }
 
+  selectDefaultImage() {
+    this.methodCalled('selectDefaultImage');
+    return Promise.resolve({success: this.selectDefaultImageResponse});
+  }
+
   selectGooglePhotosPhoto(id: string) {
     this.methodCalled('selectGooglePhotosPhoto', id);
+    return Promise.resolve({success: this.selectGooglePhotosPhotoResponse});
+  }
+
+  selectGooglePhotosAlbum(id: string) {
+    this.methodCalled('selectGooglePhotosAlbum', id);
     return Promise.resolve({success: false});
+  }
+
+  getGooglePhotosDailyRefreshAlbumId() {
+    this.methodCalled('getGooglePhotosDailyRefreshAlbumId');
+    return Promise.resolve({albumId: ''});
   }
 
   selectLocalImage(
@@ -279,10 +296,6 @@ export class TestWallpaperProvider extends
   setGooglePhotosAlbumsResumeToken(googlePhotosAlbumsResumeToken: string|
                                    undefined) {
     this.googlePhotosAlbumsResumeToken_ = googlePhotosAlbumsResumeToken;
-  }
-
-  setGooglePhotosCount(googlePhotosCount: number) {
-    this.googlePhotosCount_ = googlePhotosCount;
   }
 
   setGooglePhotosEnabled(googlePhotosEnabled: GooglePhotosEnablementState) {

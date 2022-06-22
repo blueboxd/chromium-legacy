@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_manager.h"
 
+#include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -102,28 +103,15 @@ bool AutofillManager::IsRawMetadataUploadingEnabled(
          channel == version_info::Channel::DEV;
 }
 
-AutofillManager::AutofillManager(
-    AutofillDriver* driver,
-    AutofillClient* client,
-    AutofillDownloadManagerState enable_download_manager)
-    : AutofillManager(driver,
-                      client,
-                      enable_download_manager,
-                      client->GetChannel()) {
-  DCHECK(driver);
-  DCHECK(client);
-}
-
-AutofillManager::AutofillManager(
-    AutofillDriver* driver,
-    AutofillClient* client,
-    AutofillDownloadManagerState enable_download_manager,
-    version_info::Channel channel)
+AutofillManager::AutofillManager(AutofillDriver* driver,
+                                 AutofillClient* client,
+                                 version_info::Channel channel,
+                                 EnableDownloadManager enable_download_manager)
     : driver_(driver),
       client_(client),
       log_manager_(client ? client->GetLogManager() : nullptr),
       form_interactions_ukm_logger_(CreateFormInteractionsUkmLogger()) {
-  if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
+  if (enable_download_manager) {
     download_manager_ = std::make_unique<AutofillDownloadManager>(
         driver, this, GetAPIKeyForUrl(channel),
         AutofillDownloadManager::IsRawMetadataUploadingEnabled(
@@ -178,13 +166,11 @@ void AutofillManager::OnFormSubmitted(const FormData& form,
 void AutofillManager::OnFormsSeen(
     const std::vector<FormData>& updated_forms,
     const std::vector<FormGlobalId>& removed_forms) {
-  if (base::FeatureList::IsEnabled(features::kAutofillDisplaceRemovedForms)) {
-    // Erase forms that have been removed from the DOM. This prevents
-    // |form_structures_| from growing up its upper bound
-    // kAutofillManagerMaxFormCacheSize.
-    for (FormGlobalId removed_form : removed_forms)
-      form_structures_.erase(removed_form);
-  }
+  // Erase forms that have been removed from the DOM. This prevents
+  // |form_structures_| from growing up its upper bound
+  // kAutofillManagerMaxFormCacheSize.
+  for (FormGlobalId removed_form : removed_forms)
+    form_structures_.erase(removed_form);
 
   if (!IsValidFormDataVector(updated_forms) || !driver_->RendererIsAvailable())
     return;

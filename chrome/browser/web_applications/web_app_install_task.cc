@@ -17,14 +17,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/install_bounce_metric.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_system_web_app_data.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
@@ -95,8 +94,6 @@ bool IsEmptyIconBitmapsForIconUrl(const IconsMap& icons_map,
   return true;
 }
 
-const char* kHistogramInstallResult = "WebApp.Install.Result";
-
 #if BUILDFLAG(IS_CHROMEOS)
 struct PlayStoreIntent {
   std::string app_id;
@@ -164,13 +161,11 @@ mojo::Remote<crosapi::mojom::Arc>* GetArcRemoteWithMinVersion(
 
 WebAppInstallTask::WebAppInstallTask(
     Profile* profile,
-    WebAppInstallManager* install_manager,
     WebAppInstallFinalizer* install_finalizer,
     std::unique_ptr<WebAppDataRetriever> data_retriever,
     WebAppRegistrar* registrar,
     webapps::WebappInstallSource install_surface)
     : data_retriever_(std::move(data_retriever)),
-      install_manager_(install_manager),
       install_finalizer_(install_finalizer),
       profile_(profile),
       registrar_(registrar),
@@ -344,17 +339,17 @@ void UpdateFinalizerClientData(
 }
 
 void WebAppInstallTask::InstallWebAppFromInfo(
-    std::unique_ptr<WebAppInstallInfo> web_application_info,
+    std::unique_ptr<WebAppInstallInfo> web_app_install_info,
     bool overwrite_existing_manifest_fields,
     OnceInstallCallback callback) {
   CheckInstallPreconditions();
 
-  PopulateProductIcons(web_application_info.get(),
+  PopulateProductIcons(web_app_install_info.get(),
                        /*icons_map*/ nullptr);
   // No IconsMap to populate shortcut item icons from.
 
   if (install_params_)
-    ApplyParamsToWebAppInstallInfo(*install_params_, *web_application_info);
+    ApplyParamsToWebAppInstallInfo(*install_params_, *web_app_install_info);
 
   background_installation_ = true;
   install_callback_ = std::move(callback);
@@ -372,7 +367,7 @@ void WebAppInstallTask::InstallWebAppFromInfo(
   }
 
   install_finalizer_->FinalizeInstall(
-      *web_application_info, options,
+      *web_app_install_info, options,
       base::BindOnce(&WebAppInstallTask::OnInstallFinalized, GetWeakPtr()));
 }
 
@@ -400,7 +395,7 @@ void WebAppInstallTask::LoadAndRetrieveWebAppInstallInfoWithIcons(
 
   retrieve_info_callback_ = std::move(callback);
   background_installation_ = true;
-  only_retrieve_web_application_info_ = true;
+  only_retrieve_web_app_install_info_ = true;
 
   web_contents_ = CreateWebContents(profile_);
   Observe(web_contents_.get());
@@ -468,11 +463,11 @@ void WebAppInstallTask::CallInstallCallback(const AppId& app_id,
   Observe(nullptr);
   dialog_callback_.Reset();
 
-  if (only_retrieve_web_application_info_) {
+  if (only_retrieve_web_app_install_info_) {
     DCHECK(retrieve_info_callback_);
-    if (web_application_info_) {
-      std::move(retrieve_info_callback_).Run(std::move(*web_application_info_));
-      web_application_info_ = absl::nullopt;
+    if (web_app_install_info_) {
+      std::move(retrieve_info_callback_).Run(std::move(*web_app_install_info_));
+      web_app_install_info_ = absl::nullopt;
     } else {
       std::move(retrieve_info_callback_).Run(code);
     }
@@ -480,7 +475,7 @@ void WebAppInstallTask::CallInstallCallback(const AppId& app_id,
   }
 
   DCHECK(install_callback_);
-  base::UmaHistogramBoolean(kHistogramInstallResult, webapps::IsSuccess(code));
+  webapps::InstallableMetrics::TrackInstallResult(webapps::IsSuccess(code));
   std::move(install_callback_).Run(app_id, code);
 }
 
@@ -608,26 +603,34 @@ void WebAppInstallTask::OnGetWebAppInstallInfo(
                      GetWeakPtr(), std::move(web_app_info)));
 }
 
-void WebAppInstallTask::ApplyParamsToWebAppInstallInfo(
-    const WebAppInstallParams& install_params,
-    WebAppInstallInfo& web_app_info) {
-  if (install_params.user_display_mode != DisplayMode::kUndefined)
-    web_app_info.user_display_mode = install_params.user_display_mode;
+// If the dialog callback is null, then this is considered to be
+// a background installation.
+void WebAppInstallTask::InstallWebAppOnManifestValidated(
+    content::WebContents* contents,
+    WebAppInstallDialogCallback dialog_callback,
+    OnceInstallCallback install_callback,
+    std::unique_ptr<WebAppInstallInfo> web_app_info,
+    blink::mojom::ManifestPtr opt_manifest,
+    const GURL& manifest_url,
+    WebAppInstallFlow flow,
+    absl::optional<WebAppInstallParams> install_params) {
+  DCHECK(AreWebAppsUserInstallable(profile_));
+  CheckInstallPreconditions();
 
-  if (!install_params.override_manifest_id.has_value())
-    web_app_info.manifest_id = install_params.override_manifest_id;
+  flow_ = flow;
 
-  // If `additional_search_terms` was a manifest property, it would be
-  // sanitized while parsing the manifest. Since it's not, we sanitize it
-  // here.
-  for (const std::string& search_term :
-       install_params.additional_search_terms) {
-    if (!search_term.empty())
-      web_app_info.additional_search_terms.push_back(search_term);
-  }
+  Observe(contents);
 
-  if (install_params.launch_query_params)
-    web_app_info.launch_query_params = install_params.launch_query_params;
+  dialog_callback_ = std::move(dialog_callback);
+  if (dialog_callback_.is_null())
+    background_installation_ = true;
+  install_callback_ = std::move(install_callback);
+
+  if (install_params.has_value())
+    SetInstallParams(install_params.value());
+
+  OnDidPerformInstallableCheck(std::move(web_app_info), std::move(opt_manifest),
+                               manifest_url, true, true);
 }
 
 void WebAppInstallTask::OnDidPerformInstallableCheck(
@@ -812,7 +815,7 @@ void WebAppInstallTask::OnDidCheckForIntentToPlayStoreLacros(
 
 void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
     content::WebContents* web_contents,
-    std::unique_ptr<WebAppInstallInfo> web_application_info,
+    std::unique_ptr<WebAppInstallInfo> web_app_install_info,
     WebAppInstallFinalizer::FinalizeOptions finalize_options,
     OnceInstallCallback callback) {
   CheckInstallPreconditions();
@@ -826,14 +829,14 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
   background_installation_ = true;
 
   std::vector<GURL> icon_urls =
-      GetValidIconUrlsToDownload(*web_application_info);
+      GetValidIconUrlsToDownload(*web_app_install_info);
 
   // Skip downloading the page favicons as everything in is the URL list.
   data_retriever_->GetIcons(
       web_contents, std::move(icon_urls),
       /*skip_page_favicons=*/true,
       base::BindOnce(&WebAppInstallTask::OnIconsRetrieved, GetWeakPtr(),
-                     std::move(web_application_info),
+                     std::move(web_app_install_info),
                      std::move(finalize_options)));
 }
 
@@ -903,9 +906,9 @@ void WebAppInstallTask::OnDialogCompleted(
     return;
   }
 
-  if (only_retrieve_web_application_info_) {
+  if (only_retrieve_web_app_install_info_) {
     if (web_app_info) {
-      web_application_info_ = std::move(*web_app_info);
+      web_app_install_info_ = std::move(*web_app_info);
       web_app_info.reset();
     }
     CallInstallCallback(AppId(),
@@ -928,9 +931,8 @@ void WebAppInstallTask::OnDialogCompleted(
 
     UpdateFinalizerClientData(install_params_, &finalize_options);
 
-    if (install_params_->user_display_mode != DisplayMode::kUndefined)
+    if (install_params_->user_display_mode.has_value())
       web_app_info_copy.user_display_mode = install_params_->user_display_mode;
-
     finalize_options.add_to_applications_menu =
         install_params_->add_to_applications_menu;
     finalize_options.add_to_desktop = install_params_->add_to_desktop;
@@ -995,7 +997,7 @@ void WebAppInstallTask::OnInstallFinalizedMaybeReparentTab(
         install_finalizer_->CanReparentTab(app_id, !error);
 
     if (can_reparent_tab &&
-        (web_app_info->user_display_mode != DisplayMode::kBrowser)) {
+        (web_app_info->user_display_mode != UserDisplayMode::kBrowser)) {
       install_finalizer_->ReparentTab(app_id, !error, web_contents());
     }
   }

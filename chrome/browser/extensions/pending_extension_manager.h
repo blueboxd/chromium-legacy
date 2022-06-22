@@ -124,8 +124,6 @@ class PendingExtensionManager {
   std::list<std::string> GetPendingIdsForUpdateCheck() const;
 
  private:
-  typedef std::list<PendingExtensionInfo> PendingExtensionList;
-
   // Assumes an extension with id |id| is not already installed.
   // Return true if the extension was added.
   bool AddExtensionImpl(
@@ -147,12 +145,12 @@ class PendingExtensionManager {
   // Add a pending extension record directly.  Used for unit tests that need
   // to set an inital state. Use friendship to allow the tests to call this
   // method.
-  void AddForTesting(const PendingExtensionInfo& pending_extension_info);
+  void AddForTesting(PendingExtensionInfo pending_extension_info);
 
   // The BrowserContext with which the manager is associated.
   raw_ptr<content::BrowserContext> context_;
 
-  PendingExtensionList pending_extension_list_;
+  std::map<std::string, PendingExtensionInfo> pending_extensions_;
 
   absl::optional<base::flat_set<std::string>>
       migrating_default_chrome_app_ids_cache_;

@@ -104,9 +104,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Set icon for the surface.
   void SetIcon(const gfx::ImageSkia& icon);
 
-  // Sets the system modality.
-  void SetSystemModal(bool system_modal);
-
   // Set the application ID for the surface.
   void SetApplicationId(const char* application_id);
 
@@ -160,6 +157,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Set the window bounds. The bounds specify 'visible bounds' of the
   // shell surface.
   void SetWindowBounds(const gfx::Rect& bounds_in_screen);
+
+  // Set `restore_session_id_` and `restore_window_id_` to be the browser
+  // session id and restore id, respectively.
+  void SetRestoreInfo(int32_t restore_id, int32_t restore_window_id);
 
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
@@ -221,6 +222,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void SetInitialWorkspace(const char* initial_workspace) override;
   void Pin(bool trusted) override;
   void Unpin() override;
+  void SetSystemModal(bool system_modal) override;
 
   // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
@@ -240,6 +242,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   views::View* GetContentsView() override;
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
+  bool ShouldSaveWindowPlacement() const override;
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(SkPath* mask) const override;
 
@@ -444,6 +447,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool pending_pip_ = false;
   bool in_extended_drag_ = false;
   absl::optional<std::string> initial_workspace_;
+  absl::optional<int32_t> restore_session_id_;
+  absl::optional<int32_t> restore_window_id_;
 
   // Overlay members.
   std::unique_ptr<views::Widget> overlay_widget_;

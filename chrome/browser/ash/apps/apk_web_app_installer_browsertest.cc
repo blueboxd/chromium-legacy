@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -64,21 +65,22 @@ arc::mojom::RawIconPngDataPtr GetFakeIconBytes() {
 }
 
 std::unique_ptr<WebAppInstallInfo> CreateWebAppInstallInfo(const GURL& url) {
-  auto web_application_info = std::make_unique<WebAppInstallInfo>();
-  web_application_info->start_url = url;
-  web_application_info->title = u"App Title";
-  web_application_info->theme_color = SK_ColorBLUE;
-  web_application_info->scope = url.Resolve("scope");
-  web_application_info->display_mode = web_app::DisplayMode::kBrowser;
-  web_application_info->user_display_mode = web_app::DisplayMode::kStandalone;
+  auto web_app_install_info = std::make_unique<WebAppInstallInfo>();
+  web_app_install_info->start_url = url;
+  web_app_install_info->title = u"App Title";
+  web_app_install_info->theme_color = SK_ColorBLUE;
+  web_app_install_info->scope = url.Resolve("scope");
+  web_app_install_info->display_mode = web_app::DisplayMode::kBrowser;
+  web_app_install_info->user_display_mode =
+      web_app::UserDisplayMode::kStandalone;
 
   const std::vector<SquareSizePx> sizes_px{web_app::icon_size::k256,
                                            web_app::icon_size::k512};
   const std::vector<SkColor> colors{SK_ColorRED, SK_ColorYELLOW};
-  web_app::AddIconsToWebAppInstallInfo(web_application_info.get(), url,
+  web_app::AddIconsToWebAppInstallInfo(web_app_install_info.get(), url,
                                        {{IconPurpose::ANY, sizes_px, colors}});
 
-  return web_application_info;
+  return web_app_install_info;
 }
 
 void ExpectInitialIconInfosFromWebAppInstallInfo(
@@ -133,7 +135,8 @@ void ExpectInitialManifestFieldsFromWebAppInstallInfo(
             SK_ColorYELLOW);
 
   // User preferences:
-  EXPECT_EQ(web_app->user_display_mode(), web_app::DisplayMode::kStandalone);
+  EXPECT_EQ(web_app->user_display_mode(),
+            web_app::UserDisplayMode::kStandalone);
 }
 
 }  // namespace
@@ -669,11 +672,11 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
   service->SetArcAppListPrefsForTesting(arc_app_list_prefs_);
 
   // Install the Web App as if the user installs it.
-  std::unique_ptr<WebAppInstallInfo> web_application_info =
+  std::unique_ptr<WebAppInstallInfo> web_app_install_info =
       CreateWebAppInstallInfo(GURL(kAppUrl));
 
   web_app::AppId app_id = web_app::test::InstallWebApp(
-      browser()->profile(), std::move(web_application_info),
+      browser()->profile(), std::move(web_app_install_info),
       /*overwrite_existing_manifest_fields=*/true,
       webapps::WebappInstallSource::SYNC);
 
@@ -751,11 +754,11 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
   EXPECT_FALSE(web_app->IsSynced());
 
   // Install the Web App as if the user installs it.
-  std::unique_ptr<WebAppInstallInfo> web_application_info =
+  std::unique_ptr<WebAppInstallInfo> web_app_install_info =
       CreateWebAppInstallInfo(GURL(kAppUrl));
 
   web_app::AppId web_app_id = web_app::test::InstallWebApp(
-      browser()->profile(), std::move(web_application_info),
+      browser()->profile(), std::move(web_app_install_info),
       /*overwrite_existing_manifest_fields=*/true,
       webapps::WebappInstallSource::SYNC);
   ASSERT_EQ(app_id, web_app_id);

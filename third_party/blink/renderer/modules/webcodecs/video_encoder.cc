@@ -294,22 +294,10 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
   return result;
 }
 
-const base::Feature kWebCodecsAv1Encoding{"WebCodecsAv1Encoding",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 bool VerifyCodecSupportStatic(VideoEncoderTraits::ParsedConfig* config,
                               ExceptionState* exception_state) {
   switch (config->codec) {
     case media::VideoCodec::kAV1:
-      if (!base::FeatureList::IsEnabled(kWebCodecsAv1Encoding)) {
-        if (exception_state) {
-          exception_state->ThrowDOMException(
-              DOMExceptionCode::kNotSupportedError,
-              "AV1 encoding is not supported yet.");
-        }
-        return false;
-      }
-
       if (config->profile !=
           media::VideoCodecProfile::AV1PROFILE_PROFILE_MAIN) {
         if (exception_state) {
@@ -922,10 +910,6 @@ void VideoEncoder::CallOutputCallback(
     auto* svc_metadata = SvcOutputMetadata::Create();
     svc_metadata->setTemporalLayerId(output.temporal_id);
     metadata->setSvc(svc_metadata);
-
-    // TODO(https://crbug.com/1275024): Remove these lines after deprecating.
-    if (!base::FeatureList::IsEnabled(kRemoveWebCodecsSpecViolations))
-      metadata->setTemporalLayerId(output.temporal_id);
   }
 
   // TODO(https://crbug.com/1241448): All encoders should output color space.

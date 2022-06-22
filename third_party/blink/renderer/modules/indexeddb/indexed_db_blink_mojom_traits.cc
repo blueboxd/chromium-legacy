@@ -89,17 +89,17 @@ UnionTraits<blink::mojom::IDBKeyDataView, std::unique_ptr<blink::IDBKey>>::
   DCHECK(key.get());
   switch (key->GetType()) {
     case blink::mojom::IDBKeyType::Array:
-      return blink::mojom::IDBKeyDataView::Tag::KEY_ARRAY;
+      return blink::mojom::IDBKeyDataView::Tag::kKeyArray;
     case blink::mojom::IDBKeyType::Binary:
-      return blink::mojom::IDBKeyDataView::Tag::BINARY;
+      return blink::mojom::IDBKeyDataView::Tag::kBinary;
     case blink::mojom::IDBKeyType::String:
-      return blink::mojom::IDBKeyDataView::Tag::STRING;
+      return blink::mojom::IDBKeyDataView::Tag::kString;
     case blink::mojom::IDBKeyType::Date:
-      return blink::mojom::IDBKeyDataView::Tag::DATE;
+      return blink::mojom::IDBKeyDataView::Tag::kDate;
     case blink::mojom::IDBKeyType::Number:
-      return blink::mojom::IDBKeyDataView::Tag::NUMBER;
+      return blink::mojom::IDBKeyDataView::Tag::kNumber;
     case blink::mojom::IDBKeyType::None:
-      return blink::mojom::IDBKeyDataView::Tag::OTHER_NONE;
+      return blink::mojom::IDBKeyDataView::Tag::kOtherNone;
 
     // Not used, fall through to NOTREACHED.
     case blink::mojom::IDBKeyType::Invalid:  // Only used in blink.
@@ -107,7 +107,7 @@ UnionTraits<blink::mojom::IDBKeyDataView, std::unique_ptr<blink::IDBKey>>::
       break;
   }
   NOTREACHED();
-  return blink::mojom::IDBKeyDataView::Tag::OTHER_NONE;
+  return blink::mojom::IDBKeyDataView::Tag::kOtherNone;
 }
 
 // static
@@ -115,34 +115,34 @@ bool UnionTraits<blink::mojom::IDBKeyDataView, std::unique_ptr<blink::IDBKey>>::
     Read(blink::mojom::IDBKeyDataView data,
          std::unique_ptr<blink::IDBKey>* out) {
   switch (data.tag()) {
-    case blink::mojom::IDBKeyDataView::Tag::KEY_ARRAY: {
+    case blink::mojom::IDBKeyDataView::Tag::kKeyArray: {
       Vector<std::unique_ptr<blink::IDBKey>> array;
       if (!data.ReadKeyArray(&array))
         return false;
       *out = blink::IDBKey::CreateArray(std::move(array));
       return true;
     }
-    case blink::mojom::IDBKeyDataView::Tag::BINARY: {
+    case blink::mojom::IDBKeyDataView::Tag::kBinary: {
       ArrayDataView<uint8_t> bytes;
       data.GetBinaryDataView(&bytes);
       *out = blink::IDBKey::CreateBinary(SharedBuffer::Create(
           reinterpret_cast<const char*>(bytes.data()), bytes.size()));
       return true;
     }
-    case blink::mojom::IDBKeyDataView::Tag::STRING: {
+    case blink::mojom::IDBKeyDataView::Tag::kString: {
       String string;
       if (!data.ReadString(&string))
         return false;
       *out = blink::IDBKey::CreateString(String(string));
       return true;
     }
-    case blink::mojom::IDBKeyDataView::Tag::DATE:
+    case blink::mojom::IDBKeyDataView::Tag::kDate:
       *out = blink::IDBKey::CreateDate(data.date());
       return true;
-    case blink::mojom::IDBKeyDataView::Tag::NUMBER:
+    case blink::mojom::IDBKeyDataView::Tag::kNumber:
       *out = blink::IDBKey::CreateNumber(data.number());
       return true;
-    case blink::mojom::IDBKeyDataView::Tag::OTHER_NONE:
+    case blink::mojom::IDBKeyDataView::Tag::kOtherNone:
       *out = blink::IDBKey::CreateNone();
       return true;
   }
@@ -238,7 +238,7 @@ bool StructTraits<blink::mojom::IDBValueDataView,
 
   for (const auto& object : external_objects) {
     switch (object->which()) {
-      case blink::mojom::blink::IDBExternalObject::Tag::BLOB_OR_FILE: {
+      case blink::mojom::blink::IDBExternalObject::Tag::kBlobOrFile: {
         auto& info = object->get_blob_or_file();
         if (info->file) {
           value_blob_info.emplace_back(
@@ -251,8 +251,7 @@ bool StructTraits<blink::mojom::IDBValueDataView,
         }
         break;
       }
-      case blink::mojom::blink::IDBExternalObject::Tag::
-          FILE_SYSTEM_ACCESS_TOKEN:
+      case blink::mojom::blink::IDBExternalObject::Tag::kFileSystemAccessToken:
         file_system_access_tokens.push_back(
             std::move(object->get_file_system_access_token()));
         break;
@@ -272,14 +271,12 @@ StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath>::data(
   if (key_path.GetType() == blink::mojom::IDBKeyPathType::Null)
     return nullptr;
 
-  auto data = blink::mojom::blink::IDBKeyPathData::New();
   switch (key_path.GetType()) {
     case blink::mojom::IDBKeyPathType::String: {
       String key_path_string = key_path.GetString();
       if (key_path_string.IsNull())
         key_path_string = g_empty_string;
-      data->set_string(key_path_string);
-      return data;
+      return blink::mojom::blink::IDBKeyPathData::NewString(key_path_string);
     }
     case blink::mojom::IDBKeyPathType::Array: {
       const auto& array = key_path.Array();
@@ -287,15 +284,15 @@ StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath>::data(
       result.ReserveInitialCapacity(SafeCast<wtf_size_t>(array.size()));
       for (const auto& item : array)
         result.push_back(item);
-      data->set_string_array(result);
-      return data;
+      return blink::mojom::blink::IDBKeyPathData::NewStringArray(
+          std::move(result));
     }
 
     case blink::mojom::IDBKeyPathType::Null:
       break;  // Not used, NOTREACHED.
   }
   NOTREACHED();
-  return data;
+  return nullptr;
 }
 
 // static
@@ -311,14 +308,14 @@ bool StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath>::Read(
   }
 
   switch (data_view.tag()) {
-    case blink::mojom::IDBKeyPathDataDataView::Tag::STRING: {
+    case blink::mojom::IDBKeyPathDataDataView::Tag::kString: {
       String string;
       if (!data_view.ReadString(&string))
         return false;
       *out = blink::IDBKeyPath(string);
       return true;
     }
-    case blink::mojom::IDBKeyPathDataDataView::Tag::STRING_ARRAY: {
+    case blink::mojom::IDBKeyPathDataDataView::Tag::kStringArray: {
       Vector<String> array;
       if (!data_view.ReadStringArray(&array))
         return false;

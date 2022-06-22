@@ -132,8 +132,14 @@ const char kSyncOobeCompleted[] = "sync.oobe_completed";
 const char kLoginDisplayPasswordButtonEnabled[] =
     "login_display_password_button_enabled";
 
-// Boolean pref indicating whether the user has enabled Suggested Content.
+// Boolean pref indicating whether the user has enabled Suggested Content in
+// OS settings > Privacy > "Suggest new content to explore".
 const char kSuggestedContentEnabled[] = "settings.suggested_content_enabled";
+
+// Boolean value indicating the user has hidden the launcher continue section
+// (usually because they want more visual space available for apps).
+const char kLauncherContinueSectionHidden[] =
+    "launcher.continue_section_hidden";
 
 // Boolean value that indicates that the user has given feedback for removing
 // items from the continue section.
@@ -950,6 +956,11 @@ const char kProjectorGalleryOnboardingShowCount[] =
 const char kProjectorViewerOnboardingShowCount[] =
     "ash.projector.viewer_onboarding_show_count";
 
+// A boolean pref that indicates the the exclude-transcript dialog has been
+// shown.
+const char kProjectorExcludeTranscriptDialogShown[] =
+    "ash.projector.exclude_transcript_dialog_shown";
+
 // A boolean pref that indicates the Projector has been enabled by admin
 // policy.
 const char kProjectorAllowByPolicy[] = "ash.projector.allow_by_policy";
@@ -982,6 +993,11 @@ const char kFloatingWorkspaceEnabled[] = "ash.floating_workspace_enabled";
 // Boolean value indicating that post reboot notification should be shown to the
 // user.
 const char kShowPostRebootNotification[] = "ash.show_post_reboot_notification";
+
+// Integer pref indicating which color for the backlight keyboard is currently
+// selected for a user profile.
+const char kPersonalizationKeyboardBacklightColor[] =
+    "ash.personalization.keyboard_backlight_color";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

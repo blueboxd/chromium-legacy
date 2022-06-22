@@ -4,7 +4,6 @@
 
 package org.chromium.components.external_intents;
 
-import android.Manifest.permission;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -38,7 +37,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
@@ -62,6 +60,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
+import org.chromium.ui.base.MimeTypeUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.permissions.PermissionCallback;
@@ -95,6 +94,8 @@ public class ExternalNavigationHandler {
     private static final String PLAY_REFERRER_PARAM = "referrer";
     private static final String PLAY_APP_PATH = "/store/apps/details";
     private static final String PLAY_HOSTNAME = "play.google.com";
+    @VisibleForTesting
+    public static final String PLAY_APP_PACKAGE = "com.android.vending";
 
     private static final String PDF_EXTENSION = "pdf";
     private static final String PDF_VIEWER = "com.google.android.apps.docs";
@@ -528,11 +529,20 @@ public class ExternalNavigationHandler {
      * to the app.
      */
     private boolean startFileIntentIfNecessary(ExternalNavigationParams params) {
-        if (params.getUrl().getScheme().equals(UrlConstants.FILE_SCHEME)
-                && shouldRequestFileAccess(params.getUrl())) {
-            startFileIntent(params);
-            if (DEBUG) Log.i(TAG, "Requesting filesystem access");
-            return true;
+        if (params.getUrl().getScheme().equals(UrlConstants.FILE_SCHEME)) {
+            @MimeTypeUtils.Type
+            int mimeType = MimeTypeUtils.getMimeTypeForUrl(params.getUrl());
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Android.Intent.OpenFileType", mimeType, MimeTypeUtils.NUM_MIME_TYPE_ENTRIES);
+            String permissionNeeded = MimeTypeUtils.getPermissionNameForMimeType(mimeType);
+
+            if (permissionNeeded == null) return false;
+
+            if (shouldRequestFileAccess(params.getUrl(), permissionNeeded)) {
+                startFileIntent(params, permissionNeeded);
+                if (DEBUG) Log.i(TAG, "Requesting filesystem access");
+                return true;
+            }
         }
         return false;
     }
@@ -541,12 +551,11 @@ public class ExternalNavigationHandler {
      * Trigger a UI affordance that will ask the user to grant file access.  After the access
      * has been granted or denied, continue loading the specified file URL.
      *
-     * @param intent The intent to continue loading the file URL.
-     * @param referrerUrl The HTTP referrer URL.
-     * @param needsToCloseTab Whether this action should close the current tab.
+     * @param params The {@link ExternalNavigationParams} for the navigation.
+     * @param permissionNeeded The name of the Android permission needed to access the file.
      */
     @VisibleForTesting
-    protected void startFileIntent(ExternalNavigationParams params) {
+    protected void startFileIntent(ExternalNavigationParams params, String permissionNeeded) {
         PermissionCallback permissionCallback = new PermissionCallback() {
             @Override
             public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
@@ -565,7 +574,7 @@ public class ExternalNavigationHandler {
         };
         if (!mDelegate.hasValidTab()) return;
         mDelegate.getWindowAndroid().requestPermissions(
-                new String[] {permission.READ_EXTERNAL_STORAGE}, permissionCallback);
+                new String[] {permissionNeeded}, permissionCallback);
     }
 
     /**
@@ -648,12 +657,6 @@ public class ExternalNavigationHandler {
         return false;
     }
 
-    /** Wrapper of check against the feature to support overriding for testing. */
-    @VisibleForTesting
-    boolean blockExternalFormRedirectsWithoutGesture() {
-        return ExternalIntentsFeatures.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE.isEnabled();
-    }
-
     /**
      * http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
      * the link is not an incoming intent from another application, unless it's a redirect.
@@ -699,19 +702,6 @@ public class ExternalNavigationHandler {
             return false;
         }
 
-        // http://crbug.com/839751: Require user gestures for form submits to external
-        //                          protocols.
-        // TODO(tedchoc): Turn this on by default once we verify this change does
-        //                not break the world.
-        if (isRedirectFromFormSubmit && !incomingIntentRedirect && !params.hasUserGesture()
-                && blockExternalFormRedirectsWithoutGesture()) {
-            if (DEBUG) {
-                Log.i(TAG,
-                        "Incoming form intent attempting to redirect without "
-                                + "user gesture");
-            }
-            return false;
-        }
         // http://crbug/331571 : Do not override a navigation started from user typing.
         if (params.getRedirectHandler() != null
                 && params.getRedirectHandler().isNavigationFromUserTyping()) {
@@ -1567,7 +1557,7 @@ public class ExternalNavigationHandler {
                         .build();
         Intent intent = new Intent(Intent.ACTION_VIEW, marketUri);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        intent.setPackage("com.android.vending");
+        intent.setPackage(PLAY_APP_PACKAGE);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (!params.getReferrerUrl().isEmpty()) {
             intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(params.getReferrerUrl().getSpec()));
@@ -2061,14 +2051,11 @@ public class ExternalNavigationHandler {
 
     /**
      * @param url The requested url.
+     * @param permissionNeeded The name of the Android permission needed to access the file.
      * @return Whether we should block the navigation and request file access before proceeding.
      */
     @VisibleForTesting
-    protected boolean shouldRequestFileAccess(GURL url) {
-        // TODO(https://crbug.com/1316672): Replace READ_EXTERNAL_STORAGE with READ_MEDIA_*
-        //       permissions to restore capability to open file:// on Android T.
-        if (BuildInfo.isAtLeastT()) return false;
-
+    protected boolean shouldRequestFileAccess(GURL url, String permissionNeeded) {
         // If the tab is null, then do not attempt to prompt for access.
         if (!mDelegate.hasValidTab()) return false;
         assert url.getScheme().equals(UrlConstants.FILE_SCHEME);
@@ -2076,9 +2063,8 @@ public class ExternalNavigationHandler {
         // This is required to prevent permission prompt when uses wants to access offline pages.
         if (url.getPath().startsWith(PathUtils.getDataDirectory())) return false;
 
-        return !mDelegate.getWindowAndroid().hasPermission(permission.READ_EXTERNAL_STORAGE)
-                && mDelegate.getWindowAndroid().canRequestPermission(
-                        permission.READ_EXTERNAL_STORAGE);
+        return !mDelegate.getWindowAndroid().hasPermission(permissionNeeded)
+                && mDelegate.getWindowAndroid().canRequestPermission(permissionNeeded);
     }
 
     @Nullable

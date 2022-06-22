@@ -29,7 +29,6 @@
 #include "components/lookalikes/core/features.h"
 #include "components/reputation/core/safety_tips_config.h"
 #include "components/security_interstitials/core/pref_names.h"
-#include "components/security_state/core/features.h"
 #include "components/url_formatter/spoof_checks/common_words/common_words_util.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
@@ -57,12 +56,6 @@ const char kDigitChars[] = "0123456789";
 // foo.bar.baz.com-evil.com embeds foo.bar.baz.com, but we don't flag it since
 // "baz" is shorter than kMinTargetE2LDLength.
 const size_t kMinE2LDLengthForTargetEmbedding = 4;
-
-// This list will be added to the static list of common words so common words
-// could be added to the list using a flag if needed.
-const base::FeatureParam<std::string> kRemoveAdditionalCommonWords{
-    &lookalikes::features::kDetectTargetEmbeddingLookalikes,
-    "additional_common_words", ""};
 
 // We might not protect a domain whose e2LD is a common word in target embedding
 // based on the TLD that is paired with it. This list supplements words from
@@ -383,12 +376,6 @@ bool UsesCommonWord(const reputation::SafetyTipsConfig* config_proto,
     if (domain.domain_without_registry == common_word) {
       return true;
     }
-  }
-  std::vector<std::string> additional_common_words =
-      base::SplitString(kRemoveAdditionalCommonWords.Get(), ",",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (base::Contains(additional_common_words, domain.domain_without_registry)) {
-    return true;
   }
 
   return false;
@@ -729,13 +716,10 @@ bool ShouldBlockLookalikeUrlNavigation(LookalikeUrlMatchType match_type) {
     //    check engaged sites. Otherwise, false positives are too high.
     return false;
 #else
-    return base::FeatureList::IsEnabled(
-        lookalikes::features::kDetectTargetEmbeddingLookalikes);
+    return true;
 #endif
   }
-  if (match_type == LookalikeUrlMatchType::kFailedSpoofChecks &&
-      base::FeatureList::IsEnabled(
-          lookalikes::features::kLookalikeInterstitialForPunycode)) {
+  if (match_type == LookalikeUrlMatchType::kFailedSpoofChecks) {
     return true;
   }
   return match_type == LookalikeUrlMatchType::kSkeletonMatchTop500;

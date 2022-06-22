@@ -166,7 +166,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       const base::android::JavaRef<jobject>& jrender_frame_host_android);
 #endif
 
-  ~RenderFrameHost() override {}
+  ~RenderFrameHost() override = default;
 
   // Returns the route id for this frame.
   virtual int GetRoutingID() const = 0;
@@ -963,29 +963,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // this somewhat (maybe //content would be responsible for maintaining the
   // state, with some content client method used to update it).
   virtual void UpdateIsAdSubframe(bool is_ad_subframe) = 0;
-
-  // Perform security checks on Web Authentication requests. These can be
-  // called by other |Authenticator| mojo interface implementations in the
-  // browser process so that they don't have to duplicate security policies.
-  // For requests originating from the render process, |effective_origin| will
-  // be the same as the last committed origin. However, for request originating
-  // from the browser process, this may be different.
-  // |is_payment_credential_creation| indicates whether MakeCredential is making
-  // a payment credential.
-  // |PerformGetAssertionWebAuthSecurityChecks| returns a security check result
-  // and a boolean representing whether the given origin is cross-origin with
-  // any frame in this frame's ancestor chain. This extra cross-origin bit is
-  // relevant in case callers need it for crypto signature.
-  virtual std::pair<blink::mojom::AuthenticatorStatus, bool>
-  PerformGetAssertionWebAuthSecurityChecks(
-      const std::string& relying_party_id,
-      const url::Origin& effective_origin,
-      bool is_payment_credential_get_assertion) = 0;
-  virtual blink::mojom::AuthenticatorStatus
-  PerformMakeCredentialWebAuthSecurityChecks(
-      const std::string& relying_party_id,
-      const url::Origin& effective_origin,
-      bool is_payment_credential_creation) = 0;
 
   // Tells the host that this is part of setting up a WebXR DOM Overlay. This
   // starts a short timer that permits entering fullscreen mode, similar to a

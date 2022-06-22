@@ -106,6 +106,7 @@ class CC_EXPORT ThreadedInputHandler : public InputHandler,
   void ScrollEndForSnapFling(bool did_finish) override;
   void NotifyInputEvent() override;
   bool ScrollbarScrollIsActive() override;
+  void SetDeferBeginMainFrame(bool defer_begin_main_frame) const override;
 
   // =========== InputDelegateForCompositor Interface - This section implements
   // the interface that LayerTreeHostImpl uses to communicate with the input
@@ -118,6 +119,8 @@ class CC_EXPORT ThreadedInputHandler : public InputHandler,
   void DidCommit() override;
   void DidActivatePendingTree() override;
   void RootLayerStateMayHaveChanged() override;
+  void DidRegisterScrollbar(ElementId scroll_element_id,
+                            ScrollbarOrientation orientation) override;
   void DidUnregisterScrollbar(ElementId scroll_element_id,
                               ScrollbarOrientation orientation) override;
   void ScrollOffsetAnimationFinished() override;
@@ -423,6 +426,11 @@ class CC_EXPORT ThreadedInputHandler : public InputHandler,
   // sequence on the specific axis.
   bool did_scroll_x_for_scroll_gesture_ = false;
   bool did_scroll_y_for_scroll_gesture_ = false;
+
+  // did_scroll_x/y_for_scroll_gesture_ is true when contents consume the delta,
+  // but delta_consumed_for_scroll_gesture_ can be true when only browser
+  // controls consume all the delta.
+  bool delta_consumed_for_scroll_gesture_ = false;
 
   // TODO(bokan): Mac doesn't yet have smooth scrolling for wheel; however, to
   // allow consistency in tests we use this bit to override that decision.

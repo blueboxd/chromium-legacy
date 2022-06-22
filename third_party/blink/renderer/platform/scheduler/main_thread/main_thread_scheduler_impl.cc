@@ -512,11 +512,7 @@ MainThreadSchedulerImpl::AnyThread::AnyThread(
           false,
           "Scheduler.HaveSeenInputSinceNavigation",
           &main_thread_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
-      begin_main_frame_scheduled_count(
-          0,
-          "Scheduler.BeginMainFrameScheduledCount",
-          &main_thread_scheduler_impl->tracing_controller_) {}
+          YesNoStateToString) {}
 
 MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   low_priority_background_page =
@@ -1058,11 +1054,6 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   memory_purge_manager_.SetRendererBackgrounded(backgrounded);
 }
 
-void MainThreadSchedulerImpl::OnMainFrameRequestedForInput() {
-  SetPrioritizeCompositingAfterInput(
-      scheduling_settings().prioritize_compositing_after_input);
-}
-
 #if BUILDFLAG(IS_ANDROID)
 void MainThreadSchedulerImpl::PauseTimersForAndroidWebView() {
   main_thread_only().pause_timers_for_webview = true;
@@ -1189,14 +1180,8 @@ void MainThreadSchedulerImpl::DidAnimateForInputOnCompositorThread() {
       helper_.NowTicks() + base::Milliseconds(kFlingEscalationLimitMillis);
 }
 
-void MainThreadSchedulerImpl::DidScheduleBeginMainFrame() {
-  base::AutoLock lock(any_thread_lock_);
-  any_thread().begin_main_frame_scheduled_count += 1;
-}
-
 void MainThreadSchedulerImpl::DidRunBeginMainFrame() {
   base::AutoLock lock(any_thread_lock_);
-  any_thread().begin_main_frame_scheduled_count -= 1;
   any_thread().last_main_frame_time = base::TimeTicks::Now();
 }
 
@@ -2251,11 +2236,6 @@ MainThreadSchedulerImpl::GetPendingUserInputInfo(
   return any_thread().pending_input_monitor.Info(include_continuous);
 }
 
-bool MainThreadSchedulerImpl::IsBeginMainFrameScheduled() const {
-  base::AutoLock lock(any_thread_lock_);
-  return any_thread().begin_main_frame_scheduled_count.value() > 0;
-}
-
 bool MainThreadSchedulerImpl::DontDeferBeginMainFrame() const {
   if (!scheduling_settings().can_defer_begin_main_frame_during_loading)
     return true;
@@ -2571,6 +2551,14 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
 
   RecordTaskUkm(queue.get(), task, *task_timing);
 
+  // Assume this input will result in a frame, which we want to show ASAP.
+  if (queue &&
+      queue->GetPrioritisationType() ==
+          MainThreadTaskQueue::QueueTraits::PrioritisationType::kInput) {
+    SetPrioritizeCompositingAfterInput(
+        scheduling_settings().prioritize_compositing_after_input);
+  }
+
   MaybeUpdateCompositorTaskQueuePriorityOnTaskCompleted(queue.get(),
                                                         *task_timing);
 
@@ -2777,7 +2765,9 @@ void MainThreadSchedulerImpl::SetPrioritizeCompositingAfterInput(
 TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputeCompositorPriority()
     const {
   if (main_thread_only().prioritize_compositing_after_input) {
-    return TaskQueue::QueuePriority::kVeryHighPriority;
+    // Return the highest priority here otherwise consecutive heavy inputs (e.g.
+    // typing) will starve rendering.
+    return TaskQueue::QueuePriority::kHighestPriority;
   } else if (scheduling_settings_
                  .prioritize_compositing_and_loading_during_early_loading &&
              current_use_case() == UseCase::kEarlyLoading) {

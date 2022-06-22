@@ -13,22 +13,23 @@ import './strings.m.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 
 import {DownloadItem, DownloadMode, DownloadState} from './download_shelf.mojom-webui.js';
 import {DownloadShelfApiProxy, DownloadShelfApiProxyImpl} from './download_shelf_api_proxy.js';
 
 enum DisplayMode {
   // Shows icon + filename + context menu button.
-  kNormal = 'normal',
+  NORMAL = 'normal',
   // Shows icon + warning text + discard button + context menu button.
-  kWarn = 'warn',
+  WARN = 'warn',
   // Shows icon + warning text + keep button + discard button.
-  kWarnKeep = 'warn-keep',
+  WARN_KEEP = 'warn-keep',
 }
 
 export class DownloadItemElement extends CustomElement {
   static override get template() {
-    return `{__html_template__}`;
+    return getTrustedHTML`{__html_template__}`;
   }
 
   private item_: DownloadItem;
@@ -153,13 +154,13 @@ export class DownloadItemElement extends CustomElement {
     });
 
     if (item.mode === DownloadMode.kNormal) {
-      downloadElement.dataset['displayMode'] = DisplayMode.kNormal;
+      downloadElement.dataset['displayMode'] = DisplayMode.NORMAL;
     } else if (
         item.mode === DownloadMode.kDangerous ||
         item.mode === DownloadMode.kMixedContentWarn) {
-      downloadElement.dataset['displayMode'] = DisplayMode.kWarnKeep;
+      downloadElement.dataset['displayMode'] = DisplayMode.WARN_KEEP;
     } else {
-      downloadElement.dataset['displayMode'] = DisplayMode.kWarn;
+      downloadElement.dataset['displayMode'] = DisplayMode.WARN;
     }
 
     (this.$('#keep-button') as HTMLElement).innerText =

@@ -41,6 +41,8 @@ android_library("java") {
   deps = [
     ":java_resources",
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//components/browser_ui/widget/android:java",
     "//components/messages/android:java",
     "//content/public/android:content_java",
@@ -99,7 +101,6 @@ android_library("javatests") {
       [ "java/src/org/chromium/components/translate/TranslateOptionsTest.java" ]
   deps = [
     ":java",
-    "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -135,7 +136,6 @@ source_set("unit_tests") {
     "//components/translate/core/common",
     "//testing/gmock",
     "//testing/gtest",
-    "//ui/base",
     "//url",
   ]
 }

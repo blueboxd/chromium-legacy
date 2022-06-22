@@ -14,6 +14,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
+#include "base/values.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
@@ -22,10 +23,6 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 class GURL;
-
-namespace base {
-class Value;
-}  // namespace base
 
 namespace content {
 
@@ -50,7 +47,7 @@ class CONTENT_EXPORT AttributionReport {
     EventLevelData(uint64_t trigger_data,
                    int64_t priority,
                    double randomized_trigger_rate,
-                   absl::optional<Id> id);
+                   Id id);
     EventLevelData(const EventLevelData& other);
     EventLevelData& operator=(const EventLevelData& other);
     EventLevelData(EventLevelData&& other);
@@ -69,9 +66,8 @@ class CONTENT_EXPORT AttributionReport {
     // registered.
     double randomized_trigger_rate;
 
-    // Id assigned by storage to uniquely identify a completed conversion. If
-    // null, an ID has not been assigned yet.
-    absl::optional<Id> id;
+    // Id assigned by storage to uniquely identify a completed conversion.
+    Id id;
 
     // When adding new members, the corresponding `operator==()` definition in
     // `attribution_test_utils.h` should also be updated.
@@ -83,7 +79,7 @@ class CONTENT_EXPORT AttributionReport {
 
     AggregatableAttributionData(
         std::vector<AggregatableHistogramContribution> contributions,
-        absl::optional<Id> id,
+        Id id,
         base::Time initial_report_time);
     AggregatableAttributionData(const AggregatableAttributionData&);
     AggregatableAttributionData& operator=(const AggregatableAttributionData&);
@@ -98,8 +94,7 @@ class CONTENT_EXPORT AttributionReport {
     std::vector<AggregatableHistogramContribution> contributions;
 
     // Id assigned by storage to uniquely identify an aggregatable contribution.
-    // If null, an ID has not been assigned yet.
-    absl::optional<Id> id;
+    Id id;
 
     // The report assembled by the aggregation service. If null, the report has
     // not been assembled yet.
@@ -118,6 +113,11 @@ class CONTENT_EXPORT AttributionReport {
     return static_cast<ReportType>(report_id.index());
   }
 
+  // Returns the minimum non-null time of `a` and `b`, or `absl::nullopt` if
+  // both are null.
+  static absl::optional<base::Time> MinReportTime(absl::optional<base::Time> a,
+                                                  absl::optional<base::Time> b);
+
   AttributionReport(
       AttributionInfo attribution_info,
       base::Time report_time,
@@ -132,9 +132,9 @@ class CONTENT_EXPORT AttributionReport {
   // Returns the URL to which the report will be sent.
   GURL ReportURL(bool debug = false) const;
 
-  base::Value ReportBody() const;
+  base::Value::Dict ReportBody() const;
 
-  absl::optional<Id> ReportId() const;
+  Id ReportId() const;
 
   // This will be included in aggregatable report to allow aggregation service
   // to do privacy budgeting. Note that this will DCHECK that the underlying

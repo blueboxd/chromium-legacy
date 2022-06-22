@@ -14,6 +14,7 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/util.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/numerics/checked_math.h"
 
 namespace base {
@@ -124,9 +125,9 @@ class VectorBuffer {
 
   // Trivially copyable types can use memcpy. trivially copyable implies
   // that there is a trivial destructor as we don't have to call it.
-  template <typename T2 = T,
-            typename std::enable_if<base::is_trivially_copyable<T2>::value,
-                                    int>::type = 0>
+  template <
+      typename T2 = T,
+      typename std::enable_if<std::is_trivially_copyable_v<T2>, int>::type = 0>
   static void MoveRange(T* from_begin, T* from_end, T* to) {
     CHECK(!RangesOverlap(from_begin, from_end, to));
 
@@ -139,7 +140,7 @@ class VectorBuffer {
   // destruct the original.
   template <typename T2 = T,
             typename std::enable_if<std::is_move_constructible<T2>::value &&
-                                        !base::is_trivially_copyable<T2>::value,
+                                        !std::is_trivially_copyable_v<T2>,
                                     int>::type = 0>
   static void MoveRange(T* from_begin, T* from_end, T* to) {
     CHECK(!RangesOverlap(from_begin, from_end, to));
@@ -155,7 +156,7 @@ class VectorBuffer {
   // destruct the original.
   template <typename T2 = T,
             typename std::enable_if<!std::is_move_constructible<T2>::value &&
-                                        !base::is_trivially_copyable<T2>::value,
+                                        !std::is_trivially_copyable_v<T2>,
                                     int>::type = 0>
   static void MoveRange(T* from_begin, T* from_end, T* to) {
     CHECK(!RangesOverlap(from_begin, from_end, to));
@@ -182,7 +183,7 @@ class VectorBuffer {
 
   // `buffer_` is not a raw_ptr<...> for performance reasons (based on analysis
   // of sampling profiler data and tab_search:top100:2020).
-  T* buffer_ = nullptr;
+  RAW_PTR_EXCLUSION T* buffer_ = nullptr;
   size_t capacity_ = 0;
 };
 

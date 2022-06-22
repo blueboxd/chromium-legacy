@@ -587,27 +587,27 @@ void StyleResolver::MatchPseudoPartRulesForUAHost(
                        /* for_shadow_pseudo */ true);
 }
 
-void StyleResolver::MatchPseudoPartRules(const Element& element,
+void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
                                          ElementRuleCollector& collector,
                                          bool for_shadow_pseudo) {
   if (!for_shadow_pseudo)
-    MatchPseudoPartRulesForUAHost(element, collector);
-  DOMTokenList* part = element.GetPart();
-  if (!part)
+    MatchPseudoPartRulesForUAHost(part_matching_element, collector);
+
+  DOMTokenList* part = part_matching_element.GetPart();
+  if (!part || !part->length() || !part_matching_element.IsInShadowTree())
     return;
 
   PartNames current_names(part->TokenSet());
 
-  // ::part selectors in the shadow host's scope and above can match this
-  // element.
-  Element* host = element.OwnerShadowHost();
-  if (!host)
-    return;
-
-  while (current_names.size()) {
-    TreeScope& tree_scope = host->GetTreeScope();
+  // Consider ::part rules in this element’s tree scope or above. Rules in this
+  // element’s tree scope will only match if preceded by a :host or :host() that
+  // matches one of its containing shadow hosts (see MatchForRelation).
+  for (const Element* element = &part_matching_element; element;
+       element = element->OwnerShadowHost()) {
+    TreeScope& tree_scope = element->GetTreeScope();
     if (ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver()) {
-      ElementRuleCollector::PartRulesScope scope(collector, *host);
+      ElementRuleCollector::PartRulesScope scope(
+          collector, const_cast<Element&>(*element));
       collector.ClearMatchedRules();
       resolver->CollectMatchingPartPseudoRules(collector, current_names,
                                                for_shadow_pseudo);
@@ -615,17 +615,12 @@ void StyleResolver::MatchPseudoPartRules(const Element& element,
       collector.FinishAddingAuthorRulesForTreeScope(resolver->GetTreeScope());
     }
 
-    // If the host doesn't forward any parts using partmap= then the element is
-    // unreachable from any scope further above and we can stop.
-    const NamesMap* part_map = host->PartNamesMap();
-    if (!part_map)
+    // If the host doesn't forward any parts using exportparts= then the element
+    // is unreachable from any scope further above and we can stop.
+    if (element->HasPartNamesMap())
+      current_names.PushMap(*element->PartNamesMap());
+    else if (element != &part_matching_element)
       return;
-
-    // We have reached the top-level document.
-    if (!(host = host->OwnerShadowHost()))
-      return;
-
-    current_names.PushMap(*part_map);
   }
 }
 
@@ -964,6 +959,7 @@ void StyleResolver::ApplyInheritance(Element& element,
     // the element has rules but no matched properties, we currently clone.
 
     state.SetStyle(ComputedStyle::Clone(*state.ParentStyle()));
+    state.Style()->SetInsideLink(state.ElementLinkState());
   } else {
     scoped_refptr<ComputedStyle> style = CreateComputedStyle();
     style->InheritFrom(
@@ -1222,11 +1218,46 @@ void StyleResolver::ApplyBaseStyleNoCache(
   if (tracker_)
     AddMatchedRulesToTracker(collector);
 
-  if (style_request.IsPseudoStyleRequest() &&
-      !collector.MatchedResult().HasMatchedProperties()) {
-    StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
-    state.SetHadNoMatchedProperties();
-    return;
+  if (style_request.IsPseudoStyleRequest()) {
+    if (!collector.MatchedResult().HasMatchedProperties()) {
+      StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+      state.SetHadNoMatchedProperties();
+      return;
+    }
+
+    bool skip_apply_highlight = false;
+
+    // Highlight pseudos inherit all properties from the corresponding highlight
+    // in the parent, but virtually all existing content uses universal rules
+    // like *::selection. To ensure copy-on-write inheritance still works, avoid
+    // reapplying styles if both parent and child only matched universal rules.
+    if (RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+        IsHighlightPseudoElement(style_request.pseudo_id)) {
+      // If the parent matched any non-universal highlight rules, then we need
+      // to apply, in case there are universal highlight rules.
+      bool parent_non_universal =
+          state.Style()->DidMatchNonUniversalHighlights();
+
+      // If we matched any non-universal highlight rules, then we need to apply
+      // and our children also need to apply (see above).
+      bool self_non_universal =
+          collector.MatchedResult().MatchesNonUniversalHighlights();
+
+      if (parent_non_universal || self_non_universal) {
+        // Set or reset the did-match-non-universal flag only if necessary.
+        state.Style()->SetDidMatchNonUniversalHighlights(self_non_universal);
+      } else if (element->parentNode() !=
+                 element->ContainingTreeScope().RootNode()) {
+        // The root node of the tree scope needs to apply, in case there are
+        // only universal highlight rules.
+        skip_apply_highlight = true;
+      }
+    }
+
+    if (skip_apply_highlight) {
+      StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+      return;
+    }
   }
 
   // Preserve the text autosizing multiplier on style recalc. Autosizer will
@@ -1453,16 +1484,21 @@ scoped_refptr<ComputedStyle> StyleResolver::CreateComputedStyle() const {
   return ComputedStyle::Clone(*initial_style_);
 }
 
+float StyleResolver::InitialZoom() const {
+  const Document& document = GetDocument();
+  if (const LocalFrame* frame = document.GetFrame())
+    return !document.Printing() ? frame->PageZoomFactor() : 1;
+  return 1;
+}
+
 scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement() const {
-  const LocalFrame* frame = GetDocument().GetFrame();
   StyleEngine& engine = GetDocument().GetStyleEngine();
 
   scoped_refptr<ComputedStyle> initial_style = CreateComputedStyle();
 
   initial_style->SetRtlOrdering(
       GetDocument().VisuallyOrdered() ? EOrder::kVisual : EOrder::kLogical);
-  initial_style->SetZoom(
-      frame && !GetDocument().Printing() ? frame->PageZoomFactor() : 1);
+  initial_style->SetZoom(InitialZoom());
   initial_style->SetEffectiveZoom(initial_style->Zoom());
   initial_style->SetInForcedColorsMode(GetDocument().InForcedColorsMode());
   initial_style->SetTapHighlightColor(
@@ -2153,8 +2189,6 @@ bool StyleResolver::ShouldStopBodyPropagation(const Element& body_or_html) {
                                          ? WebFeature::kHTMLRootContained
                                          : WebFeature::kHTMLBodyContained);
   }
-  if (!RuntimeEnabledFeatures::CSSContainedBodyPropagationEnabled())
-    return false;
   DCHECK_EQ(contained,
             layout_object->StyleRef().ShouldApplyAnyContainment(body_or_html))
       << "Applied containment must give the same result from LayoutObject and "
@@ -2314,7 +2348,7 @@ void StyleResolver::PropagateStyleToViewport() {
       if (overflow_anchor == EOverflowAnchor::kVisible)
         overflow_anchor = EOverflowAnchor::kAuto;
 
-      if (GetDocument().IsInMainFrame()) {
+      if (GetDocument().IsInOutermostMainFrame()) {
         using OverscrollBehaviorType = cc::OverscrollBehavior::Type;
         GetDocument().GetPage()->GetChromeClient().SetOverscrollBehavior(
             *GetDocument().GetFrame(),

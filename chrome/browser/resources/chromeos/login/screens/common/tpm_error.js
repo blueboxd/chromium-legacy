@@ -51,9 +51,7 @@ class TPMErrorMessage extends TPMErrorMessageElementBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('TPMErrorMessageScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('TPMErrorMessageScreen');
   }
 
   /** @override */
@@ -79,15 +77,6 @@ class TPMErrorMessage extends TPMErrorMessageElementBase {
    */
   setStep(step) {
     this.setUIStep(step);
-  }
-
-  /**
-   * @param {string} locale
-   * @return {string}
-   * @private
-   */
-  getTPMOwnedFailureContent_(locale) {
-    return this.i18nAdvanced('errorTPMOwnedContent');
   }
 
   onRestartTap_() {

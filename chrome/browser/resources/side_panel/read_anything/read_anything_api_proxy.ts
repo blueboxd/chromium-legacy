@@ -6,7 +6,12 @@ import {PageCallbackRouter, PageHandlerFactory, PageHandlerRemote} from './read_
 
 let instance: ReadAnythingApiProxy|null = null;
 
-export class ReadAnythingApiProxy {
+export interface ReadAnythingApiProxy {
+  getCallbackRouter(): PageCallbackRouter;
+  onUIReady(): void;
+}
+
+export class ReadAnythingApiProxyImpl implements ReadAnythingApiProxy {
   callbackRouter: PageCallbackRouter;
   handler: PageHandlerRemote;
 
@@ -23,12 +28,12 @@ export class ReadAnythingApiProxy {
     return this.callbackRouter;
   }
 
-  showUI() {
-    this.handler.showUI();
+  onUIReady() {
+    this.handler.onUIReady();
   }
 
-  static getInstance() {
-    return instance || (instance = new ReadAnythingApiProxy());
+  static getInstance(): ReadAnythingApiProxy {
+    return instance || (instance = new ReadAnythingApiProxyImpl());
   }
 
   static setInstance(obj: ReadAnythingApiProxy) {

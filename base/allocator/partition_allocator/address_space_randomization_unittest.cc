@@ -10,6 +10,7 @@
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/random.h"
 #include "base/check_op.h"
+#include "base/dcheck_is_on.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -136,7 +137,12 @@ void RandomBitCorrelation(int random_bit) {
   if ((mask & (1ULL << random_bit)) == 0)
     return;  // bit is always 0.
 
-#ifdef DEBUG
+#if DCHECK_IS_ON()
+  // Do fewer checks when DCHECK_IS_ON(). Exercized code only changes when the
+  // random number generator does, which should be almost never. However it's
+  // expensive to run all the tests. So keep iterations faster for local
+  // development builds, while having the stricter version run on official build
+  // testers.
   constexpr int kHistory = 2;
   constexpr int kRepeats = 1000;
 #else
@@ -243,5 +249,31 @@ TEST_RANDOM_BIT(48)
 #endif  // defined(ARCH_CPU_64_BITS)
 
 #undef TEST_RANDOM_BIT
+
+// Checks that we can actually map memory in the requested range.
+// TODO(crbug.com/1318466): Extend to all operating systems once they are fixed.
+#if BUILDFLAG(IS_MAC)
+TEST(PartitionAllocAddressSpaceRandomizationTest, CanMapInAslrRange) {
+  int tries = 0;
+  // This is overly generous, but we really don't want to make the test flaky.
+  constexpr int kMaxTries = 1000;
+
+  for (tries = 0; tries < kMaxTries; tries++) {
+    uintptr_t requested_address = GetRandomPageBase();
+    size_t size = internal::PageAllocationGranularity();
+
+    uintptr_t address = AllocPages(
+        requested_address, size, internal::PageAllocationGranularity(),
+        PageAccessibilityConfiguration::kReadWrite, PageTag::kPartitionAlloc);
+    ASSERT_NE(address, 0u);
+    FreePages(address, size);
+
+    if (address == requested_address)
+      break;
+  }
+
+  EXPECT_LT(tries, kMaxTries);
+}
+#endif  // BUILDFLAG(IS_MAC)
 
 }  // namespace partition_alloc

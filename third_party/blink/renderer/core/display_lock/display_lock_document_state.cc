@@ -381,8 +381,23 @@ void DisplayLockDocumentState::NotifyPrintingOrPreviewChanged() {
   if (printing_ == was_printing)
     return;
 
-  for (auto& context : display_lock_contexts_)
-    context->SetShouldUnlockAutoForPrint(printing_);
+  for (auto& context : display_lock_contexts_) {
+    if (printing_ && context->HasElement() && context->IsShapingDeferred())
+      context->SetRequestedState(EContentVisibility::kVisible);
+    else
+      context->SetShouldUnlockAutoForPrint(printing_);
+  }
+}
+
+void DisplayLockDocumentState::UnlockShapingDeferredElements() {
+  if (!RuntimeEnabledFeatures::DeferredShapingEnabled())
+    return;
+  if (LockedDisplayLockCount() == DisplayLockBlockingAllActivationCount())
+    return;
+  for (auto& context : display_lock_contexts_) {
+    if (context->HasElement() && context->IsShapingDeferred())
+      context->SetRequestedState(EContentVisibility::kVisible);
+  }
 }
 
 }  // namespace blink

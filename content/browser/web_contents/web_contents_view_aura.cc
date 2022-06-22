@@ -32,7 +32,6 @@
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
-#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -94,12 +93,13 @@
 
 namespace content {
 
-WebContentsView* CreateWebContentsView(
+std::unique_ptr<WebContentsView> CreateWebContentsView(
     WebContentsImpl* web_contents,
-    WebContentsViewDelegate* delegate,
+    std::unique_ptr<WebContentsViewDelegate> delegate,
     RenderViewHostDelegateView** render_view_host_delegate_view) {
-  WebContentsViewAura* rv = new WebContentsViewAura(web_contents, delegate);
-  *render_view_host_delegate_view = rv;
+  auto rv =
+      std::make_unique<WebContentsViewAura>(web_contents, std::move(delegate));
+  *render_view_host_delegate_view = rv.get();
   return rv;
 }
 
@@ -493,11 +493,10 @@ void WebContentsViewAura::AsyncDropTempFileDeleter::DeleteAllFilesAsync()
 
 void WebContentsViewAura::AsyncDropTempFileDeleter::DeleteFileAsync(
     const base::FilePath& path) const {
-  base::ThreadPool::PostTask(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(base::GetDeleteFileCallback(), std::move(path)));
+  base::ThreadPool::PostTask(FROM_HERE,
+                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                              base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                             base::GetDeleteFileCallback(std::move(path)));
 }
 #endif
 
@@ -681,24 +680,17 @@ void WebContentsViewAura::InstallCreateHookForTests(
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, public:
 
-WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
-                                         WebContentsViewDelegate* delegate)
+WebContentsViewAura::WebContentsViewAura(
+    WebContentsImpl* web_contents,
+    std::unique_ptr<WebContentsViewDelegate> delegate)
     : web_contents_(web_contents),
-      delegate_(delegate),
+      delegate_(std::move(delegate)),
       current_drag_op_(DragOperation::kNone),
       drag_dest_delegate_(nullptr),
       current_rvh_for_drag_(ChildProcessHost::kInvalidUniqueID,
                             MSG_ROUTING_NONE),
       drag_in_progress_(false),
       init_rwhv_with_null_parent_for_testing_(false) {}
-
-void WebContentsViewAura::SetDelegateForTesting(
-    WebContentsViewDelegate* delegate) {
-  delegate_.reset(delegate);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WebContentsViewAura, private:
 
 WebContentsViewAura::~WebContentsViewAura() {
   if (!window_)
@@ -710,6 +702,14 @@ WebContentsViewAura::~WebContentsViewAura() {
   // delete it here.
   window_.reset();
 }
+
+void WebContentsViewAura::SetDelegateForTesting(
+    std::unique_ptr<WebContentsViewDelegate> delegate) {
+  delegate_ = std::move(delegate);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WebContentsViewAura, private:
 
 void WebContentsViewAura::PrepareDropData(
     DropData* drop_data,
@@ -1148,6 +1148,9 @@ void WebContentsViewAura::StartDragging(
   // that case.
   base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr =
       source_rwh->GetWeakPtr();
+  // It's also possible for portal activation and adoption to destroy `this`
+  // during the nested run loop. See https://crbug.com/1312144.
+  base::WeakPtr<WebContentsViewAura> weak_this = weak_ptr_factory_.GetWeakPtr();
 
   drag_start_ =
       DragStart(source_rwh->GetSiteInstanceGroup()->GetId(),
@@ -1191,6 +1194,13 @@ void WebContentsViewAura::StartDragging(
                                event_info.source);
   }
 
+  if (!weak_this) {
+    if (source_rwh_weak_ptr) {
+      source_rwh_weak_ptr->DragSourceSystemDragEnded();
+    }
+    return;
+  }
+
   // Bail out immediately if the contents view window is gone. Note that it is
   // not safe to access any class members in this case since |this| may already
   // be destroyed. The local variable |drag_source| will still be valid though,
@@ -1207,9 +1217,9 @@ void WebContentsViewAura::StartDragging(
   if (!drag_in_progress_) {
     EndDrag(std::move(source_rwh_weak_ptr), result_op);
   } else {
-    end_drag_runner_.ReplaceClosure(base::BindOnce(
-        &WebContentsViewAura::EndDrag, weak_ptr_factory_.GetWeakPtr(),
-        std::move(source_rwh_weak_ptr), result_op));
+    end_drag_runner_.ReplaceClosure(
+        base::BindOnce(&WebContentsViewAura::EndDrag, std::move(weak_this),
+                       std::move(source_rwh_weak_ptr), result_op));
   }
 }
 

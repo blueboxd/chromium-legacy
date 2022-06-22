@@ -82,4 +82,8 @@ public class PermissionUpdater {
     void getLocationPermission(Origin origin, long callback) {
         mLocationPermissionUpdater.checkPermission(origin, callback);
     }
+
+    void requestNotificationPermission(Origin origin, long callback) {
+        mNotificationPermissionUpdater.requestPermission(origin, callback);
+    }
 }

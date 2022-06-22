@@ -60,6 +60,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace arc {
 
 namespace {
@@ -600,10 +604,7 @@ bool IsPlayStoreAvailable() {
   if (!ash::DemoSession::IsDeviceInDemoMode())
     return false;
 
-  // TODO(b/154290639): Remove check for |IsDemoModeOfflineEnrolled| when fixed
-  //                    in Play Store.
-  return !ash::DemoSession::IsDemoModeOfflineEnrolled() &&
-         chromeos::features::ShouldShowPlayStoreInDemoMode();
+  return chromeos::features::ShouldShowPlayStoreInDemoMode();
 }
 
 bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile) {
@@ -674,8 +675,7 @@ std::string GetHistogramNameByUserType(const std::string& base_name,
   if (IsRobotOrOfflineDemoAccountMode()) {
     auto* demo_session = ash::DemoSession::Get();
     if (demo_session && demo_session->started()) {
-      return demo_session->offline_enrolled() ? base_name + ".OfflineDemoMode"
-                                              : base_name + ".DemoMode";
+      return base_name + ".DemoMode";
     }
     return base_name + ".RobotAccount";
   }

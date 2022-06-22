@@ -20,12 +20,13 @@ import org.chromium.chrome.browser.ui.android.webid.data.Account;
 import org.chromium.chrome.browser.ui.android.webid.data.ClientIdMetadata;
 import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadata;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
-import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -65,6 +66,16 @@ class AccountSelectionMediator {
     // The account that the user has selected.
     private Account mSelectedAccount;
 
+    private KeyboardVisibilityListener mKeyboardVisibilityListener =
+            new KeyboardVisibilityListener() {
+                @Override
+                public void keyboardVisibilityChanged(boolean isShowing) {
+                    if (isShowing) {
+                        onDismissed(/*shouldEmbargo=*/false);
+                    }
+                }
+            };
+
     AccountSelectionMediator(AccountSelectionComponent.Delegate delegate, PropertyModel model,
             ModelList sheetAccountItems, BottomSheetController bottomSheetController,
             AccountSelectionBottomSheetContent bottomSheetContent, ImageFetcher imageFetcher,
@@ -91,7 +102,11 @@ class AccountSelectionMediator {
                 mBottomSheetController.removeObserver(mBottomSheetObserver);
 
                 if (!mVisible) return;
-                onDismissed(reason);
+
+                // Dismissing the FedCM bottom sheet via {@link StateChangeReason#SWIPE} is more
+                // intentional than other methods such as {@link StateChangeReason#OMNIBOX_FOCUS}.
+                onDismissed(/*shouldEmbargo=*/(
+                        reason == BottomSheetController.StateChangeReason.SWIPE));
             }
         };
     }
@@ -114,7 +129,7 @@ class AccountSelectionMediator {
                 UrlFormatter.fixupUrl(idpEtldPlusOne), SchemeDisplay.OMIT_HTTP_AND_HTTPS);
 
         Runnable closeOnClickRunnable = () -> {
-            onDismissed(BottomSheetController.StateChangeReason.NONE);
+            onDismissed(/*shouldEmbargo=*/true);
         };
 
         return new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
@@ -224,8 +239,10 @@ class AccountSelectionMediator {
 
             mVisible = true;
             mBottomSheetController.addObserver(mBottomSheetObserver);
+            KeyboardVisibilityDelegate.getInstance().addKeyboardVisibilityListener(
+                    mKeyboardVisibilityListener);
         } else {
-            onDismissed(BottomSheetController.StateChangeReason.NONE);
+            onDismissed(/*shouldEmbargo=*/false);
         }
     }
 
@@ -234,6 +251,8 @@ class AccountSelectionMediator {
      */
     void hideContent() {
         mVisible = false;
+        KeyboardVisibilityDelegate.getInstance().removeKeyboardVisibilityListener(
+                mKeyboardVisibilityListener);
         mBottomSheetController.hideContent(mBottomSheetContent, true);
     }
 
@@ -277,9 +296,9 @@ class AccountSelectionMediator {
         showVerifySheet(selectedAccount);
     }
 
-    void onDismissed(@StateChangeReason int reason) {
+    void onDismissed(boolean shouldEmbargo) {
         hideContent();
-        mDelegate.onDismissed();
+        mDelegate.onDismissed(shouldEmbargo);
     }
 
     void onAutoSignInCancelled() {

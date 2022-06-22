@@ -6,13 +6,14 @@ import './shared_style.js';
 import './toggle_row.js';
 
 import {assert, assertNotReached} from '//resources/js/assert.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {App} from './app_management.mojom-webui.js';
 import {BrowserProxy} from './browser_proxy.js';
 import {AppManagementUserAction, WindowMode} from './constants.js';
 import {AppManagementToggleRowElement} from './toggle_row.js';
 import {recordAppManagementUserAction} from './util.js';
+import {getTemplate} from './window_mode_item.html.js';
 
 export class AppManagementWindowModeElement extends PolymerElement {
   static get is() {
@@ -20,7 +21,7 @@ export class AppManagementWindowModeElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -28,6 +29,9 @@ export class AppManagementWindowModeElement extends PolymerElement {
       windowModeLabel: String,
 
       app: Object,
+
+      hidden:
+          {type: Boolean, computed: 'isHidden_(app)', reflectToAttribute: true},
     };
   }
 
@@ -88,6 +92,10 @@ export class AppManagementWindowModeElement extends PolymerElement {
   private getWindowModeBoolean(windowMode: WindowMode): boolean {
     assert(windowMode !== WindowMode.kUnknown, 'Window Mode Not Set');
     return this.convertWindowModeToBool(windowMode);
+  }
+
+  private isHidden_(app: App): Boolean {
+    return app.hideWindowMode;
   }
 }
 

@@ -47,14 +47,16 @@ class EnrollmentStatus {
     ACTIVE_DIRECTORY_POLICY_FETCH_FAILED = 17,  // Failed to fetch Active
                                                 // Directory policy via
                                                 // authpolicyd.
-    DM_TOKEN_STORE_FAILED = 18,         // Failed to store DM token into the
-                                        // local state.
-    /* LICENSE_REQUEST_FAILED = 19, */  // Unused: Failed to get available
-                                        // license types.
-    OFFLINE_POLICY_LOAD_FAILED = 20,  // Failed to load the policy data for the
-                                      // offline demo mode.
-    OFFLINE_POLICY_DECODING_FAILED = 21,  // Failed when the policy data fails
-                                          // to be decoded.
+    DM_TOKEN_STORE_FAILED = 18,             // Failed to store DM token into the
+                                            // local state.
+    /* LICENSE_REQUEST_FAILED = 19, */      // Unused: Failed to get available
+                                            // license types.
+    /* OFFLINE_POLICY_LOAD_FAILED = 20, */  // Deprecated: Failed to load the
+                                            // policy data for the offline demo
+                                            // mode.
+    /* OFFLINE_POLICY_DECODING_FAILED = 21, */  // Deprecated: Failed when the
+                                                // policy data fails to be
+                                                // decoded.
     // Device policy would block dev mode but the
     // kEnterpriseEnrollmentFailOnBlockDevMode flag was given.
     MAY_NOT_BLOCK_DEV_MODE = 22,
@@ -67,7 +69,6 @@ class EnrollmentStatus {
   static EnrollmentStatus ForFetchError(DeviceManagementStatus client_status);
   static EnrollmentStatus ForRobotAuthFetchError(
       DeviceManagementStatus client_status);
-  static EnrollmentStatus ForRobotRefreshFetchError(int http_status);
   static EnrollmentStatus ForValidationError(
       CloudPolicyValidatorBase::Status validation_status);
   static EnrollmentStatus ForStoreError(
@@ -80,7 +81,6 @@ class EnrollmentStatus {
 
   Status status() const { return status_; }
   DeviceManagementStatus client_status() const { return client_status_; }
-  int http_status() const { return http_status_; }
   CloudPolicyStore::Status store_status() const { return store_status_; }
   CloudPolicyValidatorBase::Status validation_status() const {
     return validation_status_;
@@ -95,14 +95,12 @@ class EnrollmentStatus {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   EnrollmentStatus(Status status,
                    DeviceManagementStatus client_status,
-                   int http_status,
                    CloudPolicyStore::Status store_status,
                    CloudPolicyValidatorBase::Status validation_status,
                    ash::InstallAttributes::LockResult lock_status);
 #else
   EnrollmentStatus(Status status,
                    DeviceManagementStatus client_status,
-                   int http_status,
                    CloudPolicyStore::Status store_status,
                    CloudPolicyValidatorBase::Status validation_status);
 #endif
@@ -112,13 +110,11 @@ class EnrollmentStatus {
   static EnrollmentStatus CreateEnrollmentStatusWithoutLockError(
       Status status,
       DeviceManagementStatus client_status,
-      int http_status,
       CloudPolicyStore::Status store_status,
       CloudPolicyValidatorBase::Status validation_status);
 
   Status status_;
   DeviceManagementStatus client_status_;
-  int http_status_;
   CloudPolicyStore::Status store_status_;
   CloudPolicyValidatorBase::Status validation_status_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)

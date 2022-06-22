@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -118,8 +119,7 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
   void DidFetchScript() override;
   void DidFailToFetchClassicScript() override;
   void DidFailToFetchModuleScript() override;
-  void WillEvaluateClassicScript(size_t script_size,
-                                 size_t cached_metadata_size) override;
+  void WillEvaluateClassicScript() override;
   void WillEvaluateImportedClassicScript(size_t script_size,
                                          size_t cached_metadata_size) override;
   void WillEvaluateModuleScript() override;

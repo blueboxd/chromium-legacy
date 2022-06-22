@@ -17,6 +17,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -30,11 +31,13 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
+#include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/insecure_credentials_manager.h"
@@ -45,7 +48,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/escape.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -59,6 +61,7 @@ using password_manager::CanonicalizeUsername;
 using password_manager::CredentialWithPassword;
 using password_manager::InsecureCredentialTypeFlags;
 using password_manager::LeakCheckCredential;
+using password_manager::PasswordChangeSuccessTracker;
 using password_manager::PasswordForm;
 using ui::TimeFormat;
 
@@ -195,10 +198,11 @@ std::vector<CompromisedCredentialAndType> OrderCompromisedCredentials(
   std::vector<CompromisedCredentialAndType> results;
   results.reserve(compromised_credentials.size());
   for (auto& credential : compromised_credentials) {
-    // Since CompromiseType does not contain information about weakness of
-    // credential, we need to unset this bit in the |credential.insecure_type|.
+    // Since CompromiseType does not contain information about weakness/reuse
+    // of credential, we need to unset those bits in the
+    // |credential.insecure_type|.
     auto type = static_cast<api::passwords_private::CompromiseType>(
-        UnsetWeakCredentialTypeFlag(credential.insecure_type));
+        UnsetWeakAndReusedCredentialTypeFlags(credential.insecure_type));
     results.push_back({std::move(credential), type});
   }
   // Reordering phished credential to the beginning.
@@ -352,6 +356,27 @@ bool PasswordCheckDelegate::UnmuteInsecureCredential(
     return false;
 
   return insecure_credentials_manager_.UnmuteCredential(*insecure_credential);
+}
+
+// Records that a change password flow was started for |credential| and
+// whether |is_manual_flow| applies to the flow.
+void PasswordCheckDelegate::RecordChangePasswordFlowStarted(
+    const api::passwords_private::InsecureCredential& credential,
+    bool is_manual_flow) {
+  // If the |credential| does not have a |change_password_url|, skip it.
+  if (!credential.change_password_url)
+    return;
+
+  if (is_manual_flow) {
+    GetPasswordChangeSuccessTracker()->OnManualChangePasswordFlowStarted(
+        GURL(*credential.change_password_url), credential.username,
+        PasswordChangeSuccessTracker::EntryPoint::kLeakCheckInSettings);
+  } else {
+    GetPasswordChangeSuccessTracker()->OnChangePasswordFlowStarted(
+        GURL(*credential.change_password_url), credential.username,
+        PasswordChangeSuccessTracker::StartEvent::kAutomatedFlow,
+        PasswordChangeSuccessTracker::EntryPoint::kLeakCheckInSettings);
+  }
 }
 
 void PasswordCheckDelegate::StartPasswordCheck(
@@ -598,7 +623,7 @@ PasswordCheckDelegate::ConstructInsecureCredential(
                 url_formatter::kFormatUrlOmitHTTPS |
                 url_formatter::kFormatUrlOmitTrivialSubdomains |
                 url_formatter::kFormatUrlTrimAfterHost,
-            net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+            base::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
     api_credential.detailed_origin =
         base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
             credential.url.DeprecatedGetOriginAsURL()));
@@ -610,6 +635,12 @@ PasswordCheckDelegate::ConstructInsecureCredential(
   api_credential.username = base::UTF16ToUTF8(credential.username);
 
   return api_credential;
+}
+
+PasswordChangeSuccessTracker*
+PasswordCheckDelegate::GetPasswordChangeSuccessTracker() {
+  return password_manager::PasswordChangeSuccessTrackerFactory::
+      GetForBrowserContext(profile_);
 }
 
 }  // namespace extensions

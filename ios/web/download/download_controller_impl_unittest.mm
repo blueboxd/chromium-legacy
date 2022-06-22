@@ -26,6 +26,7 @@ namespace web {
 namespace {
 const char kContentDisposition[] = "attachment; filename=file.test";
 const char kMimeType[] = "application/pdf";
+const base::FilePath::CharType kTestFileName[] = FILE_PATH_LITERAL("file.test");
 }  //  namespace
 
 // Test fixture for testing DownloadControllerImpl class.
@@ -76,7 +77,7 @@ TEST_F(DownloadControllerImplTest, OnDownloadCreated) {
   ASSERT_EQ(1U, delegate_->alive_download_tasks().size());
   DownloadTask* task = delegate_->alive_download_tasks()[0].second.get();
   EXPECT_EQ(&web_state_, delegate_->alive_download_tasks()[0].first);
-  EXPECT_NSEQ(identifier, task->GetIndentifier());
+  EXPECT_NSEQ(identifier, task->GetIdentifier());
   EXPECT_EQ(url, task->GetOriginalUrl());
   EXPECT_NSEQ(@"POST", task->GetHttpMethod());
   EXPECT_FALSE(task->IsDone());
@@ -85,7 +86,7 @@ TEST_F(DownloadControllerImplTest, OnDownloadCreated) {
   EXPECT_EQ(-1, task->GetPercentComplete());
   EXPECT_EQ(kContentDisposition, task->GetContentDisposition());
   EXPECT_EQ(kMimeType, task->GetMimeType());
-  EXPECT_EQ("file.test", base::UTF16ToUTF8(task->GetSuggestedFilename()));
+  EXPECT_EQ(base::FilePath(kTestFileName), task->GenerateFileName());
 }
 
 // Tests that DownloadController::CreateNativeDownloadTask calls
@@ -108,16 +109,16 @@ TEST_F(DownloadControllerImplTest, OnNativeDownloadCreated) {
     ASSERT_EQ(1U, delegate_->alive_download_tasks().size());
     DownloadTask* task = delegate_->alive_download_tasks()[0].second.get();
     EXPECT_EQ(&web_state_, delegate_->alive_download_tasks()[0].first);
-    EXPECT_NSEQ(identifier, task->GetIndentifier());
+    EXPECT_NSEQ(identifier, task->GetIdentifier());
     EXPECT_EQ(url, task->GetOriginalUrl());
     EXPECT_NSEQ(@"POST", task->GetHttpMethod());
     EXPECT_FALSE(task->IsDone());
     EXPECT_EQ(0, task->GetErrorCode());
-    EXPECT_EQ(0, task->GetTotalBytes());
-    EXPECT_EQ(0, task->GetPercentComplete());
+    EXPECT_EQ(-1, task->GetTotalBytes());
+    EXPECT_EQ(-1, task->GetPercentComplete());
     EXPECT_EQ(kContentDisposition, task->GetContentDisposition());
     EXPECT_EQ(kMimeType, task->GetMimeType());
-    EXPECT_EQ("file.test", base::UTF16ToUTF8(task->GetSuggestedFilename()));
+    EXPECT_EQ(base::FilePath(kTestFileName), task->GenerateFileName());
   }
 }
 
@@ -131,22 +132,4 @@ TEST_F(DownloadControllerImplTest, NullDelegate) {
       /*total_bytes=*/-1, kMimeType);
 }
 
-// Tests that DownloadController::CreateSession sets cookies correctly into the
-// session's NSURLSessionConfiguration object.
-TEST_F(DownloadControllerImplTest, SessionCookies) {
-  NSString* identifier = [NSUUID UUID].UUIDString;
-  NSURL* cookie_url = [NSURL URLWithString:@"https://download.test"];
-  NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties:@{
-    NSHTTPCookieName : @"name",
-    NSHTTPCookieValue : @"value",
-    NSHTTPCookiePath : cookie_url.path,
-    NSHTTPCookieDomain : cookie_url.host,
-    NSHTTPCookieVersion : @1,
-  }];
-  NSURLSession* session = download_controller_->CreateSession(
-      identifier, @[ cookie ], /*delegate=*/nil, /*delegate_queue=*/nil);
-  NSArray* cookies = session.configuration.HTTPCookieStorage.cookies;
-  EXPECT_EQ(1U, cookies.count);
-  EXPECT_NSEQ(cookie, cookies.firstObject);
-}
 }  // namespace web

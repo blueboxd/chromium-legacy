@@ -10,6 +10,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/cpp/assistant/controller/assistant_notification_controller.h"
 #include "base/barrier_closure.h"
@@ -26,6 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/device_settings_host.h"
 #include "chromeos/services/assistant/libassistant_service_host_impl.h"
@@ -54,9 +56,13 @@ namespace chromeos {
 namespace assistant {
 namespace {
 
+static base::OnceCallback<void()> initialized_internal_callback_for_testing;
 static bool is_first_init = true;
 
 constexpr char kAndroidSettingsAppPackage[] = "com.android.settings";
+
+// The DLC ID of Libassistant.so, used to download and mount the library.
+constexpr char kLibassistantDlcId[] = "assistant-dlc";
 
 std::vector<chromeos::libassistant::mojom::AuthenticationTokenPtr>
 ToAuthenticationTokens(
@@ -145,6 +151,18 @@ class SpeechRecognitionObserverWrapper
 };
 
 // static
+void AssistantManagerServiceImpl::SetInitializedInternalCallbackForTesting(
+    base::OnceCallback<void()> callback) {
+  CHECK(initialized_internal_callback_for_testing.is_null());
+  // We expect that the callback is set when AssistantStatus is NOT_READY to
+  // confirm that AssistantStatus has changed from NOT_READY to READY. See more
+  // details at a comment in AssistantManagerServiceImpl::OnDeviceAppsEnabled.
+  CHECK(ash::AssistantState::Get()->assistant_status() ==
+        chromeos::assistant::AssistantStatus::NOT_READY);
+  initialized_internal_callback_for_testing = std::move(callback);
+}
+
+// static
 void AssistantManagerServiceImpl::ResetIsFirstInitFlagForTesting() {
   is_first_init = true;
 }
@@ -228,7 +246,23 @@ void AssistantManagerServiceImpl::Start(const absl::optional<UserInfo>& user,
 
   EnableHotword(enable_hotword);
 
-  InitAssistant(user);
+  // Install libassistant.so from DLC.
+  // TODO(b/225063204): For phase 1, fallback to load libassistant.so from
+  // rootfs if installabtion failed. No error handling needed.
+  auto* client = chromeos::DlcserviceClient::Get();
+  if (!client) {
+    InitAssistant(user, /*dlc_path=*/std::string());
+    return;
+  }
+
+  DVLOG(1) << "Install libassistant.so from DLC";
+  dlcservice::InstallRequest install_request;
+  install_request.set_id(kLibassistantDlcId);
+  client->Install(
+      install_request,
+      base::BindOnce(&AssistantManagerServiceImpl::OnInstallDlcComplete,
+                     weak_factory_.GetWeakPtr(), user),
+      /*ProgressCallback=*/base::DoNothing());
 }
 
 void AssistantManagerServiceImpl::Stop() {
@@ -433,8 +467,21 @@ void AssistantManagerServiceImpl::OnStateChanged(
   }
 }
 
+void AssistantManagerServiceImpl::OnInstallDlcComplete(
+    const absl::optional<UserInfo>& user,
+    const chromeos::DlcserviceClient::InstallResult& result) {
+  DVLOG(1) << "Installed libassistant.so from DLC";
+  std::string dlc_path;
+  if (result.error == dlcservice::kErrorNone) {
+    dlc_path = result.root_path;
+  }
+
+  InitAssistant(user, dlc_path);
+}
+
 void AssistantManagerServiceImpl::InitAssistant(
-    const absl::optional<UserInfo>& user) {
+    const absl::optional<UserInfo>& user,
+    const std::string& dlc_path) {
   DCHECK(!IsServiceStarted());
 
   auto bootup_config = bootup_config_.Clone();
@@ -443,6 +490,7 @@ void AssistantManagerServiceImpl::InitAssistant(
   bootup_config->locale = assistant_state()->locale().value();
   bootup_config->spoken_feedback_enabled = spoken_feedback_enabled_;
   bootup_config->dark_mode_enabled = dark_mode_enabled_;
+  bootup_config->dlc_path = dlc_path;
 
   service_controller().Initialize(std::move(bootup_config),
                                   BindURLLoaderFactory());
@@ -555,6 +603,25 @@ void AssistantManagerServiceImpl::OnDeviceAppsEnabled(bool enabled) {
     return;
 
   display_controller().SetDeviceAppsEnabled(enabled);
+
+  // You can set initialized_internal callback only when AssistantStatus is
+  // NOT_READY. Also this line reaches only after GetState() becomes RUNNING
+  // (i.e. READY). From that reason, test code can assume that status has
+  // changed from NOT_READY to READY between those two points.
+  //
+  // Test code expects those things when Assistant gets initialized:
+  //
+  // - Status becomes READY.
+  // - All necessary settings are passed to LibAssistant.
+  //
+  // We update necessary settings after status becomes READY. For now,
+  // DeviceAppsEnabled is the only settings update which involves async call.
+  // As other settings are sync, if this async call gets completed, we can also
+  // assume that all necessary settings are passed to LibAssistant, i.e.
+  // initialized.
+  if (!initialized_internal_callback_for_testing.is_null()) {
+    std::move(initialized_internal_callback_for_testing).Run();
+  }
 }
 
 void AssistantManagerServiceImpl::AddTimeToTimer(const std::string& id,

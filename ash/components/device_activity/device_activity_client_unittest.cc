@@ -19,6 +19,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -71,8 +72,9 @@ const char kPsmQueryRequestEndpoint[] = "/v1/fresnel/psmRlweQuery";
 constexpr char kFakePsmDeviceActiveSecret[] = "FAKE_PSM_DEVICE_ACTIVE_SECRET";
 constexpr char kFakeFresnelApiKey[] = "FAKE_FRESNEL_API_KEY";
 
-const version_info::Channel kFakeChromeOSChannel =
-    version_info::Channel::STABLE;
+constexpr ChromeDeviceMetadataParameters kFakeChromeParameters = {
+    version_info::Channel::STABLE  // chromeos_channel
+};
 
 // Number of test cases exist in cros_test_data.binarypb file, which is part of
 // private_membership third_party library.
@@ -160,11 +162,12 @@ class FakePsmDelegate : public PsmDelegate {
 
 class FakeDailyUseCaseImpl : public DailyUseCaseImpl {
  public:
-  FakeDailyUseCaseImpl(const std::string& psm_device_active_secret,
-                       version_info::Channel chromeos_channel,
-                       PrefService* local_state)
+  FakeDailyUseCaseImpl(
+      const std::string& psm_device_active_secret,
+      const ChromeDeviceMetadataParameters& chrome_passed_device_params,
+      PrefService* local_state)
       : DailyUseCaseImpl(psm_device_active_secret,
-                         chromeos_channel,
+                         chrome_passed_device_params,
                          local_state) {}
   FakeDailyUseCaseImpl(const FakeDailyUseCaseImpl&) = delete;
   FakeDailyUseCaseImpl& operator=(const FakeDailyUseCaseImpl&) = delete;
@@ -173,11 +176,12 @@ class FakeDailyUseCaseImpl : public DailyUseCaseImpl {
 
 class FakeMonthlyUseCaseImpl : public MonthlyUseCaseImpl {
  public:
-  FakeMonthlyUseCaseImpl(const std::string& psm_device_active_secret,
-                         version_info::Channel chromeos_channel,
-                         PrefService* local_state)
+  FakeMonthlyUseCaseImpl(
+      const std::string& psm_device_active_secret,
+      const ChromeDeviceMetadataParameters& chrome_passed_device_params,
+      PrefService* local_state)
       : MonthlyUseCaseImpl(psm_device_active_secret,
-                           chromeos_channel,
+                           chrome_passed_device_params,
                            local_state) {}
   FakeMonthlyUseCaseImpl(const FakeMonthlyUseCaseImpl&) = delete;
   FakeMonthlyUseCaseImpl& operator=(const FakeMonthlyUseCaseImpl&) = delete;
@@ -279,6 +283,11 @@ class DeviceActivityClientTest : public testing::Test {
     // Initialize pointer to our fake |PsmTestData| object.
     psm_test_data_ = GetPsmTestData();
 
+    // Default network to being synchronized and available.
+    SystemClockClient::InitializeFake();
+    GetSystemClockTestInterface()->SetServiceIsAvailable(true);
+    GetSystemClockTestInterface()->SetNetworkSynchronized(true);
+
     network_state_test_helper_ = std::make_unique<NetworkStateTestHelper>(
         /*use_default_devices_and_services=*/false);
     CreateWifiNetworkConfig();
@@ -296,9 +305,9 @@ class DeviceActivityClientTest : public testing::Test {
     // should maintain ownership of.
     std::vector<std::unique_ptr<DeviceActiveUseCase>> use_cases;
     use_cases.push_back(std::make_unique<FakeDailyUseCaseImpl>(
-        kFakePsmDeviceActiveSecret, kFakeChromeOSChannel, &local_state_));
+        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_));
     use_cases.push_back(std::make_unique<FakeMonthlyUseCaseImpl>(
-        kFakePsmDeviceActiveSecret, kFakeChromeOSChannel, &local_state_));
+        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_));
 
     device_activity_client_ = std::make_unique<DeviceActivityClient>(
         network_state_test_helper_->network_state_handler(),
@@ -312,7 +321,17 @@ class DeviceActivityClientTest : public testing::Test {
         kFakeFresnelApiKey, std::move(use_cases));
   }
 
-  void TearDown() override {}
+  void TearDown() override {
+    device_activity_client_.reset();
+
+    // The system clock must be shutdown after the |device_activity_client_| is
+    // destroyed.
+    SystemClockClient::Shutdown();
+  }
+
+  SystemClockClient::TestInterface* GetSystemClockTestInterface() {
+    return SystemClockClient::Get()->GetTestInterface();
+  }
 
   void SimulateLocalStateOnPowerwash() {
     // Simulate powerwashing device by removing the local state prefs.
@@ -354,6 +373,10 @@ class DeviceActivityClientTest : public testing::Test {
             device_activity_client_->GetReportTimer());
     if (mock_timer->IsRunning())
       mock_timer->Fire();
+
+    // Ensure all pending tasks after the timer fires are executed
+    // synchronously.
+    task_environment_.RunUntilIdle();
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -371,6 +394,161 @@ class DeviceActivityClientTest : public testing::Test {
   base::HistogramTester histogram_tester_;
   chromeos::system::FakeStatisticsProvider statistics_provider_;
 };
+
+TEST_F(DeviceActivityClientTest,
+       StayIdleIfSystemClockServiceUnavailableOnNetworkConnection) {
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  GetSystemClockTestInterface()->SetServiceIsAvailable(false);
+  GetSystemClockTestInterface()->NotifyObserversSystemClockUpdated();
+
+  // Network has come online.
+  SetWifiNetworkState(shill::kStateOnline);
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnNetworkOnline,
+      1);
+
+  // |OnSystemClockSyncResult| is not called because the service for syncing the
+  // clock is unavailble.
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      0);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      0);
+
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+}
+
+TEST_F(DeviceActivityClientTest,
+       StayIdleIfSystemClockIsNotNetworkSynchronized) {
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  GetSystemClockTestInterface()->SetNetworkSynchronized(false);
+  GetSystemClockTestInterface()->NotifyObserversSystemClockUpdated();
+
+  // Network has come online.
+  SetWifiNetworkState(shill::kStateOnline);
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnNetworkOnline,
+      1);
+
+  // |OnSystemClockSyncResult| callback is not executed if the network is not
+  // synchronized.
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      0);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      0);
+
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+}
+
+TEST_F(DeviceActivityClientTest,
+       CheckMembershipOnTimerRetryIfSystemClockIsNotInitiallySynced) {
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  GetSystemClockTestInterface()->SetNetworkSynchronized(false);
+  GetSystemClockTestInterface()->NotifyObserversSystemClockUpdated();
+
+  // Network has come online.
+  SetWifiNetworkState(shill::kStateOnline);
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnNetworkOnline,
+      1);
+
+  // |OnSystemClockSyncResult| callback is not executed if the network is not
+  // synchronized.
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      0);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      0);
+
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  // Timer executes client and blocks to wait for the system clock
+  // synchronization result.
+  FireTimer();
+
+  // Synchronously complete pending tasks before validating histogram counts
+  // below.
+  GetSystemClockTestInterface()->SetNetworkSynchronized(true);
+  GetSystemClockTestInterface()->NotifyObserversSystemClockUpdated();
+  task_environment_.RunUntilIdle();
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      1);
+
+  // Begins check membership flow.
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kCheckingMembershipOprf);
+}
+
+TEST_F(DeviceActivityClientTest,
+       CheckMembershipIfSystemClockServiceAvailableOnNetworkConnection) {
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  // Network has come online.
+  SetWifiNetworkState(shill::kStateOnline);
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnNetworkOnline,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      1);
+
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kCheckingMembershipOprf);
+}
 
 TEST_F(DeviceActivityClientTest, DefaultStatesAreInitializedProperly) {
   EXPECT_EQ(device_activity_client_->GetState(),

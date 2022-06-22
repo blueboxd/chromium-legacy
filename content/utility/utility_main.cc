@@ -13,11 +13,11 @@
 #include "base/timer/hi_res_timer_manager.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "content/child/child_process.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/partition_alloc_support.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/utility/content_utility_client.h"
@@ -26,14 +26,12 @@
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox.h"
 #include "sandbox/policy/sandbox_type.h"
-#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#include "components/services/screen_ai/sandbox/screen_ai_sandbox_hook_linux.h"
 #include "content/utility/speech/speech_recognition_sandbox_hook_linux.h"
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "printing/sandbox/print_backend_sandbox_hook_linux.h"
@@ -62,6 +60,10 @@
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "components/services/screen_ai/sandbox/screen_ai_sandbox_hook_linux.h"  // nogncheck
+#endif
+
 #if BUILDFLAG(IS_MAC)
 #include "base/message_loop/message_pump_mac.h"
 #endif
@@ -75,17 +77,6 @@ sandbox::TargetServices* g_utility_target_services = nullptr;
 #endif
 
 namespace content {
-namespace {
-
-base::ThreadPriority GetIOThreadPriority(const std::string& utility_sub_type) {
-  return (base::FeatureList::IsEnabled(
-              features::kNetworkServiceUsesDisplayThreadPriority) &&
-          utility_sub_type == network::mojom::NetworkService::Name_)
-             ? base::ThreadPriority::DISPLAY
-             : base::ThreadPriority::NORMAL;
-}
-
-}  // namespace
 
 // Mainline routine for running as the utility process.
 int UtilityMain(MainFunctionParams parameters) {
@@ -128,10 +119,9 @@ int UtilityMain(MainFunctionParams parameters) {
   base::SingleThreadTaskExecutor main_thread_task_executor(message_pump_type);
   base::PlatformThread::SetName("CrUtilityMain");
 
-  const std::string utility_sub_type =
-      parameters.command_line->GetSwitchValueASCII(switches::kUtilitySubType);
-
   if (parameters.command_line->HasSwitch(switches::kUtilityStartupDialog)) {
+    const std::string utility_sub_type =
+        parameters.command_line->GetSwitchValueASCII(switches::kUtilitySubType);
     auto dialog_match = parameters.command_line->GetSwitchValueASCII(
         switches::kUtilityStartupDialog);
     if (dialog_match.empty() || dialog_match == utility_sub_type) {
@@ -162,9 +152,11 @@ int UtilityMain(MainFunctionParams parameters) {
       pre_sandbox_hook =
           base::BindOnce(&speech::SpeechRecognitionPreSandboxHook);
       break;
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
     case sandbox::mojom::Sandbox::kScreenAI:
       pre_sandbox_hook = base::BindOnce(&screen_ai::ScreenAIPreSandboxHook);
       break;
+#endif
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
     case sandbox::mojom::Sandbox::kHardwareVideoDecoding:
       pre_sandbox_hook =
@@ -208,7 +200,7 @@ int UtilityMain(MainFunctionParams parameters) {
   g_utility_target_services = parameters.sandbox_info->target_services;
 #endif
 
-  ChildProcess utility_process(GetIOThreadPriority(utility_sub_type));
+  ChildProcess utility_process(base::ThreadPriority::NORMAL);
   GetContentClient()->utility()->PostIOThreadCreated(
       utility_process.io_task_runner());
   base::RunLoop run_loop;

@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
@@ -1257,7 +1258,7 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
       else
         DCHECK(false);
 
-      layout_object->SetModifiedStyleOutsideStyleRecalc(
+      layout_object->SetTextAutoSizedStyle(
           std::move(style), LayoutObject::ApplyStyleChanges::kNo);
       if (layout_object->IsText())
         To<LayoutText>(layout_object)->AutosizingMultiplerChanged();
@@ -1269,7 +1270,7 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
 
     case kLayoutNeeded:
       DCHECK(!layouter);
-      layout_object->SetModifiedStyleOutsideStyleRecalc(
+      layout_object->SetTextAutoSizedStyle(
           std::move(style), LayoutObject::ApplyStyleChanges::kYes);
       break;
   }

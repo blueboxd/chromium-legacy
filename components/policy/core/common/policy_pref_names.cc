@@ -21,6 +21,9 @@ const char kEnterpriseMDMManagementWindows[] =
 // Integer pref that stores the Mac enterprise MDM management authority.
 const char kEnterpriseMDMManagementMac[] =
     "management.platform.enterprise_mdm_mac";
+// Boolean pref that indicates whether integration with macOS Screen Time should
+// be enabled.
+const char kScreenTimeEnabled[] = "policy.screen_time";
 #endif
 
 // 64-bit serialization of the time last policy usage statistics were collected
@@ -108,6 +111,11 @@ const char kWebSQLAccess[] = "policy.web_sql_access";
 // startup. Instead the cloud policy registration is retried at least 1 or 3
 // days later.
 const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
+#endif
+
+#if BUILDFLAG(IS_IOS)
+const char kUserPolicyNotificationWasShown[] =
+    "policy.user_policy_notification_was_shown";
 #endif
 
 }  // namespace policy_prefs

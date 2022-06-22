@@ -39,15 +39,13 @@ def IncludedFiles(input_api, allow_list=helpers.INCLUDED_PATHS):
   return input_api.AffectedFiles(include_deletes=False, file_filter=files)
 
 
-"""
-This class has two jobs. It allows us to delay searching directories for color
-state list files unless we actually find a color reference to check against. And
-additionally it's a convenient mock point for tests to specify files in a
-slightly more robust way than relying on real color state list file names.
-"""
-
-
 class LazyColorStateListSet:
+  """
+  This class has two jobs. It allows us to delay searching directories for color
+  state list files unless we actually find a color reference to check against.
+  And additionally it's a convenient mock point for tests to specify files in a
+  slightly more robust way than relying on real color state list file names.
+  """
   _color_set_or_none = None
 
   def get(self):
@@ -58,7 +56,6 @@ class LazyColorStateListSet:
     for color_dir in helpers.COLOR_STATE_LIST_DIRS:
       for color_file in os.listdir(color_dir):
         if '.' in color_file:
-          print(color_file)
           self._color_set_or_none.add(color_file[:color_file.index('.')])
     return self._color_set_or_none
 
@@ -80,6 +77,7 @@ def _CommonChecks(input_api, output_api):
   result.extend(_CheckStringResourceEllipsisPunctuations(input_api, output_api))
   # Add more checks here
   return result
+
 
 ### color resources below ###
 def _CheckColorFormat(input_api, output_api):
@@ -370,6 +368,7 @@ def _CheckTextAppearance(input_api, output_api):
       'android:fontFamily', 'android:textAllCaps']
   namespace = {'android': 'http://schemas.android.com/apk/res/android'}
   errors = []
+  differences = False
   for f in IncludedFiles(input_api):
     try:
       root = ET.fromstring(input_api.ReadFile(f))
@@ -400,17 +399,19 @@ def _CheckTextAppearance(input_api, output_api):
           errors.append('  %s:%d contains attribute %s\n    \t%s' % (
               f.LocalPath(), line_number+1, attribute, line.strip()))
           style_count += 1
+          if f.ChangedContents():
+            differences = True
         # Error for text attributes in layout.
         if widget_count > 0 and attribute in line:
           errors.append('  %s:%d contains attribute %s\n    \t%s' % (
               f.LocalPath(), line_number+1, attribute, line.strip()))
           widget_count -= 1
+          if f.ChangedContents():
+            differences = True
   # TODO(huayinz): Change the path on the error message to the corresponding
   # styles.xml when this check applies to all resource directories.
   if errors:
-    return [
-        output_api.PresubmitError(
-            '''
+    message = ('''
   Android Text Appearance Check failed:
     Your modified files contain Android text attributes defined outside
     text appearance styles, listed below.
@@ -440,8 +441,13 @@ def _CheckTextAppearance(input_api, output_api):
     Please contact arminaforoughi@chromium.org for UX approval, and
     src/chrome/android/java/res/OWNERS for questions.
     See https://crbug.com/775198 for more information.
-  ''', errors)
-    ]
+  ''')
+    if differences:
+      return [output_api.PresubmitError(message, errors)]
+    else:
+      # Report a warning instead of an error when running "presubmit --all" or
+      # "presubmit --files" so that these can run error free.
+      return [output_api.PresubmitPromptWarning(message, errors)]
   return []
 
 

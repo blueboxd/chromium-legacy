@@ -45,7 +45,7 @@ class LoginAfterUpdateToFlexTest : public LoginManagerTest,
                                    public LocalStateMixin::Delegate,
                                    public ::testing::WithParamInterface<bool> {
  public:
-  LoginAfterUpdateToFlexTest() : settings_helper_(false) {
+  LoginAfterUpdateToFlexTest() {
     if (GetParam()) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kOobeConsolidatedConsent);
@@ -100,7 +100,8 @@ class LoginAfterUpdateToFlexTest : public LoginManagerTest,
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED};
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
   FakeEulaMixin fake_eula_{&mixin_host_, embedded_test_server()};
-  ScopedCrosSettingsTestHelper settings_helper_;
+  ScopedCrosSettingsTestHelper settings_helper_{
+      /*create_settings_service=*/false};
   base::test::ScopedFeatureList scoped_feature_list_;
   LocalStateMixin local_state_mixin_{&mixin_host_, this};
 };

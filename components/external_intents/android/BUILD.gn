@@ -7,7 +7,6 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   sources = [
     "java/src/org/chromium/components/external_intents/AuthenticatorNavigationInterceptor.java",
-    "java/src/org/chromium/components/external_intents/ExternalIntentsFeatures.java",
     "java/src/org/chromium/components/external_intents/ExternalIntentsSwitches.java",
     "java/src/org/chromium/components/external_intents/ExternalNavigationDelegate.java",
     "java/src/org/chromium/components/external_intents/ExternalNavigationHandler.java",
@@ -21,6 +20,8 @@ android_library("java") {
   deps = [
     ":java_resources",
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//components/embedder_support/android:util_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/url_formatter/android:url_formatter_java",
@@ -45,18 +46,11 @@ android_resources("java_resources") {
 }
 
 generate_jni("jni_headers") {
-  sources = [
-    "java/src/org/chromium/components/external_intents/ExternalIntentsFeatures.java",
-    "java/src/org/chromium/components/external_intents/InterceptNavigationDelegateImpl.java",
-  ]
+  sources = [ "java/src/org/chromium/components/external_intents/InterceptNavigationDelegateImpl.java" ]
 }
 
 static_library("android") {
-  sources = [
-    "external_intents_features.cc",
-    "external_intents_features.h",
-    "intercept_navigation_delegate_impl.cc",
-  ]
+  sources = [ "intercept_navigation_delegate_impl.cc" ]
 
   deps = [
     ":jni_headers",

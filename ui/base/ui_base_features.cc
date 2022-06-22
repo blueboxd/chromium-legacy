@@ -81,13 +81,6 @@ bool IsDeprecateAltClickEnabled() {
   return base::FeatureList::IsEnabled(kDeprecateAltClick);
 }
 
-const base::Feature kRgbKeyboard = {"RgbKeyboard",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsRgbKeyboardEnabled() {
-  return base::FeatureList::IsEnabled(kRgbKeyboard);
-}
-
 const base::Feature kShortcutCustomizationApp = {
     "ShortcutCustomizationApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -242,7 +235,7 @@ bool IsImprovedKeyboardShortcutsEnabled() {
       return instance->IsI18nShortcutPrefEnabled();
     }
   }
-#endif  // defined(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return base::FeatureList::IsEnabled(kImprovedKeyboardShortcuts);
 }

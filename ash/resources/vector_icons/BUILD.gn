@@ -12,6 +12,7 @@ aggregate_vector_icons("ash_vector_icons") {
   icon_directory = "."
 
   sources = [
+    "adaptive_charging_battery.icon",
     "adaptive_charging_nudge_dark.icon",
     "adaptive_charging_nudge_light.icon",
     "add_cellular_network.icon",
@@ -87,6 +88,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "eche_close.icon",
     "eche_minimize.icon",
     "eight_files.icon",
+    "expand_all.icon",
     "files_app.icon",
     "five_files.icon",
     "folder.icon",
@@ -123,6 +125,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "ksv_volume_down.icon",
     "ksv_volume_up.icon",
     "launch.icon",
+    "launcher_hide_continue_section.icon",
     "lock_screen_alert.icon",
     "lock_screen_arrow.icon",
     "lock_screen_arrow_back.icon",
@@ -233,11 +236,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "pin_request_lock.icon",
     "pinned.icon",
     "privacy_screen.icon",
-    "projector_drag_handle.icon",
-    "projector_key_idea.icon",
-    "projector_marker.icon",
-    "projector_selfie_cam_off.icon",
-    "projector_selfie_cam_on.icon",
     "remove_outline.icon",
     "reorder.icon",
     "reorder_nudge_dark_clamshell.icon",
@@ -246,6 +244,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "reorder_nudge_light_tablet.icon",
     "resume.icon",
     "save_desk_as_template.icon",
+    "save_desk_for_later.icon",
     "select_to_speak_next_paragraph.icon",
     "select_to_speak_next_sentence.icon",
     "select_to_speak_pause.icon",

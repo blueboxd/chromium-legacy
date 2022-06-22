@@ -8,6 +8,7 @@
 
 #include "base/check_op.h"
 #include "base/i18n/rtl.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -15,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
@@ -94,40 +94,6 @@ std::u16string ElideComponentizedPath(
                         available_pixel_width, gfx::ELIDE_TAIL);
 }
 
-// Splits the hostname in the |url| into sub-strings for the full hostname,
-// the domain (TLD+1), and the subdomain (everything leading the domain).
-void SplitHost(const GURL& url,
-               std::u16string* url_host,
-               std::u16string* url_domain,
-               std::u16string* url_subdomain) {
-  // GURL stores IDN hostnames in punycode.  Convert back to Unicode for
-  // display to the user.  (IDNToUnicode() will only perform this conversion
-  // if it's safe to display this host/domain in Unicode.)
-  *url_host = url_formatter::IDNToUnicode(url.host());
-
-  // Get domain and registry information from the URL.
-  std::string domain_puny =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  *url_domain = domain_puny.empty() ?
-      *url_host : url_formatter::IDNToUnicode(domain_puny);
-
-  // Add port if required.
-  if (!url.port().empty()) {
-    *url_host += base::UTF8ToUTF16(":" + url.port());
-    *url_domain += base::UTF8ToUTF16(":" + url.port());
-  }
-
-  // Get sub domain.
-  const size_t domain_start_index = url_host->find(*url_domain);
-  constexpr base::StringPiece16 kWwwPrefix = u"www.";
-  if (domain_start_index != std::u16string::npos)
-    *url_subdomain = url_host->substr(0, domain_start_index);
-  if ((*url_subdomain == kWwwPrefix || url_subdomain->empty() ||
-       url.SchemeIsFile())) {
-    url_subdomain->clear();
-  }
-}
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 bool ShouldShowScheme(base::StringPiece scheme,
@@ -172,7 +138,7 @@ std::u16string ElideUrl(const GURL& url,
   // Get a formatted string and corresponding parsing of the url.
   url::Parsed parsed;
   const std::u16string url_string = url_formatter::FormatUrl(
-      url, url_formatter::kFormatUrlOmitDefaults, net::UnescapeRule::SPACES,
+      url, url_formatter::kFormatUrlOmitDefaults, base::UnescapeRule::SPACES,
       &parsed, nullptr, nullptr);
   if (available_pixel_width <= 0)
     return url_string;
@@ -211,7 +177,7 @@ std::u16string ElideUrl(const GURL& url,
   std::u16string url_host;
   std::u16string url_domain;
   std::u16string url_subdomain;
-  SplitHost(url, &url_host, &url_domain, &url_subdomain);
+  url_formatter::SplitHost(url, &url_host, &url_domain, &url_subdomain);
 
   // If this is a file type, the path is now defined as everything after ":".
   // For example, "C:/aa/aa/bb", the path is "/aa/bb/cc". Interesting, the
@@ -341,7 +307,7 @@ std::u16string ElideHost(const GURL& url,
   std::u16string url_host;
   std::u16string url_domain;
   std::u16string url_subdomain;
-  SplitHost(url, &url_host, &url_domain, &url_subdomain);
+  url_formatter::SplitHost(url, &url_host, &url_domain, &url_subdomain);
 
   const float pixel_width_url_host = gfx::GetStringWidthF(url_host, font_list);
   if (available_pixel_width >= pixel_width_url_host)
@@ -439,7 +405,57 @@ std::u16string FormatUrlForDisplayOmitSchemePathAndTrivialSubdomains(
           url_formatter::kFormatUrlTrimAfterHost |
           url_formatter::kFormatUrlOmitHTTPS |
           url_formatter::kFormatUrlOmitTrivialSubdomains,
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+      base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+}
+
+#if BUILDFLAG(IS_IOS)
+std::u16string
+FormatUrlForDisplayOmitSchemePathTrivialSubdomainsAndMobilePrefix(
+    const GURL& url) {
+  return url_formatter::FormatUrl(
+      url,
+      url_formatter::kFormatUrlOmitDefaults |
+          url_formatter::kFormatUrlTrimAfterHost |
+          url_formatter::kFormatUrlOmitHTTPS |
+          url_formatter::kFormatUrlOmitTrivialSubdomains |
+          url_formatter::kFormatUrlOmitMobilePrefix,
+      base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+}
+#endif
+
+void SplitHost(const GURL& url,
+               std::u16string* url_host,
+               std::u16string* url_domain,
+               std::u16string* url_subdomain) {
+  // GURL stores IDN hostnames in punycode.  Convert back to Unicode for
+  // display to the user.  (IDNToUnicode() will only perform this conversion
+  // if it's safe to display this host/domain in Unicode.)
+  *url_host = url_formatter::IDNToUnicode(url.host());
+
+  // Get domain and registry information from the URL.
+  std::string domain_puny =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  *url_domain = domain_puny.empty() ? *url_host
+                                    : url_formatter::IDNToUnicode(domain_puny);
+
+  // Add port if required.
+  if (!url.port().empty()) {
+    *url_host += base::UTF8ToUTF16(":" + url.port());
+    *url_domain += base::UTF8ToUTF16(":" + url.port());
+  }
+
+  // Get sub domain if requested.
+  if (url_subdomain) {
+    const size_t domain_start_index = url_host->find(*url_domain);
+    constexpr base::StringPiece16 kWwwPrefix = u"www.";
+    if (domain_start_index != std::u16string::npos)
+      *url_subdomain = url_host->substr(0, domain_start_index);
+    if ((*url_subdomain == kWwwPrefix || url_subdomain->empty() ||
+         url.SchemeIsFile())) {
+      url_subdomain->clear();
+    }
+  }
 }
 
 }  // namespace url_formatter

@@ -88,7 +88,14 @@ void SetVp8CodecParameters(vpx_codec_enc_cfg_t* config,
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Linux, using too many threads for VP8 encoding has been linked to high
   // CPU usage on machines that are under stress. See http://crbug.com/1151148.
-  config->g_threads = std::min(config->g_threads, 2U);
+  // 5/3/2022 update: Perf testing has shown that doubling the number of threads
+  // on machines with a large number of cores will improve performance at higher
+  // desktop resolutions.  Doubling the number of threads leads to ~30% increase
+  // in framerate at 4K. This could be increased further however we don't want
+  // to risk reintroducing the problem from the bug above so take the safe gains
+  // and leave plenty of cores for the non-remoting workload.
+  uint threshold = config->g_threads >= 16 ? 4U : 2U;
+  config->g_threads = std::min(config->g_threads, threshold);
 #endif  // BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Value of 2 means using the real time profile. This is basically a
@@ -135,10 +142,19 @@ void SetVp8CodecOptions(vpx_codec_ctx_t* codec) {
 void SetVp9CodecOptions(vpx_codec_ctx_t* codec, bool lossless_encode) {
   // Request the lowest-CPU usage that VP9 supports, which depends on whether
   // we are encoding lossy or lossless.
-  // Note that this is configured via the same parameter as for VP8.
-  int cpu_used = lossless_encode ? 5 : 6;
+  // Note that this knob uses the same parameter name as VP8.
+  int cpu_used = lossless_encode ? 5 : 8;
   vpx_codec_err_t ret = vpx_codec_control(codec, VP8E_SET_CPUUSED, cpu_used);
   DCHECK_EQ(VPX_CODEC_OK, ret) << "Failed to set CPUUSED";
+
+  // Turn on row-based multi-threading if more than one thread is available.
+  if (codec->config.enc->g_threads > 1) {
+    vpx_codec_control(codec, VP9E_SET_ROW_MT, 1);
+  }
+
+  // The param for this knob is a log2 value so 0 is reasonable here.
+  vpx_codec_control(codec, VP9E_SET_TILE_COLUMNS,
+                    static_cast<int>(codec->config.enc->g_threads >> 1));
 
   // Use the lowest level of noise sensitivity so as to spend less time
   // on motion estimation and inter-prediction mode.

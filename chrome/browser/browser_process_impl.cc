@@ -195,7 +195,6 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/plugins/plugins_resource_service.h"
 #include "content/public/browser/plugin_service.h"
 #endif
 
@@ -397,9 +396,6 @@ void BrowserProcessImpl::StartTearDown() {
   if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
   network_time_tracker_.reset();
-#if BUILDFLAG(ENABLE_PLUGINS)
-  plugins_resource_service_.reset();
-#endif
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Initial cleanup for ChromeBrowserCloudManagement, shutdown components that
@@ -1105,8 +1101,7 @@ void BrowserProcessImpl::CreateProfileManager() {
   profile_manager_ = std::make_unique<ProfileManager>(user_data_dir);
 }
 
-void BrowserProcessImpl::PreCreateThreads(
-    const base::CommandLine& command_line) {
+void BrowserProcessImpl::PreCreateThreads() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // chrome-extension:// URLs are safe to request anywhere, but may only
   // commit (including in iframes) in extension processes.
@@ -1167,12 +1162,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   plugin_service->SetFilter(ChromePluginServiceFilter::GetInstance());
 
   // Triggers initialization of the singleton instance on UI thread.
-  PluginFinder::GetInstance()->Init();
-
-  DCHECK(!plugins_resource_service_);
-  plugins_resource_service_ =
-      std::make_unique<PluginsResourceService>(local_state());
-  plugins_resource_service_->Init();
+  PluginFinder::GetInstance();
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if !BUILDFLAG(IS_ANDROID)

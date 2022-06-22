@@ -53,6 +53,10 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace arc {
 
 namespace {
@@ -95,9 +99,7 @@ mojom::ChromeAccountType GetAccountType(const Profile* profile) {
     // a (fake) robot account not known to auth service - this means that it has
     // to go through different, offline provisioning flow.
     DCHECK(IsRobotOrOfflineDemoAccountMode());
-    return demo_session->offline_enrolled()
-               ? mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT
-               : mojom::ChromeAccountType::ROBOT_ACCOUNT;
+    return mojom::ChromeAccountType::ROBOT_ACCOUNT;
   }
 
   return IsRobotOrOfflineDemoAccountMode()

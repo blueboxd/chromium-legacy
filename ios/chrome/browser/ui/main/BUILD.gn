@@ -84,9 +84,29 @@ source_set("incognito_blocker_scene_agent") {
   frameworks = [ "UIKit.framework" ]
 }
 
+source_set("layout_guide_scene_agent") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "layout_guide_scene_agent.h",
+    "layout_guide_scene_agent.mm",
+  ]
+  deps = [
+    ":observing_scene_agent",
+    "//base",
+    "//ios/chrome/browser/ui/util:util_swift",
+  ]
+  frameworks = [ "UIKit.framework" ]
+}
+
+source_set("scene_ui_provider") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "scene_ui_provider.h" ]
+}
+
 source_set("scene") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "scene_controller.h",
     "scene_controller.mm",
     "scene_delegate.h",
     "scene_delegate.mm",
@@ -100,6 +120,7 @@ source_set("scene") {
   deps = [
     ":default_browser_scene_agent",
     ":incognito_blocker_scene_agent",
+    ":layout_guide_scene_agent",
     ":main",
     ":observing_scene_agent",
     ":scene_state_header",
@@ -134,6 +155,8 @@ source_set("scene") {
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/crash_report:crash_report_internal",
     "//ios/chrome/browser/crash_report/breadcrumbs",
+    "//ios/chrome/browser/discover_feed",
+    "//ios/chrome/browser/discover_feed:discover_feed_factory",
     "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/infobars",
@@ -164,6 +187,8 @@ source_set("scene") {
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/incognito_reauth:incognito_reauth_scene_agent",
     "//ios/chrome/browser/ui/main:browser_interface_provider",
+    "//ios/chrome/browser/ui/ntp:feature_flags",
+    "//ios/chrome/browser/ui/policy:user_policy_scene_agent",
     "//ios/chrome/browser/ui/scoped_ui_blocker",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/sync",
@@ -191,6 +216,7 @@ source_set("scene") {
   public_deps = [
     ":scene_state_header",
     ":scene_state_observer",
+    ":scene_ui_provider",
   ]
   allow_circular_includes_from = [
     ":main",
@@ -291,11 +317,13 @@ source_set("unit_tests") {
   sources = [
     "browser_view_wrangler_unittest.mm",
     "incognito_blocker_scene_agent_unittest.mm",
+    "layout_guide_scene_agent_unittest.mm",
     "scene_controller_unittest.mm",
     "scene_state_browser_agent_unittest.mm",
   ]
   deps = [
     ":incognito_blocker_scene_agent",
+    ":layout_guide_scene_agent",
     ":main",
     ":scene",
     "//base",

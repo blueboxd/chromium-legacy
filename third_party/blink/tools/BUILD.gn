@@ -6,7 +6,9 @@
 group("wpt_tests_isolate") {
   testonly = true
   data = [
+    # Include the test runner.
     "//testing/scripts/wpt_common.py",
+    "//testing/scripts/run_wpt_tests.py",
 
     # WPT tooling
     "//third_party/wpt_tools/",
@@ -48,27 +50,29 @@ group("wpt_tests_isolate") {
   data_deps = [
     ":wpt_tests_mojo_bindings",
     "//testing:test_scripts_shared",
+    "//tools/imagediff",
   ]
   if (is_win) {
     data_deps += [ "//build/win:copy_cdb_to_output" ]
   }
-  if (is_android) {
-    data += [ "//testing/scripts/wpt_android_lib.py" ]
-  } else {
-    data += [ "//testing/scripts/run_wpt_tests.py" ]
-  }
 }
 
-group("wpt_tests_android_isolate") {
-  testonly = true
-  data_deps = [ "//third_party/blink/tools:wpt_tests_isolate" ]
-  data = [
-    "//third_party/blink/web_tests/android/WebLayerWPTOverrideExpectations",
-    "//third_party/blink/web_tests/android/ChromeWPTOverrideExpectations",
-    "//third_party/blink/web_tests/android/WebviewWPTExpectations",
-    "//third_party/blink/web_tests/android/AndroidWPTNeverFixTests",
-    "//third_party/blink/web_tests/android/WPTSmokeTestCases",
-  ]
+if (is_android) {
+  group("wpt_tests_android_isolate") {
+    testonly = true
+    data = [
+      "//third_party/blink/web_tests/android/WebLayerWPTOverrideExpectations",
+      "//third_party/blink/web_tests/android/ChromeWPTOverrideExpectations",
+      "//third_party/blink/web_tests/android/WebviewWPTExpectations",
+      "//third_party/blink/web_tests/android/AndroidWPTNeverFixTests",
+      "//third_party/blink/web_tests/android/WPTSmokeTestCases",
+    ]
+    data_deps = [
+      ":wpt_tests_isolate",
+      "//build/android:test_runner_py",
+      "//testing:run_wpt_tests",
+    ]
+  }
 }
 
 group("wpt_tests_base_mojo_bindings") {

@@ -16,6 +16,7 @@
 #include "chrome/browser/ash/arc/input_overlay/actions/input_element.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/position.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
+#include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
@@ -80,16 +81,15 @@ class Action {
   virtual std::unique_ptr<ActionView> CreateView(
       DisplayOverlayController* display_overlay_controller,
       const gfx::RectF& content_bounds) = 0;
-  // Return false if |input_element| can take any binding elements from current
-  // displayed binding. Return true if |input_element| can't take any binding
-  // elements from current displayed binding.
-  virtual bool RequireInputElement(const InputElement& input_element,
-                                   Action** overlapped_action) = 0;
-  // This is called if other action takes the input binding.
-  virtual void Unbind() = 0;
+  // This is called if other actions take the input binding from this action.
+  // |input_element| should overlap the current displayed binding. If it is
+  // partially overlapped, then we only unbind the overlapped input.
+  virtual void Unbind(const InputElement& input_element) = 0;
 
-  // This is called for editing the actions before change is saved.
-  void PrepareToBind(std::unique_ptr<InputElement> input_element);
+  // This is called for editing the actions before change is saved. Or for
+  // loading the customized data to override the default input mapping.
+  void PrepareToBind(std::unique_ptr<InputElement> input_element,
+                     DisplayMode mode = DisplayMode::kEdit);
   // Save |pending_binding_| as |current_binding_|.
   void BindPending();
   // Cancel |pending_binding_|.
@@ -99,6 +99,11 @@ class Action {
   void RestoreToDefault(const gfx::RectF& content_bounds);
   // Return currently displayed input binding.
   const InputElement& GetCurrentDisplayedBinding();
+  // Check if there is any overlap between |input_element| and current
+  // displayed binding.
+  bool IsOverlapped(const InputElement& input_element);
+  // Return the proto object if the action is customized.
+  std::unique_ptr<ActionProto> ConvertToProtoIfCustomized();
 
   InputElement* current_binding() const { return current_binding_.get(); }
   InputElement* original_binding() const { return original_binding_.get(); }
@@ -108,6 +113,7 @@ class Action {
       pending_binding_.reset();
     pending_binding_ = std::move(binding);
   }
+  int id() { return id_; }
   const std::string& name() { return name_; }
   const std::vector<std::unique_ptr<Position>>& locations() const {
     return locations_;
@@ -134,6 +140,8 @@ class Action {
   bool IsRepeatedKeyEvent(const ui::KeyEvent& key_event);
   void OnTouchReleased();
   void OnTouchCancelled();
+  // Process after unbinding the input mapping.
+  void PostUnbindProcess();
 
   // Original input binding.
   std::unique_ptr<InputElement> original_binding_;
@@ -142,6 +150,8 @@ class Action {
   // Pending input binding. It is used during the editing before it is saved.
   std::unique_ptr<InputElement> pending_binding_;
 
+  // Unique ID for each action.
+  int id_ = 0;
   // name_ is basically for debugging and not visible to users.
   std::string name_;
   // Location take turns for each key press if there are more than

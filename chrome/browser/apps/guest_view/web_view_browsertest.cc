@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
@@ -131,6 +132,7 @@
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/switches.h"
 #include "ui/compositor/compositor.h"
@@ -1737,9 +1739,36 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
   ASSERT_NE(empty_guest_embedder, embedder_web_contents);
   ASSERT_TRUE(empty_guest_embedder);
   content::RenderFrameHost* empty_guest_opener =
-      empty_guest_web_contents->GetOriginalOpener();
+      empty_guest_web_contents->GetFirstWebContentsInLiveOriginalOpenerChain()
+          ->GetMainFrame();
   ASSERT_TRUE(empty_guest_opener);
   ASSERT_NE(empty_guest_opener, empty_guest_embedder->GetMainFrame());
+}
+
+// This is a regression test for crbug.com/1309302. It launches an app
+// with two iframes and a webview within each of the iframes. The
+// purpose of the test is to ensure that webRequest subevent names are
+// unique across all webviews within the app.
+IN_PROC_BROWSER_TEST_P(WebViewTest, TwoIframesWebRequest) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving webview pages.
+  ExtensionTestMessageListener ready1("ready1", true);
+  ExtensionTestMessageListener ready2("ready2", true);
+
+  LoadAndLaunchPlatformApp("web_view/two_iframes_web_request", "Launched");
+  EXPECT_TRUE(ready1.WaitUntilSatisfied());
+  EXPECT_TRUE(ready2.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener finished1("success1", false);
+  finished1.set_failure_message("fail1");
+  ExtensionTestMessageListener finished2("success2", false);
+  finished2.set_failure_message("fail2");
+
+  // Reply to the listeners to start the navigations and wait for the
+  // results.
+  ready1.Reply("");
+  ready2.Reply("");
+  EXPECT_TRUE(finished1.WaitUntilSatisfied());
+  EXPECT_TRUE(finished2.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
@@ -2164,11 +2193,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPageRouteEvents) {
 #endif
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPageDetach) {
-  // TODO(crbug.com/1267977): fix this test to work with site isolation for
-  // <webview>.
-  if (content::SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled())
-    return;
-
   InterstitialTestHelper();
 
   content::WebContents* guest_web_contents =
@@ -2177,9 +2201,9 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPageDetach) {
 
   // Navigate to about:blank.
   content::TestNavigationObserver load_observer(guest_web_contents);
-  bool result = ExecuteScript(guest_web_contents,
-                              "window.location.assign('about:blank')");
-  EXPECT_TRUE(result);
+  auto* embedder_web_contents = GetFirstAppWindowWebContents();
+  EXPECT_TRUE(content::ExecuteScript(embedder_web_contents,
+                                     "loadGuestUrl('about:blank');"));
   load_observer.Wait();
 }
 
@@ -3839,20 +3863,33 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_testFindInMultipleWebViews) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadDataAPI) {
-  // TODO(crbug.com/1267977): fix this test to work with site isolation for
-  // <webview>.
-  if (content::SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled())
-    return;
-
   TestHelper("testLoadDataAPI", "web_view/shim", NEEDS_TEST_SERVER);
+
+  // Ensure that when site-isolated guests are enabled, the guest process is
+  // locked after the loadDataWithBaseURL navigation and is allowed to access
+  // resources belonging to the base URL's origin.
+  if (content::SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled()) {
+    content::WebContents* guest =
+        GetGuestViewManager()->WaitForSingleGuestCreated();
+    ASSERT_TRUE(guest);
+    content::RenderFrameHost* main_frame = guest->GetMainFrame();
+    EXPECT_TRUE(main_frame->GetSiteInstance()->RequiresDedicatedProcess());
+    EXPECT_TRUE(main_frame->GetProcess()->IsProcessLockedToSiteForTesting());
+
+    auto* security_policy = content::ChildProcessSecurityPolicy::GetInstance();
+    url::Origin base_origin = url::Origin::Create(GURL("http://localhost"));
+    EXPECT_TRUE(security_policy->CanAccessDataForOrigin(
+        main_frame->GetProcess()->GetID(), base_origin));
+
+    // Ensure the process doesn't have access to some other origin. This
+    // verifies that site isolation is enforced.
+    url::Origin another_origin = url::Origin::Create(GURL("http://foo.com"));
+    EXPECT_FALSE(security_policy->CanAccessDataForOrigin(
+        main_frame->GetProcess()->GetID(), another_origin));
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadDataAPIAccessibleResources) {
-  // TODO(crbug.com/1267977): fix this test to work with site isolation for
-  // <webview>.
-  if (content::SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled())
-    return;
-
   TestHelper("testLoadDataAPIAccessibleResources", "web_view/shim",
              NEEDS_TEST_SERVER);
 }
@@ -5927,6 +5964,67 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, ContentScriptInOOPIF) {
   EXPECT_TRUE(script_listener.WaitUntilSatisfied());
 }
 
+// Check that with site-isolated <webview>, two same-site OOPIFs in two
+// unrelated <webview> tags share the same process due to the subframe process
+// reuse policy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, SubframeProcessReuse) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Load an app with a <webview> guest that starts at a data: URL.
+  LoadAppWithGuest("web_view/simple");
+  content::WebContents* guest = GetGuestWebContents();
+  ASSERT_TRUE(guest);
+
+  // Navigate <webview> to a cross-site page with a same-site iframe.
+  const GURL start_url =
+      embedded_test_server()->GetURL("a.test", "/iframe.html");
+  EXPECT_TRUE(NavigateToURL(guest, start_url));
+
+  // Navigate <webview> subframe cross-site.
+  const GURL frame_url =
+      embedded_test_server()->GetURL("b.test", "/title1.html");
+  EXPECT_TRUE(NavigateIframeToURL(guest, "test", frame_url));
+  content::RenderFrameHost* subframe =
+      content::ChildFrameAt(guest->GetMainFrame(), 0);
+
+  // Attach a second <webview>.
+  ASSERT_TRUE(content::ExecuteScript(
+      GetEmbedderWebContents(),
+      base::StringPrintf("const w = document.createElement('webview');"
+                         "w.src = '%s';"
+                         "document.body.appendChild(w);",
+                         start_url.spec().c_str())));
+  GetGuestViewManager()->WaitForNumGuestsCreated(2u);
+  auto* guest2 = GetGuestViewManager()->GetLastGuestCreated();
+  EXPECT_TRUE(content::WaitForLoadStop(guest2));
+  ASSERT_NE(guest, guest2);
+
+  // Navigate second <webview> cross-site.  Use NavigateToURL() to swap
+  // BrowsingInstances.
+  const GURL second_guest_url =
+      embedded_test_server()->GetURL("c.test", "/iframe.html");
+  EXPECT_TRUE(NavigateToURL(guest2, second_guest_url));
+  EXPECT_NE(guest->GetMainFrame()->GetSiteInstance(),
+            guest2->GetMainFrame()->GetSiteInstance());
+  EXPECT_NE(guest->GetMainFrame()->GetProcess(),
+            guest2->GetMainFrame()->GetProcess());
+  EXPECT_FALSE(guest->GetMainFrame()->GetSiteInstance()->IsRelatedSiteInstance(
+      guest2->GetMainFrame()->GetSiteInstance()));
+
+  // Navigate second <webview> subframe to the same site as the first <webview>
+  // subframe, ending up with A(B) in `guest` and C(B) in `guest2`.  These
+  // subframes should be in the same (guest's) StoragePartition, but different
+  // SiteInstances and BrowsingInstances. Nonetheless, due to the subframe
+  // reuse policy, they should share the same process.
+  EXPECT_TRUE(NavigateIframeToURL(guest2, "test", frame_url));
+  content::RenderFrameHost* subframe2 =
+      content::ChildFrameAt(guest2->GetMainFrame(), 0);
+  EXPECT_NE(subframe->GetSiteInstance(), subframe2->GetSiteInstance());
+  EXPECT_EQ(subframe->GetSiteInstance()->GetStoragePartitionConfig(),
+            subframe2->GetSiteInstance()->GetStoragePartitionConfig());
+  EXPECT_EQ(subframe->GetProcess(), subframe2->GetProcess());
+}
+
 class WebViewFencedFrameTest : public WebViewTest {
  public:
   ~WebViewFencedFrameTest() override = default;
@@ -5962,4 +6060,28 @@ IN_PROC_BROWSER_TEST_P(WebViewFencedFrameTest,
             guest_web_contents->GetMainFrame()
                 ->GetSiteInstance()
                 ->GetStoragePartitionConfig());
+}
+
+class WebViewPortalTest : public WebViewTest {
+ public:
+  WebViewPortalTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kPortals,
+                              blink::features::kPortalsCrossOrigin},
+        /*disabled_features=*/{});
+  }
+  ~WebViewPortalTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(WebViewTests,
+                         WebViewPortalTest,
+                         testing::Bool(),
+                         WebViewTest::DescribeParams);
+
+// Creates and activates a <portal> element inside a <webview>.
+IN_PROC_BROWSER_TEST_P(WebViewPortalTest, PortalActivationInGuest) {
+  TestHelper("testActivatePortal", "web_view/shim", NEEDS_TEST_SERVER);
 }

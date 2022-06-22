@@ -37,6 +37,9 @@ FORWARD_DECLARE_TEST(DiskCacheBackendTest, SimpleCacheEnumerationLongKeys);
 
 namespace disk_cache {
 
+class BackendFileOperations;
+class UnboundBackendFileOperations;
+
 NET_EXPORT_PRIVATE extern const base::Feature kSimpleCachePrefetchExperiment;
 NET_EXPORT_PRIVATE extern const char kSimpleCacheFullPrefetchBytesParam[];
 NET_EXPORT_PRIVATE extern const char
@@ -101,6 +104,8 @@ struct SimpleEntryCreationResults {
   ~SimpleEntryCreationResults();
 
   raw_ptr<SimpleSynchronousEntry> sync_entry;
+  // This is set when `sync_entry` is null.
+  std::unique_ptr<UnboundBackendFileOperations> unbound_file_operations;
 
   // Expectation is that [0] will always be filled in, but [1] might not be.
   SimpleStreamPrefetchData stream_prefetch_data[2];
@@ -181,36 +186,51 @@ class SimpleSynchronousEntry {
     int buf_len;
   };
 
+  NET_EXPORT_PRIVATE SimpleSynchronousEntry(
+      net::CacheType cache_type,
+      const base::FilePath& path,
+      const std::string& key,
+      uint64_t entry_hash,
+      SimpleFileTracker* simple_file_tracker,
+      std::unique_ptr<UnboundBackendFileOperations> file_operations,
+      int32_t stream_0_size);
+
   // Like Entry, the SimpleSynchronousEntry self releases when Close() is
   // called, but sometimes temporary ones are kept in unique_ptr.
   NET_EXPORT_PRIVATE ~SimpleSynchronousEntry();
 
   // Opens a disk cache entry on disk. The |key| parameter is optional, if empty
   // the operation may be slower. The |entry_hash| parameter is required.
-  static void OpenEntry(net::CacheType cache_type,
-                        const base::FilePath& path,
-                        const std::string& key,
-                        uint64_t entry_hash,
-                        SimpleFileTracker* file_tracker,
-                        int32_t trailer_prefetch_size,
-                        SimpleEntryCreationResults* out_results);
+  static void OpenEntry(
+      net::CacheType cache_type,
+      const base::FilePath& path,
+      const std::string& key,
+      uint64_t entry_hash,
+      SimpleFileTracker* file_tracker,
+      std::unique_ptr<UnboundBackendFileOperations> file_operations,
+      int32_t trailer_prefetch_size,
+      SimpleEntryCreationResults* out_results);
 
-  static void CreateEntry(net::CacheType cache_type,
-                          const base::FilePath& path,
-                          const std::string& key,
-                          uint64_t entry_hash,
-                          SimpleFileTracker* file_tracker,
-                          SimpleEntryCreationResults* out_results);
+  static void CreateEntry(
+      net::CacheType cache_type,
+      const base::FilePath& path,
+      const std::string& key,
+      uint64_t entry_hash,
+      SimpleFileTracker* file_tracker,
+      std::unique_ptr<UnboundBackendFileOperations> file_operations,
+      SimpleEntryCreationResults* out_results);
 
-  static void OpenOrCreateEntry(net::CacheType cache_type,
-                                const base::FilePath& path,
-                                const std::string& key,
-                                uint64_t entry_hash,
-                                OpenEntryIndexEnum index_state,
-                                bool optimistic_create,
-                                SimpleFileTracker* file_tracker,
-                                int32_t trailer_prefetch_size,
-                                SimpleEntryCreationResults* out_results);
+  static void OpenOrCreateEntry(
+      net::CacheType cache_type,
+      const base::FilePath& path,
+      const std::string& key,
+      uint64_t entry_hash,
+      OpenEntryIndexEnum index_state,
+      bool optimistic_create,
+      SimpleFileTracker* file_tracker,
+      std::unique_ptr<UnboundBackendFileOperations> file_operations,
+      int32_t trailer_prefetch_size,
+      SimpleEntryCreationResults* out_results);
 
   // Renames the entry on the file system, making it no longer possible to open
   // it again, but allowing operations to continue to be executed through that
@@ -221,22 +241,28 @@ class SimpleSynchronousEntry {
   // Deletes an entry from the file system.  This variant should only be used
   // if there is no actual open instance around, as it doesn't account for
   // possibility of it having been renamed to a non-standard name.
-  static int DeleteEntryFiles(const base::FilePath& path,
-                              net::CacheType cache_type,
-                              uint64_t entry_hash);
+  static int DeleteEntryFiles(
+      const base::FilePath& path,
+      net::CacheType cache_type,
+      uint64_t entry_hash,
+      std::unique_ptr<UnboundBackendFileOperations> unbound_file_operations);
 
   // Like |DeleteEntryFiles()| above, except that it truncates the entry files
   // rather than deleting them. Used when dooming entries after the backend has
   // shutdown. See implementation of |SimpleEntryImpl::DoomEntryInternal()| for
   // more.
-  static int TruncateEntryFiles(const base::FilePath& path,
-                                uint64_t entry_hash);
+  static int TruncateEntryFiles(
+      const base::FilePath& path,
+      uint64_t entry_hash,
+      std::unique_ptr<UnboundBackendFileOperations> file_operations);
 
   // Like |DeleteEntryFiles()| above. Deletes all entries corresponding to the
   // |key_hashes|. Succeeds only when all entries are deleted. Returns a net
   // error code.
-  static int DeleteEntrySetFiles(const std::vector<uint64_t>* key_hashes,
-                                 const base::FilePath& path);
+  static int DeleteEntrySetFiles(
+      const std::vector<uint64_t>* key_hashes,
+      const base::FilePath& path,
+      std::unique_ptr<UnboundBackendFileOperations> unbound_file_operations);
 
   // N.B. ReadData(), WriteData(), CheckEOFRecord(), ReadSparseData(),
   // WriteSparseData() and Close() may block on IO.
@@ -251,7 +277,8 @@ class SimpleSynchronousEntry {
                  net::IOBuffer* in_buf,
                  SimpleEntryStat* out_entry_stat,
                  WriteResult* out_write_result);
-  int CheckEOFRecord(base::File* file,
+  int CheckEOFRecord(BackendFileOperations* file_operations,
+                     base::File* file,
                      int stream_index,
                      const SimpleEntryStat& entry_stat,
                      uint32_t expected_crc32);
@@ -293,6 +320,7 @@ class SimpleSynchronousEntry {
                            SimpleCacheEnumerationLongKeys);
   friend class SimpleFileTrackerTest;
   class PrefetchData;
+  class ScopedFileOperationsBinding;
 
   enum FileRequired {
     FILE_NOT_REQUIRED,
@@ -315,28 +343,24 @@ class SimpleSynchronousEntry {
   // make it likely the entire key is read.
   static const size_t kInitialHeaderRead = 64 * 1024;
 
-  NET_EXPORT_PRIVATE SimpleSynchronousEntry(
-      net::CacheType cache_type,
-      const base::FilePath& path,
-      const std::string& key,
-      uint64_t entry_hash,
-      SimpleFileTracker* simple_file_tracker,
-      int32_t stream_0_size);
-
   // Tries to open one of the cache entry files. Succeeds if the open succeeds
   // or if the file was not found and is allowed to be omitted if the
   // corresponding stream is empty.
-  bool MaybeOpenFile(int file_index,
+  bool MaybeOpenFile(BackendFileOperations* file_operations,
+                     int file_index,
                      base::File::Error* out_error);
   // Creates one of the cache entry files if necessary. If the file is allowed
   // to be omitted if the corresponding stream is empty, and if |file_required|
   // is FILE_NOT_REQUIRED, then the file is not created; otherwise, it is.
-  bool MaybeCreateFile(int file_index,
+  bool MaybeCreateFile(BackendFileOperations* file_operations,
+                       int file_index,
                        FileRequired file_required,
                        base::File::Error* out_error);
-  bool OpenFiles(SimpleEntryStat* out_entry_stat);
-  bool CreateFiles(SimpleEntryStat* out_entry_stat);
-  void CloseFile(int index);
+  bool OpenFiles(BackendFileOperations* file_operations,
+                 SimpleEntryStat* out_entry_stat);
+  bool CreateFiles(BackendFileOperations* file_operations,
+                   SimpleEntryStat* out_entry_stat);
+  void CloseFile(BackendFileOperations* file_operations, int index);
   void CloseFiles();
 
   // Read the header and key at the beginning of the file, and validate that
@@ -346,21 +370,24 @@ class SimpleSynchronousEntry {
   bool CheckHeaderAndKey(base::File* file, int file_index);
 
   // Returns a net error, i.e. net::OK on success.
-  int InitializeForOpen(SimpleEntryStat* out_entry_stat,
+  int InitializeForOpen(BackendFileOperations* file_operations,
+                        SimpleEntryStat* out_entry_stat,
                         SimpleStreamPrefetchData stream_prefetch_data[2]);
 
   // Writes the header and key to a newly-created stream file. |index| is the
   // index of the stream. Returns true on success; returns false and failure.
-  bool InitializeCreatedFile(int index);
+  bool InitializeCreatedFile(BackendFileOperations* file_operations, int index);
 
   // Returns a net error, including net::OK on success and net::FILE_EXISTS
   // when the entry already exists.
-  int InitializeForCreate(SimpleEntryStat* out_entry_stat);
+  int InitializeForCreate(BackendFileOperations* file_operations,
+                          SimpleEntryStat* out_entry_stat);
 
   // Allocates and fills a buffer with stream 0 data in |stream_0_data|, then
   // checks its crc32. May also optionally read in |stream_1_data| and its
   // crc, but might decide not to.
   int ReadAndValidateStream0AndMaybe1(
+      BackendFileOperations* file_operations,
       int file_size,
       SimpleEntryStat* out_entry_stat,
       SimpleStreamPrefetchData stream_prefetch_data[2]);
@@ -401,13 +428,14 @@ class SimpleSynchronousEntry {
                            SimpleStreamPrefetchData* out);
 
   // Opens the sparse data file and scans it if it exists.
-  bool OpenSparseFileIfExists(int32_t* out_sparse_data_size);
+  bool OpenSparseFileIfExists(BackendFileOperations* file_operations,
+                              int32_t* out_sparse_data_size);
 
   // Creates and initializes the sparse data file.
-  bool CreateSparseFile();
+  bool CreateSparseFile(BackendFileOperations* file_operations);
 
   // Closes the sparse data file.
-  void CloseSparseFile();
+  void CloseSparseFile(BackendFileOperations* file_operations);
 
   // Writes the header to the (newly-created) sparse file.
   bool InitializeSparseFile(base::File* file);
@@ -442,13 +470,23 @@ class SimpleSynchronousEntry {
                          int len,
                          const char* buf);
 
+  static int DeleteEntryFilesInternal(const base::FilePath& path,
+                                      net::CacheType cache_type,
+                                      uint64_t entry_hash,
+                                      BackendFileOperations* file_operations);
+
   static bool DeleteFileForEntryHash(const base::FilePath& path,
                                      uint64_t entry_hash,
-                                     int file_index);
+                                     int file_index,
+                                     BackendFileOperations* file_operations);
   static bool DeleteFilesForEntryHash(const base::FilePath& path,
-                                      uint64_t entry_hash);
+                                      uint64_t entry_hash,
+                                      BackendFileOperations* file_operations);
   static bool TruncateFilesForEntryHash(const base::FilePath& path,
-                                        uint64_t entry_hash);
+                                        uint64_t entry_hash,
+                                        BackendFileOperations* file_operations);
+
+  int DoomInternal(BackendFileOperations* file_operations);
 
   base::FilePath GetFilenameFromFileIndex(int file_index) const;
 
@@ -470,6 +508,12 @@ class SimpleSynchronousEntry {
   };
 
   raw_ptr<SimpleFileTracker> file_tracker_;
+
+  // An interface to allow file operations. This is in an "unbound" state
+  // because each operation can run on different sequence from each other.
+  // Each operation can convert this to a BackendFileOperations with calling
+  // Bind(), relying on that at most one operation runs at a time.
+  std::unique_ptr<UnboundBackendFileOperations> unbound_file_operations_;
 
   // The number of trailing bytes in file 0 that we believe should be
   // prefetched in order to read the EOF record and stream 0.  This is

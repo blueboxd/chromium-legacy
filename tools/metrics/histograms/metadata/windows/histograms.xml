@@ -65,18 +65,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Windows.FileDeleteLastRetryError" enum="WinGetLastError"
-    expires_after="2022-05-01">
-  <owner>grt@chromium.org</owner>
+<histogram name="Windows.CreateOrUpdateShortcuts.Result"
+    enum="CreateOrUpdateShortcutsResult" expires_after="2022-11-26">
   <owner>davidbienvenu@chromium.org</owner>
+  <owner>jessemckenna@google.com</owner>
   <summary>
-    Last File deletion error in DeleteFileWithRetry when no retry succeeded,
-    because we exceeded the retry count.
+    The result of creating or updating a Windows shortcut out of process.
+    Recorded when Chrome creates or updates a Windows shortcut using
+    shell_integration::win::CreateOrUpdateShortcuts, e.g., when a profile is
+    added.
   </summary>
 </histogram>
 
 <histogram name="Windows.FileDeleteRetryCount" units="attempts"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>grt@chromium.org</owner>
   <owner>davidbienvenu@chromium.org</owner>
   <summary>
@@ -97,7 +99,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HighResolutionTimerUsage" units="%"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -215,6 +217,19 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Windows.OnCurrentWorkspaceCached" enum="BooleanCacheHit"
+    expires_after="2022-10-01">
+  <owner>davidbienvenu@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Indicates if the current workspace state of a window is cached or not. If
+    it's known that the window is on the current workspace or not, then we can
+    avoid the COM method call IsWindowOnCurrentVirtualDesktop. This is recorded
+    in BrowserView::IsOnCurrentWorkspace. In general, the state should almost
+    always be cached.
+  </summary>
+</histogram>
+
 <histogram name="Windows.OOPSelectFileDialog.ProcessError" enum="BooleanError"
     expires_after="M82">
   <owner>pmonette@chromium.org</owner>
@@ -311,7 +326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.UnpinShortcut.ProcessError" enum="BooleanError"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>davidbienvenu@chromium.org</owner>
   <owner>grt@chromium.org</owner>
   <summary>

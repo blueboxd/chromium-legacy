@@ -20,6 +20,7 @@
 #include "base/strings/string_split.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
+#include "content/browser/first_party_sets/addition_overlaps_union_find.h"
 #include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -66,6 +67,37 @@ std::string ReadSetsFile(base::File sets_file) {
   return base::ReadStreamToString(file.get(), &raw_sets) ? raw_sets : "";
 }
 
+// Creates a set of SchemefulSites present with the given list of SingleSets.
+base::flat_set<net::SchemefulSite> FlattenSingleSetList(
+    const std::vector<content::FirstPartySetsLoader::SingleSet>& sets) {
+  std::vector<net::SchemefulSite> sites;
+  for (const content::FirstPartySetsLoader::SingleSet& set : sets) {
+    sites.push_back(set.first);
+    sites.insert(sites.end(), set.second.begin(), set.second.end());
+  }
+  return sites;
+}
+
+// Populates the `policy_set_overlaps` out-parameter by checking
+// `existing_sets`. If `site` is equal to an existing site e in `sets`, then
+// `policy_set_index` will be added to the list of set indices at
+// `policy_set_overlaps`[e].
+void AddIfPolicySetOverlaps(
+    const net::SchemefulSite& site,
+    size_t policy_set_index,
+    FirstPartySetsLoader::FlattenedSets existing_sets,
+    base::flat_map<net::SchemefulSite, base::flat_set<size_t>>&
+        policy_set_overlaps) {
+  // Check `site` for membership in `existing_sets`.
+  if (auto it = existing_sets.find(site); it != existing_sets.end()) {
+    // Add the index of `site`'s policy set to the list of policy set indices
+    // that also overlap with site_owner.
+    auto [site_and_sets, inserted] =
+        policy_set_overlaps.insert({it->second, {}});
+    site_and_sets->second.insert(policy_set_index);
+  }
+}
+
 }  // namespace
 
 FirstPartySetsLoader::FirstPartySetsLoader(
@@ -89,7 +121,7 @@ void FirstPartySetsLoader::SetManuallySpecifiedSet(
   manually_specified_set_ = {CanonicalizeSet(base::SplitString(
       flag_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY))};
   UmaHistogramTimes(
-      "Cookie.FirstPartySets.InitializationDuration.ReadCommandLineSet",
+      "Cookie.FirstPartySets.InitializationDuration.ReadCommandLineSet2",
       construction_timer_.Elapsed());
 
   MaybeFinishLoading();
@@ -127,7 +159,7 @@ void FirstPartySetsLoader::OnReadSetsFile(const std::string& raw_sets) {
 
   component_sets_parse_progress_ = Progress::kFinished;
   UmaHistogramTimes(
-      "Cookie.FirstPartySets.InitializationDuration.ReadComponentSets",
+      "Cookie.FirstPartySets.InitializationDuration.ReadComponentSets2",
       construction_timer_.Elapsed());
   MaybeFinishLoading();
 }
@@ -144,33 +176,141 @@ void FirstPartySetsLoader::DisposeFile(base::File sets_file) {
   }
 }
 
+std::vector<FirstPartySetsLoader::SingleSet>
+FirstPartySetsLoader::NormalizeAdditionSets(
+    const FlattenedSets& existing_sets,
+    const std::vector<SingleSet>& addition_sets) {
+  // Create a mapping from an owner site in `existing_sets` to all policy sets
+  // that intersect with the set that it owns.
+  base::flat_map<net::SchemefulSite, base::flat_set<size_t>>
+      policy_set_overlaps;
+  for (size_t set_idx = 0; set_idx < addition_sets.size(); set_idx++) {
+    const net::SchemefulSite& owner = addition_sets[set_idx].first;
+    AddIfPolicySetOverlaps(owner, set_idx, existing_sets, policy_set_overlaps);
+    for (const net::SchemefulSite& member : addition_sets[set_idx].second) {
+      AddIfPolicySetOverlaps(member, set_idx, existing_sets,
+                             policy_set_overlaps);
+    }
+  }
+
+  AdditionOverlapsUnionFind union_finder(addition_sets.size());
+  for (auto& [public_site, policy_set_indices] : policy_set_overlaps) {
+    // Union together all overlapping policy sets to determine which one will
+    // take ownership.
+    for (size_t representative : policy_set_indices) {
+      union_finder.Union(*policy_set_indices.begin(), representative);
+    }
+  }
+
+  // The union-find data structure now knows which policy set should be given
+  // the role of representative for each entry in policy_set_overlaps.
+  // AdditionOverlapsUnionFind::SetsMapping returns a map from representative
+  // index to list of its children.
+  std::vector<SingleSet> normalized_additions;
+  for (auto& [rep, children] : union_finder.SetsMapping()) {
+    SingleSet normalized = addition_sets[rep];
+    for (size_t child_set_idx : children) {
+      // Update normalized to absorb the child_set_idx-th addition set.
+      const SingleSet& child_set = addition_sets[child_set_idx];
+      normalized.second.insert(child_set.first);
+      normalized.second.insert(child_set.second.begin(),
+                               child_set.second.end());
+    }
+    normalized_additions.push_back(normalized);
+  }
+  return normalized_additions;
+}
+
 void FirstPartySetsLoader::ApplyManuallySpecifiedSet() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(component_sets_parse_progress_, Progress::kFinished);
-  DCHECK(manually_specified_set_.has_value());
+  DCHECK(HasAllInputs());
   if (!manually_specified_set_.value().has_value())
     return;
+  ApplyReplacementOverrides({manually_specified_set_->value()});
+  RemoveAllSingletons();
+}
 
-  const net::SchemefulSite& manual_owner =
-      manually_specified_set_.value()->first;
-  const base::flat_set<net::SchemefulSite>& manual_members =
-      manually_specified_set_.value()->second;
+void FirstPartySetsLoader::ApplyReplacementOverrides(
+    const std::vector<SingleSet>& override_sets) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(HasAllInputs());
 
-  const auto was_manually_provided =
-      [&manual_members, &manual_owner](const net::SchemefulSite& site) {
-        return site == manual_owner || manual_members.contains(site);
-      };
+  base::flat_set<net::SchemefulSite> all_override_sites =
+      FlattenSingleSetList(override_sets);
 
-  // Erase the intersection between the manually-specified set and the
-  // CU-supplied set, and any members whose owner was in the intersection.
-  base::EraseIf(sets_, [&was_manually_provided](const auto& p) {
-    return was_manually_provided(p.first) || was_manually_provided(p.second);
-  });
+  // Erase the intersection between |sets_| and the list of |override_sets| and
+  // any members whose owner was in the intersection.
+  base::EraseIf(
+      sets_, [&all_override_sites](
+                 const std::pair<net::SchemefulSite, net::SchemefulSite>& p) {
+        return all_override_sites.contains(p.first) ||
+               all_override_sites.contains(p.second);
+      });
 
-  // Now remove singleton sets. We already removed any sites that were part
-  // of the intersection, or whose owner was part of the intersection. This
-  // leaves sites that *are* owners, which no longer have any (other)
-  // members.
+  // Next, we must add each site in the override_sets to |sets_|.
+  for (auto& [owner, members] : override_sets) {
+    sets_.emplace(owner, owner);
+    for (const net::SchemefulSite& member : members) {
+      sets_.emplace(member, owner);
+    }
+  }
+}
+
+void FirstPartySetsLoader::ApplyAdditionOverrides(
+    const std::vector<SingleSet>& new_sets) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(HasAllInputs());
+
+  if (new_sets.empty())
+    return;
+
+  std::vector<SingleSet> normalized_additions =
+      NormalizeAdditionSets(sets_, new_sets);
+
+  FlattenedSets flattened_additions;
+  for (const auto& [owner, members] : normalized_additions) {
+    for (const net::SchemefulSite& member : members)
+      flattened_additions.emplace(member, owner);
+    flattened_additions.emplace(owner, owner);
+  }
+
+  // Identify intersections between addition sets and existing sets. This will
+  // be used to reparent existing sets if they intersect with an addition set.
+  //
+  // Since we reparent every member of an existing set (regardless of whether
+  // the intersection was via one of its members or its owner), we just keep
+  // track of the set itself, via its owner.
+  base::flat_map<net::SchemefulSite, net::SchemefulSite> owners_in_intersection;
+  for (const auto& [site, owner] : flattened_additions) {
+    // Found an overlap with an existing set. Add the existing owner to the
+    // map.
+    if (auto it = sets_.find(site); it != sets_.end()) {
+      owners_in_intersection[it->second] = owner;
+    }
+  }
+
+  // Update the (site, owner) mappings in sets_ such that if owner is in the
+  // intersection, then the site is mapped to owners_in_intersection[owner].
+  //
+  // This reparents existing sets to their owner given by the normalized
+  // addition sets.
+  for (auto& [site, owner] : sets_) {
+    if (auto owner_entry = owners_in_intersection.find(owner);
+        owner_entry != owners_in_intersection.end()) {
+      owner = owner_entry->second;
+    }
+  }
+
+  // Since the intersection between sets_ and flattened_additions has already
+  // been updated above, we can insert flattened_additions into sets_ without
+  // affecting any existing mappings in sets_.
+  sets_.insert(flattened_additions.begin(), flattened_additions.end());
+}
+
+void FirstPartySetsLoader::RemoveAllSingletons() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Now remove singleton sets, which are sets that just contain sites that
+  // *are* owners, but no longer have any (other) members.
   std::set<net::SchemefulSite> owners_with_members;
   for (const auto& it : sets_) {
     if (it.first != it.second)
@@ -179,21 +319,29 @@ void FirstPartySetsLoader::ApplyManuallySpecifiedSet() {
   base::EraseIf(sets_, [&owners_with_members](const auto& p) {
     return p.first == p.second && !base::Contains(owners_with_members, p.first);
   });
+}
 
-  // Next, we must add the manually-added set to the parsed value.
-  for (const net::SchemefulSite& member : manual_members) {
-    sets_.emplace(member, manual_owner);
-  }
-  sets_.emplace(manual_owner, manual_owner);
+void FirstPartySetsLoader::ApplyAllPolicyOverrides() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(HasAllInputs());
+  ApplyReplacementOverrides(policy_overrides_.replacements);
+  ApplyAdditionOverrides(policy_overrides_.additions);
+  RemoveAllSingletons();
 }
 
 void FirstPartySetsLoader::MaybeFinishLoading() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (component_sets_parse_progress_ != Progress::kFinished ||
-      !manually_specified_set_.has_value())
+  if (!HasAllInputs())
     return;
   ApplyManuallySpecifiedSet();
+  ApplyAllPolicyOverrides();
   std::move(on_load_complete_).Run(std::move(sets_));
+}
+
+bool FirstPartySetsLoader::HasAllInputs() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return component_sets_parse_progress_ == Progress::kFinished &&
+         manually_specified_set_.has_value();
 }
 
 }  // namespace content

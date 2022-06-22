@@ -4,30 +4,20 @@
 
 #include "ash/system/power/adaptive_charging_controller.h"
 
-#include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 
 namespace ash {
 
-AdaptiveChargingController::Observer::Observer() = default;
-
-AdaptiveChargingController::Observer::~Observer() = default;
-
-AdaptiveChargingController::AdaptiveChargingController() {
+AdaptiveChargingController::AdaptiveChargingController()
+    : nudge_controller_(std::make_unique<AdaptiveChargingNudgeController>()),
+      notification_controller_(
+          std::make_unique<AdaptiveChargingNotificationController>()) {
   power_manager_observation_.Observe(chromeos::PowerManagerClient::Get());
 }
 
 AdaptiveChargingController::~AdaptiveChargingController() = default;
-
-void AdaptiveChargingController::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void AdaptiveChargingController::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
 
 bool AdaptiveChargingController::IsAdaptiveChargingSupported() {
   const absl::optional<power_manager::PowerSupplyProperties>&
@@ -43,22 +33,25 @@ void AdaptiveChargingController::PowerChanged(
   if (!proto.has_adaptive_delaying_charge())
     return;
 
-  // Return if the new value in adaptive_delaying_charge is the same as last
-  // one.
-  if (adaptive_delaying_charge_ == proto.adaptive_delaying_charge())
+  // We only care about the change in this field.
+  if (is_adaptive_delaying_charge_ == proto.adaptive_delaying_charge())
     return;
 
-  adaptive_delaying_charge_ = proto.adaptive_delaying_charge();
+  is_adaptive_delaying_charge_ = proto.adaptive_delaying_charge();
 
-  if (adaptive_delaying_charge_.value()) {
-    for (auto& observer : observers_) {
-      observer.OnAdaptiveChargingStarted();
-    }
+  if (!is_adaptive_delaying_charge_)
     return;
-  }
 
-  for (auto& observer : observers_) {
-    observer.OnAdaptiveChargingStopped();
+  // The nudge will only be shown alongside the notification once.
+  nudge_controller_->ShowNudge();
+
+  if (proto.has_battery_time_to_full_sec() &&
+      proto.battery_time_to_full_sec() > 0) {
+    // Converts time to full from second to hours.
+    notification_controller_->ShowAdaptiveChargingNotification(
+        static_cast<int>(proto.battery_time_to_full_sec() / 3600));
+  } else {
+    notification_controller_->ShowAdaptiveChargingNotification();
   }
 }
 

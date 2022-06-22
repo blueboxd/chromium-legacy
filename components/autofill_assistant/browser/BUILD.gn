@@ -20,7 +20,10 @@ proto_library("proto") {
     "service.proto",
     "view_layout.proto",
   ]
-  link_deps = [ "//components/autofill_assistant/content/common/proto:proto" ]
+  link_deps = [
+    "//components/autofill_assistant/browser/public:proto",
+    "//components/autofill_assistant/content/common/proto:proto",
+  ]
 }
 
 proto_library("test_proto") {
@@ -56,6 +59,8 @@ static_library("browser") {
     "actions/execute_js_action.h",
     "actions/expect_navigation_action.cc",
     "actions/expect_navigation_action.h",
+    "actions/external_action.cc",
+    "actions/external_action.h",
     "actions/fallback_handler/required_field.cc",
     "actions/fallback_handler/required_field.h",
     "actions/fallback_handler/required_fields_fallback_handler.cc",
@@ -76,6 +81,8 @@ static_library("browser") {
     "actions/presave_generated_password_action.h",
     "actions/prompt_action.cc",
     "actions/prompt_action.h",
+    "actions/register_password_reset_request_action.cc",
+    "actions/register_password_reset_request_action.h",
     "actions/release_elements_action.cc",
     "actions/release_elements_action.h",
     "actions/reset_pending_credentials_action.cc",
@@ -151,10 +158,14 @@ static_library("browser") {
     "client_settings.h",
     "client_status.cc",
     "client_status.h",
+    "common_dependencies.cc",
+    "common_dependencies.h",
     "controller.cc",
     "controller.h",
     "controller_observer.cc",
     "controller_observer.h",
+    "dependencies_util.cc",
+    "dependencies_util.h",
     "desktop/starter_delegate_desktop.cc",
     "desktop/starter_delegate_desktop.h",
     "details.cc",
@@ -202,6 +213,8 @@ static_library("browser") {
     "overlay_state.h",
     "parse_jspb.cc",
     "parse_jspb.h",
+    "platform_dependencies.cc",
+    "platform_dependencies.h",
     "protocol_utils.cc",
     "protocol_utils.h",
     "radio_button_controller.cc",
@@ -301,16 +314,23 @@ static_library("browser") {
     "wait_for_dom_observer.h",
     "wait_for_dom_operation.cc",
     "wait_for_dom_operation.h",
+    "web/base_element_finder.cc",
+    "web/base_element_finder.h",
     "web/check_on_top_worker.cc",
     "web/check_on_top_worker.h",
     "web/click_or_tap_worker.cc",
     "web/click_or_tap_worker.h",
+    "web/css_element_finder.cc",
+    "web/css_element_finder.h",
     "web/element.cc",
     "web/element.h",
     "web/element_action_util.cc",
     "web/element_action_util.h",
     "web/element_finder.cc",
     "web/element_finder.h",
+    "web/element_finder_result.cc",
+    "web/element_finder_result.h",
+    "web/element_finder_result_type.h",
     "web/element_position_getter.cc",
     "web/element_position_getter.h",
     "web/element_rect_getter.cc",
@@ -326,6 +346,8 @@ static_library("browser") {
     "web/selector_observer.cc",
     "web/selector_observer.h",
     "web/selector_observer_script.h",
+    "web/semantic_element_finder.cc",
+    "web/semantic_element_finder.h",
     "web/send_keyboard_input_worker.cc",
     "web/send_keyboard_input_worker.h",
     "web/web_controller.cc",
@@ -362,6 +384,7 @@ static_library("browser") {
     "//components/strings:components_strings_grit",
     "//components/ukm/content:content",
     "//components/url_matcher",
+    "//components/variations/service",
     "//components/version_info",
     "//content/public/browser",
     "//google_apis",
@@ -389,6 +412,8 @@ static_library("unit_test_support") {
     "mock_autofill_assistant_tts_controller.h",
     "mock_client.cc",
     "mock_client.h",
+    "mock_common_dependencies.cc",
+    "mock_common_dependencies.h",
     "mock_controller_observer.cc",
     "mock_controller_observer.h",
     "mock_execution_delegate.cc",
@@ -449,6 +474,7 @@ source_set("unit_tests") {
     "actions/popup_message_action_unittest.cc",
     "actions/presave_generated_password_action_unittest.cc",
     "actions/prompt_action_unittest.cc",
+    "actions/register_password_reset_request_action_unittest.cc",
     "actions/release_elements_action_unittest.cc",
     "actions/reset_pending_credentials_action_unittest.cc",
     "actions/save_generated_password_action_unittest.cc",
@@ -571,6 +597,7 @@ source_set("unit_tests") {
     "//components/ukm:test_support",
     "//components/ukm/content:content",
     "//components/url_matcher",
+    "//components/variations/service",
     "//components/version_info",
     "//content/test:test_support",
     "//services/network:test_support",
@@ -593,7 +620,10 @@ if (is_android) {
       "service.proto",
       "view_layout.proto",
     ]
-    deps = [ "//components/autofill_assistant/content/common/proto:proto_java" ]
+    deps = [
+      "//components/autofill_assistant/browser/public:proto_java",
+      "//components/autofill_assistant/content/common/proto:proto_java",
+    ]
   }
 
   java_cpp_enum("autofill_assistant_enums_java") {

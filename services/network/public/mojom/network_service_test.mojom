@@ -38,12 +38,75 @@ struct Rule {
 
 // An entry in the "simple" backend of an HTTP cache.
 interface SimpleCacheEntry {
+  // Writes data into the entry. See disk_cache::Entry::WriteData for details.
+  WriteData(int32 index,
+            int32 offset,
+            array<uint8> data,
+            bool truncate) => (int32 result);
+
+  // Reads data from the entry. See disk_cache::Entry::ReadData for details.
+  ReadData(int32 index,
+           int32 offset,
+           uint32 length) => (array<uint8> data, int32 result);
+
+  // Writes data into the entry. See disk_cache::Entry::WriteSparseData for
+  // details.
+  WriteSparseData(int32 offset, array<uint8> data) => (int32 result);
+
+  // Reads data from the entry. See disk_cache::Entry::ReadSparseData for
+  // details.
+  ReadSparseData(int32 offset,
+                 uint32 length) => (array<uint8> data, int32 result);
+
+  // Closes the entry.
+  Close() => ();
+};
+
+// Represents the result of opening an entry.
+struct SimpleCacheOpenEntryResult {
+  // Represents the status of the open operation.
+  int32 error;
+
+  // The key of the entry. This is set if and only if `error` is net::OK.
+  string key;
+
+  // An remote pointer to the opened entry. Non-null if and only if `error` is
+  // net::OK.
+  pending_remote<SimpleCacheEntry>? entry;
+};
+
+// An interface to enumerate entries in a SimpleCache.
+interface SimpleCacheEntryEnumerator {
+  // Returns the next entry. `result.error` is net::ERR_FAILED at the end of
+  // the enumeration.
+  GetNext() => (SimpleCacheOpenEntryResult result);
 };
 
 // The "simple" backend of an HTTP cache.
 interface SimpleCache {
   // Creates a new entry.
-  CreateEntry(string key) => (pending_remote<SimpleCacheEntry>? entry);
+  CreateEntry(string key) =>
+    (pending_remote<SimpleCacheEntry>? entry, int32 error);
+
+  // Opens an entry.
+  OpenEntry(string key) =>
+    (pending_remote<SimpleCacheEntry>? entry, int32 error);
+
+  // Marks the entry for deletion.
+  DoomEntry(string key) => (int32 result);
+
+  // Marks all the entries for deletion.
+  DoomAllEntries() => (int32 result);
+
+  // Enumerate entries in the backend.
+  EnumerateEntries(pending_receiver<SimpleCacheEntryEnumerator> receiver);
+
+  // Detaches the cache backend. Once this is called, no methods can be
+  // called in the future. This also flushes tasks in the worker pool.
+  // You do NOT need to call this - the cache backend is automatically detached
+  // when the remote endpoint is detached. This is to ensure that all the tasks
+  // (e.g., writing to the index) are done.
+  Detach() => ();
 };
 
 // Testing interface to the network service.
@@ -159,9 +222,11 @@ interface NetworkServiceTest {
       => (array<FileEnumerationEntry> entries, bool error);
 
   // Creates a "simple" backend for an HTTP cache.
-  // Returns the created cache if succeeded, and null otherwise.
+  // Returns the created cache if succeeded, and null otherwise. When `reset` is
+  // true, this cleans up the cache directory before creating a cache backend.
   CreateSimpleCache(
       pending_remote<HttpCacheBackendFileOperationsFactory> factory,
-      mojo_base.mojom.FilePath path)
+      mojo_base.mojom.FilePath path,
+      bool reset)
       => (pending_remote<SimpleCache>? backend);
 };

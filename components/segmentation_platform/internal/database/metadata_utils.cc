@@ -106,7 +106,8 @@ ValidationResult ValidateMetadata(
 }
 
 ValidationResult ValidateMetadataUmaFeature(const proto::UMAFeature& feature) {
-  if (feature.type() == proto::SignalType::UNKNOWN_SIGNAL_TYPE)
+  if (feature.type() == proto::SignalType::UNKNOWN_SIGNAL_TYPE ||
+      feature.type() == proto::SignalType::UKM_EVENT)
     return ValidationResult::kSignalTypeInvalid;
 
   if ((feature.type() == proto::SignalType::HISTOGRAM_ENUM ||
@@ -157,12 +158,11 @@ ValidationResult ValidateMetadataCustomInput(
     // provide enough input values as specified by tensor length.
     if (custom_input.tensor_length() > custom_input.default_value_size())
       return ValidationResult::kCustomInputInvalid;
-  } else if (custom_input.fill_policy() ==
-             proto::CustomInput::FILL_PREDICTION_TIME) {
-    // Current time can only provide up to one input tensor value, so column
-    // weight must not exceed 1.
-    if (custom_input.tensor_length() > 1)
+  } else if (custom_input.default_value_size() != 0) {
+    // The default value should be longer than the tensor length.
+    if (custom_input.tensor_length() > custom_input.default_value_size()) {
       return ValidationResult::kCustomInputInvalid;
+    }
   }
   return ValidationResult::kValidationSuccess;
 }
@@ -203,7 +203,7 @@ ValidationResult ValidateMetadataAndFeatures(
 }
 
 ValidationResult ValidateIndexedTensors(
-    const QueryProcessor::IndexedTensors& tensor,
+    const processing::IndexedTensors& tensor,
     size_t expected_size) {
   if (tensor.size() != expected_size)
     return ValidationResult::kIndexedTensorsInvalid;
@@ -296,6 +296,7 @@ SignalKey::Kind SignalTypeToSignalKind(proto::SignalType signal_type) {
       return SignalKey::Kind::HISTOGRAM_ENUM;
     case proto::SignalType::HISTOGRAM_VALUE:
       return SignalKey::Kind::HISTOGRAM_VALUE;
+    case proto::SignalType::UKM_EVENT:
     case proto::SignalType::UNKNOWN_SIGNAL_TYPE:
       return SignalKey::Kind::UNKNOWN;
   }

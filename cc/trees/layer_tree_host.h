@@ -441,10 +441,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
         ->event_listener_properties[static_cast<size_t>(event_class)];
   }
 
-  // Indicates that its acceptable to throttle the frame rate for this content
-  // to prioritize lower power/CPU use.
-  void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling);
-
   void SetViewportRectAndScale(
       const gfx::Rect& device_viewport_rect,
       float device_scale_factor,
@@ -838,6 +834,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Returns a percentage representing average throughput of last X seconds.
   uint32_t GetAverageThroughput() const;
 
+  // TODO(szager): Remove these once threaded compositing is enabled for all
+  // web_tests.
+  bool in_composite_for_test() const { return in_composite_for_test_; }
+  [[nodiscard]] base::AutoReset<bool> ForceSyncCompositeForTest() {
+    return base::AutoReset<bool>(&in_composite_for_test_, true);
+  }
+
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);
 
@@ -1014,6 +1017,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Set if WaitForCommitCompletion() was called before commit completes. Used
   // for histograms.
   mutable bool waited_for_protected_sequence_ = false;
+
+  bool in_composite_for_test_ = false;
 
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.

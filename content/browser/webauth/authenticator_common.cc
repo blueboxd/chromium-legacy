@@ -60,6 +60,7 @@
 #include "net/der/parse_values.h"
 #include "net/der/parser.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
 
@@ -91,11 +92,6 @@ enum class RequestExtension {
 
 namespace {
 
-constexpr char kGstaticAppId[] =
-    "https://www.gstatic.com/securitykey/origins.json";
-constexpr char kGstaticCorpAppId[] =
-    "https://www.gstatic.com/securitykey/a/google.com/origins.json";
-
 WebAuthenticationDelegate* GetWebAuthenticationDelegate() {
   return GetContentClient()->browser()->GetWebAuthenticationDelegate();
 }
@@ -107,91 +103,6 @@ std::string Base64UrlEncode(const base::span<const uint8_t> input) {
                         input.size()),
       base::Base64UrlEncodePolicy::OMIT_PADDING, &ret);
   return ret;
-}
-
-// Validates whether the given origin is authorized to use the provided App
-// ID value, mostly according to the rules in
-// https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-appid-and-facets-v1.2-ps-20170411.html#determining-if-a-caller-s-facetid-is-authorized-for-an-appid.
-//
-// Returns the App ID to use for the request, or absl::nullopt if the origin
-// is not authorized to use the provided value.
-absl::optional<std::string> ProcessAppIdExtension(
-    std::string appid,
-    const url::Origin& caller_origin) {
-  // The CryptoToken U2F extension checks the appid before calling the WebAuthn
-  // API so there is no need to validate it here.
-  if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
-          caller_origin)) {
-    if (!GURL(appid).is_valid()) {
-      DCHECK(false) << "cryptotoken request did not set a valid App ID";
-      return absl::nullopt;
-    }
-    return appid;
-  }
-
-  // Step 1: "If the AppID is not an HTTPS URL, and matches the FacetID of the
-  // caller, no additional processing is necessary and the operation may
-  // proceed."
-
-  // Webauthn is only supported on secure origins and |ValidateEffectiveDomain|
-  // has already checked this property of |caller_origin| before this call. Thus
-  // this step is moot.
-  // TODO(https://crbug.com/1158302): Use IsOriginPotentiallyTrustworthy?
-  DCHECK(network::IsUrlPotentiallyTrustworthy(caller_origin.GetURL()));
-
-  // Step 2: "If the AppID is null or empty, the client must set the AppID to be
-  // the FacetID of the caller, and the operation may proceed without additional
-  // processing."
-  if (appid.empty()) {
-    // While the U2F spec says to default the App ID to the Facet ID, which is
-    // the origin plus a trailing forward slash [1], cryptotoken and Firefox
-    // just use the site's Origin without trailing slash. We follow their
-    // implementations rather than the spec.
-    //
-    // [1]https://fidoalliance.org/specs/fido-v2.0-id-20180227/fido-appid-and-facets-v2.0-id-20180227.html#determining-the-facetid-of-a-calling-application
-    appid = caller_origin.Serialize();
-  }
-
-  // Step 3: "If the caller's FacetID is an https:// Origin sharing the same
-  // host as the AppID, (e.g. if an application hosted at
-  // https://fido.example.com/myApp set an AppID of
-  // https://fido.example.com/myAppId), no additional processing is necessary
-  // and the operation may proceed."
-  GURL appid_url = GURL(appid);
-  if (!appid_url.is_valid() || appid_url.scheme() != url::kHttpsScheme ||
-      appid_url.scheme_piece() != caller_origin.scheme()) {
-    return absl::nullopt;
-  }
-
-  // This check is repeated inside |SameDomainOrHost|, just after this. However
-  // it's cheap and mirrors the structure of the spec.
-  if (appid_url.host_piece() == caller_origin.host()) {
-    return appid;
-  }
-
-  // At this point we diverge from the specification in order to avoid the
-  // complexity of making a network request which isn't believed to be
-  // necessary in practice. See also
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1244959#c8
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          appid_url, caller_origin,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    return appid;
-  }
-
-  // As a compatibility hack, sites within google.com are allowed to assert two
-  // special-case AppIDs. Firefox also does this:
-  // https://groups.google.com/forum/#!msg/mozilla.dev.platform/Uiu3fwnA2xw/201ynAiPAQAJ
-  const GURL gstatic_appid(kGstaticAppId);
-  const GURL gstatic_corp_appid(kGstaticCorpAppId);
-  DCHECK(gstatic_appid.is_valid() && gstatic_corp_appid.is_valid());
-  if (caller_origin.DomainIs("google.com") && !appid_url.has_ref() &&
-      (appid_url.EqualsIgnoringRef(gstatic_appid) ||
-       appid_url.EqualsIgnoringRef(gstatic_corp_appid))) {
-    return appid;
-  }
-
-  return absl::nullopt;
 }
 
 // Returns an App ID string if a U2F credential must be made for the request
@@ -210,9 +121,9 @@ absl::optional<std::string> MakeCredentialU2fAppIdOverride(
   if (options->google_legacy_app_id_support &&
       options->relying_party.id == "google.com") {
     if (caller_origin.DomainIs("login.corp.google.com")) {
-      return kGstaticCorpAppId;
+      return WebAuthRequestSecurityChecker::kGstaticCorpAppId;
     }
-    return kGstaticAppId;
+    return WebAuthRequestSecurityChecker::kGstaticAppId;
   }
   return absl::nullopt;
 }
@@ -284,8 +195,9 @@ void AppendUniqueTransportsFromCertificate(
 
   const net::der::Input contents_der(contents);
   net::der::Parser contents_parser(contents_der);
-  net::der::BitString transport_bits;
-  if (!contents_parser.ReadBitString(&transport_bits)) {
+  absl::optional<net::der::BitString> transport_bits =
+      contents_parser.ReadBitString();
+  if (!transport_bits) {
     return;
   }
 
@@ -305,7 +217,7 @@ void AppendUniqueTransportsFromCertificate(
   };
 
   for (const auto& mapping : kTransportMapping) {
-    if (transport_bits.AssertsBit(mapping.bit_index) &&
+    if (transport_bits->AssertsBit(mapping.bit_index) &&
         !base::Contains(*out_transports, mapping.transport)) {
       out_transports->push_back(mapping.transport);
     }
@@ -468,17 +380,7 @@ AuthenticatorCommon::AuthenticatorCommon(RenderFrameHost* render_frame_host)
           BackForwardCacheDisable::DisabledReasonId::kWebAuthenticationAPI));
 }
 
-AuthenticatorCommon::~AuthenticatorCommon() {
-  // Resolve pending callbacks before disconnecting the receiver.
-  if (make_credential_response_callback_) {
-    CompleteMakeCredentialRequest(
-        blink::mojom::AuthenticatorStatus::UNKNOWN_ERROR);
-  }
-  if (get_assertion_response_callback_) {
-    CompleteGetAssertionRequest(
-        blink::mojom::AuthenticatorStatus::UNKNOWN_ERROR);
-  }
-}
+AuthenticatorCommon::~AuthenticatorCommon() = default;
 
 std::unique_ptr<AuthenticatorRequestClientDelegate>
 AuthenticatorCommon::MaybeCreateRequestDelegate() {
@@ -591,19 +493,23 @@ bool AuthenticatorCommon::IsFocused() const {
 }
 
 void AuthenticatorCommon::OnLargeBlobCompressed(
+    uint64_t original_size,
     data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result) {
-  ctap_get_assertion_request_->large_blob_write =
-      device::fido_parsing_utils::MaterializeOrNull(result.value);
+  if (result.value) {
+    ctap_get_assertion_request_->large_blob_write = device::LargeBlob(
+        device::fido_parsing_utils::Materialize(*result.value), original_size);
+  }
   StartGetAssertionRequest(/*allow_skipping_pin_touch=*/true);
 }
 
 void AuthenticatorCommon::OnLargeBlobUncompressed(
     device::AuthenticatorGetAssertionResponse response,
     data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result) {
-  response.large_blob =
-      device::fido_parsing_utils::MaterializeOrNull(result.value);
-  CompleteGetAssertionRequest(blink::mojom::AuthenticatorStatus::SUCCESS,
-                              CreateGetAssertionResponse(std::move(response)));
+  CompleteGetAssertionRequest(
+      blink::mojom::AuthenticatorStatus::SUCCESS,
+      CreateGetAssertionResponse(
+          std::move(response),
+          device::fido_parsing_utils::MaterializeOrNull(result.value)));
 }
 
 // mojom::Authenticator
@@ -634,25 +540,23 @@ void AuthenticatorCommon::MakeCredential(
   BeginRequestTimeout(options->timeout);
 
   if (options->remote_desktop_client_override) {
-    // TODO(crbug.com/1314480): Implement remoteDesktopClientOverride
-    // browser-side.
+    // WebAuthRequestSecurityChecker will validate whether use of the extension
+    // is authorized.
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kWebAuthRemoteDesktopSupport)) {
       mojo::ReportBadMessage("--webauthn-remote-desktop-support not enabled");
+      return;
     }
-    CompleteMakeCredentialRequest(
-        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
-    return;
   }
 
   WebAuthRequestSecurityChecker::RequestType request_type =
       options->is_payment_credential_creation
           ? WebAuthRequestSecurityChecker::RequestType::kMakePaymentCredential
           : WebAuthRequestSecurityChecker::RequestType::kMakeCredential;
-  bool is_cross_origin;
+  bool is_cross_origin_iframe = false;
   blink::mojom::AuthenticatorStatus status =
       security_checker_->ValidateAncestorOrigins(caller_origin, request_type,
-                                                 &is_cross_origin);
+                                                 &is_cross_origin_iframe);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     CompleteMakeCredentialRequest(status);
     return;
@@ -667,7 +571,8 @@ void AuthenticatorCommon::MakeCredential(
   }
 
   status = security_checker_->ValidateDomainAndRelyingPartyID(
-      caller_origin, options->relying_party.id, request_type);
+      caller_origin, options->relying_party.id, request_type,
+      options->remote_desktop_client_override);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     CompleteMakeCredentialRequest(status);
     return;
@@ -683,10 +588,35 @@ void AuthenticatorCommon::MakeCredential(
   caller_origin_ = caller_origin;
   relying_party_id_ = options->relying_party.id;
 
+  absl::optional<std::string> appid_exclude;
+  if (options->appid_exclude) {
+    appid_exclude = "";
+    auto status = security_checker_->ValidateAppIdExtension(
+        *options->appid_exclude, caller_origin,
+        options->remote_desktop_client_override, &appid_exclude.value());
+    if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+      CompleteMakeCredentialRequest(status);
+      return;
+    }
+    // `ValidateAppidExtension` must have set a value to use. If not, it would
+    // be a security bug, so crashing seems appropriate here.
+    CHECK(!appid_exclude->empty());
+  }
+
   // If there is an active webAuthenticationProxy extension, let it handle the
   // request.
   WebAuthenticationRequestProxy* proxy = GetWebAuthnRequestProxyIfActive();
   if (proxy) {
+    if (options->remote_desktop_client_override) {
+      // Don't allow proxying of an already proxied request.
+      CompleteMakeCredentialRequest(
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      return;
+    }
+    options->remote_desktop_client_override =
+        blink::mojom::RemoteDesktopClientOverride::New(
+            /*origin=*/caller_origin_,
+            /*same_origin_with_ancestors=*/!is_cross_origin_iframe);
     pending_proxied_request_id_ = proxy->SignalCreateRequest(
         options,
         base::BindOnce(&AuthenticatorCommon::OnMakeCredentialProxyResponse,
@@ -719,17 +649,6 @@ void AuthenticatorCommon::MakeCredential(
       CompleteMakeCredentialRequest(
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-  }
-
-  absl::optional<std::string> appid_exclude;
-  if (options->appid_exclude) {
-    appid_exclude =
-        ProcessAppIdExtension(*options->appid_exclude, caller_origin);
-    if (!appid_exclude) {
-      CompleteMakeCredentialRequest(
-          blink::mojom::AuthenticatorStatus::INVALID_DOMAIN);
-      return;
-    }
   }
 
   if (options->user.icon_url) {
@@ -835,19 +754,22 @@ void AuthenticatorCommon::MakeCredential(
     request_delegate_->DisableUI();
   }
 
+  // Assemble clientDataJSON.
+  ClientDataJsonParams client_data_json_params(
+      ClientDataRequestType::kWebAuthnCreate, caller_origin_,
+      options->challenge, is_cross_origin_iframe);
   if (origin_is_crypto_token_extension) {
     // Cryptotoken passes the real caller origin in |relying_party.name|.
-    const url::Origin client_data_origin =
+    client_data_json_params.type = ClientDataRequestType::kU2fRegister;
+    client_data_json_params.origin =
         url::Origin::Create(GURL(*options->relying_party.name));
-    client_data_json_ = BuildClientDataJson(
-        ClientDataRequestType::kU2fRegister, client_data_origin.Serialize(),
-        options->challenge, is_cross_origin);
-  } else {
-    // Regular WebAuthn request
-    client_data_json_ = BuildClientDataJson(
-        ClientDataRequestType::kWebAuthnCreate, caller_origin_.Serialize(),
-        options->challenge, is_cross_origin);
+  } else if (options->remote_desktop_client_override) {
+    client_data_json_params.origin =
+        options->remote_desktop_client_override->origin;
+    client_data_json_params.is_cross_origin_iframe =
+        !options->remote_desktop_client_override->same_origin_with_ancestors;
   }
+  client_data_json_ = BuildClientDataJson(std::move(client_data_json_params));
 
   ctap_make_credential_request_ = device::CtapMakeCredentialRequest(
       client_data_json_, options->relying_party, options->user,
@@ -912,7 +834,7 @@ void AuthenticatorCommon::MakeCredential(
 void AuthenticatorCommon::GetAssertion(
     url::Origin caller_origin,
     blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
-    blink::mojom::PaymentOptionsPtr payment,
+    blink::mojom::PaymentOptionsPtr payment_options,
     blink::mojom::Authenticator::GetAssertionCallback callback) {
   if (has_pending_request_) {
     if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
@@ -935,15 +857,13 @@ void AuthenticatorCommon::GetAssertion(
   get_assertion_response_callback_ = std::move(callback);
 
   if (options->remote_desktop_client_override) {
-    // TODO(crbug.com/1314480): Implement remoteDesktopClientOverride
-    // browser-side.
+    // WebAuthRequestSecurityChecker will validate whether use of the extension
+    // is authorized.
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kWebAuthRemoteDesktopSupport)) {
       mojo::ReportBadMessage("--webauthn-remote-desktop-support not enabled");
+      return;
     }
-    CompleteGetAssertionRequest(
-        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
-    return;
   }
 
   if (!options->is_conditional) {
@@ -951,20 +871,20 @@ void AuthenticatorCommon::GetAssertion(
   }
 
   WebAuthRequestSecurityChecker::RequestType request_type =
-      payment.is_null()
+      payment_options.is_null()
           ? WebAuthRequestSecurityChecker::RequestType::kGetAssertion
           : WebAuthRequestSecurityChecker::RequestType::
                 kGetPaymentCredentialAssertion;
-  if (!payment.is_null() && options->allow_credentials.empty()) {
+  if (!payment_options.is_null() && options->allow_credentials.empty()) {
     CompleteGetAssertionRequest(
         blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
     NOTREACHED();
     return;
   }
-  bool is_cross_origin;
+  bool is_cross_origin_iframe = false;
   blink::mojom::AuthenticatorStatus status =
       security_checker_->ValidateAncestorOrigins(caller_origin, request_type,
-                                                 &is_cross_origin);
+                                                 &is_cross_origin_iframe);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     CompleteGetAssertionRequest(status);
     return;
@@ -979,7 +899,8 @@ void AuthenticatorCommon::GetAssertion(
   }
 
   status = security_checker_->ValidateDomainAndRelyingPartyID(
-      caller_origin, options->relying_party_id, request_type);
+      caller_origin, options->relying_party_id, request_type,
+      options->remote_desktop_client_override);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     CompleteGetAssertionRequest(status);
     return;
@@ -994,8 +915,35 @@ void AuthenticatorCommon::GetAssertion(
 
   caller_origin_ = caller_origin;
   relying_party_id_ = options->relying_party_id;
+
+  if (options->appid) {
+    requested_extensions_.insert(RequestExtension::kAppID);
+    std::string app_id;
+    auto status = security_checker_->ValidateAppIdExtension(
+        *options->appid, caller_origin, options->remote_desktop_client_override,
+        &app_id);
+    if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+      CompleteGetAssertionRequest(status);
+      return;
+    }
+    // `ValidateAppidExtension` must have set a value to use. If not, it would
+    // be a security bug, so crashing seems appropriate here.
+    CHECK(!app_id.empty());
+    app_id_ = app_id;
+  }
+
   WebAuthenticationRequestProxy* proxy = GetWebAuthnRequestProxyIfActive();
   if (proxy) {
+    if (options->remote_desktop_client_override) {
+      // Don't allow proxying of an already proxied request.
+      CompleteMakeCredentialRequest(
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      return;
+    }
+    options->remote_desktop_client_override =
+        blink::mojom::RemoteDesktopClientOverride::New(
+            /*origin=*/caller_origin_,
+            /*same_origin_with_ancestors=*/!is_cross_origin_iframe);
     pending_proxied_request_id_ = proxy->SignalGetRequest(
         options,
         base::BindOnce(&AuthenticatorCommon::OnGetAssertionProxyResponse,
@@ -1018,24 +966,31 @@ void AuthenticatorCommon::GetAssertion(
       WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
           caller_origin_);
 
+  // Assemble clientDataJSON.
+  ClientDataJsonParams client_data_json_params(
+      ClientDataRequestType::kWebAuthnGet, caller_origin, options->challenge,
+      is_cross_origin_iframe);
   if (origin_is_crypto_token_extension) {
     // Cryptotoken provides the sender origin for U2F sign requests in the
     // |relying_party_id| attribute.
-    client_data_json_ = BuildClientDataJson(
-        ClientDataRequestType::kU2fSign, options->relying_party_id,
-        options->challenge, /*is_cross_origin=*/false);
-  } else if (payment) {
-    url::Origin top_origin =
-        GetRenderFrameHost()->GetOutermostMainFrame()->GetLastCommittedOrigin();
-    client_data_json_ = BuildClientDataJson(
-        ClientDataRequestType::kPaymentGet, caller_origin_.Serialize(),
-        options->challenge, is_cross_origin, std::move(payment),
-        relying_party_id_, top_origin.Serialize());
-  } else {
-    client_data_json_ = BuildClientDataJson(
-        ClientDataRequestType::kWebAuthnGet, caller_origin_.Serialize(),
-        options->challenge, is_cross_origin);
+    client_data_json_params.type = ClientDataRequestType::kU2fSign;
+    client_data_json_params.origin =
+        url::Origin::Create(GURL(options->relying_party_id));
+  } else if (payment_options) {
+    client_data_json_params.type = ClientDataRequestType::kPaymentGet;
+    client_data_json_params.payment_options = std::move(payment_options);
+    client_data_json_params.payment_rp = relying_party_id_;
+    client_data_json_params.payment_top_origin = GetRenderFrameHost()
+                                                     ->GetOutermostMainFrame()
+                                                     ->GetLastCommittedOrigin()
+                                                     .Serialize();
+  } else if (options->remote_desktop_client_override) {
+    client_data_json_params.origin =
+        options->remote_desktop_client_override->origin;
+    client_data_json_params.is_cross_origin_iframe =
+        !options->remote_desktop_client_override->same_origin_with_ancestors;
   }
+  client_data_json_ = BuildClientDataJson(std::move(client_data_json_params));
 
   device::fido_filter::MaybeInitialize();
   if (device::fido_filter::Evaluate(
@@ -1063,16 +1018,6 @@ void AuthenticatorCommon::GetAssertion(
       return;
     }
     empty_allow_list_ = true;
-  }
-
-  if (options->appid) {
-    requested_extensions_.insert(RequestExtension::kAppID);
-    app_id_ = ProcessAppIdExtension(*options->appid, caller_origin_);
-    if (!app_id_) {
-      CompleteGetAssertionRequest(
-          blink::mojom::AuthenticatorStatus::INVALID_DOMAIN);
-      return;
-    }
   }
 
   if (options->large_blob_read && options->large_blob_write) {
@@ -1147,10 +1092,11 @@ void AuthenticatorCommon::GetAssertion(
   ctap_get_assertion_request_->is_u2f_only = origin_is_crypto_token_extension;
 
   if (options->large_blob_write) {
-    data_decoder_.GzipCompress(
+    data_decoder_.Deflate(
         *options->large_blob_write,
         base::BindOnce(&AuthenticatorCommon::OnLargeBlobCompressed,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr(),
+                       options->large_blob_write->size()));
     return;
   }
 
@@ -1593,10 +1539,11 @@ void AuthenticatorCommon::OnSignResponse(
 void AuthenticatorCommon::OnAccountSelected(
     device::AuthenticatorGetAssertionResponse response) {
   if (response.large_blob) {
-    std::vector<uint8_t> blob = std::move(*response.large_blob);
-    data_decoder_.GzipUncompress(
-        blob, base::BindOnce(&AuthenticatorCommon::OnLargeBlobUncompressed,
-                             weak_factory_.GetWeakPtr(), std::move(response)));
+    device::LargeBlob large_blob = std::move(*response.large_blob);
+    data_decoder_.Inflate(
+        std::move(large_blob.compressed_data), large_blob.original_size,
+        base::BindOnce(&AuthenticatorCommon::OnLargeBlobUncompressed,
+                       weak_factory_.GetWeakPtr(), std::move(response)));
     return;
   }
   CompleteGetAssertionRequest(blink::mojom::AuthenticatorStatus::SUCCESS,
@@ -1827,7 +1774,8 @@ void AuthenticatorCommon::CompleteMakeCredentialRequest(
 
 blink::mojom::GetAssertionAuthenticatorResponsePtr
 AuthenticatorCommon::CreateGetAssertionResponse(
-    device::AuthenticatorGetAssertionResponse response_data) {
+    device::AuthenticatorGetAssertionResponse response_data,
+    absl::optional<std::vector<uint8_t>> large_blob) {
   auto response = blink::mojom::GetAssertionAuthenticatorResponse::New();
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json_.begin(),
@@ -1878,7 +1826,7 @@ AuthenticatorCommon::CreateGetAssertionResponse(
       }
       case RequestExtension::kLargeBlobRead:
         response->echo_large_blob = true;
-        response->large_blob = response_data.large_blob;
+        response->large_blob = large_blob;
         break;
       case RequestExtension::kLargeBlobWrite:
         response->echo_large_blob = true;
@@ -1886,7 +1834,6 @@ AuthenticatorCommon::CreateGetAssertionResponse(
         response->large_blob_written = response_data.large_blob_written;
         break;
       case RequestExtension::kGetCredBlob: {
-        response->echo_get_cred_blob = true;
         const absl::optional<cbor::Value>& extensions =
             response_data.authenticator_data.extensions();
         if (extensions) {
@@ -1896,6 +1843,13 @@ AuthenticatorCommon::CreateGetAssertionResponse(
             response->get_cred_blob = it->second.GetBytestring();
           }
         }
+        if (!response->get_cred_blob.has_value()) {
+          // The authenticator is supposed to return an empty byte string if it
+          // does not have a credBlob for the credential. But in case it
+          // doesn't, we return one to the caller anyway.
+          response->get_cred_blob = std::vector<uint8_t>();
+        }
+
         break;
       }
       case RequestExtension::kHMACSecret:

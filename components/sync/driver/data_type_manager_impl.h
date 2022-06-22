@@ -11,7 +11,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/model_load_manager.h"
@@ -20,20 +19,16 @@
 namespace syncer {
 
 class DataTypeController;
-class DataTypeDebugInfoListener;
 class DataTypeEncryptionHandler;
 class DataTypeManagerObserver;
-struct DataTypeConfigurationStats;
 
 class DataTypeManagerImpl : public DataTypeManager,
                             public ModelLoadManagerDelegate {
  public:
-  DataTypeManagerImpl(
-      const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      const DataTypeController::TypeMap* controllers,
-      const DataTypeEncryptionHandler* encryption_handler,
-      ModelTypeConfigurer* configurer,
-      DataTypeManagerObserver* observer);
+  DataTypeManagerImpl(const DataTypeController::TypeMap* controllers,
+                      const DataTypeEncryptionHandler* encryption_handler,
+                      ModelTypeConfigurer* configurer,
+                      DataTypeManagerObserver* observer);
 
   DataTypeManagerImpl(const DataTypeManagerImpl&) = delete;
   DataTypeManagerImpl& operator=(const DataTypeManagerImpl&) = delete;
@@ -41,7 +36,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   ~DataTypeManagerImpl() override;
 
   // DataTypeManager interface.
-  void Configure(ModelTypeSet desired_types,
+  void Configure(ModelTypeSet preferred_types,
                  const ConfigureContext& context) override;
   void DataTypePreconditionChanged(ModelType type) override;
   void ResetDataTypeErrors() override;
@@ -79,27 +74,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   };
   using DataTypeConfigStateMap = std::map<ModelType, DataTypeConfigState>;
 
-  struct AssociationTypesInfo {
-    AssociationTypesInfo();
-    AssociationTypesInfo(const AssociationTypesInfo& other);
-    ~AssociationTypesInfo();
-
-    // Pending types. This is generally the same as
-    // |configuration_types_queue_.front()|.
-    ModelTypeSet types;
-    // Types that have just been downloaded. This includes types that had
-    // previously encountered an error and had to be purged.
-    // This is a subset of |types|.
-    ModelTypeSet first_sync_types;
-    // Time at which |types| began downloading.
-    base::Time download_start_time;
-    // Time at which |types| finished downloading.
-    base::Time download_ready_time;
-    // The set of types that are higher priority, and were therefore blocking
-    // the download of |types|.
-    ModelTypeSet higher_priority_types_before;
-  };
-
   // Return model types in |state_map| that match |state|.
   static ModelTypeSet GetDataTypesInState(
       DataTypeConfigState state,
@@ -111,8 +85,7 @@ class DataTypeManagerImpl : public DataTypeManager,
                                 DataTypeConfigStateMap* state_map);
 
   // Prepare the parameters for the configurer's configuration.
-  ModelTypeConfigurer::ConfigureParams PrepareConfigureParams(
-      const AssociationTypesInfo& association_types_info);
+  ModelTypeConfigurer::ConfigureParams PrepareConfigureParams();
 
   // Update precondition state of types in data_type_status_table_ to match
   // value of DataTypeController::GetPreconditionState().
@@ -134,7 +107,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   void NotifyStart();
   void NotifyDone(const ConfigureResult& result);
 
-  void ConfigureImpl(ModelTypeSet desired_types,
+  void ConfigureImpl(ModelTypeSet preferred_types,
                      const ConfigureContext& context);
 
   // Calls data type controllers of requested types to connect.
@@ -145,18 +118,9 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // Start configuration of next set of types in |configuration_types_queue_|
   // (if any exist, does nothing otherwise).
-  void StartNextConfiguration(ModelTypeSet higher_priority_types_before);
-  void ConfigurationCompleted(AssociationTypesInfo association_types_info,
-                              ModelTypeSet configured_types,
-                              ModelTypeSet succeeded_configuration_types,
+  void StartNextConfiguration();
+  void ConfigurationCompleted(ModelTypeSet succeeded_configuration_types,
                               ModelTypeSet failed_configuration_types);
-
-  void RecordConfigurationStats(
-      const AssociationTypesInfo& association_types_info);
-  void RecordConfigurationStatsImpl(
-      const AssociationTypesInfo& association_types_info,
-      ModelType type,
-      ModelTypeSet same_priority_types_configured_before);
 
   void StopImpl(ShutdownReason reason);
 
@@ -186,7 +150,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   ConfigureContext last_requested_context_;
 
   // A set of types that were enabled at the time of Restart().
-  ModelTypeSet last_enabled_types_;
+  ModelTypeSet preferred_types_without_errors_;
 
   // A set of types that have been configured but haven't been
   // connected/activated.
@@ -202,10 +166,6 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // The last time Restart() was called.
   base::Time last_restart_time_;
-
-  // Sync's datatype debug info listener, which we pass model configuration
-  // statistics to.
-  const WeakHandle<DataTypeDebugInfoListener> debug_info_listener_;
 
   // The manager that loads the local models of the data types.
   ModelLoadManager model_load_manager_;
@@ -224,9 +184,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   // The encryption handler lets the DataTypeManager know the state of sync
   // datatype encryption.
   raw_ptr<const DataTypeEncryptionHandler> encryption_handler_;
-
-  // Timing stats of data type configuration.
-  std::map<ModelType, DataTypeConfigurationStats> configuration_stats_;
 
   base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_{this};
 };

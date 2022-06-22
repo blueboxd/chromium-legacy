@@ -30,9 +30,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_H_
 
-#include <bitset>
-#include <string>
-#include <utility>
+#include <memory>
 
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
@@ -68,10 +66,8 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/dom/user_action_element_set.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/fragment_directive/fragment_directive.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
-#include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
@@ -88,6 +84,10 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+}
+
+namespace cc {
+class AnimationTimeline;
 }
 
 namespace gfx {
@@ -127,7 +127,6 @@ class CSSStyleSheet;
 class CanvasFontCache;
 class ChromeClient;
 class Comment;
-class CompositorAnimationTimeline;
 class ComputedAccessibleNode;
 class DOMWrapperWorld;
 class DisplayLockDocumentState;
@@ -163,6 +162,7 @@ class ExceptionState;
 class FontMatchingMetrics;
 class FocusedElementChangeObserver;
 class FormController;
+class FragmentDirective;
 class FrameCallback;
 class FrameScheduler;
 class HTMLAllCollection;
@@ -174,7 +174,7 @@ class HTMLFrameOwnerElement;
 class HTMLHeadElement;
 class HTMLLinkElement;
 class HTMLMetaElement;
-class HasMatchedCacheScope;
+class CheckPseudoHasCacheScope;
 class HitTestRequest;
 class HttpRefreshScheduler;
 class IdleRequestOptions;
@@ -201,6 +201,7 @@ class ProcessingInstruction;
 class PropertyRegistry;
 class QualifiedName;
 class Range;
+class RenderBlockingResourceManager;
 class ResizeObserver;
 class ResourceFetcher;
 class RootScrollerController;
@@ -1484,7 +1485,7 @@ class CORE_EXPORT Document : public ContainerNode,
     return *worklet_animation_controller_;
   }
 
-  void AttachCompositorTimeline(CompositorAnimationTimeline*) const;
+  void AttachCompositorTimeline(cc::AnimationTimeline*) const;
 
   void AddToTopLayer(Element*, const Element* before = nullptr);
   void RemoveFromTopLayer(Element*);
@@ -1494,17 +1495,18 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HTMLDialogElement* ActiveModalDialog() const;
 
-  HeapVector<Member<Element>>& PopupElementStack() {
-    return popup_element_stack_;
+  HeapVector<Member<Element>>& PopupAndHintStack() {
+    return popup_and_hint_stack_;
   }
-  bool PopupShowing() const;
-  void HideTopmostPopupElement();
+  bool PopupOrHintShowing() const;
+  bool HintShowing() const;
+  void HideTopmostPopupOrHint();
   // This hides all visible popups up to, but not including,
   // |endpoint|. If |endpoint| is nullptr, all popups are hidden.
   void HideAllPopupsUntil(const Element* endpoint);
   // This hides the provided popup, if it is showing. This will also
   // hide all popups above |popup| in the popup stack.
-  void HidePopupIfShowing(const Element* popup);
+  void HidePopupIfShowing(Element* popup);
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -1560,8 +1562,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   NthIndexCache* GetNthIndexCache() const { return nth_index_cache_; }
 
-  HasMatchedCacheScope* GetHasMatchedCacheScope() const {
-    return has_matched_cache_scope_;
+  CheckPseudoHasCacheScope* GetCheckPseudoHasCacheScope() const {
+    return check_pseudo_has_cache_scope_;
   }
 
   CanvasFontCache* GetCanvasFontCache();
@@ -1590,7 +1592,13 @@ class CORE_EXPORT Document : public ContainerNode,
     return *root_scroller_controller_;
   }
 
+  // Returns true if this document has a frame and it is a main frame.
+  // See `Frame::IsMainFrame`.
   bool IsInMainFrame() const;
+
+  // Returns true if this document has a frame and is an outermost main frame.
+  // See `Frame::IsOutermostMainFrame`.
+  bool IsInOutermostMainFrame() const;
 
   const PropertyRegistry* GetPropertyRegistry() const {
     return property_registry_;
@@ -1713,10 +1721,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // A META element with name=color-scheme was added, removed, or modified.
   // Update the presentation level color-scheme property for the root element.
   void ColorSchemeMetaChanged();
-
-  // A META element with name=battery-savings was added, removed, or modified.
-  // Re-collect the META values that apply and pass to LayerTreeHost.
-  void BatterySavingsMetaChanged();
 
   // A META element with name=supports-reduced-motion was added, removed, or
   // modified. Re-collect the META values.
@@ -1882,7 +1886,7 @@ class CORE_EXPORT Document : public ContainerNode,
   friend class ThrowOnDynamicMarkupInsertionCountIncrementer;
   friend class IgnoreOpensDuringUnloadCountIncrementer;
   friend class NthIndexCache;
-  friend class HasMatchedCacheScope;
+  friend class CheckPseudoHasCacheScope;
   friend class CanvasRenderingAPIUkmMetricsTest;
   friend class OffscreenCanvasRenderingAPIUkmMetricsTest;
   FRIEND_TEST_ALL_PREFIXES(LazyLoadAutomaticImagesTest,
@@ -2012,9 +2016,10 @@ class CORE_EXPORT Document : public ContainerNode,
     nth_index_cache_ = nth_index_cache;
   }
 
-  void SetHasMatchedCacheScope(HasMatchedCacheScope* has_matched_cache_scope) {
-    DCHECK(!has_matched_cache_scope_ || !has_matched_cache_scope);
-    has_matched_cache_scope_ = has_matched_cache_scope;
+  void SetCheckPseudoHasCacheScope(
+      CheckPseudoHasCacheScope* check_pseudo_has_cache_scope) {
+    DCHECK(!check_pseudo_has_cache_scope_ || !check_pseudo_has_cache_scope);
+    check_pseudo_has_cache_scope_ = check_pseudo_has_cache_scope;
   }
 
   void UpdateActiveState(bool is_active, bool update_active_chain, Element*);
@@ -2031,8 +2036,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetFreezingInProgress(bool is_freezing_in_progress) {
     is_freezing_in_progress_ = is_freezing_in_progress;
   }
-
-  void HidePopup(Element* popup);
 
   void NotifyFocusedElementChanged(Element* old_focused_element,
                                    Element* new_focused_element,
@@ -2274,7 +2277,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // on the stack, and cleared upon leaving its allocated scope. The object's
   // references will be traced by a stack walk.
   GC_PLUGIN_IGNORE("https://crbug.com/669058")
-  HasMatchedCacheScope* has_matched_cache_scope_ = nullptr;
+  CheckPseudoHasCacheScope* check_pseudo_has_cache_scope_ = nullptr;
 
   DocumentClassFlags document_classes_;
 
@@ -2290,13 +2293,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 
-  // The stack of currently-displayed Popup elements. This includes both <popup>
-  // elements (which are deprecated) and elements containing the `popup`
-  // attribute. Elements in the stack go from earliest (bottom-most) to latest
-  // (top-most).
-  // TODO(crbug.com/1307772): Update this comment once HTMLPopupElement is
-  // removed.
-  HeapVector<Member<Element>> popup_element_stack_;
+  // The stack of currently-displayed Popup (and Hint) elements, which are
+  // elements that have either `popup=popup` or `popup=hint`. Elements in the
+  // stack go from earliest (bottom-most) to latest (top-most). If there is a
+  // hint in the stack, it is at the top.
+  HeapVector<Member<Element>> popup_and_hint_stack_;
 
   int load_event_delay_count_;
 

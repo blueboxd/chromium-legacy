@@ -24,8 +24,9 @@
 OobeWelcomeDialogBase.$;
 
 /* #export */ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
-
-  static get is() { return 'oobe-welcome-dialog'; }
+  static get is() {
+    return 'oobe-welcome-dialog';
+  }
 
   /* #html_template_placeholder */
 
@@ -155,9 +156,10 @@ OobeWelcomeDialogBase.$;
     if (!this.focusedElement_) {
       this.focusedElement_ = 'getStarted';
     }
-    let focusedElement = this.$[this.focusedElement_];
-    if (focusedElement)
+    const focusedElement = this.$[this.focusedElement_];
+    if (focusedElement) {
       focusedElement.focus();
+    }
   }
 
   /*
@@ -165,7 +167,7 @@ OobeWelcomeDialogBase.$;
     * This replaces the show() function, in this class.
     */
   updateHidden_(newValue, oldValue) {
-    let visible = !newValue;
+    const visible = !newValue;
     if (visible) {
       this.focus();
     }
@@ -180,8 +182,9 @@ OobeWelcomeDialogBase.$;
    * @suppress {missingProperties}
    */
   setVideoPlay_(play) {
-    if (this.isMeet_)
+    if (this.isMeet_) {
       return;
+    }
     this.$.welcomeAnimation.playing = play;
   }
 

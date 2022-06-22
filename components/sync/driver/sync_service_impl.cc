@@ -20,7 +20,6 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -709,10 +708,8 @@ void SyncServiceImpl::DataTypePreconditionChanged(ModelType type) {
   data_type_manager_->DataTypePreconditionChanged(type);
 }
 
-void SyncServiceImpl::OnEngineInitialized(
-    const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-    bool success,
-    bool is_first_time_sync_configure) {
+void SyncServiceImpl::OnEngineInitialized(bool success,
+                                          bool is_first_time_sync_configure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(treib): Based on some crash reports, it seems like the user could have
@@ -738,8 +735,7 @@ void SyncServiceImpl::OnEngineInitialized(
 
   data_type_manager_ =
       sync_client_->GetSyncApiComponentFactory()->CreateDataTypeManager(
-          debug_info_listener, &data_type_controllers_, &crypto_, engine_.get(),
-          this);
+          &data_type_controllers_, &crypto_, engine_.get(), this);
 
   crypto_.SetSyncEngine(GetAccountInfo(), engine_.get());
 
@@ -831,7 +827,7 @@ void SyncServiceImpl::OnActionableError(const SyncProtocolError& error) {
       // Sync-the-feature remains off.
       StopAndClear();
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS)
       // TODO(https://crbug.com/1233933): Update this when Lacros profiles
       //     support signed-in-but-not-consented-to-sync state.
 
@@ -1187,6 +1183,14 @@ void SyncServiceImpl::ConfigureDataTypeManager(ConfigureReason reason) {
             UserSelectableTypeToCanonicalModelType(type));
         base::UmaHistogramEnumeration("Sync.CustomSync3", canonical_model_type);
       }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      for (UserSelectableOsType type : user_settings_->GetSelectedOsTypes()) {
+        ModelTypeForHistograms canonical_model_type = ModelTypeHistogramValue(
+            UserSelectableOsTypeToCanonicalModelType(type));
+        base::UmaHistogramEnumeration("Sync.CustomOSSync",
+                                      canonical_model_type);
+      }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     }
   }
 }

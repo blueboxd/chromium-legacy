@@ -117,9 +117,7 @@ class PinSetup extends PinSetupBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('PinSetupScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('PinSetupScreen');
   }
 
   defaultUIStep() {
@@ -165,8 +163,9 @@ class PinSetup extends PinSetupBase {
 
   /** @private */
   onIsConfirmStepChanged_() {
-    if (this.isConfirmStep_)
+    if (this.isConfirmStep_) {
       this.setUIStep(PinSetupState.CONFIRM);
+    }
   }
 
   /** @private */

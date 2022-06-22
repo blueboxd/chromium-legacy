@@ -80,7 +80,7 @@ void IndexedDBDatabaseCallbacks::OnComplete(
     return;
 
   indexed_db_context_->TransactionComplete(
-      transaction.database()->storage_key());
+      transaction.database()->bucket_locator());
   if (callbacks_)
     callbacks_->Complete(transaction.id());
 }

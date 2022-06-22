@@ -94,7 +94,7 @@ FONT_FILES = [
     [[CONTENT_SHELL_FONTS_DIR], 'Lohit-Tamil.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'MuktiNarrow.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'NotoColorEmoji.ttf', None],
-    [[CONTENT_SHELL_FONTS_DIR], 'NotoSansCJKjp-Regular.otf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'NotoSansCJK-VF.otf.ttc', None],
     [[CONTENT_SHELL_FONTS_DIR], 'NotoSansKhmer-Regular.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'NotoSansSymbols2-Regular.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'NotoSansTibetan-Regular.ttf', None],
@@ -745,8 +745,8 @@ class Port(object):
             match: Whether the baseline is a match or a mismatch.
 
         Returns:
-            A list of (platform_dir, results_filename) pairs, where
-                platform_dir - abs path to the top of the results tree (or test
+            A list of (baseline_dir, results_filename) pairs, where
+                baseline_dir - abs path to the top of the results tree (or test
                     tree)
                 results_filename - relative path from top of tree to the results
                     file
@@ -760,20 +760,18 @@ class Port(object):
         baseline_search_path = self.baseline_search_path()
 
         baselines = []
-        for platform_dir in baseline_search_path:
+        for baseline_dir in baseline_search_path:
             if self._filesystem.exists(
-                    self._filesystem.join(platform_dir, baseline_filename)):
-                baselines.append((platform_dir, baseline_filename))
+                    self._filesystem.join(baseline_dir, baseline_filename)):
+                baselines.append((baseline_dir, baseline_filename))
 
             if not all_baselines and baselines:
                 return baselines
 
-        # If it wasn't found in a platform directory, return the expected
-        # result in the test directory, even if no such file actually exists.
-        platform_dir = self.web_tests_dir()
+        baseline_dir = self.generic_baselines_dir()
         if self._filesystem.exists(
-                self._filesystem.join(platform_dir, baseline_filename)):
-            baselines.append((platform_dir, baseline_filename))
+                self._filesystem.join(baseline_dir, baseline_filename)):
+            baselines.append((baseline_dir, baseline_filename))
 
         if baselines:
             return baselines
@@ -785,7 +783,8 @@ class Port(object):
                           extension,
                           return_default=True,
                           fallback_base_for_virtual=True,
-                          match=True):
+                          match=True,
+                          look_for_same_folder_reference_file=False):
         """Given a test name, returns an absolute path to its expected results.
 
         If no expected results are found in any of the searched directories,
@@ -808,25 +807,38 @@ class Port(object):
                 to find baselines of the base test; if False, depending on
                 |return_default|, returns the generic virtual baseline or None.
             match: Whether the baseline is a match or a mismatch.
+            look_for_same_folder_reference_file: For reference test only. Returns
+                the reference file if found in the same folder of the test file.
 
         Returns:
             An absolute path to its expected results, or None if not found.
         """
         # The [0] means the first expected baseline (which is the one to be
         # used) in the fallback paths.
-        platform_dir, baseline_filename = self.expected_baselines(
+        baseline_dir, baseline_filename = self.expected_baselines(
             test_name, extension, match=match)[0]
-        if platform_dir:
-            return self._filesystem.join(platform_dir, baseline_filename)
+        if baseline_dir:
+            return self._filesystem.join(baseline_dir, baseline_filename)
+
+        if look_for_same_folder_reference_file:
+            path = self._filesystem.join(self.web_tests_dir(),
+                                         baseline_filename)
+            if self._filesystem.exists(path):
+                return path
 
         if fallback_base_for_virtual:
             actual_test_name = self.lookup_virtual_test_base(test_name)
             if actual_test_name:
                 return self.expected_filename(
-                    actual_test_name, extension, return_default, match=match)
+                    actual_test_name,
+                    extension,
+                    return_default,
+                    match=match,
+                    look_for_same_folder_reference_file=look_for_same_folder_reference_file
+                )
 
         if return_default:
-            return self._filesystem.join(self.web_tests_dir(),
+            return self._filesystem.join(self.generic_baselines_dir(),
                                          baseline_filename)
         return None
 
@@ -852,9 +864,9 @@ class Port(object):
                     actual_test_name, extension, return_default=False)
             return None
 
-        platform_dir, baseline_filename = baselines[1]
-        if platform_dir:
-            return self._filesystem.join(platform_dir, baseline_filename)
+        baseline_dir, baseline_filename = baselines[1]
+        if baseline_dir:
+            return self._filesystem.join(baseline_dir, baseline_filename)
         return None
 
     def expected_checksum(self, test_name):
@@ -922,7 +934,11 @@ class Port(object):
         for expectation in ('==', '!='):
             for extension in Port.supported_file_extensions:
                 path = self.expected_filename(
-                    test_name, extension, match=(expectation == '=='))
+                    test_name,
+                    extension,
+                    match=(expectation == '=='),
+                    look_for_same_folder_reference_file=True
+                )
                 if self._filesystem.exists(path):
                     reftest_list.append((expectation, path))
         if reftest_list:
@@ -999,7 +1015,7 @@ class Port(object):
         # When collecting test cases, skip these directories.
         skipped_directories = set([
             'platform', 'resources', 'support', 'script-tests', 'reference',
-            'reftest'
+            'reftest', 'SmokeTests'
         ])
         # Also ignore all WPT directories. Note that this is only an
         # optimization; is_non_wpt_test_file should skip WPT regardless.
@@ -1253,6 +1269,9 @@ class Port(object):
             return self._filesystem.abspath(custom_web_tests_dir)
         return self._path_finder.web_tests_dir()
 
+    def generic_baselines_dir(self):
+        return self._filesystem.join(self.web_tests_dir(), "platform", "generic")
+
     def skips_test(self, test):
         """Checks whether the given test is skipped for this port.
 
@@ -1291,7 +1310,10 @@ class Port(object):
         return test not in smoke_tests
 
     def path_to_smoke_tests_file(self):
-        return self._filesystem.join(self.web_tests_dir(), 'SmokeTests')
+        # Historically we only have one smoke tests list. That one now becomes
+        # the default
+        return self._filesystem.join(self.web_tests_dir(), 'SmokeTests',
+                                     'Default.txt')
 
     def skipped_in_never_fix_tests(self, test):
         """Checks if the test is marked as Skip in NeverFixTests for this port.
@@ -1722,11 +1744,13 @@ class Port(object):
             return []
         flag_dir = self._filesystem.join(self.web_tests_dir(), 'flag-specific',
                                          config_name)
-        platform_dirs = [
-            self._filesystem.join(flag_dir, 'platform', platform_dir)
-            for platform_dir in self.FALLBACK_PATHS[self.version()]
+        # FIXME: should we delete the line below? We only run flag specific
+        # tests on linux now
+        baseline_dirs = [
+            self._filesystem.join(flag_dir, 'platform', baseline_dir)
+            for baseline_dir in self.FALLBACK_PATHS[self.version()]
         ]
-        return platform_dirs + [flag_dir]
+        return baseline_dirs + [flag_dir]
 
     def expectations_dict(self):
         """Returns an OrderedDict of name -> expectations strings.

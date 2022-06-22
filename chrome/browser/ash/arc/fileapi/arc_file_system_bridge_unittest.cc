@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/virtual_file_provider/fake_virtual_file_provider_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -133,7 +133,7 @@ TEST_F(ArcFileSystemBridgeTest, GetFileNameNonASCII) {
   run_loop.Run();
 }
 
-// net::UnescapeURLComponent() leaves UTF-8 lock icons escaped, but they're
+// base::UnescapeURLComponent() leaves UTF-8 lock icons escaped, but they're
 // valid file names, so shouldn't be left escaped here.
 TEST_F(ArcFileSystemBridgeTest, GetFileNameLockIcon) {
   const GURL url("externalfile:abc:test-filesystem:/%F0%9F%94%92");

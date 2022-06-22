@@ -43,7 +43,6 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -122,6 +121,11 @@ class ScopedSharedMemoryPtr {
   GLuint offset() {
     return scoped_transfer_ptr_ ? scoped_transfer_ptr_->offset()
                                 : scoped_mapped_ptr_->offset();
+  }
+
+  bool valid() {
+    return scoped_transfer_ptr_ ? scoped_transfer_ptr_->valid()
+                                : scoped_mapped_ptr_->valid();
   }
 
   void* address() {
@@ -506,8 +510,7 @@ RasterImplementation::RasterImplementation(
       lost_(false),
       max_inlined_entry_size_(kMaxTransferCacheEntrySizeForTransferBuffer),
       transfer_cache_(this),
-      image_decode_accelerator_(image_decode_accelerator),
-      raw_draw_(features::IsUsingRawDraw()) {
+      image_decode_accelerator_(image_decode_accelerator) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
   DCHECK(gpu_control);
@@ -1278,6 +1281,12 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
   std::unique_ptr<ScopedSharedMemoryPtr> scoped_shared_memory =
       std::make_unique<ScopedSharedMemoryPtr>(total_size, transfer_buffer_,
                                               mapped_memory_.get(), helper());
+
+  if (!scoped_shared_memory->valid()) {
+    SetGLError(GL_INVALID_OPERATION, "WritePixels", "size too big");
+    return;
+  }
+
   GLint shm_id = scoped_shared_memory->shm_id();
   GLuint shm_offset = scoped_shared_memory->offset();
   void* address = scoped_shared_memory->address();
@@ -1410,7 +1419,7 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
           raster_properties_->color_space, &skottie_serialization_history_,
           raster_properties_->can_use_lcd_text,
           capabilities().context_supports_distance_field_text,
-          capabilities().max_texture_size, raw_draw_));
+          capabilities().max_texture_size));
   if (preserve_recording) {
     serializer.Serialize(&list->paint_op_buffer_, &temp_raster_offsets_,
                          preamble);

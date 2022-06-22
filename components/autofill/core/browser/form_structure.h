@@ -19,8 +19,10 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_parsing/field_candidates.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/form_interactions_counter.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/language_code.h"
@@ -120,7 +122,7 @@ class FormStructure {
   // included in |query| and |queried_form_signatures|.
   static bool EncodeQueryRequest(
       const std::vector<FormStructure*>& forms,
-      autofill::AutofillPageQueryRequest* query,
+      AutofillPageQueryRequest* query,
       std::vector<FormSignature>* queried_form_signatures);
 
   // Parses `payload` as AutofillQueryResponse proto and calls
@@ -207,7 +209,8 @@ class FormStructure {
       const base::TimeTicks& submission_time,
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       bool did_show_suggestions,
-      bool observed_submission) const;
+      bool observed_submission,
+      const FormInteractionCounts& form_interaction_counts) const;
 
   // Log the quality of the heuristics and server predictions for this form
   // structure, if autocomplete attributes are present on the fields (they are
@@ -215,6 +218,8 @@ class FormStructure {
   void LogQualityMetricsBasedOnAutocomplete(
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger)
       const;
+
+  void LogDetermineHeuristicTypesMetrics();
 
   // Classifies each field in |fields_| based upon its |autocomplete| attribute,
   // if the attribute is available.  The association is stored into the field's
@@ -225,6 +230,10 @@ class FormStructure {
   // Fills |has_author_specified_sections_| with |true| if the attribute
   // specifies a section for at least one field.
   void ParseFieldTypesFromAutocompleteAttributes();
+
+  // Classifies each field in |fields_| using the regular expressions.
+  void ParseFieldTypesWithPatterns(PatternSource pattern_source,
+                                   LogManager* log_manager);
 
   // Returns the values that can be filled into the form structure for the
   // given type. For example, there's no way to fill in a value of "The Moon"
@@ -367,7 +376,7 @@ class FormStructure {
   void set_overall_field_type_for_testing(size_t field_index,
                                           ServerFieldType type) {
     if (field_index < fields_.size() && type > 0 && type < MAX_VALID_FIELD_TYPE)
-      fields_[field_index]->set_heuristic_type(type);
+      fields_[field_index]->set_heuristic_type(GetActivePatternSource(), type);
   }
   // Set the server field type for |fields_[field_index]| to |type| for testing
   // purposes.
@@ -559,7 +568,7 @@ class FormStructure {
   void EncodeFormFieldsForUpload(
       bool is_raw_metadata_uploading_enabled,
       absl::optional<FormGlobalId> filter_renderer_form_id,
-      autofill::AutofillUploadContents* upload) const;
+      AutofillUploadContents* upload) const;
 
   // Returns true if the form has no fields, or too many.
   bool IsMalformed() const;

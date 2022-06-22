@@ -412,8 +412,8 @@ PassthroughResources::SharedImageData::SharedImageData(
     SharedImageData&& other) = default;
 PassthroughResources::SharedImageData::~SharedImageData() = default;
 
-PassthroughResources::SharedImageData& PassthroughResources::SharedImageData::
-operator=(SharedImageData&& other) {
+PassthroughResources::SharedImageData&
+PassthroughResources::SharedImageData::operator=(SharedImageData&& other) {
   scoped_access_ = std::move(other.scoped_access_);
   representation_ = std::move(other.representation_);
   return *this;
@@ -779,7 +779,6 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       offscreen_single_buffer_(false),
       offscreen_target_buffer_preserved_(false),
       create_color_buffer_count_for_test_(0),
-      max_2d_texture_size_(0),
       bound_draw_framebuffer_(0),
       bound_read_framebuffer_(0),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
@@ -1147,10 +1146,11 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   lose_context_when_out_of_memory_ =
       attrib_helper.lose_context_when_out_of_memory;
 
-  api()->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_2d_texture_size_);
+  GLint max_2d_texture_size = 0;
+  api()->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_2d_texture_size);
   api()->glGetIntegervFn(GL_MAX_RENDERBUFFER_SIZE, &max_renderbuffer_size_);
   max_offscreen_framebuffer_size_ =
-      std::min(max_2d_texture_size_, max_renderbuffer_size_);
+      std::min(max_2d_texture_size, max_renderbuffer_size_);
 
   if (offscreen_) {
     offscreen_single_buffer_ = attrib_helper.single_buffer;
@@ -1662,6 +1662,11 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.image_ab30 = feature_info_->feature_flags().chromium_image_ab30;
   caps.image_ycbcr_p010 =
       feature_info_->feature_flags().chromium_image_ycbcr_p010;
+  if (feature_info_->workarounds().client_max_texture_size) {
+    caps.max_texture_size =
+        std::min(caps.max_texture_size,
+                 feature_info_->workarounds().client_max_texture_size);
+  }
   caps.max_copy_texture_chromium_size =
       feature_info_->workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
@@ -1689,7 +1694,11 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
 #if BUILDFLAG(IS_WIN)
+  caps.shared_image_d3d =
+      SharedImageBackingFactoryD3D::IsD3DSharedImageSupported(
+          group_->gpu_preferences());
   caps.shared_image_swap_chain =
+      caps.shared_image_d3d &&
       SharedImageBackingFactoryD3D::IsSwapChainSupported();
 #endif  // BUILDFLAG(IS_WIN)
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
@@ -2236,6 +2245,16 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
         return error::kInvalidArguments;
       }
       std::copy(std::begin(scissor_), std::end(scissor_), params);
+      break;
+
+    case GL_MAX_TEXTURE_SIZE:
+    case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
+    case GL_MAX_3D_TEXTURE_SIZE:
+      if (feature_info_->workarounds().client_max_texture_size) {
+        *params = std::min(
+            *params, static_cast<T>(
+                         feature_info_->workarounds().client_max_texture_size));
+      }
       break;
 
     default:
@@ -2959,52 +2978,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleSetActiveURLCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
-    GLenum target,
-    GLenum internalformat,
-    GLint imageId) {
-  TextureTarget target_enum = GLenumToTextureTarget(target);
-  if (target_enum == TextureTarget::kCubeMap ||
-      target_enum == TextureTarget::kUnkown) {
-    InsertError(GL_INVALID_ENUM, "Invalid target");
-    return error::kNoError;
-  }
-
-  gl::GLImage* image = group_->image_manager()->LookupImage(imageId);
-  if (image == nullptr) {
-    InsertError(GL_INVALID_OPERATION, "No image found with the given ID");
-    return error::kNoError;
-  }
-
-  const BoundTexture& bound_texture =
-      bound_textures_[static_cast<size_t>(target_enum)][active_texture_unit_];
-  if (bound_texture.texture == nullptr) {
-    InsertError(GL_INVALID_OPERATION, "No texture bound");
-    return error::kNoError;
-  }
-
-  if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
-    if (internalformat)
-      image->BindTexImageWithInternalformat(target, internalformat);
-    else
-      image->BindTexImage(target);
-  } else {
-    image->CopyTexImage(target);
-  }
-
-  // Target is already validated
-  UpdateTextureSizeFromTarget(target);
-
-  DCHECK(bound_texture.texture != nullptr);
-  bound_texture.texture->SetLevelImage(target, 0, image);
-
-  // If there was any GLImage bound to |target| on this texture unit, then
-  // forget it.
-  RemovePendingBindingTexture(target, active_texture_unit_);
-
-  return error::kNoError;
-}
-
 void GLES2DecoderPassthroughImpl::VerifyServiceTextureObjectsExist() {
   resources_->texture_object_map.ForEach(
       [this](GLuint client_id, scoped_refptr<TexturePassthrough> texture) {
@@ -3111,11 +3084,12 @@ bool GLES2DecoderPassthroughImpl::CheckErrorCallbackState() {
   return had_error_;
 }
 
-#define GLES2_CMD_OP(name)                                               \
-  {                                                                      \
-      &GLES2DecoderPassthroughImpl::Handle##name, cmds::name::kArgFlags, \
-      cmds::name::cmd_flags,                                             \
-      sizeof(cmds::name) / sizeof(CommandBufferEntry) - 1,               \
+#define GLES2_CMD_OP(name)                                 \
+  {                                                        \
+      &GLES2DecoderPassthroughImpl::Handle##name,          \
+      cmds::name::kArgFlags,                               \
+      cmds::name::cmd_flags,                               \
+      sizeof(cmds::name) / sizeof(CommandBufferEntry) - 1, \
   }, /* NOLINT */
 
 constexpr GLES2DecoderPassthroughImpl::CommandInfo

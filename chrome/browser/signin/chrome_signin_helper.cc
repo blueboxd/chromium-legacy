@@ -209,7 +209,7 @@ void ProcessMirrorHeader(
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(service_type);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
       account_reconcilor->GetState());
 
@@ -324,9 +324,11 @@ void ProcessMirrorHeader(
 
     AccountProfileMapper* mapper =
         g_browser_process->profile_manager()->GetAccountProfileMapper();
-    SigninManagerFactory::GetForProfile(profile)->StartWebSigninFlow(
+    SigninManagerFactory::GetForProfile(profile)->StartLacrosSigninFlow(
         profile->GetPath(), mapper,
-        account_reconcilor->GetConsistencyCookieManager());
+        account_reconcilor->GetConsistencyCookieManager(),
+        account_manager::AccountManagerFacade::AccountAdditionSource::
+            kOgbAddAccount);
 #else
     ::GetAccountManagerFacade(profile->GetPath().value())
         ->ShowAddAccountDialog(account_manager::AccountManagerFacade::
@@ -369,7 +371,7 @@ void ProcessMirrorHeader(
       return;
     SigninBridge::OpenAccountManagementScreen(window, service_type);
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 #endif  // BUILDFLAG(ENABLE_MIRROR)
 

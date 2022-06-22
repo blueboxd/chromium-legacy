@@ -13,11 +13,9 @@
 
 namespace cc {
 
+// Software output surface for pixel tests.
 class PixelTestOutputSurface : public viz::OutputSurface {
  public:
-  explicit PixelTestOutputSurface(
-      scoped_refptr<viz::ContextProvider> context_provider,
-      gfx::SurfaceOrigin origin);
   explicit PixelTestOutputSurface(
       std::unique_ptr<viz::SoftwareOutputDevice> software_device);
   ~PixelTestOutputSurface() override;
@@ -27,11 +25,7 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
-  void Reshape(const gfx::Size& size,
-               float device_scale_factor,
-               const gfx::ColorSpace& color_space,
-               gfx::BufferFormat format,
-               bool use_stencil) override;
+  void Reshape(const ReshapeParams& params) override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   void SwapBuffers(viz::OutputSurfaceFrame frame) override;
@@ -44,14 +38,9 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
 
-  void set_has_external_stencil_test(bool has_test) {
-    external_stencil_test_ = has_test;
-  }
-
  private:
   void SwapBuffersCallback();
 
-  bool external_stencil_test_ = false;
   raw_ptr<viz::OutputSurfaceClient> client_ = nullptr;
   base::WeakPtrFactory<PixelTestOutputSurface> weak_ptr_factory_{this};
 };

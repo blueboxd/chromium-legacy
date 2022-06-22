@@ -1,0 +1,28 @@
+This content should be visible, if HTMLPopupAttribute is disabled
+This content should be visible, if HTMLPopupAttribute is disabled
+This content should be visible, if HTMLPopupAttribute is disabled
+Summary
+
+Harness status: OK
+
+Rerun
+
+Found 5 tests
+
+5 Pass
+Details
+Result	Test Name	Message
+Pass	Basic tests	
+Asserts run
+
+Pass	popup_popup should be stylable/visible and not display:none	
+Asserts run
+
+Pass	popup_hint should be stylable/visible and not display:none	
+Asserts run
+
+Pass	popup_async should be stylable/visible and not display:none	
+Asserts run
+
+Pass	The popup IDL attribute should not be present on Element	
+Asserts run

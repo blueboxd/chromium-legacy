@@ -259,8 +259,8 @@ class DemoSetupTestBase : public OobeBaseTest {
   // test environment.
   void SetFakeTimeForMultiTapDetector(base::Time fake_time) {
     const std::string query =
-        base::StrCat({"MultiTapDetector.FAKE_TIME_FOR_TESTS = new Date('",
-                      base::TimeToISO8601(fake_time), "');"});
+        base::StrCat({"MultiTapDetector.setFakeTimeForTests(new Date('",
+                      base::TimeToISO8601(fake_time), "'));"});
     test::ExecuteOobeJS(query);
   }
 
@@ -1075,12 +1075,13 @@ class DemoSetupRegionCodeNotExistTest : public DemoSetupArcSupportedTest {
   }
 };
 
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_RegionCodeNotExistPlaceholderIsSet \
-  DISABLED_RegionCodeNotExistPlaceholderIsSet
-#else
+// TODO(crbug.com/1320444): Re-enable the test in debug.
+#if defined(NDEBUG)
 #define MAYBE_RegionCodeNotExistPlaceholderIsSet \
   RegionCodeNotExistPlaceholderIsSet
+#else
+#define MAYBE_RegionCodeNotExistPlaceholderIsSet \
+  DISABLED_RegionCodeNotExistPlaceholderIsSet
 #endif
 IN_PROC_BROWSER_TEST_F(DemoSetupRegionCodeNotExistTest,
                        MAYBE_RegionCodeNotExistPlaceholderIsSet) {
@@ -1090,6 +1091,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupRegionCodeNotExistTest,
   enrollment_helper_.ExpectAttestationEnrollmentSuccess();
   SimulateNetworkConnected();
 
+  // TODO(crbug.com/1320412): Re-enable this test
   TriggerDemoModeOnWelcomeScreen();
 
   // Expect inactive "OK" button when entering the preference screen.

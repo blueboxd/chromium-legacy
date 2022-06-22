@@ -12,8 +12,8 @@ android_library("test_support_java") {
     "java/src/org/chromium/chrome/browser/ui/appmenu/TestAppMenuObserver.java",
   ]
   deps = [
-    "//base:base_java",
     "//base:base_java_test_support",
+    "//build/android:build_java",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/appmenu/internal:java",
     "//ui/android:ui_no_recycler_view_java",

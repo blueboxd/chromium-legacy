@@ -68,13 +68,17 @@ const char HttpCache::kDoubleKeyPrefix[] = "_dk_";
 const char HttpCache::kDoubleKeySeparator[] = " ";
 const char HttpCache::kSubframeDocumentResourcePrefix[] = "s_";
 
-HttpCache::DefaultBackend::DefaultBackend(CacheType type,
-                                          BackendType backend_type,
-                                          const base::FilePath& path,
-                                          int max_bytes,
-                                          bool hard_reset)
+HttpCache::DefaultBackend::DefaultBackend(
+    CacheType type,
+    BackendType backend_type,
+    scoped_refptr<disk_cache::BackendFileOperationsFactory>
+        file_operations_factory,
+    const base::FilePath& path,
+    int max_bytes,
+    bool hard_reset)
     : type_(type),
       backend_type_(backend_type),
+      file_operations_factory_(std::move(file_operations_factory)),
       path_(path),
       max_bytes_(max_bytes),
       hard_reset_(hard_reset) {}
@@ -85,6 +89,7 @@ HttpCache::DefaultBackend::~DefaultBackend() = default;
 std::unique_ptr<HttpCache::BackendFactory> HttpCache::DefaultBackend::InMemory(
     int max_bytes) {
   return std::make_unique<DefaultBackend>(MEMORY_CACHE, CACHE_BACKEND_DEFAULT,
+                                          /*file_operations_factory=*/nullptr,
                                           base::FilePath(), max_bytes, false);
 }
 
@@ -100,13 +105,13 @@ int HttpCache::DefaultBackend::CreateBackend(
 #if BUILDFLAG(IS_ANDROID)
   if (app_status_listener_) {
     return disk_cache::CreateCacheBackend(
-        type_, backend_type_, /*file_operations=*/nullptr, path_, max_bytes_,
+        type_, backend_type_, file_operations_factory_, path_, max_bytes_,
         reset_handling, net_log, backend, std::move(callback),
         app_status_listener_);
   }
 #endif
   return disk_cache::CreateCacheBackend(
-      type_, backend_type_, /*file_operations=*/nullptr, path_, max_bytes_,
+      type_, backend_type_, file_operations_factory_, path_, max_bytes_,
       reset_handling, net_log, backend, std::move(callback));
 }
 
@@ -232,18 +237,8 @@ class HttpCache::WorkItem {
 
 //-----------------------------------------------------------------------------
 
-HttpCache::HttpCache(HttpNetworkSession* session,
-                     std::unique_ptr<BackendFactory> backend_factory,
-                     bool is_main_cache)
-    : HttpCache(std::make_unique<HttpNetworkLayer>(session),
-                std::move(backend_factory),
-                is_main_cache) {
-  g_init_cache = true;
-}
-
 HttpCache::HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
-                     std::unique_ptr<BackendFactory> backend_factory,
-                     bool is_main_cache)
+                     std::unique_ptr<BackendFactory> backend_factory)
     : net_log_(nullptr),
       backend_factory_(std::move(backend_factory)),
       building_backend_(false),
@@ -262,8 +257,6 @@ HttpCache::HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
     return;
 
   net_log_ = session->net_log();
-  if (!is_main_cache)
-    return;
 
   session->SetServerPushDelegate(
       std::make_unique<HttpCacheLookupManager>(this));
@@ -1144,8 +1137,6 @@ void HttpCache::ProcessDoneHeadersQueue(ActiveEntry* entry) {
   ParallelWritingPattern parallel_writing_pattern =
       CanTransactionJoinExistingWriters(transaction);
   if (IsWritingInProgress(entry)) {
-    transaction->MaybeSetParallelWritingPatternForMetrics(
-        parallel_writing_pattern);
     if (parallel_writing_pattern != PARALLEL_WRITING_JOIN) {
       // TODO(shivanisha): Returning from here instead of checking the next
       // transaction in the queue because the FIFO order is maintained
@@ -1172,14 +1163,10 @@ void HttpCache::ProcessDoneHeadersQueue(ActiveEntry* entry) {
         transaction->WriteModeTransactionAboutToBecomeReader();
         auto return_val = entry->readers.insert(transaction);
         DCHECK(return_val.second);
-        transaction->MaybeSetParallelWritingPatternForMetrics(
-            PARALLEL_WRITING_NONE_CACHE_READ);
       }
     } else {  // mode READ
       auto return_val = entry->readers.insert(transaction);
       DCHECK(return_val.second);
-      transaction->MaybeSetParallelWritingPatternForMetrics(
-          PARALLEL_WRITING_NONE_CACHE_READ);
     }
   }
 
@@ -1197,8 +1184,6 @@ void HttpCache::AddTransactionToWriters(
     ParallelWritingPattern parallel_writing_pattern) {
   if (!entry->writers) {
     entry->writers = std::make_unique<Writers>(this, entry);
-    transaction->MaybeSetParallelWritingPatternForMetrics(
-        PARALLEL_WRITING_CREATE);
   } else {
     ParallelWritingPattern writers_pattern;
     DCHECK(entry->writers->CanAddWriters(&writers_pattern));
@@ -1345,15 +1330,8 @@ void HttpCache::OnProcessQueuedTransactions(ActiveEntry* entry) {
   // wait till the response is complete. If the response is not yet started, the
   // done_headers_queue transaction should start writing it.
   if (!entry->done_headers_queue.empty()) {
-    ParallelWritingPattern reason = PARALLEL_WRITING_NONE;
-    if (entry->writers && !entry->writers->CanAddWriters(&reason)) {
-      if (reason != PARALLEL_WRITING_NONE) {
-        for (auto* done_headers_transaction : entry->done_headers_queue) {
-          done_headers_transaction->MaybeSetParallelWritingPatternForMetrics(
-              reason);
-        }
-      }
-    } else {
+    ParallelWritingPattern unused_reason;
+    if (!entry->writers || entry->writers->CanAddWriters(&unused_reason)) {
       ProcessDoneHeadersQueue(entry);
       return;
     }

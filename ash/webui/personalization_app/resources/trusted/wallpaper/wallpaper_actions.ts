@@ -6,8 +6,8 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {Action} from 'chrome://resources/js/cr/ui/store.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 
+import {DisplayableImage} from '../../common/constants.js';
 import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperImage} from '../personalization_app.mojom-webui.js';
-import {DisplayableImage} from '../personalization_reducers.js';
 
 /**
  * @fileoverview Defines the actions to change wallpaper state.
@@ -19,21 +19,24 @@ export enum WallpaperActionName {
   APPEND_GOOGLE_PHOTOS_PHOTOS = 'append_google_photos_photos',
   BEGIN_LOAD_GOOGLE_PHOTOS_ALBUM = 'begin_load_google_photos_album',
   BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS = 'begin_load_google_photos_albums',
-  BEGIN_LOAD_GOOGLE_PHOTOS_COUNT = 'begin_load_google_photos_count',
   BEGIN_LOAD_GOOGLE_PHOTOS_ENABLED = 'begin_load_google_photos_enabled',
   BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS = 'begin_load_google_photos_photos',
   BEGIN_LOAD_IMAGES_FOR_COLLECTIONS = 'begin_load_images_for_collections',
+  BEGIN_LOAD_DEFAULT_IMAGE_THUMBNAIL = 'begin_load_default_image',
   BEGIN_LOAD_LOCAL_IMAGES = 'begin_load_local_images',
   BEGIN_LOAD_LOCAL_IMAGE_DATA = 'begin_load_local_image_data',
   BEGIN_LOAD_SELECTED_IMAGE = 'begin_load_selected_image',
   BEGIN_SELECT_IMAGE = 'begin_select_image',
   BEGIN_UPDATE_DAILY_REFRESH_IMAGE = 'begin_update_daily_refresh_image',
+  CLEAR_DAILY_REFRESH_ACTION = 'clear_daily_refresh_action',
   END_SELECT_IMAGE = 'end_select_image',
   SET_COLLECTIONS = 'set_collections',
   SET_DAILY_REFRESH_COLLECTION_ID = 'set_daily_refresh_collection_id',
-  SET_GOOGLE_PHOTOS_COUNT = 'set_google_photos_count',
+  SET_GOOGLE_PHOTOS_DAILY_REFRESH_ALBUM_ID =
+      'set_google_photos_daily_refresh_album_id',
   SET_GOOGLE_PHOTOS_ENABLED = 'set_google_photos_enabled',
   SET_IMAGES_FOR_COLLECTION = 'set_images_for_collection',
+  SET_DEFAULT_IMAGE_THUMBNAIL = 'set_default_image',
   SET_LOCAL_IMAGES = 'set_local_images',
   SET_LOCAL_IMAGE_DATA = 'set_local_image_data',
   SET_SELECTED_IMAGE = 'set_selected_image',
@@ -43,15 +46,16 @@ export enum WallpaperActionName {
 
 export type WallpaperActions =
     AppendGooglePhotosAlbumAction|AppendGooglePhotosAlbumsAction|
-    AppendGooglePhotosPhotosAction|BeginLoadGooglePhotosAlbumAction|
-    BeginLoadGooglePhotosAlbumsAction|BeginLoadGooglePhotosCountAction|
+    AppendGooglePhotosPhotosAction|BeginLoadDefaultImageThumbnailAction|
+    BeginLoadGooglePhotosAlbumAction|BeginLoadGooglePhotosAlbumsAction|
     BeginLoadGooglePhotosEnabledAction|BeginLoadGooglePhotosPhotosAction|
     BeginLoadImagesForCollectionsAction|BeginLoadLocalImagesAction|
     BeginLoadLocalImageDataAction|BeginUpdateDailyRefreshImageAction|
-    BeginLoadSelectedImageAction|BeginSelectImageAction|EndSelectImageAction|
-    SetCollectionsAction|SetDailyRefreshCollectionIdAction|
-    SetGooglePhotosCountAction|SetGooglePhotosEnabledAction|
-    SetImagesForCollectionAction|SetLocalImageDataAction|SetLocalImagesAction|
+    BeginLoadSelectedImageAction|BeginSelectImageAction|ClearDailyRefreshAction|
+    EndSelectImageAction|SetCollectionsAction|SetDailyRefreshCollectionIdAction|
+    SetGooglePhotosDailyRefreshAlbumIdAction|SetGooglePhotosEnabledAction|
+    SetImagesForCollectionAction|SetDefaultImageThumbnailAction|
+    SetLocalImageDataAction|SetLocalImagesAction|
     SetUpdatedDailyRefreshImageAction|SetSelectedImageAction|
     SetFullscreenEnabledAction;
 
@@ -143,18 +147,6 @@ export function beginLoadGooglePhotosAlbumsAction():
   return {name: WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS};
 }
 
-export type BeginLoadGooglePhotosCountAction = Action&{
-  name: WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_COUNT,
-};
-
-/**
- * Notify that the app is loading the count of Google Photos photos.
- */
-export function beginLoadGooglePhotosCountAction():
-    BeginLoadGooglePhotosCountAction {
-  return {name: WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_COUNT};
-}
-
 export type BeginLoadGooglePhotosEnabledAction = Action&{
   name: WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ENABLED,
 };
@@ -194,6 +186,15 @@ export function beginLoadImagesForCollectionsAction(
     collections,
     name: WallpaperActionName.BEGIN_LOAD_IMAGES_FOR_COLLECTIONS,
   };
+}
+
+export type BeginLoadDefaultImageThumbnailAction = Action&{
+  name: WallpaperActionName.BEGIN_LOAD_DEFAULT_IMAGE_THUMBNAIL,
+};
+
+export function beginLoadDefaultImageThubmnailAction():
+    BeginLoadDefaultImageThumbnailAction {
+  return {name: WallpaperActionName.BEGIN_LOAD_DEFAULT_IMAGE_THUMBNAIL};
 }
 
 export type BeginLoadLocalImagesAction = Action&{
@@ -293,13 +294,13 @@ export function setCollectionsAction(collections: WallpaperCollection[]|
 
 export type SetDailyRefreshCollectionIdAction = Action&{
   name: WallpaperActionName.SET_DAILY_REFRESH_COLLECTION_ID,
-  collectionId: string | null,
+  collectionId: string,
 };
 
 /**
  * Set and enable daily refresh for given collectionId.
  */
-export function setDailyRefreshCollectionIdAction(collectionId: string|null):
+export function setDailyRefreshCollectionIdAction(collectionId: string):
     SetDailyRefreshCollectionIdAction {
   return {
     collectionId,
@@ -307,15 +308,34 @@ export function setDailyRefreshCollectionIdAction(collectionId: string|null):
   };
 }
 
-export type SetGooglePhotosCountAction = Action&{
-  name: WallpaperActionName.SET_GOOGLE_PHOTOS_COUNT,
-  count: number | null,
+export type SetGooglePhotosDailyRefreshAlbumIdAction = Action&{
+  name: WallpaperActionName.SET_GOOGLE_PHOTOS_DAILY_REFRESH_ALBUM_ID,
+  albumId: string,
 };
 
-/** Sets the count of Google Photos photos. May be called with null on error. */
-export function setGooglePhotosCountAction(count: number|
-                                           null): SetGooglePhotosCountAction {
-  return {count, name: WallpaperActionName.SET_GOOGLE_PHOTOS_COUNT};
+/**
+ * Set and enable daily refresh for given Google Photos albumId.
+ */
+export function setGooglePhotosDailyRefreshAlbumIdAction(albumId: string):
+    SetGooglePhotosDailyRefreshAlbumIdAction {
+  return {
+    albumId,
+    name: WallpaperActionName.SET_GOOGLE_PHOTOS_DAILY_REFRESH_ALBUM_ID,
+  };
+}
+
+export type ClearDailyRefreshAction = Action&{
+  name: WallpaperActionName.CLEAR_DAILY_REFRESH_ACTION,
+};
+
+/**
+ * Clear the data related to daily refresh, indicating daily refresh is not
+ * active.
+ */
+export function clearDailyRefreshAction(): ClearDailyRefreshAction {
+  return {
+    name: WallpaperActionName.CLEAR_DAILY_REFRESH_ACTION,
+  };
 }
 
 export type SetGooglePhotosEnabledAction = Action&{
@@ -346,6 +366,19 @@ export function setImagesForCollectionAction(
     collectionId,
     images,
     name: WallpaperActionName.SET_IMAGES_FOR_COLLECTION,
+  };
+}
+
+export type SetDefaultImageThumbnailAction = Action&{
+  name: WallpaperActionName.SET_DEFAULT_IMAGE_THUMBNAIL,
+  thumbnail: string,
+};
+
+export function setDefaultImageThumbnailAction(thumbnail: string):
+    SetDefaultImageThumbnailAction {
+  return {
+    thumbnail,
+    name: WallpaperActionName.SET_DEFAULT_IMAGE_THUMBNAIL,
   };
 }
 

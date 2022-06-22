@@ -14,6 +14,7 @@
 #include "media/video/renderable_gpu_memory_buffer_video_frame_pool.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -130,6 +131,13 @@ bool WebGraphicsContext3DVideoFramePool::CopyRGBATextureToVideoFrame(
   auto* raster_context_provider = context_provider->RasterContextProvider();
   if (!raster_context_provider)
     return false;
+
+#if BUILDFLAG(IS_WIN)
+  // CopyRGBATextureToVideoFrame below needs D3D shared images on Windows so
+  // early out before creating the GMB since it's going to fail anyway.
+  if (!context_provider->GetCapabilities().shared_image_d3d)
+    return false;
+#endif  // BUILDFLAG(IS_WIN)
 
   scoped_refptr<media::VideoFrame> dst_frame =
       pool_->MaybeCreateVideoFrame(src_size, dst_color_space);

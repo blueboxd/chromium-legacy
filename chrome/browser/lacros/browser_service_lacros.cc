@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
 #include "chrome/browser/lacros/feedback_util.h"
 #include "chrome/browser/lacros/system_logs/lacros_system_log_fetcher.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -53,7 +55,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/platform_window/platform_window.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_lacros.h"
 #include "url/gurl.h"
 
 namespace {
@@ -98,7 +100,7 @@ void OnMainProfileLoaded(base::OnceCallback<void(Profile*)>& callback,
     case Profile::CREATE_STATUS_INITIALIZED:
       DCHECK(profile);
 
-      if (can_trigger_fre && ShouldOpenPrimaryProfileFirstRun()) {
+      if (can_trigger_fre && ShouldOpenPrimaryProfileFirstRun(profile)) {
         // TODO(https://crbug.com/1313848): Consider taking a
         // `ScopedProfileKeepAlive`.
         OpenPrimaryProfileFirstRunIfNeeded(
@@ -183,16 +185,22 @@ void BrowserServiceLacros::REMOVED_2(crosapi::mojom::BrowserInitParamsPtr) {
   NOTIMPLEMENTED();
 }
 
+void BrowserServiceLacros::REMOVED_16(
+    base::flat_map<policy::PolicyNamespace, std::vector<uint8_t>> policy) {
+  NOTIMPLEMENTED();
+}
+
 void BrowserServiceLacros::NewWindow(bool incognito,
                                      bool should_trigger_session_restore,
                                      NewWindowCallback callback) {
   if (ProfilePicker::ShouldShowAtLaunch() && !incognito) {
     // Profile picker does not support passing through the incognito param. It
-    // also does not support passing though the `should_trigger_session_restore`
-    // param but that's true very common (left clicking the launcher icon) so
-    // we can't skip the picker in this case. The default behavior for the first
-    // browser window supports session restore, additional windows are opened
-    // blank and thus it works reasonably well for BrowserServiceLacros.
+    // also does not support passing through the
+    // `should_trigger_session_restore` param but that's very common (left
+    // clicking the launcher icon) so we can't skip the picker in this case. The
+    // default behavior for the first browser window supports session restore,
+    // additional windows are opened blank and thus it works reasonably well for
+    // BrowserServiceLacros.
     ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
         ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
     std::move(callback).Run();
@@ -297,6 +305,10 @@ void BrowserServiceLacros::GetActiveTabUrl(GetActiveTabUrlCallback callback) {
 void BrowserServiceLacros::UpdateDeviceAccountPolicy(
     const std::vector<uint8_t>& policy) {
   chromeos::LacrosService::Get()->NotifyPolicyUpdated(policy);
+}
+
+void BrowserServiceLacros::NotifyPolicyFetchAttempt() {
+  chromeos::LacrosService::Get()->NotifyPolicyFetchAttempt();
 }
 
 void BrowserServiceLacros::UpdateKeepAlive(bool enabled) {
@@ -442,6 +454,21 @@ void BrowserServiceLacros::NewWindowWithProfile(
     return;
   }
 
+  switch (IncognitoModePrefs::GetAvailability(profile->GetPrefs())) {
+    case IncognitoModePrefs::Availability::kEnabled:
+      // Default behavior: both incognito and regular mode are allowed.
+      break;
+    case IncognitoModePrefs::Availability::kDisabled:
+      incognito = false;
+      break;
+    case IncognitoModePrefs::Availability::kForced:
+      incognito = true;
+      break;
+    case IncognitoModePrefs::Availability::kNumTypes:
+      NOTREACHED();
+      break;
+  }
+
   chrome::NewEmptyWindow(
       incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
                 : profile,
@@ -526,9 +553,9 @@ void BrowserServiceLacros::NewWindowForDetachingTabWithProfile(
   new_browser->window()->Show();
 
   auto* native_window = new_browser->window()->GetNativeWindow();
-  auto* dwth_linux =
-      views::DesktopWindowTreeHostLinux::From(native_window->GetHost());
-  auto* platform_window = dwth_linux->platform_window();
+  auto* dwth_platform =
+      views::DesktopWindowTreeHostLacros::From(native_window->GetHost());
+  auto* platform_window = dwth_platform->platform_window();
   std::move(callback).Run(crosapi::mojom::CreationResult::kSuccess,
                           platform_window->GetWindowUniqueId());
 }
@@ -653,7 +680,7 @@ void BrowserServiceLacros::OpenForFullRestoreWithProfile(Profile* profile) {
 }
 
 void BrowserServiceLacros::UpdateComponentPolicy(
-    base::flat_map<policy::PolicyNamespace, std::vector<uint8_t>> policy) {
+    policy::ComponentPolicyMap policy) {
   // TODO(crbug.com/1284279): Process received data in Lacros.
 }
 

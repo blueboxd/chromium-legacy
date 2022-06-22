@@ -154,7 +154,7 @@ const CGFloat kTopAndBottomPadding = 8.0;
 #pragma mark - AutocompleteResultConsumer
 
 - (void)updateMatches:(NSArray<id<AutocompleteSuggestionGroup>>*)result
-        withAnimation:(BOOL)animation {
+    preselectedMatchGroupIndex:(NSInteger)groupIndex {
   self.forwardsScrollEvents = NO;
   // Reset highlight state.
   if (self.highlightedIndexPath) {

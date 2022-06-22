@@ -84,6 +84,42 @@ SkRect MapRect(const SkMatrix& matrix, const SkRect& src) {
   matrix.mapRect(&dst, src);
   return dst;
 }
+
+void DrawImageRect(SkCanvas* canvas,
+                   const SkImage* image,
+                   const SkRect& src,
+                   const SkRect& dst,
+                   const SkSamplingOptions& options,
+                   const SkPaint* paint,
+                   SkCanvas::SrcRectConstraint constraint) {
+  if (!image)
+    return;
+  if (constraint == SkCanvas::kStrict_SrcRectConstraint &&
+      options.mipmap != SkMipmapMode::kNone &&
+      src.contains(SkRect::Make(image->dimensions()))) {
+    SkMatrix m;
+    m.setRectToRect(src, dst, SkMatrix::ScaleToFit::kFill_ScaleToFit);
+    canvas->save();
+    canvas->concat(m);
+    canvas->drawImage(image, 0, 0, options, paint);
+    canvas->restore();
+    return;
+  }
+  canvas->drawImageRect(image, src, dst, options, paint, constraint);
+}
+
+bool GrSlugAreEqual(sk_sp<GrSlug> left, sk_sp<GrSlug> right) {
+  if (!left && !right) {
+    return true;
+  }
+  if (left && right) {
+    auto left_data = left->serialize();
+    auto right_data = right->serialize();
+    return left_data->equals(right_data.get());
+  }
+  return false;
+}
+
 }  // namespace
 
 #define TYPES(M)      \
@@ -350,8 +386,7 @@ PlaybackParams::PlaybackParams(ImageProvider* image_provider,
     : image_provider(image_provider),
       original_ctm(original_ctm),
       custom_callback(custom_callback),
-      did_draw_op_callback(did_draw_op_callback),
-      raw_draw_analysis(false) {}
+      did_draw_op_callback(did_draw_op_callback) {}
 
 PlaybackParams::~PlaybackParams() {}
 
@@ -368,8 +403,7 @@ PaintOp::SerializeOptions::SerializeOptions(
     SkottieSerializationHistory* skottie_serialization_history,
     bool can_use_lcd_text,
     bool context_supports_distance_field_text,
-    int max_texture_size,
-    bool raw_draw)
+    int max_texture_size)
     : image_provider(image_provider),
       transfer_cache(transfer_cache),
       paint_cache(paint_cache),
@@ -379,8 +413,7 @@ PaintOp::SerializeOptions::SerializeOptions(
       can_use_lcd_text(can_use_lcd_text),
       context_supports_distance_field_text(
           context_supports_distance_field_text),
-      max_texture_size(max_texture_size),
-      raw_draw(raw_draw) {}
+      max_texture_size(max_texture_size) {}
 
 PaintOp::SerializeOptions::SerializeOptions() = default;
 PaintOp::SerializeOptions::SerializeOptions(const SerializeOptions&) = default;
@@ -538,7 +571,7 @@ size_t DrawImageOp::Serialize(const PaintOp* base_op,
   helper.Write(
       CreateDrawImage(op->image, flags_to_serialize, op->sampling, current_ctm),
       &scale_adjustment);
-  helper.AlignMemory(alignof(SkScalar));
+  helper.AssertAlignment(alignof(SkScalar));
   helper.Write(scale_adjustment.width());
   helper.Write(scale_adjustment.height());
 
@@ -569,7 +602,7 @@ size_t DrawImageRectOp::Serialize(const PaintOp* base_op,
   helper.Write(
       CreateDrawImage(op->image, flags_to_serialize, op->sampling, matrix),
       &scale_adjustment);
-  helper.AlignMemory(alignof(SkScalar));
+  helper.AssertAlignment(alignof(SkScalar));
   helper.Write(scale_adjustment.width());
   helper.Write(scale_adjustment.height());
 
@@ -608,7 +641,7 @@ size_t DrawLineOp::Serialize(const PaintOp* base_op,
   if (!flags_to_serialize)
     flags_to_serialize = &op->flags;
   helper.Write(*flags_to_serialize, current_ctm);
-  helper.AlignMemory(alignof(SkScalar));
+  helper.AssertAlignment(alignof(SkScalar));
   helper.Write(op->x0);
   helper.Write(op->y0);
   helper.Write(op->x1);
@@ -717,11 +750,14 @@ void SerializeSkottieFrameData(const SkM44& current_ctm,
   // |scale_adjustment| is not ultimately used; Skottie handles image
   // scale adjustment internally when rastering.
   SkSize scale_adjustment = SkSize::MakeEmpty();
-  helper.Write(DrawImage(frame_data.image, /*use_dark_mode=*/false,
-                         SkIRect::MakeWH(frame_data.image.width(),
-                                         frame_data.image.height()),
-                         frame_data.quality, current_ctm),
-               &scale_adjustment);
+  DrawImage draw_image;
+  if (frame_data.image) {
+    draw_image = DrawImage(
+        frame_data.image, /*use_dark_mode=*/false,
+        SkIRect::MakeWH(frame_data.image.width(), frame_data.image.height()),
+        frame_data.quality, current_ctm);
+  }
+  helper.Write(draw_image, &scale_adjustment);
   helper.Write(frame_data.quality);
 }
 
@@ -783,18 +819,11 @@ size_t DrawTextBlobOp::Serialize(const PaintOp* base_op,
   if (!flags_to_serialize)
     flags_to_serialize = &op->flags;
   helper.Write(*flags_to_serialize, current_ctm);
-  helper.AlignMemory(alignof(SkScalar));
-  helper.Write(op->x);
-  helper.Write(op->y);
-  unsigned int count = options.raw_draw ? (op->extra_slugs.size() + 1) : 0;
+  unsigned int count = op->extra_slugs.size() + 1;
   helper.Write(count);
-  if (options.raw_draw) {
-    helper.Write(op->slug);
-    for (const auto& slug : op->extra_slugs) {
-      helper.Write(slug);
-    }
-  } else {
-    helper.Write(op->blob);
+  helper.Write(op->slug);
+  for (const auto& slug : op->extra_slugs) {
+    helper.Write(slug);
   }
   return helper.size();
 }
@@ -988,7 +1017,7 @@ class PaintOpDeserializer {
 
   void ReadSize(size_t* size) { reader_.ReadSize(size); }
 
-  void AlignMemory(size_t alignment) { reader_.AlignMemory(alignment); }
+  void AssertAlignment(size_t alignment) { reader_.AssertAlignment(alignment); }
 
  private:
   PaintOpReader reader_;
@@ -1115,7 +1144,7 @@ PaintOp* DrawImageOp::Deserialize(const volatile void* input,
   deserializer.Read(&deserializer->flags);
 
   deserializer.Read(&deserializer->image);
-  deserializer.AlignMemory(alignof(SkScalar));
+  deserializer.AssertAlignment(alignof(SkScalar));
   deserializer.Read(&deserializer->scale_adjustment.fWidth);
   deserializer.Read(&deserializer->scale_adjustment.fHeight);
 
@@ -1136,7 +1165,7 @@ PaintOp* DrawImageRectOp::Deserialize(const volatile void* input,
   deserializer.Read(&deserializer->flags);
 
   deserializer.Read(&deserializer->image);
-  deserializer.AlignMemory(alignof(SkScalar));
+  deserializer.AssertAlignment(alignof(SkScalar));
   deserializer.Read(&deserializer->scale_adjustment.fWidth);
   deserializer.Read(&deserializer->scale_adjustment.fHeight);
 
@@ -1169,7 +1198,7 @@ PaintOp* DrawLineOp::Deserialize(const volatile void* input,
   PaintOpDeserializer<DrawLineOp> deserializer(input, input_size, options,
                                                new (output) DrawLineOp);
   deserializer.Read(&deserializer->flags);
-  deserializer.AlignMemory(alignof(SkScalar));
+  deserializer.AssertAlignment(alignof(SkScalar));
   deserializer.Read(&deserializer->x0);
   deserializer.Read(&deserializer->y0);
   deserializer.Read(&deserializer->x1);
@@ -1284,9 +1313,6 @@ absl::optional<SkottieFrameData> DeserializeSkottieFrameData(
     PaintOpDeserializer<DrawSkottieOp>& deserializer) {
   SkottieFrameData frame_data;
   deserializer.Read(&frame_data.image);
-  if (!frame_data.image)
-    return absl::nullopt;
-
   deserializer.Read(&frame_data.quality);
   return frame_data;
 }
@@ -1359,19 +1385,12 @@ PaintOp* DrawTextBlobOp::Deserialize(const volatile void* input,
   PaintOpDeserializer<DrawTextBlobOp> deserializer(input, input_size, options,
                                                    new (output) DrawTextBlobOp);
   deserializer.Read(&deserializer->flags);
-  deserializer.AlignMemory(alignof(SkScalar));
-  deserializer.Read(&deserializer->x);
-  deserializer.Read(&deserializer->y);
   unsigned int count = 0;
   deserializer.Read(&count);
-  if (count) {
-    deserializer.Read(&deserializer->slug);
-    deserializer->extra_slugs.resize(count - 1);
-    for (auto& slug : deserializer->extra_slugs) {
-      deserializer.Read(&slug);
-    }
-  } else {
-    deserializer.Read(&deserializer->blob);
+  deserializer.Read(&deserializer->slug);
+  deserializer->extra_slugs.resize(count - 1);
+  for (auto& slug : deserializer->extra_slugs) {
+    deserializer.Read(&slug);
   }
   return deserializer.FinalizeOp();
 }
@@ -1661,8 +1680,8 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
       }
       if (!sk_image)
         sk_image = op->image.GetSwSkImage();
-      c->drawImageRect(sk_image.get(), adjusted_src, op->dst, op->sampling, &p,
-                       op->constraint);
+      DrawImageRect(c, sk_image.get(), adjusted_src, op->dst, op->sampling, &p,
+                    op->constraint);
     });
     return;
   }
@@ -1695,8 +1714,8 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
                                                              const SkPaint& p) {
     SkSamplingOptions options = PaintFlags::FilterQualityToSkSamplingOptions(
         decoded_image.filter_quality());
-    c->drawImageRect(decoded_image.image().get(), adjusted_src, op->dst,
-                     options, &p, op->constraint);
+    DrawImageRect(c, decoded_image.image().get(), adjusted_src, op->dst,
+                  options, &p, op->constraint);
   });
 }
 
@@ -1788,7 +1807,9 @@ SkottieWrapper::FrameDataFetchResult DrawSkottieOp::GetImageAssetForRaster(
     return SkottieWrapper::FrameDataFetchResult::NO_UPDATE;
 
   const SkottieFrameData& frame_data = images_iter->second;
-  if (params.image_provider) {
+  if (!frame_data.image) {
+    sk_image = nullptr;
+  } else if (params.image_provider) {
     // There is no use case for applying dark mode filters to skottie images
     // currently.
     DrawImage draw_image(
@@ -1808,8 +1829,6 @@ SkottieWrapper::FrameDataFetchResult DrawSkottieOp::GetImageAssetForRaster(
     if (!sk_image)
       sk_image = frame_data.image.GetSwSkImage();
   }
-  DCHECK(sk_image) << "Failed to fetch SkImage for Skottie image asset "
-                   << asset_id;
   sampling_out =
       PaintFlags::FilterQualityToSkSamplingOptions(frame_data.quality);
   return SkottieWrapper::FrameDataFetchResult::NEW_DATA_AVAILABLE;
@@ -1825,7 +1844,7 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
   // The PaintOpBuffer could be rasterized with different global matrix. It is
   // used for over scall on Android. So we cannot reuse slugs, they have to be
   // recreated.
-  if (params.raw_draw_analysis) {
+  if (params.is_analyzing) {
     const_cast<DrawTextBlobOp*>(op)->slug.reset();
     const_cast<DrawTextBlobOp*>(op)->extra_slugs.clear();
   }
@@ -1836,7 +1855,7 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
   flags->DrawToSk(canvas, [op, &params, &i](SkCanvas* c, const SkPaint& p) {
     if (op->blob) {
       c->drawTextBlob(op->blob.get(), op->x, op->y, p);
-      if (params.raw_draw_analysis) {
+      if (params.is_analyzing) {
         auto s = GrSlug::ConvertBlob(c, *op->blob, {op->x, op->y}, p);
         if (i == 0) {
           const_cast<DrawTextBlobOp*>(op)->slug = std::move(s);
@@ -1845,7 +1864,7 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
         }
       }
     } else if (i < 1 + op->extra_slugs.size()) {
-      DCHECK(!params.raw_draw_analysis);
+      DCHECK(!params.is_analyzing);
       const auto& draw_slug = i == 0 ? op->slug : op->extra_slugs[i - 1];
       if (draw_slug)
         draw_slug->draw(c);
@@ -2310,10 +2329,7 @@ bool DrawTextBlobOp::AreEqual(const PaintOp* base_left,
     return false;
   if (left->node_id != right->node_id)
     return false;
-
-  SkSerialProcs default_procs;
-  return left->blob->serialize(default_procs)
-      ->equals(right->blob->serialize(default_procs).get());
+  return GrSlugAreEqual(left->slug, right->slug);
 }
 
 bool NoopOp::AreEqual(const PaintOp* base_left, const PaintOp* base_right) {
@@ -3108,6 +3124,7 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
                             params.did_draw_op_callback);
   new_params.save_layer_alpha_should_preserve_lcd_text =
       save_layer_alpha_should_preserve_lcd_text;
+  new_params.is_analyzing = params.is_analyzing;
   for (PlaybackFoldingIterator iter(this, offsets); iter; ++iter) {
     const PaintOp* op = *iter;
 

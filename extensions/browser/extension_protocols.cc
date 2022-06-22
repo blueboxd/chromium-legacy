@@ -31,10 +31,12 @@
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
@@ -59,7 +61,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/favicon_util.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
@@ -400,15 +401,16 @@ void GetSecurityPolicyForURL(const network::ResourceRequest& request,
       (extension.creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE) != 0;
 }
 
-bool IsPathEqualTo(const GURL& url, const char* test) {
+bool IsPathEqualTo(const GURL& url, base::StringPiece test) {
   base::StringPiece path_piece = url.path_piece();
   return path_piece.size() > 1 && path_piece.substr(1) == test;
 }
 
 bool IsFaviconURL(const GURL& url) {
-  return IsPathEqualTo(url, kFaviconSourcePath) &&
-         base::FeatureList::IsEnabled(
-             extensions_features::kNewExtensionFaviconHandling);
+  return base::FeatureList::IsEnabled(
+             extensions_features::kNewExtensionFaviconHandling) &&
+         (IsPathEqualTo(url, kFaviconSourcePath) ||
+          IsPathEqualTo(url, base::StrCat({kFaviconSourcePath, "/"})));
 }
 
 bool IsBackgroundPageURL(const GURL& url) {
@@ -603,20 +605,25 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
         extension_info_map_(extension_info_map) {
     client =
         WrapWithMetricsIfNeeded(request.url, ukm_source_id, std::move(client));
-    loader_.Bind(std::move(loader));
     client_.Bind(std::move(client));
+    loader_.Bind(std::move(loader));
     loader_.set_disconnect_handler(base::BindOnce(
-        &ExtensionURLLoader::OnMojoDisconnect, base::Unretained(this)));
-    client_.set_disconnect_handler(base::BindOnce(
-        &ExtensionURLLoader::OnMojoDisconnect, base::Unretained(this)));
+        &ExtensionURLLoader::OnMojoDisconnect, weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // This instance is no longer needed after loader/client unbind.
+  // `this` instance should only be `delete`ed after completing handling of the
+  // `request_` (e.g. after sending the response back to the `client_` or after
+  // encountering an error and communicating the error to the the `client_`).
   void DeleteThis() { delete this; }
+
+  void CompleteRequestAndDeleteThis(int status) {
+    client_->OnComplete(network::URLLoaderCompletionStatus(status));
+    DeleteThis();
+  }
 
   void Start() {
     if (browser_context_->ShutdownStarted()) {
-      client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+      CompleteRequestAndDeleteThis(net::ERR_FAILED);
       return;
     }
 
@@ -635,9 +642,7 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
             render_process_id_, browser_context_->IsOffTheRecord(),
             extension.get(), incognito_enabled, enabled_extensions,
             *process_map)) {
-      client_->OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_CLIENT));
-      DeleteThis();
+      CompleteRequestAndDeleteThis(net::ERR_BLOCKED_BY_CLIENT);
       return;
     }
 
@@ -645,8 +650,7 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
     if (!GetDirectoryForExtensionURL(
             request_.url, extension_id, extension.get(),
             registry->disabled_extensions(), &directory_path)) {
-      client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
-      DeleteThis();
+      CompleteRequestAndDeleteThis(net::ERR_FAILED);
       return;
     }
 
@@ -673,24 +677,65 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
         /* allow_directory_listing */ false, std::move(response_headers));
   }
 
-  static void OnFilePathAndLastModifiedTimeRead(
-      network::ResourceRequest request,
-      mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      scoped_refptr<ContentVerifier> content_verifier,
+  void OnFilePathAndLastModifiedTimeRead(
       const extensions::ExtensionResource& resource,
       scoped_refptr<net::HttpResponseHeaders> headers,
       std::pair<base::FilePath, base::Time> file_path_and_time) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     const auto& read_file_path = file_path_and_time.first;
     const auto& last_modified_time = file_path_and_time.second;
-    request.url = net::FilePathToFileURL(read_file_path);
+    request_.url = net::FilePathToFileURL(read_file_path);
+    scoped_refptr<ContentVerifier> content_verifier =
+        extension_info_map_->content_verifier();
 
     AddCacheHeaders(*headers, last_modified_time);
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
-        base::BindOnce(&StartVerifyJob, std::move(request), std::move(loader),
-                       std::move(client), std::move(content_verifier), resource,
+        base::BindOnce(&StartVerifyJob, std::move(request_), loader_.Unbind(),
+                       client_.Unbind(), std::move(content_verifier), resource,
                        std::move(headers)));
+    DeleteThis();
+  }
+
+  void OnFaviconRetrieved(mojo::StructPtr<network::mojom::URLResponseHead> head,
+                          scoped_refptr<base::RefCountedMemory> bitmap_data) {
+    if (bitmap_data) {
+      head->mime_type = "image/bmp";
+      WriteData(std::move(head),
+                base::as_bytes(
+                    base::make_span(bitmap_data->data(), bitmap_data->size())));
+    } else {
+      CompleteRequestAndDeleteThis(net::ERR_FAILED);
+    }
+  }
+
+  void WriteData(mojo::StructPtr<network::mojom::URLResponseHead> head,
+                 base::span<const uint8_t> contents) {
+    DCHECK(contents.data());
+    uint32_t size = base::saturated_cast<uint32_t>(contents.size());
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    if (mojo::CreateDataPipe(size, producer_handle, consumer_handle) !=
+        MOJO_RESULT_OK) {
+      CompleteRequestAndDeleteThis(net::ERR_FAILED);
+      return;
+    }
+    MojoResult result = producer_handle->WriteData(contents.data(), &size,
+                                                   MOJO_WRITE_DATA_FLAG_NONE);
+    if (result != MOJO_RESULT_OK || size < contents.size()) {
+      CompleteRequestAndDeleteThis(net::ERR_FAILED);
+      return;
+    }
+
+    if (base::FeatureList::IsEnabled(network::features::kCombineResponseBody)) {
+      client_->OnReceiveResponse(std::move(head), std::move(consumer_handle));
+    } else {
+      client_->OnReceiveResponse(std::move(head),
+                                 mojo::ScopedDataPipeConsumerHandle());
+      client_->OnStartLoadingResponseBody(std::move(consumer_handle));
+    }
+
+    CompleteRequestAndDeleteThis(net::OK);
   }
 
   void LoadExtension(scoped_refptr<const Extension> extension,
@@ -749,45 +794,18 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
           content_security_policy, cross_origin_embedder_policy,
           cross_origin_opener_policy, false /* send_cors_headers */,
           include_allow_service_worker_header);
-      std::string contents;
       if (is_background_page_url) {
+        std::string contents;
         GenerateBackgroundPageContents(extension.get(), &head->mime_type,
                                        &head->charset, &contents);
+        WriteData(std::move(head), base::as_bytes(base::make_span(contents)));
       } else if (is_favicon_url) {
-        favicon_util::GetFaviconForExtensionRequest(
-            extension.get(), &head->mime_type, &head->charset, &contents);
+        tracker_ = std::make_unique<base::CancelableTaskTracker>();
+        ExtensionsBrowserClient::Get()->GetFavicon(
+            browser_context_, extension.get(), request_.url, tracker_.get(),
+            base::BindOnce(&ExtensionURLLoader::OnFaviconRetrieved,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(head)));
       }
-
-      uint32_t size = base::saturated_cast<uint32_t>(contents.size());
-      mojo::ScopedDataPipeProducerHandle producer_handle;
-      mojo::ScopedDataPipeConsumerHandle consumer_handle;
-      if (mojo::CreateDataPipe(size, producer_handle, consumer_handle) !=
-          MOJO_RESULT_OK) {
-        client_->OnComplete(
-            network::URLLoaderCompletionStatus(net::ERR_FAILED));
-        DeleteThis();
-        return;
-      }
-      MojoResult result = producer_handle->WriteData(contents.data(), &size,
-                                                     MOJO_WRITE_DATA_FLAG_NONE);
-      if (result != MOJO_RESULT_OK || size < contents.size()) {
-        client_->OnComplete(
-            network::URLLoaderCompletionStatus(net::ERR_FAILED));
-        DeleteThis();
-        return;
-      }
-
-      if (base::FeatureList::IsEnabled(
-              network::features::kCombineResponseBody)) {
-        client_->OnReceiveResponse(std::move(head), std::move(consumer_handle));
-      } else {
-        client_->OnReceiveResponse(std::move(head),
-                                   mojo::ScopedDataPipeConsumerHandle());
-        client_->OnStartLoadingResponseBody(std::move(consumer_handle));
-      }
-
-      client_->OnComplete(network::URLLoaderCompletionStatus(net::OK));
-      DeleteThis();
       return;
     }
 
@@ -816,9 +834,7 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
     // files there are internal implementation details that should not be
     // considered part of the extension.
     if (base::FilePath(kMetadataFolder).IsParent(relative_path)) {
-      client_->OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_FILE_NOT_FOUND));
-      DeleteThis();
+      CompleteRequestAndDeleteThis(net::ERR_FILE_NOT_FOUND);
       return;
     }
 
@@ -841,9 +857,7 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
         extension_id = new_extension_id;
         relative_path = base::FilePath::FromUTF8Unsafe(new_relative_path);
       } else {
-        client_->OnComplete(
-            network::URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_CLIENT));
-        DeleteThis();
+        CompleteRequestAndDeleteThis(net::ERR_BLOCKED_BY_CLIENT);
         return;
       }
     }
@@ -856,17 +870,13 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
     if (follow_symlinks_anywhere)
       resource.set_follow_symlinks_anywhere();
 
-    scoped_refptr<ContentVerifier> content_verifier =
-        extension_info_map_->content_verifier();
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
         base::BindOnce(&ReadResourceFilePathAndLastModifiedTime, resource,
                        directory_path),
-        base::BindOnce(&OnFilePathAndLastModifiedTimeRead, request_,
-                       loader_.Unbind(), client_.Unbind(),
-                       std::move(content_verifier), resource,
+        base::BindOnce(&ExtensionURLLoader::OnFilePathAndLastModifiedTimeRead,
+                       weak_ptr_factory_.GetWeakPtr(), resource,
                        std::move(headers)));
-    DeleteThis();
   }
 
   void OnMojoDisconnect() { DeleteThis(); }
@@ -883,6 +893,11 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
   // the objects.
   const int render_process_id_;
   const scoped_refptr<extensions::InfoMap> extension_info_map_;
+
+  // Tracker for favicon callback.
+  std::unique_ptr<base::CancelableTaskTracker> tracker_;
+
+  base::WeakPtrFactory<ExtensionURLLoader> weak_ptr_factory_{this};
 };
 
 class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {

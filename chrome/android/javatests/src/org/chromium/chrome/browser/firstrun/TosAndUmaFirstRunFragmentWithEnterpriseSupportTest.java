@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -61,6 +62,7 @@ import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyF
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
+import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.policy.PolicyService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -120,6 +122,8 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
     public EnterpriseInfo mMockEnterpriseInfo;
     @Mock
     private PrivacyPreferencesManagerImpl mPrivacyPreferencesManagerMock;
+    @Mock
+    private ExternalAuthUtils mExternalAuthUtilsMock;
 
     @Spy
     public ChromeBrowserInitializer mInitializer;
@@ -157,6 +161,8 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
                 .handlePostNativeStartup(anyBoolean(), any(BrowserParts.class));
         ChromeBrowserInitializer.setForTesting(mInitializer);
 
+        when(mExternalAuthUtilsMock.canUseGooglePlayServices(any())).thenReturn(true);
+        ExternalAuthUtils.setInstanceForTesting(mExternalAuthUtilsMock);
         FirstRunAppRestrictionInfo.setInitializedInstanceForTest(mMockAppRestrictionInfo);
         ToSAndUMAFirstRunFragment.setShowUmaCheckBoxForTesting(true);
         PolicyServiceFactory.setPolicyServiceForTest(mPolicyService);
@@ -224,7 +230,7 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
         FirstRunUtilsJni.TEST_HOOKS.setInstanceForTesting(mFirstRunUtils);
         EnterpriseInfo.setInstanceForTest(null);
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, false);
+                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER, false);
         if (mActivity != null) mActivity.finish();
     }
 
@@ -954,7 +960,7 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
 
     private void setMetricsReportDisabled() {
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, false);
+                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER, false);
         Assert.assertFalse("Crash report should be disabled by shared preference.",
                 PrivacyPreferencesManagerImpl.getInstance()
                         .isUsageAndCrashReportingPermittedByUser());

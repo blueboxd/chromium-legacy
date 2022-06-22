@@ -1,0 +1,98 @@
+// Copyright 2022 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_CAST_STREAMING_BROWSER_STREAMING_INITIALIZATION_INFO_H_
+#define COMPONENTS_CAST_STREAMING_BROWSER_STREAMING_INITIALIZATION_INFO_H_
+
+#include "base/callback.h"
+#include "base/callback_forward.h"
+#include "media/base/audio_decoder_config.h"
+#include "media/base/video_decoder_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace openscreen::cast {
+class Receiver;
+class ReceiverSession;
+}  // namespace openscreen::cast
+
+namespace cast_streaming {
+
+// This struct provides information pertaining to the initialization or
+// re-initialization of a cast streaming session.
+// NOTE: This struct IS copyable.
+struct StreamingInitializationInfo {
+  struct AudioStreamInfo {
+    AudioStreamInfo(media::AudioDecoderConfig audio_config,
+                    openscreen::cast::Receiver* cast_receiver);
+    AudioStreamInfo(media::AudioDecoderConfig audio_config,
+                    openscreen::cast::Receiver* cast_receiver,
+                    base::RepeatingClosure on_no_buffers_cb,
+                    base::OnceClosure on_error_cb);
+    AudioStreamInfo();
+    AudioStreamInfo(const AudioStreamInfo& other);
+    ~AudioStreamInfo();
+
+    // The decoder config associated with this audio stream.
+    media::AudioDecoderConfig config;
+
+    // The Receiver for the audio stream. This pointer will remain valid for the
+    // duration of the streaming session.
+    openscreen::cast::Receiver* receiver;
+
+    // Callback to be called when no buffers are available for reading.
+    base::RepeatingClosure on_no_buffers_callback;
+
+    // Callback to be called when a non-recoverable error occurs.
+    base::OnceClosure on_error_callback;
+  };
+
+  struct VideoStreamInfo {
+    VideoStreamInfo(media::VideoDecoderConfig video_config,
+                    openscreen::cast::Receiver* cast_receiver);
+    VideoStreamInfo(media::VideoDecoderConfig video_config,
+                    openscreen::cast::Receiver* cast_receiver,
+                    base::RepeatingClosure on_no_buffers_cb,
+                    base::OnceClosure on_error_cb);
+    VideoStreamInfo();
+    VideoStreamInfo(const VideoStreamInfo& other);
+    ~VideoStreamInfo();
+
+    // The decoder config associated with this video stream.
+    media::VideoDecoderConfig config;
+
+    // The Receiver for the video stream. This pointer will remain valid for the
+    // duration of the streaming session.
+    openscreen::cast::Receiver* receiver;
+
+    // Callback to be called when no buffers are available for reading.
+    base::RepeatingClosure on_no_buffers_callback;
+
+    // Callback to be called when a non-recoverable error occurs.
+    base::OnceClosure on_error_callback;
+  };
+
+  StreamingInitializationInfo(
+      const openscreen::cast::ReceiverSession* receiver_session,
+      absl::optional<AudioStreamInfo> audio_info,
+      absl::optional<VideoStreamInfo> video_info);
+  StreamingInitializationInfo();
+  StreamingInitializationInfo(const StreamingInitializationInfo& other);
+  ~StreamingInitializationInfo();
+
+  // The receiver session for which the remainder of this config is valid. This
+  // pointer will remain valid for the duration of the streaming session.
+  const openscreen::cast::ReceiverSession* session;
+
+  // Information detailing the audio stream. Will be populated iff the streaming
+  // session has audio.
+  absl::optional<AudioStreamInfo> audio_stream_info;
+
+  // Information detailing the video stream. Will be populated iff the streaming
+  // session has video.
+  absl::optional<VideoStreamInfo> video_stream_info;
+};
+
+}  // namespace cast_streaming
+
+#endif  // COMPONENTS_CAST_STREAMING_BROWSER_STREAMING_INITIALIZATION_INFO_H_

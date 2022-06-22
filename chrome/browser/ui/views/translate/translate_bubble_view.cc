@@ -24,10 +24,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
-#include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
+#include "chrome/browser/ui/translate/translate_bubble_ui_action_logger.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/md_text_button_with_down_arrow.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
@@ -531,7 +530,6 @@ TranslateBubbleView::TranslateBubbleView(
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetFootnoteView(CreateWordmarkView());
   SetProperty(views::kElementIdentifierKey, kIdentifier);
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::TRANSLATE);
 }
 
 views::View* TranslateBubbleView::GetCurrentView() const {
@@ -820,7 +818,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewErrorNoTitle(
                             views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   view->AddChildView(std::move(button_row));
 
-  // Layout();
   return view;
 }
 
@@ -833,14 +830,11 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedSource() {
 
   // Language icon
   int source_default_index = model_->GetSourceLanguageIndex();
-  source_language_combobox_model_ =
+  auto source_language_combobox_model =
       std::make_unique<SourceLanguageComboboxModel>(source_default_index,
                                                     model_.get());
-
-  // Ideally all child view elements shall be created using unique_ptr.
-  // Using normal pointer for compatibility with existing code.
-  auto source_language_combobox =
-      std::make_unique<views::Combobox>(source_language_combobox_model_.get());
+  auto source_language_combobox = std::make_unique<views::Combobox>(
+      std::move(source_language_combobox_model));
   source_language_combobox->SetProperty(views::kElementIdentifierKey,
                                         kSourceLanguageCombobox);
 
@@ -895,14 +889,11 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTarget() {
           views::style::CONTEXT_DIALOG_TITLE);
 
   int target_default_index = model_->GetTargetLanguageIndex();
-  target_language_combobox_model_ =
+  auto target_language_combobox_model =
       std::make_unique<TargetLanguageComboboxModel>(target_default_index,
                                                     model_.get());
-
-  // Ideally all view components shall be created using unique_ptr.
-  // Using normal pointer for compatibility with existing code.
-  auto target_language_combobox =
-      std::make_unique<views::Combobox>(target_language_combobox_model_.get());
+  auto target_language_combobox = std::make_unique<views::Combobox>(
+      std::move(target_language_combobox_model));
   target_language_combobox->SetProperty(views::kElementIdentifierKey,
                                         kTargetLanguageCombobox);
 
@@ -962,6 +953,8 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvanced(
                            gfx::Insets::VH(vertical_spacing, 0));
   }
   auto* form_view = view->AddChildView(std::make_unique<views::View>());
+  // Stretch `form_view` to fit the rest of bubble's width.
+  layout->SetFlexForView(form_view, 1);
   form_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       vertical_spacing));

@@ -10,10 +10,12 @@
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/system/system_clock_observer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
+#include "components/access_code_cast/common/access_code_cast_metrics.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
+struct DeviceEnterpriseInfo;
 struct LocaleInfo;
 class SystemTray;
 enum class LoginStatus;
@@ -95,7 +97,8 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   void ShowFirmwareUpdate() override;
   void RequestRestartForUpdate() override;
   void SetLocaleAndExit(const std::string& locale_iso_code) override;
-  void ShowAccessCodeCastingDialog() override;
+  void ShowAccessCodeCastingDialog(
+      AccessCodeCastDialogOpenLocation open_location) override;
   void ShowCalendarEvent(const absl::optional<GURL>& event_url,
                          bool& opened_pwa,
                          GURL& finalized_event_url) override;
@@ -127,7 +130,7 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;
   void OnStoreError(policy::CloudPolicyStore* store) override;
 
-  void UpdateEnterpriseDomainInfo();
+  void UpdateDeviceEnterpriseInfo();
   void UpdateEnterpriseAccountDomainInfo(Profile* profile);
 
   // The system tray model in ash.
@@ -136,10 +139,7 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   // Information on whether the update is recommended or required.
   ash::RelaunchNotificationState relaunch_notification_state_;
 
-  // Avoid sending ash an empty enterprise domain manager at startup and
-  // suppress duplicate IPCs during the session.
-  std::string last_enterprise_domain_manager_;
-  bool last_active_directory_managed_ = false;
+  std::unique_ptr<ash::DeviceEnterpriseInfo> last_device_enterprise_info_;
   std::string last_enterprise_account_domain_manager_;
 
   std::unique_ptr<EnterpriseAccountObserver> enterprise_account_observer_;

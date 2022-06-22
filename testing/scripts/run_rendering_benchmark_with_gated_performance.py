@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -20,13 +20,18 @@ from __future__ import print_function
 import argparse
 import csv
 import json
-import numpy as np
 import os
 import sys
 import time
 
-import common
+import numpy as np
+
 import run_performance_tests
+
+# Add src/testing/ into sys.path for importing common without pylint errors.
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+from scripts import common
 
 # AVG_ERROR_MARGIN determines how much more the value of frame times can be
 # compared to the recorded value (multiplier of upper limit).
@@ -38,6 +43,9 @@ AVG_ERROR_MARGIN = 1.1
 CI_ERROR_MARGIN = 1.5
 
 METRIC_NAME = 'frame_times'
+
+# pylint: disable=useless-object-inheritance
+
 
 class ResultRecorder(object):
   def __init__(self):
@@ -151,7 +159,7 @@ class RenderingRepresentativePerfTest(object):
     # least by 10 [AVG_ERROR_MARGIN] percent of upper limit, that would be
     # considered a failure. crbug.com/953895
     with open(
-      os.path.join(os.path.dirname(__file__),
+      os.path.join(os.path.dirname(os.path.abspath(__file__)),
       'representative_perf_test_data',
       'representatives_frame_times_upper_limit.json')
     ) as bound_data:

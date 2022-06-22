@@ -19,14 +19,23 @@ namespace user_notes {
 // static
 UserNoteService* UserNoteServiceFactory::GetForContext(
     content::BrowserContext* context) {
-  return static_cast<UserNoteService*>(
-      GetInstance()->GetServiceForBrowserContext(context,
-                                                 /*create=*/true));
+  auto* instance = GetInstance();
+  return instance->service_for_testing_
+             ? instance->service_for_testing_.get()
+             : static_cast<UserNoteService*>(
+                   instance->GetServiceForBrowserContext(context,
+                                                         /*create=*/true));
 }
 
 // static
 UserNoteServiceFactory* UserNoteServiceFactory::GetInstance() {
   return base::Singleton<UserNoteServiceFactory>::get();
+}
+
+// static
+void UserNoteServiceFactory::SetServiceForTesting(
+    std::unique_ptr<UserNoteService> service) {
+  GetInstance()->service_for_testing_ = std::move(service);
 }
 
 UserNoteServiceFactory::UserNoteServiceFactory()
@@ -46,6 +55,8 @@ KeyedService* UserNoteServiceFactory::BuildServiceInstanceFor(
 content::BrowserContext* UserNoteServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // For now, the feature is not supported in Incognito mode.
+  // TODO(crbug.com/1313967): This will need to be changed if User Notes are to
+  // be available in Incognito.
   if (context->IsOffTheRecord()) {
     return nullptr;
   }

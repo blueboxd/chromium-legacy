@@ -35,6 +35,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -91,9 +92,21 @@ class AutofillPopupBaseView::Widget : public views::Widget {
   const raw_ptr<AutofillPopupBaseView> autofill_popup_base_view_;
 };
 
+// static
 int AutofillPopupBaseView::GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
       views::Emphasis::kMedium);
+}
+
+// static
+int AutofillPopupBaseView::GetHorizontalMargin() {
+  return views::MenuConfig::instance().item_horizontal_padding +
+         GetCornerRadius();
+}
+
+// static
+int AutofillPopupBaseView::GetHorizontalPadding() {
+  return GetHorizontalMargin();
 }
 
 SkColor AutofillPopupBaseView::GetBackgroundColor() const {
@@ -413,7 +426,7 @@ bool AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
 std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW,
-      GetBackgroundColor());
+      ui::kColorDropdownBackground);
   border->SetCornerRadius(GetCornerRadius());
   border->set_md_shadow_elevation(
       ChromeLayoutProvider::Get()->GetShadowElevationMetric(

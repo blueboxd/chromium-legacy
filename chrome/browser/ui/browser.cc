@@ -181,6 +181,7 @@
 #include "components/permissions/permission_request_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -284,6 +285,10 @@
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/ui/color_chooser.h"
 #endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "chrome/browser/accessibility/ax_screen_ai_annotator.h"
+#endif
 
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
@@ -1656,6 +1661,13 @@ void Browser::AddNewContents(WebContents* source,
     window_action = NavigateParams::SHOW_WINDOW_INACTIVE;
     fullscreen_controller->FullscreenTabOpeningPopup(source,
                                                      new_contents.get());
+    // Defer popup creation if the opener has a fullscreen transition in
+    // progress. This works around a defect on Mac where separate displays
+    // cannot switch their independent spaces simultaneously (crbug.com/1315749)
+    fullscreen_controller->RunOrDeferUntilTransitionIsComplete(base::BindOnce(
+        &chrome::AddWebContents, this, source, std::move(new_contents),
+        target_url, disposition, initial_rect, window_action));
+    return;
   }
 
   chrome::AddWebContents(this, source, std::move(new_contents), target_url,
@@ -2913,6 +2925,21 @@ bool Browser::CustomTabBrowserSupportsWindowFeature(
 }
 #endif
 
+bool Browser::PictureInPictureBrowserSupportsWindowFeature(
+    WindowFeature feature,
+    bool check_can_support) const {
+  switch (feature) {
+    case FEATURE_TITLEBAR:
+      return true;
+    case FEATURE_LOCATIONBAR:
+    case FEATURE_TABSTRIP:
+    case FEATURE_TOOLBAR:
+    case FEATURE_BOOKMARKBAR:
+    case FEATURE_NONE:
+      return false;
+  }
+}
+
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
                                         bool check_can_support) const {
   switch (type_) {
@@ -2932,6 +2959,9 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
     case TYPE_CUSTOM_TAB:
       return CustomTabBrowserSupportsWindowFeature(feature);
 #endif
+    case TYPE_PICTURE_IN_PICTURE:
+      return PictureInPictureBrowserSupportsWindowFeature(feature,
+                                                          check_can_support);
   }
 }
 
@@ -3091,3 +3121,13 @@ BackgroundContents* Browser::CreateBackgroundContents(
 
   return contents;
 }
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+void Browser::RunScreenAIAnnotator() {
+  if (!screen_ai_annotator_) {
+    screen_ai_annotator_ =
+        std::make_unique<screen_ai::AXScreenAIAnnotator>(this);
+  }
+  screen_ai_annotator_->Run();
+}
+#endif

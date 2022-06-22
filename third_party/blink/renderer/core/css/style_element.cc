@@ -52,7 +52,8 @@ StyleElement::StyleElement(Document* document, bool created_by_parser)
       registered_as_candidate_(false),
       created_by_parser_(created_by_parser),
       start_position_(TextPosition::BelowRangePosition()),
-      pending_sheet_type_(PendingSheetType::kNone) {
+      pending_sheet_type_(PendingSheetType::kNone),
+      render_blocking_behavior_(RenderBlockingBehavior::kUnset) {
   if (created_by_parser && document &&
       document->GetScriptableDocumentParser() &&
       !document->IsInDocumentWrite()) {
@@ -118,9 +119,9 @@ void StyleElement::ClearSheet(Element& owner_element) {
 
   if (sheet_->IsLoading()) {
     DCHECK(IsSameObject(owner_element));
-    if (pending_sheet_type_ == PendingSheetType::kBlocking) {
-      owner_element.GetDocument().GetStyleEngine().RemovePendingSheet(
-          owner_element);
+    if (pending_sheet_type_ != PendingSheetType::kNonBlocking) {
+      owner_element.GetDocument().GetStyleEngine().RemovePendingBlockingSheet(
+          owner_element, pending_sheet_type_);
     }
     pending_sheet_type_ = PendingSheetType::kNone;
   }
@@ -170,20 +171,19 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
         media_query_matches = evaluator.Eval(*media_queries);
       }
     }
-    pending_sheet_type_ =
-        media_query_matches &&
-                (created_by_parser_ ||
-                 (RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
-                  blocking() && blocking()->IsRenderBlocking()))
-            ? PendingSheetType::kBlocking
-            : PendingSheetType::kNonBlocking;
+    auto type_and_behavior = ComputePendingSheetTypeAndRenderBlockingBehavior(
+        element, media_query_matches, created_by_parser_);
+    pending_sheet_type_ = type_and_behavior.first;
+    render_blocking_behavior_ = type_and_behavior.second;
+
     loading_ = true;
     TextPosition start_position =
         start_position_ == TextPosition::BelowRangePosition()
             ? TextPosition::MinimumPosition()
             : start_position_;
     new_sheet = document.GetStyleEngine().CreateSheet(
-        element, text, start_position, pending_sheet_type_);
+        element, text, start_position, pending_sheet_type_,
+        render_blocking_behavior_);
     new_sheet->SetMediaQueries(media_queries);
     loading_ = false;
   }
@@ -210,8 +210,10 @@ bool StyleElement::SheetLoaded(Document& document) {
     return false;
 
   DCHECK(IsSameObject(*sheet_->ownerNode()));
-  if (pending_sheet_type_ == PendingSheetType::kBlocking)
-    document.GetStyleEngine().RemovePendingSheet(*sheet_->ownerNode());
+  if (pending_sheet_type_ != PendingSheetType::kNonBlocking) {
+    document.GetStyleEngine().RemovePendingBlockingSheet(*sheet_->ownerNode(),
+                                                         pending_sheet_type_);
+  }
   pending_sheet_type_ = PendingSheetType::kNone;
   return true;
 }
@@ -220,7 +222,23 @@ void StyleElement::SetToPendingState(Document& document, Element& element) {
   DCHECK(IsSameObject(element));
   DCHECK_LT(pending_sheet_type_, PendingSheetType::kBlocking);
   pending_sheet_type_ = PendingSheetType::kBlocking;
-  document.GetStyleEngine().AddPendingSheet(element);
+  document.GetStyleEngine().AddPendingBlockingSheet(element,
+                                                    pending_sheet_type_);
+}
+
+void StyleElement::BlockingAttributeChanged(Element& element) {
+  // If this is a dynamically inserted style element, and the `blocking`
+  // has changed so that the element is no longer render-blocking, then unblock
+  // rendering on this element. Note that Parser-inserted stylesheets are
+  // render-blocking by default, so removing `blocking=render` does not unblock
+  // rendering.
+  if (pending_sheet_type_ != PendingSheetType::kDynamicRenderBlocking)
+    return;
+  if (blocking() && blocking()->IsExplicitlyRenderBlocking())
+    return;
+  element.GetDocument().GetStyleEngine().RemovePendingBlockingSheet(
+      element, pending_sheet_type_);
+  pending_sheet_type_ = PendingSheetType::kNonBlocking;
 }
 
 void StyleElement::Trace(Visitor* visitor) const {

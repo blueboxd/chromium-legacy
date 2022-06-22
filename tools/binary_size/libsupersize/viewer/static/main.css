@@ -241,6 +241,7 @@ ul {
 }
 
 .modal-content {
+  align-items: center;
   background-color: #fefefe;
   border-radius: 5px;
   box-sizing: border-box;
@@ -304,6 +305,8 @@ ul {
 
 #disassembly-code {
   border: 1px solid #ccc;
+  box-sizing: border-box;
+  max-width: 100%;
   min-width: 500px;
   overflow: auto;
   position: relative;

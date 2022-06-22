@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -31,7 +32,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
-#include "net/base/escape.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -323,6 +323,9 @@ void AuctionRunner::Auction::StartReportingPhase(
     DCHECK(top_seller_signals);
     if (!auction_worklet_manager_->RequestSellerWorklet(
             config_->decision_logic_url, config_->trusted_scoring_signals_url,
+            config_->has_seller_experiment_group_id
+                ? absl::make_optional(config_->seller_experiment_group_id)
+                : absl::nullopt,
             base::BindOnce(&Auction::ReportSellerResult, base::Unretained(this),
                            top_seller_signals),
             base::BindOnce(&Auction::OnWinningComponentSellerWorkletFatalError,
@@ -380,18 +383,18 @@ GURL AuctionRunner::Auction::FillPostAuctionSignals(
   // reportWin()/reportResult().
   std::string url_string = url.spec();
   base::ReplaceSubstringsAfterOffset(
-      &url_string, 0, net::EscapeExternalHandlerValue("${winningBid}"),
+      &url_string, 0, base::EscapeExternalHandlerValue("${winningBid}"),
       base::NumberToString(signals.winning_bid));
   base::ReplaceSubstringsAfterOffset(
-      &url_string, 0, net::EscapeExternalHandlerValue("${madeWinningBid}"),
+      &url_string, 0, base::EscapeExternalHandlerValue("${madeWinningBid}"),
       signals.made_winning_bid ? "true" : "false");
   base::ReplaceSubstringsAfterOffset(
       &url_string, 0,
-      net::EscapeExternalHandlerValue("${highestScoringOtherBid}"),
+      base::EscapeExternalHandlerValue("${highestScoringOtherBid}"),
       base::NumberToString(signals.highest_scoring_other_bid));
   base::ReplaceSubstringsAfterOffset(
       &url_string, 0,
-      net::EscapeExternalHandlerValue("${madeHighestScoringOtherBid}"),
+      base::EscapeExternalHandlerValue("${madeHighestScoringOtherBid}"),
       signals.made_highest_scoring_other_bid ? "true" : "false");
 
   // For component auction sellers only, which get post auction signals from
@@ -401,11 +404,11 @@ GURL AuctionRunner::Auction::FillPostAuctionSignals(
   if (top_level_signals.has_value()) {
     base::ReplaceSubstringsAfterOffset(
         &url_string, 0,
-        net::EscapeExternalHandlerValue("${topLevelWinningBid}"),
+        base::EscapeExternalHandlerValue("${topLevelWinningBid}"),
         base::NumberToString(top_level_signals->winning_bid));
     base::ReplaceSubstringsAfterOffset(
         &url_string, 0,
-        net::EscapeExternalHandlerValue("${topLevelMadeWinningBid}"),
+        base::EscapeExternalHandlerValue("${topLevelMadeWinningBid}"),
         top_level_signals->made_winning_bid ? "true" : "false");
   }
 
@@ -708,6 +711,9 @@ void AuctionRunner::Auction::OnComponentSellerWorkletReceived() {
 void AuctionRunner::Auction::RequestSellerWorklet() {
   if (auction_worklet_manager_->RequestSellerWorklet(
           config_->decision_logic_url, config_->trusted_scoring_signals_url,
+          config_->has_seller_experiment_group_id
+              ? absl::make_optional(config_->seller_experiment_group_id)
+              : absl::nullopt,
           base::BindOnce(&Auction::OnSellerWorkletReceived,
                          base::Unretained(this)),
           base::BindOnce(&Auction::OnSellerWorkletFatalError,
@@ -974,21 +980,6 @@ void AuctionRunner::Auction::OnBidScored(
     OnBiddingAndScoringComplete(AuctionResult::kBadMojoMessage);
     return;
   }
-  // Component Auctions must receive a `component_auction_modified_bid_params`,
-  // and top-level Auctions must not.
-  if (component_auction_modified_bid_params.is_null() != (parent_ == nullptr)) {
-    mojo::ReportBadMessage("Invalid component_auction_modified_bid_params");
-    OnBiddingAndScoringComplete(AuctionResult::kBadMojoMessage);
-    return;
-  }
-  // If a component seller modified, the new bid must also be valid.
-  if (component_auction_modified_bid_params &&
-      component_auction_modified_bid_params->has_bid &&
-      !IsValidBid(component_auction_modified_bid_params->bid)) {
-    mojo::ReportBadMessage("Invalid component_auction_modified_bid_params bid");
-    OnBiddingAndScoringComplete(AuctionResult::kBadMojoMessage);
-    return;
-  }
   errors_.insert(errors_.end(), errors.begin(), errors.end());
 
   // Use separate fields for component and top-level seller reports, so both can
@@ -1008,6 +999,23 @@ void AuctionRunner::Auction::OnBidScored(
   // A score <= 0 means the seller rejected the bid.
   if (score <= 0) {
     MaybeCompleteBiddingAndScoringPhase();
+    return;
+  }
+
+  // If they accept a bid / return a positive score, component auction
+  // SellerWorklets must return a `component_auction_modified_bid_params`, and
+  // top-level auctions must not.
+  if (component_auction_modified_bid_params.is_null() != (parent_ == nullptr)) {
+    mojo::ReportBadMessage("Invalid component_auction_modified_bid_params");
+    OnBiddingAndScoringComplete(AuctionResult::kBadMojoMessage);
+    return;
+  }
+  // If a component seller modified the bid, the new bid must also be valid.
+  if (component_auction_modified_bid_params &&
+      component_auction_modified_bid_params->has_bid &&
+      !IsValidBid(component_auction_modified_bid_params->bid)) {
+    mojo::ReportBadMessage("Invalid component_auction_modified_bid_params bid");
+    OnBiddingAndScoringComplete(AuctionResult::kBadMojoMessage);
     return;
   }
 
@@ -1255,9 +1263,18 @@ void AuctionRunner::Auction::OnReportSellerResultComplete(
   // an error if it crashes at this point, failing the auction unnecessarily.
   seller_worklet_handle_.reset();
 
-  if (!seller_ad_beacon_map.empty())
+  if (!seller_ad_beacon_map.empty()) {
+    for (const auto& element : seller_ad_beacon_map) {
+      if (!IsUrlValid(element.second)) {
+        mojo::ReportBadMessage(base::StrCat(
+            {"Invalid seller beacon URL for '", element.first, "'"}));
+        OnReportingPhaseComplete(AuctionResult::kBadMojoMessage);
+        return;
+      }
+    }
     ad_beacon_map_.metadata[ReportingDestination::kSeller] =
         seller_ad_beacon_map;
+  }
 
   if (seller_report_url) {
     if (!IsUrlValid(*seller_report_url)) {
@@ -1338,9 +1355,18 @@ void AuctionRunner::Auction::OnReportBidWinComplete(
   // fatal error notification.
   top_bid_->bid->bid_state->worklet_handle.reset();
 
-  if (!bidder_ad_beacon_map.empty())
+  if (!bidder_ad_beacon_map.empty()) {
+    for (const auto& element : bidder_ad_beacon_map) {
+      if (!IsUrlValid(element.second)) {
+        mojo::ReportBadMessage(base::StrCat(
+            {"Invalid bidder beacon URL for '", element.first, "'"}));
+        OnReportingPhaseComplete(AuctionResult::kBadMojoMessage);
+        return;
+      }
+    }
     ad_beacon_map_.metadata[ReportingDestination::kBuyer] =
         bidder_ad_beacon_map;
+  }
 
   if (bidder_report_url) {
     if (!IsUrlValid(*bidder_report_url)) {
@@ -1463,10 +1489,18 @@ bool AuctionRunner::Auction::RequestBidderWorklet(
   DCHECK(!bid_state.worklet_handle);
 
   const blink::InterestGroup& interest_group = bid_state.bidder.interest_group;
+
+  absl::optional<uint16_t> experiment_group_id = absl::nullopt;
+  auto it = config_->per_buyer_experiment_group_ids.find(interest_group.owner);
+  if (it != config_->per_buyer_experiment_group_ids.end())
+    experiment_group_id = it->second;
+  else if (config_->has_all_buyer_experiment_group_id)
+    experiment_group_id = config_->all_buyer_experiment_group_id;
+
   return auction_worklet_manager_->RequestBidderWorklet(
       interest_group.bidding_url.value_or(GURL()),
       interest_group.bidding_wasm_helper_url,
-      interest_group.trusted_bidding_signals_url,
+      interest_group.trusted_bidding_signals_url, experiment_group_id,
       std::move(worklet_available_callback), std::move(fatal_error_callback),
       bid_state.worklet_handle);
 }

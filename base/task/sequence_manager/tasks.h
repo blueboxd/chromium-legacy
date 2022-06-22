@@ -8,6 +8,7 @@
 #include "base/base_export.h"
 #include "base/check.h"
 #include "base/containers/intrusive_heap.h"
+#include "base/dcheck_is_on.h"
 #include "base/pending_task.h"
 #include "base/task/delay_policy.h"
 #include "base/task/sequence_manager/delayed_task_handle_delegate.h"
@@ -62,7 +63,7 @@ struct BASE_EXPORT PostedTask {
   Nestable nestable = Nestable::kNestable;
   TaskType task_type = kTaskTypeNone;
   absl::variant<TimeDelta, TimeTicks> delay_or_delayed_run_time;
-  absl::optional<subtle::DelayPolicy> delay_policy;
+  subtle::DelayPolicy delay_policy = subtle::DelayPolicy::kFlexibleNoSooner;
   // The task runner this task is running on. Can be used by task runners that
   // support posting back to the "current sequence".
   scoped_refptr<SequencedTaskRunner> task_runner;
@@ -77,7 +78,7 @@ enum class WakeUpResolution { kLow, kHigh };
 
 // Represents a time at which a task wants to run.
 struct WakeUp {
-  static constexpr TimeDelta kDefaultLeeway = Milliseconds(8);
+  static constexpr TimeDelta kDefaultLeeway = PendingTask::kDefaultLeeway;
 
   // is_null() for immediate wake up.
   TimeTicks time;
@@ -125,16 +126,10 @@ struct BASE_EXPORT Task : public PendingTask {
 
   bool enqueue_order_set() const { return enqueue_order_; }
 
-  TimeTicks earliest_delayed_run_time() const;
-  TimeTicks latest_delayed_run_time() const;
-
   TaskOrder task_order() const;
 
   // OK to dispatch from a nested loop.
   Nestable nestable = Nestable::kNonNestable;
-
-  TimeDelta leeway;
-  subtle::DelayPolicy delay_policy = subtle::DelayPolicy::kFlexibleNoSooner;
 
   // Needs high resolution timers.
   bool is_high_res = false;

@@ -10,7 +10,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "services/network/public/cpp/network_switches.h"
 
-namespace web_app {
+namespace web_app::integration_tests {
 
 TwoClientWebAppsIntegrationTestBase::TwoClientWebAppsIntegrationTestBase()
     : WebAppsSyncTestBase(TWO_CLIENT), helper_(this) {}
@@ -24,8 +24,8 @@ void TwoClientWebAppsIntegrationTestBase::AddBlankTabAndShow(Browser* browser) {
   InProcessBrowserTest::AddBlankTabAndShow(browser);
 }
 
-net::EmbeddedTestServer*
-TwoClientWebAppsIntegrationTestBase::EmbeddedTestServer() {
+const net::EmbeddedTestServer*
+TwoClientWebAppsIntegrationTestBase::EmbeddedTestServer() const {
   return embedded_test_server();
 }
 
@@ -51,7 +51,13 @@ void TwoClientWebAppsIntegrationTestBase::SyncTurnOn() {
 }
 
 void TwoClientWebAppsIntegrationTestBase::AwaitWebAppQuiescence() {
-  ASSERT_TRUE(AwaitQuiescence());
+  bool is_sync_on = true;
+  for (SyncServiceImplHarness* client : GetSyncClients()) {
+    is_sync_on = is_sync_on && client->service()->IsSyncFeatureActive();
+  }
+  // If sync is off, then `AwaitQuiescence()` will crash.
+  if (is_sync_on)
+    ASSERT_TRUE(AwaitQuiescence());
   apps_helper::AwaitWebAppQuiescence(GetAllProfiles());
 }
 
@@ -91,4 +97,4 @@ void TwoClientWebAppsIntegrationTestBase::SetUpCommandLine(
   command_line->AppendSwitch("disable-fake-server-failure-output");
 }
 
-}  // namespace web_app
+}  // namespace web_app::integration_tests

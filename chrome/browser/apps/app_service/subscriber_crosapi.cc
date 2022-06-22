@@ -64,7 +64,7 @@ void SubscriberCrosapi::RegisterAppServiceProxyFromCrosapi(
       &SubscriberCrosapi::OnCrosapiDisconnected, base::Unretained(this)));
 }
 
-void SubscriberCrosapi::OnApps(const std::vector<apps::AppPtr>& deltas) {
+void SubscriberCrosapi::OnApps(const std::vector<AppPtr>& deltas) {
   if (!subscriber_.is_bound()) {
     return;
   }
@@ -82,10 +82,23 @@ void SubscriberCrosapi::OnApps(const std::vector<apps::AppPtr>& deltas) {
                       /*should_notify_initialized=*/false);
 }
 
+void SubscriberCrosapi::InitializePreferredApps(PreferredApps preferred_apps) {
+  if (subscriber_.is_bound()) {
+    subscriber_->InitializePreferredApps(std::move(preferred_apps));
+  }
+}
+
+void SubscriberCrosapi::OnPreferredAppsChanged(PreferredAppChangesPtr changes) {
+  if (!subscriber_.is_bound()) {
+    return;
+  }
+  subscriber_->OnPreferredAppsChanged(std::move(changes));
+}
+
 void SubscriberCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas,
                                apps::mojom::AppType mojom_app_type,
                                bool should_notify_initialized) {
-  if (base::FeatureList::IsEnabled(AppServiceCrosApiOnAppsWithoutMojom)) {
+  if (base::FeatureList::IsEnabled(kAppServiceCrosApiOnAppsWithoutMojom)) {
     return;
   }
 
@@ -116,15 +129,17 @@ void SubscriberCrosapi::OnPreferredAppsChanged(
   if (!subscriber_.is_bound()) {
     return;
   }
-  subscriber_->OnPreferredAppsChanged(std::move(changes));
+  subscriber_->OnPreferredAppsChanged(
+      ConvertMojomPreferredAppChangesToPreferredAppChanges(changes));
 }
 
 void SubscriberCrosapi::InitializePreferredApps(
-    PreferredAppsList::PreferredApps preferred_apps) {
+    std::vector<apps::mojom::PreferredAppPtr> preferred_apps) {
   if (!subscriber_.is_bound()) {
     return;
   }
-  subscriber_->InitializePreferredApps(std::move(preferred_apps));
+  subscriber_->InitializePreferredApps(
+      ConvertMojomPreferredAppsToPreferredApps(preferred_apps));
 }
 
 void SubscriberCrosapi::OnCrosapiDisconnected() {

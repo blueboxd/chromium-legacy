@@ -351,7 +351,6 @@ bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
                 codec_context->ch_layout.u.mask,
                 codec_context->ch_layout.nb_channels);
 
-  int sample_rate = codec_context->sample_rate;
   switch (codec) {
     // For AC3/EAC3 we enable only demuxing, but not decoding, so FFmpeg does
     // not fill |sample_fmt|.
@@ -398,7 +397,7 @@ bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
                       codec_context->extradata + codec_context->extradata_size);
   }
 
-  config->Initialize(codec, sample_format, channel_layout, sample_rate,
+  config->Initialize(codec, sample_format, channel_layout, codec_context->sample_rate,
                      extra_data, encryption_scheme, seek_preroll,
                      codec_context->delay);
   if (channel_layout == CHANNEL_LAYOUT_DISCRETE)
@@ -569,6 +568,31 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
           break;
         case FF_PROFILE_HEVC_MAIN_STILL_PICTURE:
           profile = HEVCPROFILE_MAIN_STILL_PICTURE;
+          break;
+        case FF_PROFILE_HEVC_REXT:
+          profile = HEVCPROFILE_REXT;
+          break;
+        // FF will treat the following profiles as FF_PROFILE_UNKNOWN
+        case 5:
+          profile = HEVCPROFILE_HIGH_THROUGHPUT;
+          break;
+        case 6:
+          profile = HEVCPROFILE_MULTIVIEW_MAIN;
+          break;
+        case 7:
+          profile = HEVCPROFILE_SCALABLE_MAIN;
+          break;
+        case 8:
+          profile = HEVCPROFILE_3D_MAIN;
+          break;
+        case 9:
+          profile = HEVCPROFILE_SCREEN_EXTENDED;
+          break;
+        case 10:
+          profile = HEVCPROFILE_SCALABLE_REXT;
+          break;
+        case 11:
+          profile = HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED;
           break;
         default:
           // Always assign a default if all heuristics fail.

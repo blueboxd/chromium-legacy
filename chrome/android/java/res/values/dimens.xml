@@ -269,7 +269,7 @@
     <!-- Custom Tabs dimensions -->
     <dimen name="custom_tabs_toolbar_maxWidth">60dp</dimen>
     <dimen name="custom_tabs_toolbar_vertical_padding">16dp</dimen>
-    <dimen name="custom_tabs_toolbar_horizontal_margin_no_close">8dp</dimen>
+    <dimen name="custom_tabs_toolbar_horizontal_margin_no_start">8dp</dimen>
     <dimen name="min_toolbar_icon_side_padding">6dp</dimen>
     <dimen name="custom_tabs_url_text_size">12sp</dimen>
     <dimen name="custom_tabs_title_text_size">16sp</dimen>
@@ -287,8 +287,6 @@
 
     <!-- Clear browsing data preferences dimensions -->
     <dimen name="clear_browsing_data_button_margin">16dp</dimen>
-
-    <dimen name="pref_spinner_padding_end">8dp</dimen>
 
     <dimen name="pref_languages_add_button_padding">24dp</dimen>
     <dimen name="pref_languages_item_popup_width">260dp</dimen>

@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_modal_dialog.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
@@ -19,7 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
 #endif
 
@@ -104,13 +105,6 @@ class SigninViewController {
   // out SAML accounts completely (see https://crbug.com/1069421).
   void ShowGaiaLogoutTab(signin_metrics::SourceForRefreshTokenOperation source);
 
-  // Shows the modal sign-in email confirmation dialog as a tab-modal dialog on
-  // top of the currently displayed WebContents in |browser_|.
-  void ShowModalSigninEmailConfirmationDialog(
-      const std::string& last_email,
-      const std::string& email,
-      SigninEmailConfirmationDialog::Callback callback);
-
   // Shows the reauth prompt for |account_id| as either:
   // - a tab-modal dialog on top of the currently active tab, or
   // - a new tab
@@ -134,6 +128,15 @@ class SigninViewController {
       bool is_forced_intercept);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Shows the modal sign-in email confirmation dialog as a tab-modal dialog on
+  // top of the currently displayed WebContents in |browser_|.
+  void ShowModalSigninEmailConfirmationDialog(
+      const std::string& last_email,
+      const std::string& email,
+      SigninEmailConfirmationDialog::Callback callback);
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
   // of the |browser_|'s window.
   void ShowModalSyncConfirmationDialog();
@@ -142,14 +145,9 @@ class SigninViewController {
   // top of the `browser_`'s window. `domain_name` is the domain of the
   // enterprise account being shown. `callback` is called with the user's action
   // on the dialog.
-  // If `profile_creation_required_by_policy` is true, the wording of the dialog
-  // will tell the user that an admin requires a new profile for the account,
-  // otherwise the default wording will be used.
-  // When `show_link_data_option` is false, the callback is called with either
-  // SIGNIN_CHOICE_CANCEL or SIGNIN_CHOICE_NEW_PROFILE.
   void ShowModalEnterpriseConfirmationDialog(
       const AccountInfo& account_info,
-      bool profile_creation_required_by_policy,
+      bool force_new_profile,
       bool show_link_data_option,
       SkColor profile_color,
       signin::SigninChoiceCallback callback);

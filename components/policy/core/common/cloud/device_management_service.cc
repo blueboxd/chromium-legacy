@@ -10,13 +10,13 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
@@ -360,6 +360,10 @@ DeviceManagementService::Job::RetryMethod JobConfigurationBase::ShouldRetry(
   return DeviceManagementService::Job::NO_RETRY;
 }
 
+absl::optional<base::TimeDelta> JobConfigurationBase::GetTimeoutDuration() {
+  return timeout_;
+}
+
 // A device management service job implementation.
 class DeviceManagementService::JobImpl : public Job {
  public:
@@ -427,6 +431,8 @@ void DeviceManagementService::JobImpl::CreateUrlLoader() {
   url_loader_ = network::SimpleURLLoader::Create(std::move(rr), annotation);
   url_loader_->AttachStringForUpload(config_->GetPayload(), kPostContentType);
   url_loader_->SetAllowHttpErrorResults(true);
+  if (config_->GetTimeoutDuration())
+    url_loader_->SetTimeoutDuration(config_->GetTimeoutDuration().value());
 }
 
 void DeviceManagementService::JobImpl::OnURLLoaderComplete(

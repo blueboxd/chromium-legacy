@@ -68,7 +68,8 @@ void HTMLLinkElement::ParseAttribute(
   const AtomicString& value = params.new_value;
   if (name == html_names::kRelAttr) {
     rel_attribute_ = LinkRelAttribute(value);
-    if (rel_attribute_.IsMonetization() && !GetDocument().ParentDocument()) {
+    if (rel_attribute_.IsMonetization() &&
+        GetDocument().IsInOutermostMainFrame()) {
       // TODO(1031476): The Web Monetization specification is an unofficial
       // draft, available at https://webmonetization.org/specification.html
       // Currently it relies on a <meta> tag but there is an open issue about
@@ -84,7 +85,12 @@ void HTMLLinkElement::ParseAttribute(
              RuntimeEnabledFeatures::BlockingAttributeEnabled()) {
     blocking_attribute_->DidUpdateAttributeValue(params.old_value, value);
     blocking_attribute_->CountTokenUsage();
-    Process();
+    if (!IsRenderBlocking()) {
+      if (GetLinkStyle() && GetLinkStyle()->StyleSheetIsLoading())
+        GetLinkStyle()->UnblockRenderingForPendingSheet();
+      if (link_loader_)
+        link_loader_->UnblockRenderingForPendingLinkPreload();
+    }
   } else if (name == html_names::kHrefAttr) {
     // Log href attribute before logging resource fetching in process().
     LogUpdateAttributeIfIsolatedWorldAndInDocument("link", params);
@@ -328,6 +334,15 @@ void HTMLLinkElement::ScheduleEvent() {
 void HTMLLinkElement::SetToPendingState() {
   DCHECK(GetLinkStyle());
   GetLinkStyle()->SetToPendingState();
+}
+
+bool HTMLLinkElement::IsImplicitlyRenderBlocking() const {
+  return IsCreatedByParser() && rel_attribute_.IsStyleSheet();
+}
+
+bool HTMLLinkElement::IsRenderBlocking() const {
+  return blocking_attribute_->IsExplicitlyRenderBlocking() ||
+         IsImplicitlyRenderBlocking();
 }
 
 bool HTMLLinkElement::IsURLAttribute(const Attribute& attribute) const {

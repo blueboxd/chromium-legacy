@@ -64,17 +64,17 @@ void IndexedDBInternalsHandler::RegisterMessages() {
   // migration.
   web_ui()->RegisterMessageCallback(
       "getAllOrigins",
-      base::BindRepeating(&IndexedDBInternalsHandler::GetAllStorageKeys,
+      base::BindRepeating(&IndexedDBInternalsHandler::GetAllBuckets,
                           base::Unretained(this)));
   // TODO(https://crbug.com/1199077): Fix this name as part of storage key
   // migration.
   web_ui()->RegisterMessageCallback(
       "downloadOriginData",
-      base::BindRepeating(&IndexedDBInternalsHandler::DownloadStorageKeyData,
+      base::BindRepeating(&IndexedDBInternalsHandler::DownloadBucketData,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "forceClose",
-      base::BindRepeating(&IndexedDBInternalsHandler::ForceCloseStorageKey,
+      base::BindRepeating(&IndexedDBInternalsHandler::ForceCloseBucket,
                           base::Unretained(this)));
 }
 
@@ -82,8 +82,7 @@ void IndexedDBInternalsHandler::OnJavascriptDisallowed() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void IndexedDBInternalsHandler::GetAllStorageKeys(
-    const base::Value::List& args) {
+void IndexedDBInternalsHandler::GetAllBuckets(const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   AllowJavascript();
@@ -97,14 +96,14 @@ void IndexedDBInternalsHandler::GetAllStorageKeys(
             if (!handler)
               return;
             auto& control = partition->GetIndexedDBControl();
-            control.GetAllStorageKeysDetails(base::BindOnce(
+            control.GetAllBucketsDetails(base::BindOnce(
                 [](base::WeakPtr<IndexedDBInternalsHandler> handler,
                    base::FilePath partition_path, bool incognito,
                    base::Value::List info_list) {
                   if (!handler)
                     return;
 
-                  handler->OnStorageKeysReady(
+                  handler->OnBucketsReady(
                       base::Value(std::move(info_list)),
                       incognito ? base::FilePath() : partition_path);
                 },
@@ -113,9 +112,8 @@ void IndexedDBInternalsHandler::GetAllStorageKeys(
           weak_factory_.GetWeakPtr()));
 }
 
-void IndexedDBInternalsHandler::OnStorageKeysReady(
-    const base::Value& storage_keys,
-    const base::FilePath& path) {
+void IndexedDBInternalsHandler::OnBucketsReady(const base::Value& storage_keys,
+                                               const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(https://crbug.com/1199077): Fix this name as part of storage key
   // migration.
@@ -133,7 +131,7 @@ static void FindControl(const base::FilePath& partition_path,
   }
 }
 
-bool IndexedDBInternalsHandler::GetStorageKeyData(
+bool IndexedDBInternalsHandler::GetBucketData(
     const base::Value::List& args,
     std::string* callback_id,
     base::FilePath* partition_path,
@@ -147,10 +145,10 @@ bool IndexedDBInternalsHandler::GetStorageKeyData(
   *storage_key =
       blink::StorageKey(url::Origin::Create(GURL(args[2].GetString())));
 
-  return GetStorageKeyControl(*partition_path, *storage_key, control);
+  return GetBucketControl(*partition_path, *storage_key, control);
 }
 
-bool IndexedDBInternalsHandler::GetStorageKeyControl(
+bool IndexedDBInternalsHandler::GetBucketControl(
     const base::FilePath& path,
     const blink::StorageKey& storage_key,
     storage::mojom::IndexedDBControl** control) {
@@ -169,7 +167,7 @@ bool IndexedDBInternalsHandler::GetStorageKeyControl(
   return true;
 }
 
-void IndexedDBInternalsHandler::DownloadStorageKeyData(
+void IndexedDBInternalsHandler::DownloadBucketData(
     const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -177,12 +175,13 @@ void IndexedDBInternalsHandler::DownloadStorageKeyData(
   base::FilePath partition_path;
   blink::StorageKey storage_key;
   storage::mojom::IndexedDBControl* control;
-  if (!GetStorageKeyData(args, &callback_id, &partition_path, &storage_key,
-                         &control))
+  if (!GetBucketData(args, &callback_id, &partition_path, &storage_key,
+                     &control))
     return;
 
   AllowJavascript();
   DCHECK(control);
+  // TODO(crbug.com/1315371): Allow custom bucket names.
   control->ForceClose(
       storage_key, storage::mojom::ForceCloseReason::FORCE_CLOSE_INTERNALS_PAGE,
       base::BindOnce(
@@ -192,6 +191,7 @@ void IndexedDBInternalsHandler::DownloadStorageKeyData(
              const std::string& callback_id) {
             // Is the connection count always zero after closing,
             // such that this can be simplified?
+            // TODO(crbug.com/1315371): Allow custom bucket names.
             control->GetConnectionCount(
                 storage_key,
                 base::BindOnce(
@@ -203,7 +203,8 @@ void IndexedDBInternalsHandler::DownloadStorageKeyData(
                       if (!handler)
                         return;
 
-                      control->DownloadStorageKeyData(
+                      // TODO(crbug.com/1315371): Allow custom bucket names.
+                      control->DownloadBucketData(
                           storage_key,
                           base::BindOnce(
                               &IndexedDBInternalsHandler::OnDownloadDataReady,
@@ -214,7 +215,7 @@ void IndexedDBInternalsHandler::DownloadStorageKeyData(
           weak_factory_.GetWeakPtr(), storage_key, control, callback_id));
 }
 
-void IndexedDBInternalsHandler::ForceCloseStorageKey(
+void IndexedDBInternalsHandler::ForceCloseBucket(
     const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -222,11 +223,12 @@ void IndexedDBInternalsHandler::ForceCloseStorageKey(
   base::FilePath partition_path;
   blink::StorageKey storage_key;
   storage::mojom::IndexedDBControl* control;
-  if (!GetStorageKeyData(args, &callback_id, &partition_path, &storage_key,
-                         &control))
+  if (!GetBucketData(args, &callback_id, &partition_path, &storage_key,
+                     &control))
     return;
 
   AllowJavascript();
+  // TODO(crbug.com/1315371): Allow custom bucket names.
   control->ForceClose(
       storage_key, storage::mojom::ForceCloseReason::FORCE_CLOSE_INTERNALS_PAGE,
       base::BindOnce(
@@ -236,6 +238,7 @@ void IndexedDBInternalsHandler::ForceCloseStorageKey(
              const std::string& callback_id) {
             if (!handler)
               return;
+            // TODO(crbug.com/1315371): Allow custom bucket names.
             control->GetConnectionCount(
                 storage_key,
                 base::BindOnce(&IndexedDBInternalsHandler::OnForcedClose,
@@ -346,8 +349,7 @@ FileDeleter::~FileDeleter() {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(base::GetDeletePathRecursivelyCallback(),
-                     std::move(temp_dir_)));
+      base::GetDeletePathRecursivelyCallback(std::move(temp_dir_)));
 }
 
 void IndexedDBInternalsHandler::OnDownloadStarted(

@@ -14,9 +14,10 @@ GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
+GEN('#include "content/public/common/content_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 GEN('#include "components/language/core/common/language_experiments.h"');
 GEN('#endif');
 
@@ -105,10 +106,6 @@ var CrSettingsLanguagesPageTest = class extends CrSettingsBrowserTest {
     return 'chrome://settings/test_loader.html?module=settings/languages_page_tests.js&host=webui-test';
   }
 };
-
-TEST_F('CrSettingsLanguagesPageTest', 'LanguageSettings', function() {
-  mocha.grep(languages_page_tests.TestNames.LanguageSettings).run();
-});
 
 TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
   mocha.grep(languages_page_tests.TestNames.Spellcheck).run();
@@ -445,6 +442,13 @@ var CrSettingsPrivacyPageTest = class extends CrSettingsBrowserTest {
       ]
     };
   }
+
+  get featuresWithParameters() {
+    return [{
+      featureName: 'features::kFedCm',
+      parameters: [{name: 'DesktopSettings', value: true}]
+    }];
+  }
 };
 
 // TODO(crbug.com/1263420): Flaky on Linux Tests(dbg).
@@ -736,6 +740,7 @@ TEST_F('CrSettingsSiteDataDetailsSubpageTest', 'All', function() {
  ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.js'],
  ['HelpPage', 'help_page_test.js'],
  ['Menu', 'settings_menu_test.js'],
+ ['PasswordView', 'password_view_test.js'],
  ['PaymentsSection', 'payments_section_test.js'],
  ['PeoplePage', 'people_page_test.js'],
  ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],
@@ -779,7 +784,7 @@ GEN('#if !(BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
 [['AllSites', 'all_sites_tests.js'], ].forEach(test => registerTest(...test));
 GEN('#endif');
 
-GEN('#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#if BUILDFLAG(IS_CHROMEOS)');
 [['PasswordsSectionCros', 'passwords_section_test_cros.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif');
@@ -796,7 +801,7 @@ GEN('#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 ].forEach(test => registerTest(...test));
 GEN('#endif');
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 [['DefaultBrowser', 'default_browser_test.js'],
  ['ImportDataDialog', 'import_data_dialog_test.js'],
  ['SystemPage', 'system_page_tests.js'],

@@ -87,7 +87,7 @@ export class ChromeCartModuleElement extends I18nMixin
         type: Boolean,
         value: () =>
             loadTimeData.getInteger('modulesCartDiscountConsentVariation') >
-            DiscountConsentVariation.StringChange
+            DiscountConsentVariation.STRING_CHANGE
       },
       firstThreeCartItems_:
           {type: Array, computed: 'computeFirstThreeCartItems_(cartItems)'},
@@ -476,7 +476,7 @@ export class ChromeCartModuleElement extends I18nMixin
 
   private async onDiscountConsentContinued_() {
     if (loadTimeData.getInteger('modulesCartDiscountConsentVariation') ===
-        DiscountConsentVariation.NativeDialog) {
+        DiscountConsentVariation.NATIVE_DIALOG) {
       const {consentStatus} =
           await ChromeCartProxy.getHandler().showNativeConsentDialog();
 
@@ -485,7 +485,6 @@ export class ChromeCartModuleElement extends I18nMixin
           this.onDiscountConsentAccepted_();
           break;
         case ConsentStatus.DISMISSED:
-          this.onDiscountConsentDismissed_();
           break;
         case ConsentStatus.REJECTED:
           this.onDiscountConsentRejected_();

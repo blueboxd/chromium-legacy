@@ -639,29 +639,6 @@ RTCSetSessionDescriptionOperation GetRTCVoidRequestOperationType(
 const char kOnlySupportedInUnifiedPlanMessage[] =
     "This operation is only supported in 'unified-plan'.";
 
-SdpUsageCategory DeduceSdpUsageCategory(
-    const ParsedSessionDescription& parsed_sdp,
-    bool sdp_semantics_specified,
-    webrtc::SdpSemantics sdp_semantics) {
-  auto sdp_format = DeduceSdpFormat(parsed_sdp);
-  if (!sdp_format)
-    return SdpUsageCategory::kUnknown;
-  switch (*sdp_format) {
-    case SdpFormat::kSimple:
-      return SdpUsageCategory::kSafe;
-    case SdpFormat::kComplexPlanB:
-      return (sdp_semantics_specified &&
-              sdp_semantics == webrtc::SdpSemantics::kPlanB)
-                 ? SdpUsageCategory::kSafe
-                 : SdpUsageCategory::kUnsafe;
-    case SdpFormat::kComplexUnifiedPlan:
-      return (sdp_semantics_specified &&
-              sdp_semantics == webrtc::SdpSemantics::kUnifiedPlan)
-                 ? SdpUsageCategory::kSafe
-                 : SdpUsageCategory::kUnsafe;
-  }
-}
-
 RTCPeerConnection::EventWrapper::EventWrapper(Event* event,
                                               BoolFunction function)
     : event_(event), setup_function_(std::move(function)) {}
@@ -1410,42 +1387,6 @@ void RTCPeerConnection::UpdateIceConnectionState() {
   ChangeIceConnectionState(new_state);
 }
 
-void RTCPeerConnection::ReportSetSdpUsage(
-    SetSdpOperationType operation_type,
-    const ParsedSessionDescription& parsed_sdp) const {
-  if (!parsed_sdp.description()) {
-    LOG(ERROR) << "ReportSetSdpUsage called on SDP that failed parsing";
-    return;
-  }
-  SdpUsageCategory sdp_usage = DeduceSdpUsageCategory(
-      parsed_sdp, sdp_semantics_specified_, sdp_semantics_);
-  if (parsed_sdp.description()->GetType() == webrtc::SdpType::kOffer) {
-    switch (operation_type) {
-      case SetSdpOperationType::kSetLocalDescription:
-        UMA_HISTOGRAM_ENUMERATION(
-            "WebRTC.PeerConnection.SdpComplexUsage.SetLocalOffer", sdp_usage);
-        break;
-      case SetSdpOperationType::kSetRemoteDescription:
-        UMA_HISTOGRAM_ENUMERATION(
-            "WebRTC.PeerConnection.SdpComplexUsage.SetRemoteOffer", sdp_usage);
-        break;
-    }
-  } else if (parsed_sdp.description()->GetType() == webrtc::SdpType::kAnswer ||
-             parsed_sdp.description()->GetType() ==
-                 webrtc::SdpType::kPrAnswer) {
-    switch (operation_type) {
-      case SetSdpOperationType::kSetLocalDescription:
-        UMA_HISTOGRAM_ENUMERATION(
-            "WebRTC.PeerConnection.SdpComplexUsage.SetLocalAnswer", sdp_usage);
-        break;
-      case SetSdpOperationType::kSetRemoteDescription:
-        UMA_HISTOGRAM_ENUMERATION(
-            "WebRTC.PeerConnection.SdpComplexUsage.SetRemoteAnswer", sdp_usage);
-        break;
-    }
-  }
-}
-
 ScriptPromise RTCPeerConnection::setLocalDescription(
     ScriptState* script_state) {
   DCHECK(script_state->ContextIsValid());
@@ -1492,7 +1433,6 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
       ParsedSessionDescription::Parse(session_description_init->type(), sdp);
   if (session_description_init->type() != V8RTCSdpType::Enum::kRollback) {
     RecordSdpCategoryAndMaybeEmitWarnings(parsed_sdp);
-    ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription, parsed_sdp);
 
     DOMException* exception = checkSdpForStateErrors(
         ExecutionContext::From(script_state), parsed_sdp);
@@ -1555,7 +1495,6 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   if (!session_description_init->hasType() ||
       session_description_init->type() != V8RTCSdpType::Enum::kRollback) {
     RecordSdpCategoryAndMaybeEmitWarnings(parsed_sdp);
-    ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription, parsed_sdp);
   }
   ExecutionContext* context = ExecutionContext::From(script_state);
   UseCounter::Count(context, WebFeature::kRTCPeerConnectionSetLocalDescription);
@@ -1624,7 +1563,6 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
   if (!session_description_init->hasType() ||
       session_description_init->type() != V8RTCSdpType::Enum::kRollback) {
     RecordSdpCategoryAndMaybeEmitWarnings(parsed_sdp);
-    ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription, parsed_sdp);
   }
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
@@ -1674,7 +1612,6 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
   if (!session_description_init->hasType() ||
       session_description_init->type() != V8RTCSdpType::Enum::kRollback) {
     RecordSdpCategoryAndMaybeEmitWarnings(parsed_sdp);
-    ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription, parsed_sdp);
   }
   ExecutionContext* context = ExecutionContext::From(script_state);
   UseCounter::Count(context,
@@ -2818,7 +2755,7 @@ RTCIceTransport* RTCPeerConnection::CreateOrUpdateIceTransport(
     return nullptr;
   }
   auto& transport =
-      ice_transports_by_native_transport_.insert(ice_transport, nullptr)
+      ice_transports_by_native_transport_.insert(ice_transport.get(), nullptr)
           .stored_value->value;
   if (!transport) {
     transport = RTCIceTransport::Create(GetExecutionContext(),
@@ -2874,20 +2811,10 @@ void RTCPeerConnection::RegisterTrack(MediaStreamTrack* track) {
 }
 
 void RTCPeerConnection::NoteSdpCreated(const RTCSessionDescription& desc) {
-  // TODO(https://bugs.webrtc.org/12215): Don't re-parse the description here,
-  // it's passed in as a parsed structure into
-  // CreateSessionDescriptionRequest::OnSuccess.
-  SdpUsageCategory sdp_usage = DeduceSdpUsageCategory(
-      ParsedSessionDescription::Parse(desc.type(), desc.sdp()),
-      sdp_semantics_specified_, sdp_semantics_);
   if (desc.type() == "offer") {
     last_offer_ = desc.sdp();
-    UMA_HISTOGRAM_ENUMERATION(
-        "WebRTC.PeerConnection.SdpComplexUsage.CreateOffer", sdp_usage);
   } else if (desc.type() == "answer") {
     last_answer_ = desc.sdp();
-    UMA_HISTOGRAM_ENUMERATION(
-        "WebRTC.PeerConnection.SdpComplexUsage.CreateAnswer", sdp_usage);
   }
 }
 
@@ -3175,24 +3102,26 @@ void RTCPeerConnection::DidModifyTransceivers(
     webrtc::PeerConnectionInterface::SignalingState signaling_state,
     Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers,
     Vector<uintptr_t> removed_transceiver_ids,
-    bool is_remote_description) {
+    bool is_remote_description_or_rollback) {
   HeapVector<Member<MediaStreamTrack>> mute_tracks;
   HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>
       remove_list;
   HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>> add_list;
   HeapVector<Member<RTCRtpTransceiver>> track_events;
   MediaStreamVector previous_streams = getRemoteStreams();
+  // Remove transceivers and update their states to reflect that they are
+  // necessarily stopped.
   for (auto id : removed_transceiver_ids) {
     for (auto* it = transceivers_.begin(); it != transceivers_.end(); ++it) {
       if ((*it)->platform_transceiver()->Id() == id) {
+        // All streams are removed on stop, update `remove_list` if necessary.
         auto* track = (*it)->receiver()->track();
         for (const auto& stream : (*it)->receiver()->streams()) {
           if (stream->getTracks().Contains(track)) {
             remove_list.push_back(std::make_pair(stream, track));
           }
         }
-        (*it)->receiver()->set_streams(MediaStreamVector());
-        (*it)->platform_transceiver()->SetMid(absl::nullopt);
+        (*it)->OnTransceiverStopped();
         transceivers_.erase(it);
         break;
       }
@@ -3217,7 +3146,7 @@ void RTCPeerConnection::DidModifyTransceivers(
     // removed). A track event indicates either that the track was "added" in
     // the sense that FiredDirectionHasRecv() changed, or that a new remote
     // stream was added containing the receiver's track.
-    if (is_remote_description &&
+    if (is_remote_description_or_rollback &&
         ((!previously_had_recv && transceiver->FiredDirectionHasRecv()) ||
          add_list_prev_size != add_list.size())) {
       // "Process the addition of a remote track".
@@ -3598,7 +3527,7 @@ void RTCPeerConnection::CloseInternal() {
   ChangeSignalingState(webrtc::PeerConnectionInterface::SignalingState::kClosed,
                        false);
   for (auto& transceiver : transceivers_) {
-    transceiver->OnPeerConnectionClosed();
+    transceiver->OnTransceiverStopped();
   }
   if (sctp_transport_) {
     sctp_transport_->Close();

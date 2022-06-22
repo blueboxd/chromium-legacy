@@ -43,12 +43,17 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/ozone/buildflags.h"
 #include "ui/ozone/public/ozone_platform.h"
+#if BUILDFLAG(OZONE_PLATFORM_X11)
+#include "ui/gl/gl_image_glx_native_pixmap.h"
+#endif
 #endif
 
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_WIN)) && \
     BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_ozone.h"
 #elif BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
@@ -124,34 +129,64 @@ enum DmaBufSupportedType {
   kYesPixmapNoVulkanExtYesGlExt = 5,
   kYesPixmapYesVulkanExtNoGlExt = 6,
   kYesPixmapYesVulkanExtYesGlExt = 7,
-  kMaxValue = kYesPixmapYesVulkanExtYesGlExt
+  kNoPixmapNoVulkanExtYesGlxExt = 8,
+  kNoPixmapYesVulkanExtYesGlxExt = 9,
+  kYesPixmapNoVulkanExtYesGlxExt = 10,
+  kYesPixmapYesVulkanExtYesGlxExt = 11,
+  kMaxValue = kYesPixmapYesVulkanExtYesGlxExt
 };
+
+enum class GLExtType { kNone, kEGL, kGLX };
 
 DmaBufSupportedType GetDmaBufSupportedType(bool pixmap_supported,
                                            bool vulkan_ext_supported,
-                                           bool gl_ext_supported) {
+                                           GLExtType gl_ext_supported) {
   if (pixmap_supported) {
     if (vulkan_ext_supported) {
-      return gl_ext_supported ? kYesPixmapYesVulkanExtYesGlExt
-                              : kYesPixmapYesVulkanExtNoGlExt;
+      switch (gl_ext_supported) {
+        case GLExtType::kNone:
+          return kYesPixmapYesVulkanExtNoGlExt;
+        case GLExtType::kEGL:
+          return kYesPixmapYesVulkanExtYesGlExt;
+        case GLExtType::kGLX:
+          return kYesPixmapYesVulkanExtYesGlxExt;
+      }
     } else {
-      return gl_ext_supported ? kYesPixmapNoVulkanExtYesGlExt
-                              : kYesPixmapNoVulkanExtNoGlExt;
+      switch (gl_ext_supported) {
+        case GLExtType::kNone:
+          return kYesPixmapNoVulkanExtNoGlExt;
+        case GLExtType::kEGL:
+          return kYesPixmapNoVulkanExtYesGlExt;
+        case GLExtType::kGLX:
+          return kYesPixmapNoVulkanExtYesGlxExt;
+      }
     }
   } else {
     if (vulkan_ext_supported) {
-      return gl_ext_supported ? kNoPixmapYesVulkanExtYesGlExt
-                              : kNoPixmapYesVulkanExtNoGlExt;
+      switch (gl_ext_supported) {
+        case GLExtType::kNone:
+          return kNoPixmapYesVulkanExtNoGlExt;
+        case GLExtType::kEGL:
+          return kNoPixmapYesVulkanExtYesGlExt;
+        case GLExtType::kGLX:
+          return kNoPixmapYesVulkanExtYesGlxExt;
+      }
     } else {
-      return gl_ext_supported ? kNoPixmapNoVulkanExtYesGlExt
-                              : kNoPixmapNoVulkanExtNoGlExt;
+      switch (gl_ext_supported) {
+        case GLExtType::kNone:
+          return kNoPixmapNoVulkanExtNoGlExt;
+        case GLExtType::kEGL:
+          return kNoPixmapNoVulkanExtYesGlExt;
+        case GLExtType::kGLX:
+          return kNoPixmapNoVulkanExtYesGlxExt;
+      }
     }
   }
 }
 
 void ReportDmaBufSupportMetric(bool pixmap_supported,
                                bool vulkan_ext_supported,
-                               bool gl_ext_supported) {
+                               GLExtType gl_ext_supported) {
   DmaBufSupportedType type = GetDmaBufSupportedType(
       pixmap_supported, vulkan_ext_supported, gl_ext_supported);
   UMA_HISTOGRAM_ENUMERATION("GPU.SharedImage.DmaBufSupportedType", type);
@@ -207,6 +242,8 @@ SharedImageFactory::SharedImageFactory(
   if (!set_dmabuf_supported_metric_) {
     bool pixmap_supported = ShouldUseOzoneFactory();
     bool vulkan_ext_supported = false;
+    GLExtType gl_ext_type = GLExtType::kNone;
+
 #if BUILDFLAG(ENABLE_VULKAN)
     if (gr_context_type_ == GrContextType::kVulkan && context_state) {
       const auto& enabled_extensions = context_state->vk_context_provider()
@@ -218,10 +255,24 @@ SharedImageFactory::SharedImageFactory(
           gfx::HasExtension(enabled_extensions,
                             VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME);
     }
-#endif
-    bool gl_ext_supported = gl::GLSurfaceEGL::HasEGLExtension("EGL_KHR_image");
+#endif  // BUILDFLAG(ENABLE_VULKAN)
+
+    bool egl_ext_supported =
+        gl::GLSurfaceEGL::GetGLDisplayEGL()->HasEGLExtension("EGL_KHR_image");
+    bool glx_ext_supported = false;
+#if defined(USE_OZONE)
+#if BUILDFLAG(OZONE_PLATFORM_X11)
+    glx_ext_supported = gl::GLImageGLXNativePixmap::CanImportNativePixmap();
+#endif  // BUILDFLAG(OZONE_PLATFORM_X11)
+#endif  // defined(USE_OZONE)
+    if (egl_ext_supported) {
+      gl_ext_type = GLExtType::kEGL;
+    } else if (glx_ext_supported) {
+      gl_ext_type = GLExtType::kGLX;
+    }
+
     ReportDmaBufSupportMetric(pixmap_supported, vulkan_ext_supported,
-                              gl_ext_supported);
+                              gl_ext_type);
     set_dmabuf_supported_metric_ = true;
   }
 
@@ -240,7 +291,9 @@ SharedImageFactory::SharedImageFactory(
     factories_.push_back(std::move(factory));
   }
 
-  bool use_gl = gl::GetGLImplementation() != gl::kGLImplementationNone;
+  bool use_gl =
+      gl::GetGLImplementation() != gl::kGLImplementationNone &&
+      (!is_for_display_compositor_ || gr_context_type_ == GrContextType::kGL);
   if (use_gl) {
     auto gl_texture_backing_factory =
         std::make_unique<SharedImageBackingFactoryGLTexture>(
@@ -251,16 +304,11 @@ SharedImageFactory::SharedImageFactory(
   }
 
 #if BUILDFLAG(IS_WIN)
-  // Only supported for passthrough command decoder and Skia-GL.
-  const bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
-                               gles2::PassthroughCommandDecoderSupported();
-  const bool is_skia_gl = gr_context_type_ == GrContextType::kGL;
-  // D3D11 device will be null if ANGLE is using the D3D9 backend.
-  // TODO(sunnyps): Should we get the device from SharedContextState instead?
-  auto d3d11_device = gl::QueryD3D11DeviceObjectFromANGLE();
-  if (use_passthrough && is_skia_gl && d3d11_device) {
+  if (SharedImageBackingFactoryD3D::IsD3DSharedImageSupported(
+          gpu_preferences)) {
+    // TODO(sunnyps): Should we get the device from SharedContextState instead?
     auto d3d_factory = std::make_unique<SharedImageBackingFactoryD3D>(
-        std::move(d3d11_device),
+        gl::QueryD3D11DeviceObjectFromANGLE(),
         shared_image_manager_->dxgi_shared_handle_manager());
     d3d_backing_factory_ = d3d_factory.get();
     factories_.push_back(std::move(d3d_factory));
@@ -328,8 +376,13 @@ SharedImageFactory::SharedImageFactory(
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
     !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_CHROMECAST)
   // Desktop Linux, not ChromeOS.
+  if (ShouldUseOzoneFactory()) {
+    auto ozone_factory =
+        std::make_unique<SharedImageBackingFactoryOzone>(context_state);
+    factories_.push_back(std::move(ozone_factory));
+  }
   if (gr_context_type_ == GrContextType::kVulkan &&
-      ShouldUseExternalVulkanImageFactory()) {
+      (!ShouldUseOzoneFactory() || ShouldUseExternalVulkanImageFactory())) {
     auto external_vk_image_factory =
         std::make_unique<ExternalVkImageFactory>(context_state);
     factories_.push_back(std::move(external_vk_image_factory));
@@ -345,12 +398,9 @@ SharedImageFactory::SharedImageFactory(
   }
   vulkan_context_provider_ = context_state->vk_context_provider();
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-  if (gpu_preferences.enable_webgpu ||
-      gr_context_type_ == GrContextType::kVulkan) {
-    auto ozone_factory =
-        std::make_unique<SharedImageBackingFactoryOzone>(context_state);
-    factories_.push_back(std::move(ozone_factory));
-  }
+  auto ozone_factory =
+      std::make_unique<SharedImageBackingFactoryOzone>(context_state);
+  factories_.push_back(std::move(ozone_factory));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // defined(USE_OZONE)
 
@@ -652,16 +702,22 @@ bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
   if (usage & SHARED_IMAGE_USAGE_RAW_DRAW)
     return true;
 
-  // If |shared_image_manager_| is thread safe, it means the display is
-  // running on a separate thread (which uses a separate GL context or
-  // VkDeviceQueue).
+  // DISPLAY is for gpu composition and SCANOUT for overlays.
+  constexpr int kDisplayCompositorUsage =
+      SHARED_IMAGE_USAGE_DISPLAY | SHARED_IMAGE_USAGE_SCANOUT;
+
+  // Image is used on display compositor gpu thread if it's used by display
+  // compositor and if display compositor runs on a separate thread. Image is
+  // used by display compositor if it has kDisplayCompositorUsage or is being
+  // created by display compositor.
   const bool used_by_display_compositor_gpu_thread =
-      (usage & SHARED_IMAGE_USAGE_DISPLAY || is_for_display_compositor_) &&
+      ((usage & kDisplayCompositorUsage) || is_for_display_compositor_) &&
       shared_image_manager_->display_context_on_another_thread();
-  // If it has usage other than DISPLAY OR if it is not used just for display
-  // compositor, it means that it is used by the gpu main thread.
+
+  // If it has usage other than kDisplayCompositorUsage OR if it is not created
+  // by display compositor, it means that it is used by the gpu main thread.
   const bool used_by_main_gpu_thread =
-      usage & ~SHARED_IMAGE_USAGE_DISPLAY || !is_for_display_compositor_;
+      usage & ~kDisplayCompositorUsage || !is_for_display_compositor_;
   return used_by_display_compositor_gpu_thread && used_by_main_gpu_thread;
 }
 

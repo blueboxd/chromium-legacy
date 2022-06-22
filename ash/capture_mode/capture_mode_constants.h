@@ -29,6 +29,7 @@ constexpr int kSpaceBetweenCaptureBarAndSettingsMenu = 8;
 
 // Constants needed to paint the highlight around the area being captured.
 constexpr int kCaptureRegionBorderStrokePx = 1;
+// This color is set to WHITE on purpose in both dark and light mode.
 constexpr SkColor kRegionBorderColor = SK_ColorWHITE;
 
 // The space between the `image_toggle_button_` and `video_toggle_button_`.
@@ -53,6 +54,9 @@ constexpr int kCaptureSurfaceShortSideDivider = 4;
 // The divider used to calculate the collapsed diameter from the expanded
 // diameter.
 constexpr int kCollapsedPreviewDivider = 2;
+
+// Size of the camera preview border.
+constexpr int kCameraPreviewBorderSize = 4;
 
 // The space between the camera preview and edges of the bounds that will be
 // recorded.

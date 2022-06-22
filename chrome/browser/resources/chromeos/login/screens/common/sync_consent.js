@@ -117,9 +117,7 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('SyncConsentScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('SyncConsentScreen');
 
     if (this.locale === '') {
       // Update the locale just in case the locale switched between the element
@@ -178,20 +176,22 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
    * @private
    */
   getConsentConfirmation_(path) {
-    for (let element of path) {
-      if (!element.hasAttribute)
+    for (const element of path) {
+      if (!element.hasAttribute) {
         continue;
+      }
 
-      if (element.hasAttribute('consent-confirmation'))
+      if (element.hasAttribute('consent-confirmation')) {
         return element.innerHTML.trim();
+      }
 
       // Search down in case of click on a button with description below.
-      let labels = element.querySelectorAll('[consent-confirmation]');
+      const labels = element.querySelectorAll('[consent-confirmation]');
       if (labels && labels.length > 0) {
         assert(labels.length == 1);
 
         let result = '';
-        for (let label of labels) {
+        for (const label of labels) {
           result += label.innerHTML.trim();
         }
         return result;
@@ -203,7 +203,7 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
 
   /** @return {!Array<string>} Text of the consent description elements. */
   getConsentDescription_() {
-    let consentDescription =
+    const consentDescription =
         Array.from(this.shadowRoot.querySelectorAll('[consent-description]'))
             .filter(element => element.clientWidth * element.clientHeight > 0)
             .map(element => element.innerHTML.trim());
@@ -212,8 +212,9 @@ class SyncConsentScreen extends SyncConsentScreenElementBase {
   }
 
   getReviewSettingText_(locale, isArcRestricted) {
-    if (isArcRestricted)
+    if (isArcRestricted) {
       return this.i18n('syncConsentReviewSyncOptionsWithArcRestrictedText');
+    }
     return this.i18n('syncConsentReviewSyncOptionsText');
   }
 

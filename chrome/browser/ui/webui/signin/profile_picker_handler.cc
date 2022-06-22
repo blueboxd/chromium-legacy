@@ -53,6 +53,7 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -1027,7 +1028,7 @@ ProfilePickerHandler::GetProfileAttributes() {
   std::vector<ProfileAttributesEntry*> ordered_entries =
       g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
-          .GetAllProfilesAttributesSortedByLocalProfilName();
+          .GetAllProfilesAttributesSortedByLocalProfileName();
   base::EraseIf(ordered_entries, [](const ProfileAttributesEntry* entry) {
     return entry->IsOmitted();
   });

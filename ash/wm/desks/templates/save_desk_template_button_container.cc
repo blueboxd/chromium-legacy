@@ -6,17 +6,18 @@
 
 #include <array>
 
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/wm/desks/templates/desks_templates_util.h"
+#include "ash/wm/desks/templates/saved_desk_util.h"
 #include "base/check.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icon_types.h"
 
 namespace ash {
 
 namespace {
 
-// TODO(yongshun): Update when specs are ready.
-constexpr int kButtonSpacing = 5;
+constexpr int kButtonSpacing = 16;
 
 enum class TooltipStatus {
   kOk = 0,
@@ -108,22 +109,24 @@ SaveDeskTemplateButtonContainer::SaveDeskTemplateButtonContainer(
   SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kCenter);
   SetBetweenChildSpacing(kButtonSpacing);
 
-  if (desks_templates_util::AreDesksTemplatesEnabled()) {
+  if (saved_desk_util::AreDesksTemplatesEnabled()) {
     save_desk_as_template_button_ =
         AddChildView(std::make_unique<SaveDeskTemplateButton>(
             save_as_template_callback,
             l10n_util::GetStringUTF16(
                 IDS_ASH_DESKS_TEMPLATES_SAVE_DESK_AS_TEMPLATE_BUTTON),
-            SaveDeskTemplateButton::Type::kSaveAsTemplate));
+            SaveDeskTemplateButton::Type::kSaveAsTemplate,
+            &kSaveDeskAsTemplateIcon));
   }
 
-  if (desks_templates_util::IsDeskSaveAndRecallEnabled()) {
+  if (saved_desk_util::IsDeskSaveAndRecallEnabled()) {
     save_desk_for_later_button_ =
         AddChildView(std::make_unique<SaveDeskTemplateButton>(
             save_for_later_callback,
             l10n_util::GetStringUTF16(
                 IDS_ASH_DESKS_TEMPLATES_SAVE_DESK_FOR_LATER_BUTTON),
-            SaveDeskTemplateButton::Type::kSaveForLater));
+            SaveDeskTemplateButton::Type::kSaveForLater,
+            &kSaveDeskForLaterIcon));
   }
 }
 

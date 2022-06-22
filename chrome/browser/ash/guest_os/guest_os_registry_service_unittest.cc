@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include "ash/constants/ash_features.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
@@ -27,17 +29,12 @@ using testing::_;
 using vm_tools::apps::App;
 using vm_tools::apps::ApplicationList;
 
-constexpr char kCrostiniAppsInstalledHistogram[] =
-    "Crostini.AppsInstalledAtLogin";
-
-constexpr char kPluginVmAppsInstalledHistogram[] =
-    "PluginVm.AppsInstalledAtLogin";
-
 namespace guest_os {
 
 class GuestOsRegistryServiceTest : public testing::Test {
  public:
   GuestOsRegistryServiceTest() : crostini_test_helper_(&profile_) {
+    features_.InitWithFeatures({ash::features::kTerminalSSH}, {});
     RecreateService();
   }
 
@@ -88,6 +85,7 @@ class GuestOsRegistryServiceTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   crostini::CrostiniTestHelper crostini_test_helper_;
+  base::test::ScopedFeatureList features_;
 
   std::unique_ptr<GuestOsRegistryService> service_;
 };
@@ -247,9 +245,6 @@ TEST_F(GuestOsRegistryServiceTest, ZeroAppsInstalledHistogram) {
   base::HistogramTester histogram_tester;
 
   RecreateService();
-
-  // Check that there are no apps installed.
-  histogram_tester.ExpectUniqueSample(kCrostiniAppsInstalledHistogram, 0, 1);
 }
 
 TEST_F(GuestOsRegistryServiceTest, NAppsInstalledHistogram) {
@@ -278,8 +273,6 @@ TEST_F(GuestOsRegistryServiceTest, NAppsInstalledHistogram) {
   service()->UpdateApplicationList(app_list);
 
   RecreateService();
-
-  histogram_tester.ExpectUniqueSample(kCrostiniAppsInstalledHistogram, 4, 1);
 }
 
 TEST_F(GuestOsRegistryServiceTest, PluginVmAppsInstalledHistogram) {
@@ -290,7 +283,6 @@ TEST_F(GuestOsRegistryServiceTest, PluginVmAppsInstalledHistogram) {
 
   // Plugin VM needs to be enabled before we start counting.
   RecreateService();
-  histogram_tester.ExpectTotalCount(kPluginVmAppsInstalledHistogram, 0);
 
   test_helper.EnablePluginVm();
   // Set up an app list with the expected number of apps.
@@ -301,8 +293,6 @@ TEST_F(GuestOsRegistryServiceTest, PluginVmAppsInstalledHistogram) {
   service()->UpdateApplicationList(app_list);
 
   RecreateService();
-
-  histogram_tester.ExpectUniqueSample(kPluginVmAppsInstalledHistogram, 2, 1);
 }
 
 TEST_F(GuestOsRegistryServiceTest, InstallAndLaunchTime) {
@@ -377,10 +367,8 @@ TEST_F(GuestOsRegistryServiceTest, MultipleContainers) {
   std::string app_id_3 =
       crostini::CrostiniTestHelper::GenerateAppId("app", "vm 2", "container 1");
 
-  EXPECT_THAT(
-      GetRegisteredAppIds(),
-      testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3,
-                                    crostini::kCrostiniTerminalSystemAppId));
+  EXPECT_THAT(GetRegisteredAppIds(),
+              testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3));
 
   // Clobber app_id_2
   service()->UpdateApplicationList(crostini::CrostiniTestHelper::BasicAppList(
@@ -388,10 +376,8 @@ TEST_F(GuestOsRegistryServiceTest, MultipleContainers) {
   std::string new_app_id = crostini::CrostiniTestHelper::GenerateAppId(
       "app 2", "vm 1", "container 2");
 
-  EXPECT_THAT(
-      GetRegisteredAppIds(),
-      testing::UnorderedElementsAre(app_id_1, app_id_3, new_app_id,
-                                    crostini::kCrostiniTerminalSystemAppId));
+  EXPECT_THAT(GetRegisteredAppIds(),
+              testing::UnorderedElementsAre(app_id_1, app_id_3, new_app_id));
 }
 
 // Test that ClearApplicationList works, and only removes apps from the
@@ -416,16 +402,14 @@ TEST_F(GuestOsRegistryServiceTest, ClearApplicationList) {
 
   EXPECT_THAT(
       GetRegisteredAppIds(),
-      testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3, app_id_4,
-                                    crostini::kCrostiniTerminalSystemAppId));
+      testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3, app_id_4));
 
   service()->ClearApplicationList(
       GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA, "vm 2",
       "");
 
   EXPECT_THAT(GetRegisteredAppIds(),
-              testing::UnorderedElementsAre(
-                  app_id_1, app_id_2, crostini::kCrostiniTerminalSystemAppId));
+              testing::UnorderedElementsAre(app_id_1, app_id_2));
 }
 
 TEST_F(GuestOsRegistryServiceTest, IsScaledReturnFalseWhenNotSet) {
@@ -555,28 +539,6 @@ TEST_F(GuestOsRegistryServiceTest, SetAndGetPackageId) {
   EXPECT_EQ(result_no_package_id->PackageId(), "");
 }
 
-// Validates crash fix from crbug.com/1113477.
-TEST_F(GuestOsRegistryServiceTest, TerminalPrefsAppMerge) {
-  // Add prefs entry for terminal.
-  base::DictionaryValue registry;
-  registry.SetKey(crostini::kCrostiniTerminalSystemAppId,
-                  base::DictionaryValue());
-  profile()->GetPrefs()->Set(guest_os::prefs::kGuestOsRegistry,
-                             std::move(registry));
-
-  // Pref values should merge with app values, and reading Terminal VmName
-  // should not crash.
-  bool terminal_found = false;
-  for (const auto& pair : service()->GetAllRegisteredApps()) {
-    const auto& registration = pair.second;
-    if (registration.app_id() == crostini::kCrostiniTerminalSystemAppId) {
-      terminal_found = true;
-      EXPECT_EQ(crostini::kCrostiniDefaultVmName, registration.VmName());
-    }
-  }
-  EXPECT_TRUE(terminal_found);
-}
-
 TEST_F(GuestOsRegistryServiceTest, GetEnabledApps) {
   crostini::FakeCrostiniFeatures fake_crostini_features;
   plugin_vm::FakePluginVmFeatures fake_plugin_vm_features;
@@ -589,7 +551,6 @@ TEST_F(GuestOsRegistryServiceTest, GetEnabledApps) {
   *crostini_list.add_apps() = crostini::CrostiniTestHelper::BasicApp("c");
   std::string c =
       crostini::CrostiniTestHelper::GenerateAppId("c", "termina", "penguin");
-  const std::string& t = crostini::kCrostiniTerminalSystemAppId;
   service()->UpdateApplicationList(crostini_list);
 
   ApplicationList plugin_vm_list;
@@ -605,25 +566,25 @@ TEST_F(GuestOsRegistryServiceTest, GetEnabledApps) {
   // All enabled.
   fake_crostini_features.set_enabled(true);
   fake_plugin_vm_features.set_enabled(true);
-  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(t, p, c));
-  EXPECT_THAT(GetEnabledAppIds(), testing::UnorderedElementsAre(t, p, c));
+  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(p, c));
+  EXPECT_THAT(GetEnabledAppIds(), testing::UnorderedElementsAre(p, c));
 
   // Crostini disabled.
   fake_crostini_features.set_enabled(false);
   fake_plugin_vm_features.set_enabled(true);
-  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(t, p, c));
+  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(p, c));
   EXPECT_THAT(GetEnabledAppIds(), testing::UnorderedElementsAre(p));
 
   // Plugin VM disabled.
   fake_crostini_features.set_enabled(true);
   fake_plugin_vm_features.set_enabled(false);
-  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(t, p, c));
-  EXPECT_THAT(GetEnabledAppIds(), testing::UnorderedElementsAre(t, c));
+  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(p, c));
+  EXPECT_THAT(GetEnabledAppIds(), testing::UnorderedElementsAre(c));
 
   // All disabled.
   fake_crostini_features.set_enabled(false);
   fake_plugin_vm_features.set_enabled(false);
-  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(t, p, c));
+  EXPECT_THAT(GetRegisteredAppIds(), testing::UnorderedElementsAre(p, c));
   EXPECT_THAT(GetEnabledAppIds(), testing::IsEmpty());
 }
 

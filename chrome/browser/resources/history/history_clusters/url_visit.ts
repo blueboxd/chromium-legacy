@@ -14,7 +14,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {Annotation, URLVisit} from './history_clusters.mojom-webui.js';
 import {OpenWindowProxyImpl} from './open_window_proxy.js';
 import {getTemplate} from './url_visit.html.js';
-import {insertHighlightedTextIntoElement} from './utils.js';
+import {insertHighlightedTextWithMatchesIntoElement} from './utils.js';
 
 /**
  * @fileoverview This file provides a custom element displaying a visit to a
@@ -100,15 +100,13 @@ class VisitRowElement extends PolymerElement {
       },
 
       /**
-       * The visible url stripped of the scheme, common prefixes, username,
-       * password, port, queries, and hashes to be simpler and more descriptive.
        * This property is actually unused. The side effect of the compute
-       * function is used to insert the HTML elements for highlighting into
-       * this.$.url element.
+       * function is used to insert HTML elements for the highlighted
+       * `this.visit.urlForDisplay` URL into the `this.$.url` element.
        */
-      unusedVisibleUrl_: {
+      unusedUrlForDisplay_: {
         type: String,
-        computed: 'computeVisibleUrl_(visit)',
+        computed: 'computeUrlForDisplay_(visit)',
       }
     };
   }
@@ -188,26 +186,16 @@ class VisitRowElement extends PolymerElement {
   }
 
   private computeTitle_(_visit: URLVisit): string {
-    insertHighlightedTextIntoElement(
-        this.$.title, this.visit.pageTitle, this.query);
+    insertHighlightedTextWithMatchesIntoElement(
+        this.$.title, this.visit.pageTitle, this.visit.titleMatchPositions);
     return this.visit.pageTitle;
   }
 
-  /**
-   * TODO(crbug.com/1294350): Move this logic to a cross-platform location to
-   * be shared by various surfaces.
-   */
-  private computeVisibleUrl_(_visit: URLVisit): string {
-    try {
-      const url = new URL(this.visit.normalizedUrl.url);
-      const visibleUrl =
-          url.hostname.replace(/^(www\.|m\.|mobile\.|touch\.)/, '').trim() +
-          url.pathname.trim();
-      insertHighlightedTextIntoElement(this.$.url, visibleUrl, this.query);
-      return visibleUrl;
-    } catch (err) {
-      return '';
-    }
+  private computeUrlForDisplay_(_visit: URLVisit): string {
+    insertHighlightedTextWithMatchesIntoElement(
+        this.$.url, this.visit.urlForDisplay,
+        this.visit.urlForDisplayMatchPositions);
+    return this.visit.urlForDisplay;
   }
 }
 

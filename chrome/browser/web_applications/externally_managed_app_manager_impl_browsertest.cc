@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -480,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
   std::vector<ExternalInstallOptions> desired_apps_install_options;
   {
     ExternalInstallOptions install_options(
-        app_url, DisplayMode::kStandalone,
+        app_url, UserDisplayMode::kStandalone,
         ExternalInstallSource::kExternalPolicy);
     install_options.add_to_applications_menu = false;
     install_options.add_to_desktop = false;
@@ -510,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
   DCHECK(app_id.has_value());
   EXPECT_EQ(registrar().GetAppDisplayMode(*app_id), DisplayMode::kBrowser);
   EXPECT_EQ(registrar().GetAppUserDisplayMode(*app_id),
-            DisplayMode::kStandalone);
+            UserDisplayMode::kStandalone);
   EXPECT_EQ(registrar().GetAppEffectiveDisplayMode(*app_id),
             DisplayMode::kMinimalUi);
   EXPECT_FALSE(registrar().GetAppThemeColor(*app_id).has_value());
@@ -540,17 +541,17 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerImplBrowserTest,
   GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
 
   // Install user app
-  auto web_application_info = std::make_unique<WebAppInstallInfo>();
-  web_application_info->start_url = url;
-  web_application_info->title = u"Test user app";
-  AppId app_id =
-      test::InstallWebApp(profile(), std::move(web_application_info));
+  auto install_info = std::make_unique<WebAppInstallInfo>();
+  install_info->start_url = url;
+  install_info->title = u"Test user app";
+  AppId app_id = test::InstallWebApp(profile(), std::move(install_info));
   ASSERT_TRUE(registrar().WasInstalledByUser(app_id));
   ASSERT_FALSE(registrar().HasExternalApp(app_id));
 
   // Install policy app
   ExternalInstallOptions install_options(
-      url, DisplayMode::kStandalone, ExternalInstallSource::kExternalPolicy);
+      url, UserDisplayMode::kStandalone,
+      ExternalInstallSource::kExternalPolicy);
   InstallApp(install_options);
   ASSERT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
             result_code_.value());

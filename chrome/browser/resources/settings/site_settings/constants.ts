@@ -7,7 +7,7 @@
  * the UI. Both top-level categories and content settings that represent
  * individual permissions under Site Details should appear here.
  * This should be kept in sync with the |kContentSettingsTypeGroupNames| array
- * in chrome/browser/ui/webui/site_settings_helper.cc
+ * in chrome/browser/ui/webui/settings/site_settings_helper.cc
  */
 export enum ContentSettingsTypes {
   ADS = 'ads',
@@ -19,6 +19,7 @@ export enum ContentSettingsTypes {
   CAMERA = 'media-stream-camera',
   CLIPBOARD = 'clipboard',
   COOKIES = 'cookies',
+  FEDERATED_IDENTITY_API = 'federated-identity-api',
   FILE_SYSTEM_WRITE = 'file-system-write',
   GEOLOCATION = 'location',
   HID_DEVICES = 'hid-devices',
@@ -64,7 +65,7 @@ export enum ContentSetting {
 /**
  * All possible ChooserTypes that we currently support configuring in the UI.
  * This should be kept in sync with the |kChooserTypeGroupNames| array in
- * chrome/browser/ui/webui/site_settings_helper.cc
+ * chrome/browser/ui/webui/settings/site_settings_helper.cc
  */
 export enum ChooserType {
   NONE = '',
@@ -88,7 +89,7 @@ export enum CookieControlsMode {
 /**
  * Contains the possible sources of a ContentSetting.
  * This should be kept in sync with the |SiteSettingSource| enum in
- * chrome/browser/ui/webui/site_settings_helper.h
+ * chrome/browser/ui/webui/settings/site_settings_helper.h
  */
 export enum SiteSettingSource {
   ADS_FILTER_BLACKLIST = 'ads-filter-blacklist',
@@ -150,7 +151,7 @@ export enum SortMethod {
  * Contains types of dialogs on the AllSites page,
  * used for logging userActions.
  */
-export enum ALL_SITES_DIALOG {
+export enum AllSitesDialog {
   CLEAR_DATA = 'ClearData',
   RESET_PERMISSIONS = 'ResetPermissions',
 }

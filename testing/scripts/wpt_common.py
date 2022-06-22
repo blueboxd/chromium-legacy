@@ -2,11 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
+import glob
+import logging
 import os
-import posixpath
 import sys
 
-import common
+# Add src/testing/ into sys.path for importing common without pylint errors.
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+from scripts import common
 
 BLINK_TOOLS_DIR = os.path.join(common.SRC_DIR, 'third_party', 'blink', 'tools')
 CATAPULT_DIR = os.path.join(common.SRC_DIR, 'third_party', 'catapult')
@@ -25,7 +30,10 @@ if TYP_DIR not in sys.path:
 from blinkpy.common.host import Host
 from blinkpy.common.path_finder import PathFinder
 
+logger = logging.getLogger(__name__)
 
+
+# pylint: disable=super-with-arguments
 class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
     """The base class for script adapters that use wptrunner to execute web
     platform tests. This contains any code shared between these scripts, such
@@ -34,8 +42,10 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
 
     def __init__(self, host=None):
         super(BaseWptScriptAdapter, self).__init__()
+        self._parser = self._override_options(self._parser)
         if not host:
             host = Host()
+        self.host = host
         self.fs = host.filesystem
         self.path_finder = PathFinder(self.fs)
         self.port = host.port_factory.get()
@@ -43,6 +53,7 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
         # run, parsed after this constructor. Can be overwritten by tests.
         self.wpt_output = None
         self.wptreport = None
+        self._include_filename = None
         self.layout_test_results_subdir = 'layout-test-results'
         default_wpt_binary = os.path.join(
             common.SRC_DIR, "third_party", "wpt_tools", "wpt", "wpt")
@@ -69,57 +80,86 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             default='Release',
             help='Target build subdirectory under //out')
         parser.add_argument(
-            '--repeat',
-            '--gtest_repeat',
-            type=int,
-            default=1,
-            help='Number of times to run the tests')
-        # TODO(crbug/1306222): wptrunner currently cannot rerun individual
-        # failed tests, so this flag is accepted but not used.
-        parser.add_argument(
-            '--test-launcher-retry-limit',
-            metavar='LIMIT',
-            type=int,
-            default=0,
-            help='Maximum number of times to rerun a failed test')
-        parser.add_argument(
             '--default-exclude',
             action='store_true',
             help=('Only run the tests explicitly given in arguments '
                   '(can run no tests, which will exit with code 0)'))
-        parser.add_argument(
-            '--dry-run',
-            action='store_true',
-            help='Do not upload results to ResultDB')
+        self.add_mode_arguments(parser)
+        self.add_output_arguments(parser)
+
+    def add_mode_arguments(self, parser):
+        group = parser.add_argument_group(
+            'Mode',
+            'Options for wptrunner modes other than running tests.')
         # We provide an option to show wptrunner's help here because the 'wpt'
-        # executable may not be inaccessible from the user's PATH. The top-level
+        # executable may be inaccessible from the user's PATH. The top-level
         # 'wpt' command also needs to have virtualenv disabled.
-        parser.add_argument(
+        group.add_argument(
             '--wpt-help',
             action='store_true',
-            help="Show the wptrunner help message and exit")
+            help='Show the wptrunner help message and exit')
+        return group
 
-        self.output_group = parser.add_argument_group(
+    def add_output_arguments(self, parser):
+        group = parser.add_argument_group(
             'Output Logging',
             'Options for controlling logging behavior.')
-        self.output_group.add_argument(
+        group.add_argument(
             '--log-wptreport',
             nargs='?',
-            const=self._default_wpt_report(),
+            # We cannot provide a default, since the default filename depends on
+            # the product, so we use this placeholder instead.
+            const='',
             help=('Log a wptreport in JSON to the output directory '
-                  '(default filename: %(const)s)'))
-        self.output_group.add_argument(
+                  '(default filename: '
+                  'wpt_reports_<product>_<shard-index>.json)'))
+        group.add_argument(
             '-v',
             '--verbose',
             action='count',
             default=0,
             help='Increase verbosity')
+        return group
 
-        # Parser will format the epilog for us.
-        parser.epilog = (parser.epilog or '') + ' ' + (
-            'All unrecognized arguments are passed through to wptrunner. '
-            "Use '--wpt-help' to see wptrunner's usage."
+    def _override_options(self, base_parser):
+        """Create a parser that overrides existing options.
+
+        `argument.ArgumentParser` can extend other parsers and override their
+        options, with the caveat that the child parser only inherits options
+        that the parent had at the time of the child's initialization. There is
+        not a clean way to add option overrides in `add_extra_arguments`, where
+        the provided parser is only passed up the inheritance chain, so we add
+        overridden options here at the very end.
+
+        See Also:
+            https://docs.python.org/3/library/argparse.html#parents
+        """
+        parser = argparse.ArgumentParser(
+            parents=[base_parser],
+            # Allow overriding existing options in the parent parser.
+            conflict_handler='resolve',
+            epilog=('All unrecognized arguments are passed through '
+                    "to wptrunner. Use '--wpt-help' to see wptrunner's usage."),
         )
+        parser.add_argument(
+            '--isolated-script-test-repeat',
+            '--repeat',
+            '--gtest_repeat',
+            metavar='REPEAT',
+            type=int,
+            default=1,
+            help='Number of times to run the tests')
+        parser.add_argument(
+            '--isolated-script-test-launcher-retry-limit',
+            '--test-launcher-retry-limit',
+            metavar='LIMIT',
+            type=int,
+            default=0,
+            help='Maximum number of times to rerun a failed test')
+        # `--gtest_filter` and `--isolated-script-test-filter` have slightly
+        # different formats and behavior, so keep them as separate options.
+        # See: crbug/1316164#c4
+        return parser
 
     def maybe_set_default_isolated_script_test_output(self):
         if self.options.isolated_script_test_output:
@@ -131,7 +171,54 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
         self.options.isolated_script_test_output = default_value
 
     def generate_test_output_args(self, output):
-        return ['--log-chromium', output]
+        return ['--log-chromium=%s' % output]
+
+    def _resolve_tests_from_isolate_filter(self, test_filter):
+        """Resolve an isolated script-style filter string into lists of tests.
+
+        Arguments:
+            test_filter (str): Glob patterns delimited by double colons ('::').
+                The glob is prefixed with '-' to indicate that tests matching
+                the pattern should not run. Assume a valid wpt name cannot start
+                with '-'.
+
+        Returns:
+            tuple[list[str], list[str]]: Tests to include and exclude,
+                respectively.
+        """
+        included_tests, excluded_tests = [], []
+        for pattern in common.extract_filter_list(test_filter):
+            test_group = included_tests
+            if pattern.startswith('-'):
+                test_group, pattern = excluded_tests, pattern[1:]
+            pattern_on_disk = self.fs.join(
+                self.wpt_root_dir,
+                self.path_finder.strip_wpt_path(pattern),
+            )
+            test_group.extend(glob.glob(pattern_on_disk))
+        return included_tests, excluded_tests
+
+    def generate_test_filter_args(self, test_filter_str):
+        included_tests, excluded_tests = \
+            self._resolve_tests_from_isolate_filter(test_filter_str)
+        include_file, self._include_filename = self.fs.open_text_tempfile()
+        with include_file:
+            for test in included_tests:
+                include_file.write(test)
+                include_file.write('\n')
+        wpt_args = ['--include-file=%s' % self._include_filename]
+        for test in excluded_tests:
+            wpt_args.append('--exclude=%s' % test)
+        return wpt_args
+
+    def generate_test_repeat_args(self, repeat_count):
+        return ['--repeat=%d' % repeat_count]
+
+    # pylint: disable=unused-argument
+    def generate_test_launcher_retry_limit_args(self, retry_limit):
+        # TODO(crbug/1306222): wptrunner currently cannot rerun individual
+        # failed tests, so this flag is accepted but not used.
+        return []
 
     def generate_sharding_args(self, total_shards, shard_index):
         return ['--total-chunks=%d' % total_shards,
@@ -145,26 +232,27 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
 
     def parse_args(self, args=None):
         super(BaseWptScriptAdapter, self).parse_args(args)
-        # Update the output directory to the default if it's not set.
-        # We cannot provide a CLI arg default because the path depends on
-        # --target.
-        self.maybe_set_default_isolated_script_test_output()
-        if self.options.log_wptreport:
-            wpt_output = self.options.isolated_script_test_output
-            self.wptreport = self.fs.join(
-                self.fs.dirname(wpt_output),
-                self.options.log_wptreport)
-
-    def do_pre_test_run_tasks(self):
-        super(BaseWptScriptAdapter, self).do_pre_test_run_tasks()
         if self.options.wpt_help:
-            command = [
-                self.select_python_executable(),
-            ]
-            command.extend(self._wpt_run_args)
-            command.extend(['--help'])
-            exit_code = common.run_command(command)
-            self.parser.exit(exit_code)
+            self._show_wpt_help()
+        # Update the output directory and wptreport filename to defaults if not
+        # set. We cannot provide CLI option defaults because they depend on
+        # other options ('--target' and '--product').
+        self.maybe_set_default_isolated_script_test_output()
+        report = self.options.log_wptreport
+        if report is not None:
+            if not report:
+                report = self._default_wpt_report()
+            wpt_output = self.options.isolated_script_test_output
+            self.wptreport = self.fs.join(self.fs.dirname(wpt_output), report)
+
+    def _show_wpt_help(self):
+        command = [
+            self.select_python_executable(),
+        ]
+        command.extend(self._wpt_run_args)
+        command.extend(['--help'])
+        exit_code = common.run_command(command)
+        self.parser.exit(exit_code)
 
     @property
     def _wpt_run_args(self):
@@ -179,20 +267,18 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
 
     @property
     def rest_args(self):
-        wpt_args = super(BaseWptScriptAdapter, self).rest_args
+        unknown_args = super(BaseWptScriptAdapter, self).rest_args
 
         rest_args = list(self._wpt_run_args)
         rest_args.extend([
             # By default, wpt will treat unexpected passes as errors, so we
             # disable that to be consistent with Chromium CI.
             '--no-fail-on-unexpected-pass',
-            self.wpt_product_name(),
             '--no-pause-after-test',
             '--no-capture-stdio',
             '--no-manifest-download',
             '--tests=%s' % self.wpt_root_dir,
             '--mojojs-path=%s' % self.mojo_js_directory,
-            '--repeat=%d' % self.options.repeat,
         ])
 
         if self.options.default_exclude:
@@ -213,7 +299,22 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
                 '--webdriver-arg="--log-path=-"',
             ])
 
-        rest_args.extend(wpt_args)
+        rest_args.append(self.wpt_product_name())
+        # We pass through unknown args as late as possible so that they can
+        # override earlier options. It also allows users to pass test names as
+        # positional args, which must not have option strings between them.
+        for unknown_arg in unknown_args:
+            # crbug/1274933#c14: Some developers had used the end-of-options
+            # marker '--' to pass through arguments to wptrunner.
+            # crrev.com/c/3573284 makes this no longer necessary.
+            if unknown_arg == '--':
+                logger.warning(
+                    'Unrecognized options will automatically fall through '
+                    'to wptrunner.')
+                logger.warning(
+                    "There is no need to use the end-of-options marker '--'.")
+            else:
+                rest_args.append(unknown_arg)
         return rest_args
 
     def do_post_test_run_tasks(self):
@@ -223,7 +324,6 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
         command = [
             self.select_python_executable(),
             os.path.join(BLINK_TOOLS_DIR, 'wpt_process_results.py'),
-            '--verbose',
             '--target',
             self.options.target,
             '--web-tests-dir',
@@ -234,12 +334,16 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             '--wpt-results',
             self.wpt_output,
         ]
+        if self.options.verbose:
+            command.append('--verbose')
         if self.wptreport:
             command.extend(['--wpt-report', self.wptreport])
         common.run_command(command)
 
-    @classmethod
-    def wpt_product_name(cls):
+        if self._include_filename:
+            self.fs.remove(self._include_filename)
+
+    def wpt_product_name(self):
         raise NotImplementedError
 
     def _default_wpt_report(self):

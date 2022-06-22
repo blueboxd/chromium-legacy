@@ -86,7 +86,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                     int event_flags,
                     ash::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
-                           bool add_sort_options,
+                           AppListItemContext item_context,
                            GetContextMenuModelCallback callback) override;
   ui::ImplicitAnimationObserver* GetAnimationObserver(
       ash::AppListViewState target_state) override;
@@ -123,6 +123,9 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   int AdjustAppListViewScrollOffset(int offset, ui::EventType type) override;
   void LoadIcon(const std::string& app_id) override {}
   bool HasValidProfile() const override;
+  bool ShouldHideContinueSection() const override;
+  void SetHideContinueSection(bool hide) override;
+  void CommitTemporarySortOrder() override {}
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

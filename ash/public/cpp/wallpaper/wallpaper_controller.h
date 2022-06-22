@@ -101,6 +101,11 @@ class ASH_PUBLIC_EXPORT WallpaperController {
       const GooglePhotosWallpaperParams& params,
       SetWallpaperCallback callback) = 0;
 
+  // Get the Google Photos daily refresh album id. Empty if
+  // `current_wallpaper_.type` is not `kDailyGooglePhotos`
+  virtual std::string GetGooglePhotosDailyRefreshAlbumId(
+      const AccountId& account_id) const = 0;
+
   // Deprecated. Use |SetOnlineWallpaper| instead because it will handle
   // downloading the image if it is not on disk yet.
   // Sets wallpaper from the Chrome OS wallpaper picker. If the
@@ -128,8 +133,16 @@ class ASH_PUBLIC_EXPORT WallpaperController {
   // |account_id|: The user's account id.
   // |show_wallpaper|: If false, don't show the new wallpaper now but only
   //                   update cache.
+  // |callback|: Called with a boolean to indicate success when the default
+  //             wallpaper is read and decoded.
   virtual void SetDefaultWallpaper(const AccountId& account_id,
-                                   bool show_wallpaper) = 0;
+                                   bool show_wallpaper,
+                                   SetWallpaperCallback callback) = 0;
+
+  // Get the path to the default wallpaper file for this account. Will be empty
+  // if this user/device has no recommended default wallpaper.
+  virtual base::FilePath GetDefaultWallpaperPath(
+      const AccountId& account_id) = 0;
 
   // Sets the paths of the customized default wallpaper to be used wherever a
   // default wallpaper is needed. If a default wallpaper is being shown, updates
@@ -276,7 +289,7 @@ class ASH_PUBLIC_EXPORT WallpaperController {
 
   // Returns a struct with info about the active user's wallpaper; the location
   // is an empty string and the layout is invalid if there's no active user.
-  virtual WallpaperInfo GetActiveUserWallpaperInfo() = 0;
+  virtual WallpaperInfo GetActiveUserWallpaperInfo() const = 0;
 
   // Returns true if the wallpaper setting (used to open the wallpaper picker)
   // should be visible.

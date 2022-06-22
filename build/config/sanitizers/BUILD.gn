@@ -56,7 +56,7 @@ assert(!(is_win && is_asan && current_cpu == "x86"),
        "ASan is only supported in 64-bit builds on Windows.")
 
 if ((is_apple || is_win) && is_asan) {
-  if (is_mac) {
+  if (is_mac || (is_ios && target_environment == "catalyst")) {
     _clang_rt_dso_path = "darwin/libclang_rt.asan_osx_dynamic.dylib"
   } else if (is_ios) {
     _clang_rt_dso_path = "darwin/libclang_rt.asan_iossim_dynamic.dylib"
@@ -99,7 +99,7 @@ if ((is_apple || is_win) && is_asan) {
 
 config("sanitizer_options_link_helper") {
   if (is_apple) {
-    ldflags = [ "-Wl,-U,_sanitizer_options_link_helper" ]
+    ldflags = [ "-Wl,-u,__sanitizer_options_link_helper" ]
   } else if (!is_win) {
     ldflags = [ "-Wl,-u_sanitizer_options_link_helper" ]
   }
@@ -416,6 +416,9 @@ config("msan_flags") {
       "-fsanitize=memory",
       "-fsanitize-memory-track-origins=$msan_track_origins",
       "-fsanitize-ignorelist=$msan_ignorelist_path",
+
+      # TODO(https://crbug.com/1317909): evaluate and possibly enable
+      "-fno-sanitize-memory-use-after-dtor",
     ]
   }
 }

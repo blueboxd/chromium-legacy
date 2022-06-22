@@ -39,7 +39,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/native_widget.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/ui/wm/desks/desks_helper.h"
 #endif
 
@@ -95,8 +95,12 @@ void BrowserFrame::InitBrowserFrame() {
   params.delegate = browser_view_;
   params.headless_mode = headless::IsChromeNativeHeadless();
 
+  Browser* browser = browser_view_->browser();
+  if (browser->is_type_picture_in_picture()) {
+    params.z_order = ui::ZOrderLevel::kFloatingWindow;
+  }
+
   if (native_browser_frame_->ShouldRestorePreviousBrowserWidgetState()) {
-    Browser* browser = browser_view_->browser();
     if (browser->is_type_normal() || browser->is_type_devtools() ||
         browser->is_type_app()) {
       // Typed panel/popup can only return a size once the widget has been
@@ -317,7 +321,7 @@ ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
     menu_model_builder_.reset();
   }
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   auto* desks_helper = chromeos::DesksHelper::Get(GetNativeWindow());
   int current_num_desks = desks_helper ? desks_helper->GetNumberOfDesks() : -1;
   if (current_num_desks != num_desks_) {

@@ -663,17 +663,17 @@ void AutofillAgent::SetSuggestionAvailability(
   WebInputElement input_element = element_.DynamicTo<WebInputElement>();
   if (!input_element.IsNull()) {
     switch (state) {
-      case autofill::mojom::AutofillState::kAutofillAvailable:
+      case mojom::AutofillState::kAutofillAvailable:
         WebAXObject::FromWebNode(input_element)
             .HandleAutofillStateChanged(
                 blink::WebAXAutofillState::kAutofillAvailable);
         return;
-      case autofill::mojom::AutofillState::kAutocompleteAvailable:
+      case mojom::AutofillState::kAutocompleteAvailable:
         WebAXObject::FromWebNode(input_element)
             .HandleAutofillStateChanged(
                 blink::WebAXAutofillState::kAutocompleteAvailable);
         return;
-      case autofill::mojom::AutofillState::kNoSuggestions:
+      case mojom::AutofillState::kNoSuggestions:
         WebAXObject::FromWebNode(input_element)
             .HandleAutofillStateChanged(
                 blink::WebAXAutofillState::kNoSuggestions);
@@ -985,7 +985,7 @@ void AutofillAgent::TriggerReparse() {
 
 void AutofillAgent::ProcessForms() {
   FormCache::UpdateFormCacheResult cache =
-      form_cache_.ExtractNewForms(field_data_manager_.get());
+      form_cache_.UpdateFormCache(field_data_manager_.get());
 
   // Always communicate to browser process for topmost frame.
   if (!cache.updated_forms.empty() || !cache.removed_forms.empty() ||

@@ -128,12 +128,6 @@ const char* const kWebViewCrashKeyAllowList[] = {
 
     "VerifyDidCommit-has_si_url",
 
-    "NoNode-ftn_is_main_frame",
-    "NoNode-ftn_child_count",
-    "NoNode-bfs_depth",
-    "NoFTN-is_main_frame",
-    "NoFTN-children_size",
-
     // services/network
     "network_deserialization",
 
@@ -144,6 +138,9 @@ const char* const kWebViewCrashKeyAllowList[] = {
     // crash keys needed for recording finch trials
     "variations",
     "num-experiments",
+
+    // sandbox/linux
+    "seccomp-sigsys",
 
     kWeblayerWebViewCompatMode,
 

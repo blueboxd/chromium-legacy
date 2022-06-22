@@ -6,9 +6,12 @@ import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './confirmation_page.js';
 import './search_page.js';
 import './share_data_page.js';
+import './strings.m.js';
 
+import {stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {FeedbackContext, FeedbackServiceProviderInterface} from './feedback_types.js';
+
+import {FeedbackContext, FeedbackServiceProviderInterface, Report} from './feedback_types.js';
 import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
 
 /**
@@ -59,6 +62,14 @@ export class FeedbackFlowElement extends PolymerElement {
 
     /** @private {!FeedbackServiceProviderInterface} */
     this.feedbackServiceProvider_ = getFeedbackServiceProvider();
+
+    /**
+     * The description entered by the user. It is set when the user clicks the
+     * next button on the search page.
+     * @type {string}
+     * @private
+     */
+    this.description_;
   }
 
   ready() {
@@ -77,6 +88,21 @@ export class FeedbackFlowElement extends PolymerElement {
     switch (event.detail.currentState) {
       case FeedbackFlowState.SEARCH:
         this.currentState_ = FeedbackFlowState.SHARE_DATA;
+        this.description_ = event.detail.description;
+        // TODO(xiangdongkong): Fetch a real screenshot.
+        this.shadowRoot.querySelector('share-data-page').screenshotUrl =
+            './app_icon_192.png';
+        break;
+      case FeedbackFlowState.SHARE_DATA:
+        /** @type {!Report} */
+        const report = event.detail.report;
+        report.description = stringToMojoString16(this.description_);
+
+        // TODO(xiangdongkong): Show a spinner or the like for sendReport could
+        // take a while.
+        this.feedbackServiceProvider_.sendReport(report).then((response) => {
+          this.currentState_ = FeedbackFlowState.CONFIRMATION;
+        });
         break;
       default:
         console.warn('unexpected state: ', event.detail.currentState);
@@ -102,6 +128,13 @@ export class FeedbackFlowElement extends PolymerElement {
    */
   setCurrentStateForTesting(newState) {
     this.currentState_ = newState;
+  }
+
+  /**
+   * @param {string} text
+   */
+  setDescriptionForTesting(text) {
+    this.description_ = text;
   }
 }
 

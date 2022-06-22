@@ -53,11 +53,12 @@ if (optimize_webui) {
       "chrome://resources/mojo/ash/services/cellular_setup/public/mojom/esim_manager.mojom-lite.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-lite.js",
-      "chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-lite.js",
+      "chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js",
+      "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js",
       "chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js",
       "chrome://resources/mojo/services/network/public/mojom/ip_address.mojom-lite.js",
       "chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js",
@@ -91,9 +92,18 @@ if (optimize_webui) {
   }
 }
 
+copy("personalization_search_mojo_bindings") {
+  sources = [
+    "$root_gen_dir/ash/webui/personalization_app/search/search.mojom-lite.js",
+  ]
+  outputs = [ "$root_gen_dir/chrome/browser/ui/webui/settings/chromeos/search/personalization_{{source_file_part}}" ]
+  deps = [ "//ash/webui/personalization_app/search:mojo_bindings_js" ]
+}
+
 # OS Settings specific mojo files, bundled in optimized builds.
 preprocess_if_expr("preprocess_mojo_v3") {
   deps = [
+    ":personalization_search_mojo_bindings",
     "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_js",
     "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js",
   ]
@@ -106,6 +116,7 @@ preprocess_if_expr("preprocess_mojo_v3") {
     "search/search.mojom-lite.js",
     "search/search_result_icon.mojom-lite.js",
     "search/user_action_recorder.mojom-lite.js",
+    "search/personalization_search.mojom-lite.js",
   ]
 }
 
@@ -260,7 +271,9 @@ preprocess_if_expr("preprocess_v3") {
     "chromeos/metrics_recorder.js",
     "chromeos/os_settings_routes.js",
     "chromeos/route_origin_behavior.js",
-    "chromeos/search_handler.js",
+    "chromeos/combined_search_handler.js",
+    "chromeos/personalization_search_handler.js",
+    "chromeos/settings_search_handler.js",
     "chromeos/os_route.js",
     "chromeos/os_page_visibility.js",
     "chromeos/os_people_page/lock_state_behavior.js",
@@ -524,6 +537,7 @@ preprocess_if_expr("preprocess_gen_v3") {
     "chromeos/os_a11y_page/switch_access_subpage.js",
     "chromeos/os_a11y_page/tts_subpage.js",
     "chromeos/os_about_page/channel_switcher_dialog.js",
+    "chromeos/os_about_page/consumer_auto_update_toggle_dialog.js",
     "chromeos/os_about_page/detailed_build_info.js",
     "chromeos/os_about_page/edit_hostname_dialog.js",
     "chromeos/os_about_page/os_about_page.js",
@@ -553,6 +567,7 @@ preprocess_if_expr("preprocess_gen_v3") {
     "chromeos/os_files_page/os_files_page.js",
     "chromeos/os_files_page/smb_shares_page.js",
     "chromeos/os_icons.js",
+    "chromeos/os_languages_page/add_items_dialog.js",
     "chromeos/os_languages_page/add_input_methods_dialog.js",
     "chromeos/os_languages_page/add_spellcheck_languages_dialog.js",
     "chromeos/os_languages_page/change_device_language_dialog.js",
@@ -613,7 +628,6 @@ preprocess_if_expr("preprocess_gen_v3") {
     "chromeos/os_toolbar/os_toolbar.js",
     "chromeos/parental_controls_page/parental_controls_page.js",
     "chromeos/personalization_page/change_picture.js",
-    "chromeos/personalization_page/dark_mode_subpage.js",
     "chromeos/personalization_page/personalization_page.js",
     "chromeos/settings_scheduler_slider/settings_scheduler_slider.js",
   ]
@@ -662,8 +676,9 @@ group("closure_compile_module") {
 
 js_type_check("closure_compile_local_module") {
   is_polymer3 = true
-  closure_flags = os_settings_closure_flags
+  closure_flags = os_settings_closure_flags + mojom_js_args
   deps = [
+    ":combined_search_handler",
     ":global_scroll_target_behavior",
     ":lazy_load",
     ":metrics_recorder",
@@ -673,11 +688,12 @@ js_type_check("closure_compile_local_module") {
     ":os_settings",
     ":os_settings_icons_css",
     ":os_settings_routes",
+    ":personalization_search_handler",
     ":pref_to_setting_metric_converter",
     ":prefs_behavior",
     ":route_observer_behavior",
     ":route_origin_behavior",
-    ":search_handler",
+    ":settings_search_handler",
   ]
 }
 
@@ -762,7 +778,19 @@ js_library("route_origin_behavior") {
   ]
 }
 
-js_library("search_handler") {
+js_library("combined_search_handler") {
+  deps = [
+    ":personalization_search_handler",
+    ":settings_search_handler",
+    "//mojo/public/mojom/base:base_webui_js",
+  ]
+}
+
+js_library("personalization_search_handler") {
+  deps = [ "//ash/webui/personalization_app/search:mojo_bindings_js_library_for_compile" ]
+}
+
+js_library("settings_search_handler") {
   deps = [
     "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:cr.m",

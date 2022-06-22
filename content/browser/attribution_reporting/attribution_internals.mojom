@@ -36,15 +36,10 @@ struct WebUIReportEventLevelData {
   bool attributed_truthfully;
 };
 
-// Represents `AttributionAggregatableKey`.
-struct AggregatableKey {
-  uint64 high_bits;
-  uint64 low_bits;
-};
-
 // Represents `AggregatableHistogramContribution`.
 struct AggregatableHistogramContribution {
-  AggregatableKey key;
+  // Hex-encoded unsigned 128-bit integer.
+  string key;
   uint32 value;
 };
 
@@ -63,7 +58,8 @@ struct Empty {};
 
 union ReportStatus {
   Empty pending;
-  Empty replaced_by_higher_priority_report;
+  // Contains the external report ID of the replacement report.
+  string replaced_by_higher_priority_report;
   Empty prohibited_by_browser_policy;
   // Contains the HTTP response code.
   int32 sent;
@@ -76,7 +72,7 @@ union ReportStatus {
 struct WebUIReport {
   // Allows the WebUI to issue commands for individual reports.
   // Not intended to be displayed.
-  ReportID? id;
+  ReportID id;
   url.mojom.Url report_url;
   double trigger_time;
   double report_time;
@@ -103,7 +99,8 @@ struct WebUISource {
   DebugKey? debug_key;
   array<uint64> dedup_keys;
   map<string, array<string>> filter_data;
-  map<string, AggregatableKey> aggregatable_source;
+  // The value is a hex-encoded unsigned 128-bit integer.
+  map<string, string> aggregatable_source;
 
   // Union of `StorableSource::Result` and `StoredSource::AttributionLogic`,
   // and `AttributionStorage::DeactivatedSource::Reason`.

@@ -121,7 +121,7 @@ class AppListModelUpdater {
   using GetMenuModelCallback =
       base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetContextMenuModel(const std::string& id,
-                                   bool add_sort_options,
+                                   ash::AppListItemContext item_context,
                                    GetMenuModelCallback callback) = 0;
   virtual size_t BadgedItemCount() = 0;
   // For SearchModel:
@@ -129,6 +129,9 @@ class AppListModelUpdater {
 
   // Notifies when the app list gets hidden.
   virtual void OnAppListHidden() = 0;
+
+  // Handles the request to commit the app list temporary sort order from ash.
+  virtual void CommitTemporarySortOrder() = 0;
 
   virtual void AddObserver(AppListModelUpdaterObserver* observer) = 0;
   virtual void RemoveObserver(AppListModelUpdaterObserver* observer) = 0;

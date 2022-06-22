@@ -103,6 +103,10 @@ constexpr int kAdjacentLabelsVerticalSpacing = 2;
 // The default icon size used in the suggestion drop down.
 constexpr int kIconSize = 16;
 
+// The icon size used in the suggestion dropdown for displaying the Google
+// Password Manager icon in the Manager Passwords entry.
+constexpr int kGooglePasswordManagerIconSize = 20;
+
 // Popup items that use a leading icon instead of a trailing one.
 constexpr PopupItemId kItemTypesUsingLeadingIcons[] = {
     PopupItemId::POPUP_ITEM_ID_CLEAR_FORM,
@@ -125,11 +129,6 @@ int GetContentsVerticalPadding() {
   return ChromeLayoutProvider::Get()->GetDistanceMetric(
       UseImprovedSuggestionUi() ? DISTANCE_CONTENT_LIST_VERTICAL_SINGLE
                                 : DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
-}
-
-int GetHorizontalMargin() {
-  return views::MenuConfig::instance().item_horizontal_padding +
-         autofill::AutofillPopupBaseView::GetCornerRadius();
 }
 
 // Builds a column set for |layout| used in the autofill dropdown.
@@ -159,9 +158,15 @@ std::unique_ptr<views::ImageView> ImageViewFromImageSkia(
 }
 
 std::unique_ptr<views::ImageView> ImageViewFromVectorIcon(
-    const gfx::VectorIcon& vector_icon) {
+    const gfx::VectorIcon& vector_icon,
+    int icon_size) {
   return std::make_unique<views::ImageView>(
-      ui::ImageModel::FromVectorIcon(vector_icon, ui::kColorIcon, kIconSize));
+      ui::ImageModel::FromVectorIcon(vector_icon, ui::kColorIcon, icon_size));
+}
+
+std::unique_ptr<views::ImageView> ImageViewFromVectorIcon(
+    const gfx::VectorIcon& vector_icon) {
+  return ImageViewFromVectorIcon(vector_icon, kIconSize);
 }
 
 std::unique_ptr<views::ImageView> GetIconImageViewByName(
@@ -217,7 +222,8 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
   }
 
   if (icon_str == "googlePasswordManager") {
-    return ImageViewFromVectorIcon(GooglePasswordManagerVectorIcon());
+    return ImageViewFromVectorIcon(GooglePasswordManagerVectorIcon(),
+                                   kGooglePasswordManagerIconSize);
   }
 
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -734,7 +740,7 @@ void AutofillPopupItemView::CreateContent() {
 
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets::VH(0, GetHorizontalMargin())));
+      gfx::Insets::VH(0, AutofillPopupBaseView::GetHorizontalMargin())));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -746,7 +752,7 @@ void AutofillPopupItemView::CreateContent() {
 
   if (icon) {
     AddChildView(std::move(icon));
-    AddSpacerWithSize(GetHorizontalMargin(),
+    AddSpacerWithSize(AutofillPopupBaseView::GetHorizontalPadding(),
                       /*resize=*/false, layout_manager);
   }
 
@@ -799,7 +805,7 @@ void AutofillPopupItemView::CreateContent() {
   std::unique_ptr<views::ImageView> trailing_icon =
       GetTrailingIconImageView(suggestions[GetLineNumber()]);
   if (trailing_icon) {
-    AddSpacerWithSize(GetHorizontalMargin(),
+    AddSpacerWithSize(AutofillPopupBaseView::GetHorizontalPadding(),
                       /*resize=*/true, layout_manager);
     AddChildView(std::move(trailing_icon));
   }
@@ -849,10 +855,10 @@ std::unique_ptr<views::Label> AutofillPopupItemView::CreateMainTextView() {
   // TODO(crbug.com/831603): Remove elision responsibilities from controller.
   std::u16string text =
       popup_view()->controller()->GetSuggestionMainTextAt(GetLineNumber());
-  if (popup_view()
-          ->controller()
-          ->GetSuggestionAt(GetLineNumber())
-          .is_value_secondary) {
+  if (!popup_view()
+           ->controller()
+           ->GetSuggestionAt(GetLineNumber())
+           .main_text.is_primary) {
     std::unique_ptr<views::Label> label = CreateLabelWithStyleAndContext(
         text, views::style::CONTEXT_DIALOG_BODY_TEXT,
         UseImprovedSuggestionUi() ? views::style::STYLE_PRIMARY
@@ -910,9 +916,11 @@ void AutofillPopupItemView::UpdateLayoutSize(views::BoxLayout* layout_manager,
   // In the case that there are three rows in total, adding extra padding to
   // avoid cramming.
   if (num_subtexts == 2) {
-    layout_manager->set_inside_border_insets(gfx::Insets::TLBR(
-        kAutofillPopupAdditionalPadding, GetHorizontalMargin(),
-        kAutofillPopupAdditionalPadding, GetHorizontalMargin()));
+    layout_manager->set_inside_border_insets(
+        gfx::Insets::TLBR(kAutofillPopupAdditionalPadding,
+                          AutofillPopupBaseView::GetHorizontalMargin(),
+                          kAutofillPopupAdditionalPadding,
+                          AutofillPopupBaseView::GetHorizontalMargin()));
   }
 }
 
@@ -1125,7 +1133,7 @@ void AutofillPopupFooterView::CreateContent() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets::VH(0, GetHorizontalMargin())));
+          gfx::Insets::VH(0, AutofillPopupBaseView::GetHorizontalMargin())));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -1139,10 +1147,12 @@ void AutofillPopupFooterView::CreateContent() {
   if (suggestion.is_loading) {
     SetEnabled(false);
     AddChildView(std::make_unique<views::Throbber>())->Start();
-    AddSpacerWithSize(GetHorizontalMargin(), /*resize=*/false, layout_manager);
+    AddSpacerWithSize(AutofillPopupBaseView::GetHorizontalPadding(),
+                      /*resize=*/false, layout_manager);
   } else if (icon && use_leading_icon) {
     AddChildView(std::move(icon));
-    AddSpacerWithSize(GetHorizontalMargin(), /*resize=*/false, layout_manager);
+    AddSpacerWithSize(AutofillPopupBaseView::GetHorizontalPadding(),
+                      /*resize=*/false, layout_manager);
   }
 
   // GetCornerRadius adds extra height to the footer to account for rounded
@@ -1160,14 +1170,16 @@ void AutofillPopupFooterView::CreateContent() {
   AddSpacerWithSize(0, /*resize=*/true, layout_manager);
 
   if (icon && !use_leading_icon) {
-    AddSpacerWithSize(GetHorizontalMargin(), /*resize=*/false, layout_manager);
+    AddSpacerWithSize(AutofillPopupBaseView::GetHorizontalPadding(),
+                      /*resize=*/false, layout_manager);
     AddChildView(std::move(icon));
   }
 
   std::unique_ptr<views::ImageView> trailing_icon =
       GetTrailingIconImageView(suggestion);
   if (trailing_icon) {
-    AddSpacerWithSize(GetHorizontalMargin(), /*resize=*/true, layout_manager);
+    AddSpacerWithSize(AutofillPopupBaseView::GetHorizontalPadding(),
+                      /*resize=*/true, layout_manager);
     AddChildView(std::move(trailing_icon));
   }
 }
@@ -1267,7 +1279,8 @@ void AutofillPopupWarningView::GetAccessibleNodeData(
   if (!controller)
     return;
 
-  node_data->SetName(controller->GetSuggestionAt(GetLineNumber()).value);
+  node_data->SetName(
+      controller->GetSuggestionAt(GetLineNumber()).main_text.value);
   node_data->role = ax::mojom::Role::kStaticText;
 }
 
@@ -1275,7 +1288,7 @@ void AutofillPopupWarningView::CreateContent() {
   base::WeakPtr<AutofillPopupController> controller =
       popup_view()->controller();
 
-  int horizontal_margin = GetHorizontalMargin();
+  int horizontal_margin = AutofillPopupBaseView::GetHorizontalMargin();
   int vertical_margin = AutofillPopupBaseView::GetCornerRadius();
 
   SetUseDefaultFillLayout(true);

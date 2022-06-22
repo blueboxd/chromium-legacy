@@ -194,7 +194,6 @@ void DownloadToolbarButtonView::OpenSecurityDialog(
   security_view_->UpdateSecurityView(download_row_view);
   primary_view_->SetVisible(false);
   security_view_->SetVisible(true);
-  security_view_->UpdateAccessibilityTextAndFocus();
   ResizeDialog();
 }
 
@@ -225,8 +224,6 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate(
   std::unique_ptr<views::BubbleDialogDelegate> bubble_delegate =
       std::make_unique<views::BubbleDialogDelegate>(
           this, views::BubbleBorder::TOP_RIGHT);
-  bubble_delegate->SetTitle(
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_HEADER_TEXT));
   bubble_delegate->SetShowTitle(false);
   bubble_delegate->SetShowCloseButton(false);
   bubble_delegate->SetButtons(ui::DIALOG_BUTTON_NONE);

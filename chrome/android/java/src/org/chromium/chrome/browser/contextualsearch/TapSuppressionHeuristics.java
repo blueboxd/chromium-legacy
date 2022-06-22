@@ -11,8 +11,6 @@ import androidx.annotation.Nullable;
  * and can be used as signals to drive an ML tap suppression model.
  */
 public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
-    private CtrSuppression mCtrSuppression;
-
     /**
      * Gets all the heuristics needed for Tap suppression.
      * @param selectionController The {@link ContextualSearchSelectionController}.
@@ -30,8 +28,6 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
             ContextualSearchContext contextualSearchContext, int tapDurationMs,
             boolean wasSelectionEmptyBeforeTap, int fontSizeDips, int elementRunLength) {
         super();
-        mCtrSuppression = new CtrSuppression();
-        mHeuristics.add(mCtrSuppression);
         mHeuristics.add(new EngagementSuppression());
         mHeuristics.add(new RecentScrollTapSuppression(selectionController));
         mHeuristics.add(new TapFarFromPreviousSuppression(
@@ -41,24 +37,12 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
         mHeuristics.add(new TapWordEdgeSuppression(contextualSearchContext));
         mHeuristics.add(new ContextualSearchEntityHeuristic(contextualSearchContext));
         mHeuristics.add(new NearTopTapSuppression(selectionController, y));
-        mHeuristics.add(new BarOverlapTapSuppression(selectionController, y));
         mHeuristics.add(new ShortTextRunSuppression(contextualSearchContext, elementRunLength));
         mHeuristics.add(new SmallTextSuppression(fontSizeDips));
         // Quick Answer that appears in the Caption via the JS API.
         QuickAnswersHeuristic quickAnswersHeuristic = new QuickAnswersHeuristic();
         setQuickAnswersHeuristic(quickAnswersHeuristic);
         mHeuristics.add(quickAnswersHeuristic);
-    }
-
-    /**
-     * This method should be called to clean up storage when an instance of this class is
-     * no longer in use.
-     */
-    public void destroy() {
-        if (mCtrSuppression != null) {
-            mCtrSuppression.destroy();
-            mCtrSuppression = null;
-        }
     }
 
     @Override

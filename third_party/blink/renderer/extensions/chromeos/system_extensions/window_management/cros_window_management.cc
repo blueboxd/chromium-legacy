@@ -12,12 +12,28 @@
 
 namespace blink {
 
-CrosWindowManagement::CrosWindowManagement(ExecutionContext* execution_context)
-    : ExecutionContextClient(execution_context),
-      cros_window_management_(execution_context) {}
+const char CrosWindowManagement::kSupplementName[] = "CrosWindowManagement";
+
+CrosWindowManagement& CrosWindowManagement::From(
+    ExecutionContext& execution_context) {
+  CHECK(!execution_context.IsContextDestroyed());
+  auto* supplement = Supplement<ExecutionContext>::From<CrosWindowManagement>(
+      execution_context);
+  if (!supplement) {
+    supplement = MakeGarbageCollected<CrosWindowManagement>(execution_context);
+    ProvideTo(execution_context, supplement);
+  }
+  return *supplement;
+}
+
+CrosWindowManagement::CrosWindowManagement(ExecutionContext& execution_context)
+    : Supplement(execution_context),
+      ExecutionContextClient(&execution_context),
+      cros_window_management_(&execution_context) {}
 
 void CrosWindowManagement::Trace(Visitor* visitor) const {
   visitor->Trace(cros_window_management_);
+  Supplement<ExecutionContext>::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -38,7 +54,7 @@ CrosWindowManagement::GetCrosWindowManagementOrNull() {
   return cros_window_management_.get();
 }
 
-ScriptPromise CrosWindowManagement::windows(ScriptState* script_state) {
+ScriptPromise CrosWindowManagement::getWindows(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto* window_management = GetCrosWindowManagementOrNull();
   if (window_management) {
@@ -51,7 +67,7 @@ ScriptPromise CrosWindowManagement::windows(ScriptState* script_state) {
 
 void CrosWindowManagement::WindowsCallback(
     ScriptPromiseResolver* resolver,
-    WTF::Vector<mojom::blink::CrosWindowPtr> windows) {
+    WTF::Vector<mojom::blink::CrosWindowInfoPtr> windows) {
   HeapVector<Member<CrosWindow>> results;
   results.ReserveInitialCapacity(windows.size());
   for (auto& w : windows) {

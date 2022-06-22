@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/command.h"
+#include "extensions/common/command.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
@@ -146,9 +146,13 @@ bool CommandsHandler::AlwaysParseForType(Manifest::Type type) const {
 
 void CommandsHandler::MaybeSetBrowserActionDefault(const Extension* extension,
                                                    CommandsInfo* info) {
-  // TODO(devlin): Synthesize a command for the "action" key, too?
-  if (extension->manifest()->FindKey(keys::kBrowserAction) &&
-      !info->browser_action_command.get()) {
+  if (extension->manifest()->FindKey(keys::kAction) &&
+      !info->action_command.get()) {
+    info->action_command =
+        std::make_unique<Command>(manifest_values::kActionCommandEvent,
+                                  std::u16string(), std::string(), false);
+  } else if (extension->manifest()->FindKey(keys::kBrowserAction) &&
+             !info->browser_action_command.get()) {
     info->browser_action_command =
         std::make_unique<Command>(manifest_values::kBrowserActionCommandEvent,
                                   std::u16string(), std::string(), false);

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/scoped_guest_button_blocker.h"
 #include "base/bind.h"
@@ -33,6 +34,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace ash {
 namespace {
@@ -301,6 +306,14 @@ void ResetScreen::OnUserActionDeprecated(const std::string& action_id) {
     ShowHelpArticle(HelpAppLauncher::HELP_TPM_FIRMWARE_UPDATE);
   else
     BaseScreen::OnUserActionDeprecated(action_id);
+}
+
+bool ResetScreen::HandleAccelerator(LoginAcceleratorAction action) {
+  if (action == LoginAcceleratorAction::kShowResetScreen) {
+    OnToggleRollback();
+    return true;
+  }
+  return false;
 }
 
 void ResetScreen::OnCancel() {

@@ -39,10 +39,8 @@ source_set("base_unittests_filters") {
 source_set("blink_unittests_filters") {
   testonly = true
 
-  data = [
-    "//testing/buildbot/filters/android.emulator.blink_unittests.filter",
-    "//testing/buildbot/filters/fuchsia.blink_unittests.filter",
-  ]
+  data =
+      [ "//testing/buildbot/filters/android.emulator.blink_unittests.filter" ]
 }
 
 source_set("blink_web_tests_filter") {
@@ -72,7 +70,7 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/mac.mac11-arm64-rel.browser_tests.filter",
     "//testing/buildbot/filters/mac.mac-rel.browser_tests.filter",
     "//testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter",
-    "//testing/buildbot/filters/pixel_browser_tests.filter",
+    "//testing/buildbot/filters/pixel_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
     "//testing/buildbot/filters/win_backuprefptr_fyi.browser_tests.filter",
   ]
@@ -127,7 +125,6 @@ source_set("content_browsertests_filters") {
     "//testing/buildbot/filters/android.marshmallow_tablet_tester.content_browsertests.filter",
     "//testing/buildbot/filters/cast-linux.content_browsertests.filter",
     "//testing/buildbot/filters/chromium.webrtc.fyi.android.tests.dbg.content_browsertests.filter",
-    "//testing/buildbot/filters/fuchsia.content_browsertests.filter",
     "//testing/buildbot/filters/linux-lacros.content_browsertests.filter",
     "//testing/buildbot/filters/site_isolation_android.content_browsertests.filter",
     "//testing/buildbot/filters/vulkan.content_browsertests.filter",
@@ -210,28 +207,10 @@ source_set("views_unittests_filters") {
   ]
 }
 
-source_set("headless_browsertests_filters") {
-  testonly = true
-
-  data = [ "//testing/buildbot/filters/fuchsia.headless_browsertests.filter" ]
-}
-
-source_set("net_perftests_filters") {
-  testonly = true
-
-  data = [ "//testing/buildbot/filters/fuchsia.net_perftests.filter" ]
-}
-
 source_set("services_unittests_filters") {
   testonly = true
 
   data = [ "//testing/buildbot/filters/fuchsia.services_unittests.filter" ]
-}
-
-source_set("storage_unittests_filters") {
-  testonly = true
-
-  data = [ "//testing/buildbot/filters/fuchsia.storage_unittests.filter" ]
 }
 
 source_set("ui_base_unittests_filters") {
@@ -301,6 +280,7 @@ source_set("interactive_ui_tests_filters") {
   data = [
     "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter",
     "//testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter",
+    "//testing/buildbot/filters/pixel_tests.filter",
   ]
 }
 

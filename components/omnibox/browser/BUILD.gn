@@ -58,7 +58,6 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "page.icon",
     "pedal.icon",
     "product.icon",
-    "send.icon",
     "share.icon",
     "star.icon",
     "star_active.icon",
@@ -88,8 +87,6 @@ static_library("vector_icons") {
 
 static_library("browser") {
   sources = [
-    "actions/history_clusters_action.cc",
-    "actions/history_clusters_action.h",
     "actions/omnibox_action.cc",
     "actions/omnibox_action.h",
     "actions/omnibox_action_concepts.h",
@@ -257,7 +254,6 @@ static_library("browser") {
     "//components/dom_distiller/core:core",
     "//components/favicon/core",
     "//components/favicon_base",
-    "//components/history_clusters/core",
     "//components/keyed_service/core",
     "//components/metrics",
     "//components/navigation_metrics",
@@ -294,7 +290,14 @@ static_library("browser") {
   }
 
   if (!is_ios) {
-    deps += [ "//components/keyed_service/content" ]
+    sources += [
+      "actions/history_clusters_action.cc",
+      "actions/history_clusters_action.h",
+    ]
+    deps += [
+      "//components/history_clusters/core",
+      "//components/keyed_service/content",
+    ]
   }
 
   if (enable_extensions) {
@@ -417,13 +420,15 @@ if (is_android) {
       "android/java/src/org/chromium/components/omnibox/SecurityButtonAnimationDelegate.java",
       "android/java/src/org/chromium/components/omnibox/SecurityStatusIcon.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
+      "android/java/src/org/chromium/components/omnibox/action/HistoryClustersAction.java",
       "android/java/src/org/chromium/components/omnibox/action/OmniboxPedal.java",
     ]
 
     resources_package = "org.chromium.components.omnibox"
     deps = [
       ":java_resources",
-      "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//components/browser_ui/widget/android:java",
       "//components/embedder_support/android:util_java",
       "//components/query_tiles:query_tile_java",
@@ -457,6 +462,7 @@ if (is_android) {
       "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
       "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
+      "android/java/src/org/chromium/components/omnibox/action/HistoryClustersAction.java",
       "android/java/src/org/chromium/components/omnibox/action/OmniboxPedal.java",
     ]
   }

@@ -1838,10 +1838,29 @@ be describing additional metrics about the same event.
   <summary>
     Recorded when user submits a form.
   </summary>
+  <metric name="AutocompleteFills">
+    <summary>
+      Number of Autocomplete fills invoked by the user on the current form.
+    </summary>
+  </metric>
+  <metric name="AutofillFills">
+    <summary>
+      Number of Autofill fills invoked by the user on the current form.
+    </summary>
+  </metric>
   <metric name="AutofillFormSubmittedState">
     <summary>
       Whether form's fields were all autofilled, some fields were autofilled, or
       none of the field were autofilled. See |AutofillFormSubmittedState|.
+    </summary>
+  </metric>
+  <metric name="FormElementUserModifications">
+    <summary>
+      Number of times a user focused on a form element and changed its value.
+      Consecutive value changes on the same form element are not counted,
+      neither are JS invoked changes. Also, re-focusing a form element and
+      changing its value is only counted if another form element's value was
+      changed in the meantime.
     </summary>
   </metric>
   <metric name="FormSignature">
@@ -2987,6 +3006,12 @@ be describing additional metrics about the same event.
 
     This event is not recorded on machines with low-resolution clocks.
   </summary>
+  <metric name="Accessibility">
+    <summary>
+      The time spent in accessibility tree code, between navigation and First
+      Contentful Paint, in microseconds.
+    </summary>
+  </metric>
   <metric name="AnchorElementMetricsIntersectionObserver">
     <summary>
       Time spent computing IntersectionObservations for anchor elements, in
@@ -3264,6 +3289,17 @@ be describing additional metrics about the same event.
 
     This event is not recorded on machines with low-resolution clocks.
   </summary>
+  <metric name="Accessibility">
+    <summary>
+      The time taken for accessibility for the main frame in microseconds during
+      the sampled frame.
+    </summary>
+  </metric>
+  <metric name="AccessibilityBeginMainFrame">
+    <summary>
+      The total main frame time used in accessibility, in microseconds.
+    </summary>
+  </metric>
   <metric name="AnchorElementMetricsIntersectionObserver">
     <summary>
       Time spent computing IntersectionObservations for anchor elements, in
@@ -6911,6 +6947,20 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="SendBeginMainFrameToCommit.Accessibility">
+    <summary>
+      The time portion of SendBeginMainFrameToCommit spent on accessibility, in
+      microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="SendBeginMainFrameToCommit.Animate">
     <summary>
       The time portion of SendBeginMainFrameToCommit spent on animations, in
@@ -7407,6 +7457,20 @@ be describing additional metrics about the same event.
     <summary>
       The time from when the BeginMainFrame is sent to the beginning of the
       commit, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SendBeginMainFrameToCommit.Accessibility">
+    <summary>
+      The time portion of SendBeginMainFrameToCommit spent on accessibility, in
+      microseconds.
     </summary>
     <aggregation>
       <history>
@@ -11028,6 +11092,7 @@ be describing additional metrics about the same event.
 
 <event name="Media.WebAudio.AudioContext.AudibleTime">
   <owner>hongchan@chromium.org</owner>
+  <owner>mjwilson@chromium.org</owner>
   <owner>webaudio-dev@chromium.org</owner>
   <summary>
     Records the AudioContext audible time information.
@@ -12046,7 +12111,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Navigation.ReceivedResponse">
-  <owner>abeyad@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
   <summary>
     Recorded when the navigation receives a response from the networking layer.
@@ -16506,6 +16571,42 @@ be describing additional metrics about the same event.
       A boolean that is set to true if the page was prerendered and later
       activated. Cancelled prerender page loads are not logged.
     </summary>
+  </metric>
+</event>
+
+<event name="Presentation.StartResult">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Records when users start a Presentation and receive a response from the
+    receiver. Android only. The following failures are not recorded because they
+    don't represent an actual error: (1)
+    PresentationErrorType::PRESENTATION_REQUEST_CANCELLED This error is created
+    when users close the dialog without starting a Presentation. (2)
+    PresentationErrorType::NO_PRESENTATION_FOUND This error might happen when a
+    website implemnting CastSDK try to join a route every time the page loads.
+  </summary>
+  <metric name="PresentationRequest" enum="Boolean">
+    <summary>
+      Records whether the users' request to start a Presentation with a
+      &quot;cast:&quot; presentation URL succeed.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics/>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="RemotePlayback" enum="Boolean">
+    <summary>
+      Records whether the users' request to start a Presentation through
+      RemotePlayback succeed.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics/>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

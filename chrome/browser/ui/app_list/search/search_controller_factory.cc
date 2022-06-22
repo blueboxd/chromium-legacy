@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/app_list/search/files/zero_state_file_provider.h"
 #include "chrome/browser/ui/app_list/search/games/game_provider.h"
 #include "chrome/browser/ui/app_list/search/help_app_provider.h"
+#include "chrome/browser/ui/app_list/search/help_app_zero_state_provider.h"
 #include "chrome/browser/ui/app_list/search/keyboard_shortcut_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_lacros_provider.h"
@@ -73,6 +74,7 @@ constexpr size_t kMaxZeroStateDriveResults = 10;
 // TODO(warx): Need UX spec.
 constexpr size_t kMaxAppShortcutResults = 4;
 
+constexpr size_t kMaxPlayStoreResults = 12;
 constexpr size_t kMaxAssistantTextResults = 1;
 
 }  // namespace
@@ -133,6 +135,14 @@ std::unique_ptr<SearchController> CreateSearchController(
                             std::make_unique<DriveSearchProvider>(profile));
   }
 
+  if (app_list_features::IsLauncherPlayStoreSearchEnabled()) {
+    size_t playstore_api_group_id = controller->AddGroup(kMaxPlayStoreResults);
+    controller->AddProvider(
+        playstore_api_group_id,
+        std::make_unique<ArcPlayStoreSearchProvider>(kMaxPlayStoreResults,
+                                                     profile, list_controller));
+  }
+
   if (arc::IsArcAllowedForProfile(profile)) {
     size_t app_shortcut_group_id = controller->AddGroup(kMaxAppShortcutResults);
     controller->AddProvider(
@@ -180,6 +190,12 @@ std::unique_ptr<SearchController> CreateSearchController(
   size_t help_app_group_id = controller->AddGroup(kGenericMaxResults);
   controller->AddProvider(help_app_group_id,
                           std::make_unique<HelpAppProvider>(profile));
+
+  size_t help_app_zero_state_group_id =
+      controller->AddGroup(kGenericMaxResults);
+  controller->AddProvider(
+      help_app_zero_state_group_id,
+      std::make_unique<HelpAppZeroStateProvider>(profile, notifier));
 
   if (search_features::IsLauncherGameSearchEnabled()) {
     size_t games_group_id = controller->AddGroup(kGenericMaxResults);

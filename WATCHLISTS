@@ -863,6 +863,10 @@
                   '|chrome/browser/ash/arc/enterprise/'\
                   '|docs/website/site/administrators/'
     },
+    'cros_discovery': {
+      'filepath': 'chrome/browser/apps/app_discovery_service/'\
+                  '|chrome/browser/apps/app_provisioning_service/',
+    },
     'cros_reporting': {
       'filepath': 'chrome/browser/policy/messaging_layer/'\
                   '|chrome/browser/ash/policy/status_collector/'\
@@ -923,11 +927,6 @@
     },
     'dbus': {
       'filepath': 'dbus/',
-    },
-    'demo_mode': {
-      'filepath': 'docs/login/demo_mode.md|'\
-                  'chrome/browser/ash/login/demo_mode/|'\
-                  'ash/metrics/demo_session_metrics_recorder',
     },
     'desktop_in_product_help': {
       'filepath': 'chrome/browser/ui/in_product_help|'\
@@ -2238,7 +2237,7 @@
     'blink_animation': ['alexis.menard@intel.com',
                         'gerchiko@microsoft.com',
                         'blink-reviews-animation@chromium.org'],
-    'blink_audio': ['hongchan@chromium.org'],
+    'blink_audio': ['hongchan@chromium.org', 'mjwilson@chromium.org'],
     'blink_battery_status': ['raphael.kubo.da.costa@intel.com'],
     'blink_bindings': ['blink-reviews-bindings@chromium.org', 'haraken@chromium.org'],
     'blink_bindings_serialization': ['jbroman+watch@chromium.org'],
@@ -2479,6 +2478,7 @@
            'yyanagisawa+cc@chromium.org'],
     'cr_elements': ['michaelpg+watch-elements@chromium.org'],
     'cros_commercial_policy': ['enterprise-policy-review@google.com'],
+    'cros_discovery': ['melzhang+watch+discovery@chromium.org'],
     'cros_reporting': ['cros-reporting-reviews@google.com'],
     'cros_sharesheet': ['melzhang+watch+sharesheet@chromium.org'],
     'crostini': ['crostini-ui@chromium.org'],
@@ -2497,7 +2497,6 @@
                    'pnevase@microsoft.com'],
     'data_decoder': ['mbarowsky+watch-data-decoder@chromium.org'],
     'dbus': ['hashimoto+watch@chromium.org'],
-    'demo_mode': ['cros-essential-apps-dev+watch@chromium.org'],
     'desktop_in_product_help': ['collinbaker+watch@chromium.org'],
     'device_bluetooth': ['mattreynolds+watch@chromium.org'],
     'device_chooser': ['mattreynolds+watch@chromium.org',
@@ -2764,7 +2763,8 @@
     'safe_browsing': ['drubery+watch@chromium.org',
                       'vakh+safe_browsing_watch@chromium.org',
                       'xinghuilu+watch@chromium.org'],
-    'sampling_profiler': ['wittman+watch@chromium.org'],
+    'sampling_profiler': ['wittman+watch@chromium.org',
+                          'chenleihu@google.com'],
     'scanning': ['gavinwill+scanning-watch@chromium.org',
                  'zentaro+scanning-watch@chromium.org'],
     'security': ['security-watchlist@chromium.org'],

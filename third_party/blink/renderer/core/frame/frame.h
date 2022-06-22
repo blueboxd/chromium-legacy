@@ -152,7 +152,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   //
   // Important notes:
   // - This function is not appropriate for determining if a subframe is
-  //   cross-origin to its parent (see: |IsCrossOriginToParentFrame|).
+  //   cross-origin to its parent (see: |IsCrossOriginToParentOrOuterDocument|).
   // - The return value must NOT be cached. A frame can be reused across
   //   navigations, so the return value can change over time.
   // - The return value is inaccurate for a detached frame: it always
@@ -174,8 +174,9 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   bool IsCrossOriginToOutermostMainFrame() const;
 
   // Returns true if this frame is a subframe and is cross-origin to the parent
-  // frame. See |IsCrossOriginToMainFrame| for important notes.
-  bool IsCrossOriginToParentFrame() const;
+  // frame or has an outer document in another frame tree.
+  // See |IsCrossOriginToMainFrame| for important notes.
+  bool IsCrossOriginToParentOrOuterDocument() const;
 
   FrameOwner* Owner() const;
   void SetOwner(FrameOwner*);
@@ -344,8 +345,8 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   bool GetVisibleToHitTesting() const { return visible_to_hit_testing_; }
   void UpdateVisibleToHitTesting();
 
-  void ScheduleFormSubmission(FrameScheduler* scheduler,
-                              FormSubmission* form_submission);
+  base::OnceClosure ScheduleFormSubmission(FrameScheduler* scheduler,
+                                           FormSubmission* form_submission);
   void CancelFormSubmission();
   bool IsFormSubmissionPending();
 
@@ -358,7 +359,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   virtual void DidFocus() = 0;
 
   virtual gfx::Size GetMainFrameViewportSize() const = 0;
-  virtual gfx::Point GetMainFrameScrollOffset() const = 0;
+  virtual gfx::Point GetMainFrameScrollPosition() const = 0;
 
   // Sets this frame's opener to another frame, or disowned the opener
   // if opener is null. See http://html.spec.whatwg.org/#dom-opener.
@@ -518,6 +519,8 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // Note: This is only called if fenced frames are enabled with ShadowDOM
   bool FocusCrossesFencedBoundary();
 
+  void CancelFormSubmissionWithVersion(uint64_t version);
+
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;
   FrameLifecycle lifecycle_;
@@ -591,6 +594,11 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // The reason it is stored here is so that it can handle both LocalFrames and
   // RemoteFrames, and so it can be canceled by FrameLoader.
   TaskHandle form_submit_navigation_task_;
+  // form_submit_navigation_task_version_ is incremented every time we make a
+  // new task for form_submit_navigation_task_. It is used in order to create a
+  // copyable Closure which can cancel a specific task that was assigned to
+  // form_submit_navigation_task_.
+  uint64_t form_submit_navigation_task_version_ = 0;
 
   OpenedFrameTracker opened_frame_tracker_;
 };

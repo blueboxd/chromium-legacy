@@ -25,6 +25,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_PROPERTY_SERIALIZER_H_
 
 #include <bitset>
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 
@@ -42,6 +43,9 @@ class CORE_EXPORT StylePropertySerializer {
 
   String AsText() const;
   String SerializeShorthand(CSSPropertyID) const;
+
+  static bool IsValidToggleShorthand(const CSSValue* toggle_root,
+                                     const CSSValue* toggle_trigger);
 
  private:
   String GetCommonValue(const StylePropertyShorthand&) const;

@@ -31,7 +31,6 @@
 #include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/website_login_manager_impl.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -655,7 +654,7 @@ void CollectUserDataAction::UpdateMetrics(UserData* user_data) {
   if (!shown_to_user_) {
     shown_to_user_ = true;
     metrics_data_.source_id =
-        ukm::GetSourceIdForWebContentsDocument(delegate_->GetWebContents());
+        delegate_->GetWebContents()->GetMainFrame()->GetPageUkmSourceId();
     metrics_data_.user_data_source =
         ShouldUseBackendData(proto_.collect_user_data())
             ? Metrics::UserDataSource::BACKEND
@@ -988,13 +987,17 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
             collect_user_data.required_shipping_address_data_piece().end());
   }
 
+  bool should_use_backend_data = ShouldUseBackendData(collect_user_data);
+  if (delegate_->MustUseBackendData() && !should_use_backend_data) {
+    VLOG(1) << "This run must use backend data but does not.";
+    return false;
+  }
   collect_user_data_options_->should_store_data_changes =
       !delegate_->GetWebContents()->GetBrowserContext()->IsOffTheRecord() &&
-      !ShouldUseBackendData(collect_user_data);
-  collect_user_data_options_->can_edit_contacts =
-      !ShouldUseBackendData(collect_user_data);
+      !should_use_backend_data;
+  collect_user_data_options_->can_edit_contacts = !should_use_backend_data;
   collect_user_data_options_->use_gms_core_edit_dialogs =
-      ShouldUseBackendData(collect_user_data);
+      should_use_backend_data;
 
   collect_user_data_options_->request_login_choice =
       collect_user_data.has_login_details();
@@ -1429,8 +1432,9 @@ void CollectUserDataAction::UpdateUserDataFromProto(
     if (proto_data.has_selected_contact_identifier()) {
       const auto& it = base::ranges::find_if(
           user_data->available_contacts_, [&](const auto& contact) {
-            return proto_data.selected_contact_identifier() ==
-                   contact->identifier.value_or(std::string());
+            return contact->identifier &&
+                   proto_data.selected_contact_identifier() ==
+                       contact->identifier;
           });
       if (it == user_data->available_contacts_.end()) {
         NOTREACHED();

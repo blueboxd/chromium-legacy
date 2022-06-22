@@ -30,6 +30,12 @@ GURL ComputeURLForDeduping(const GURL& url);
 // should be separately canonicalized by TemplateURLService and not sent here.
 std::string ComputeURLKeywordForLookup(const GURL& url);
 
+// Returns a string suitable for display in the Journeys UI from the normalized
+// visit URL. Displays the host and the path. Set `trim_after_host` to true to
+// also remove the path, query, and ref.
+std::u16string ComputeURLForDisplay(const GURL& normalized_url,
+                                    bool trim_after_host = false);
+
 // Stable sorts visits according to score, then reverse-chronologically.
 void StableSortVisits(std::vector<history::ClusterVisit>* visits);
 

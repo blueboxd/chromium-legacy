@@ -218,8 +218,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver)
       override {}
   void BindQuotaManagerHost(
-      int render_frame_id,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::QuotaManagerHost> receiver) override {
   }
   void CreateLockManager(
@@ -255,6 +254,11 @@ class MockRenderProcessHost : public RenderProcessHost {
   void WriteIntoTrace(perfetto::TracedProto<TraceProto> proto) const override;
   void EnableBlinkRuntimeFeatures(
       const std::vector<std::string>& features) override;
+
+  void PauseSocketManagerForRenderFrameHost(
+      const GlobalRenderFrameHostId& render_frame_host_id) override {}
+  void ResumeSocketManagerForRenderFrameHost(
+      const GlobalRenderFrameHostId& render_frame_host_id) override {}
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;

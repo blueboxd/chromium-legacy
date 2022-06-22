@@ -34,12 +34,13 @@
 #include "cc/trees/paint_holding_reason.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
@@ -60,6 +61,7 @@
 #undef CreateWindow
 
 namespace cc {
+class AnimationTimeline;
 struct ElementId;
 class Layer;
 struct OverscrollBehavior;
@@ -78,7 +80,6 @@ namespace blink {
 
 class ColorChooser;
 class ColorChooserClient;
-class CompositorAnimationTimeline;
 class DateTimeChooser;
 class DateTimeChooserClient;
 class Element;
@@ -385,14 +386,14 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void AttachRootLayer(scoped_refptr<cc::Layer>,
                                LocalFrame* local_root) = 0;
 
-  // Set the CompositorAnimationTimeline for a local root. Should later be unset
+  // Set the cc::AnimationTimeline for a local root. Should later be unset
   // by a call to DetachCompositorAnimationTimeline().
-  virtual void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*,
+  virtual void AttachCompositorAnimationTimeline(cc::AnimationTimeline*,
                                                  LocalFrame* local_root) {}
-  // Removes the CompositorAnimationTimeline for a local root. The timeline
+  // Removes the cc::AnimationTimeline for a local root. The timeline
   // would have previously been given to AttachCompositorAnimationTimeline() but
   // it's valid to call this even if the timeline was never attached.
-  virtual void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
+  virtual void DetachCompositorAnimationTimeline(cc::AnimationTimeline*,
                                                  LocalFrame* local_root) {}
 
   virtual void EnterFullscreen(LocalFrame&,
@@ -531,9 +532,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void SetDelegatedInkMetadata(
       LocalFrame* frame,
       std::unique_ptr<gfx::DelegatedInkMetadata> metadata) {}
-
-  virtual void BatterySavingsChanged(LocalFrame& main_frame,
-                                     BatterySavingsFlags savings) = 0;
 
   virtual void FormElementReset(HTMLFormElement& element) {}
 

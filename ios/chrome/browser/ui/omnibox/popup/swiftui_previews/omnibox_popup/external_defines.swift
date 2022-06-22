@@ -24,8 +24,14 @@ public class OmniboxPopupAccessibilityIdentifierHelper {
   }
 }
 
+// These constants are needed for the previews project, but named in C++ code,
+// so they shouldn't be linted.
+// swift-format-ignore: AlwaysUseLowerCamelCase
 let IDS_IOS_OMNIBOX_POPUP_SWITCH_TO_OPEN_TAB = 1
+// swift-format-ignore: AlwaysUseLowerCamelCase
 let IDS_IOS_OMNIBOX_POPUP_APPEND = 2
+// swift-format-ignore: AlwaysUseLowerCamelCase
+let IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND = 3
 
 public class L10NUtils {
   public static func string(forMessageId: Int) -> String? {
@@ -41,5 +47,14 @@ public class L10NUtils {
 
     }
   }
+}
 
+public func NativeReversableImage(_ imageID: Int, _ reversable: Bool) -> UIImage? {
+  switch imageID {
+  case IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND:
+    let uiImage = UIImage(named: "IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND")
+    return uiImage!.imageFlippedForRightToLeftLayoutDirection()
+  default:
+    fatalError("This image ID is not available in the previews project")
+  }
 }

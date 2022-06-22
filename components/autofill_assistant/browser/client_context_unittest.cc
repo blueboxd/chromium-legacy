@@ -43,7 +43,7 @@ TEST_F(ClientContextTest, Initialize) {
       .WillOnce(Return(std::make_pair(1080, 1920)));
   EXPECT_CALL(mock_client_, GetScreenOrientation())
       .WillOnce(Return(ClientContextProto::PORTRAIT));
-  EXPECT_CALL(mock_client_, GetChromeSignedInEmailAddress())
+  EXPECT_CALL(mock_client_, GetSignedInEmail())
       .WillOnce(Return("john.doe@chromium.org"));
   EXPECT_CALL(mock_client_, IsAccessibilityEnabled()).WillOnce(Return(true));
 
@@ -67,6 +67,15 @@ TEST_F(ClientContextTest, Initialize) {
   EXPECT_THAT(actual_client_context.window_size().height_pixels(), Eq(1920));
   EXPECT_THAT(actual_client_context.screen_orientation(),
               ClientContextProto::PORTRAIT);
+#if BUILDFLAG(IS_ANDROID)
+  EXPECT_THAT(actual_client_context.platform_type(),
+              ClientContextProto::PLATFORM_TYPE_ANDROID);
+#endif
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
+  EXPECT_THAT(actual_client_context.platform_type(),
+              ClientContextProto::PLATFORM_TYPE_DESKTOP);
+#endif
 
   auto actual_device_context = actual_client_context.device_context();
   EXPECT_THAT(actual_device_context.version().sdk_int(), Eq(123));
@@ -77,7 +86,7 @@ TEST_F(ClientContextTest, Initialize) {
 TEST_F(ClientContextTest, UpdateWithTriggerContext) {
   // Calls expected when the constructor is called.
   EXPECT_CALL(mock_client_, IsAccessibilityEnabled()).WillOnce(Return(false));
-  EXPECT_CALL(mock_client_, GetChromeSignedInEmailAddress())
+  EXPECT_CALL(mock_client_, GetSignedInEmail())
       .WillOnce(Return("john.doe@chromium.org"));
   EXPECT_CALL(mock_client_, GetWindowSize())
       .WillOnce(Return(std::make_pair(0, 0)));
@@ -88,8 +97,7 @@ TEST_F(ClientContextTest, UpdateWithTriggerContext) {
   // Calls expected when Update is called. We expect the previous entries to
   // be overwritten.
   EXPECT_CALL(mock_client_, IsAccessibilityEnabled()).WillOnce(Return(true));
-  EXPECT_CALL(mock_client_, GetChromeSignedInEmailAddress())
-      .WillOnce(Return(""));
+  EXPECT_CALL(mock_client_, GetSignedInEmail()).WillOnce(Return(""));
   EXPECT_CALL(mock_client_, GetWindowSize())
       .WillOnce(Return(std::pair<int, int>(1080, 1920)));
   EXPECT_CALL(mock_client_, GetScreenOrientation())
@@ -147,7 +155,7 @@ TEST_F(ClientContextTest, WindowSizeIsClearedIfNoLongerAvailable) {
 }
 
 TEST_F(ClientContextTest, AccountMatching) {
-  EXPECT_CALL(mock_client_, GetChromeSignedInEmailAddress())
+  EXPECT_CALL(mock_client_, GetSignedInEmail())
       .WillRepeatedly(Return("john.doe@chromium.org"));
 
   ClientContextImpl client_context(&mock_client_);
@@ -180,14 +188,13 @@ TEST_F(ClientContextTest, AccountMatching) {
 }
 
 TEST_F(ClientContextTest, SignedInStatus) {
-  EXPECT_CALL(mock_client_, GetChromeSignedInEmailAddress())
-      .WillOnce(Return(""));
+  EXPECT_CALL(mock_client_, GetSignedInEmail()).WillOnce(Return(""));
 
   ClientContextImpl client_context_a(&mock_client_);
   EXPECT_THAT(client_context_a.AsProto().signed_into_chrome_status(),
               Eq(ClientContextProto::NOT_SIGNED_IN));
 
-  EXPECT_CALL(mock_client_, GetChromeSignedInEmailAddress())
+  EXPECT_CALL(mock_client_, GetSignedInEmail())
       .WillOnce(Return("john.doe@chromium.org"));
   ClientContextImpl client_context_b(&mock_client_);
   EXPECT_THAT(client_context_b.AsProto().signed_into_chrome_status(),

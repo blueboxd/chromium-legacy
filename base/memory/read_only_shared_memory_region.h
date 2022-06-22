@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 
@@ -33,7 +34,8 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
   // This means that the caller's process is the only process that can modify
   // the region content. If you need to pass write access to another process,
   // consider using WritableSharedMemoryRegion or UnsafeSharedMemoryRegion.
-  static MappedReadOnlyRegion Create(size_t size);
+  static MappedReadOnlyRegion Create(size_t size,
+                                     SharedMemoryMapper* mapper = nullptr);
   using CreateFunction = decltype(Create);
 
   // Returns a ReadOnlySharedMemoryRegion built from a platform-specific handle
@@ -77,14 +79,23 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
   // read-only access. The mapped address is guaranteed to have an alignment of
   // at least |subtle::PlatformSharedMemoryRegion::kMapMinimumAlignment|.
   // Returns a valid ReadOnlySharedMemoryMapping instance on success, invalid
-  // otherwise.
-  ReadOnlySharedMemoryMapping Map() const;
+  // otherwise. A custom |SharedMemoryMapper| for mapping (and later unmapping)
+  // the region can be provided using the optional |mapper| parameter.
+  ReadOnlySharedMemoryMapping Map(SharedMemoryMapper* mapper = nullptr) const;
 
-  // Same as above, but maps only |size| bytes of the shared memory region
-  // starting with the given |offset|. |offset| must be aligned to value of
-  // |SysInfo::VMAllocationGranularity()|. Returns an invalid mapping if
-  // requested bytes are out of the region limits.
-  ReadOnlySharedMemoryMapping MapAt(uint64_t offset, size_t size) const;
+  // Similar to `Map()`, but maps only `size` bytes of the shared memory block
+  // at byte `offset`. Returns an invalid mapping if requested bytes are out of
+  // the region limits.
+  //
+  // `offset` does not need to be aligned; if `offset` is not a multiple of
+  // `subtle::PlatformSharedMemoryRegion::kMapMinimumAlignment`, then the
+  // returned mapping will not respect alignment either. Internally, `offset`
+  // and `size` are still first adjusted to respect alignment when mapping in
+  // the shared memory region, but the returned mapping will be "unadjusted" to
+  // match the exact `offset` and `size` requested.
+  ReadOnlySharedMemoryMapping MapAt(uint64_t offset,
+                                    size_t size,
+                                    SharedMemoryMapper* mapper = nullptr) const;
 
   // Whether the underlying platform handle is valid.
   bool IsValid() const;

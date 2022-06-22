@@ -548,7 +548,7 @@ union BluetoothResult {
 
 // Information related to one of a device's Bluetooth adapters.
 //
-// NextMinVersion: 1, NextIndex: 4
+// NextMinVersion: 2, NextIndex: 9
 struct BluetoothAdapterInfo {
   // The name of the adapter.
   string name@0;
@@ -558,6 +558,56 @@ struct BluetoothAdapterInfo {
   bool powered@2;
   // The number of devices connected to this adapter.
   uint32 num_connected_devices@3;
+  // The info of connected devices to this adapter.
+  [MinVersion=1] array<BluetoothDeviceInfo>? connected_devices@4;
+  // The adapter is visible or not.
+  [MinVersion=1] bool discoverable@5;
+  // The device discovery procedure is active or not.
+  [MinVersion=1] bool discovering@6;
+  // The list of the available local services.
+  [MinVersion=1] array<string>? uuids@7;
+  // Local Device ID information.
+  [MinVersion=1] string? modalias@8;
+};
+
+
+// Information related to one of a adapter's Bluetooth connected devices.
+//
+// NextMinVersion: 1, NextIndex: 8
+struct BluetoothDeviceInfo {
+  // The MAC address of the device.
+  string address@0;
+  // The name of the device.
+  string? name@1;
+  // The carriers supported by this remote device ("BR/EDR", "LE", or "DUAL").
+  BluetoothDeviceType type@2;
+  // The external appearance of the device.
+  NullableUint16 appearance@3;
+  // Remote Device ID information.
+  string? modalias@4;
+  // Received Signal Strength Indicator.
+  NullableInt16 rssi@5;
+  // The Maximum Transmission Unit used in ATT communication.
+  NullableUint16 mtu@6;
+  // The list of the available remote services.
+  array<string>? uuids@7;
+};
+
+// An enumeration of type in Bluetooth device info.
+//
+// NextMinVersion: 1, NextIndex: 4
+[Extensible]
+enum BluetoothDeviceType {
+  // An enum value not defined in this version of the enum definition.
+  [Default] kUnmappedEnumField = 0,
+  // Unfound type.
+  kUnfound = 1,
+  // BR/EDR.
+  kBrEdr = 2,
+  // LE.
+  kLe = 3,
+  // DUAL.
+  kDual = 4,
 };
 
 // System probe result. Can either be populated with the SystemInfo or an error
@@ -911,7 +961,7 @@ struct PciBusInfo {
 
 // The info related to usb.
 //
-// NextMinVersion: 1, NextIndex: 6
+// NextMinVersion: 2, NextIndex: 7
 struct UsbBusInfo {
   // These fields can be used to classify / identify the usb devices. See the
   // usb.ids database for the values. (https://github.com/gentoo/hwids)
@@ -925,6 +975,54 @@ struct UsbBusInfo {
   // device. This allows a usb device to provide multiple features.
   // The interfaces are sorted by the |interface_number| field.
   array<UsbBusInterfaceInfo> interfaces@5;
+  // The firmware version obtained from fwupd.
+  [MinVersion=1] FwupdFirmwareVersionInfo? fwupd_firmware_version_info@6;
+};
+
+// The info related to firmware version obtained from fwupd.
+//
+// NextMinVersion: 1, NextIndex: 2
+struct FwupdFirmwareVersionInfo {
+  // The string form of the firmware version.
+  string version@0;
+  // The format for parsing the version string.
+  FwupdVersionFormat version_format@1;
+};
+
+// An enumeration of the formats of firmware version in fwpud. See the fwupd
+// repo for the values. (https://github.com/fwupd/fwupd)
+//
+// NextMinVersion: 1, NextIndex: 14
+[Extensible]
+enum FwupdVersionFormat {
+  // An enum value not defined in this version of the enum definition.
+  [Default] kUnmappedEnumField = 0,
+  // Unknown version format.
+  kUnknown = 1,
+  // An unidentified format text string.
+  kPlain = 2,
+  // A single integer version number.
+  kNumber = 3,
+  // Two AABB.CCDD version numbers.
+  kPair = 4,
+  // Microsoft-style AA.BB.CCDD version numbers.
+  kTriplet = 5,
+  // UEFI-style AA.BB.CC.DD version numbers.
+  kQuad = 6,
+  // Binary coded decimal notation.
+  kBcd = 7,
+  // Intel ME-style bitshifted notation.
+  kIntelMe = 8,
+  // Intel ME-style A.B.CC.DDDD notation.
+  kIntelMe2 = 9,
+  // Legacy Microsoft Surface 10b.12b.10b.
+  kSurfaceLegacy = 10,
+  // Microsoft Surface 8b.16b.8b.
+  kSurface = 11,
+  // Dell BIOS BB.CC.DD style.
+  kDellBios = 12,
+  // Hexadecimal 0xAABCCDD style.
+  kHex = 13,
 };
 
 // The info related to usb interfaces.

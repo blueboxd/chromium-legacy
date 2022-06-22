@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/themes/test/theme_service_changed_waiter.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/themes/theme_service_test_utils.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/color/chrome_color_mixers.h"
 #include "chrome/common/buildflags.h"
@@ -49,11 +51,11 @@
 #include "ui/native_theme/test_native_theme.h"
 #include "ui/views/views_features.h"
 
-#if BUILDFLAG(USE_GTK)
-#include "ui/gtk/gtk_ui_factory.h"
+#if BUILDFLAG(IS_LINUX)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/linux_ui/linux_ui.h"
-#endif  // BUILDFLAG(USE_GTK)
+#include "ui/views/linux_ui/linux_ui_factory.h"  // nogncheck
+#endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -64,57 +66,6 @@ namespace {
 
 enum class ContrastMode { kNonHighContrast, kHighContrast };
 enum class SystemTheme { kDefault, kCustom };
-
-// Struct to distinguish SkColor (aliased to uint32_t) for printing.
-struct PrintableSkColor {
-  bool operator==(const PrintableSkColor& other) const {
-    return color == other.color;
-  }
-
-  bool operator!=(const PrintableSkColor& other) const {
-    return !operator==(other);
-  }
-
-  const SkColor color;
-};
-
-std::ostream& operator<<(std::ostream& os, PrintableSkColor printable_color) {
-  SkColor color = printable_color.color;
-  return os << base::StringPrintf("SkColorARGB(0x%02x, 0x%02x, 0x%02x, 0x%02x)",
-                                  SkColorGetA(color), SkColorGetR(color),
-                                  SkColorGetG(color), SkColorGetB(color));
-}
-
-std::string ColorIdToString(int id) {
-#define E(color_id, theme_property_id, ...) \
-  {theme_property_id, #theme_property_id},
-#define E_CPONLY(color_id, ...)
-
-  static constexpr const auto kMap =
-      base::MakeFixedFlatMap<int, const char*>({CHROME_COLOR_IDS});
-
-#undef E
-#undef E_CPONLY
-  constexpr char kPrefix[] = "ThemeProperties::";
-
-  std::string id_str = kMap.find(id)->second;
-  if (base::StartsWith(id_str, kPrefix))
-    return id_str.substr(strlen(kPrefix));
-  return id_str;
-}
-
-std::pair<PrintableSkColor, PrintableSkColor> GetOriginalAndRedirected(
-    const ui::ThemeProvider& theme_provider,
-    int color_id) {
-  PrintableSkColor original{theme_provider.GetColor(color_id)};
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kColorProviderRedirectionForThemeProvider);
-  PrintableSkColor redirected{theme_provider.GetColor(color_id)};
-
-  return std::make_pair(original, redirected);
-}
 
 // A class that ensures any installed extension is uninstalled before it goes
 // out of scope.  This ensures the temporary directory used to load the
@@ -256,16 +207,16 @@ class ThemeProviderRedirectedEquivalenceTest
     // Only perform mixer initialization once.
     static bool initialized_mixers = false;
     if (!initialized_mixers) {
-#if BUILDFLAG(USE_GTK)
-      // Ensures GTK is configured on supported linux platforms. Initializing
-      // GTK also adds the native GTK ColorMixers.
+#if BUILDFLAG(IS_LINUX)
+      // Ensures LinuxUI is configured on supported linux platforms.
+      // Initializing the toolkit also adds the native toolkit ColorMixers.
       ui::OzonePlatform::InitParams ozone_params;
       ozone_params.single_process = true;
       ui::OzonePlatform::InitializeForUI(ozone_params);
-      auto linux_ui = BuildGtkUi();
-      linux_ui->Initialize();
+      auto linux_ui = CreateLinuxUi();
+      ASSERT_TRUE(linux_ui);
       views::LinuxUI::SetInstance(std::move(linux_ui));
-#endif  // BUILDFLAG(USE_GTK)
+#endif  // BUILDFLAG(IS_LINUX)
 
       // Add the Chrome ColorMixers after native ColorMixers.
       ui::ColorProviderManager::Get().AppendColorProviderInitializer(
@@ -273,13 +224,13 @@ class ThemeProviderRedirectedEquivalenceTest
 
       initialized_mixers = true;
     }
-#if BUILDFLAG(USE_GTK)
+#if BUILDFLAG(IS_LINUX)
     views::LinuxUI::instance()->SetUseSystemThemeCallback(base::BindRepeating(
         [](bool use_system_theme, aura::Window* window) {
           return use_system_theme;
         },
         std::get<SystemTheme>(GetParam()) == SystemTheme::kCustom));
-#endif  // BUILDFLAG(USE_GTK)
+#endif  // BUILDFLAG(IS_LINUX)
 
     const auto param_tuple = GetParam();
     auto color_scheme = std::get<ui::NativeTheme::ColorScheme>(param_tuple);
@@ -289,7 +240,7 @@ class ThemeProviderRedirectedEquivalenceTest
     // ThemeService tracks the global NativeTheme instance for native UI. Update
     // this to reflect test params and propagate any updates.
     native_theme_ = ui::NativeTheme::GetInstanceForNativeUi();
-#if BUILDFLAG(USE_GTK)
+#if BUILDFLAG(IS_LINUX)
     if (system_theme == SystemTheme::kCustom) {
       const auto* linux_ui = views::LinuxUI::instance();
       native_theme_ = linux_ui->GetNativeTheme(nullptr);
@@ -384,12 +335,6 @@ class ThemeProviderRedirectedEquivalenceTest
   bool original_should_use_dark_colors_ = false;
   raw_ptr<ui::NativeTheme> native_theme_;
 };
-
-#define E(color_id, theme_property_id, ...) theme_property_id,
-#define E_CPONLY(color_id, ...)
-static constexpr int kTestIdValues[] = {CHROME_COLOR_IDS};
-#undef E
-#undef E_CPONLY
 
 INSTANTIATE_TEST_SUITE_P(
     ,
@@ -817,66 +762,28 @@ TEST_F(ThemeServiceTest, PolicyThemeColorSet) {
 }
 
 TEST_P(ThemeProviderRedirectedEquivalenceTest, GetColor) {
-  static constexpr const auto kTolerances = base::MakeFixedFlatMap<int, int>(
-      {{ThemeProperties::COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY, 1},
-       {ThemeProperties::COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY_SELECTED, 1},
-       {ThemeProperties::COLOR_STATUS_BUBBLE_INACTIVE, 1},
-       {ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE, 1},
-       {ThemeProperties::COLOR_TAB_GROUP_BOOKMARK_BAR_ORANGE, 1},
-       {ThemeProperties::COLOR_TAB_STROKE_FRAME_INACTIVE, 1},
-       {ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE, 1},
-       {ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE, 1}});
-  auto get_tolerance = [](int id) {
-    auto* it = kTolerances.find(id);
-    if (it != kTolerances.end())
-      return it->second;
-    return 0;
-  };
-
-#if BUILDFLAG(USE_GTK)
+#if BUILDFLAG(IS_LINUX)
   const auto param_tuple = GetParam();
   const auto color_scheme = std::get<ui::NativeTheme::ColorScheme>(param_tuple);
   const auto contrast_mode = std::get<ContrastMode>(param_tuple);
   const auto system_theme = std::get<SystemTheme>(param_tuple);
-  // For GTK, test only the light, non high contrast mode.
-  // TODO(crbug.com/1310397): make a dedicated test for GTK colors.
+  // For LinuxUI, test only the light, non high contrast mode.
+  // TODO(crbug.com/1310397): make a dedicated test for LinuxUI colors.
   if (system_theme == SystemTheme::kCustom &&
       !(color_scheme == ui::NativeTheme::ColorScheme::kLight &&
         contrast_mode == ContrastMode::kNonHighContrast))
     return;
-#endif  // BUILDFLAG(USE_GTK)
+#endif  // BUILDFLAG(IS_LINUX)
 
   const ui::ThemeProvider& theme_provider =
       ThemeService::GetThemeProviderForProfile(profile());
 
-  for (auto color_id : kTestIdValues) {
-    // Verifies that colors with and without the ColorProvider are the same.
-    auto pair = GetOriginalAndRedirected(theme_provider, color_id);
-    auto original = pair.first;
-    auto redirected = pair.second;
-    auto tolerance = get_tolerance(color_id);
+  for (auto color_id : theme_service::test::kTestColorIds) {
     std::string error_message =
-        base::StrCat({ColorIdToString(color_id), " has mismatched values"});
-    if (!tolerance) {
-      EXPECT_EQ(original, redirected) << error_message;
-    } else {
-      EXPECT_LE(std::abs(static_cast<int>(SkColorGetA(original.color) -
-                                          SkColorGetA(redirected.color))),
-                tolerance)
-          << error_message;
-      EXPECT_LE(std::abs(static_cast<int>(SkColorGetR(original.color) -
-                                          SkColorGetR(redirected.color))),
-                tolerance)
-          << error_message;
-      EXPECT_LE(std::abs(static_cast<int>(SkColorGetG(original.color) -
-                                          SkColorGetG(redirected.color))),
-                tolerance)
-          << error_message;
-      EXPECT_LE(std::abs(static_cast<int>(SkColorGetB(original.color) -
-                                          SkColorGetB(redirected.color))),
-                tolerance)
-          << error_message;
-    }
+        base::StrCat({theme_service::test::ColorIdToString(color_id),
+                      " has mismatched values"});
+    theme_service::test::TestOriginalAndRedirectedColorMatched(
+        theme_provider, color_id, error_message);
   }
 }
 

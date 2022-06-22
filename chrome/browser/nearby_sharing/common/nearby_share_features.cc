@@ -15,7 +15,7 @@ const base::Feature kNearbySharing{"NearbySharing",
 // persistently scan and present a notification when a nearby device is
 // attempting to share.
 const base::Feature kNearbySharingBackgroundScanning{
-    "NearbySharingBackgroundScanning", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NearbySharingBackgroundScanning", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables support for Nearby Share on child accounts.
 const base::Feature kNearbySharingChildAccounts{
@@ -34,7 +34,7 @@ const base::Feature kNearbySharingOnePageOnboarding{
 
 // Enables receiving WiFi networks using Nearby Share.
 const base::Feature kNearbySharingReceiveWifiCredentials{
-    "NearbySharingReceiveWifiCredentials", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NearbySharingReceiveWifiCredentials", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables auto-accept functionality when sharing between a user's own devices.
 const base::Feature kNearbySharingSelfShareAutoAccept{

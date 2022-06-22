@@ -13,14 +13,6 @@ StatusController::StatusController() = default;
 
 StatusController::~StatusController() = default;
 
-const ModelTypeSet StatusController::get_updates_request_types() const {
-  return model_neutral_.get_updates_request_types;
-}
-
-void StatusController::set_get_updates_request_types(ModelTypeSet value) {
-  model_neutral_.get_updates_request_types = value;
-}
-
 ModelTypeSet StatusController::get_updated_types() const {
   return model_neutral_.updated_types;
 }
@@ -42,11 +34,6 @@ void StatusController::increment_num_tombstone_updates_downloaded_by(
   model_neutral_.num_tombstone_updates_downloaded_total += value;
 }
 
-void StatusController::increment_num_reflected_updates_downloaded_by(
-    int value) {
-  model_neutral_.num_reflected_updates_downloaded_total += value;
-}
-
 void StatusController::UpdateStartTime() {
   sync_start_time_ = base::Time::Now();
 }
@@ -63,24 +50,8 @@ void StatusController::increment_num_successful_commits() {
   model_neutral_.num_successful_commits++;
 }
 
-void StatusController::increment_num_encryption_conflicts_by(int value) {
-  model_neutral_.num_encryption_conflicts += value;
-}
-
-void StatusController::increment_num_hierarchy_conflicts_by(int value) {
-  model_neutral_.num_hierarchy_conflicts += value;
-}
-
 void StatusController::increment_num_server_conflicts() {
   model_neutral_.num_server_conflicts++;
-}
-
-void StatusController::increment_num_local_overwrites() {
-  model_neutral_.num_local_overwrites++;
-}
-
-void StatusController::increment_num_server_overwrites() {
-  model_neutral_.num_server_overwrites++;
 }
 
 void StatusController::set_last_get_key_result(const SyncerError result) {
@@ -100,32 +71,12 @@ SyncerError StatusController::last_get_key_result() const {
   return model_neutral_.last_get_key_result;
 }
 
-int StatusController::num_server_overwrites() const {
-  return model_neutral_.num_server_overwrites;
-}
-
-int StatusController::num_local_overwrites() const {
-  return model_neutral_.num_local_overwrites;
-}
-
-int StatusController::num_encryption_conflicts() const {
-  return model_neutral_.num_encryption_conflicts;
-}
-
-int StatusController::num_hierarchy_conflicts() const {
-  return model_neutral_.num_hierarchy_conflicts;
-}
-
 int StatusController::num_server_conflicts() const {
   return model_neutral_.num_server_conflicts;
 }
 
 int StatusController::TotalNumConflictingItems() const {
-  int sum = 0;
-  sum += num_encryption_conflicts();
-  sum += num_hierarchy_conflicts();
-  sum += num_server_conflicts();
-  return sum;
+  return num_server_conflicts();
 }
 
 }  // namespace syncer

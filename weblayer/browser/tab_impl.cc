@@ -52,14 +52,18 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "weblayer/browser/autofill_client_impl.h"
@@ -79,7 +83,6 @@
 #include "weblayer/browser/page_load_metrics_initialize.h"
 #include "weblayer/browser/page_specific_content_settings_delegate.h"
 #include "weblayer/browser/password_manager_driver_factory.h"
-#include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
@@ -130,6 +133,7 @@
 #include "weblayer/browser/safe_browsing/weblayer_safe_browsing_tab_observer_delegate.h"
 #include "weblayer/browser/translate_client_impl.h"
 #include "weblayer/browser/url_bar/trusted_cdn_observer.h"
+#include "weblayer/browser/webapps/weblayer_app_banner_manager_android.h"
 #include "weblayer/browser/weblayer_factory_impl_android.h"
 #include "weblayer/browser/webrtc/media_stream_manager.h"
 #include "weblayer/common/features.h"
@@ -435,6 +439,11 @@ TabImpl::TabImpl(ProfileImpl* profile,
   PrerenderTabHelper::CreateForWebContents(web_contents_.get());
 
   webapps::InstallableManager::CreateForWebContents(web_contents_.get());
+
+#if BUILDFLAG(IS_ANDROID)
+  // Must be created after InstallableManager.
+  WebLayerAppBannerManagerAndroid::CreateForWebContents(web_contents_.get());
+#endif
 }
 
 TabImpl::~TabImpl() {
@@ -1121,8 +1130,9 @@ void TabImpl::RequestMediaAccessPermission(
   MediaStreamManager::FromWebContents(web_contents)
       ->RequestMediaAccessPermission(request, std::move(callback));
 #else
-  std::move(callback).Run(
-      {}, blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED, nullptr);
+  std::move(callback).Run(blink::mojom::StreamDevices(),
+                          blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED,
+                          nullptr);
 #endif
 }
 
@@ -1132,15 +1142,25 @@ bool TabImpl::CheckMediaAccessPermission(
     blink::mojom::MediaStreamType type) {
   DCHECK(type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
          type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE);
-  ContentSettingsType content_settings_type =
+  blink::PermissionType permission_type =
       type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE
-          ? ContentSettingsType::MEDIASTREAM_MIC
-          : ContentSettingsType::MEDIASTREAM_CAMERA;
-  return PermissionManagerFactory::GetForBrowserContext(
-             render_frame_host->GetBrowserContext())
-             ->GetPermissionStatusForFrame(content_settings_type,
-                                           render_frame_host, security_origin)
-             .content_setting == CONTENT_SETTING_ALLOW;
+          ? blink::PermissionType::AUDIO_CAPTURE
+          : blink::PermissionType::VIDEO_CAPTURE;
+
+  // TODO(crbug.com/1321100): Remove `security_origin`.
+  if (render_frame_host->GetLastCommittedOrigin().GetURL() != security_origin) {
+    return false;
+  }
+  // It is OK to ignore `security_origin` because it will be calculated from
+  // `render_frame_host` and we always ignore `requesting_origin` for
+  // `AUDIO_CAPTURE` and `VIDEO_CAPTURE`.
+  // `render_frame_host->GetMainFrame()->GetLastCommittedOrigin()` will be used
+  // instead.
+  return render_frame_host->GetBrowserContext()
+             ->GetPermissionController()
+             ->GetPermissionStatusForCurrentDocument(permission_type,
+                                                     render_frame_host) ==
+         blink::mojom::PermissionStatus::GRANTED;
 }
 
 void TabImpl::EnterFullscreenModeForTab(
@@ -1392,16 +1412,13 @@ void TabImpl::InitializeAutofillDriver() {
 
   AutofillClientImpl::CreateForWebContents(web_contents);
 
-  autofill::AutofillManager::AutofillDownloadManagerState
-      enable_autofill_download_manager =
-          autofill::AutofillProvider::is_download_manager_disabled_for_testing()
-              ? autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER
-              : autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER;
-
   autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents, AutofillClientImpl::FromWebContents(web_contents),
-      i18n::GetApplicationLocale(), enable_autofill_download_manager,
-      base::BindRepeating(&autofill::AndroidAutofillManager::Create));
+      base::BindRepeating(&autofill::AndroidDriverInitHook,
+                          AutofillClientImpl::FromWebContents(web_contents),
+                          autofill::AutofillManager::EnableDownloadManager(
+                              !autofill::AutofillProvider::
+                                  is_download_manager_disabled_for_testing())));
 }
 
 #endif  // BUILDFLAG(IS_ANDROID)

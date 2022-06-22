@@ -13,13 +13,14 @@ import './styles.js';
 import '../../common/styles.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {DisplayableImage} from '../../common/constants.js';
 import {getLoadingPlaceholders, isSelectionEvent} from '../../common/utils.js';
-import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosPhoto, WallpaperImage, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
+import {dismissErrorAction, setErrorAction} from '../personalization_actions.js';
+import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosPhoto, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {isGooglePhotosPhoto} from '../utils.js';
 
@@ -28,6 +29,7 @@ import {getTemplate} from './google_photos_photos_by_album_id_element.html.js';
 import {fetchGooglePhotosAlbum, selectWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 
+const ERROR_ID = 'GooglePhotosByAlbumId';
 const PLACEHOLDER_ID = 'placeholder';
 
 /** Returns placeholders to show while Google Photos photos are loading. */
@@ -100,7 +102,7 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   private currentSelected_: CurrentWallpaper|null;
 
   /** The pending selected wallpaper. */
-  private pendingSelected_: FilePath|GooglePhotosPhoto|WallpaperImage|null;
+  private pendingSelected_: DisplayableImage|null;
 
   /** The list of photos by album id. */
   private photosByAlbumId_: Record<string, GooglePhotosPhoto[]|null|undefined>|
@@ -168,6 +170,9 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   /** Invoked on changes to this element's |hidden| state. */
   private onHiddenChanged_(hidden: GooglePhotosPhotosByAlbumId['hidden']) {
     if (hidden) {
+      // If |hidden|, the error associated with this element will have lost
+      // user-facing context so it should be dismissed.
+      this.dispatch(dismissErrorAction(ERROR_ID, /*fromUser=*/ false));
       return;
     }
 
@@ -175,6 +180,17 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
     // iron-list will render incorrectly. Force relayout by invalidating the
     // iron-list when this element becomes visible.
     afterNextRender(this, () => this.$.grid.fire('iron-resize'));
+
+    // When the user reselects an album that previously failed to load we should
+    // automatically retry loading the selected album. Placeholders should be
+    // shown while loading is in progress.
+    if (this.albumId && this.photosByAlbumId_ && this.photosByAlbumIdLoading_ &&
+        this.photosByAlbumId_[this.albumId] === null &&
+        !this.photosByAlbumIdLoading_[this.albumId]) {
+      fetchGooglePhotosAlbum(
+          this.wallpaperProvider_, this.getStore(), this.albumId);
+      this.album_ = getPlaceholders();
+    }
   }
 
   /** Invoked on changes to |albumId|, |albums_|, or |photosByAlbumId_|. */
@@ -206,6 +222,31 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
       return;
     }
 
+    // If the currently selected album fails to load, display an error to the
+    // user that allows them to make another attempt.
+    if (photosByAlbumId[albumId] === null) {
+      if (!this.hidden) {
+        this.dispatch(setErrorAction({
+          id: ERROR_ID,
+          message: this.i18n('googlePhotosError'),
+          dismiss: {
+            message: this.i18n('googlePhotosRetry'),
+            callback: (fromUser: boolean) => {
+              if (fromUser) {
+                // Post the reattempt instead of performing it immediately to
+                // avoid updating the personalization store from the same
+                // sequence that generated this event.
+                setTimeout(
+                    () => fetchGooglePhotosAlbum(
+                        this.wallpaperProvider_, this.getStore(), albumId));
+              }
+            },
+          },
+        }));
+      }
+      return;
+    }
+
     // NOTE: |album_| is updated in place to avoid resetting the scroll
     // position of the grid which would otherwise occur during reassignment.
     this.updateList(
@@ -231,8 +272,17 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
     assert(e.model.photo);
     if (!this.isPhotoPlaceholder_(e.model.photo) && isSelectionEvent(e)) {
       selectWallpaper(e.model.photo, this.wallpaperProvider_, this.getStore());
-      recordWallpaperGooglePhotosSourceUMA(WallpaperGooglePhotosSource.Albums);
+      recordWallpaperGooglePhotosSourceUMA(WallpaperGooglePhotosSource.ALBUMS);
     }
+  }
+
+  /** Returns the aria label for the specified |photo|. */
+  private getPhotoAriaLabel_(photo: GooglePhotosPhoto|null): string|undefined {
+    if (photo) {
+      return photo.id === PLACEHOLDER_ID ? this.i18n('ariaLabelLoading') :
+                                           photo.name;
+    }
+    return undefined;
   }
 
   /** Returns whether the specified |photo| is a placeholder. */
@@ -254,7 +304,7 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
       return true;
     }
     if (!pendingSelected && !!currentSelected &&
-        currentSelected.type === WallpaperType.kGooglePhotos &&
+        currentSelected.type === WallpaperType.kOnceGooglePhotos &&
         currentSelected.key === photo.id) {
       return true;
     }

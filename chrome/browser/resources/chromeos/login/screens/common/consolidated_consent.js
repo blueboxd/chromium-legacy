@@ -126,12 +126,6 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
     // Text displayed in the Arc Terms of Service webview.
     this.arcTosContent_ = '';
 
-    /**
-     * If online ARC ToS failed to load in the demo mode, the offline version
-     * is loaded and `isArcTosUsingOfflineTerms_` is set to true.
-     */
-    this.isArcTosUsingOfflineTerms_ = false;
-
     // Flag that ensures that OOBE configuration is applied only once.
     this.configuration_applied_ = false;
 
@@ -187,9 +181,7 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('ConsolidatedConsentScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('ConsolidatedConsentScreen');
     this.updateLocalizedContent();
 
     if (loadTimeData.valueExists(
@@ -215,8 +207,9 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
     // If the ToS section is hidden, apply the remove the top border of the
     // first opt-in.
-    if (this.isTosHidden_)
+    if (this.isTosHidden_) {
       this.$.usageStats.classList.add('first-optin-no-tos');
+    }
 
     this.googleEulaUrl_ = data['googleEulaUrl'];
     this.crosEulaUrl_ = data['crosEulaUrl'];
@@ -234,18 +227,22 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   }
 
   applyOobeConfiguration_() {
-    if (this.configuration_applied_)
+    if (this.configuration_applied_) {
       return;
+    }
 
     var configuration = Oobe.getInstance().getOobeConfiguration();
-    if (!configuration)
+    if (!configuration) {
       return;
+    }
 
-    if (configuration.eulaSendStatistics)
+    if (configuration.eulaSendStatistics) {
       this.usageChecked = true;
+    }
 
-    if (configuration.eulaAutoAccept && configuration.arcTosAutoAccept)
+    if (configuration.eulaAutoAccept && configuration.arcTosAutoAccept) {
       this.onAcceptClick_();
+    }
   }
 
   // If ARC is disabled, don't show ARC ToS.
@@ -254,8 +251,9 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   }
 
   initializeArcTos_(countryCode) {
-    if (this.isArcTosInitialized_)
+    if (this.isArcTosInitialized_) {
       return;
+    }
 
     this.isArcTosInitialized_ = true;
     const webview = this.$.arcTosWebview;
@@ -331,12 +329,6 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
     const webview = this.$.arcTosWebview;
 
     var loadFailureCallback = () => {
-      if (this.isDemo_) {
-        this.isArcTosUsingOfflineTerms_ = true;
-        WebViewHelper.loadUrlContentToWebView(
-            webview, ARC_TERMS_URL, WebViewHelper.ContentType.HTML);
-        return;
-      }
       this.setUIStep(ConsolidatedConsentScreenState.ERROR);
     };
 
@@ -415,29 +407,15 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
   onArcTosContentLoad_() {
     const webview = this.$.arcTosWebview;
-
-    if (this.isArcTosUsingOfflineTerms_) {
-      // Process offline ToS. Scripts added to web view by addContentScripts()
-      // are not executed when using data url.
-      var setParameters =
-          `document.body.classList.add('large-view', 'offline-terms');`;
-      webview.executeScript({code: setParameters});
-      webview.insertCSS({file: 'playstore.css'});
-
-      // Load the offline terms for privacy policy
-      WebViewHelper.loadUrlContentToWebView(
-          webview, PRIVACY_POLICY_URL, WebViewHelper.ContentType.PDF);
-    } else {
-      webview.executeScript({code: 'getPrivacyPolicyLink();'}, (results) => {
-        if (results && results.length == 1 && typeof results[0] == 'string') {
-          this.loadPrivacyPolicyWebview_(results[0]);
-        } else {
-          var defaultLink = 'https://www.google.com/intl/' +
-              this.getCurrentLanguage_() + '/policies/privacy/';
-          this.loadPrivacyPolicyWebview_(defaultLink);
-        }
-      });
-    }
+    webview.executeScript({code: 'getPrivacyPolicyLink();'}, (results) => {
+      if (results && results.length == 1 && typeof results[0] == 'string') {
+        this.loadPrivacyPolicyWebview_(results[0]);
+      } else {
+        var defaultLink = 'https://www.google.com/intl/' +
+            this.getCurrentLanguage_() + '/policies/privacy/';
+        this.loadPrivacyPolicyWebview_(defaultLink);
+      }
+    });
 
     // In demo mode, consents are not recorded, so no need to store the ToS
     // Content.
@@ -445,8 +423,9 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
       // Process online ToS.
       var getToSContent = {code: 'getToSContent();'};
       webview.executeScript(getToSContent, (results) => {
-        if (!results || results.length != 1 || typeof results[0] !== 'string')
+        if (!results || results.length != 1 || typeof results[0] !== 'string') {
           return;
+        }
         this.arcTosContent_ = results[0];
       });
     }
@@ -523,30 +502,35 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   }
 
   getTitle_(locale, isTosHidden, isChildAccount) {
-    if (isTosHidden)
+    if (isTosHidden) {
       return this.i18n('consolidatedConsentHeaderManaged');
+    }
 
-    if (isChildAccount)
+    if (isChildAccount) {
       return this.i18n('consolidatedConsentHeaderChild');
+    }
 
     return this.i18n('consolidatedConsentHeader');
   }
 
   getUsageText_(locale, isChildAccount, isArcEnabled, isDemo, isOwner) {
     if (this.isArcOptInsHidden_(isArcEnabled, isDemo)) {
-      if (isOwner)
+      if (isOwner) {
         return this.i18n('consolidatedConsentUsageOptInArcDisabledOwner');
+      }
       return this.i18n('consolidatedConsentUsageOptInArcDisabled');
     }
 
     if (isChildAccount) {
-      if (isOwner)
+      if (isOwner) {
         return this.i18n('consolidatedConsentUsageOptInChildOwner');
+      }
       return this.i18n('consolidatedConsentUsageOptInChild');
     }
 
-    if (isOwner)
+    if (isOwner) {
       return this.i18n('consolidatedConsentUsageOptInOwner');
+    }
     return this.i18n('consolidatedConsentUsageOptIn');
   }
 
@@ -554,34 +538,39 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
       locale, isChildAccount, isArcEnabled, isDemo, isOwner) {
     if (this.isArcOptInsHidden_(isArcEnabled, isDemo)) {
       if (isChildAccount) {
-        if (isOwner)
+        if (isOwner) {
           return this.i18nAdvanced(
               'consolidatedConsentUsageOptInLearnMoreArcDisabledChildOwner');
+        }
         return this.i18nAdvanced(
             'consolidatedConsentUsageOptInLearnMoreArcDisabledChild');
       }
 
-      if (isOwner)
+      if (isOwner) {
         return this.i18nAdvanced(
             'consolidatedConsentUsageOptInLearnMoreArcDisabledOwner');
+      }
       return this.i18nAdvanced(
           'consolidatedConsentUsageOptInLearnMoreArcDisabled');
     }
     if (isChildAccount) {
-      if (isOwner)
+      if (isOwner) {
         return this.i18nAdvanced(
             'consolidatedConsentUsageOptInLearnMoreChildOwner');
+      }
       return this.i18nAdvanced('consolidatedConsentUsageOptInLearnMoreChild');
     }
 
-    if (isOwner)
+    if (isOwner) {
       return this.i18nAdvanced('consolidatedConsentUsageOptInLearnMoreOwner');
+    }
     return this.i18nAdvanced('consolidatedConsentUsageOptInLearnMore');
   }
 
   getBackupLearnMoreText_(locale, isChildAccount) {
-    if (isChildAccount)
+    if (isChildAccount) {
       return this.i18nAdvanced('consolidatedConsentBackupOptInLearnMoreChild');
+    }
     return this.i18nAdvanced('consolidatedConsentBackupOptInLearnMore');
   }
 

@@ -15,8 +15,10 @@ using ui::GetLastEGLErrorString;
 namespace gl {
 
 NativeViewGLSurfaceEGLX11GLES2::NativeViewGLSurfaceEGLX11GLES2(
+    gl::GLDisplayEGL* display,
     x11::Window window)
-    : NativeViewGLSurfaceEGLX11(x11::Window::None), parent_window_(window) {}
+    : NativeViewGLSurfaceEGLX11(display, x11::Window::None),
+      parent_window_(window) {}
 
 bool NativeViewGLSurfaceEGLX11GLES2::InitializeNativeWindow() {
   auto* connection = GetXNativeConnection();
@@ -92,7 +94,7 @@ EGLConfig NativeViewGLSurfaceEGLX11GLES2::GetConfig() {
                                EGL_NONE};
     config_attribs[kBufferSizeOffset] = geometry->depth;
 
-    EGLDisplay display = GetHardwareDisplay();
+    EGLDisplay display = GLSurfaceEGL::GetGLDisplayEGL()->GetHardwareDisplay();
     x11::VisualId visual_id;
     ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
         true, &visual_id, nullptr, nullptr, nullptr);

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/debug/debug_overlay_handler.h"
 
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -20,6 +21,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "ui/display/display_switches.h"
 #include "ui/snapshot/snapshot.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace chromeos {
 
@@ -99,6 +104,7 @@ DebugOverlayHandler::~DebugOverlayHandler() = default;
 void DebugOverlayHandler::DeclareJSCallbacks() {
   AddCallback("debug.captureScreenshot",
               &DebugOverlayHandler::HandleCaptureScreenshot);
+  AddCallback("debug.toggleColorMode", &DebugOverlayHandler::ToggleColorMode);
 }
 
 void DebugOverlayHandler::DeclareLocalizedValues(
@@ -134,6 +140,11 @@ void DebugOverlayHandler::HandleCaptureScreenshot(const std::string& name) {
         base::BindOnce(&RunStoreScreenshotOnTaskRunner, screenshot_dir_,
                        filename));
   }
+}
+
+void DebugOverlayHandler::ToggleColorMode() {
+  ash::ColorProvider::Get()->SetDarkModeEnabledForTest(  // IN-TEST
+      !ash::ColorProvider::Get()->IsDarkModeEnabled());
 }
 
 }  // namespace chromeos

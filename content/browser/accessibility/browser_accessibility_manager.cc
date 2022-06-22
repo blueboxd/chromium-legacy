@@ -918,6 +918,29 @@ void BrowserAccessibilityManager::SignalEndOfTest() {
   delegate_->AccessibilityPerformAction(action_data);
 }
 
+void BrowserAccessibilityManager::Scroll(const BrowserAccessibility& node,
+                                         ax::mojom::Action scroll_action) {
+  if (!delegate_)
+    return;
+
+  switch (scroll_action) {
+    case ax::mojom::Action::kScrollBackward:
+    case ax::mojom::Action::kScrollForward:
+    case ax::mojom::Action::kScrollUp:
+    case ax::mojom::Action::kScrollDown:
+    case ax::mojom::Action::kScrollLeft:
+    case ax::mojom::Action::kScrollRight:
+      break;
+    default:
+      NOTREACHED() << "Cannot call Scroll with action=" << scroll_action;
+  }
+  ui::AXActionData action_data;
+  action_data.action = scroll_action;
+  action_data.target_node_id = node.GetId();
+  delegate_->AccessibilityPerformAction(action_data);
+  BrowserAccessibilityStateImpl::GetInstance()->OnAccessibilityApiUsage();
+}
+
 void BrowserAccessibilityManager::ScrollToMakeVisible(
     const BrowserAccessibility& node,
     gfx::Rect subfocus,
@@ -1467,8 +1490,11 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
     if (wrapper == GetLastFocusedNode())
       SetLastFocusedNode(nullptr);
 
-    // We fire these here, immediately, to ensure we can send platform
-    // notifications prior to the actual destruction of the object.
+    // TODO(accessibility): Move this to the AXEventGenerator which fires
+    // MENU_POPUP_START when a node with the menu role is created. The issue to
+    // be solved is that after the AXEventGenerator adds MENU_POPUP_END, the
+    // node gets removed from the tree. Then PostprocessEvents removes the
+    // events from that now-removed node, thus MENU_POPUP_END never gets fired.
     if (node->GetRole() == ax::mojom::Role::kMenu)
       FireGeneratedEvent(ui::AXEventGenerator::Event::MENU_POPUP_END, wrapper);
   }

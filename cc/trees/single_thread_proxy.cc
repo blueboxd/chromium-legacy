@@ -444,6 +444,13 @@ void SingleThreadProxy::NotifyReadyToActivate() {
     scheduler_on_impl_thread_->NotifyReadyToActivate();
 }
 
+bool SingleThreadProxy::IsReadyToActivate() {
+  DCHECK(!task_runner_provider_->HasImplThread() ||
+         task_runner_provider_->IsImplThread());
+  return scheduler_on_impl_thread_ &&
+         scheduler_on_impl_thread_->IsReadyToActivate();
+}
+
 void SingleThreadProxy::NotifyReadyToDraw() {
   DCHECK(!task_runner_provider_->HasImplThread() ||
          task_runner_provider_->IsImplThread());
@@ -707,6 +714,7 @@ void SingleThreadProxy::CompositeImmediatelyForTest(
   base::AutoReset<bool> inside_composite(&inside_synchronous_composite_, true);
 
   if (layer_tree_frame_sink_lost_) {
+    auto sync = layer_tree_host_->ForceSyncCompositeForTest();  // IN-TEST
     RequestNewLayerTreeFrameSink();
     // RequestNewLayerTreeFrameSink could have synchronously created an output
     // surface, so check again before returning.
@@ -887,11 +895,6 @@ void SingleThreadProxy::SetRenderFrameObserver(
   DCHECK(task_runner_provider_->IsMainThread());
   DebugScopedSetImplThread impl(task_runner_provider_);
   host_impl_->SetRenderFrameObserver(std::move(observer));
-}
-
-void SingleThreadProxy::SetEnableFrameRateThrottling(
-    bool enable_frame_rate_throttling) {
-  DCHECK(task_runner_provider_->IsMainThread());
 }
 
 uint32_t SingleThreadProxy::GetAverageThroughput() const {
@@ -1130,6 +1133,7 @@ void SingleThreadProxy::ScheduledActionBeginLayerTreeFrameSinkCreation() {
     ScheduleRequestNewLayerTreeFrameSink();
   } else {
     DebugScopedSetMainThread main(task_runner_provider_);
+    auto sync = layer_tree_host_->ForceSyncCompositeForTest();  // IN-TEST
     RequestNewLayerTreeFrameSink();
   }
 }

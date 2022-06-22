@@ -1506,6 +1506,14 @@ bool BrowserAccessibility::IsDescendantOfAtomicTextField() const {
   return node()->IsDescendantOfAtomicTextField();
 }
 
+bool BrowserAccessibility::IsPlatformDocument() const {
+  return ui::IsPlatformDocument(GetRole());
+}
+
+bool BrowserAccessibility::IsPlatformDocumentWithContent() const {
+  return IsPlatformDocument() && GetChildCount();
+}
+
 gfx::NativeViewAccessible BrowserAccessibility::GetLowestPlatformAncestor()
     const {
   BrowserAccessibility* lowest_platform_ancestor =
@@ -1902,6 +1910,14 @@ bool BrowserAccessibility::AccessibilityPerformAction(
       return true;
     case ax::mojom::Action::kDecrement:
       manager_->Decrement(*this);
+      return true;
+    case ax::mojom::Action::kScrollBackward:
+    case ax::mojom::Action::kScrollForward:
+    case ax::mojom::Action::kScrollUp:
+    case ax::mojom::Action::kScrollDown:
+    case ax::mojom::Action::kScrollLeft:
+    case ax::mojom::Action::kScrollRight:
+      manager_->Scroll(*this, data.action);
       return true;
     default:
       return false;

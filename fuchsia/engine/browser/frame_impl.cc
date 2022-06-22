@@ -32,7 +32,7 @@
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/permission_controller_delegate.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -59,8 +59,10 @@
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/messaging/web_message_port.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/mojom/navigation/was_activated_option.mojom.h"
 #include "ui/accessibility/platform/fuchsia/semantic_provider_impl.h"
 #include "ui/aura/window.h"
@@ -69,6 +71,7 @@
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -184,17 +187,17 @@ FrameImplMap& WebContentsToFrameImplMap() {
   return frame_impl_map;
 }
 
-content::PermissionType FidlPermissionTypeToContentPermissionType(
+blink::PermissionType FidlPermissionTypeToContentPermissionType(
     fuchsia::web::PermissionType fidl_type) {
   switch (fidl_type) {
     case fuchsia::web::PermissionType::MICROPHONE:
-      return content::PermissionType::AUDIO_CAPTURE;
+      return blink::PermissionType::AUDIO_CAPTURE;
     case fuchsia::web::PermissionType::CAMERA:
-      return content::PermissionType::VIDEO_CAPTURE;
+      return blink::PermissionType::VIDEO_CAPTURE;
     case fuchsia::web::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return content::PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+      return blink::PermissionType::PROTECTED_MEDIA_IDENTIFIER;
     case fuchsia::web::PermissionType::PERSISTENT_STORAGE:
-      return content::PermissionType::DURABLE_STORAGE;
+      return blink::PermissionType::DURABLE_STORAGE;
   }
 }
 
@@ -203,16 +206,16 @@ void HandleMediaPermissionsRequestResult(
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback,
     const std::vector<blink::mojom::PermissionStatus>& result) {
-  blink::MediaStreamDevices devices;
+  blink::mojom::StreamDevices devices;
 
   int result_pos = 0;
 
   if (request.audio_type ==
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
     if (result[result_pos] == blink::mojom::PermissionStatus::GRANTED) {
-      devices.push_back(blink::MediaStreamDevice(
+      devices.audio_device = blink::MediaStreamDevice(
           request.audio_type, request.requested_audio_device_id,
-          /*name=*/""));
+          /*name=*/"");
     }
     result_pos++;
   }
@@ -220,16 +223,17 @@ void HandleMediaPermissionsRequestResult(
   if (request.video_type ==
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
     if (result[result_pos] == blink::mojom::PermissionStatus::GRANTED) {
-      devices.push_back(blink::MediaStreamDevice(
+      devices.video_device = blink::MediaStreamDevice(
           request.video_type, request.requested_video_device_id,
-          /*name=*/""));
+          /*name=*/"");
     }
   }
 
   std::move(callback).Run(
       devices,
-      devices.empty() ? blink::mojom::MediaStreamRequestResult::NO_HARDWARE
-                      : blink::mojom::MediaStreamRequestResult::OK,
+      (!devices.audio_device.has_value() && !devices.video_device.has_value())
+          ? blink::mojom::MediaStreamRequestResult::NO_HARDWARE
+          : blink::mojom::MediaStreamRequestResult::OK,
       nullptr);
 }
 
@@ -1146,7 +1150,7 @@ void FrameImpl::SetPermissionState(
     return;
   }
 
-  content::PermissionType type =
+  blink::PermissionType type =
       FidlPermissionTypeToContentPermissionType(fidl_permission.type());
 
   blink::mojom::PermissionStatus state =
@@ -1157,7 +1161,7 @@ void FrameImpl::SetPermissionState(
   // TODO(crbug.com/1136994): Remove this once the PermissionManager API is
   // available.
   if (web_origin_string == "*" &&
-      type == content::PermissionType::PROTECTED_MEDIA_IDENTIFIER) {
+      type == blink::PermissionType::PROTECTED_MEDIA_IDENTIFIER) {
     permission_controller_.SetDefaultPermissionState(type, state);
     return;
   }
@@ -1231,24 +1235,24 @@ void FrameImpl::RequestMediaAccessPermission(
     content::MediaResponseCallback callback) {
   DCHECK_EQ(web_contents_.get(), web_contents);
 
-  std::vector<content::PermissionType> permissions;
+  std::vector<blink::PermissionType> permissions;
 
   if (request.audio_type ==
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
-    permissions.push_back(content::PermissionType::AUDIO_CAPTURE);
+    permissions.push_back(blink::PermissionType::AUDIO_CAPTURE);
   } else if (request.audio_type != blink::mojom::MediaStreamType::NO_SERVICE) {
     std::move(callback).Run(
-        blink::MediaStreamDevices(),
+        blink::mojom::StreamDevices(),
         blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED, nullptr);
     return;
   }
 
   if (request.video_type ==
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
-    permissions.push_back(content::PermissionType::VIDEO_CAPTURE);
+    permissions.push_back(blink::PermissionType::VIDEO_CAPTURE);
   } else if (request.video_type != blink::mojom::MediaStreamType::NO_SERVICE) {
     std::move(callback).Run(
-        blink::MediaStreamDevices(),
+        blink::mojom::StreamDevices(),
         blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED, nullptr);
     return;
   }
@@ -1257,16 +1261,26 @@ void FrameImpl::RequestMediaAccessPermission(
       request.render_process_id, request.render_frame_id);
   if (!render_frame_host) {
     std::move(callback).Run(
-        blink::MediaStreamDevices(),
+        blink::mojom::StreamDevices(),
         blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
     return;
   }
 
-  auto* permission_controller =
-      web_contents_->GetBrowserContext()->GetPermissionControllerDelegate();
-  permission_controller->RequestPermissions(
-      permissions, render_frame_host, request.security_origin,
-      request.user_gesture,
+  if (url::Origin::Create(request.security_origin) !=
+      render_frame_host->GetLastCommittedOrigin()) {
+    std::move(callback).Run(
+        blink::mojom::StreamDevices(),
+        blink::mojom::MediaStreamRequestResult::INVALID_SECURITY_ORIGIN,
+        nullptr);
+    return;
+  }
+
+  content::PermissionController* permission_controller =
+      web_contents_->GetBrowserContext()->GetPermissionController();
+  DCHECK(permission_controller);
+
+  permission_controller->RequestPermissionsFromCurrentDocument(
+      permissions, render_frame_host, request.user_gesture,
       base::BindOnce(&HandleMediaPermissionsRequestResult, request,
                      std::move(callback)));
 }
@@ -1275,22 +1289,31 @@ bool FrameImpl::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     blink::mojom::MediaStreamType type) {
-  content::PermissionType permission;
+  blink::PermissionType permission;
   switch (type) {
     case blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE:
-      permission = content::PermissionType::AUDIO_CAPTURE;
+      permission = blink::PermissionType::AUDIO_CAPTURE;
       break;
     case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
-      permission = content::PermissionType::VIDEO_CAPTURE;
+      permission = blink::PermissionType::VIDEO_CAPTURE;
       break;
     default:
       NOTREACHED();
       return false;
   }
-  auto* permission_controller =
-      web_contents_->GetBrowserContext()->GetPermissionControllerDelegate();
-  return permission_controller->GetPermissionStatusForFrame(
-             permission, render_frame_host, security_origin) ==
+
+  // TODO(crbug.com/1321100): Remove `security_origin`.
+  if (url::Origin::Create(security_origin) !=
+      render_frame_host->GetLastCommittedOrigin()) {
+    return false;
+  }
+
+  content::PermissionController* permission_controller =
+      web_contents_->GetBrowserContext()->GetPermissionController();
+  DCHECK(permission_controller);
+
+  return permission_controller->GetPermissionStatusForCurrentDocument(
+             permission, render_frame_host) ==
          blink::mojom::PermissionStatus::GRANTED;
 }
 

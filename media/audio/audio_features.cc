@@ -6,13 +6,8 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 
 namespace features {
-
-// Allows usage of OS-level (platform) audio encoders.
-const base::Feature kPlatformAudioEncoder{"PlatformAudioEncoder",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When the audio service in a separate process, kill it when a hang is
 // detected. It will be restarted when needed.
@@ -38,7 +33,7 @@ const base::Feature kUseAAudioDriver{"UseAAudioDriver",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 const base::Feature kCrOSSystemAEC{"CrOSSystemAECWithBoardTuningsAllowed",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kCrOSSystemAECDeactivatedGroups{

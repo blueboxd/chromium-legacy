@@ -19,6 +19,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/drive/drive_integration_service.h"
@@ -365,6 +366,46 @@ TEST(DownloadPrefsTest, AutoOpenSetByPolicyBlobURL) {
   EXPECT_FALSE(prefs.IsAutoOpenByPolicy(kDisallowedURL, kFilePath));
   EXPECT_TRUE(prefs.IsAutoOpenByPolicy(kBlobAllowedURL, kFilePath));
   EXPECT_FALSE(prefs.IsAutoOpenByPolicy(kBlobDisallowedURL, kFilePath));
+}
+
+TEST(DownloadPrefsTest, Pdf) {
+  const base::FilePath kPdfFile(FILE_PATH_LITERAL("abcd.pdf"));
+  const GURL kURL("http://basic.com");
+
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile profile;
+  DownloadPrefs prefs(&profile);
+
+  // Consistency check.
+  EXPECT_FALSE(prefs.IsAutoOpenByUserUsed());
+  EXPECT_FALSE(prefs.IsAutoOpenEnabled(kURL, kPdfFile));
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // ChromeOS always has a "SystemReader" that opens in a tab.
+  EXPECT_TRUE(prefs.ShouldOpenPdfInSystemReader());
+#elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+  EXPECT_FALSE(prefs.ShouldOpenPdfInSystemReader());
+#endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
+  prefs.SetShouldOpenPdfInSystemReader(true);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // Using the system reader does not imply auto-open on ChromeOS.
+  EXPECT_FALSE(prefs.IsAutoOpenByUserUsed());
+  EXPECT_FALSE(prefs.IsAutoOpenEnabled(kURL, kPdfFile));
+  EXPECT_TRUE(prefs.ShouldOpenPdfInSystemReader());
+#elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+  EXPECT_TRUE(prefs.IsAutoOpenByUserUsed());
+  EXPECT_TRUE(prefs.IsAutoOpenEnabled(kURL, kPdfFile));
+  EXPECT_TRUE(prefs.ShouldOpenPdfInSystemReader());
+#else
+  EXPECT_FALSE(prefs.IsAutoOpenByUserUsed());
+  EXPECT_FALSE(prefs.IsAutoOpenEnabled(kURL, kPdfFile));
+  // Note ShouldOpenPdfInSystemReader is not declared on non-Desktop.
+#endif
 }
 
 TEST(DownloadPrefsTest, MissingDefaultPathCorrected) {

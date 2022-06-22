@@ -22,10 +22,9 @@ namespace {
 const char kAuthorizationHeaderFormat[] = "Bearer %s";
 const char kSecureConnectApiGetSecondaryGoogleAccountUsageUrl[] =
     "https://secureconnect-pa.clients6.google.com/"
-    "v1:getManagedAccountsSigninRestriction";
+    "v1:getManagedAccountsSigninRestriction?policy_name="
+    "SecondaryGoogleAccountUsage";
 const char kJsonContentType[] = "application/json";
-const char kChromeOSPolicyHeader[] = "x-chromeos-policy";
-const char kSecondaryGoogleAccountUsage[] = "SecondaryGoogleAccountUsage";
 // Presence of this key in the user info response indicates whether the user is
 // on a hosted domain.
 const char kHostedDomainKey[] = "hd";
@@ -70,9 +69,7 @@ std::unique_ptr<network::SimpleURLLoader> CreateUrlLoader(
       net::HttpRequestHeaders::kAuthorization,
       base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
-  // Add header to fetch the SecondaryGoogleAccountUsage policy from the API.
-  resource_request->headers.SetHeader(kChromeOSPolicyHeader,
-                                      kSecondaryGoogleAccountUsage);
+
   auto url_loader =
       network::SimpleURLLoader::Create(std::move(resource_request), annotation);
   return url_loader;
@@ -94,6 +91,8 @@ UserCloudSigninRestrictionPolicyFetcherChromeOS::
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : email_(email), url_loader_factory_(url_loader_factory) {
   DCHECK(url_loader_factory_);
+  user_info_fetcher_ =
+      std::make_unique<policy::UserInfoFetcher>(this, url_loader_factory_);
 }
 
 UserCloudSigninRestrictionPolicyFetcherChromeOS::
@@ -123,7 +122,8 @@ void UserCloudSigninRestrictionPolicyFetcherChromeOS::FetchAccessToken() {
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
       {GaiaConstants::kGoogleUserInfoEmail,
-       GaiaConstants::kGoogleUserInfoProfile});
+       GaiaConstants::kGoogleUserInfoProfile,
+       GaiaConstants::kSecureConnectOAuth2Scope});
 }
 
 void UserCloudSigninRestrictionPolicyFetcherChromeOS::OnGetTokenSuccess(
@@ -148,9 +148,6 @@ std::string UserCloudSigninRestrictionPolicyFetcherChromeOS::GetConsumerName()
 }
 
 void UserCloudSigninRestrictionPolicyFetcherChromeOS::FetchUserInfo() {
-  // TODO(b/224743604): Inject UserInfoFetcher as a dependency.
-  user_info_fetcher_ =
-      std::make_unique<policy::UserInfoFetcher>(this, url_loader_factory_);
   user_info_fetcher_->Start(access_token_);
 }
 

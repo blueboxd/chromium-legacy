@@ -64,7 +64,6 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const sk_sp<SkData>& data);
   void Write(const SkColorSpace* data);
   void Write(const SkSamplingOptions&);
-  void Write(const sk_sp<SkTextBlob>& blob);
   void Write(const sk_sp<GrSlug>& slug);
   void Write(SkYUVColorSpace yuv_color_space);
   void Write(SkYUVAInfo::PlaneConfig plane_config);
@@ -97,6 +96,13 @@ class CC_PAINT_EXPORT PaintOpWriter {
 
   // Aligns the memory to the given alignment.
   void AlignMemory(size_t alignment);
+
+  void AssertAlignment(size_t alignment) {
+#if DCHECK_IS_ON()
+    uintptr_t memory = reinterpret_cast<uintptr_t>(memory_.get());
+    DCHECK_EQ(base::bits::AlignUp(memory, alignment), memory);
+#endif
+  }
 
   // sk_sp is implicitly convertible to uint8_t (likely via implicit bool
   // conversion). In order to avoid accidentally calling that overload instead
@@ -171,7 +177,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void WriteImage(const DecodedDrawImage& decoded_draw_image);
   void WriteImage(uint32_t transfer_cache_entry_id, bool needs_mips);
   void WriteImage(const gpu::Mailbox& mailbox);
-
+  void DidWrite(size_t bytes_written);
   void EnsureBytes(size_t required_bytes);
   sk_sp<PaintShader> TransformShaderIfNecessary(
       const PaintShader* original,

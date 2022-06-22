@@ -177,12 +177,6 @@ const base::FeatureParam<bool> kPlatformProvidedTrustTokenIssuance{
 const base::Feature kWebSocketReassembleShortMessages{
     "WebSocketReassembleShortMessages", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable support for ACCEPT_CH H2/3 frame as part of Client Hint Reliability.
-// See:
-// https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02#section-4.3
-const base::Feature kAcceptCHFrame{"AcceptCHFrame",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kSCTAuditingRetryReports{"SCTAuditingRetryReports",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -263,7 +257,7 @@ const base::Feature kURLLoaderSyncClient{"URLLoaderSyncClient",
 
 // Combine URLLoaderClient::OnReceiveResponse and OnStartLoadingResponseBody.
 const base::Feature kCombineResponseBody{"CombineResponseBody",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Don't wait for database write before responding to
 // RestrictedCookieManager::SetCookieFromString.

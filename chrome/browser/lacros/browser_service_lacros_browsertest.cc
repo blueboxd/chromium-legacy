@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
 #include "chrome/browser/lacros/browser_service_lacros.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
@@ -33,7 +34,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom-test-utils.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,8 +105,7 @@ class BrowserServiceLacrosBrowserTest : public InProcessBrowserTest {
   void SetSessionType(SessionType type) {
     BrowserInitParamsPtr init_params = BrowserInitParams::New();
     init_params->session_type = type;
-    chromeos::LacrosService::Get()->SetInitParamsForTests(
-        std::move(init_params));
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
   }
 
   void CreateFullscreenWindow() {
@@ -121,7 +121,7 @@ class BrowserServiceLacrosBrowserTest : public InProcessBrowserTest {
     // Verify `AppSession` object is created when `NewFullscreenWindow` is
     // called in the Web Kiosk session. Then, disable the `AttemptUserExit`
     // method to do nothing.
-    if (chromeos::LacrosService::Get()->init_params()->session_type ==
+    if (chromeos::BrowserInitParams::Get()->session_type ==
         SessionType::kWebKioskSession) {
       chromeos::AppSession* app_session =
           KioskSessionServiceLacros::Get()->GetAppSessionForTesting();
@@ -424,6 +424,30 @@ IN_PROC_BROWSER_TEST_F(BrowserServiceLacrosWindowlessBrowserTest,
             tab_strip->GetWebContentsAt(0)->GetLastCommittedURL().path());
 }
 
+// Tests that requesting an incognito window when incognito mode is disallowed
+// does not crash, and opens a regular window instead. Regression test for
+// https://crbug.com/1314473
+IN_PROC_BROWSER_TEST_F(BrowserServiceLacrosBrowserTest,
+                       NewWindow_IncognitoDisallowed) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* main_profile = profile_manager->GetProfileByPath(
+      ProfileManager::GetPrimaryUserProfilePath());
+  // Disallow incognito.
+  IncognitoModePrefs::SetAvailability(
+      main_profile->GetPrefs(), IncognitoModePrefs::Availability::kDisabled);
+  // Request a new incognito window.
+  base::RunLoop run_loop;
+  browser_service()->NewWindow(
+      /*incognito=*/true, /*should_trigger_session_restore=*/false,
+      /*callback=*/base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+  run_loop.Run();
+  // A regular window opens instead.
+  EXPECT_FALSE(ProfilePicker::IsOpen());
+  Profile* profile = BrowserList::GetInstance()->GetLastActive()->profile();
+  EXPECT_EQ(profile->GetPath(), main_profile->GetPath());
+  EXPECT_FALSE(profile->IsOffTheRecord());
+}
+
 // Tests for lacros-chrome that require `LacrosNonSyncingProfiles` to be
 // enabled.
 class BrowserServiceLacrosNonSyncingProfilesBrowserTest
@@ -458,7 +482,9 @@ IN_PROC_BROWSER_TEST_F(BrowserServiceLacrosNonSyncingProfilesBrowserTest,
 }
 IN_PROC_BROWSER_TEST_F(BrowserServiceLacrosNonSyncingProfilesBrowserTest,
                        NewWindow_OpensFirstRun) {
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun());
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile_manager->GetProfile(
+      profile_manager->GetPrimaryUserProfilePath())));
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
 
   base::RunLoop run_loop;
@@ -478,7 +504,9 @@ IN_PROC_BROWSER_TEST_F(BrowserServiceLacrosNonSyncingProfilesBrowserTest,
 }
 IN_PROC_BROWSER_TEST_F(BrowserServiceLacrosNonSyncingProfilesBrowserTest,
                        NewWindow_OpensFirstRun_UiClose) {
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun());
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile_manager->GetProfile(
+      profile_manager->GetPrimaryUserProfilePath())));
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
 
   base::RunLoop run_loop;
@@ -498,7 +526,9 @@ IN_PROC_BROWSER_TEST_F(BrowserServiceLacrosNonSyncingProfilesBrowserTest,
 }
 IN_PROC_BROWSER_TEST_F(BrowserServiceLacrosNonSyncingProfilesBrowserTest,
                        NewTab_OpensFirstRun) {
-  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun());
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  EXPECT_TRUE(ShouldOpenPrimaryProfileFirstRun(profile_manager->GetProfile(
+      profile_manager->GetPrimaryUserProfilePath())));
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
 
   base::RunLoop run_loop;

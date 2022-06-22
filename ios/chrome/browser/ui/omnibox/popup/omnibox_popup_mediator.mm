@@ -63,8 +63,7 @@ const CGFloat kOmniboxIconSize = 16;
   return self;
 }
 
-- (void)updateMatches:(const AutocompleteResult&)result
-        withAnimation:(BOOL)animation {
+- (void)updateMatches:(const AutocompleteResult&)result {
   _currentResult.Reset();
   _currentResult.CopyFrom(result);
 
@@ -75,7 +74,7 @@ const CGFloat kOmniboxIconSize = 16;
   [self.consumer updateMatches:@[ [AutocompleteSuggestionGroupImpl
                                    groupWithTitle:nil
                                       suggestions:matches] ]
-                 withAnimation:animation];
+      preselectedMatchGroupIndex:0];
 
   [self loadModelImages];
 }
@@ -93,7 +92,8 @@ const CGFloat kOmniboxIconSize = 16;
     formatter.starred = _delegate->IsStarredMatch(match);
     formatter.incognito = _incognito;
     formatter.defaultSearchEngineIsGoogle = self.defaultSearchEngineIsGoogle;
-    formatter.pedalData = [self.pedalAnnotator pedalForMatch:match];
+    formatter.pedalData = [self.pedalAnnotator pedalForMatch:match
+                                                   incognito:_incognito];
     [wrappedMatches addObject:formatter];
   }
 
@@ -101,17 +101,8 @@ const CGFloat kOmniboxIconSize = 16;
 }
 
 - (void)updateWithResults:(const AutocompleteResult&)result {
-  if (!self.open && !result.empty()) {
-    // The popup is not currently open and there are results to display. Update
-    // and animate the cells
-    [self updateMatches:result withAnimation:YES];
-  } else {
-    // The popup is already displayed or there are no results to display. Update
-    // the cells without animating.
-    [self updateMatches:result withAnimation:NO];
-  }
+  [self updateMatches:result];
   self.open = !result.empty();
-
   [self.presenter updatePopup];
 }
 

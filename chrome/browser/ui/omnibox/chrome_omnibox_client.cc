@@ -57,6 +57,7 @@
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/browser/shortcuts_backend.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/search_engines/template_url_service.h"
@@ -384,14 +385,12 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   // values (kHitFinished, kUnused, kCancelled) are recorded in
   // PrerenderManager.
   content::WebContents* web_contents = controller_->GetWebContents();
-  if (web_contents) {
-    auto* prerender_manager = PrerenderManager::FromWebContents(web_contents);
-    if (!prerender_manager ||
-        !prerender_manager->HasSearchResultPagePrerendered()) {
-      base::UmaHistogramEnumeration(
-          internal::kHistogramPrerenderPredictionStatusDefaultSearchEngine,
-          PrerenderPredictionStatus::kNotStarted);
-    }
+  auto* prerender_manager = PrerenderManager::FromWebContents(web_contents);
+  if (!prerender_manager ||
+      !prerender_manager->HasSearchResultPagePrerendered()) {
+    base::UmaHistogramEnumeration(
+        internal::kHistogramPrerenderPredictionStatusDefaultSearchEngine,
+        PrerenderPredictionStatus::kNotStarted);
   }
 
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)

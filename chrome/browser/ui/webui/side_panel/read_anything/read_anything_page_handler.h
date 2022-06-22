@@ -5,46 +5,61 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIDE_PANEL_READ_ANYTHING_READ_ANYTHING_PAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SIDE_PANEL_READ_ANYTHING_READ_ANYTHING_PAGE_HANDLER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/side_panel/read_anything/read_anything_model.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything.mojom.h"
-#include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_model.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "ui/accessibility/ax_node_id_forward.h"
 
-namespace ui {
-struct AXTreeUpdate;
-}
+using read_anything::mojom::ContentNodePtr;
+using read_anything::mojom::Page;
+using read_anything::mojom::PageHandler;
 
-class ReadAnythingPageHandler : public read_anything::mojom::PageHandler,
+///////////////////////////////////////////////////////////////////////////////
+// ReadAnythingPageHandler
+//
+//  A handler of the Read Anything app
+//  (chrome/browser/resources/side_panel/read_anything/app.ts).
+//  This class is created and owned by ReadAnythingUI and has the same lifetime
+//  as the Side Panel view.
+//
+class ReadAnythingPageHandler : public PageHandler,
                                 public ReadAnythingModel::Observer {
  public:
-  explicit ReadAnythingPageHandler(
-      mojo::PendingRemote<read_anything::mojom::Page> page,
-      mojo::PendingReceiver<read_anything::mojom::PageHandler> receiver);
+  class Delegate {
+   public:
+    virtual void OnUIReady() = 0;
+  };
+
+  explicit ReadAnythingPageHandler(mojo::PendingRemote<Page> page,
+                                   mojo::PendingReceiver<PageHandler> receiver);
   ReadAnythingPageHandler(const ReadAnythingPageHandler&) = delete;
   ReadAnythingPageHandler& operator=(const ReadAnythingPageHandler&) = delete;
   ~ReadAnythingPageHandler() override;
 
-  // read_anything::mojom::PageHandler:
-  void ShowUI() override;
+  // PageHandler:
+  void OnUIReady() override;
 
   // ReadAnythingModel::Observer:
   void OnFontNameUpdated(const std::string& new_font_name) override;
+  void OnContentUpdated(
+      const std::vector<ContentNodePtr>& content_nodes) override;
 
  private:
-  // Callback method which receives an AXTree snapshot and a list of AXNodes
-  // which correspond to nodes in the tree that contain main content.
-  void OnAXTreeDistilled(const ui::AXTreeUpdate& snapshot,
-                         const std::vector<ui::AXNodeID>& text_node_ids);
+  // ReadAnythingPageHandler::Delegate is owned by ReadAnythingCoordinator which
+  // is a browser user data, so |delegate_| has the same lifetime as |browser_|.
+  raw_ptr<ReadAnythingPageHandler::Delegate> delegate_;
 
-  BrowserView* browser_view_;
+  Browser* browser_;
 
-  mojo::Receiver<read_anything::mojom::PageHandler> receiver_;
-  mojo::Remote<read_anything::mojom::Page> page_;
+  mojo::Receiver<PageHandler> receiver_;
+  mojo::Remote<Page> page_;
   base::WeakPtrFactory<ReadAnythingPageHandler> weak_pointer_factory_{this};
 };
 

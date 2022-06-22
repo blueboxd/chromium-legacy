@@ -16,10 +16,10 @@
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
@@ -43,6 +43,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
   kShareButton,
   kVoiceSearchButton,
 };
+
+// The size of the symbol image.
+NSInteger kSymbolImagePointSize = 18;
 
 // FullScreen progress threshold in which to toggle between full screen on and
 // off mode for the badge view.
@@ -471,10 +474,13 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                     action:@selector(shareButtonPressed)
           forControlEvents:UIControlEventTouchUpInside];
 
+      UIImage* shareImage =
+          UseSymbols()
+              ? DefaultSymbolWithPointSize(kShareSymbol, kSymbolImagePointSize)
+              : [UIImage imageNamed:@"location_bar_share"];
       [self.locationBarSteadyView.trailingButton
-          setImage:
-              [[UIImage imageNamed:@"location_bar_share"]
-                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+          setImage:[shareImage imageWithRenderingMode:
+                                   UIImageRenderingModeAlwaysTemplate]
           forState:UIControlStateNormal];
       self.locationBarSteadyView.trailingButton.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
@@ -492,10 +498,14 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                  addTarget:self
                     action:@selector(startVoiceSearch)
           forControlEvents:UIControlEventTouchUpInside];
+
+      UIImage* micImage =
+          UseSymbols() ? DefaultSymbolWithPointSize(kMicrophoneFillSymbol,
+                                                    kSymbolImagePointSize)
+                       : [UIImage imageNamed:@"location_bar_voice"];
       [self.locationBarSteadyView.trailingButton
-          setImage:
-              [[UIImage imageNamed:@"location_bar_voice"]
-                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+          setImage:[micImage imageWithRenderingMode:
+                                 UIImageRenderingModeAlwaysTemplate]
           forState:UIControlStateNormal];
       self.locationBarSteadyView.trailingButton.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_VOICE_SEARCH);

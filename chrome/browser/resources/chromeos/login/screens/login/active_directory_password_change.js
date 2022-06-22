@@ -52,8 +52,9 @@ const UIState = {
 ActiveDirectoryPasswordChangeBase.$;
 
 class ActiveDirectoryPasswordChange extends ActiveDirectoryPasswordChangeBase {
-
-  static get is() { return 'active-directory-password-change-element'; }
+  static get is() {
+    return 'active-directory-password-change-element';
+  }
 
   /* #html_template_placeholder */
 
@@ -121,9 +122,7 @@ class ActiveDirectoryPasswordChange extends ActiveDirectoryPasswordChangeBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('ActiveDirectoryPasswordChangeScreen', {
-      resetAllowed: false,
-    });
+    this.initializeLoginScreen('ActiveDirectoryPasswordChangeScreen');
   }
 
   /**
@@ -134,10 +133,12 @@ class ActiveDirectoryPasswordChange extends ActiveDirectoryPasswordChangeBase {
     // Active Directory password change screen is similar to Active
     // Directory login screen. So we restore bottom bar controls.
     this.reset();
-    if ('username' in data)
+    if ('username' in data) {
       this.username_ = data.username;
-    if ('error' in data)
+    }
+    if ('error' in data) {
       this.setInvalid(data.error);
+    }
   }
 
   /**

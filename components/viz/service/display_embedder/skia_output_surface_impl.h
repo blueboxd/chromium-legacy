@@ -81,11 +81,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void SetEnableDCLayers(bool enable) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
-  void Reshape(const gfx::Size& size,
-               float device_scale_factor,
-               const gfx::ColorSpace& color_space,
-               gfx::BufferFormat format,
-               bool use_stencil) override;
+  void Reshape(const ReshapeParams& params) override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
   void SetGpuVSyncEnabled(bool enabled) override;
@@ -124,6 +120,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                                  ResourceFormat format,
                                  bool mipmap,
                                  sk_sp<SkColorSpace> color_space,
+                                 bool is_overlay,
                                  const gpu::Mailbox& mailbox) override;
   void EndPaint(base::OnceClosure on_finished) override;
   void MakePromiseSkImage(ImageContext* image_context) override;
@@ -138,8 +135,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void RemoveRenderPassResource(
       std::vector<AggregatedRenderPassId> ids) override;
   void ScheduleOverlays(OverlayList overlays,
-                        std::vector<gpu::SyncToken> sync_tokens,
-                        base::OnceClosure on_finished) override;
+                        std::vector<gpu::SyncToken> sync_tokens) override;
 
   void CopyOutput(AggregatedRenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
@@ -152,15 +148,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   gpu::SharedImageInterface* GetSharedImageInterface() override;
   gpu::SyncToken Flush() override;
   bool EnsureMinNumberOfBuffers(int n) override;
-
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
-  SkCanvas* BeginPaintRenderPassOverlay(
-      const gfx::Size& size,
-      ResourceFormat format,
-      bool mipmap,
-      sk_sp<SkColorSpace> color_space) override;
-  sk_sp<SkDeferredDisplayList> EndPaintRenderPassOverlay() override;
-#endif
 
   // ExternalUseClient implementation:
   gpu::SyncToken ReleaseImageContexts(
@@ -255,21 +242,18 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
     explicit ScopedPaint(SkDeferredDisplayListRecorder* root_recorder);
     explicit ScopedPaint(SkSurfaceCharacterization characterization);
     ScopedPaint(SkSurfaceCharacterization characterization,
-                AggregatedRenderPassId render_pass_id,
                 gpu::Mailbox mailbox);
     ~ScopedPaint();
 
     SkDeferredDisplayListRecorder* recorder() { return recorder_; }
-    AggregatedRenderPassId render_pass_id() { return render_pass_id_; }
     gpu::Mailbox mailbox() { return mailbox_; }
 
    private:
     // This is recorder being used for current paint
     SkDeferredDisplayListRecorder* recorder_;
-    // If we need new recorder for this Paint (i.e it's not root render pass),
+    // If we need new recorder for this Paint (i.e. it's not root render pass),
     // it's stored here
     absl::optional<SkDeferredDisplayListRecorder> recorder_storage_;
-    const AggregatedRenderPassId render_pass_id_;
     const gpu::Mailbox mailbox_;
   };
 

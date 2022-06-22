@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
-#include "chrome/browser/ui/views/side_panel/user_note/user_note_ui_coordinator.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/common/buildflags.h"
@@ -72,7 +71,6 @@ class InfoBarContainerView;
 class LocationBarView;
 class SidePanel;
 class SidePanelCoordinator;
-class SidePanelRegistry;
 class StatusBubbleViews;
 class TabSearchBubbleHost;
 class TabStrip;
@@ -91,9 +89,7 @@ class LensSidePanelController;
 }  // namespace lens
 #endif
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
 class SideSearchBrowserController;
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 namespace ui {
 class NativeTheme;
@@ -202,14 +198,6 @@ class BrowserView : public BrowserWindow,
     return side_panel_coordinator_.get();
   }
 
-  SidePanelRegistry* global_side_panel_registry() {
-    return global_side_panel_registry_.get();
-  }
-
-  UserNoteUICoordinator* user_note_ui_coordinator() {
-    return user_note_ui_coordinator_.get();
-  }
-
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   lens::LensSidePanelController* lens_side_panel_controller() {
     return lens_side_panel_controller_.get();
@@ -220,11 +208,9 @@ class BrowserView : public BrowserWindow,
   void DeleteLensSidePanelController();
 #endif
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
   SideSearchBrowserController* side_search_controller() {
     return side_search_controller_.get();
   }
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
   void set_contents_border_widget(views::Widget* contents_border_widget) {
     GetBrowserViewLayout()->set_contents_border_widget(contents_border_widget);
@@ -322,6 +308,10 @@ class BrowserView : public BrowserWindow,
   // Returns true if the Browser object associated with this BrowserView is a
   // for an installed web app.
   bool GetIsWebAppType() const;
+
+  // Returns true if the Browser object associated with this BrowserView is for
+  // a Picture in Picture window.
+  bool GetIsPictureInPictureType() const;
 
   // Returns true if the top browser controls (a.k.a. top-chrome UIs) are
   // allowed to slide up and down with the gesture scrolls on the current tab's
@@ -501,25 +491,19 @@ class BrowserView : public BrowserWindow,
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
   sharing_hub::ScreenshotCapturedBubble* ShowScreenshotCapturedBubble(
       content::WebContents* contents,
-      const gfx::Image& image,
-      sharing_hub::ScreenshotCapturedBubbleController* controller) override;
+      const gfx::Image& image) override;
   qrcode_generator::QRCodeGeneratorBubbleView* ShowQRCodeGeneratorBubble(
       content::WebContents* contents,
-      qrcode_generator::QRCodeGeneratorBubbleController* controller,
       const GURL& url,
       bool show_back_button) override;
   send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
-      content::WebContents* contents,
-      send_tab_to_self::SendTabToSelfBubbleController* controller,
-      bool is_user_gesture) override;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+      content::WebContents* contents) override;
+#if BUILDFLAG(IS_CHROMEOS)
   views::Button* GetSharingHubIconButton() override;
 #else
   sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
-      content::WebContents* contents,
-      sharing_hub::SharingHubBubbleController* controller,
-      bool is_user_gesture) override;
-#endif
+      content::WebContents* contents) override;
+#endif  // BUILDFLAG(IS_CHROMEOS)
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
@@ -620,6 +604,7 @@ class BrowserView : public BrowserWindow,
   ui::ImageModel GetWindowIcon() override;
   bool ExecuteWindowsCommand(int command_id) override;
   std::string GetWindowName() const override;
+  bool ShouldSaveWindowPlacement() const override;
   void SaveWindowPlacement(const gfx::Rect& bounds,
                            ui::WindowShowState show_state) override;
   bool GetSavedWindowPlacement(const views::Widget* widget,
@@ -743,11 +728,9 @@ class BrowserView : public BrowserWindow,
   // aligned side panels.
   void RightAlignedSidePanelWasClosed();
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
   bool IsSideSearchPanelVisible() const override;
   void MaybeRestoreSideSearchStatePerWindow(
       const std::map<std::string, std::string>& extra_data) override;
-#endif
 
  private:
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
@@ -1015,10 +998,6 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<SidePanelCoordinator> side_panel_coordinator_;
 
-  std::unique_ptr<UserNoteUICoordinator> user_note_ui_coordinator_;
-
-  std::unique_ptr<SidePanelRegistry> global_side_panel_registry_;
-
   // TODO(pbos): Move this functionality into SidePanel when multiple "panels"
   // are managed within the same object.
   // Observer object managing the button highlight of the side-panel button
@@ -1040,9 +1019,7 @@ class BrowserView : public BrowserWindow,
 #endif
 
   // Controls the browser window's side panel for the Side Search feature.
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
   std::unique_ptr<SideSearchBrowserController> side_search_controller_;
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
   // Provides access to the toolbar buttons this browser view uses. Buttons may
   // appear in a hosted app frame or in a tabbed UI toolbar.

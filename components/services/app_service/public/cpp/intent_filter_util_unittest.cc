@@ -75,6 +75,15 @@ class IntentFilterUtilTest : public testing::Test {
     return intent_filter;
   }
 
+  apps::IntentFilterPtr MakeHostOnlyFilter(std::string host,
+                                           apps::PatternMatchType pattern) {
+    auto intent_filter = std::make_unique<apps::IntentFilter>();
+    intent_filter->AddSingleValueCondition(apps::ConditionType::kHost, host,
+                                           pattern);
+
+    return intent_filter;
+  }
+
   apps::mojom::IntentFilterPtr MakeHostOnlyFilter(
       std::string host,
       apps::mojom::PatternMatchType pattern) {
@@ -88,52 +97,50 @@ class IntentFilterUtilTest : public testing::Test {
 };
 
 TEST_F(IntentFilterUtilTest, EmptyConditionList) {
-  auto intent_filter = apps::mojom::IntentFilter::New();
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
 
-  EXPECT_EQ(apps_util::AppManagementGetSupportedLinks(intent_filter).size(),
-            0u);
+  EXPECT_EQ(intent_filter->GetSupportedLinksForAppManagement().size(), 0u);
 }
 
 TEST_F(IntentFilterUtilTest, SingleHostAndManyPaths) {
-  auto intent_filter = apps::mojom::IntentFilter::New();
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kScheme, url::kHttpScheme,
-      apps::mojom::PatternMatchType::kNone, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kScheme,
+                                         url::kHttpScheme,
+                                         apps::PatternMatchType::kNone);
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kHost, kHostUrlGoogle,
-      apps::mojom::PatternMatchType::kNone, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kHost,
+                                         kHostUrlGoogle,
+                                         apps::PatternMatchType::kNone);
 
   std::set<std::string> links =
-      apps_util::AppManagementGetSupportedLinks(intent_filter);
+      intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 0u);
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kPattern, kPathLiteral,
-      apps::mojom::PatternMatchType::kLiteral, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kPattern,
+                                         kPathLiteral,
+                                         apps::PatternMatchType::kLiteral);
 
-  links = apps_util::AppManagementGetSupportedLinks(intent_filter);
+  links = intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 1u);
   EXPECT_EQ(links.count(kUrlGoogleLiteral), 1u);
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kPattern, kPathPrefix,
-      apps::mojom::PatternMatchType::kPrefix, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kPattern,
+                                         kPathPrefix,
+                                         apps::PatternMatchType::kPrefix);
 
-  links = apps_util::AppManagementGetSupportedLinks(intent_filter);
+  links = intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 2u);
   EXPECT_EQ(links.count(kUrlGoogleLiteral), 1u);
   EXPECT_EQ(links.count(kUrlGooglePrefix), 1u);
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kPattern, kPathGlob,
-      apps::mojom::PatternMatchType::kGlob, intent_filter);
+  intent_filter->AddSingleValueCondition(
+      apps::ConditionType::kPattern, kPathGlob, apps::PatternMatchType::kGlob);
 
-  links = apps_util::AppManagementGetSupportedLinks(intent_filter);
+  links = intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 3u);
   EXPECT_EQ(links.count(kUrlGoogleLiteral), 1u);
@@ -143,38 +150,38 @@ TEST_F(IntentFilterUtilTest, SingleHostAndManyPaths) {
 
 TEST_F(IntentFilterUtilTest, InvalidScheme) {
   auto intent_filter = MakeFilter(url::kTelScheme, kHostUrlGoogle, kPathLiteral,
-                                  apps::mojom::PatternMatchType::kLiteral);
+                                  apps::PatternMatchType::kLiteral);
 
   std::set<std::string> links =
-      apps_util::AppManagementGetSupportedLinks(intent_filter);
+      intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 0u);
 }
 
 TEST_F(IntentFilterUtilTest, ManyHostsAndOnePath) {
-  auto intent_filter = apps::mojom::IntentFilter::New();
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kScheme, url::kHttpScheme,
-      apps::mojom::PatternMatchType::kNone, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kScheme,
+                                         url::kHttpScheme,
+                                         apps::PatternMatchType::kNone);
 
-  std::vector<apps::mojom::ConditionValuePtr> condition_values;
+  std::vector<apps::ConditionValuePtr> condition_values;
 
-  condition_values.push_back(apps_util::MakeConditionValue(
-      kHostUrlGoogle, apps::mojom::PatternMatchType::kNone));
+  condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      kHostUrlGoogle, apps::PatternMatchType::kNone));
 
-  condition_values.push_back(apps_util::MakeConditionValue(
-      kHostUrlGmail, apps::mojom::PatternMatchType::kNone));
+  condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      kHostUrlGmail, apps::PatternMatchType::kNone));
 
-  intent_filter->conditions.push_back(apps_util::MakeCondition(
-      apps::mojom::ConditionType::kHost, std::move(condition_values)));
+  intent_filter->conditions.push_back(std::make_unique<apps::Condition>(
+      apps::ConditionType::kHost, std::move(condition_values)));
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kPattern, kPathLiteral,
-      apps::mojom::PatternMatchType::kLiteral, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kPattern,
+                                         kPathLiteral,
+                                         apps::PatternMatchType::kLiteral);
 
   std::set<std::string> links =
-      apps_util::AppManagementGetSupportedLinks(intent_filter);
+      intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 2u);
   EXPECT_EQ(links.count(kUrlGoogleLiteral), 1u);
@@ -182,36 +189,36 @@ TEST_F(IntentFilterUtilTest, ManyHostsAndOnePath) {
 }
 
 TEST_F(IntentFilterUtilTest, ManyHostsAndManyPaths) {
-  auto intent_filter = apps::mojom::IntentFilter::New();
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kScheme, url::kHttpScheme,
-      apps::mojom::PatternMatchType::kNone, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kScheme,
+                                         url::kHttpScheme,
+                                         apps::PatternMatchType::kNone);
 
-  std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
+  std::vector<apps::ConditionValuePtr> host_condition_values;
 
-  host_condition_values.push_back(apps_util::MakeConditionValue(
-      kHostUrlGoogle, apps::mojom::PatternMatchType::kNone));
-  host_condition_values.push_back(apps_util::MakeConditionValue(
-      kHostUrlGmail, apps::mojom::PatternMatchType::kNone));
+  host_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      kHostUrlGoogle, apps::PatternMatchType::kNone));
+  host_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      kHostUrlGmail, apps::PatternMatchType::kNone));
 
-  intent_filter->conditions.push_back(apps_util::MakeCondition(
-      apps::mojom::ConditionType::kHost, std::move(host_condition_values)));
+  intent_filter->conditions.push_back(std::make_unique<apps::Condition>(
+      apps::ConditionType::kHost, std::move(host_condition_values)));
 
-  std::vector<apps::mojom::ConditionValuePtr> path_condition_values;
+  std::vector<apps::ConditionValuePtr> path_condition_values;
 
-  path_condition_values.push_back(apps_util::MakeConditionValue(
-      kPathLiteral, apps::mojom::PatternMatchType::kLiteral));
-  path_condition_values.push_back(apps_util::MakeConditionValue(
-      kPathPrefix, apps::mojom::PatternMatchType::kPrefix));
-  path_condition_values.push_back(apps_util::MakeConditionValue(
-      kPathGlob, apps::mojom::PatternMatchType::kGlob));
+  path_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      kPathLiteral, apps::PatternMatchType::kLiteral));
+  path_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      kPathPrefix, apps::PatternMatchType::kPrefix));
+  path_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      kPathGlob, apps::PatternMatchType::kGlob));
 
-  intent_filter->conditions.push_back(apps_util::MakeCondition(
-      apps::mojom::ConditionType::kPattern, std::move(path_condition_values)));
+  intent_filter->conditions.push_back(std::make_unique<apps::Condition>(
+      apps::ConditionType::kPattern, std::move(path_condition_values)));
 
   std::set<std::string> links =
-      apps_util::AppManagementGetSupportedLinks(intent_filter);
+      intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 6u);
   EXPECT_EQ(links.count(kUrlGoogleLiteral), 1u);
@@ -224,88 +231,86 @@ TEST_F(IntentFilterUtilTest, ManyHostsAndManyPaths) {
 
 TEST_F(IntentFilterUtilTest, WildcardHost) {
   std::string host = ".google.com";
-  auto intent_filter = apps::mojom::IntentFilter::New();
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kScheme, url::kHttpScheme,
-      apps::mojom::PatternMatchType::kNone, intent_filter);
-  apps_util::AddSingleValueCondition(apps::mojom::ConditionType::kHost, host,
-                                     apps::mojom::PatternMatchType::kSuffix,
-                                     intent_filter);
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kPattern, kPathLiteral,
-      apps::mojom::PatternMatchType::kLiteral, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kScheme,
+                                         url::kHttpScheme,
+                                         apps::PatternMatchType::kNone);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kHost, host,
+                                         apps::PatternMatchType::kSuffix);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kPattern,
+                                         kPathLiteral,
+                                         apps::PatternMatchType::kLiteral);
 
   std::set<std::string> links =
-      apps_util::AppManagementGetSupportedLinks(intent_filter);
+      intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 1u);
   EXPECT_EQ(links.count("*.google.com/a"), 1u);
 }
 
 TEST_F(IntentFilterUtilTest, HttpsScheme) {
-  std::set<std::string> links = apps_util::AppManagementGetSupportedLinks(
+  auto intent_filter =
       MakeFilter(url::kHttpsScheme, kHostUrlGoogle, kPathLiteral,
-                 apps::mojom::PatternMatchType::kLiteral));
+                 apps::PatternMatchType::kLiteral);
+  std::set<std::string> links =
+      intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 1u);
   EXPECT_EQ(links.count(kUrlGoogleLiteral), 1u);
 }
 
 TEST_F(IntentFilterUtilTest, HttpAndHttpsSchemes) {
-  auto intent_filter = apps::mojom::IntentFilter::New();
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
 
-  std::vector<apps::mojom::ConditionValuePtr> condition_values;
+  std::vector<apps::ConditionValuePtr> condition_values;
 
-  condition_values.push_back(apps_util::MakeConditionValue(
-      url::kHttpScheme, apps::mojom::PatternMatchType::kNone));
+  condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      url::kHttpScheme, apps::PatternMatchType::kNone));
 
-  condition_values.push_back(apps_util::MakeConditionValue(
-      url::kHttpsScheme, apps::mojom::PatternMatchType::kNone));
+  condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      url::kHttpsScheme, apps::PatternMatchType::kNone));
 
-  intent_filter->conditions.push_back(apps_util::MakeCondition(
-      apps::mojom::ConditionType::kScheme, std::move(condition_values)));
+  intent_filter->conditions.push_back(std::make_unique<apps::Condition>(
+      apps::ConditionType::kScheme, std::move(condition_values)));
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kHost, kHostUrlGoogle,
-      apps::mojom::PatternMatchType::kNone, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kHost,
+                                         kHostUrlGoogle,
+                                         apps::PatternMatchType::kNone);
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kPattern, kPathLiteral,
-      apps::mojom::PatternMatchType::kLiteral, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kPattern,
+                                         kPathLiteral,
+                                         apps::PatternMatchType::kLiteral);
 
   std::set<std::string> links =
-      apps_util::AppManagementGetSupportedLinks(intent_filter);
+      intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 1u);
   EXPECT_EQ(links.count(kUrlGoogleLiteral), 1u);
 }
 
 TEST_F(IntentFilterUtilTest, PathsWithNoSlash) {
-  auto intent_filter = apps::mojom::IntentFilter::New();
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kScheme, url::kHttpScheme,
-      apps::mojom::PatternMatchType::kNone, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kScheme,
+                                         url::kHttpScheme,
+                                         apps::PatternMatchType::kNone);
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kHost, "m.youtube.com",
-      apps::mojom::PatternMatchType::kNone, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kHost,
+                                         "m.youtube.com",
+                                         apps::PatternMatchType::kNone);
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kPattern, ".*",
-      apps::mojom::PatternMatchType::kGlob, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kPattern, ".*",
+                                         apps::PatternMatchType::kGlob);
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kPattern, ".*/foo",
-      apps::mojom::PatternMatchType::kGlob, intent_filter);
+  intent_filter->AddSingleValueCondition(
+      apps::ConditionType::kPattern, ".*/foo", apps::PatternMatchType::kGlob);
 
-  apps_util::AddSingleValueCondition(
-      apps::mojom::ConditionType::kPattern, "",
-      apps::mojom::PatternMatchType::kPrefix, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kPattern, "",
+                                         apps::PatternMatchType::kPrefix);
 
   std::set<std::string> links =
-      apps_util::AppManagementGetSupportedLinks(intent_filter);
+      intent_filter->GetSupportedLinksForAppManagement();
 
   EXPECT_EQ(links.size(), 3u);
   EXPECT_EQ(links.count("m.youtube.com/*"), 1u);
@@ -385,7 +390,8 @@ TEST_F(IntentFilterUtilTest, NotSupportedLink) {
   ASSERT_FALSE(apps_util::IsSupportedLinkForApp(kAppId, browser_filter));
 }
 
-TEST_F(IntentFilterUtilTest, HostMatchOverlapLiteralAndNone) {
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentFilterUtilTest, HostMatchOverlapLiteralAndNoneMojom) {
   auto google_domain_filter = MakeFilter(
       "https", "www.google.com", "/", apps::mojom::PatternMatchType::kLiteral);
 
@@ -403,7 +409,26 @@ TEST_F(IntentFilterUtilTest, HostMatchOverlapLiteralAndNone) {
       apps_util::FiltersHaveOverlap(maps_domain_filter, google_domain_filter));
 }
 
-TEST_F(IntentFilterUtilTest, HostMatchOverlapSuffix) {
+TEST_F(IntentFilterUtilTest, HostMatchOverlapLiteralAndNone) {
+  auto google_domain_filter = MakeFilter("https", "www.google.com", "/",
+                                         apps::PatternMatchType::kLiteral);
+
+  auto maps_domain_filter = MakeFilter("https", "maps.google.com", "/",
+                                       apps::PatternMatchType::kLiteral);
+
+  ASSERT_FALSE(
+      apps_util::FiltersHaveOverlap(maps_domain_filter, google_domain_filter));
+
+  apps_util::AddConditionValue(apps::ConditionType::kHost, "www.google.com",
+                               apps::PatternMatchType::kNone,
+                               maps_domain_filter);
+
+  ASSERT_TRUE(
+      apps_util::FiltersHaveOverlap(maps_domain_filter, google_domain_filter));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentFilterUtilTest, HostMatchOverlapSuffixMojom) {
   // Wildcard host filter
   auto wikipedia_wildcard_filter = MakeHostOnlyFilter(
       ".wikipedia.org", apps::mojom::PatternMatchType::kSuffix);
@@ -443,7 +468,48 @@ TEST_F(IntentFilterUtilTest, HostMatchOverlapSuffix) {
                                             wikipedia_subsubdomain_filter));
 }
 
-TEST_F(IntentFilterUtilTest, PatternMatchOverlap) {
+TEST_F(IntentFilterUtilTest, HostMatchOverlapSuffix) {
+  // Wildcard host filter
+  auto wikipedia_wildcard_filter =
+      MakeHostOnlyFilter(".wikipedia.org", apps::PatternMatchType::kSuffix);
+
+  // Filters that shouldn't overlap
+  auto wikipedia_com_filter =
+      MakeHostOnlyFilter(".wikipedia.com", apps::PatternMatchType::kNone);
+  auto wikipedia_no_subdomain_filter =
+      MakeHostOnlyFilter("wikipedia.org", apps::PatternMatchType::kNone);
+
+  ASSERT_FALSE(apps_util::FiltersHaveOverlap(wikipedia_wildcard_filter,
+                                             wikipedia_com_filter));
+  ASSERT_FALSE(apps_util::FiltersHaveOverlap(wikipedia_wildcard_filter,
+                                             wikipedia_no_subdomain_filter));
+
+  // Filters that should overlap
+  auto wikipedia_subdomain_filter =
+      MakeHostOnlyFilter("es.wikipedia.org", apps::PatternMatchType::kNone);
+  auto wikipedia_empty_subdomain_filter =
+      MakeHostOnlyFilter(".wikipedia.org", apps::PatternMatchType::kNone);
+  auto wikipedia_literal_filter =
+      MakeHostOnlyFilter("fr.wikipedia.org", apps::PatternMatchType::kLiteral);
+  auto wikipedia_other_wildcard_filter =
+      MakeHostOnlyFilter(".wikipedia.org", apps::PatternMatchType::kSuffix);
+  auto wikipedia_subsubdomain_filter =
+      MakeHostOnlyFilter(".es.wikipedia.org", apps::PatternMatchType::kSuffix);
+
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(wikipedia_wildcard_filter,
+                                            wikipedia_subdomain_filter));
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(wikipedia_wildcard_filter,
+                                            wikipedia_empty_subdomain_filter));
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(wikipedia_wildcard_filter,
+                                            wikipedia_literal_filter));
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(wikipedia_wildcard_filter,
+                                            wikipedia_other_wildcard_filter));
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(wikipedia_wildcard_filter,
+                                            wikipedia_subsubdomain_filter));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentFilterUtilTest, PatternMatchOverlapMojom) {
   auto literal_pattern_filter1 = MakeFilter(
       "https", "www.example.com", "/", apps::mojom::PatternMatchType::kLiteral);
   apps_util::AddConditionValue(apps::mojom::ConditionType::kPattern, "/foo",
@@ -482,7 +548,46 @@ TEST_F(IntentFilterUtilTest, PatternMatchOverlap) {
       apps_util::FiltersHaveOverlap(foo_prefix_filter, bar_prefix_filter));
 }
 
-TEST_F(IntentFilterUtilTest, PatternGlobAndLiteralOverlap) {
+TEST_F(IntentFilterUtilTest, PatternMatchOverlap) {
+  auto literal_pattern_filter1 = MakeFilter("https", "www.example.com", "/",
+                                            apps::PatternMatchType::kLiteral);
+  apps_util::AddConditionValue(apps::ConditionType::kPattern, "/foo",
+                               apps::PatternMatchType::kLiteral,
+                               literal_pattern_filter1);
+
+  auto literal_pattern_filter2 = MakeFilter(
+      "https", "www.example.com", "/foo/bar", apps::PatternMatchType::kLiteral);
+  apps_util::AddConditionValue(apps::ConditionType::kPattern, "/bar",
+                               apps::PatternMatchType::kLiteral,
+                               literal_pattern_filter2);
+
+  ASSERT_FALSE(apps_util::FiltersHaveOverlap(literal_pattern_filter1,
+                                             literal_pattern_filter2));
+
+  auto root_prefix_filter = MakeFilter("https", "www.example.com", "/",
+                                       apps::PatternMatchType::kPrefix);
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(root_prefix_filter,
+                                            literal_pattern_filter1));
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(root_prefix_filter,
+                                            literal_pattern_filter2));
+
+  auto bar_prefix_filter = MakeFilter("https", "www.example.com", "/bar",
+                                      apps::PatternMatchType::kPrefix);
+  ASSERT_FALSE(apps_util::FiltersHaveOverlap(bar_prefix_filter,
+                                             literal_pattern_filter1));
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(bar_prefix_filter,
+                                            literal_pattern_filter2));
+  ASSERT_TRUE(
+      apps_util::FiltersHaveOverlap(bar_prefix_filter, root_prefix_filter));
+
+  auto foo_prefix_filter = MakeFilter("https", "www.example.com", "/foo",
+                                      apps::PatternMatchType::kPrefix);
+  ASSERT_FALSE(
+      apps_util::FiltersHaveOverlap(foo_prefix_filter, bar_prefix_filter));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentFilterUtilTest, PatternGlobAndLiteralOverlapMojom) {
   auto literal_pattern_filter1 =
       MakeFilter("https", "maps.google.com", "/u/0/maps",
                  apps::mojom::PatternMatchType::kLiteral);
@@ -503,102 +608,23 @@ TEST_F(IntentFilterUtilTest, PatternGlobAndLiteralOverlap) {
                                              glob_pattern_filter));
 }
 
-TEST_F(IntentFilterUtilTest, IntentFiltersConvert) {
-  base::flat_map<std::string, std::vector<apps::IntentFilterPtr>> filters;
+TEST_F(IntentFilterUtilTest, PatternGlobAndLiteralOverlap) {
+  auto literal_pattern_filter1 =
+      MakeFilter("https", "maps.google.com", "/u/0/maps",
+                 apps::PatternMatchType::kLiteral);
+  auto literal_pattern_filter2 = MakeFilter("https", "maps.google.com", "/maps",
+                                            apps::PatternMatchType::kLiteral);
 
-  auto intent_filter1 = std::make_unique<apps::IntentFilter>();
-  intent_filter1->AddSingleValueCondition(apps::ConditionType::kScheme, "1",
-                                          apps::PatternMatchType::kNone);
-  filters["1"].push_back(std::move(intent_filter1));
+  auto glob_pattern_filter = MakeFilter(
+      "https", "maps.google.com", "/u/.*/maps", apps::PatternMatchType::kGlob);
 
-  auto intent_filter2 = std::make_unique<apps::IntentFilter>();
-  intent_filter2->AddSingleValueCondition(apps::ConditionType::kHost, "2",
-                                          apps::PatternMatchType::kLiteral);
-  intent_filter2->AddSingleValueCondition(apps::ConditionType::kPattern, "3",
-                                          apps::PatternMatchType::kPrefix);
-  filters["1"].push_back(std::move(intent_filter2));
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(literal_pattern_filter1,
+                                            glob_pattern_filter));
+  ASSERT_TRUE(apps_util::FiltersHaveOverlap(glob_pattern_filter,
+                                            literal_pattern_filter1));
 
-  apps::IntentFilters intent_filters2;
-  auto intent_filter3 = std::make_unique<apps::IntentFilter>();
-  intent_filter3->AddSingleValueCondition(apps::ConditionType::kAction, "4",
-                                          apps::PatternMatchType::kGlob);
-  intent_filter3->AddSingleValueCondition(apps::ConditionType::kMimeType, "5",
-                                          apps::PatternMatchType::kMimeType);
-  filters["2"].push_back(std::move(intent_filter3));
-
-  auto intent_filter4 = std::make_unique<apps::IntentFilter>();
-  intent_filter4->AddSingleValueCondition(apps::ConditionType::kFile, "6",
-                                          apps::PatternMatchType::kMimeType);
-  intent_filter4->AddSingleValueCondition(
-      apps::ConditionType::kFile, "7", apps::PatternMatchType::kFileExtension);
-  filters["2"].push_back(std::move(intent_filter4));
-
-  auto output = apps::ConvertMojomIntentFiltersToIntentFilters(
-      apps::ConvertIntentFiltersToMojomIntentFilters(filters));
-
-  ASSERT_EQ(output.size(), 2U);
-  EXPECT_EQ(*filters["1"][0], *output["1"][0]);
-  EXPECT_EQ(*filters["1"][1], *output["1"][1]);
-
-  EXPECT_EQ(*filters["2"][0], *output["2"][0]);
-  EXPECT_EQ(*filters["2"][1], *output["2"][1]);
-
-  {
-    auto& condition = output["1"][0]->conditions[0];
-    EXPECT_EQ(condition->condition_type, apps::ConditionType::kScheme);
-    ASSERT_EQ(condition->condition_values.size(), 1U);
-    EXPECT_EQ(condition->condition_values[0]->match_type,
-              apps::PatternMatchType::kNone);
-    EXPECT_EQ(condition->condition_values[0]->value, "1");
-  }
-  {
-    auto& condition = output["1"][1]->conditions[0];
-    EXPECT_EQ(condition->condition_type, apps::ConditionType::kHost);
-    ASSERT_EQ(condition->condition_values.size(), 1U);
-    EXPECT_EQ(condition->condition_values[0]->match_type,
-              apps::PatternMatchType::kLiteral);
-    EXPECT_EQ(condition->condition_values[0]->value, "2");
-  }
-  {
-    auto& condition = output["1"][1]->conditions[1];
-    EXPECT_EQ(condition->condition_type, apps::ConditionType::kPattern);
-    ASSERT_EQ(condition->condition_values.size(), 1U);
-    EXPECT_EQ(condition->condition_values[0]->match_type,
-              apps::PatternMatchType::kPrefix);
-    EXPECT_EQ(condition->condition_values[0]->value, "3");
-  }
-  {
-    auto& condition = output["2"][0]->conditions[0];
-    EXPECT_EQ(condition->condition_type, apps::ConditionType::kAction);
-    ASSERT_EQ(condition->condition_values.size(), 1U);
-    EXPECT_EQ(condition->condition_values[0]->match_type,
-              apps::PatternMatchType::kGlob);
-    EXPECT_EQ(condition->condition_values[0]->value, "4");
-  }
-  {
-    auto& condition = output["2"][0]->conditions[1];
-    EXPECT_EQ(condition->condition_type, apps::ConditionType::kMimeType);
-    ASSERT_EQ(condition->condition_values.size(), 1U);
-    EXPECT_EQ(condition->condition_values[0]->match_type,
-              apps::PatternMatchType::kMimeType);
-    EXPECT_EQ(condition->condition_values[0]->value, "5");
-  }
-  {
-    auto& condition = output["2"][1]->conditions[0];
-    EXPECT_EQ(condition->condition_type, apps::ConditionType::kFile);
-    ASSERT_EQ(condition->condition_values.size(), 1U);
-    EXPECT_EQ(condition->condition_values[0]->match_type,
-              apps::PatternMatchType::kMimeType);
-    EXPECT_EQ(condition->condition_values[0]->value, "6");
-  }
-  {
-    auto& condition = output["2"][1]->conditions[1];
-    EXPECT_EQ(condition->condition_type, apps::ConditionType::kFile);
-    ASSERT_EQ(condition->condition_values.size(), 1U);
-    EXPECT_EQ(condition->condition_values[0]->match_type,
-              apps::PatternMatchType::kFileExtension);
-    EXPECT_EQ(condition->condition_values[0]->value, "7");
-  }
+  ASSERT_FALSE(apps_util::FiltersHaveOverlap(literal_pattern_filter2,
+                                             glob_pattern_filter));
 }
 
 TEST_F(IntentFilterUtilTest, TestIntentFilterUrlMatchLength) {

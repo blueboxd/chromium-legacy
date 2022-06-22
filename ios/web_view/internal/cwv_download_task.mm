@@ -59,7 +59,8 @@ class DownloadTaskObserverBridge : public web::DownloadTaskObserver {
 @synthesize delegate = _delegate;
 
 - (NSString*)suggestedFileName {
-  return base::SysUTF16ToNSString(_internalTask->GetSuggestedFilename());
+  return base::SysUTF8ToNSString(
+      _internalTask->GenerateFileName().AsUTF8Unsafe());
 }
 
 - (NSString*)MIMEType {
@@ -100,8 +101,7 @@ class DownloadTaskObserverBridge : public web::DownloadTaskObserver {
 }
 
 - (void)startDownloadToLocalFileAtPath:(NSString*)path {
-  _internalTask->Start(base::FilePath(base::SysNSStringToUTF8(path)),
-                       web::DownloadTask::Destination::kToDisk);
+  _internalTask->Start(base::FilePath(base::SysNSStringToUTF8(path)));
 }
 
 - (void)cancel {

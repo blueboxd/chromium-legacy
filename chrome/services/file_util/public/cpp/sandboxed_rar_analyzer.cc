@@ -64,14 +64,16 @@ void SandboxedRarAnalyzer::AnalyzeFileDone(
     const safe_browsing::ArchiveAnalyzerResults& results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   remote_analyzer_.reset();
-  std::move(callback_).Run(results);
+  if (callback_) {
+    std::move(callback_).Run(results);
+  }
 }
 
 void SandboxedRarAnalyzer::PrepareFileToAnalyze() {
   if (file_path_.value().empty()) {
     // TODO(vakh): Add UMA metrics here to check how often this happens.
     DLOG(ERROR) << "file_path_ empty!";
-    ReportFileFailure();
+    ReportFileFailure(safe_browsing::ArchiveAnalysisResult::kFailedToOpen);
     return;
   }
 
@@ -79,7 +81,7 @@ void SandboxedRarAnalyzer::PrepareFileToAnalyze() {
   if (!file.IsValid()) {
     // TODO(vakh): Add UMA metrics here to check how often this happens.
     DLOG(ERROR) << "Could not open file: " << file_path_.value();
-    ReportFileFailure();
+    ReportFileFailure(safe_browsing::ArchiveAnalysisResult::kFailedToOpen);
     return;
   }
 
@@ -94,7 +96,8 @@ void SandboxedRarAnalyzer::PrepareFileToAnalyze() {
 
   if (!temp_file.IsValid()) {
     DLOG(ERROR) << "Could not open temp file: " << temp_path.value();
-    ReportFileFailure();
+    ReportFileFailure(
+        safe_browsing::ArchiveAnalysisResult::kFailedToOpenTempFile);
     return;
   }
 
@@ -103,11 +106,14 @@ void SandboxedRarAnalyzer::PrepareFileToAnalyze() {
                                 std::move(file), std::move(temp_file)));
 }
 
-void SandboxedRarAnalyzer::ReportFileFailure() {
+void SandboxedRarAnalyzer::ReportFileFailure(
+    safe_browsing::ArchiveAnalysisResult reason) {
   if (callback_) {
+    safe_browsing::ArchiveAnalyzerResults results;
+    results.analysis_result = reason;
+
     content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback_),
-                                  safe_browsing::ArchiveAnalyzerResults()));
+        FROM_HERE, base::BindOnce(std::move(callback_), results));
   }
 }
 

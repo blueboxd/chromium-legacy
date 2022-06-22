@@ -10,6 +10,13 @@
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 
 /**
+ * Checks if argument is an array with zero length.
+ */
+export function isEmptyArray(maybeArray: unknown): maybeArray is[] {
+  return Array.isArray(maybeArray) && maybeArray.length === 0;
+}
+
+/**
  * Checks if argument is an array with non-zero length.
  */
 export function isNonEmptyArray(maybeArray: unknown): maybeArray is unknown[] {
@@ -114,6 +121,20 @@ export function getLoadingPlaceholders<T>(factory: () => T): T[] {
  */
 export function getNumberOfGridItemsPerRow(): number {
   return window.innerWidth > 720 ? 4 : 3;
+}
+
+/**
+ * Returns the attribution list from local storage.
+ * Such as attribution (image title, author...) of a downloaded image.
+ */
+export function getLocalStorageAttribution(key: string): string[] {
+  const attributionMap =
+      JSON.parse((window.localStorage['attribution'] || '{}'));
+  const attribution = attributionMap[key];
+  if (!attribution) {
+    console.warn('Unable to get attribution from local storage.', key);
+  }
+  return attribution;
 }
 
 /**

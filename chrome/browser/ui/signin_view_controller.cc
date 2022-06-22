@@ -226,7 +226,6 @@ SigninViewController::ShowReauthPrompt(
   dialog_ = std::make_unique<SigninReauthViewController>(
       browser_, account_id, access_point, GetOnModalDialogClosedCallback(),
       std::move(wrapped_reauth_callback));
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGNIN_REAUTH);
   return abort_handle;
 }
 
@@ -241,18 +240,30 @@ void SigninViewController::ShowModalInterceptFirstRunExperienceDialog(
   // Casts pointer to a base class.
   dialog_ = std::move(fre_dialog);
   raw_dialog->Show();
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE);
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+void SigninViewController::ShowModalSigninEmailConfirmationDialog(
+    const std::string& last_email,
+    const std::string& email,
+    SigninEmailConfirmationDialog::Callback callback) {
+  CloseModalSignin();
+  content::WebContents* active_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  dialog_ = std::make_unique<SigninModalDialogImpl>(
+      SigninEmailConfirmationDialog::AskForConfirmation(
+          active_contents, browser_->profile(), last_email, email,
+          std::move(callback)),
+      GetOnModalDialogClosedCallback());
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 void SigninViewController::ShowModalSyncConfirmationDialog() {
   CloseModalSignin();
   dialog_ = std::make_unique<SigninModalDialogImpl>(
       SigninViewControllerDelegate::CreateSyncConfirmationDelegate(browser_),
       GetOnModalDialogClosedCallback());
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::SIGN_IN_SYNC_CONFIRMATION);
 }
 
 void SigninViewController::ShowModalEnterpriseConfirmationDialog(
@@ -269,8 +280,6 @@ void SigninViewController::ShowModalEnterpriseConfirmationDialog(
           browser_, account_info, force_new_profile, show_link_data_option,
           profile_color, std::move(callback)),
       GetOnModalDialogClosedCallback());
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::SIGNIN_ENTERPRISE_INTERCEPTION);
 #else
   NOTREACHED() << "Enterprise confirmation dialog modal not supported";
 #endif
@@ -281,7 +290,6 @@ void SigninViewController::ShowModalSigninErrorDialog() {
   dialog_ = std::make_unique<SigninModalDialogImpl>(
       SigninViewControllerDelegate::CreateSigninErrorDelegate(browser_),
       GetOnModalDialogClosedCallback());
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN_ERROR);
 }
 
 bool SigninViewController::ShowsModalDialog() {
@@ -435,22 +443,6 @@ void SigninViewController::ShowGaiaLogoutTab(
       browser_->tab_strip_model()->GetActiveWebContents();
   DCHECK(logout_tab_contents);
   LogoutTabHelper::CreateForWebContents(logout_tab_contents);
-}
-
-void SigninViewController::ShowModalSigninEmailConfirmationDialog(
-    const std::string& last_email,
-    const std::string& email,
-    SigninEmailConfirmationDialog::Callback callback) {
-  CloseModalSignin();
-  content::WebContents* active_contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
-  dialog_ = std::make_unique<SigninModalDialogImpl>(
-      SigninEmailConfirmationDialog::AskForConfirmation(
-          active_contents, browser_->profile(), last_email, email,
-          std::move(callback)),
-      GetOnModalDialogClosedCallback());
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::SIGN_IN_EMAIL_CONFIRMATION);
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

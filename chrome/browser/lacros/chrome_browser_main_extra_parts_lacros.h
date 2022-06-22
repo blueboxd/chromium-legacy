@@ -12,6 +12,7 @@
 class ArcIconCache;
 class AutomationManagerLacros;
 class BrowserServiceLacros;
+class ChromeKioskLaunchControllerLacros;
 class DeskTemplateClientLacros;
 class DriveFsCache;
 class DownloadControllerClientLacros;
@@ -53,6 +54,7 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
 
  private:
   // ChromeBrowserMainExtraParts:
+  void PreProfileInit() override;
   void PostBrowserStart() override;
   void PostProfileInit(Profile* profile, bool is_initial_profile) override;
 
@@ -81,6 +83,9 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
 
   // Sends lacros installation status of force-installed extensions to ash.
   std::unique_ptr<ForceInstalledTrackerLacros> force_installed_tracker_;
+
+  std::unique_ptr<ChromeKioskLaunchControllerLacros>
+      chrome_kiosk_launch_controller_;
 
   // Manages the resources used in the web Kiosk session, and sends window
   // status changes of lacros-chrome to ash when necessary.

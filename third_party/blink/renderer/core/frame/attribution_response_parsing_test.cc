@@ -5,16 +5,19 @@
 #include "third_party/blink/renderer/core/frame/attribution_response_parsing.h"
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/blink/public/common/attribution_reporting/constants.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
-#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink::attribution_response_parsing {
@@ -26,10 +29,8 @@ class AggregatableSourceBuilder {
   AggregatableSourceBuilder() = default;
   ~AggregatableSourceBuilder() = default;
 
-  AggregatableSourceBuilder& AddKey(
-      String key_id,
-      mojom::blink::AttributionAggregatableKeyPtr key) {
-    source_.keys.insert(std::move(key_id), std::move(key));
+  AggregatableSourceBuilder& AddKey(String key_id, absl::uint128 key) {
+    source_.keys.insert(std::move(key_id), key);
     return *this;
   }
 
@@ -102,7 +103,7 @@ class VectorBuilder {
 TEST(AttributionResponseParsingTest, ParseAttributionAggregatableSource) {
   const struct {
     String description;
-    AtomicString header;
+    String header;
     bool valid;
     mojom::blink::AttributionAggregatableSourcePtr source;
   } kTestCases[] = {
@@ -118,25 +119,21 @@ TEST(AttributionResponseParsingTest, ParseAttributionAggregatableSource) {
        mojom::blink::AttributionAggregatableSource::New()},
       {"One valid key", R"([{"id":"key","key_piece":"0x159"}])", true,
        AggregatableSourceBuilder()
-           .AddKey(/*key_id=*/"key",
-                   mojom::blink::AttributionAggregatableKey::New(
-                       /*high_bits=*/0, /*low_bits=*/345))
+           .AddKey(/*key_id=*/"key", absl::MakeUint128(/*high=*/0, /*low=*/345))
            .Build()},
       {"Two valid keys",
-       AtomicString(R"([{"id":"key1","key_piece":"0x159"},)") +
-           R"({"id":"key2","key_piece":"0x50000000000000159"}])",
+       R"([{"id":"key1","key_piece":"0x159"},
+           {"id":"key2","key_piece":"0x50000000000000159"}])",
        true,
        AggregatableSourceBuilder()
            .AddKey(/*key_id=*/"key1",
-                   mojom::blink::AttributionAggregatableKey::New(
-                       /*high_bits=*/0, /*low_bits=*/345))
+                   absl::MakeUint128(/*high=*/0, /*low=*/345))
            .AddKey(/*key_id=*/"key2",
-                   mojom::blink::AttributionAggregatableKey::New(
-                       /*high_bits=*/5, /*low_bits=*/345))
+                   absl::MakeUint128(/*high=*/5, /*low=*/345))
            .Build()},
       {"Second key invalid",
-       AtomicString(R"([{"id":"key1","key_piece":"0x159"},)") +
-           R"({"id":"key2","key_piece":""}])",
+       R"([{"id":"key1","key_piece":"0x159"},
+           {"id":"key2","key_piece":""}])",
        false, mojom::blink::AttributionAggregatableSource::New()},
   };
 
@@ -157,8 +154,9 @@ TEST(AttributionResponseParsingTest,
     wtf_size_t key_count;
     wtf_size_t key_size;
 
-    AtomicString GetHeader() const {
+    String GetHeader() const {
       StringBuilder builder;
+      builder.Append("[");
 
       const char* separator = "";
       for (wtf_size_t i = 0u; i < key_count; ++i) {
@@ -169,7 +167,8 @@ TEST(AttributionResponseParsingTest,
         separator = ",";
       }
 
-      return "[" + builder.ToAtomicString() + "]";
+      builder.Append("]");
+      return builder.ToString();
     }
 
     mojom::blink::AttributionAggregatableSourcePtr GetSource() const {
@@ -178,8 +177,7 @@ TEST(AttributionResponseParsingTest,
         return builder.Build();
 
       for (wtf_size_t i = 0u; i < key_count; ++i) {
-        builder.AddKey(GetKey(i), mojom::blink::AttributionAggregatableKey::New(
-                                      /*high_bits=*/0, /*low_bits=*/1));
+        builder.AddKey(GetKey(i), absl::MakeUint128(/*high=*/0, /*low=*/1));
       }
 
       return builder.Build();
@@ -220,7 +218,7 @@ TEST(AttributionResponseParsingTest,
 TEST(AttributionResponseParsingTest, ParseAttributionAggregatableTrigger) {
   const struct {
     String description;
-    AtomicString header;
+    String header;
     bool valid;
     mojom::blink::AttributionAggregatableTriggerPtr trigger;
   } kTestCases[] = {
@@ -239,21 +237,23 @@ TEST(AttributionResponseParsingTest, ParseAttributionAggregatableTrigger) {
        AggregatableTriggerBuilder()
            .AddTriggerData(
                mojom::blink::AttributionAggregatableTriggerData::New(
-                   mojom::blink::AttributionAggregatableKey::New(
-                       /*high_bits=*/0, /*low_bits=*/1024),
+                   absl::MakeUint128(/*high=*/0, /*low=*/1024),
                    /*source_keys=*/Vector<String>{"key"},
                    /*filters=*/mojom::blink::AttributionFilterData::New(),
                    /*not_filters=*/mojom::blink::AttributionFilterData::New()))
            .Build()},
       {"Valid trigger with filters",
-       AtomicString(R"([{"key_piece":"0x400","source_keys":["key"],)") +
-           R"("filters":{"filter":["value1"]},"not_filters":{"filter":["value2"]}}])",
+       R"([{
+         "key_piece": "0x400",
+         "source_keys": ["key"],
+         "filters": {"filter": ["value1"]},
+         "not_filters": {"filter": ["value2"]}
+       }])",
        true,
        AggregatableTriggerBuilder()
            .AddTriggerData(
                mojom::blink::AttributionAggregatableTriggerData::New(
-                   mojom::blink::AttributionAggregatableKey::New(
-                       /*high_bits=*/0, /*low_bits=*/1024),
+                   absl::MakeUint128(/*high=*/0, /*low=*/1024),
                    /*source_keys=*/Vector<String>{"key"},
                    /*filters=*/
                    AttributionFilterDataBuilder()
@@ -265,21 +265,19 @@ TEST(AttributionResponseParsingTest, ParseAttributionAggregatableTrigger) {
                        .Build()))
            .Build()},
       {"Two valid trigger data",
-       AtomicString(R"([{"key_piece":"0x400","source_keys":["key1"]},)") +
-           R"({"key_piece":"0xA80","source_keys":["key2"]}])",
+       R"([{"key_piece":"0x400","source_keys":["key1"]},
+           {"key_piece":"0xA80","source_keys":["key2"]}])",
        true,
        AggregatableTriggerBuilder()
            .AddTriggerData(
                mojom::blink::AttributionAggregatableTriggerData::New(
-                   mojom::blink::AttributionAggregatableKey::New(
-                       /*high_bits=*/0, /*low_bits=*/1024),
+                   absl::MakeUint128(/*high=*/0, /*low=*/1024),
                    /*source_keys=*/Vector<String>{"key1"},
                    /*filters=*/mojom::blink::AttributionFilterData::New(),
                    /*not_filters=*/mojom::blink::AttributionFilterData::New()))
            .AddTriggerData(
                mojom::blink::AttributionAggregatableTriggerData::New(
-                   mojom::blink::AttributionAggregatableKey::New(
-                       /*high_bits=*/0, /*low_bits=*/2688),
+                   absl::MakeUint128(/*high=*/0, /*low=*/2688),
                    /*source_keys=*/Vector<String>{"key2"},
                    /*filters=*/mojom::blink::AttributionFilterData::New(),
                    /*not_filters=*/mojom::blink::AttributionFilterData::New()))
@@ -308,8 +306,10 @@ TEST(AttributionResponseParsingTest,
     wtf_size_t key_count;
     wtf_size_t key_size;
 
-    AtomicString GetHeader() const {
+    String GetHeader() const {
       StringBuilder builder;
+      builder.Append("[");
+
       String key = GetKey();
 
       const char* separator = "";
@@ -330,7 +330,8 @@ TEST(AttributionResponseParsingTest,
         separator = ",";
       }
 
-      return "[" + builder.ToAtomicString() + "]";
+      builder.Append("]");
+      return builder.ToString();
     }
 
     WTF::Vector<mojom::blink::AttributionAggregatableTriggerDataPtr>
@@ -342,8 +343,7 @@ TEST(AttributionResponseParsingTest,
       for (wtf_size_t i = 0u; i < trigger_data_count; ++i) {
         builder.AddTriggerData(
             mojom::blink::AttributionAggregatableTriggerData::New(
-                mojom::blink::AttributionAggregatableKey::New(
-                    /*high_bits=*/0, /*low_bits=*/1),
+                absl::MakeUint128(/*high=*/0, /*low=*/1),
                 /*source_keys=*/Vector<String>(key_count, GetKey()),
                 /*filters=*/mojom::blink::AttributionFilterData::New(),
                 /*not_filters=*/mojom::blink::AttributionFilterData::New()));
@@ -386,8 +386,8 @@ TEST(AttributionResponseParsingTest,
 
 TEST(AttributionResponseParsingTest, ParseAttributionAggregatableValues) {
   const struct {
-    AtomicString description;
-    AtomicString header;
+    String description;
+    String header;
     bool valid;
     WTF::HashMap<String, uint32_t> values;
   } kTestCases[] = {
@@ -399,6 +399,8 @@ TEST(AttributionResponseParsingTest, ParseAttributionAggregatableValues) {
        R"({"key1":123,"key2":456})",
        true,
        {{"key1", 123}, {"key2", 456}}},
+      {"Max valid value", R"({"key":65536})", true, {{"key", 65536}}},
+      {"Value out of range", R"({"key":65537})", false, {}},
   };
 
   for (const auto& test_case : kTestCases) {
@@ -418,8 +420,10 @@ TEST(AttributionResponseParsingTest,
     wtf_size_t key_count;
     wtf_size_t key_size;
 
-    AtomicString GetHeader() const {
+    String GetHeader() const {
       StringBuilder builder;
+      builder.Append("{");
+
       const char* separator = "";
       for (wtf_size_t i = 0u; i < key_count; ++i) {
         builder.Append(separator);
@@ -429,7 +433,9 @@ TEST(AttributionResponseParsingTest,
         builder.AppendNumber(i + 1);
         separator = ",";
       }
-      return "{" + builder.ToAtomicString() + "}";
+
+      builder.Append("}");
+      return builder.ToString();
     }
 
     WTF::HashMap<String, uint32_t> GetValues() const {
@@ -619,7 +625,7 @@ TEST(AttributionResponseParsingTest, ParseSourceRegistrationHeader) {
 
   const struct {
     String description;
-    AtomicString json;
+    String json;
     mojom::blink::AttributionSourceDataPtr expected;
   } kTestCases[] = {
       {
@@ -938,7 +944,7 @@ TEST(AttributionResponseParsingTest, ParseDebugKey) {
 TEST(AttributionResponseParsingTest, ParseEventTriggerData) {
   const struct {
     String description;
-    AtomicString json;
+    String json;
     bool valid;
     Vector<mojom::blink::EventTriggerDataPtr> expected;
   } kTestCases[] = {
@@ -1199,6 +1205,128 @@ TEST(AttributionResponseParsingTest, ParseEventTriggerData) {
     bool valid = ParseEventTriggerData(test_case.json, actual);
     EXPECT_EQ(valid, test_case.valid) << test_case.description;
     EXPECT_EQ(actual, test_case.expected) << test_case.description;
+  }
+}
+
+TEST(AttributionResponseParsingTest, FilterValuesHistogram) {
+  const auto make_filter_data = [](wtf_size_t n) {
+    auto array = std::make_unique<JSONArray>();
+    for (wtf_size_t i = 0; i < n; ++i) {
+      array->PushString("x");
+    }
+
+    JSONObject object;
+    object.SetArray("a", std::move(array));
+    return object.ToJSONString();
+  };
+
+  const struct {
+    wtf_size_t size;
+    bool expected;
+  } kTestCases[] = {
+      {0, true},
+      {kMaxValuesPerAttributionFilter, true},
+      {kMaxValuesPerAttributionFilter + 1, false},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    base::HistogramTester histograms;
+    mojom::blink::AttributionFilterData filter_data;
+    ParseFilters(make_filter_data(test_case.size), filter_data);
+    histograms.ExpectUniqueSample("Conversions.ValuesPerFilter", test_case.size,
+                                  test_case.expected);
+  }
+}
+
+TEST(AttributionResponseParsingTest, FiltersSizeHistogram) {
+  const auto make_filter_data = [](wtf_size_t n) {
+    JSONObject object;
+    for (wtf_size_t i = 0; i < n; ++i) {
+      object.SetArray(String::Number(i), std::make_unique<JSONArray>());
+    }
+    return object.ToJSONString();
+  };
+
+  const struct {
+    wtf_size_t size;
+    bool expected;
+  } kTestCases[] = {
+      {0, true},
+      {kMaxAttributionFiltersPerSource, true},
+      {kMaxAttributionFiltersPerSource + 1, false},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    base::HistogramTester histograms;
+    mojom::blink::AttributionFilterData filter_data;
+    ParseFilters(make_filter_data(test_case.size), filter_data);
+    histograms.ExpectUniqueSample("Conversions.FiltersPerFilterData",
+                                  test_case.size, test_case.expected);
+  }
+}
+
+TEST(AttributionResponseParsingTest, SourceAggregatableKeysHistogram) {
+  const auto make_aggregatable_source_with_keys = [](wtf_size_t n) {
+    JSONArray array;
+    for (wtf_size_t i = 0; i < n; ++i) {
+      auto object = std::make_unique<JSONObject>();
+      object->SetString("id", String::Number(i));
+      object->SetString("key_piece", "0x1");
+      array.PushObject(std::move(object));
+    }
+    return array.ToJSONString();
+  };
+
+  const struct {
+    wtf_size_t size;
+    bool expected;
+  } kTestCases[] = {
+      {0, true},
+      {kMaxAttributionAggregatableKeysPerSourceOrTrigger, true},
+      {kMaxAttributionAggregatableKeysPerSourceOrTrigger + 1, false},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    base::HistogramTester histograms;
+    mojom::blink::AttributionAggregatableSource aggregatable_source;
+    ParseAttributionAggregatableSource(
+        make_aggregatable_source_with_keys(test_case.size),
+        aggregatable_source);
+    histograms.ExpectUniqueSample("Conversions.AggregatableKeysPerSource",
+                                  test_case.size, test_case.expected);
+  }
+}
+
+TEST(AttributionResponseParsingTest, AggregatableTriggerDataHistogram) {
+  const auto make_aggregatable_trigger_with_trigger_data = [](wtf_size_t n) {
+    JSONArray array;
+    for (wtf_size_t i = 0; i < n; ++i) {
+      auto object = std::make_unique<JSONObject>();
+      object->SetString("key_piece", "0x1");
+      object->SetArray("source_keys", std::make_unique<JSONArray>());
+      array.PushObject(std::move(object));
+    }
+    return array.ToJSONString();
+  };
+
+  const struct {
+    wtf_size_t size;
+    bool expected;
+  } kTestCases[] = {
+      {0, true},
+      {kMaxAttributionAggregatableTriggerDataPerTrigger, true},
+      {kMaxAttributionAggregatableTriggerDataPerTrigger + 1, false},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    base::HistogramTester histograms;
+    WTF::Vector<mojom::blink::AttributionAggregatableTriggerDataPtr>
+        trigger_data;
+    ParseAttributionAggregatableTriggerData(
+        make_aggregatable_trigger_with_trigger_data(test_case.size),
+        trigger_data);
+    histograms.ExpectUniqueSample("Conversions.AggregatableTriggerDataLength",
+                                  test_case.size, test_case.expected);
   }
 }
 

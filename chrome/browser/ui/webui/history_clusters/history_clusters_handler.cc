@@ -21,7 +21,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/ui/webui/history_clusters/history_clusters.mojom.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
@@ -47,6 +47,7 @@ mojom::URLVisitPtr VisitToMojom(Profile* profile,
                                 const history::ClusterVisit& visit) {
   auto visit_mojom = mojom::URLVisit::New();
   visit_mojom->normalized_url = visit.normalized_url;
+  visit_mojom->url_for_display = base::UTF16ToUTF8(visit.url_for_display);
 
   auto& annotated_visit = visit.annotated_visit;
   visit_mojom->raw_urls.push_back(annotated_visit.url_row.url());
@@ -65,6 +66,21 @@ mojom::URLVisitPtr VisitToMojom(Profile* profile,
   }
 
   visit_mojom->page_title = base::UTF16ToUTF8(annotated_visit.url_row.title());
+
+  for (const auto& match : visit.title_match_positions) {
+    auto match_mojom = mojom::MatchPosition::New();
+    match_mojom->begin = match.first;
+    match_mojom->end = match.second;
+    visit_mojom->title_match_positions.push_back(std::move(match_mojom));
+  }
+  for (const auto& match : visit.url_for_display_match_positions) {
+    auto match_mojom = mojom::MatchPosition::New();
+    match_mojom->begin = match.first;
+    match_mojom->end = match.second;
+    visit_mojom->url_for_display_match_positions.push_back(
+        std::move(match_mojom));
+  }
+
   visit_mojom->relative_date = base::UTF16ToUTF8(ui::TimeFormat::Simple(
       ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
       base::Time::Now() - annotated_visit.visit_row.visit_time));
@@ -141,6 +157,12 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
     cluster_mojom->id = cluster.cluster_id;
     if (cluster.label) {
       cluster_mojom->label = base::UTF16ToUTF8(*cluster.label);
+      for (const auto& match : cluster.label_match_positions) {
+        auto match_mojom = mojom::MatchPosition::New();
+        match_mojom->begin = match.first;
+        match_mojom->end = match.second;
+        cluster_mojom->label_match_positions.push_back(std::move(match_mojom));
+      }
     }
 
     for (const auto& visit : cluster.visits) {
@@ -260,16 +282,6 @@ void HistoryClustersHandler::LoadMoreClusters(const std::string& query) {
 void HistoryClustersHandler::RemoveVisits(
     std::vector<mojom::URLVisitPtr> visits,
     RemoveVisitsCallback callback) {
-  // TODO(crbug.com/1327743): Enforced here because enforcing at the UI level is
-  // too complicated to merge. We can consider removing this clause or turning
-  // it to a DCHECK after we enforce it at the UI level, but it's essentially
-  // harmless to keep it here too.
-  if (!profile_->GetPrefs()->GetBoolean(
-          ::prefs::kAllowDeletingBrowserHistory)) {
-    std::move(callback).Run(false);
-    return;
-  }
-
   // Reject the request if a pending task exists or the set of visits is empty.
   if (remove_task_tracker_.HasTrackedTasks() || visits.empty()) {
     std::move(callback).Run(false);

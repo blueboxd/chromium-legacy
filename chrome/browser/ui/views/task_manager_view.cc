@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -125,12 +124,6 @@ bool TaskManagerView::IsColumnVisible(int column_id) const {
 }
 
 void TaskManagerView::SetColumnVisibility(int column_id, bool new_visibility) {
-  // Check if there is at least 1 visible column before changing the visibility.
-  // If this column would be the last column to be visible and its hiding, then
-  // prevent this column visibility change. see crbug.com/1320307 for details.
-  if (!new_visibility && tab_table_->visible_columns().size() <= 1)
-    return;
-
   tab_table_->SetColumnVisibility(column_id, new_visibility);
 }
 
@@ -310,7 +303,6 @@ TaskManagerView::TaskManagerView()
   SetCloseCallback(base::DoNothing());
 
   Init();
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::TASK_MANAGER);
 }
 
 // static

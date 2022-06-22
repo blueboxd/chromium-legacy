@@ -9,7 +9,7 @@
 // #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js'
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {$, appendParam} from 'chrome://resources/js/util.m.js';
-// #import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// #import {sendWithPromise, getPropertyDescriptor} from 'chrome://resources/js/cr.m.js';
 
 // #import {SamlHandler, OnHeadersReceivedDetails} from './saml_handler.m.js';
 // #import {WebviewEventManager} from './webview_event_manager.m.js';
@@ -104,7 +104,6 @@ cr.define('cr.login', function() {
    *   isSupervisedUser: boolean,
    *   isDeviceOwner: boolean,
    *   ssoProfile: string,
-   *   enableCloseView: boolean,
    *   enableAzureADIntegration: boolean
    * }}
    */
@@ -223,8 +222,6 @@ cr.define('cr.login', function() {
     'isSupervisedUser',  // True if the user is supervised user.
     'isDeviceOwner',     // True if the user is device owner.
     'doSamlRedirect',    // True if the authentication is done via external IdP.
-    'enableCloseView',   // True if authenticator should wait for the closeView
-                         // message from Gaia.
     'rart',              // Encrypted reauth request token.
     'enableAzureADIntegration'  // True if features specific to Azure AD are
                                 // enabled
@@ -348,20 +345,10 @@ cr.define('cr.login', function() {
       this.syncTrustedVaultKeys_ = msg.value;
     },
     'closeView'(msg) {
-      // We need to resend the message to make sure it comes after the API
-      // 'confirm' call. The API calls go via different channel.
-      window.postMessage({method: 'resendCloseView'}, window.origin);
-    },
-    'resendCloseView'(msg) {
-      if (!this.enableCloseView_) {
-        return;
-      }
-
-      if (!this.services_) {
-        console.error('Authenticator: UserInfo should come before closeView');
-      }
-
       if (!this.authCompletedFired_) {
+        if (!this.services_) {
+          console.error('Authenticator: UserInfo should come before closeView');
+        }
         const metric = this.authFlow === AuthFlow.SAML ?
             GAIA_MESSAGE_SAML_CLOSE_VIEW :
             GAIA_MESSAGE_GAIA_CLOSE_VIEW;
@@ -428,7 +415,6 @@ cr.define('cr.login', function() {
           webview;
       assert(this.webview_);
       this.enableGaiaActionButtons_ = false;
-      this.enableCloseView_ = false;
       this.webviewEventManager_ = WebviewEventManager.create();
 
       this.clientId_ = null;
@@ -442,6 +428,7 @@ cr.define('cr.login', function() {
       this.missingGaiaInfoCallback = null;
       this.needPassword = true;
       this.services_ = null;
+      this.waitApiPasswordConfirm_ = false;
       this.gaiaDoneTimer_ = null;
       /** @private {boolean} */
       this.isConstrainedWindow_ = false;
@@ -488,7 +475,8 @@ cr.define('cr.login', function() {
       this.samlHandler_.reset();
       this.videoEnabled = false;
       this.services_ = null;
-      this.gaiaDoneTimer_ = null;
+      this.waitApiPasswordConfirm_ = false;
+      this.maybeClearGaiaTimeout_();
       this.syncTrustedVaultKeys_ = null;
       this.closeViewReceived_ = false;
       this.isAzureADIntegrationEnabled_ = false;
@@ -534,6 +522,9 @@ cr.define('cr.login', function() {
       this.webviewEventManager_.addEventListener(
           this.samlHandler_, 'apiPasswordAdded',
           e => this.onSamlApiPasswordAdded_(e));
+      this.webviewEventManager_.addEventListener(
+          this.samlHandler_, 'apiPasswordConfirmed',
+          e => this.onSamlApiPasswordConfirmed_(e));
       this.webviewEventManager_.addEventListener(
           this.samlHandler_, 'challengeMachineKeyRequired',
           e => this.onChallengeMachineKeyRequired_(e));
@@ -655,7 +646,6 @@ cr.define('cr.login', function() {
       this.clientId_ = data.clientId;
       this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
       this.enableGaiaActionButtons_ = data.enableGaiaActionButtons;
-      this.enableCloseView_ = !!data.enableCloseView;
       this.isAzureADIntegrationEnabled_ = data.enableAzureADIntegration;
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
@@ -993,28 +983,12 @@ cr.define('cr.login', function() {
     }
 
     /**
-     * Returns true if given HTML5 message is received from the current window.
-     * @param {Object} e Payload of the received HTML5 message.
-     */
-    isSelfMessage_(e) {
-      if (e.origin !== window.origin) {
-        return false;
-      }
-
-      if (typeof e.data !== 'object' || !e.data.hasOwnProperty('method')) {
-        return false;
-      }
-
-      return true;
-    }
-
-    /**
      * Invoked when an HTML5 message is received from the webview element.
      * @param {Object} e Payload of the received HTML5 message.
      * @private
      */
     onMessageFromWebview_(e) {
-      if (!this.isGaiaMessage_(e) && !this.isSelfMessage_(e)) {
+      if (!this.isGaiaMessage_(e)) {
         return;
       }
 
@@ -1087,21 +1061,16 @@ cr.define('cr.login', function() {
       // `onGaiaDoneTimeout_`.
       const userInfoAvailable = !!this.services_;
 
-      const gaiaDone = userInfoAvailable &&
-          (!this.enableCloseView_ || this.closeViewReceived_);
+      const gaiaDone = userInfoAvailable && this.closeViewReceived_ &&
+          !this.waitApiPasswordConfirm_;
 
-      if (gaiaDone && this.gaiaDoneTimer_) {
-        window.clearTimeout(this.gaiaDoneTimer_);
-        this.gaiaDoneTimer_ = null;
-      }
-
-      if (this.gaiaDoneTimer_) {
+      if (gaiaDone) {
+        this.maybeClearGaiaTimeout_();
+      } else if (this.gaiaDoneTimer_) {
         // Early out if `gaiaDoneTimer_` is running.
         return;
-      }
-
-      if (!gaiaDone) {
-        // Start `gaiaDoneTimer_` if user info is not available.
+      } else {
+        // Start `gaiaDoneTimer_` if Gaia is not yet done.
         this.gaiaDoneTimer_ = window.setTimeout(
             () => this.onGaiaDoneTimeout_(), GAIA_DONE_WAIT_TIMEOUT_MS);
         return;
@@ -1298,9 +1267,23 @@ cr.define('cr.login', function() {
      */
     onSamlApiPasswordAdded_(e) {
       this.dispatchEvent(new Event('apiPasswordAdded'));
+      this.waitApiPasswordConfirm_ = true;
+
       // Saml API 'add' password might be received after the 'loadcommit'
       // event. In such case, maybeCompleteAuth_ should be attempted again if
       // GAIA ID is available.
+      if (this.gaiaId_) {
+        this.maybeCompleteAuth_();
+      }
+    }
+
+    /**
+     * Invoked when |samlHandler_| fires 'apiPasswordConfirmed' event. Could be
+     * from 3rd-party SAML IdP or Gaia which also uses the API.
+     * @private
+     */
+    onSamlApiPasswordConfirmed_(e) {
+      this.waitApiPasswordConfirm_ = false;
       if (this.gaiaId_) {
         this.maybeCompleteAuth_();
       }
@@ -1432,7 +1415,7 @@ cr.define('cr.login', function() {
         chrome.send('metricsHandler:recordBooleanHistogram', [metric, false]);
       }
 
-      if (this.enableCloseView_ && !this.closeViewReceived_) {
+      if (!this.closeViewReceived_) {
         console.error('Gaia done timeout: closeView was not called.');
         this.closeViewReceived_ = true;
 
@@ -1442,12 +1425,29 @@ cr.define('cr.login', function() {
         chrome.send('metricsHandler:recordBooleanHistogram', [metric, false]);
       }
 
-      this.gaiaDoneTimer_ = null;
+      if (this.waitApiPasswordConfirm_) {
+        // Log duplicates the log from the saml handler. The message is used by
+        // the tast test to catch failures.
+        console.error('SamlHandler.onAPICall_: API password was not confirmed');
+        this.waitApiPasswordConfirm_ = false;
+      }
+
+      this.maybeClearGaiaTimeout_();
       this.maybeCompleteAuth_();
+    }
+
+    /**
+     * @private
+     */
+    maybeClearGaiaTimeout_() {
+      if (!this.gaiaDoneTimer_) {
+        return;
+      }
+      window.clearTimeout(this.gaiaDoneTimer_);
+      this.gaiaDoneTimer_ = null;
     }
   }
 
-  // #cr_define_end
   /**
    * The current auth flow of the hosted auth page.
    * @type {AuthFlow}
@@ -1479,5 +1479,6 @@ cr.define('cr.login', function() {
   Authenticator.AuthMode = AuthMode;
   Authenticator.SUPPORTED_PARAMS = SUPPORTED_PARAMS;
 
+  // #cr_define_end
   return {Authenticator: Authenticator};
 });

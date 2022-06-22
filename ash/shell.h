@@ -137,7 +137,7 @@ class HoldingSpaceController;
 class HpsNotifyController;
 class HpsOrientationController;
 class ImeControllerImpl;
-class InSessionAuthDialogControllerImpl;
+class WebAuthNDialogControllerImpl;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
 class KeyboardControllerImpl;
@@ -147,7 +147,6 @@ class LockStateController;
 class LogoutConfirmationController;
 class LoginScreenController;
 class LoginUnlockThroughputRecorder;
-class MarkerController;
 class MediaNotificationProviderImpl;
 class TabClusterUIController;
 class TabletModeController;
@@ -354,6 +353,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   AppListControllerImpl* app_list_controller() {
     return app_list_controller_.get();
   }
+  AdaptiveChargingController* adaptive_charging_controller() {
+    return adaptive_charging_controller_.get();
+  }
   AmbientController* ambient_controller() { return ambient_controller_.get(); }
   AssistantControllerImpl* assistant_controller() {
     return assistant_controller_.get();
@@ -455,8 +457,8 @@ class ASH_EXPORT Shell : public SessionObserver,
     return hps_orientation_controller_.get();
   }
   ImeControllerImpl* ime_controller() { return ime_controller_.get(); }
-  InSessionAuthDialogControllerImpl* in_session_auth_dialog_controller() {
-    return in_session_auth_dialog_controller_.get();
+  WebAuthNDialogControllerImpl* webauthn_dialog_controller() {
+    return webauthn_dialog_controller_.get();
   }
   KeyAccessibilityEnabler* key_accessibility_enabler() {
     return key_accessibility_enabler_.get();
@@ -482,7 +484,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   LogoutConfirmationController* logout_confirmation_controller() {
     return logout_confirmation_controller_.get();
   }
-  MarkerController* marker_controller() { return marker_controller_.get(); }
   MediaControllerImpl* media_controller() { return media_controller_.get(); }
   MessageCenterAshImpl* message_center_ash_impl() {
     return message_center_ash_impl_.get();
@@ -533,6 +534,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   ResolutionNotificationController* resolution_notification_controller() {
     return resolution_notification_controller_.get();
+  }
+  RgbKeyboardManager* rgb_keyboard_manager() {
+    return rgb_keyboard_manager_.get();
   }
   ScreenLayoutObserver* screen_layout_observer() {
     return screen_layout_observer_.get();
@@ -790,8 +794,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<HpsOrientationController> hps_orientation_controller_;
   std::unique_ptr<ImeControllerImpl> ime_controller_;
   std::unique_ptr<chromeos::ImmersiveContext> immersive_context_;
-  std::unique_ptr<InSessionAuthDialogControllerImpl>
-      in_session_auth_dialog_controller_;
+  std::unique_ptr<WebAuthNDialogControllerImpl> webauthn_dialog_controller_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
   std::unique_ptr<LocaleUpdateControllerImpl> locale_update_controller_;
@@ -858,7 +861,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<HighContrastController> high_contrast_controller_;
   std::unique_ptr<FullscreenMagnifierController>
       fullscreen_magnifier_controller_;
-  std::unique_ptr<MarkerController> marker_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
   std::unique_ptr<::wm::FocusController> focus_controller_;
 

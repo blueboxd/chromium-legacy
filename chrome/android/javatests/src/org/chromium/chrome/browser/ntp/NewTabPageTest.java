@@ -24,9 +24,7 @@ import android.support.test.InstrumentationRegistry;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.MarginLayoutParams;
 
-import androidx.annotation.Nullable;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
@@ -34,6 +32,7 @@ import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,9 +40,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.memory.MemoryPressureCallback;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterProvider;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
@@ -53,17 +57,18 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.feed.FeedReliabilityLoggingSignals;
+import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -75,6 +80,7 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
@@ -87,6 +93,7 @@ import org.chromium.url.GURL;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -98,12 +105,24 @@ import java.util.concurrent.TimeUnit;
  *
  * TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=IPH_FeedHeaderMenu"})
 @Features.DisableFeatures({ChromeFeatureList.EXPLORE_SITES, ChromeFeatureList.QUERY_TILES,
         ChromeFeatureList.VIDEO_TUTORIALS})
 public class NewTabPageTest {
+    /**
+     * Parameter set controlling whether scrollable mvt is enabled.
+     */
+    public static class MVTParams implements ParameterProvider {
+        @Override
+        public Iterable<ParameterSet> getParameters() {
+            return Arrays.asList(new ParameterSet().value(true).name("EnableScrollableMVTOnNTP"),
+                    new ParameterSet().value(false).name("DisableScrollableMVTOnNTP"));
+        }
+    }
+
     private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
     private static final int SIGNIN_PROMO_POSITION = 2;
 
@@ -127,7 +146,9 @@ public class NewTabPageTest {
     @Mock
     VoiceRecognitionHandler mVoiceRecognitionHandler;
     @Mock
-    FeedReliabilityLoggingSignals mFeedReliabilityLoggingSignals;
+    FeedReliabilityLogger mFeedReliabilityLogger;
+    @Mock
+    private TemplateUrlService mTemplateUrlService;
 
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
     private static final String TEST_FEED =
@@ -136,19 +157,28 @@ public class NewTabPageTest {
     private Tab mTab;
     private NewTabPage mNtp;
     private View mFakebox;
-    @Nullable
-    private ViewGroup mTileGridLayout;
-    @Nullable
-    private ViewGroup mMVTCarouselLayout;
+    private ViewGroup mMvTilesLayout;
     private FakeMostVisitedSites mMostVisitedSites;
     private EmbeddedTestServer mTestServer;
     private List<SiteSuggestion> mSiteSuggestions;
     private OmniboxTestUtils mOmnibox;
+    private boolean mEnableScrollableMVT;
+
+    @ParameterAnnotations.UseMethodParameterBefore(MVTParams.class)
+    public void setIsScrollableMVTEnabledForTest(boolean isScrollableMVTEnabled) {
+        mEnableScrollableMVT = isScrollableMVTEnabled;
+        FeatureList.TestValues testValuesOverride = new FeatureList.TestValues();
+        testValuesOverride.addFeatureFlagOverride(
+                ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID, isScrollableMVTEnabled);
+        FeatureList.setTestValues(testValuesOverride);
+    }
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityWithURL("about:blank");
+        Assume.assumeFalse(mActivityTestRule.getActivity().isTablet() && mEnableScrollableMVT);
+
         mOmnibox = new OmniboxTestUtils(mActivityTestRule.getActivity());
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -165,36 +195,34 @@ public class NewTabPageTest {
         Assert.assertTrue(mTab.getNativePage() instanceof NewTabPage);
         mNtp = (NewTabPage) mTab.getNativePage();
         mFakebox = mNtp.getView().findViewById(R.id.search_box);
-        mTileGridLayout = mNtp.getView().findViewById(R.id.tile_grid_layout);
-        if (mTileGridLayout != null) {
-            Assert.assertEquals(mSiteSuggestions.size(), mTileGridLayout.getChildCount());
-        }
-
-        mMVTCarouselLayout = mNtp.getView().findViewById(R.id.mv_tiles_layout);
-        if (mMVTCarouselLayout != null) {
-            Assert.assertEquals(mSiteSuggestions.size(), mMVTCarouselLayout.getChildCount());
-        }
+        mMvTilesLayout = mNtp.getView().findViewById(R.id.mv_tiles_layout);
+        Assert.assertEquals(mSiteSuggestions.size(), mMvTilesLayout.getChildCount());
+        mNtp.getCoordinatorForTesting().setReliabilityLoggerForTesting(mFeedReliabilityLogger);
     }
 
     @After
     public void tearDown() {
-        mTestServer.stopAndDestroyServer();
+        if (mTestServer != null) {
+            mTestServer.stopAndDestroyServer();
+        }
     }
 
     @Test
     @MediumTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
-    @Features.DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    public void testRender_FocusFakeBox_WithNonScrollableMVT() throws Exception {
-        testRender_FocusFakeBox(false);
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
-    @Features.EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    public void testRender_FocusFakeBox_WithScrollableMVT() throws Exception {
-        testRender_FocusFakeBox(true);
+    @ParameterAnnotations.UseMethodParameter(MVTParams.class)
+    public void testRender_FocusFakeBoxT(boolean isScrollableMVTEnabled) throws Exception {
+        ScrimCoordinator scrimCoordinator = mActivityTestRule.getActivity()
+                                                    .getRootUiCoordinatorForTesting()
+                                                    .getScrimCoordinatorForTesting();
+        scrimCoordinator.disableAnimationForTesting(true);
+        onView(withId(R.id.search_box)).perform(click());
+        ChromeRenderTestRule.sanitize(mNtp.getView().getRootView());
+        mRenderTestRule.render(mNtp.getView().getRootView(),
+                "focus_fake_box"
+                        + (mEnableScrollableMVT ? "_with_scrollable_mvt"
+                                                : "_with_non_scrollable_mvt"));
+        scrimCoordinator.disableAnimationForTesting(false);
     }
 
     @Test
@@ -300,14 +328,14 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @Features.DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    public void testClickMostVisitedItem() {
-        Assert.assertNotNull(mTileGridLayout);
+    @ParameterAnnotations.UseMethodParameter(MVTParams.class)
+    public void testClickMostVisitedItem(boolean isScrollableMVTEnabled) {
+        Assert.assertNotNull(mMvTilesLayout);
         ChromeTabUtils.waitForTabPageLoaded(
                 mTab, mSiteSuggestions.get(0).url.getSpec(), new Runnable() {
                     @Override
                     public void run() {
-                        View mostVisitedItem = mTileGridLayout.getChildAt(0);
+                        View mostVisitedItem = mMvTilesLayout.getChildAt(0);
                         TouchCommon.singleClickView(mostVisitedItem);
                     }
                 });
@@ -320,12 +348,13 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @Features.DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
+    @ParameterAnnotations.UseMethodParameter(MVTParams.class)
     @DisabledTest(message = "Flaky - crbug.com/543138")
-    public void testOpenMostVisitedItemInNewTab() throws ExecutionException {
-        Assert.assertNotNull(mTileGridLayout);
+    public void testOpenMostVisitedItemInNewTab(boolean isScrollableMVTEnabled)
+            throws ExecutionException {
+        Assert.assertNotNull(mMvTilesLayout);
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
-                mTileGridLayout.getChildAt(0), ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB,
+                mMvTilesLayout.getChildAt(0), ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB,
                 false, mSiteSuggestions.get(0).url.getSpec());
     }
 
@@ -335,11 +364,12 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @Features.DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    public void testOpenMostVisitedItemInIncognitoTab() throws ExecutionException {
-        Assert.assertNotNull(mTileGridLayout);
+    @ParameterAnnotations.UseMethodParameter(MVTParams.class)
+    public void testOpenMostVisitedItemInIncognitoTab(boolean isScrollableMVTEnabled)
+            throws ExecutionException {
+        Assert.assertNotNull(mMvTilesLayout);
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
-                mTileGridLayout.getChildAt(0),
+                mMvTilesLayout.getChildAt(0),
                 ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, true,
                 mSiteSuggestions.get(0).url.getSpec());
     }
@@ -350,14 +380,15 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @Features.DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    @FlakyTest(message = "crbug.com/1075804")
-    public void testRemoveMostVisitedItem() throws ExecutionException {
-        Assert.assertNotNull(mTileGridLayout);
+    @ParameterAnnotations.UseMethodParameter(MVTParams.class)
+    @FlakyTest(message = "crbug.com/1036500")
+    public void testRemoveMostVisitedItem(boolean isScrollableMVTEnabled)
+            throws ExecutionException {
+        Assert.assertNotNull(mMvTilesLayout);
         SiteSuggestion testSite = mSiteSuggestions.get(0);
-        View mostVisitedItem = mTileGridLayout.getChildAt(0);
+        View mostVisitedItem = mMvTilesLayout.getChildAt(0);
         ArrayList<View> views = new ArrayList<>();
-        mTileGridLayout.findViewsWithText(views, testSite.title, View.FIND_VIEWS_WITH_TEXT);
+        mMvTilesLayout.findViewsWithText(views, testSite.title, View.FIND_VIEWS_WITH_TEXT);
         Assert.assertEquals(1, views.size());
 
         TestTouchUtils.performLongClickOnMainSync(
@@ -367,126 +398,6 @@ public class NewTabPageTest {
 
         Assert.assertTrue(mMostVisitedSites.isUrlBlocklisted(testSite.url));
     }
-
-    ////////////////Scrollable MVT tests start////////////////////////////
-    /**
-     * Tests clicking on a most visited item.
-     */
-    @Test
-    @SmallTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
-    @Features.EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    public void testClickMostVisitedItemOnMVTCarousel() {
-        // SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID feature should be disabled on tablets.
-        if (mActivityTestRule.getActivity().isTablet()) {
-            Assert.assertNull(mMVTCarouselLayout);
-            Assert.assertNotNull(mTileGridLayout);
-            return;
-        }
-        Assert.assertNotNull(mMVTCarouselLayout);
-        ChromeTabUtils.waitForTabPageLoaded(
-                mTab, mSiteSuggestions.get(0).url.getSpec(), new Runnable() {
-                    @Override
-                    public void run() {
-                        View mostVisitedItem = mMVTCarouselLayout.getChildAt(0);
-                        TouchCommon.singleClickView(mostVisitedItem);
-                    }
-                });
-        Assert.assertEquals(mSiteSuggestions.get(0).url, ChromeTabUtils.getUrlOnUiThread(mTab));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
-    @Features.EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    public void testMostVisitedTilesMargins() {
-        // SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID feature should be disabled on tablets.
-        if (mActivityTestRule.getActivity().isTablet()) {
-            Assert.assertNull(mMVTCarouselLayout);
-            Assert.assertNotNull(mTileGridLayout);
-            return;
-        }
-        int lateralPaddingsForNTP =
-                mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
-                        R.dimen.ntp_header_lateral_paddings_v2);
-        ViewGroup mMVTCarouselContainer = mNtp.getView().findViewById(R.id.mv_tiles_container);
-        MarginLayoutParams params = (MarginLayoutParams) mMVTCarouselContainer.getLayoutParams();
-        Assert.assertEquals(-lateralPaddingsForNTP, params.leftMargin);
-        Assert.assertEquals(-lateralPaddingsForNTP, params.leftMargin);
-    }
-
-    /**
-     * Tests opening a most visited item in a new tab.
-     */
-    @Test
-    @SmallTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
-    @Features.EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    public void testOpenMostVisitedItemInNewTabOnMVTCarousel() throws ExecutionException {
-        // SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID feature should be disabled on tablets.
-        if (mActivityTestRule.getActivity().isTablet()) {
-            Assert.assertNull(mMVTCarouselLayout);
-            Assert.assertNotNull(mTileGridLayout);
-            return;
-        }
-        Assert.assertNotNull(mMVTCarouselLayout);
-        ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
-                mMVTCarouselLayout.getChildAt(0),
-                ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB, false,
-                mSiteSuggestions.get(0).url.getSpec());
-    }
-
-    /**
-     * Tests opening a most visited item in a new incognito tab.
-     */
-    @Test
-    @SmallTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
-    @Features.EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    public void testOpenMostVisitedItemInIncognitoTabOnMVTCarousel() throws ExecutionException {
-        // SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID feature should be disabled on tablets.
-        if (mActivityTestRule.getActivity().isTablet()) {
-            Assert.assertNull(mMVTCarouselLayout);
-            Assert.assertNotNull(mTileGridLayout);
-            return;
-        }
-        Assert.assertNotNull(mMVTCarouselLayout);
-        ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
-                mMVTCarouselLayout.getChildAt(0),
-                ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, true,
-                mSiteSuggestions.get(0).url.getSpec());
-    }
-
-    /**
-     * Tests deleting a most visited item.
-     */
-    @Test
-    @SmallTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
-    @FlakyTest(message = "crbug.com/1075804")
-    @Features.EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    public void testRemoveMostVisitedItemOnMVTCarousel() throws ExecutionException {
-        // SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID feature should be disabled on tablets.
-        if (mActivityTestRule.getActivity().isTablet()) {
-            Assert.assertNull(mMVTCarouselLayout);
-            Assert.assertNotNull(mTileGridLayout);
-            return;
-        }
-        Assert.assertNotNull(mMVTCarouselLayout);
-        SiteSuggestion testSite = mSiteSuggestions.get(0);
-        View mostVisitedItem = mMVTCarouselLayout.getChildAt(0);
-        ArrayList<View> views = new ArrayList<>();
-        mMVTCarouselLayout.findViewsWithText(views, testSite.title, View.FIND_VIEWS_WITH_TEXT);
-        Assert.assertEquals(1, views.size());
-
-        TestTouchUtils.performLongClickOnMainSync(
-                InstrumentationRegistry.getInstrumentation(), mostVisitedItem);
-        Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
-                mActivityTestRule.getActivity(), ContextMenuManager.ContextMenuItemId.REMOVE, 0));
-
-        Assert.assertTrue(mMostVisitedSites.isUrlBlocklisted(testSite.url));
-    }
-    ////////////////Scrollable MVT tests end////////////////////////////
 
     @Test
     @MediumTest
@@ -590,8 +501,10 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
-    @Features.DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
     public void testPlaceholder() {
+        TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
+        when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(true);
+
         final NewTabPageLayout ntpLayout = mNtp.getNewTabPageLayout();
         final View logoView = ntpLayout.findViewById(R.id.search_provider_logo);
         final View searchBoxView = ntpLayout.findViewById(R.id.search_box);
@@ -600,8 +513,8 @@ public class NewTabPageTest {
         // and the placeholder has not been inflated yet.
         Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
         Assert.assertEquals(View.VISIBLE, searchBoxView.getVisibility());
-        Assert.assertEquals(8, mTileGridLayout.getChildCount());
-        Assert.assertNull(ntpLayout.getPlaceholder());
+        Assert.assertEquals(8, mMvTilesLayout.getChildCount());
+        Assert.assertNull(mNtp.getView().findViewById(R.id.tile_grid_placeholder));
 
         // When the search provider has no logo and there are no tile suggestions, the placeholder
         // is shown.
@@ -611,15 +524,17 @@ public class NewTabPageTest {
             Assert.assertEquals(View.GONE, searchBoxView.getVisibility());
 
             mMostVisitedSites.setTileSuggestions(new String[] {});
+            when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(false);
 
-            ntpLayout.getTileGroup().onSwitchToForeground(false); // Force tile refresh.
+            ntpLayout.onSwitchToForeground(); // Force tile refresh.
         });
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(
-                    "The tile grid was not updated.", mTileGridLayout.getChildCount(), is(0));
+                    "The tile grid was not updated.", mMvTilesLayout.getChildCount(), is(0));
         });
-        Assert.assertNotNull(ntpLayout.getPlaceholder());
-        Assert.assertEquals(View.VISIBLE, ntpLayout.getPlaceholder().getVisibility());
+        Assert.assertNotNull(mNtp.getView().findViewById(R.id.tile_grid_placeholder));
+        Assert.assertEquals(View.VISIBLE,
+                mNtp.getView().findViewById(R.id.tile_grid_placeholder).getVisibility());
 
         // Once the search provider has a logo again, the logo and search box are shown again and
         // the placeholder is hidden.
@@ -627,7 +542,14 @@ public class NewTabPageTest {
             ntpLayout.setSearchProviderInfo(/* hasLogo = */ true, /* isGoogle */ true);
             Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
             Assert.assertEquals(View.VISIBLE, searchBoxView.getVisibility());
-            Assert.assertEquals(View.GONE, ntpLayout.getPlaceholder().getVisibility());
+
+            when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(true);
+
+            // Mock to notify the template URL service observer.
+            ntpLayout.getMostVisitedTilesCoordinatorForTesting()
+                    .onTemplateURLServiceChangedForTesting();
+            Assert.assertEquals(View.GONE,
+                    mNtp.getView().findViewById(R.id.tile_grid_placeholder).getVisibility());
         });
     }
 
@@ -664,7 +586,7 @@ public class NewTabPageTest {
         mMostVisitedSites = null;
         mSuggestionsDeps.getFactory().mostVisitedSites = null;
         mFakebox = null;
-        mTileGridLayout = null;
+        mMvTilesLayout = null;
         mTab = null;
 
         Assert.assertTrue(GarbageCollectionTestUtils.canBeGarbageCollected(ntpRef));
@@ -693,11 +615,9 @@ public class NewTabPageTest {
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
     public void testSettingOmniboxStubAddsUrlFocusChangeListener() throws IOException {
-        mNtp.setFeedReliabilityLoggingSignalsForTesting(mFeedReliabilityLoggingSignals);
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mNtp.setOmniboxStub(mOmniboxStub);
-            verify(mOmniboxStub).addUrlFocusChangeListener(eq(mFeedReliabilityLoggingSignals));
+            verify(mOmniboxStub).addUrlFocusChangeListener(eq(mFeedReliabilityLogger));
         });
     }
 
@@ -705,12 +625,10 @@ public class NewTabPageTest {
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
     public void testFeedReliabilityLoggingFocusOmnibox() throws IOException {
-        mNtp.setFeedReliabilityLoggingSignalsForTesting(mFeedReliabilityLoggingSignals);
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mNtp.getNewTabPageManagerForTesting().focusSearchBox(
                     /*beginVoiceSearch=*/false, /*pastedText=*/"");
-            verify(mFeedReliabilityLoggingSignals).onOmniboxFocused();
+            verify(mFeedReliabilityLogger).onOmniboxFocused();
         });
     }
 
@@ -718,27 +636,11 @@ public class NewTabPageTest {
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
     public void testFeedReliabilityLoggingVoiceSearch() throws IOException {
-        mNtp.setFeedReliabilityLoggingSignalsForTesting(mFeedReliabilityLoggingSignals);
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mNtp.getNewTabPageManagerForTesting().focusSearchBox(
                     /*beginVoiceSearch=*/true, /*pastedText=*/"");
-            verify(mFeedReliabilityLoggingSignals).onVoiceSearch();
+            verify(mFeedReliabilityLogger).onVoiceSearch();
         });
-    }
-
-    private void testRender_FocusFakeBox(boolean isScrollableMVTOnNTPEnabled) throws Exception {
-        ScrimCoordinator scrimCoordinator = mActivityTestRule.getActivity()
-                                                    .getRootUiCoordinatorForTesting()
-                                                    .getScrimCoordinatorForTesting();
-        scrimCoordinator.disableAnimationForTesting(true);
-        onView(withId(R.id.search_box)).perform(click());
-        ChromeRenderTestRule.sanitize(mNtp.getView().getRootView());
-        mRenderTestRule.render(mNtp.getView().getRootView(),
-                "focus_fake_box"
-                        + (isScrollableMVTOnNTPEnabled ? "_with_scrollable_mvt"
-                                                       : "_with_non_scrollable_mvt"));
-        scrimCoordinator.disableAnimationForTesting(false);
     }
 
     private void assertThumbnailInvalidAndRecapture() {

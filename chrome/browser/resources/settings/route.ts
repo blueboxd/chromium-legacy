@@ -31,12 +31,10 @@ function addPrivacyChildRoutes(r: SettingsRoutes) {
 
   if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
     r.SECURITY_KEYS = r.SECURITY.createChild('/securityKeys');
-    if (loadTimeData.getBoolean('enableSecurityKeysPhonesSubpage')) {
-      r.SECURITY_KEYS_PHONES =
-          r.SECURITY_KEYS.createChild('/securityKeys/phones');
-    }
+    r.SECURITY_KEYS_PHONES =
+        r.SECURITY_KEYS.createChild('/securityKeys/phones');
     // <if expr="is_win">
-  } else if (loadTimeData.getBoolean('enableSecurityKeysPhonesSubpage')) {
+  } else {
     r.SECURITY_KEYS_PHONES = r.SECURITY.createChild('/securityKeys/phones');
     // </if>
   }
@@ -87,6 +85,10 @@ function addPrivacyChildRoutes(r: SettingsRoutes) {
   if (loadTimeData.getBoolean('enablePaymentHandlerContentSetting')) {
     r.SITE_SETTINGS_PAYMENT_HANDLER =
         r.SITE_SETTINGS.createChild('paymentHandler');
+  }
+  if (loadTimeData.getBoolean('enableFederatedIdentityApiContentSetting')) {
+    r.SITE_SETTINGS_FEDERATED_IDENTITY_API =
+        r.SITE_SETTINGS.createChild('federatedIdentityApi');
   }
   r.SITE_SETTINGS_VR = r.SITE_SETTINGS.createChild('vr');
   if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {

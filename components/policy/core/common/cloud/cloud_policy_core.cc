@@ -25,8 +25,9 @@ namespace policy {
 CloudPolicyCore::Observer::~Observer() = default;
 
 void CloudPolicyCore::Observer::OnRemoteCommandsServiceStarted(
-    CloudPolicyCore* core) {
-}
+    CloudPolicyCore* core) {}
+
+void CloudPolicyCore::Observer::OnCoreDestruction(CloudPolicyCore* core) {}
 
 CloudPolicyCore::CloudPolicyCore(
     const std::string& policy_type,
@@ -41,7 +42,11 @@ CloudPolicyCore::CloudPolicyCore(
       network_connection_tracker_getter_(
           std::move(network_connection_tracker_getter)) {}
 
-CloudPolicyCore::~CloudPolicyCore() = default;
+CloudPolicyCore::~CloudPolicyCore() {
+  Disconnect();
+  for (auto& observer : observers_)
+    observer.OnCoreDestruction(this);
+}
 
 void CloudPolicyCore::Connect(std::unique_ptr<CloudPolicyClient> client) {
   CHECK(!client_);

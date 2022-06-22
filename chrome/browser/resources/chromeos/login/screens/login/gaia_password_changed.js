@@ -76,9 +76,7 @@ class GaiaPasswordChanged extends GaiaPasswordChangedBase {
    */
   ready() {
     super.ready();
-    this.initializeLoginScreen('GaiaPasswordChangedScreen', {
-      resetAllowed: false,
-    });
+    this.initializeLoginScreen('GaiaPasswordChangedScreen');
 
     cr.ui.LoginUITools.addSubmitListener(
         this.$.oldPasswordInput, this.submit_.bind(this));
@@ -106,10 +104,12 @@ class GaiaPasswordChanged extends GaiaPasswordChangedBase {
    * @private
    */
   submit_() {
-    if (this.disabled)
+    if (this.disabled) {
       return;
-    if (!this.$.oldPasswordInput.validate())
+    }
+    if (!this.$.oldPasswordInput.validate()) {
       return;
+    }
     this.setUIStep(GaiaPasswordChangedUIState.PROGRESS);
     this.disabled = true;
 
@@ -139,8 +139,9 @@ class GaiaPasswordChanged extends GaiaPasswordChangedBase {
 
   /** @private */
   onProceedClicked_() {
-    if (this.disabled)
+    if (this.disabled) {
       return;
+    }
     this.setUIStep(GaiaPasswordChangedUIState.PROGRESS);
     this.disabled = true;
     this.clearPassword();
@@ -149,8 +150,9 @@ class GaiaPasswordChanged extends GaiaPasswordChangedBase {
 
   /** @private */
   onCancel_() {
-    if (this.disabled)
+    if (this.disabled) {
       return;
+    }
     this.userActed('cancel');
   }
 }

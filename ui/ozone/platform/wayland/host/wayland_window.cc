@@ -175,18 +175,6 @@ uint32_t WaylandWindow::GetPreferredEnteredOutputId() {
     auto* output_manager = connection_->wayland_output_manager();
     auto* output = output_manager->GetOutput(output_id);
     auto* preferred_output = output_manager->GetOutput(preferred_output_id);
-    // The compositor may have told the surface to enter the output that the
-    // client is not aware of.  In such an event, we cannot evaluate scales, and
-    // can only return the default, which means falling back to the primary
-    // display in the code that calls this.
-    // DCHECKS below are kept for trying to catch the situation in developer's
-    // builds and find the way to reproduce the issue.
-    // See crbug.com/1323635
-    DCHECK(output) << " output " << output_id << " not found!";
-    DCHECK(preferred_output)
-        << " output " << preferred_output_id << " not found!";
-    if (!output || !preferred_output)
-      return 0;
     if (output->scale_factor() > preferred_output->scale_factor())
       preferred_output_id = output_id;
   }
@@ -208,19 +196,21 @@ void WaylandWindow::RemoveEnteredOutput(uint32_t output_id) {
   root_surface_->RemoveEnteredOutput(output_id);
 }
 
-bool WaylandWindow::StartDrag(const ui::OSExchangeData& data,
-                              int operations,
-                              mojom::DragEventSource source,
-                              gfx::NativeCursor cursor,
-                              bool can_grab_pointer,
-                              WmDragHandler::Delegate* delegate) {
+bool WaylandWindow::StartDrag(
+    const ui::OSExchangeData& data,
+    int operations,
+    mojom::DragEventSource source,
+    gfx::NativeCursor cursor,
+    bool can_grab_pointer,
+    WmDragHandler::DragFinishedCallback drag_finished_callback,
+    WmDragHandler::LocationDelegate* location_delegate) {
   if (!connection_->data_drag_controller()->StartSession(data, operations,
                                                          source)) {
     return false;
   }
 
-  DCHECK(!drag_handler_delegate_);
-  drag_handler_delegate_ = delegate;
+  DCHECK(drag_finished_callback_.is_null());
+  drag_finished_callback_ = std::move(drag_finished_callback);
 
   base::RunLoop drag_loop(base::RunLoop::Type::kNestableTasksAllowed);
   drag_loop_quit_closure_ = drag_loop.QuitClosure();
@@ -281,7 +271,7 @@ bool WaylandWindow::IsVisible() const {
 }
 
 void WaylandWindow::PrepareForShutdown() {
-  if (drag_handler_delegate_)
+  if (drag_finished_callback_)
     OnDragSessionClose(DragOperation::kNone);
 }
 
@@ -383,12 +373,12 @@ void WaylandWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-void WaylandWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds_px) {
-  restored_bounds_px_ = bounds_px;
+void WaylandWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {
+  restored_size_in_dip_ = bounds.size();
 }
 
-gfx::Rect WaylandWindow::GetRestoredBoundsInPixels() const {
-  return restored_bounds_px_;
+gfx::Rect WaylandWindow::GetRestoredBoundsInDIP() const {
+  return gfx::Rect(restored_size_in_dip_);
 }
 
 bool WaylandWindow::ShouldWindowContentsBeTransparent() const {
@@ -531,14 +521,6 @@ absl::optional<std::vector<gfx::Rect>> WaylandWindow::GetWindowShape() const {
   return absl::nullopt;
 }
 
-void WaylandWindow::UpdateWindowMask() {
-  UpdateWindowShape();
-  std::vector<gfx::Rect> region{gfx::Rect{visual_size_px()}};
-  root_surface_->SetOpaqueRegion(&region);
-}
-
-void WaylandWindow::UpdateWindowShape() {}
-
 void WaylandWindow::OnDragEnter(const gfx::PointF& point,
                                 std::unique_ptr<OSExchangeData> data,
                                 int operation) {
@@ -547,8 +529,7 @@ void WaylandWindow::OnDragEnter(const gfx::PointF& point,
     return;
 
   // TODO(crbug.com/1102857): get the real event modifier here.
-  drop_handler->OnDragEnter(ToRootWindowPixel(point), std::move(data),
-                            operation,
+  drop_handler->OnDragEnter(point, std::move(data), operation,
                             /*modifiers=*/0);
 }
 
@@ -558,7 +539,7 @@ int WaylandWindow::OnDragMotion(const gfx::PointF& point, int operation) {
     return 0;
 
   // TODO(crbug.com/1102857): get the real event modifier here.
-  return drop_handler->OnDragMotion(ToRootWindowPixel(point), operation,
+  return drop_handler->OnDragMotion(point, operation,
                                     /*modifiers=*/0);
 }
 
@@ -578,17 +559,16 @@ void WaylandWindow::OnDragLeave() {
 }
 
 void WaylandWindow::OnDragSessionClose(DragOperation operation) {
-  DCHECK(drag_handler_delegate_);
-  drag_handler_delegate_->OnDragFinished(operation);
-  drag_handler_delegate_ = nullptr;
+  DCHECK(drag_finished_callback_);
+  std::move(drag_finished_callback_).Run(operation);
   connection()->event_source()->ResetPointerFlags();
   std::move(drag_loop_quit_closure_).Run();
 }
 
 void WaylandWindow::SetBoundsDip(const gfx::Rect& bounds_dip) {
-  // This method is used to update the content size, and this method is calling
-  // WindowWindow's SetBounds to avoid calling into
-  // WaylandToplevelWindow::SetBounds which sends a request to a compostior.
+  // This method is used to update the content size by calling WindowWindow's
+  // SetBounds, instead of WaylandToplevelWindow's override, which sends a
+  // request to the compositor.
   WaylandWindow::SetBounds(gfx::ScaleToRoundedRect(bounds_dip, window_scale()));
 }
 
@@ -644,7 +624,7 @@ WaylandWindow* WaylandWindow::GetRootParentWindow() {
   return parent_window_ ? parent_window_->GetRootParentWindow() : this;
 }
 
-void WaylandWindow::OnEnteredOutput() {
+void WaylandWindow::OnEnteredOutputIdAdded() {
   // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.
@@ -654,7 +634,7 @@ void WaylandWindow::OnEnteredOutput() {
   UpdateWindowScale(true);
 }
 
-void WaylandWindow::OnLeftOutput() {
+void WaylandWindow::OnEnteredOutputIdRemoved() {
   // Wayland does weird things for menus so instead of tracking outputs that
   // we entered or left, we take that from the parent window and ignore this
   // event.
@@ -888,7 +868,7 @@ bool WaylandWindow::CommitOverlays(
         root_surface()->buffer_id(), buffer_scale, gfx::RectF(visual_size),
         gfx::RectF(), gfx::Rect(), root_surface()->use_blending(),
         root_surface()->opacity(), gfx::GpuFenceHandle(),
-        gfx::OverlayPriorityHint::kNone, rounded_clip_bounds);
+        gfx::OverlayPriorityHint::kNone, rounded_clip_bounds, absl::nullopt);
   }
 
   frame_manager_->RecordFrame(std::make_unique<WaylandFrame>(
@@ -991,18 +971,28 @@ gfx::Rect WaylandWindow::AdjustBoundsToConstraintsPx(
     const gfx::Rect& bounds_px) {
   gfx::Rect adjusted_bounds_px = bounds_px;
   if (const auto min_size = delegate_->GetMinimumSizeForWindow()) {
-    if (min_size->width() > 0 && adjusted_bounds_px.width() < min_size->width())
-      adjusted_bounds_px.set_width(min_size->width());
-    if (min_size->height() > 0 &&
-        adjusted_bounds_px.height() < min_size->height())
-      adjusted_bounds_px.set_height(min_size->height());
+    gfx::Size min_size_in_px =
+        delegate()->ConvertRectToPixels(gfx::Rect(*min_size)).size();
+    if (min_size_in_px.width() > 0 &&
+        adjusted_bounds_px.width() < min_size_in_px.width()) {
+      adjusted_bounds_px.set_width(min_size_in_px.width());
+    }
+    if (min_size_in_px.height() > 0 &&
+        adjusted_bounds_px.height() < min_size_in_px.height()) {
+      adjusted_bounds_px.set_height(min_size_in_px.height());
+    }
   }
   if (const auto max_size = delegate_->GetMaximumSizeForWindow()) {
-    if (max_size->width() > 0 && adjusted_bounds_px.width() > max_size->width())
-      adjusted_bounds_px.set_width(max_size->width());
-    if (max_size->height() > 0 &&
-        adjusted_bounds_px.height() > max_size->height())
-      adjusted_bounds_px.set_height(max_size->height());
+    gfx::Size max_size_in_px =
+        delegate()->ConvertRectToPixels(gfx::Rect(*max_size)).size();
+    if (max_size_in_px.width() > 0 &&
+        adjusted_bounds_px.width() > max_size_in_px.width()) {
+      adjusted_bounds_px.set_width(max_size_in_px.width());
+    }
+    if (max_size_in_px.height() > 0 &&
+        adjusted_bounds_px.height() > max_size_in_px.height()) {
+      adjusted_bounds_px.set_height(max_size_in_px.height());
+    }
   }
   return adjusted_bounds_px;
 }

@@ -10,12 +10,18 @@
 // Delegate for controlling the presented feed.
 @protocol FeedControlDelegate
 
+// Returns the currently selected feed.
+- (FeedType)selectedFeed;
+
 // Handles operations after a new feed has been selected. e.g. Displays the
 // feed, updates states, etc.
 - (void)handleFeedSelected:(FeedType)feedType;
 
 // Handles the sorting being selected for the Following feed.
 - (void)handleSortTypeForFollowingFeed:(FollowingFeedSortType)sortType;
+
+// Determines whether the feed should be shown based on the user prefs.
+- (BOOL)shouldFeedBeVisible;
 
 @end
 

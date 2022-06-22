@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
 
 #import "base/check.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -29,6 +30,7 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -196,7 +198,7 @@
 
   // Scrolls NTP into feed initially if |shouldScrollIntoFeed|.
   if (self.shouldScrollIntoFeed) {
-    [self setContentOffset:[self offsetWhenScrolledIntoFeed]];
+    [self scrollIntoFeed];
     self.shouldScrollIntoFeed = NO;
   }
 
@@ -227,13 +229,12 @@
 
   __weak NewTabPageViewController* weakSelf = self;
 
-  CGFloat yOffsetBeforeRotation = self.collectionView.contentOffset.y;
+  CGFloat yOffsetBeforeRotation = [self scrollPosition];
   CGFloat heightAboveFeedBeforeRotation = [self heightAboveFeed];
 
   void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) = ^(
       id<UIViewControllerTransitionCoordinatorContext> context) {
-    [weakSelf handleStickyElementsForScrollPosition:weakSelf.collectionView
-                                                        .contentOffset.y
+    [weakSelf handleStickyElementsForScrollPosition:[weakSelf scrollPosition]
                                               force:YES];
 
     // Redraw the ContentSuggestionsViewController to properly
@@ -263,7 +264,7 @@
     // minimum scroll position upon device rotation.
     CGFloat pinnedOffsetY = [weakSelf.headerSynchronizer pinnedOffsetY];
     if ([weakSelf.headerSynchronizer isOmniboxFocused] &&
-        weakSelf.collectionView.contentOffset.y < pinnedOffsetY) {
+        [weakSelf scrollPosition] < pinnedOffsetY) {
       weakSelf.collectionView.contentOffset = CGPointMake(0, pinnedOffsetY);
     }
     if (!self.isFeedVisible) {
@@ -411,7 +412,7 @@
 }
 
 - (BOOL)isNTPScrolledToTop {
-  return self.collectionView.contentOffset.y <= -[self heightAboveFeed];
+  return [self scrollPosition] <= -[self heightAboveFeed];
 }
 
 - (void)updateNTPLayout {
@@ -466,6 +467,18 @@
     [self removeFromViewHierarchy:self.headerController];
   }
   self.contentSuggestionsHeightConstraint.active = NO;
+}
+
+- (CGFloat)scrollPosition {
+  return self.collectionView.contentOffset.y;
+}
+
+- (void)setContentOffsetUpToTopOfFeed:(CGFloat)contentOffset {
+  if (contentOffset < [self offsetWhenScrolledIntoFeed]) {
+    [self setContentOffset:contentOffset];
+  } else {
+    [self scrollIntoFeed];
+  }
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -742,17 +755,35 @@
 - (void)stickFeedHeaderToTop {
   DCHECK(self.feedHeaderViewController);
   DCHECK(IsWebChannelsEnabled());
+
   [NSLayoutConstraint deactivateConstraints:self.feedHeaderConstraints];
-  self.feedHeaderConstraints = @[
-    [self.feedHeaderViewController.view.topAnchor
-        constraintEqualToAnchor:self.headerController.view.bottomAnchor
-                       constant:-(content_suggestions::headerBottomPadding() +
-                                  [self.feedHeaderViewController
-                                          customSearchEngineViewHeight])],
-    [self.collectionView.topAnchor
-        constraintEqualToAnchor:[self contentSuggestionsViewController]
-                                    .view.bottomAnchor],
-  ];
+
+  // On iPhones, the fake omnibox is pinned to the top so we anchor the feed
+  // header to the bottom of it. The fake omnibox is not pinned for iPads, so we
+  // instead anchor the feed header to the top of the NTP.
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    self.feedHeaderConstraints = @[
+      [self.feedHeaderViewController.view.topAnchor
+          constraintEqualToAnchor:self.view.topAnchor
+                         constant:-[self.feedHeaderViewController
+                                          customSearchEngineViewHeight]],
+      [self.collectionView.topAnchor
+          constraintEqualToAnchor:[self contentSuggestionsViewController]
+                                      .view.bottomAnchor],
+    ];
+  } else {
+    self.feedHeaderConstraints = @[
+      [self.feedHeaderViewController.view.topAnchor
+          constraintEqualToAnchor:self.headerController.view.bottomAnchor
+                         constant:-(content_suggestions::headerBottomPadding() +
+                                    [self.feedHeaderViewController
+                                            customSearchEngineViewHeight])],
+      [self.collectionView.topAnchor
+          constraintEqualToAnchor:[self contentSuggestionsViewController]
+                                      .view.bottomAnchor],
+    ];
+  }
+
   [self.feedHeaderViewController toggleBackgroundBlur:YES animated:YES];
   [NSLayoutConstraint activateConstraints:self.feedHeaderConstraints];
 }
@@ -827,14 +858,18 @@
 // TODO(crbug.com/1277504): Modify this comment when Web Channels is released.
 - (void)handleStickyElementsForScrollPosition:(CGFloat)scrollPosition
                                         force:(BOOL)force {
-  if (scrollPosition > [self offsetToStickOmnibox] &&
-      !self.fakeOmniboxPinnedToTop) {
-    [self pinFakeOmniboxToTop];
-  } else if (scrollPosition <= [self offsetToStickOmnibox] &&
-             self.fakeOmniboxPinnedToTop) {
-    [self resetFakeOmniboxConstraints];
+  // Handles the sticky omnibox. Does not stick for iPads.
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
+    if (scrollPosition > [self offsetToStickOmnibox] &&
+        !self.fakeOmniboxPinnedToTop) {
+      [self pinFakeOmniboxToTop];
+    } else if (scrollPosition <= [self offsetToStickOmnibox] &&
+               self.fakeOmniboxPinnedToTop) {
+      [self resetFakeOmniboxConstraints];
+    }
   }
 
+  // Handles the sticky feed header.
   if (IsWebChannelsEnabled()) {
     if ((!self.isScrolledIntoFeed || force) &&
         scrollPosition > [self offsetWhenScrolledIntoFeed]) {
@@ -917,6 +952,11 @@
       CGSizeMake(self.view.frame.size.width, minimumNTPHeight);
 }
 
+// Sets the content offset to the top of the feed.
+- (void)scrollIntoFeed {
+  [self setContentOffset:[self offsetWhenScrolledIntoFeed]];
+}
+
 #pragma mark - Helpers
 
 - (UIViewController*)contentSuggestionsViewController {
@@ -979,8 +1019,12 @@
 }
 
 // The y-position content offset for when the user has completely scrolled into
-// the Feed.
+// the Feed. Only takes sticky omnibox into consideration for non-iPad devices.
 - (CGFloat)offsetWhenScrolledIntoFeed {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return -[self feedHeaderHeight];
+  }
+
   return -(self.headerController.view.frame.size.height -
            [self stickyOmniboxHeight] -
            [self.feedHeaderViewController customSearchEngineViewHeight] -
@@ -996,7 +1040,7 @@
         [self.feedHeaderViewController customSearchEngineViewHeight]);
   if (IsSplitToolbarMode(self) &&
       IsContentSuggestionsHeaderMigrationEnabled()) {
-    return offset - [self contentSuggestionsContentHeight];
+    offset -= [self contentSuggestionsContentHeight];
   }
   return offset;
 }
@@ -1086,8 +1130,7 @@
 // updates property.
 - (void)updateScrolledToMinimumHeight {
   CGFloat pinnedOffsetY = [self.headerSynchronizer pinnedOffsetY];
-  self.scrolledToMinimumHeight =
-      self.collectionView.contentOffset.y >= pinnedOffsetY;
+  self.scrolledToMinimumHeight = [self scrollPosition] >= pinnedOffsetY;
 }
 
 // Adds |viewController| as a child of |parentViewController| and adds
@@ -1135,11 +1178,10 @@
   self.contentSuggestionsLayout.isScrolledIntoFeed = scrolledIntoFeed;
 }
 
-// Sets the feed collection contentOffset to |offset| to set the initial scroll
-// position.
+// Sets the y content offset of the NTP collection view.
 - (void)setContentOffset:(CGFloat)offset {
   self.collectionView.contentOffset = CGPointMake(0, offset);
-  self.scrolledIntoFeed = offset > -[self offsetWhenScrolledIntoFeed];
+  self.scrolledIntoFeed = offset >= -[self offsetWhenScrolledIntoFeed];
   if (self.feedHeaderViewController) {
     [self.feedHeaderViewController toggleBackgroundBlur:self.scrolledIntoFeed
                                                animated:NO];

@@ -43,9 +43,11 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::Between;
 using ::testing::DoAll;
 using ::testing::Eq;
+using ::testing::Gt;
 using ::testing::HasSubstr;
 using ::testing::Invoke;
 using ::testing::Property;
@@ -464,34 +466,6 @@ class StorageTest
       const raw_ptr<test::TestCallbackWaiter> waiter_;
     };
 
-    // Helper class for setting up mock uploader expectations on empty queue.
-    class SetEmpty {
-     public:
-      explicit SetEmpty(StorageTest* self)
-          : uploader_(std::make_unique<TestUploader>(self)) {}
-      SetEmpty(const SetEmpty& other) = delete;
-      SetEmpty& operator=(const SetEmpty& other) = delete;
-      ~SetEmpty() { CHECK(!uploader_) << "Missed 'Complete' call"; }
-
-      std::unique_ptr<TestUploader> Complete() {
-        CHECK(uploader_) << "'Complete' already called";
-        EXPECT_CALL(*uploader_->mock_upload_,
-                    UploadRecord(Eq(uploader_->uploader_id_), _, _, _))
-            .Times(0);
-        EXPECT_CALL(*uploader_->mock_upload_,
-                    UploadRecordFailure(Eq(uploader_->uploader_id_), _, _, _))
-            .Times(0);
-        EXPECT_CALL(
-            *uploader_->mock_upload_,
-            UploadComplete(Eq(uploader_->uploader_id_), Eq(Status::StatusOK())))
-            .Times(1);
-        return std::move(uploader_);
-      }
-
-     private:
-      std::unique_ptr<TestUploader> uploader_;
-    };
-
     // Helper class for setting up mock uploader expectations for key delivery.
     class SetKeyDelivery {
      public:
@@ -503,12 +477,13 @@ class StorageTest
 
       std::unique_ptr<TestUploader> Complete() {
         CHECK(uploader_) << "'Complete' already called";
+        // Log and ignore records and failures (usually there are none).
         EXPECT_CALL(*uploader_->mock_upload_,
                     UploadRecord(Eq(uploader_->uploader_id_), _, _, _))
-            .Times(0);
+            .WillRepeatedly(Return(true));
         EXPECT_CALL(*uploader_->mock_upload_,
                     UploadRecordFailure(Eq(uploader_->uploader_id_), _, _, _))
-            .Times(0);
+            .WillRepeatedly(Return(true));
         EXPECT_CALL(
             *uploader_->mock_upload_,
             UploadComplete(Eq(uploader_->uploader_id_), Eq(Status::StatusOK())))
@@ -732,23 +707,28 @@ class StorageTest
       scoped_refptr<EncryptionModuleInterface> encryption_module =
           EncryptionModule::Create(
               /*renew_encryption_key_period=*/base::Minutes(30))) {
+    if (expect_to_need_key_) {
+      // Set uploader expectations for any queue; expect no records and need
+      // key. Make sure no uploads happen, and key is requested.
+      EXPECT_CALL(set_mock_uploader_expectations_,
+                  Call(UploaderInterface::UploadReason::KEY_DELIVERY))
+          .Times(AtLeast(1))
+          .WillRepeatedly(Invoke([this](UploaderInterface::UploadReason) {
+            return TestUploader::SetKeyDelivery(this).Complete();
+          }));
+    } else {
+      // No attempts to deliver key.
+      EXPECT_CALL(set_mock_uploader_expectations_,
+                  Call(UploaderInterface::UploadReason::KEY_DELIVERY))
+          .Times(0);
+    }
+
     ASSERT_FALSE(storage_) << "TestStorage already assigned";
     StatusOr<scoped_refptr<Storage>> storage_result =
         CreateTestStorage(options, encryption_module);
     ASSERT_OK(storage_result)
         << "Failed to create TestStorage, error=" << storage_result.status();
     storage_ = std::move(storage_result.ValueOrDie());
-
-    if (expect_to_need_key_) {
-      // Set uploader expectations for any queue; expect no records and need
-      // key. Make sure no uploads happen, and key is requested.
-      EXPECT_CALL(set_mock_uploader_expectations_,
-                  Call(UploaderInterface::UploadReason::KEY_DELIVERY))
-          .WillOnce(Invoke([this](UploaderInterface::UploadReason) {
-            return TestUploader::SetKeyDelivery(this).Complete();
-          }))
-          .RetiresOnSaturation();
-    }
   }
 
   void ResetTestStorage() {
@@ -899,7 +879,7 @@ class StorageTest
     return signed_encryption_key;
   }
 
-  void DeliverKey() const {
+  void DeliverKey() {
     ASSERT_TRUE(is_encryption_enabled())
         << "Key can be delivered only when encryption is enabled";
     storage_->UpdateEncryptionKey(signed_encryption_key_);
@@ -998,7 +978,7 @@ TEST_P(StorageTest, WriteIntoNewStorageAndUploadWithKeyUpdate) {
     return;
   }
 
-  static constexpr auto kKeyRenewalTime = base::Seconds(5);
+  static constexpr auto kKeyRenewalTime = base::Milliseconds(500);
   CreateTestStorageOrDie(BuildTestStorageOptions(),
                          EncryptionModule::Create(kKeyRenewalTime));
   WriteStringOrDie(MANUAL_BATCH, kData[0]);
@@ -1033,25 +1013,24 @@ TEST_P(StorageTest, WriteIntoNewStorageAndUploadWithKeyUpdate) {
   WriteStringOrDie(MANUAL_BATCH, kMoreData[2]);
 
   // Wait to trigger encryption key request on the next upload.
-  task_environment_.FastForwardBy(kKeyRenewalTime + base::Seconds(1));
+  task_environment_.FastForwardBy(kKeyRenewalTime + base::Milliseconds(100));
 
-  // Set uploader expectations with encryption key request.
+  // Set uploader expectations for MANUAL upload.
   test::TestCallbackAutoWaiter waiter;
   EXPECT_CALL(set_mock_uploader_expectations_,
               Call(Eq(UploaderInterface::UploadReason::KEY_DELIVERY)))
       .WillOnce(Invoke([&waiter, this](UploaderInterface::UploadReason reason) {
+        // Prevent more key delivery requests.
+        DeliverKey();
         return TestUploader::SetUp(MANUAL_BATCH, &waiter, this)
             .Required(3, kMoreData[0])
             .Required(4, kMoreData[1])
             .Required(5, kMoreData[2])
             .Complete();
       }))
-      // Can be called later again, reject it.
-      .WillRepeatedly(Invoke([](UploaderInterface::UploadReason reason) {
-        return Status(error::CANCELLED, "Repeated key delivery rejected");
-      }));
+      .RetiresOnSaturation();
 
-  // Trigger upload with key update after a long wait.
+  // Trigger upload to make sure data is present.
   EXPECT_OK(storage_->Flush(MANUAL_BATCH));
 }
 
@@ -1745,10 +1724,10 @@ TEST_P(StorageTest, KeyDeliveryFailureOnNewStorage) {
   key_delivery_failure_.store(false);
   EXPECT_CALL(set_mock_uploader_expectations_,
               Call(Eq(UploaderInterface::UploadReason::KEY_DELIVERY)))
-      .WillOnce(Invoke([this](UploaderInterface::UploadReason) {
+      .Times(AtLeast(1))
+      .WillRepeatedly(Invoke([this](UploaderInterface::UploadReason) {
         return TestUploader::SetKeyDelivery(this).Complete();
-      }))
-      .RetiresOnSaturation();
+      }));
 
   // Forward time to trigger upload
   task_environment_.FastForwardBy(base::Seconds(1));

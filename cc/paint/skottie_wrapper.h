@@ -63,16 +63,13 @@ class CC_PAINT_EXPORT SkottieWrapper
   // immutable and does not change during SkottieWrapper's lifetime.
   virtual const base::flat_set<std::string>& GetTextNodeNames() const = 0;
 
-  // Returns the set of all text nodes in the animation, along with their
-  // corresponding current values. The nodes' values can only be updated via
-  // the |text_map| argument in Draw().
+  // Returns a map from hashed animation node name to its current property
+  // value in the animation (see SkottieProperty.h). Some properties' values
+  // can be updated via its corresponding argument in Draw().
   virtual SkottieTextPropertyValueMap GetCurrentTextPropertyValues() const = 0;
-
-  // Returns the set of all transform nodes in the animation, along with their
-  // corresponding current values. The nodes' values are not updateable via
-  // Draw() like other properties simply because there is no use case yet.
   virtual SkottieTransformPropertyValueMap GetCurrentTransformPropertyValues()
       const = 0;
+  virtual SkottieColorMap GetCurrentColorPropertyValues() const = 0;
 
   // Returns all markers present in the animation. The returned list is
   // immutable and does not change during SkottieWrapper's lifetime.
@@ -91,9 +88,9 @@ class CC_PAINT_EXPORT SkottieWrapper
     // The callback's output parameters have not been filled and will be
     // ignored by SkottieWrapper. In this case, SkottieWrapper will reuse the
     // frame data that was most recently provided for the given asset (it caches
-    // this internally). If no frame data has ever been provided for this asset,
-    // a null image will be passed to Skottie's Animation during Seek(); this
-    // is acceptable if there's no rendering.
+    // this internally). Note it is acceptable to set |image_out| to a null
+    // SkImage; Skottie will simply skip the image asset while rendering the
+    // rest of the frame.
     NO_UPDATE,
   };
   // The callback's implementation must synchronously fill the output

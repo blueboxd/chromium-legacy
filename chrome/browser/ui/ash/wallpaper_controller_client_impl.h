@@ -63,8 +63,10 @@ class WallpaperControllerClientImpl
   // ash::WallpaperControllerClient:
   void OpenWallpaperPicker() override;
   void MaybeClosePreviewWallpaper() override;
-  void SetDefaultWallpaper(const AccountId& account_id,
-                           bool show_wallpaper) override;
+  void SetDefaultWallpaper(
+      const AccountId& account_id,
+      bool show_wallpaper,
+      ash::WallpaperController::SetWallpaperCallback callback) override;
   void MigrateCollectionIdFromChromeApp(
       const AccountId& account_id,
       base::OnceCallback<void(const std::string&)> result_callback) override;
@@ -77,6 +79,14 @@ class WallpaperControllerClientImpl
   void FetchGooglePhotosPhoto(const AccountId& account_id,
                               const std::string& id,
                               FetchGooglePhotosPhotoCallback callback) override;
+  void FetchDailyGooglePhotosPhoto(
+      const AccountId& account_id,
+      const std::string& album_id,
+      const absl::optional<std::string>& current_photo_id,
+      FetchGooglePhotosPhotoCallback callback) override;
+  void FetchGooglePhotosAccessToken(
+      const AccountId& account_id,
+      FetchGooglePhotosAccessTokenCallback callback) override;
   void SaveWallpaperToDriveFs(
       const AccountId& account_id,
       const base::FilePath& origin,
@@ -197,6 +207,18 @@ class WallpaperControllerClientImpl
       FetchGooglePhotosPhotoCallback callback,
       ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
           response);
+
+  void OnGooglePhotosDailyAlbumFetched(
+      const absl::optional<std::string>& current_photo_id,
+      FetchGooglePhotosPhotoCallback callback,
+      ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
+          response);
+
+  void OnGooglePhotosTokenFetched(
+      FetchGooglePhotosAccessTokenCallback callback,
+      std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> fetcher,
+      GoogleServiceAuthError error,
+      signin::AccessTokenInfo access_token_info);
 
   void ObserveVolumeManagerForAccountId(const AccountId& account_id);
 

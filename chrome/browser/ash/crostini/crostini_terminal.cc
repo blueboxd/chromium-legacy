@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -41,10 +42,12 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/full_restore_save_handler.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/escape.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/base_window.h"
@@ -110,6 +113,7 @@ void LaunchTerminalImpl(Profile* profile,
 
       // TODO(crbug.com/1308961): Migrate to use PWA pinned home tab when ready.
       // For TerminalSSH, if opening a new tab, first pin home tab.
+      full_restore::FullRestoreSaveHandler::GetInstance();
       GURL home(base::StrCat(
           {chrome::kChromeUIUntrustedTerminalURL, kTerminalHomePath}));
       Browser* browser = web_app::LaunchSystemWebAppImpl(
@@ -117,6 +121,13 @@ void LaunchTerminalImpl(Profile* profile,
       if (url != home) {
         chrome::AddTabAt(browser, url, /*index=*/1, /*foreground=*/true);
       }
+      auto info = std::make_unique<app_restore::AppLaunchInfo>(
+          kCrostiniTerminalSystemAppId, browser->session_id().id(),
+          params.container, params.disposition, params.display_id,
+          std::vector<base::FilePath>{}, nullptr);
+      full_restore::SaveAppLaunchInfo(browser->profile()->GetPath(),
+                                      std::move(info));
+
       return;
     }
   }
@@ -136,7 +147,7 @@ GURL GenerateTerminalURL(Profile* profile,
                          const std::string& cwd,
                          const std::vector<std::string>& terminal_args) {
   auto escape = [](std::string param) {
-    return net::EscapeQueryParamValue(param, /*use_plus=*/true);
+    return base::EscapeQueryParamValue(param, /*use_plus=*/true);
   };
   std::string start = base::StrCat({chrome::kChromeUIUntrustedTerminalURL,
                                     "html/terminal.html?command=vmshell"});
@@ -197,9 +208,7 @@ void LaunchTerminalWithUrl(Profile* profile,
     return;
   }
 
-  // Do not track Crostini apps or terminal in session restore. Apps will fail
-  // since VMs are not restarted on restore, and we don't want terminal to
-  // force the VM to start.
+  // Terminal Home page will be restored by app service.
   params->omit_from_session_restore = true;
 
   // Always launch asynchronously to avoid disturbing the caller. See

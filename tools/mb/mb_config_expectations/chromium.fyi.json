@@ -310,6 +310,28 @@
       "use_thin_lto": true
     }
   },
+  "Linux ChromiumOS MSan Focal": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_msan": true,
+      "msan_track_origins": 2,
+      "target_os": "chromeos",
+      "use_goma": true
+    }
+  },
+  "Linux MSan Focal": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_msan": true,
+      "msan_track_origins": 2,
+      "use_rbe": true,
+      "use_remoteexec": true
+    }
+  },
   "Linux Viz": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -409,34 +431,6 @@
       "symbol_level": 1,
       "use_rbe": true,
       "use_remoteexec": true
-    }
-  },
-  "Win ASan Release (reclient shadow)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_ipc_fuzzer": true,
-      "is_asan": true,
-      "is_clang": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "use_rbe": true,
-      "use_remoteexec": true,
-      "v8_enable_verify_heap": true
-    }
-  },
-  "Win ASan Release Media (reclient shadow)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_ipc_fuzzer": true,
-      "ffmpeg_branding": "Chrome",
-      "is_asan": true,
-      "is_clang": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "use_rbe": true,
-      "use_remoteexec": true,
-      "v8_enable_verify_heap": true
     }
   },
   "Win x64 Builder (reclient compare)": {
@@ -596,22 +590,12 @@
       "use_goma": true
     }
   },
-  "fuchsia-fyi-arm64-dbg": {
+  "fuchsia-fyi-arm64-emu-arg": {
     "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "fuchsia",
-      "test_host_cpu": "arm64",
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-arm64-femu": {
-    "gn_args": {
-      "dcheck_always_on": false,
+      "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
+      "symbol_level": 0,
       "target_cpu": "arm64",
       "target_os": "fuchsia",
       "test_host_cpu": "arm64",
@@ -626,26 +610,6 @@
       "target_cpu": "arm64",
       "target_os": "fuchsia",
       "test_host_cpu": "arm64",
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-x64-asan": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_asan": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "is_lsan": true,
-      "target_os": "fuchsia",
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-x64-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_os": "fuchsia",
       "use_goma": true
     }
   },
@@ -910,8 +874,6 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -924,8 +886,6 @@
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
@@ -938,22 +898,19 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
       "ozone_platform_headless": true,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "lacros-amd64-generic-rel-skylab-fyi": {
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -1028,13 +985,13 @@
       "use_remoteexec": true
     }
   },
-  "linux-blink-v8-sandbox-future-dbg": {
+  "linux-blink-v8-sandbox-future-rel": {
     "gn_args": {
       "dcheck_always_on": true,
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x64",
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
       "use_rbe": true,
       "use_remoteexec": true,
       "v8_enable_sandbox_future": true
@@ -1048,7 +1005,8 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-chromeos-code-coverage": {
@@ -1060,7 +1018,8 @@
       "proprietary_codecs": true,
       "target_os": "chromeos",
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-chromeos-js-code-coverage": {
@@ -1071,8 +1030,9 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "target_os": "chromeos",
-      "use_goma": true,
-      "use_javascript_coverage": true
+      "use_javascript_coverage": true,
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-code-coverage": {
@@ -1126,7 +1086,8 @@
       "is_component_build": false,
       "is_debug": false,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-lacros-builder-rel (goma cache silo)": {
@@ -1163,7 +1124,8 @@
       "symbol_level": 0,
       "target_os": "chromeos",
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-lacros-dbg-fyi": {
@@ -1174,7 +1136,8 @@
       "is_debug": true,
       "symbol_level": 1,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-lacros-dbg-tests-fyi": {
@@ -1206,7 +1169,8 @@
       "is_component_build": false,
       "is_debug": false,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-perfetto-rel": {
@@ -1373,6 +1337,18 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
+      "symbol_level": 1,
+      "use_rbe": true,
+      "use_remoteexec": true
+    }
+  },
+  "win-fieldtrial-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
       "symbol_level": 1,
       "use_rbe": true,
       "use_remoteexec": true

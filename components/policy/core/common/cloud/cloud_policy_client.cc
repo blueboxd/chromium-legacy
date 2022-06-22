@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/client_data_delegate.h"
@@ -153,6 +154,18 @@ DecodeRemoteCommands(DeviceManagementStatus status,
       ToVector(response.remote_command_response().secure_commands()));
 }
 
+// Returns a separator-less string with MAC address to match the format of
+// reporting MAC addresses.
+std::string FormatMacAddress(const CloudPolicyClient::MacAddress& mac_address) {
+  CHECK_EQ(mac_address.size(), 6u);
+  // Print 2-digit (02) upper-case hex (X) values of MAC address.
+  std::string mac_address_string = base::StringPrintf(
+      "%02X%02X%02X%02X%02X%02X", mac_address[0], mac_address[1],
+      mac_address[2], mac_address[3], mac_address[4], mac_address[5]);
+  DCHECK_EQ(mac_address_string.size(), 12u);
+  return mac_address_string;
+}
+
 }  // namespace
 
 CloudPolicyClient::RegistrationParameters::RegistrationParameters(
@@ -186,8 +199,8 @@ CloudPolicyClient::CloudPolicyClient(
     const std::string& machine_model,
     const std::string& brand_code,
     const std::string& attested_device_id,
-    const std::string& ethernet_mac_address,
-    const std::string& dock_mac_address,
+    absl::optional<MacAddress> ethernet_mac_address,
+    absl::optional<MacAddress> dock_mac_address,
     const std::string& manufacture_date,
     DeviceManagementService* service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -196,8 +209,12 @@ CloudPolicyClient::CloudPolicyClient(
       machine_model_(machine_model),
       brand_code_(brand_code),
       attested_device_id_(attested_device_id),
-      ethernet_mac_address_(ethernet_mac_address),
-      dock_mac_address_(dock_mac_address),
+      ethernet_mac_address_(ethernet_mac_address.has_value()
+                                ? FormatMacAddress(ethernet_mac_address.value())
+                                : std::string()),
+      dock_mac_address_(dock_mac_address.has_value()
+                            ? FormatMacAddress(dock_mac_address.value())
+                            : std::string()),
       manufacture_date_(manufacture_date),
       service_(service),  // Can be null for unit tests.
       device_dm_token_callback_(device_dm_token_callback),
@@ -278,7 +295,7 @@ void CloudPolicyClient::RegisterWithCertificate(
     const std::string& client_id,
     const std::string& pem_certificate_chain,
     const std::string& sub_organization,
-    SigningService* signing_service) {
+    std::unique_ptr<SigningService> signing_service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(signing_service);
   DCHECK(service_);
@@ -299,16 +316,19 @@ void CloudPolicyClient::RegisterWithCertificate(
     configuration->set_device_owner(sub_organization);
   }
 
-  signing_service->SignData(
+  SigningService* signing_service_ptr = signing_service.get();
+  signing_service_ptr->SignData(
       data.SerializeAsString(),
       base::BindOnce(&CloudPolicyClient::OnRegisterWithCertificateRequestSigned,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(signing_service)));
 }
 
 void CloudPolicyClient::RegisterWithToken(
     const std::string& token,
     const std::string& client_id,
-    const ClientDataDelegate& client_data_delegate) {
+    const ClientDataDelegate& client_data_delegate,
+    bool is_mandatory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(service_);
   DCHECK(!token.empty());
@@ -325,6 +345,10 @@ void CloudPolicyClient::RegisterWithToken(
           base::BindOnce(&CloudPolicyClient::OnRegisterCompleted,
                          weak_ptr_factory_.GetWeakPtr()));
 
+  // sets CBCM enrollment timeout to 30 seconds when CBCM enrollment is optional
+  if (!is_mandatory)
+    config->SetTimeoutDuration(base::Seconds(30));
+
   enterprise_management::RegisterBrowserRequest* request =
       config->request()->mutable_register_browser_request();
   client_data_delegate.FillRegisterBrowserRequest(
@@ -333,8 +357,11 @@ void CloudPolicyClient::RegisterWithToken(
 }
 
 void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(
+    std::unique_ptr<SigningService> signing_service,
     bool success,
     em::SignedData signed_data) {
+  signing_service.reset();
+
   if (!success) {
     const em::DeviceManagementResponse response;
     OnRegisterCompleted(nullptr, DM_STATUS_CANNOT_SIGN_REQUEST, 0, response);

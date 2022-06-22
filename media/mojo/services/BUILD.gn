@@ -4,6 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
+import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
@@ -177,16 +178,23 @@ component("services") {
       "media_foundation_service_broker.cc",
       "media_foundation_service_broker.h",
     ]
-    deps += [ "//media/base/win:media_foundation_util" ]
+    deps += [
+      "//media/base/win:media_foundation_util",
+      "//ui/gfx/mojom:dxgi_info",
+    ]
   }
 
-  if (is_chromeos_ash || is_linux) {
+  if ((is_chromeos_ash || is_linux) && (use_vaapi || use_v4l2_codec)) {
     sources += [
       "stable_video_decoder_factory_service.cc",
       "stable_video_decoder_factory_service.h",
+      "stable_video_decoder_service.cc",
+      "stable_video_decoder_service.h",
     ]
 
     public_deps += [ "//media/mojo/mojom/stable:stable_video_decoder" ]
+
+    deps += [ "//media/gpu/chromeos" ]
   }
 }
 

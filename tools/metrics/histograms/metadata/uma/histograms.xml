@@ -166,7 +166,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.CleanExitBeaconConsistency3"
-    enum="UmaCleanExitConsistency3" expires_after="2022-08-01">
+    enum="UmaCleanExitConsistency3" expires_after="2022-10-16">
   <owner>caitlinfischer@google.com</owner>
   <owner>justincohen@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -215,9 +215,9 @@ chromium-metrics-reviews@google.com.
   <owner>jongahn@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
-    Records the state that metrics service is in when user log store was set or
-    unset. This should be recorded once when a valid user that can use per-user
-    logs in and unsetting should be recorded once when a user logs out.
+    Records the status of writing the per-user metrics state to daemon-store (or
+    the boot state to /home/chronos/). Written on login or logout, and when a
+    user changes their consent state.
   </summary>
 </histogram>
 
@@ -507,7 +507,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.MetricsReporting.Toggle" enum="MetricsReportingChange"
-    expires_after="2022-08-01">
+    expires_after="2022-10-23">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -599,9 +599,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.ProfileSignInStatus" enum="ProfileSyncConsentStatus"
-    expires_after="never">
-<!-- expires-never: For the signin_status filter in dynamic table. -->
-
+    expires_after="2022-05-15">
+  <obsolete>
+    In May 2022, replaced with UMA.ProfileSignInStatusV2 and
+    UMA.ProfileSyncStatusV2, which actually monitors sign-in and sync status.
+    This earlier version actually monitored sync consent status.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>isherman@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -622,6 +625,69 @@ chromium-metrics-reviews@google.com.
 
     Reported incorrect data on ChromeOS before M80. Removed from ChromeOS in
     M97.
+  </summary>
+</histogram>
+
+<histogram name="UMA.ProfileSignInStatusV2" enum="ProfileSignInStatus"
+    expires_after="2023-05-04">
+  <owner>mpearson@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    An enum representing the sign-in status of all regular profiles with open
+    browser windows at the time a UMA log record is closed (i.e., excluding
+    system and guest profiles). Recorded once in every ongoing metrics log; not
+    recorded in logs about the previous session. System, Guest and Incognito
+    profiles are ignored because the user cannot sign-in into them.
+
+    Being signed into the browser means, for example, the user sees their Google
+    account on the New Tab Page and in the toolbar at the top of the browser. It
+    does NOT mean the user has a currently-valid token; they may need to refresh
+    their credentials. As a concrete example, it means the user may not get
+    personalized results and suggestions when using google.com.
+
+    On desktop, when Chrome is running and there are no profiles with open
+    browser windows (this can happen on Mac), this histogram will report
+    &quot;Unknown sign-in status&quot;.
+
+    On Android, when Chrome is running and there are no profiles with open
+    browser windows (this can happen when Chrome is doing something in the
+    background), it will report the sign-in status as if there were an open
+    browser window.
+
+    If a profile is open during the time period covered by this log record but
+    closed before the log record is closed, the profile's status will not be
+    reflected in this histogram.
+
+    Not supported on ChromeOS Ash. (Supported on Lacros.)
+  </summary>
+</histogram>
+
+<histogram name="UMA.ProfileSyncStatusV2" enum="ProfileSyncStatus"
+    expires_after="2023-03-04">
+  <owner>mpearson@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    An enum representing the sync status of all regular profiles with open
+    browser windows at the time a UMA log record is closed (i.e., excluding
+    system and guest profiles). Recorded once in every ongoing metrics log; not
+    recorded in logs about the previous session. System, Guest and Incognito
+    profiles are ignored because the user cannot sign-in into them.
+
+    If a profile is open during the time period covered by this log record but
+    closed before the log record is closed, the profile's status will not be
+    reflected in this histogram.
+
+    Sync status indicates the profile has consented to sync and has a valid
+    credentials for the account (i.e., is signed-in), meaning sync in principle
+    should be working. For example, if the user signs out of the web, their
+    credentials will be put into an error state; they will not be valid. The
+    profile will not be considered to be syncing. It is possible that the user
+    is technically syncing (according to this histogram and Chrome) yet not
+    syncing at that instant. Examples of this include (i) user is offline and
+    (ii) user disabled syncing for all sync data types but didn't revoke
+    consent.
+
+    Not supported on ChromeOS Ash. (Supported on Lacros.)
   </summary>
 </histogram>
 
@@ -709,7 +775,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.EventRecordingState"
-    enum="StructuredMetricsEventRecordingState" expires_after="2022-04-24">
+    enum="StructuredMetricsEventRecordingState" expires_after="2022-11-01">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -741,7 +807,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.InternalError2"
-    enum="StructuredMetricsInternalError2" expires_after="2022-05-01">
+    enum="StructuredMetricsInternalError2" expires_after="2022-11-01">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -752,7 +818,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.KeyValidationState"
-    enum="StructuredMetricsKeyValidationState" expires_after="2022-04-24">
+    enum="StructuredMetricsKeyValidationState" expires_after="2022-11-01">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -764,7 +830,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.NumEventsInUpload" units="count"
-    expires_after="2022-04-24">
+    expires_after="2022-11-01">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -785,7 +851,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2022-10-09">
+    expires_after="2022-10-30">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>

@@ -18,6 +18,7 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/bottom_status_indicator.h"
+#include "ash/login/ui/kiosk_app_default_message.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_screen_media_controls_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
@@ -36,9 +37,11 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/child_accounts/parent_access_controller.h"
 #include "ash/public/cpp/login_accelerators.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/smartlock_state.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -326,7 +329,7 @@ class UserAddingScreenIndicator : public views::View {
     layout_manager->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
 
-    info_icon_ = AddChildView(new views::ImageView());
+    info_icon_ = AddChildView(std::make_unique<views::ImageView>());
     info_icon_->SetPreferredSize(gfx::Size(kInfoIconSizeDp, kInfoIconSizeDp));
 
     std::u16string message =
@@ -432,6 +435,11 @@ class LockContentsView::AutoLoginUserActivityHandler
 LockContentsView::TestApi::TestApi(LockContentsView* view) : view_(view) {}
 
 LockContentsView::TestApi::~TestApi() = default;
+
+KioskAppDefaultMessage* LockContentsView::TestApi::kiosk_default_message()
+    const {
+  return view_->kiosk_default_message_;
+}
 
 LoginBigUserView* LockContentsView::TestApi::primary_big_view() const {
   return view_->primary_big_view_;
@@ -670,12 +678,11 @@ LockContentsView::LockContentsView(
   tooltip_bubble_->SetPadding(kHorizontalPaddingLoginTooltipViewDp,
                               kVerticalPaddingLoginTooltipViewDp);
 
-  management_bubble_ = new ManagementBubble(
+  management_bubble_ = AddChildView(std::make_unique<ManagementBubble>(
       l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_ENTERPRISE_MANAGED_POP_UP,
                                  ui::GetChromeOSDeviceName(),
                                  base::UTF8ToUTF16(enterprise_domain_manager)),
-      bottom_status_indicator_);
-  AddChildView(management_bubble_);
+      bottom_status_indicator_));
 
   warning_banner_bubble_ = AddChildView(std::make_unique<LoginErrorBubble>());
   warning_banner_bubble_->set_persistent(true);
@@ -687,10 +694,19 @@ LockContentsView::LockContentsView(
     user_adding_screen_indicator_ =
         AddChildView(std::make_unique<UserAddingScreenIndicator>());
   }
-
   OnLockScreenNoteStateChanged(initial_note_action_state);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
   RegisterAccelerators();
+
+  // If feature is enabled, update the boolean kiosk_license_mode_. Otherwise,
+  // it's false by default.
+  if (features::IsKioskEnrollmentInOobeEnabled()) {
+    kiosk_license_mode_ =
+        Shell::Get()
+            ->system_tray_model()
+            ->enterprise_domain()
+            ->management_device_mode() == ManagementDeviceMode::kKioskSku;
+  }
 }
 
 LockContentsView::~LockContentsView() {
@@ -832,6 +848,26 @@ void LockContentsView::ShowParentAccessDialog() {
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
 }
 
+void LockContentsView::SetKioskAppsButtonPresence(
+    bool is_kiosk_apps_button_present) {
+  if (!kiosk_license_mode_)
+    return;
+
+  // check if the kiosk app button is visible
+  if (is_kiosk_apps_button_present) {
+    if (kiosk_default_message_)
+      kiosk_default_message_->GetWidget()->Hide();
+  } else {
+    if (!kiosk_default_message_) {
+      // KioskAppDefaultMessage is owned by itself and would be destroyed when
+      // its widget got destroyed, which happened when the widget's window got
+      // destroyed.
+      kiosk_default_message_ = new KioskAppDefaultMessage();
+    }
+    kiosk_default_message_->GetWidget()->Show();
+  }
+}
+
 void LockContentsView::Layout() {
   View::Layout();
   LayoutTopHeader();
@@ -936,6 +972,9 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
       views::BoxLayout::MainAxisAlignment::kCenter);
   main_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
+
+  if (kiosk_license_mode_)
+    return;
 
   // If there are no users, show GAIA signin if login.
   if (users.empty() && screen_type_ == LockScreen::ScreenType::kLogin) {
@@ -1933,11 +1972,10 @@ void LockContentsView::LayoutUserAddingScreenIndicator() {
 
 void LockContentsView::LayoutPublicSessionView() {
   gfx::Rect bounds = GetContentsBounds();
-  gfx::Size pref_size = expanded_view_->GetPreferredSize();
-  if (bounds.width() < pref_size.width()) {
-    int height = expanded_view_->GetHeightForWidth(bounds.width());
-    pref_size = {bounds.width(), height};
-  }
+  bounds.set_height(bounds.height() - ShelfConfig::Get()->shelf_size());
+  gfx::Size pref_size = bounds.width() >= bounds.height()
+                            ? expanded_view_->GetPreferredSizeLandscape()
+                            : expanded_view_->GetPreferredSizePortrait();
   bounds.ClampToCenteredSize(pref_size);
   expanded_view_->SetBoundsRect(bounds);
 }
@@ -2555,6 +2593,11 @@ void LockContentsView::OnBottomStatusIndicatorTapped() {
 void LockContentsView::OnBackToSigninButtonTapped() {
   Shell::Get()->login_screen_controller()->ShowGaiaSignin(
       /*prefilled_account=*/EmptyAccountId());
+}
+
+void LockContentsView::SetKioskLicenseModeForTesting(
+    bool is_kiosk_license_mode) {
+  kiosk_license_mode_ = is_kiosk_license_mode;
 }
 
 BEGIN_METADATA(LockContentsView, NonAccessibleView)

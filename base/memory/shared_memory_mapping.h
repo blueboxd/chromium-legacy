@@ -11,6 +11,7 @@
 #include "base/base_export.h"
 #include "base/check.h"
 #include "base/containers/span.h"
+#include "base/memory/shared_memory_mapper.h"
 #include "base/unguessable_token.h"
 
 namespace base {
@@ -43,7 +44,7 @@ class BASE_EXPORT SharedMemoryMapping {
 
   // Returns true iff the mapping is valid. False means there is no
   // corresponding area of memory.
-  bool IsValid() const { return memory_ != nullptr; }
+  bool IsValid() const { return !mapped_span_.empty(); }
 
   // Returns the logical size of the mapping in bytes. This is precisely the
   // size requested by whoever created the mapping, and it is always less than
@@ -58,7 +59,7 @@ class BASE_EXPORT SharedMemoryMapping {
   // constraints. This is undefined for invalid instances.
   size_t mapped_size() const {
     DCHECK(IsValid());
-    return mapped_size_;
+    return mapped_span_.size();
   }
 
   // Returns 128-bit GUID of the region this mapping belongs to.
@@ -68,21 +69,23 @@ class BASE_EXPORT SharedMemoryMapping {
   }
 
  protected:
-  SharedMemoryMapping(void* address,
+  SharedMemoryMapping(span<uint8_t> mapped_span,
                       size_t size,
-                      size_t mapped_size,
-                      const UnguessableToken& guid);
-  void* raw_memory_ptr() const { return memory_; }
+                      const UnguessableToken& guid,
+                      SharedMemoryMapper* mapper);
+  void* raw_memory_ptr() const {
+    return reinterpret_cast<void*>(mapped_span_.data());
+  }
 
  private:
   friend class SharedMemoryTracker;
 
   void Unmap();
 
-  void* memory_ = nullptr;
+  span<uint8_t> mapped_span_;
   size_t size_ = 0;
-  size_t mapped_size_ = 0;
   UnguessableToken guid_;
+  SharedMemoryMapper* mapper_ = nullptr;
 };
 
 // Class modeling a read-only mapping of a shared memory region into the
@@ -102,8 +105,8 @@ class BASE_EXPORT ReadOnlySharedMemoryMapping : public SharedMemoryMapping {
   ReadOnlySharedMemoryMapping& operator=(
       ReadOnlySharedMemoryMapping&&) noexcept;
 
-  // Returns the base address of the mapping. This is read-only memory. This is
-  // page-aligned. This is nullptr for invalid instances.
+  // Returns the base address of the read-only mapping. Returns nullptr for
+  // invalid instances.
   const void* memory() const { return raw_memory_ptr(); }
 
   // Returns a pointer to a page-aligned const T if the mapping is valid and
@@ -154,10 +157,10 @@ class BASE_EXPORT ReadOnlySharedMemoryMapping : public SharedMemoryMapping {
 
  private:
   friend class ReadOnlySharedMemoryRegion;
-  ReadOnlySharedMemoryMapping(void* address,
+  ReadOnlySharedMemoryMapping(span<uint8_t> mapped_span,
                               size_t size,
-                              size_t mapped_size,
-                              const UnguessableToken& guid);
+                              const UnguessableToken& guid,
+                              SharedMemoryMapper* mapper);
 };
 
 // Class modeling a writable mapping of a shared memory region into the
@@ -177,8 +180,8 @@ class BASE_EXPORT WritableSharedMemoryMapping : public SharedMemoryMapping {
   WritableSharedMemoryMapping& operator=(
       WritableSharedMemoryMapping&&) noexcept;
 
-  // Returns the base address of the mapping. This is writable memory. This is
-  // page-aligned. This is nullptr for invalid instances.
+  // Returns the base address of the writable mapping. Returns nullptr for
+  // invalid instances.
   void* memory() const { return raw_memory_ptr(); }
 
   // Returns a pointer to a page-aligned T if the mapping is valid and large
@@ -234,10 +237,10 @@ class BASE_EXPORT WritableSharedMemoryMapping : public SharedMemoryMapping {
   friend class ReadOnlySharedMemoryRegion;
   friend class WritableSharedMemoryRegion;
   friend class UnsafeSharedMemoryRegion;
-  WritableSharedMemoryMapping(void* address,
+  WritableSharedMemoryMapping(span<uint8_t> mapped_span,
                               size_t size,
-                              size_t mapped_size,
-                              const UnguessableToken& guid);
+                              const UnguessableToken& guid,
+                              SharedMemoryMapper* mapper);
 };
 
 }  // namespace base

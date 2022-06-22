@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/test/test_search_controller.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,6 +71,15 @@ class ArcAppShortcutsSearchProviderTest
   std::string AddArcAppAndShortcut(const arc::mojom::AppInfo& app_info,
                                    bool launchable) {
     ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+
+    absl::optional<uint64_t> app_size_in_bytes;
+    absl::optional<uint64_t> data_size_in_bytes;
+
+    if (!app_info.app_storage.is_null()) {
+      app_size_in_bytes = app_info.app_storage->app_size_in_bytes;
+      data_size_in_bytes = app_info.app_storage->data_size_in_bytes;
+    }
+
     // Adding app to the prefs, and check that the app is accessible by id.
     prefs->AddAppAndShortcut(
         app_info.name, app_info.package_name, app_info.activity,
@@ -77,7 +87,7 @@ class ArcAppShortcutsSearchProviderTest
         app_info.version_name, false /* sticky */,
         true /* notifications_enabled */, true /* app_ready */,
         false /* suspended */, false /* shortcut */, launchable,
-        ArcAppListPrefs::WindowLayout());
+        ArcAppListPrefs::WindowLayout(), app_size_in_bytes, data_size_in_bytes);
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
     EXPECT_TRUE(prefs->GetApp(app_id));
@@ -100,13 +110,18 @@ TEST_P(ArcAppShortcutsSearchProviderTest, Basic) {
   const size_t kMaxResults = launchable ? 4 : 0;
   constexpr char16_t kQuery[] = u"shortlabel";
 
+  TestSearchController search_controller;
   auto provider = std::make_unique<ArcAppShortcutsSearchProvider>(
       kMaxResults, profile(), controller_.get());
-  EXPECT_TRUE(provider->results().empty());
+  ArcAppShortcutsSearchProvider* provider_ptr = provider.get();
+  search_controller.AddProvider(0, std::move(provider));
+  EXPECT_TRUE(search_controller.last_results().empty());
   arc::IconDecodeRequest::DisableSafeDecodingForTesting();
 
-  provider->Start(kQuery);
-  const auto& results = provider->results();
+  search_controller.StartSearch(kQuery);
+  const auto& results = app_list_features::IsCategoricalSearchEnabled()
+                            ? search_controller.last_results()
+                            : provider_ptr->results();
   EXPECT_EQ(kMaxResults, results.size());
   // Verify search results.
   for (size_t i = 0; i < results.size(); ++i) {

@@ -77,7 +77,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.AdaptiveToolbar.SegmentSelected.Startup"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2022-08-28">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2022-10-30">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -88,7 +88,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.AdaptiveToolbar.SegmentSelection.Computed"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2022-10-09">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2022-10-30">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -98,13 +98,34 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.AdaptiveToolbar.SegmentSwitched"
-    enum="AdaptiveToolbarSegmentSwitch" expires_after="2022-08-14">
+    enum="AdaptiveToolbarSegmentSwitch" expires_after="2022-10-16">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
     Records the segment selection switch from an old value to a new segment
     after a model evaluation completes. Recorded only if the selected segment
     switches to a new value.
+  </summary>
+</histogram>
+
+<histogram name="SegmentationPlatform.Init.CreationToInitializationLatency"
+    units="ms" expires_after="M104">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    Time taken from the platform getting created till the platform finishes
+    initialization. Recorded when initialization is done.
+  </summary>
+</histogram>
+
+<histogram
+    name="SegmentationPlatform.Init.ProcessCreationToServiceCreationLatency"
+    units="ms" expires_after="M104">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    Time taken from process creation till the time segmentation platform was
+    created. Recorded once when the platform is created.
   </summary>
 </histogram>
 
@@ -212,7 +233,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.ModelDelivery.Received"
-    enum="SegmentationPlatformSegmentationModel" expires_after="2022-08-14">
+    enum="SegmentationPlatformSegmentationModel" expires_after="2022-10-16">
   <owner>nyquist@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
@@ -408,7 +429,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.SelectionFailedReason"
-    enum="SegmentationSelectionFailureReason" expires_after="2022-09-11">
+    enum="SegmentationSelectionFailureReason" expires_after="2022-10-30">
   <owner>ssid@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>

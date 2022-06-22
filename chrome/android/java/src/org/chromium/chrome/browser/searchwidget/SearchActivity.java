@@ -24,6 +24,7 @@ import org.chromium.base.Log;
 import org.chromium.base.jank_tracker.DummyJankTracker;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.blink.mojom.DisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -199,8 +200,9 @@ public class SearchActivity extends AsyncInitializationActivity
                 TabWindowManagerSingleton::getInstance, /*bookmarkState=*/(url) -> false,
                 VoiceToolbarButtonController::isToolbarMicEnabled, new DummyJankTracker(),
                 /*ExploreIconState*/(pixelSize, callback) ->{},
-                /*userEducationHelper=*/null, /*merchantTrustSignalsCoordinatorSupplier=*/null,
-                new OmniboxPedalDelegateImpl(this), null,
+                /*merchantTrustSignalsCoordinatorSupplier=*/null,
+                new OmniboxPedalDelegateImpl(this, new OneshotSupplierImpl<>(),
+                        getModalDialogManagerSupplier()), null,
                 ChromePureJavaExceptionReporter::postReportJavaException);
         // clang-format on
         mLocationBarCoordinator.setUrlBarFocusable(true);

@@ -180,7 +180,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       mojom::blink::ResourceTimingInfoPtr timing,
       const String& server_timing_values) final;
   void ScrollRectToVisible(
-      const gfx::Rect& rect_to_scroll,
+      const gfx::RectF& rect_to_scroll,
       mojom::blink::ScrollIntoViewParamsPtr params) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
@@ -208,7 +208,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   // Called only when this frame has a local frame owner.
   gfx::Size GetMainFrameViewportSize() const override;
-  gfx::Point GetMainFrameScrollOffset() const override;
+  gfx::Point GetMainFrameScrollPosition() const override;
 
   void SetOpener(Frame* opener) override;
 

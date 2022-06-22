@@ -25,9 +25,10 @@ if (is_android) {
 # This target is for dependency tracking for the command ID header.
 source_set("command_ids") {
   sources = [ "chrome_command_ids.h" ]
-  deps = [
+  public_deps = [
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//components/services/screen_ai/buildflags",
   ]
 }
 
@@ -90,10 +91,7 @@ if (is_android) {
 
 grit("generated_resources") {
   source = "generated_resources.grd"
-  defines = chrome_grit_defines
-  if (is_cfm) {
-    defines += [ "is_cfm" ]
-  }
+  defines = chrome_grit_defines + [ "is_cfm=${is_cfm}" ]
   output_dir = "$root_gen_dir/chrome"
   outputs =
       [ "grit/generated_resources.h" ] +
@@ -219,7 +217,7 @@ static_library("test_support") {
   if (is_chromeos_ash) {
     deps += [
       "//ash/constants",
-      "//chrome/browser/chromeos",
+      "//chrome/browser/ash",
       "//chromeos",
       "//chromeos/memory:memory",
     ]
@@ -231,6 +229,7 @@ static_library("test_support") {
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
       "//chromeos/lacros/dbus",
+      "//chromeos/startup",
     ]
   }
 

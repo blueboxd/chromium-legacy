@@ -17,6 +17,7 @@
 #include "base/observer_list_types.h"
 #include "base/system/system_monitor.h"
 #include "base/timer/timer.h"
+#include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -79,7 +80,8 @@ struct CameraInfo {
   CameraInfo(CameraId camera_id,
              std::string device_id,
              std::string display_name,
-             const media::VideoCaptureFormats& supported_formats);
+             const media::VideoCaptureFormats& supported_formats,
+             media::VideoFacingMode camera_facing_mode);
   CameraInfo(CameraInfo&&);
   CameraInfo& operator=(CameraInfo&&);
   ~CameraInfo();
@@ -104,6 +106,11 @@ struct CameraInfo {
   // (See `media::VideoCaptureSystemImpl::DevicesInfoReady()`) by the frame size
   // area, then by frame width, then by the *largest* frame rate.
   media::VideoCaptureFormats supported_formats;
+
+  // Whether the camera is facing the user (e.g. for internal front cameras), or
+  // the environment (e.g. internal rear cameras), or unknown (e.g. usually for
+  // external USB cameras).
+  media::VideoFacingMode camera_facing_mode;
 };
 
 using CameraInfoList = std::vector<CameraInfo>;
@@ -183,8 +190,10 @@ class ASH_EXPORT CaptureModeCameraController
   void MaybeReparentPreviewWidget();
 
   // Sets `camera_preview_snap_position_` and updates the preview widget's
-  // bounds accordingly.
-  void SetCameraPreviewSnapPosition(CameraPreviewSnapPosition value);
+  // bounds accordingly. If `animate` is set to true, the camera preview will
+  // animate to its new snap position.
+  void SetCameraPreviewSnapPosition(CameraPreviewSnapPosition value,
+                                    bool animate = false);
 
   // Updates the bounds and visibility of `camera_preview_widget_` according to
   // the current state of the capture surface within which the camera preview
@@ -212,6 +221,16 @@ class ASH_EXPORT CaptureModeCameraController
   // request a new list of cameras from the video capture service.
   // https://crbug/1316230.
   void OnFrameHandlerFatalError();
+
+  // Called when the device is shutting down. After this call, we don't do any
+  // operations that interacts with the video capture service.
+  void OnShuttingDown();
+
+  // As `camera_preview_view_` is a
+  // CaptureModeSessionFocusCycler::HighlightableView. This will show the focus
+  // ring and trigger setting a11y focus on the camera preview. Note, this is
+  // only for focusing the preview while recording is in progress.
+  void PseudoFocusCameraPreview();
 
   // base::SystemMonitor::DevicesChangedObserver:
   void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) override;
@@ -279,13 +298,12 @@ class ASH_EXPORT CaptureModeCameraController
       const gfx::Size& preview_size,
       CameraPreviewSnapPosition snap_position) const;
 
-  // Called by `EndDraggingPreview`, updating `camera_preview_snap_position_`
-  // according to the current position of the `camera_preview_view_`.
-  void UpdateSnapPositionOnDragEnded();
+  // Returns the new snap position of the camera preview on drag ended.
+  CameraPreviewSnapPosition CalculateSnapPositionOnDragEnded() const;
 
   // Returns the current bounds of camemra preview widget that match the
   // coordinate system of the confine bounds.
-  gfx::Rect GetCurrentBoundsMatchingConfineBoundsCoordinates();
+  gfx::Rect GetCurrentBoundsMatchingConfineBoundsCoordinates() const;
 
   // Does post works for camera preview after RefreshCameraPreview(). It
   // triggers a11y alert based on `was_preview_visible_before` and the current
@@ -374,6 +392,14 @@ class ASH_EXPORT CaptureModeCameraController
   // the resize button is clicked. The size of the preview widget and the icon
   // of the resize button will be updated based on it.
   bool is_camera_preview_collapsed_ = false;
+
+  // True if it's the first time to update the camera preview's bounds after
+  // it's created.
+  bool is_first_bounds_update_ = false;
+
+  // True when the device is shutting down, and we should no longer make any
+  // requests to the video capture service.
+  bool is_shutting_down_ = false;
 
   // Valid only during recording to track the number of camera disconnections
   // while recording is in progress.

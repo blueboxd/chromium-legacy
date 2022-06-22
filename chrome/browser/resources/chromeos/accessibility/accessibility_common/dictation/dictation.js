@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {InputController} from './input_controller.js';
-import {Macro} from './macros/macro.js';
-import {MacroName} from './macros/macro_names.js';
-import {MetricsUtils} from './metrics_utils.js';
-import {SpeechParser} from './parse/speech_parser.js';
-import {HintContext, UIController, UIState} from './ui_controller.js';
+import {InputController} from '/accessibility_common/dictation/input_controller.js';
+import {Macro} from '/accessibility_common/dictation/macros/macro.js';
+import {MacroName} from '/accessibility_common/dictation/macros/macro_names.js';
+import {MetricsUtils} from '/accessibility_common/dictation/metrics_utils.js';
+import {SpeechParser} from '/accessibility_common/dictation/parse/speech_parser.js';
+import {HintContext, UIController, UIState} from '/accessibility_common/dictation/ui_controller.js';
 
 const ErrorEvent = chrome.speechRecognitionPrivate.SpeechRecognitionErrorEvent;
 const ResultEvent =
@@ -28,12 +28,6 @@ export class Dictation {
 
     /** @private {SpeechParser} */
     this.speechParser_ = null;
-
-    /** @private {boolean} */
-    this.commandsFeatureEnabled_ = false;
-
-    /** @private {boolean} */
-    this.hintsFeatureEnabled_ = false;
 
     /** @private {string} */
     this.localePref_ = '';
@@ -80,6 +74,9 @@ export class Dictation {
         new InputController(() => this.stopDictation_(/*notify=*/ true));
     this.uiController_ = new UIController();
     this.speechParser_ = new SpeechParser(this.inputController_);
+    if (this.localePref_) {
+      this.speechParser_.initialize(this.localePref_);
+    }
 
     // Set default speech recognition properties. Locale will be updated when
     // `updateFromPrefs_` is called.
@@ -104,29 +101,6 @@ export class Dictation {
     // Browser process.
     chrome.accessibilityPrivate.onToggleDictation.addListener(
         activated => this.onToggleDictation_(activated));
-
-    this.checkEnabledFeatures_();
-  }
-
-  /** @private */
-  checkEnabledFeatures_() {
-    const commandsFeature =
-        chrome.accessibilityPrivate.AccessibilityFeature.DICTATION_COMMANDS;
-    const hintsFeature =
-        chrome.accessibilityPrivate.AccessibilityFeature.DICTATION_HINTS;
-
-    chrome.accessibilityPrivate.isFeatureEnabled(commandsFeature, (result) => {
-      this.commandsFeatureEnabled_ = result;
-      if (this.commandsFeatureEnabled_ && this.localePref_) {
-        this.speechParser_.setCommandsEnabled(this.localePref_);
-      }
-      if (this.commandsFeatureEnabled_) {
-        chrome.accessibilityPrivate.isFeatureEnabled(hintsFeature, (result) => {
-          this.hintsFeatureEnabled_ = result;
-          this.uiController_.setEnabled(this.hintsFeatureEnabled_);
-        });
-      }
-    });
   }
 
   /**
@@ -184,7 +158,7 @@ export class Dictation {
     this.active_ = false;
     // Stop speech recognition.
     chrome.speechRecognitionPrivate.stop({}, () => {});
-    if (this.inputController_.hasCompositionText() || this.interimText_) {
+    if (this.interimText_) {
       this.endTone_.play();
     } else {
       this.cancelTone_.play();
@@ -193,10 +167,8 @@ export class Dictation {
     // Clear any timeouts.
     this.clearTimeoutIds_();
 
-    if (this.commandsFeatureEnabled_) {
-      this.inputController_.commitText(this.interimText_);
-      this.hideCommandsUI_();
-    }
+    this.inputController_.commitText(this.interimText_);
+    this.hideCommandsUI_();
     this.inputController_.disconnect();
     Dictation.removeAsInputMethod();
 
@@ -245,20 +217,8 @@ export class Dictation {
    * @private
    */
   async processSpeechRecognitionResult_(transcript, isFinal) {
-    // TODO(crbug.com/1216111): Make dictation.js store the current composition
-    // (we already have a member called interimText_) and remove the
-    // currentComposition_ member from input_controller.js. This aligns more
-    // closely with the model-view-controller design pattern.
-    this.inputController_.setCurrentComposition(transcript);
-
     if (!isFinal) {
-      if (this.commandsFeatureEnabled_) {
-        this.setInterimText_(transcript);
-      } else if (!this.chromeVoxEnabled_) {
-        // When ChromeVox is enabled, we shouldn't display interim
-        // composition results because it will increase the verbosity too much.
-        this.inputController_.displayCurrentComposition();
-      }
+      this.showInterimText_(transcript);
       return;
     }
 
@@ -357,9 +317,7 @@ export class Dictation {
             this.speechRecognitionOptions_.locale =
                 /** @type {string} */ (pref.value);
             this.localePref_ = this.speechRecognitionOptions_.locale;
-            if (this.commandsFeatureEnabled_) {
-              this.speechParser_.setCommandsEnabled(this.localePref_);
-            }
+            this.speechParser_.initialize(this.localePref_);
           }
           break;
         case Dictation.SPOKEN_FEEDBACK_PREF:
@@ -380,11 +338,7 @@ export class Dictation {
    * @param {string} text
    * @private
    */
-  setInterimText_(text) {
-    if (!this.commandsFeatureEnabled_) {
-      return;
-    }
-
+  showInterimText_(text) {
     // TODO(crbug.com/1252037): Need to find a way to show interim text that is
     // only whitespace. Google Cloud Speech can return a newline character
     // although SODA does not seem to do that. The newline character looks wrong
@@ -398,10 +352,6 @@ export class Dictation {
    * @private
    */
   clearInterimText_() {
-    if (!this.commandsFeatureEnabled_) {
-      return;
-    }
-
     this.interimText_ = '';
     this.uiController_.setState(UIState.STANDBY);
   }
@@ -414,10 +364,6 @@ export class Dictation {
    * @private
    */
   showMacroExecuted_(macro, transcript) {
-    if (!this.commandsFeatureEnabled_) {
-      return;
-    }
-
     MetricsUtils.recordMacroSucceeded(macro);
 
     if (macro.getMacroName() === MacroName.INPUT_TEXT_VIEW ||
@@ -446,10 +392,6 @@ export class Dictation {
    * @private
    */
   showMacroExecutionFailed_(macro, transcript) {
-    if (!this.commandsFeatureEnabled_) {
-      return;
-    }
-
     MetricsUtils.recordMacroFailed(macro);
 
     this.interimText_ = '';
@@ -465,10 +407,6 @@ export class Dictation {
    * @private
    */
   hideCommandsUI_() {
-    if (!this.commandsFeatureEnabled_) {
-      return;
-    }
-
     this.interimText_ = '';
     this.uiController_.setState(UIState.HIDDEN);
   }

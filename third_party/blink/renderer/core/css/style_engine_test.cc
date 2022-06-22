@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/css/style_engine.h"
 
+#include <limits>
 #include <memory>
 
-#include <limits>
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -780,13 +781,15 @@ TEST_F(StyleEngineTest, TextToSheetCache) {
   TextPosition min_pos = TextPosition::MinimumPosition();
 
   CSSStyleSheet* sheet1 = GetStyleEngine().CreateSheet(
-      *element, sheet_text, min_pos, PendingSheetType::kNonBlocking);
+      *element, sheet_text, min_pos, PendingSheetType::kNonBlocking,
+      RenderBlockingBehavior::kNonBlocking);
 
   // Check that the first sheet is not using a cached StyleSheetContents.
   EXPECT_FALSE(sheet1->Contents()->IsUsedFromTextCache());
 
   CSSStyleSheet* sheet2 = GetStyleEngine().CreateSheet(
-      *element, sheet_text, min_pos, PendingSheetType::kNonBlocking);
+      *element, sheet_text, min_pos, PendingSheetType::kNonBlocking,
+      RenderBlockingBehavior::kNonBlocking);
 
   // Check that the second sheet uses the cached StyleSheetContents for the
   // first.
@@ -804,7 +807,8 @@ TEST_F(StyleEngineTest, TextToSheetCache) {
   element = MakeGarbageCollected<HTMLStyleElement>(GetDocument(),
                                                    CreateElementFlags());
   sheet1 = GetStyleEngine().CreateSheet(*element, sheet_text, min_pos,
-                                        PendingSheetType::kNonBlocking);
+                                        PendingSheetType::kNonBlocking,
+                                        RenderBlockingBehavior::kNonBlocking);
 
   // Check that we did not use a cached StyleSheetContents after the garbage
   // collection.
@@ -3366,6 +3370,42 @@ TEST_F(StyleEngineTest, CSSOMMediaConditionUnknownUseCounter) {
     EXPECT_FALSE(IsUseCounted(WebFeature::kCSSOMMediaConditionUnknown));
     ClearUseCounter(WebFeature::kCSSOMMediaConditionUnknown);
   }
+}
+
+TEST_F(StyleEngineTest, AtScopeUseCount) {
+  ScopedCSSScopeForTest scope_feature(true);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { --x: No @scope rule here; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleScope));
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @scope (.a) {
+        body { --x:true; }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleScope));
+}
+
+TEST_F(StyleEngineTest, AtScopeUseCountWithoutFeature) {
+  ScopedCSSScopeForTest scope_feature(false);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @scope (.a) {
+        body { --x:true; }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleScope));
 }
 
 TEST_F(StyleEngineTest, RemoveDeclaredPropertiesEmptyRegistry) {

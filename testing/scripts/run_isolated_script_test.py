@@ -26,7 +26,11 @@ import sys
 import tempfile
 
 
-import common
+# Add src/testing/ into sys.path for importing xvfb and common.
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+import xvfb
+from scripts import common
 
 
 # Some harnesses understand the --isolated-script-test arguments
@@ -52,10 +56,9 @@ KNOWN_TYP_VPYTHON3_TEST_RUNNERS = {
     'test_suite_all.py',  # //tools/grit:grit_python_unittests
 }
 
-class IsolatedScriptTestAdapter(common.BaseIsolatedScriptArgsAdapter):
-  def __init__(self):
-    super(IsolatedScriptTestAdapter, self).__init__()
+# pylint: disable=super-with-arguments
 
+class IsolatedScriptTestAdapter(common.BaseIsolatedScriptArgsAdapter):
   def generate_sharding_args(self, total_shards, shard_index):
     # This script only uses environment variable for sharding.
     del total_shards, shard_index  # unused
@@ -88,9 +91,6 @@ class TypUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
     del total_shards, shard_index  # unused
     return []
 
-  def generate_test_output_args(self, output):
-    return ['--write-full-results-to', output]
-
   def generate_test_filter_args(self, test_filter_str):
     filter_list = common.extract_filter_list(test_filter_str)
     self._temp_filter_file = tempfile.NamedTemporaryFile(
@@ -103,6 +103,15 @@ class TypUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
 
     return ['--%s=' % arg_name + self._temp_filter_file.name]
 
+  def generate_test_output_args(self, output):
+    return ['--write-full-results-to', output]
+
+  def generate_test_launcher_retry_limit_args(self, retry_limit):
+    return ['--isolated-script-test-launcher-retry-limit=%d' % retry_limit]
+
+  def generate_test_repeat_args(self, repeat_count):
+    return ['--isolated-script-test-repeat=%d' % repeat_count]
+
   def clean_up_after_test_run(self):
     if self._temp_filter_file:
       os.unlink(self._temp_filter_file.name)
@@ -111,9 +120,6 @@ class TypUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
     if any(r in self.rest_args[0] for r in KNOWN_TYP_VPYTHON3_TEST_RUNNERS):
       return 'vpython3.bat' if sys.platform == 'win32' else 'vpython3'
     return super(TypUnittestAdapter, self).select_python_executable()
-
-  def run_test(self):
-    return super(TypUnittestAdapter, self).run_test()
 
 
 def main():

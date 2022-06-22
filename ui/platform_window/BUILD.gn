@@ -49,8 +49,14 @@ component("platform_window") {
       "extensions/desk_extension.h",
       "extensions/pinned_mode_extension.cc",
       "extensions/pinned_mode_extension.h",
+      "extensions/system_modal_extension.cc",
+      "extensions/system_modal_extension.h",
       "extensions/wayland_extension.cc",
       "extensions/wayland_extension.h",
+    ]
+  }
+  if (is_linux || is_chromeos_ash) {
+    sources += [
       "extensions/x11_extension.cc",
       "extensions/x11_extension.h",
       "extensions/x11_extension_delegate.h",

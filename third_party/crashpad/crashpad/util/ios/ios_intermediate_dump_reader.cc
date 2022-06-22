@@ -70,12 +70,6 @@ bool IOSIntermediateDumpReader::Parse(FileReaderInterface* reader,
   }
 
   while (reader->ReadExactly(&command, sizeof(Command))) {
-    constexpr int kMaxStackDepth = 10;
-    if (stack.size() > kMaxStackDepth) {
-      LOG(ERROR) << "Unexpected depth of intermediate dump data.";
-      return false;
-    }
-
     IOSIntermediateDumpObject* parent = stack.top();
     switch (command) {
       case Command::kMapStart: {

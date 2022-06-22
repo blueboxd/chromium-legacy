@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
-#include "chromeos/dbus/concierge/concierge_service.pb.h"
 
 // This file contains simple C++ types. Simple isn't a precise term, but as a
 // guideline enums and PoD structs are simple while structs/classes with methods
@@ -98,7 +98,8 @@ enum class CrostiniResult {
   VSH_CONNECT_FAILED = 65,
   CONTAINER_STOP_FAILED = 66,
   CONTAINER_STOP_CANCELLED = 67,
-  kMaxValue = CONTAINER_STOP_CANCELLED,
+  WAYLAND_SERVER_CREATION_FAILED = 68,
+  kMaxValue = WAYLAND_SERVER_CREATION_FAILED,
   // When adding a new value, check you've followed the steps in the comment at
   // the top of this enum.
 };

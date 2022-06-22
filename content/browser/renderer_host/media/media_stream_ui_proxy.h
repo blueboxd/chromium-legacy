@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_stream_request.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
@@ -29,7 +30,7 @@ class RenderFrameHostDelegate;
 class CONTENT_EXPORT MediaStreamUIProxy {
  public:
   using ResponseCallback =
-      base::OnceCallback<void(const blink::MediaStreamDevices& devices,
+      base::OnceCallback<void(const blink::mojom::StreamDevices& devices,
                               blink::mojom::MediaStreamRequestResult result)>;
 
   using WindowIdCallback =
@@ -71,8 +72,21 @@ class CONTENT_EXPORT MediaStreamUIProxy {
       std::vector<DesktopMediaID> screen_share_ids,
       MediaStreamUI::StateChangeCallback state_change_callback);
 
+  // Notifies the UI that the MediaStream is being stopped.
+  // |label| is the unique label of the stream's request.
+  // |media_id| is the media ID of the capture that's being stopped.
   virtual void OnDeviceStopped(const std::string& label,
                                const DesktopMediaID& media_id);
+
+  // Notifies the UI that the MediaStream is being stopped, similar to
+  // OnDeviceStopped(), but also notifies (on ChromeOS devices) the DLP module
+  // that the source for an existing stream is being changed. |label| is the
+  // unique label of the stream's request. |media_id| is the old media ID of the
+  // capture that's being stopped.
+  virtual void OnDeviceStoppedForSourceChange(
+      const std::string& label,
+      const DesktopMediaID& old_media_id,
+      const DesktopMediaID& new_media_id);
 
   virtual void OnRegionCaptureRectChanged(
       const absl::optional<gfx::Rect>& region_capture_rect);
@@ -103,7 +117,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   friend class FakeMediaStreamUIProxy;
 
   void ProcessAccessRequestResponse(
-      const blink::MediaStreamDevices& devices,
+      const blink::mojom::StreamDevices& devices,
       blink::mojom::MediaStreamRequestResult result);
   void ProcessStopRequestFromUI();
   void ProcessChangeSourceRequestFromUI(const DesktopMediaID& media_id);
@@ -149,9 +163,15 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
       MediaStreamUI::StateChangeCallback state_change_callback) override;
   void OnDeviceStopped(const std::string& label,
                        const DesktopMediaID& media_id) override;
+  void OnDeviceStoppedForSourceChange(
+      const std::string& label,
+      const DesktopMediaID& old_media_id,
+      const DesktopMediaID& new_media_id) override;
 
  private:
   // This is used for RequestAccess().
+  // TODO(crbug/1313021): Use blink::mojom::StreamDevices instead of
+  // blink::MediaStreamDevices.
   blink::MediaStreamDevices devices_;
 
   // These are used for CheckAccess().

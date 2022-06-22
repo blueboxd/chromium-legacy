@@ -21,10 +21,9 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
-#include "pdf/ppapi_migration/bitmap.h"
+#include "pdf/paint_ready_rect.h"
 #include "pdf/test/test_helpers.h"
 #include "pdf/test/test_pdfium_engine.h"
-#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
@@ -39,7 +38,10 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -61,10 +63,12 @@ namespace {
 using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::Invoke;
+using ::testing::IsEmpty;
 using ::testing::MockFunction;
 using ::testing::NiceMock;
 using ::testing::Pointwise;
 using ::testing::Return;
+using ::testing::SizeIs;
 
 // `kCanvasSize` needs to be big enough to hold plugin's snapshots during
 // testing.
@@ -119,10 +123,14 @@ MATCHER_P(IsExpectedImeKeyEvent, expected_text, "") {
 // clipped area and `kDefaultColor` as the background color.
 SkBitmap GenerateExpectedBitmapForPaint(const gfx::Rect& expected_clipped_rect,
                                         SkColor paint_color) {
-  SkBitmap expected_bitmap =
-      CreateN32PremulSkBitmap(gfx::SizeToSkISize(kCanvasSize));
-  expected_bitmap.eraseColor(kDefaultColor);
-  expected_bitmap.erase(paint_color, gfx::RectToSkIRect(expected_clipped_rect));
+  sk_sp<SkSurface> expected_surface =
+      CreateSkiaSurfaceForTesting(kCanvasSize, kDefaultColor);
+  expected_surface->getCanvas()->clipIRect(
+      gfx::RectToSkIRect(expected_clipped_rect));
+  expected_surface->getCanvas()->clear(paint_color);
+
+  SkBitmap expected_bitmap;
+  expected_surface->makeImageSnapshot()->asLegacyBitmap(&expected_bitmap);
   return expected_bitmap;
 }
 
@@ -424,16 +432,9 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     UpdatePluginGeometry(device_scale, window_rect);
     canvas_.DrawColor(kDefaultColor);
 
-    // Fill the graphics device with `kPaintColor` and update the plugin's
-    // snapshot.
-    const gfx::Rect& plugin_rect = plugin_->GetPluginRectForTesting();
-    std::unique_ptr<Graphics> graphics =
-        plugin_->CreatePaintGraphics(plugin_rect.size());
-    graphics->PaintImage(
-        CreateSkiaImageForTesting(plugin_rect.size(), kPaintColor),
-        gfx::Rect(plugin_rect.width(), plugin_rect.height()));
-    graphics->Flush(base::DoNothing());
-
+    // Paint the plugin with `kPaintColor`.
+    plugin_->UpdateSnapshot(CreateSkiaImageForTesting(
+        plugin_->GetPluginRectForTesting().size(), kPaintColor));
     plugin_->Paint(canvas_.sk_canvas(), paint_rect);
 
     // Expect the clipped area on canvas to be filled with `kPaintColor`.
@@ -570,6 +571,41 @@ TEST_F(PdfViewWebPluginTest, PaintSnapshotsWithVariousRectPositions) {
     TestPaintSnapshots(params.device_scale, params.window_rect,
                        params.paint_rect, params.expected_clipped_rect);
   }
+}
+
+TEST_F(PdfViewWebPluginTest, OnPaintWithMultiplePaintRects) {
+  SetDocumentDimensions({100, 200});
+  UpdatePluginGeometryWithoutWaiting(/*device_scale=*/1.0f,
+                                     gfx::Rect(0, 0, 40, 40));
+
+  EXPECT_CALL(*engine_ptr_, Paint)
+      .WillRepeatedly(
+          [](const gfx::Rect& rect, SkBitmap& /*image_data*/,
+             std::vector<gfx::Rect>& ready,
+             std::vector<gfx::Rect>& /*pending*/) { ready.push_back(rect); });
+  std::vector<PaintReadyRect> ready;
+  std::vector<gfx::Rect> pending;
+  plugin_->OnPaint(
+      /*paint_rects=*/{gfx::Rect(5, 5, 10, 10), gfx::Rect(20, 20, 10, 10)},
+      ready, pending);
+
+  // Expect three paints: an initial background-clearing paint, and one for each
+  // requested paint rectangle.
+  ASSERT_THAT(ready, SizeIs(3));
+  EXPECT_THAT(pending, IsEmpty());
+
+  EXPECT_EQ(gfx::Rect(0, 0, 90, 90), ready[0].rect());
+  EXPECT_TRUE(ready[0].flush_now());
+
+  EXPECT_EQ(gfx::Rect(5, 5, 10, 10), ready[1].rect());
+  EXPECT_FALSE(ready[1].flush_now());
+
+  EXPECT_EQ(gfx::Rect(20, 20, 10, 10), ready[2].rect());
+  EXPECT_FALSE(ready[2].flush_now());
+
+  // All the requested paints should share the same `SkImage`.
+  EXPECT_NE(&ready[0].image(), &ready[1].image());
+  EXPECT_EQ(&ready[1].image(), &ready[2].image());
 }
 
 TEST_F(PdfViewWebPluginTest, UpdateLayerTransformWithIdentity) {

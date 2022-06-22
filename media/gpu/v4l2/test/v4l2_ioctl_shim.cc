@@ -37,6 +37,7 @@ static const base::FilePath kMediaDevice("/dev/media-dec0");
 static const std::unordered_map<int, std::string>
     kMapFromV4L2RequestCodeToString = {
         V4L2_REQUEST_CODE_AND_STRING(VIDIOC_QUERYCAP),
+        V4L2_REQUEST_CODE_AND_STRING(VIDIOC_QUERYCTRL),
         V4L2_REQUEST_CODE_AND_STRING(VIDIOC_ENUM_FMT),
         V4L2_REQUEST_CODE_AND_STRING(VIDIOC_ENUM_FRAMESIZES),
         V4L2_REQUEST_CODE_AND_STRING(VIDIOC_S_FMT),
@@ -170,6 +171,18 @@ bool V4L2IoctlShim::Ioctl(int request_code, struct v4l2_capability* cap) const {
 
 template <>
 bool V4L2IoctlShim::Ioctl(int request_code,
+                          struct v4l2_queryctrl* query_ctrl) const {
+  DCHECK_EQ(request_code, static_cast<int>(VIDIOC_QUERYCTRL));
+  LOG_ASSERT(query_ctrl != nullptr) << "|query_ctrl| check failed.";
+
+  const int ret = ioctl(decode_fd_.GetPlatformFile(), request_code, query_ctrl);
+  LogIoctlResult(ret, request_code);
+
+  return ret == kIoctlOk;
+}
+
+template <>
+bool V4L2IoctlShim::Ioctl(int request_code,
                           struct v4l2_fmtdesc* fmtdesc) const {
   DCHECK_EQ(request_code, static_cast<int>(VIDIOC_ENUM_FMT));
   LOG_ASSERT(fmtdesc != nullptr) << "|fmtdesc| check failed.";
@@ -272,6 +285,15 @@ bool V4L2IoctlShim::Ioctl(int request_code,
   LogIoctlResult(ret, request_code);
 
   return ret == kIoctlOk;
+}
+
+bool V4L2IoctlShim::QueryCtrl(const uint32_t ctrl_id) const {
+  struct v4l2_queryctrl query_ctrl;
+
+  memset(&query_ctrl, 0, sizeof(query_ctrl));
+  query_ctrl.id = ctrl_id;
+
+  return Ioctl(VIDIOC_QUERYCTRL, &query_ctrl);
 }
 
 bool V4L2IoctlShim::EnumFrameSizes(uint32_t fourcc) const {
@@ -458,13 +480,14 @@ bool V4L2IoctlShim::StreamOn(const enum v4l2_buf_type type) const {
   return Ioctl(VIDIOC_STREAMON, &arg);
 }
 
-bool V4L2IoctlShim::SetExtCtrls(
-    const std::unique_ptr<V4L2Queue>& queue,
-    v4l2_ctrl_vp9_frame_decode_params& frame_params) const {
-  struct v4l2_ext_control ctrl = {
-      .id = V4L2_CID_MPEG_VIDEO_VP9_FRAME_DECODE_PARAMS,
-      .size = sizeof(frame_params),
-      .ptr = &frame_params};
+bool V4L2IoctlShim::SetExtCtrls(const std::unique_ptr<V4L2Queue>& queue,
+                                v4l2_ctrl_vp9_frame& v4l2_frame_params) const {
+  struct v4l2_ext_control ctrl = {.id = V4L2_CID_STATELESS_VP9_FRAME,
+                                  .size = sizeof(v4l2_frame_params),
+                                  .ptr = &v4l2_frame_params};
+
+  // TODO(b/230021497): add compressed header probability related change
+  // when V4L2_CID_STATELESS_VP9_COMPRESSED_HDR is supported
 
   // "If |request_fd| is set to a not-yet-queued request file descriptor
   // and |which| is set to V4L2_CTRL_WHICH_REQUEST_VAL, then the controls

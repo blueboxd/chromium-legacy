@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/services/assistant/assistant_host.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_impl.h"
@@ -95,6 +96,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       private chromeos::libassistant::mojom::StateObserver,
       public ConversationObserver {
  public:
+  // |callback| is called when AssistantManagerServiceImpl got initialized
+  // internally. This waits DeviceApps config value sync.
+  static void SetInitializedInternalCallbackForTesting(
+      base::OnceCallback<void()> callback);
   static void ResetIsFirstInitFlagForTesting();
 
   // |service| owns this class and must outlive this class.
@@ -185,7 +190,13 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnStateChanged(
       chromeos::libassistant::mojom::ServiceState new_state) override;
 
-  void InitAssistant(const absl::optional<UserInfo>& user);
+  void OnInstallDlcComplete(
+      const absl::optional<UserInfo>& user,
+      const chromeos::DlcserviceClient::InstallResult& result);
+
+  // `dlc_path` is where the DLC libassistant.so mounted.
+  void InitAssistant(const absl::optional<UserInfo>& user,
+                     const std::string& dlc_path);
   void OnServiceStarted();
   void OnServiceRunning();
   bool IsServiceStarted() const;

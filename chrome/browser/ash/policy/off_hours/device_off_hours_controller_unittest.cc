@@ -16,16 +16,14 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/settings/device_settings_test_helper.h"
-#include "chromeos/dbus/system_clock/system_clock_client.h"
+#include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
-namespace em = enterprise_management;
-
-namespace policy {
-namespace off_hours {
-
+namespace policy::off_hours {
 
 namespace {
+
+namespace em = ::enterprise_management;
 
 constexpr em::WeeklyTimeProto_DayOfWeek kWeekdays[] = {
     em::WeeklyTimeProto::DAY_OF_WEEK_UNSPECIFIED,
@@ -146,15 +144,15 @@ class DeviceOffHoursControllerSimpleTest : public ash::DeviceSettingsTestBase {
 
   void SetUp() override {
     ash::DeviceSettingsTestBase::SetUp();
-    chromeos::SystemClockClient::InitializeFake();
+    ash::SystemClockClient::InitializeFake();
     system_clock_client()->SetServiceIsAvailable(false);
 
     device_settings_service_->SetDeviceOffHoursControllerForTesting(
-        std::make_unique<policy::off_hours::DeviceOffHoursController>());
+        std::make_unique<DeviceOffHoursController>());
   }
 
   void TearDown() override {
-    chromeos::SystemClockClient::Shutdown();
+    ash::SystemClockClient::Shutdown();
     ash::DeviceSettingsTestBase::TearDown();
   }
 
@@ -172,11 +170,11 @@ class DeviceOffHoursControllerSimpleTest : public ash::DeviceSettingsTestBase {
         .guest_mode_enabled();
   }
 
-  chromeos::SystemClockClient::TestInterface* system_clock_client() {
-    return chromeos::SystemClockClient::Get()->GetTestInterface();
+  ash::SystemClockClient::TestInterface* system_clock_client() {
+    return ash::SystemClockClient::Get()->GetTestInterface();
   }
 
-  policy::off_hours::DeviceOffHoursController* device_off_hours_controller() {
+  DeviceOffHoursController* device_off_hours_controller() {
     return device_settings_service_->device_off_hours_controller();
   }
 };
@@ -456,5 +454,4 @@ INSTANTIATE_TEST_SUITE_P(
                         kHour * 10,  // Advancing to 1970-01-01T10:00:00
                         false)));
 
-}  // namespace off_hours
-}  // namespace policy
+}  // namespace policy::off_hours

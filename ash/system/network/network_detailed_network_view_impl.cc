@@ -6,6 +6,9 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/system/network/network_detailed_view.h"
+#include "ash/system/network/network_list_mobile_header_view_impl.h"
+#include "ash/system/network/network_list_network_item_view.h"
+#include "ash/system/network/network_list_wifi_header_view_impl.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 
@@ -23,8 +26,43 @@ NetworkDetailedNetworkViewImpl::NetworkDetailedNetworkViewImpl(
 
 NetworkDetailedNetworkViewImpl::~NetworkDetailedNetworkViewImpl() = default;
 
+void NetworkDetailedNetworkViewImpl::NotifyNetworkListChanged() {
+  scroll_content()->InvalidateLayout();
+  Layout();
+}
+
 views::View* NetworkDetailedNetworkViewImpl::GetAsView() {
   return this;
+}
+
+NetworkListNetworkItemView*
+NetworkDetailedNetworkViewImpl::AddNetworkListItem() {
+  return scroll_content()->AddChildView(
+      new NetworkListNetworkItemView(/*listener=*/this));
+}
+
+NetworkListNetworkHeaderView*
+NetworkDetailedNetworkViewImpl::AddWifiSectionHeader() {
+  return scroll_content()->AddChildView(
+      new NetworkListWifiHeaderViewImpl(/*delegate=*/this));
+}
+
+NetworkListNetworkHeaderView*
+NetworkDetailedNetworkViewImpl::AddMobileSectionHeader() {
+  return scroll_content()->AddChildView(
+      new NetworkListMobileHeaderViewImpl(/*delegate=*/this));
+}
+
+views::View* NetworkDetailedNetworkViewImpl::network_list() {
+  return scroll_content();
+}
+
+void NetworkDetailedNetworkViewImpl::OnMobileToggleClicked(bool new_state) {
+  NetworkDetailedNetworkView::delegate()->OnMobileToggleClicked(new_state);
+}
+
+void NetworkDetailedNetworkViewImpl::OnWifiToggleClicked(bool new_state) {
+  NetworkDetailedNetworkView::delegate()->OnWifiToggleClicked(new_state);
 }
 
 BEGIN_METADATA(NetworkDetailedNetworkViewImpl, views::View)

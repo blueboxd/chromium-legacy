@@ -4,11 +4,9 @@
 
 #include "base/allocator/partition_allocator/tagging.h"
 
+#include "base/allocator/partition_allocator/partition_alloc_base/cpu.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
-#include "base/cpu.h"
-#include "base/files/file_path.h"
-#include "base/native_library.h"
 #include "build/build_config.h"
 
 #if defined(PA_HAS_MEMORY_TAGGING)
@@ -40,7 +38,8 @@
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-#include "base/native_library.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/files/file_path.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/native_library.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 namespace partition_alloc {
@@ -48,7 +47,7 @@ namespace partition_alloc {
 #if defined(PA_HAS_MEMORY_TAGGING)
 namespace {
 void ChangeMemoryTaggingModeInternal(unsigned prctl_mask) {
-  base::CPU cpu;
+  internal::base::CPU cpu;
   if (cpu.has_mte()) {
     int status = prctl(PR_SET_TAGGED_ADDR_CTRL, prctl_mask, 0, 0, 0);
     PA_CHECK(status == 0);
@@ -86,7 +85,8 @@ void ChangeMemoryTaggingModeForAllThreadsPerProcess(
     base::FilePath module_path;
     base::NativeLibraryLoadError load_error;
     base::FilePath library_path = module_path.Append("libc.so");
-    base::NativeLibrary library = LoadNativeLibrary(library_path, &load_error);
+    base::NativeLibrary library =
+        base::LoadNativeLibrary(library_path, &load_error);
     PA_CHECK(library);
     void* func_ptr =
         base::GetFunctionPointerFromNativeLibrary(library, "mallopt");

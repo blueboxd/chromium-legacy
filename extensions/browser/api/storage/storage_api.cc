@@ -41,8 +41,8 @@ constexpr PrefMap kPrefSessionStorageAccessLevel = {
 std::vector<std::string> GetKeysFromList(const base::Value& list) {
   DCHECK(list.is_list());
   std::vector<std::string> keys;
-  keys.reserve(list.GetListDeprecated().size());
-  for (const auto& value : list.GetListDeprecated()) {
+  keys.reserve(list.GetList().size());
+  for (const auto& value : list.GetList()) {
     auto* as_string = value.GetIfString();
     if (as_string)
       keys.push_back(*as_string);
@@ -190,9 +190,7 @@ ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(
   if (!result.status().ok())
     return Error(result.status().message);
 
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Swap(&result.settings());
-  return OneArgument(base::Value::FromUniquePtrValue(std::move(dict)));
+  return OneArgument(std::move(result.settings()));
 }
 
 ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(

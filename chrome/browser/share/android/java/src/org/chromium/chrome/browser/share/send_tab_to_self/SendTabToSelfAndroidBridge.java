@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.share.send_tab_to_self;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -63,29 +61,14 @@ public class SendTabToSelfAndroidBridge {
      * @param profile Profile of the user to add entry for.
      * @param url URL to be shared
      * @param title Title of the page
-     * @param navigationTime Time the user navigated to the page
      * @return If the persistent entry in the bridge was created.
      */
-    public static SendTabToSelfEntry addEntry(Profile profile, String url, String title,
-            long navigationTime, String targetDeviceSyncCacheGuid) {
+    public static boolean addEntry(
+            Profile profile, String url, String title, String targetDeviceSyncCacheGuid) {
         // TODO(https://crbug.com/942549): Add this assertion back in once the code to load is in
         // place. assert mIsNativeSendTabToSelfModelLoaded;
         return SendTabToSelfAndroidBridgeJni.get().addEntry(
-                profile, url, title, navigationTime, targetDeviceSyncCacheGuid);
-    }
-
-    /**
-     * Return the entry associated with a particular GUID
-     *
-     * @param profile Profile of the user to get entry for.
-     * @param guid The GUID to retrieve the entry for
-     * @return The found entry or null if none exists
-     */
-    @Nullable
-    public static SendTabToSelfEntry getEntryByGUID(Profile profile, String guid) {
-        // TODO(https://crbug.com/942549): Add this assertion back in once the code to load is in
-        // place. assert mIsNativeSendTabToSelfModelLoaded;
-        return SendTabToSelfAndroidBridgeJni.get().getEntryByGUID(profile, guid);
+                profile, url, title, targetDeviceSyncCacheGuid);
     }
 
     /**
@@ -115,17 +98,6 @@ public class SendTabToSelfAndroidBridge {
      */
     public static void markEntryOpened(Profile profile, String guid) {
         SendTabToSelfAndroidBridgeJni.get().markEntryOpened(profile, guid);
-    }
-
-    /**
-     * Return whether the feature is available for the current user Profile and
-     * the current WebContents.
-     *
-     * @param WebContents The current WebContents.
-     * @return Whether the feature is available.
-     */
-    public static boolean isFeatureAvailable(WebContents webContents) {
-        return SendTabToSelfAndroidBridgeJni.get().isFeatureAvailable(webContents);
     }
 
     /**
@@ -162,8 +134,8 @@ public class SendTabToSelfAndroidBridge {
 
     @NativeMethods
     public interface Natives {
-        SendTabToSelfEntry addEntry(Profile profile, String url, String title, long navigationTime,
-                String targetDeviceSyncCacheGuid);
+        boolean addEntry(
+                Profile profile, String url, String title, String targetDeviceSyncCacheGuid);
 
         void getAllGuids(Profile profile, List<String> guids);
 
@@ -174,10 +146,6 @@ public class SendTabToSelfAndroidBridge {
         void dismissEntry(Profile profile, String guid);
 
         void markEntryOpened(Profile profile, String guid);
-
-        SendTabToSelfEntry getEntryByGUID(Profile profile, String guid);
-
-        boolean isFeatureAvailable(WebContents webContents);
 
         void getAllTargetDeviceInfos(Profile profile, List<TargetDeviceInfo> guids);
 

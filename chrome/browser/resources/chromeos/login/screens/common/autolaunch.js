@@ -52,9 +52,7 @@ class Autolaunch extends AutolaunchBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('AutolaunchScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('AutolaunchScreen');
   }
 
   onConfirm_() {
@@ -85,8 +83,9 @@ class Autolaunch extends AutolaunchBase {
    */
   updateApp(app) {
     this.appName_ = app.appName;
-    if (app.appIconUrl && app.appIconUrl.length)
+    if (app.appIconUrl && app.appIconUrl.length) {
       this.appIconUrl_ = app.appIconUrl;
+    }
   }
 }
 

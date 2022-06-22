@@ -38,11 +38,11 @@
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/address_pool_manager_types.h"
 #include "base/allocator/partition_allocator/allocation_guard.h"
-#include "base/allocator/partition_allocator/base/bits.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc-inl.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/bits.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -65,6 +65,7 @@
 #include "base/allocator/partition_allocator/thread_cache.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
@@ -978,10 +979,10 @@ ALWAYS_INLINE void PartitionAllocFreeForRefCounting(uintptr_t slot_start) {
 
   // memset() can be really expensive.
 #if EXPENSIVE_DCHECKS_ARE_ON()
-  memset(reinterpret_cast<void*>(slot_start), kFreedByte,
-         slot_span->GetUtilizedSlotSize()
+  DebugMemset(reinterpret_cast<void*>(slot_start), kFreedByte,
+              slot_span->GetUtilizedSlotSize()
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-             - sizeof(PartitionRefCount)
+                  - sizeof(PartitionRefCount)
 #endif
   );
 #endif
@@ -1256,10 +1257,10 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
 
   // memset() can be really expensive.
 #if EXPENSIVE_DCHECKS_ARE_ON()
-  memset(SlotStartAddr2Ptr(slot_start), internal::kFreedByte,
-         slot_span->GetUtilizedSlotSize()
+  internal::DebugMemset(SlotStartAddr2Ptr(slot_start), internal::kFreedByte,
+                        slot_span->GetUtilizedSlotSize()
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-             - sizeof(internal::PartitionRefCount)
+                            - sizeof(internal::PartitionRefCount)
 #endif
   );
 #elif defined(PA_ZERO_RANDOMLY_ON_FREE)
@@ -1794,7 +1795,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocWithFlagsNoHooks(
   if (LIKELY(!zero_fill)) {
     // memset() can be really expensive.
 #if EXPENSIVE_DCHECKS_ARE_ON()
-    memset(object, internal::kUninitializedByte, usable_size);
+    internal::DebugMemset(object, internal::kUninitializedByte, usable_size);
 #endif
   } else if (!is_already_zeroed) {
     memset(object, 0, usable_size);

@@ -3,31 +3,40 @@
     align-items: stretch;
     display: flex;
     flex-direction: row;
-    height: 100%;
     width: 100%;
+  }
+
+  :host([equal-panes]) #leftPane {
+    width: 50%;
+  }
+
+  :host([equal-panes]) #rightPane {
+    width: 50%;
+  }
+
+  :host([left-pane-only]) #leftPane {
+    margin-inline-end: 0;
+    width: 100%;
+  }
+
+  :host([left-pane-only]) #rightPane {
+    width: 0;
   }
 
   #leftPane {
     box-sizing: border-box;
-    padding-inline-end: 32px;
+    margin-inline-end: 80px;
+    margin-top: 112px;
     width: 40%;
   }
 
   #rightPane {
     box-sizing: border-box;
-    padding-inline-start: 48px;
     width: 60%;
-  }
-
-  #optionalIcon {
-    height: 112px;
   }
 </style>
 <div id="pageWrapper">
   <div id="leftPane">
-    <div id="optionalIcon">
-      <slot name="optional-icon"></slot>
-    </div>
     <slot name="left-pane"></slot>
   </div>
   <div id="rightPane">

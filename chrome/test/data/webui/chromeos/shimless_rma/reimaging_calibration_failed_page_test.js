@@ -77,15 +77,6 @@ export function reimagingCalibrationFailedPageTest() {
     return flushTasks();
   }
 
-  /** @return {!Promise} */
-  function clickRetryCalibrationButton() {
-    const retryButton =
-        component.shadowRoot.querySelector('#retryCalibrationButton');
-    assertFalse(retryButton.disabled);
-    retryButton.click();
-    return flushTasks();
-  }
-
   /**
    * Get getComponentsList_ private member for testing.
    * @suppress {visibility} // access private member
@@ -151,7 +142,7 @@ export function reimagingCalibrationFailedPageTest() {
         CalibrationStatus.kCalibrationSkip, getComponentsList()[0].status);
   });
 
-  test('NextButtonTriggersCalibrationComplete', async () => {
+  test('CancelButtonTriggersCalibrationComplete', async () => {
     const resolver = new PromiseResolver();
     await initializeCalibrationPage(fakeCalibrationComponentsWithoutFails);
     let startCalibrationCalls = 0;
@@ -165,9 +156,9 @@ export function reimagingCalibrationFailedPageTest() {
     };
     await flushTasks();
 
-    let expectedResult = {foo: 'bar'};
+    const expectedResult = {foo: 'bar'};
     let savedResult;
-    component.onNextButtonClick().then((result) => savedResult = result);
+    component.onCancelButtonClick().then((result) => savedResult = result);
     // Resolve to a distinct result to confirm it was not modified.
     resolver.resolve(expectedResult);
     await flushTasks();
@@ -176,7 +167,7 @@ export function reimagingCalibrationFailedPageTest() {
     assertDeepEquals(savedResult, expectedResult);
   });
 
-  test('RetryButtonTriggersCalibration', async () => {
+  test('NextButtonTriggersCalibration', async () => {
     const resolver = new PromiseResolver();
     await initializeCalibrationPage(fakeCalibrationComponentsWithFails);
 
@@ -198,8 +189,15 @@ export function reimagingCalibrationFailedPageTest() {
       return resolver.promise;
     };
 
-    await clickRetryCalibrationButton();
+    const expectedResult = {foo: 'bar'};
+    let savedResult;
+    component.onNextButtonClick().then((result) => savedResult = result);
+    // Resolve to a distinct result to confirm it was not modified.
+    resolver.resolve(expectedResult);
+    await flushTasks();
+
     assertEquals(1, startCalibrationCalls);
+    assertDeepEquals(savedResult, expectedResult);
   });
 
   test('ComponentChipAllButtonsDisabled', async () => {
@@ -213,21 +211,11 @@ export function reimagingCalibrationFailedPageTest() {
     assertTrue(lidAccelerometerComponent.disabled);
   });
 
-  test('RetryCalibrationAllButtonsDisabled', async () => {
-    await initializeCalibrationPage(fakeCalibrationComponentsWithFails);
-
-    const retryButton =
-        component.shadowRoot.querySelector('#retryCalibrationButton');
-    assertFalse(retryButton.disabled);
-    component.allButtonsDisabled = true;
-    assertTrue(retryButton.disabled);
-  });
-
   test('SkipCalibrationWithFailedComponents', async () => {
     await initializeCalibrationPage(fakeCalibrationComponentsWithFails);
 
     let wasPromiseRejected = false;
-    component.onNextButtonClick()
+    component.onCancelButtonClick()
         .then(() => assertNotReached('Do not proceed with failed components'))
         .catch(() => {
           wasPromiseRejected = true;
@@ -247,7 +235,7 @@ export function reimagingCalibrationFailedPageTest() {
       return resolver.promise;
     };
 
-    component.onNextButtonClick().catch(() => {});
+    component.onCancelButtonClick().catch(() => {});
 
     await flushTasks();
     assertEquals(0, startCalibrationCalls);
@@ -271,7 +259,7 @@ export function reimagingCalibrationFailedPageTest() {
       return resolver.promise;
     };
 
-    component.onNextButtonClick().catch(() => {});
+    component.onCancelButtonClick().catch(() => {});
 
     await flushTasks();
     assertEquals(0, startCalibrationCalls);

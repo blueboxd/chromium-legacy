@@ -12,8 +12,8 @@ import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_be
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
-import {QrCode, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
-import {enableNextButton} from './shimless_rma_util.js';
+import {QrCode, RmadErrorCode, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {dispatchNextButtonClick, enableNextButton} from './shimless_rma_util.js';
 
 // The size of each tile in pixels.
 const QR_CODE_TILE_SIZE = 5;
@@ -57,6 +57,15 @@ export class OnboardingEnterRsuWpDisableCodePage extends
        * @type {boolean}
        */
       allButtonsDisabled: Boolean,
+
+      /**
+       * Set by shimless_rma.js.
+       * @type {RmadErrorCode}
+       */
+      errorCode: {
+        type: Object,
+        observer: 'onErrorCodeChanged_',
+      },
 
       /** @protected */
       canvasSize_: {
@@ -146,8 +155,8 @@ export class OnboardingEnterRsuWpDisableCodePage extends
   }
 
   /**
-   * @private
    * @param {?{qrCode: QrCode}} response
+   * @private
    */
   updateQrCode_(response) {
     if (!response || !response.qrCode) {
@@ -181,18 +190,29 @@ export class OnboardingEnterRsuWpDisableCodePage extends
   }
 
   /**
-   * @protected
    * @param {!Event} event
+   * @protected
    */
   onRsuCodeChanged_(event) {
     // Set to false whenever the user changes the code to remove the red invalid
     // warning.
     this.rsuCodeInvalid_ = false;
+    this.rsuCode_ = this.rsuCode_.toUpperCase();
   }
 
   /**
-   * @private
+   * @param {!Event} event
+   * @protected
+   */
+  onKeyDown_(event) {
+    if (event.key === 'Enter') {
+      dispatchNextButtonClick(this);
+    }
+  }
+
+  /**
    * @return {!CanvasRenderingContext2D}
+   * @private
    */
   getCanvasContext_() {
     return this.shadowRoot.querySelector('#qrCodeCanvas').getContext('2d');
@@ -237,6 +257,22 @@ export class OnboardingEnterRsuWpDisableCodePage extends
   /** @private */
   closeDialog_() {
     this.shadowRoot.querySelector('#rsuChallengeDialog').close();
+  }
+
+  /** @private */
+  onErrorCodeChanged_() {
+    if (this.errorCode === RmadErrorCode.kWriteProtectDisableRsuCodeInvalid) {
+      this.rsuCodeInvalid_ = true;
+    }
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getRsuCodeLabelText_() {
+    return this.rsuCodeInvalid_ ? this.i18n('rsuCodeErrorLabelText') :
+                                  this.i18n('rsuCodeLabelText');
   }
 }
 

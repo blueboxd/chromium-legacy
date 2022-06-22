@@ -11,7 +11,10 @@
 #include "ash/ambient/model/ambient_animation_attribution_provider.h"
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/model/ambient_photo_config.h"
+#include "ash/ambient/resources/ambient_animation_resource_constants.h"
 #include "ash/ambient/resources/ambient_animation_static_resources.h"
+#include "ash/ambient/ui/ambient_animation_attribution_transformer.h"
+#include "ash/ambient/ui/ambient_animation_background_color.h"
 #include "ash/ambient/ui/ambient_animation_player.h"
 #include "ash/ambient/ui/ambient_animation_resizer.h"
 #include "ash/ambient/ui/ambient_animation_shield_controller.h"
@@ -28,6 +31,7 @@
 #include "base/time/time.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/paint/skottie_color_map.h"
+#include "cc/paint/skottie_resource_metadata.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -156,6 +160,14 @@ void AmbientAnimationView::Init(AmbientViewDelegate* view_delegate) {
   animation_container_view->SetUseDefaultFillLayout(true);
   // Purely for performance reasons. Gains 3-4 fps.
   animation_container_view->SetPaintToLayer();
+  // In portrait mode, the landscape animation file is currently being used. Its
+  // width is scaled down to match the width of the portrait screen, and it's
+  // center-aligned leaving empty space on the top and bottom of the screen. To
+  // make this look less obvious to the user, make the empty space exactly match
+  // the background color of the animation itself. This may be removed in the
+  // future if portrait versions of the animations are made.
+  animation_container_view->SetBackground(views::CreateSolidBackground(
+      GetAnimationBackgroundColor(*static_resources_->GetSkottieWrapper())));
 
   animated_image_view_ = animation_container_view->AddChildView(
       std::make_unique<views::AnimatedImageView>());
@@ -271,9 +283,9 @@ void AmbientAnimationView::AnimationCycleEnded(
 
 void AmbientAnimationView::OnViewBoundsChanged(View* observed_view) {
   DCHECK_EQ(observed_view, static_cast<View*>(animated_image_view_));
-  DVLOG(4) << __func__ << " to "
-           << animated_image_view_->GetContentsBounds().ToString();
-  if (animated_image_view_->GetContentsBounds().IsEmpty())
+  gfx::Rect content_bounds = animated_image_view_->GetContentsBounds();
+  DVLOG(4) << __func__ << " to " << content_bounds.ToString();
+  if (content_bounds.IsEmpty())
     return;
 
   // By default, the |animated_image_view_| will render the animation with the
@@ -284,6 +296,20 @@ void AmbientAnimationView::OnViewBoundsChanged(View* observed_view) {
   gfx::Rect previous_animation_bounds = animated_image_view_->GetImageBounds();
   AmbientAnimationResizer::Resize(*animated_image_view_,
                                   GetPaddingForAnimationJitter());
+  AmbientAnimationAttributionTransformer::TransformTextBox(
+      *animated_image_view_);
+  // When the device is in portrait mode, the landscape version of the
+  // animation is currently being used. The tree shadow in "feel the breeze"
+  // gets cut off at the top when doing this, making it look strange. UX
+  // decision is to just omit the tree shadow in portrait mode. If/when
+  // portrait versions of the animation are made, this logic can be removed.
+  if (static_resources_->GetAmbientAnimationTheme() ==
+      AmbientAnimationTheme::kFeelTheBreeze) {
+    bool tree_shadow_toggled = animation_photo_provider_.ToggleStaticImageAsset(
+        cc::HashSkottieResourceId(ambient::resources::kTreeShadowAssetId),
+        /*enabled=*/content_bounds.width() >= content_bounds.height());
+    DCHECK(tree_shadow_toggled);
+  }
   DVLOG(4)
       << "View bounds available. Resized animation with native size "
       << animated_image_view_->animated_image()->GetOriginalSize().ToString()

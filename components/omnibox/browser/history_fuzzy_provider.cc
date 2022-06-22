@@ -15,15 +15,37 @@
 
 #include "base/check.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
+#include "components/history/core/browser/history_database.h"
+#include "components/history/core/browser/history_db_task.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/history_quick_provider.h"
 #include "components/search_engines/omnibox_focus_type.h"
+#include "components/url_formatter/elide_url.h"
+#include "url/gurl.h"
+
+namespace {
+
+// This utility function reduces a URL to the most meaningful and likely part
+// of the hostname to be matched against, i.e. the domain, the URL's TLD+1.
+// May return an empty string if the given URL is not a good candidate for
+// meaningful domain name matching.
+std::u16string UrlDomainReduction(const GURL& url) {
+  std::u16string url_host;
+  std::u16string url_domain;
+  url_formatter::SplitHost(url, &url_host, &url_domain, nullptr);
+  return url_domain;
+}
+
+}  // namespace
 
 namespace fuzzy {
 
@@ -89,7 +111,7 @@ std::unique_ptr<Correction> Correction::GetApplicableCorrection() {
 }
 
 // This operator implementation is for debugging.
-std::ostream& operator<<(std::ostream& os, Correction& correction) {
+std::ostream& operator<<(std::ostream& os, const Correction& correction) {
   os << '{';
   switch (correction.kind) {
     case Correction::Kind::KEEP: {
@@ -120,6 +142,8 @@ std::ostream& operator<<(std::ostream& os, Correction& correction) {
 
 Node::Node() = default;
 
+Node::Node(Node&&) = default;
+
 Node::~Node() = default;
 
 void Node::Insert(const std::u16string& text, size_t from) {
@@ -127,12 +151,25 @@ void Node::Insert(const std::u16string& text, size_t from) {
     relevance = 1;
     return;
   }
-  char16_t c = text[from];
-  std::unique_ptr<Node>& node = next[c];
+  std::unique_ptr<Node>& node = next[text[from]];
   if (!node) {
     node = std::make_unique<Node>();
   }
   node->Insert(text, from + 1);
+}
+
+bool Node::Delete(const std::u16string& text, size_t from) {
+  if (from < text.length()) {
+    auto it = next.find(text[from]);
+    if (it != next.end() && it->second->Delete(text, from + 1)) {
+      next.erase(it);
+    }
+  }
+  return next.empty();
+}
+
+void Node::Clear() {
+  next.clear();
 }
 
 bool Node::FindCorrections(const std::u16string& text,
@@ -276,13 +313,17 @@ bool Node::FindCorrections(const std::u16string& text,
                  step.length + 1,
                  {Correction::Kind::INSERT, step.index, entry.first,
                   step.correction.GetApplicableCorrection()}});
-        // Replace
-        pq.push({entry.second.get(),
-                 step.distance + 1,
-                 step.index + 1,
-                 step.length + 1,
-                 {Correction::Kind::REPLACE, step.index, entry.first,
-                  step.correction.GetApplicableCorrection()}});
+        // Replace. Note, we do not replace at the same position as a previous
+        // insertion because doing so could produce unnecessary duplicates.
+        if (step.correction.kind != Correction::Kind::INSERT ||
+            step.correction.at != step.index) {
+          pq.push({entry.second.get(),
+                   step.distance + 1,
+                   step.index + 1,
+                   step.length + 1,
+                   {Correction::Kind::REPLACE, step.index, entry.first,
+                    step.correction.GetApplicableCorrection()}});
+        }
       }
     }
   }
@@ -301,10 +342,71 @@ void Node::Log(std::u16string built) const {
   }
 }
 
+size_t Node::EstimateMemoryUsage() const {
+  size_t res = 0;
+  res += base::trace_event::EstimateMemoryUsage(next);
+  return res;
+}
+
+// This task class loads URLs considered significant according to
+// `HistoryDatabase::InitURLEnumeratorForSignificant` but there's nothing
+// special about that implementation; we may do something different for
+// fuzzy matching. The goal in general is to load and keep a reasonably sized
+// set of likely relevant host names for fast fuzzy correction.
+class LoadSignificantUrls : public history::HistoryDBTask {
+ public:
+  using Callback = base::OnceCallback<void(Node)>;
+
+  LoadSignificantUrls(base::WaitableEvent* event, Callback callback)
+      : wait_event_(event), callback_(std::move(callback)) {
+    DVLOG(1) << "LoadSignificantUrls ctor thread "
+             << base::PlatformThread::CurrentId();
+  }
+  ~LoadSignificantUrls() override = default;
+
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
+    DVLOG(1) << "LoadSignificantUrls run on db thread "
+             << base::PlatformThread::CurrentId() << "; db: " << db;
+    history::URLDatabase::URLEnumerator enumerator;
+    if (db && db->InitURLEnumeratorForSignificant(&enumerator)) {
+      DVLOG(1) << "Got InMemoryDatabase";
+      history::URLRow row;
+      while (enumerator.GetNextURL(&row)) {
+        DVLOG(1) << "url #" << row.id() << ": " << row.url().host();
+        node_.Insert(UrlDomainReduction(row.url()), 0);
+      }
+    } else {
+      DVLOG(1) << "No significant InMemoryDatabase";
+    }
+    return true;
+  }
+
+  void DoneRunOnMainThread() override {
+    DVLOG(1) << "Done thread " << base::PlatformThread::CurrentId();
+    std::move(callback_).Run(std::move(node_));
+    wait_event_->Signal();
+  }
+
+ private:
+  Node node_;
+  raw_ptr<base::WaitableEvent> wait_event_;
+  Callback callback_;
+};
+
 }  // namespace fuzzy
 
 HistoryFuzzyProvider::HistoryFuzzyProvider(AutocompleteProviderClient* client)
-    : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_FUZZY, client) {}
+    : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_FUZZY, client) {
+  history_service_observation_.Observe(client->GetHistoryService());
+  client->GetHistoryService()->ScheduleDBTask(
+      FROM_HERE,
+      std::make_unique<fuzzy::LoadSignificantUrls>(
+          &urls_loaded_event_,
+          base::BindOnce(&HistoryFuzzyProvider::OnUrlsLoaded,
+                         weak_ptr_factory_.GetWeakPtr())),
+      &task_tracker_);
+}
 
 void HistoryFuzzyProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
@@ -315,14 +417,26 @@ void HistoryFuzzyProvider::Start(const AutocompleteInput& input,
     return;
   }
 
+  if (!urls_loaded_event_.IsSignaled()) {
+    return;
+  }
+
   autocomplete_input_ = input;
 
-  DoAutocomplete();
+  // Fuzzy matching intends to correct quick typos, and because it may involve
+  // a compute intensive search, some conditions are checked to bypass this
+  // provider early. When the cursor is moved from the end of input string,
+  // user may have slowed down to edit manually.
+  if (autocomplete_input_.cursor_position() ==
+      autocomplete_input_.text().length()) {
+    DoAutocomplete();
+  }
 }
 
 size_t HistoryFuzzyProvider::EstimateMemoryUsage() const {
   size_t res = HistoryProvider::EstimateMemoryUsage();
   res += base::trace_event::EstimateMemoryUsage(autocomplete_input_);
+  res += base::trace_event::EstimateMemoryUsage(root_);
   return res;
 }
 
@@ -335,7 +449,6 @@ void HistoryFuzzyProvider::DoAutocomplete() {
       .step_length = 4,
       .limit = 3,
   };
-  AddMatchForText(u"fuzzyurlhere.org");
 
   const std::u16string& text = autocomplete_input_.text();
   if (text.length() == 0) {
@@ -356,11 +469,49 @@ void HistoryFuzzyProvider::DoAutocomplete() {
       DVLOG(1) << "Trie contains input; no fuzzy results needed?";
       AddMatchForText(u"INPUT ON TRIE");
     }
-    for (const auto& correction : corrections) {
-      std::u16string fixed = text;
-      correction.ApplyTo(fixed);
-      DVLOG(1) << ":  " << fixed;
-      AddMatchForText(fixed);
+    if (!corrections.empty()) {
+      // Use of `scoped_refptr` is required here because destructor is private.
+      scoped_refptr<HistoryQuickProvider> history_quick_provider =
+          new HistoryQuickProvider(client());
+      for (const auto& correction : corrections) {
+        std::u16string fixed = text;
+        correction.ApplyTo(fixed);
+        DVLOG(1) << ":  " << fixed;
+        AddMatchForText(fixed);
+
+        // Note the `cursor_position` could be changed by insert or delete
+        // corrections, but this is easy to adapt since we only fuzzy
+        // match when cursor is at end of input; just move to new end.
+        DCHECK_EQ(autocomplete_input_.cursor_position(),
+                  autocomplete_input_.text().length());
+        AutocompleteInput corrected_input(
+            fixed, fixed.length(),
+            autocomplete_input_.current_page_classification(),
+            client()->GetSchemeClassifier());
+        history_quick_provider->Start(corrected_input, false);
+        DCHECK(history_quick_provider->done());
+
+        // TODO(orinj): Optimize with move not copy; requires provider change.
+        //  Consider taking only the most relevant match.
+        for (const auto& history_quick_match :
+             history_quick_provider->matches()) {
+          DVLOG(1) << "HQP match: " << history_quick_match.contents;
+          matches_.push_back(history_quick_match);
+
+          // Update match in place.
+          AutocompleteMatch& match = matches_.back();
+          match.provider = this;
+          match.inline_autocompletion.clear();
+          match.allowed_to_be_default_match = false;
+          // TODO(orinj): Determine suitable relevance penalty; it should
+          //  likely take into account the edit distance or size of correction.
+          //  Using 9/10 reasonably took a 1334 relevance match down to 1200.
+          match.relevance = match.relevance * 9 / 10;
+          match.contents_class.clear();
+          match.contents_class.push_back(
+              {0, AutocompleteMatch::ACMatchClassification::DIM});
+        }
+      }
     }
     DVLOG(1) << "}?";
   }
@@ -373,4 +524,32 @@ void HistoryFuzzyProvider::AddMatchForText(std::u16string text) {
   match.contents_class.push_back(
       {0, AutocompleteMatch::ACMatchClassification::DIM});
   matches_.push_back(std::move(match));
+}
+
+void HistoryFuzzyProvider::OnUrlsLoaded(fuzzy::Node node) {
+  root_ = std::move(node);
+}
+
+void HistoryFuzzyProvider::OnURLVisited(
+    history::HistoryService* history_service,
+    ui::PageTransition transition,
+    const history::URLRow& row,
+    const history::RedirectList& redirects,
+    base::Time visit_time) {
+  DVLOG(1) << "URL Visit: " << row.url();
+  root_.Insert(UrlDomainReduction(row.url()), 0);
+}
+
+void HistoryFuzzyProvider::OnURLsDeleted(
+    history::HistoryService* history_service,
+    const history::DeletionInfo& deletion_info) {
+  // Note, this implementation is conservative in terms of user privacy; it
+  // deletes hosts from the trie if any URL with the given host is deleted.
+  if (deletion_info.IsAllHistory()) {
+    root_.Clear();
+  } else {
+    for (const history::URLRow& row : deletion_info.deleted_rows()) {
+      root_.Delete(UrlDomainReduction(row.url()), 0);
+    }
+  }
 }

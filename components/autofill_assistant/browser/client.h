@@ -61,7 +61,7 @@ class Client {
 
   // Returns the e-mail address used to sign into Chrome, or an empty string if
   // the user is not signed in.
-  virtual std::string GetChromeSignedInEmailAddress() const = 0;
+  virtual std::string GetSignedInEmail() const = 0;
 
   // Returns the AccessTokenFetcher to use to get oauth credentials.
   virtual AccessTokenFetcher* GetAccessTokenFetcher() = 0;
@@ -121,6 +121,10 @@ class Client {
   // Returns the ScriptExecutorUiDelegate if it exists, otherwise returns
   // nullptr.
   virtual ScriptExecutorUiDelegate* GetScriptExecutorUiDelegate() = 0;
+
+  // Returns whether or not this instance of Autofill Assistant must use a
+  // backend endpoint to query data.
+  virtual bool MustUseBackendData() const = 0;
 
  protected:
   Client() = default;

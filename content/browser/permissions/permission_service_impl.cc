@@ -15,8 +15,8 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-shared.h"
 
 using blink::mojom::PermissionDescriptorPtr;
@@ -40,7 +40,7 @@ void PermissionRequestResponseCallbackWrapper(
 
 class PermissionServiceImpl::PendingRequest {
  public:
-  PendingRequest(std::vector<PermissionType> types,
+  PendingRequest(std::vector<blink::PermissionType> types,
                  RequestPermissionsCallback callback)
       : callback_(std::move(callback)), request_size_(types.size()) {}
 
@@ -101,10 +101,10 @@ void PermissionServiceImpl::RequestPermissions(
     return;
   }
 
-  std::vector<PermissionType> types(permissions.size());
-  std::set<PermissionType> duplicates_check;
+  std::vector<blink::PermissionType> types(permissions.size());
+  std::set<blink::PermissionType> duplicates_check;
   for (size_t i = 0; i < types.size(); ++i) {
-    auto type = PermissionDescriptorToPermissionType(permissions[i]);
+    auto type = blink::PermissionDescriptorToPermissionType(permissions[i]);
     if (!type) {
       ReceivedBadMessage();
       return;
@@ -147,7 +147,8 @@ void PermissionServiceImpl::HasPermission(PermissionDescriptorPtr permission,
 void PermissionServiceImpl::RevokePermission(
     PermissionDescriptorPtr permission,
     PermissionStatusCallback callback) {
-  auto permission_type = PermissionDescriptorToPermissionType(permission);
+  auto permission_type =
+      blink::PermissionDescriptorToPermissionType(permission);
   if (!permission_type) {
     ReceivedBadMessage();
     return;
@@ -170,7 +171,7 @@ void PermissionServiceImpl::AddPermissionObserver(
     PermissionDescriptorPtr permission,
     PermissionStatus last_known_status,
     mojo::PendingRemote<blink::mojom::PermissionObserver> observer) {
-  auto type = PermissionDescriptorToPermissionType(permission);
+  auto type = blink::PermissionDescriptorToPermissionType(permission);
   if (!type) {
     ReceivedBadMessage();
     return;
@@ -182,7 +183,7 @@ void PermissionServiceImpl::AddPermissionObserver(
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatus(
     const PermissionDescriptorPtr& permission) {
-  auto type = PermissionDescriptorToPermissionType(permission);
+  auto type = blink::PermissionDescriptorToPermissionType(permission);
   if (!type) {
     ReceivedBadMessage();
     return PermissionStatus::DENIED;
@@ -191,7 +192,7 @@ PermissionStatus PermissionServiceImpl::GetPermissionStatus(
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
-    PermissionType type) {
+    blink::PermissionType type) {
   BrowserContext* browser_context = context_->GetBrowserContext();
   if (!browser_context)
     return PermissionStatus::DENIED;
@@ -213,7 +214,7 @@ PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
       ->GetPermissionStatusForOriginWithoutContext(type, origin_);
 }
 
-void PermissionServiceImpl::ResetPermissionStatus(PermissionType type) {
+void PermissionServiceImpl::ResetPermissionStatus(blink::PermissionType type) {
   BrowserContext* browser_context = context_->GetBrowserContext();
   if (!browser_context)
     return;

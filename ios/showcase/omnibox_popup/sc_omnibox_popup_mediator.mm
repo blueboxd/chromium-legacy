@@ -56,7 +56,7 @@
       [AutocompleteSuggestionGroupImpl groupWithTitle:nil
                                           suggestions:suggestions];
 
-  [self.consumer updateMatches:@[ group ] withAnimation:YES];
+  [self.consumer updateMatches:@[ group ] preselectedMatchGroupIndex:0];
 }
 
 @end

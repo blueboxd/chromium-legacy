@@ -34,6 +34,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
@@ -78,6 +79,16 @@ eAVEncH264VProfile GetH264VProfile(VideoCodecProfile profile,
     }
     default:
       return eAVEncH264VProfile_unknown;
+  }
+}
+
+// Only eAVEncVP9VProfile_420_8 is supported on Intel graphics.
+eAVEncVP9VProfile GetVP9VProfile(VideoCodecProfile profile) {
+  switch (profile) {
+    case VP9PROFILE_PROFILE0:
+      return eAVEncVP9VProfile_420_8;
+    default:
+      return eAVEncVP9VProfile_unknown;
   }
 }
 
@@ -235,7 +246,7 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
 
   SupportedProfiles profiles;
 
-  for (auto codec : {VideoCodec::kH264, VideoCodec::kAV1}) {
+  for (auto codec : {VideoCodec::kH264, VideoCodec::kVP9, VideoCodec::kAV1}) {
     auto codec_profiles = GetSupportedProfilesForCodec(codec, true);
     profiles.insert(profiles.end(), codec_profiles.begin(),
                     codec_profiles.end());
@@ -254,7 +265,7 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesLight() {
 
   SupportedProfiles profiles;
 
-  for (auto codec : {VideoCodec::kH264, VideoCodec::kAV1}) {
+  for (auto codec : {VideoCodec::kH264, VideoCodec::kVP9, VideoCodec::kAV1}) {
     auto codec_profiles = GetSupportedProfilesForCodec(codec, false);
     profiles.insert(profiles.end(), codec_profiles.begin(),
                     codec_profiles.end());
@@ -269,9 +280,12 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesForCodec(
     VideoCodec codec,
     bool populate_svc_info) {
   SupportedProfiles profiles;
-  if (codec == VideoCodec::kAV1 &&
-      !base::FeatureList::IsEnabled(kMediaFoundationAV1Encoding))
+  if ((codec == VideoCodec::kVP9 &&
+       !base::FeatureList::IsEnabled(kMediaFoundationVP9Encoding)) ||
+      (codec == VideoCodec::kAV1 &&
+       !base::FeatureList::IsEnabled(kMediaFoundationAV1Encoding))) {
     return profiles;
+  }
 
   IMFActivate** pp_activate = nullptr;
   uint32_t encoder_count = EnumerateHardwareEncoders(codec, &pp_activate);
@@ -320,6 +334,9 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesForCodec(
 
     profile.profile = H264PROFILE_HIGH;
     profiles.push_back(profile);
+  } else if (codec == VideoCodec::kVP9) {
+    profile.profile = VP9PROFILE_PROFILE0;
+    profiles.push_back(profile);
   } else if (codec == VideoCodec::kAV1) {
     profile.profile = AV1PROFILE_PROFILE_MAIN;
     profiles.push_back(profile);
@@ -347,17 +364,25 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
     if (GetH264VProfile(config.output_profile, config.is_constrained_h264) ==
         eAVEncH264VProfile_unknown) {
       MEDIA_LOG(ERROR, media_log.get())
-          << "Output profile not supported= " << config.output_profile;
+          << "Output profile not supported = " << config.output_profile;
       return false;
     }
     codec_ = VideoCodec::kH264;
+  } else if (config.output_profile >= VP9PROFILE_MIN &&
+             config.output_profile <= VP9PROFILE_MAX) {
+    if (GetVP9VProfile(config.output_profile) == eAVEncVP9VProfile_unknown) {
+      MEDIA_LOG(ERROR, media_log.get())
+          << "Output profile not supported = " << config.output_profile;
+      return false;
+    }
+    codec_ = VideoCodec::kVP9;
   } else if (config.output_profile == AV1PROFILE_PROFILE_MAIN) {
     codec_ = VideoCodec::kAV1;
   }
 
   if (codec_ == VideoCodec::kUnknown) {
     MEDIA_LOG(ERROR, media_log.get())
-        << "Output profile not supported= " << config.output_profile;
+        << "Output profile not supported = " << config.output_profile;
     return false;
   }
 
@@ -602,7 +627,8 @@ uint32_t MediaFoundationVideoEncodeAccelerator::EnumerateHardwareEncoders(
     return 0;
   }
 
-  if (codec != VideoCodec::kH264 && codec != VideoCodec::kAV1) {
+  if (codec != VideoCodec::kH264 && codec != VideoCodec::kVP9 &&
+      codec != VideoCodec::kAV1) {
     DVLOG(ERROR) << "Enumerating unsupported hardware encoders.";
     return 0;
   }
@@ -784,6 +810,9 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputParameters(
     hr = imf_output_media_type_->SetUINT32(
         MF_MT_MPEG2_PROFILE,
         GetH264VProfile(output_profile, is_constrained_h264));
+  } else if (codec_ == VideoCodec::kVP9) {
+    hr = imf_output_media_type_->SetUINT32(MF_MT_MPEG2_PROFILE,
+                                           GetVP9VProfile(output_profile));
   }
   RETURN_ON_HR_FAILURE(hr, "Couldn't set codec profile", false);
   hr = encoder_->SetOutputType(output_stream_id_, imf_output_media_type_.Get(),
@@ -839,9 +868,11 @@ bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
     RETURN_ON_HR_FAILURE(hr, "Couldn't set CommonRateControlMode", false);
   }
 
-  // Intel drivers want the layer count to be set explicitly, even if it's one.
+  // Intel drivers want the layer count to be set explicitly for H.264, even if
+  // it's one.
   const bool set_svc_layer_count =
-      (num_temporal_layers_ > 1) || (vendor_ == DriverVendor::kIntel);
+      (num_temporal_layers_ > 1) ||
+      (vendor_ == DriverVendor::kIntel && codec_ == VideoCodec::kH264);
   if (set_svc_layer_count) {
     var.ulVal = num_temporal_layers_;
     hr = codec_api_->SetValue(&CODECAPI_AVEncVideoTemporalLayerCount, &var);
@@ -999,17 +1030,8 @@ HRESULT MediaFoundationVideoEncodeAccelerator::PopulateInputSampleBuffer(
     return MF_E_INVALID_STREAM_DATA;
   }
 
-  const uint8_t* src_y = nullptr;
-  const uint8_t* src_uv = nullptr;
-  base::ScopedClosureRunner scoped_unmap_gmb;
-
   if (frame->storage_type() ==
       VideoFrame::StorageType::STORAGE_GPU_MEMORY_BUFFER) {
-    if (frame->format() != PIXEL_FORMAT_NV12) {
-      DLOG(ERROR) << "GMB video frame is not NV12";
-      return MF_E_INVALID_STREAM_DATA;
-    }
-
     gfx::GpuMemoryBuffer* gmb = frame->GetGpuMemoryBuffer();
     if (!gmb) {
       DLOG(ERROR) << "Failed to get GMB for input frame";
@@ -1027,20 +1049,17 @@ HRESULT MediaFoundationVideoEncodeAccelerator::PopulateInputSampleBuffer(
       return PopulateInputSampleBufferGpu(std::move(frame));
     }
 
-    // Shared memory GMB case.
-    if (!gmb->Map()) {
+    // ConvertToMemoryMappedFrame() doesn't copy pixel data,
+    // it just maps GPU buffer owned by |frame| and presents it as mapped
+    // view in CPU memory. |frame| will unmap the buffer when destructed.
+    frame = ConvertToMemoryMappedFrame(std::move(frame));
+    if (!frame) {
       DLOG(ERROR) << "Failed to map shared memory GMB";
       return E_FAIL;
     }
-
-    scoped_unmap_gmb.ReplaceClosure(
-        base::BindOnce([](gfx::GpuMemoryBuffer* gmb) { gmb->Unmap(); }, gmb));
-
-    src_y = reinterpret_cast<const uint8_t*>(gmb->memory(VideoFrame::kYPlane));
-    src_uv =
-        reinterpret_cast<const uint8_t*>(gmb->memory(VideoFrame::kUVPlane));
   }
 
+  const auto kTargetPixelFormat = PIXEL_FORMAT_NV12;
   Microsoft::WRL::ComPtr<IMFMediaBuffer> input_buffer;
   HRESULT hr = input_sample_->GetBufferByIndex(0, &input_buffer);
   if (FAILED(hr)) {
@@ -1048,11 +1067,10 @@ HRESULT MediaFoundationVideoEncodeAccelerator::PopulateInputSampleBuffer(
     MFT_INPUT_STREAM_INFO input_stream_info;
     hr = encoder_->GetInputStreamInfo(input_stream_id_, &input_stream_info);
     RETURN_ON_HR_FAILURE(hr, "Couldn't get input stream info", hr);
-
     hr = MFCreateAlignedMemoryBuffer(
         input_stream_info.cbSize ? input_stream_info.cbSize
                                  : VideoFrame::AllocationSize(
-                                       PIXEL_FORMAT_NV12, input_visible_size_),
+                                       kTargetPixelFormat, input_visible_size_),
         input_stream_info.cbAlignment == 0 ? input_stream_info.cbAlignment
                                            : input_stream_info.cbAlignment - 1,
         &input_buffer);
@@ -1061,54 +1079,36 @@ HRESULT MediaFoundationVideoEncodeAccelerator::PopulateInputSampleBuffer(
     RETURN_ON_HR_FAILURE(hr, "Failed to add buffer to sample", hr);
   }
 
+  // Establish plain pointers into the input buffer, where we will copy pixel
+  // data to.
   MediaBufferScopedPointer scoped_buffer(input_buffer.Get());
   DCHECK(scoped_buffer.get());
   uint8_t* dst_y = scoped_buffer.get();
+  size_t dst_y_stride = VideoFrame::RowBytes(
+      VideoFrame::kYPlane, kTargetPixelFormat, input_visible_size_.width());
   uint8_t* dst_uv =
       scoped_buffer.get() +
-      frame->row_bytes(VideoFrame::kYPlane) * frame->rows(VideoFrame::kYPlane);
-  uint8_t* end = dst_uv + frame->row_bytes(VideoFrame::kUVPlane) *
-                              frame->rows(VideoFrame::kUVPlane);
+      dst_y_stride * VideoFrame::Rows(VideoFrame::kYPlane, kTargetPixelFormat,
+                                      input_visible_size_.height());
+  size_t dst_uv_stride = VideoFrame::RowBytes(
+      VideoFrame::kUVPlane, kTargetPixelFormat, input_visible_size_.width());
+  uint8_t* end = dst_uv + dst_uv_stride * frame->rows(VideoFrame::kUVPlane);
   DCHECK_GE(static_cast<ptrdiff_t>(scoped_buffer.max_length()),
             end - scoped_buffer.get());
 
-  if (frame->format() == PIXEL_FORMAT_NV12) {
-    // Copy NV12 pixel data from |frame| to |input_buffer|.
-    if (frame->IsMappable()) {
-      src_y = frame->visible_data(VideoFrame::kYPlane);
-      src_uv = frame->visible_data(VideoFrame::kUVPlane);
-    }
-    int error = libyuv::NV12Copy(src_y, frame->stride(VideoFrame::kYPlane),
-                                 src_uv, frame->stride(VideoFrame::kUVPlane),
-                                 dst_y, frame->row_bytes(VideoFrame::kYPlane),
-                                 dst_uv, frame->row_bytes(VideoFrame::kUVPlane),
-                                 input_visible_size_.width(),
-                                 input_visible_size_.height());
-    if (error) {
-      DLOG(ERROR) << "NV12Copy failed";
-      return E_FAIL;
-    }
-  } else if (frame->format() == PIXEL_FORMAT_I420) {
-    DCHECK(frame->IsMappable());
-    // Convert I420 to NV12 as input.
-    int error = libyuv::I420ToNV12(
-        frame->visible_data(VideoFrame::kYPlane),
-        frame->stride(VideoFrame::kYPlane),
-        frame->visible_data(VideoFrame::kUPlane),
-        frame->stride(VideoFrame::kUPlane),
-        frame->visible_data(VideoFrame::kVPlane),
-        frame->stride(VideoFrame::kVPlane), dst_y,
-        frame->row_bytes(VideoFrame::kYPlane), dst_uv,
-        frame->row_bytes(VideoFrame::kUPlane) * 2, input_visible_size_.width(),
-        input_visible_size_.height());
-    if (error) {
-      DLOG(ERROR) << "I420ToNV12 failed";
-      return E_FAIL;
-    }
-  } else {
-    NOTREACHED();
-  }
+  // Set up a VideoFrame with the data pointing into the input buffer.
+  // We need it to ease copying and scaling by reusing ConvertAndScaleFrame()
+  auto frame_in_buffer = VideoFrame::WrapExternalYuvData(
+      kTargetPixelFormat, input_visible_size_, gfx::Rect(input_visible_size_),
+      input_visible_size_, dst_y_stride, dst_uv_stride, dst_y, dst_uv,
+      frame->timestamp());
 
+  auto status = ConvertAndScaleFrame(*frame, *frame_in_buffer, resize_buffer_);
+  if (!status.is_ok()) {
+    DLOG(ERROR) << "ConvertAndScaleFrame failed with error code: "
+                << static_cast<uint32_t>(status.code());
+    return E_FAIL;
+  }
   return S_OK;
 }
 

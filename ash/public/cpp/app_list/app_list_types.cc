@@ -37,10 +37,44 @@ bool IsAppListSearchResultAnApp(AppListSearchResultType result_type) {
     case AppListSearchResultType::kInternalPrivacyInfo:
     case AppListSearchResultType::kAssistantText:
     case AppListSearchResultType::kHelpApp:
+    case AppListSearchResultType::kZeroStateHelpApp:
     case AppListSearchResultType::kFileSearch:
     case AppListSearchResultType::kDriveSearch:
     case AppListSearchResultType::kKeyboardShortcut:
     case AppListSearchResultType::kOpenTab:
+    case AppListSearchResultType::kPersonalization:
+      return false;
+  }
+}
+
+bool IsContinueSectionResultType(AppListSearchResultType result_type) {
+  switch (result_type) {
+    case AppListSearchResultType::kZeroStateFile:
+    case AppListSearchResultType::kZeroStateDrive:
+    case AppListSearchResultType::kZeroStateHelpApp:
+      return true;
+    case AppListSearchResultType::kUnknown:
+    case AppListSearchResultType::kInstalledApp:
+    case AppListSearchResultType::kPlayStoreApp:
+    case AppListSearchResultType::kInstantApp:
+    case AppListSearchResultType::kInternalApp:
+    case AppListSearchResultType::kOmnibox:
+    case AppListSearchResultType::kLauncher:
+    case AppListSearchResultType::kAnswerCard:
+    case AppListSearchResultType::kPlayStoreReinstallApp:
+    case AppListSearchResultType::kArcAppShortcut:
+    case AppListSearchResultType::kFileChip:
+    case AppListSearchResultType::kDriveChip:
+    case AppListSearchResultType::kAssistantChip:
+    case AppListSearchResultType::kOsSettings:
+    case AppListSearchResultType::kInternalPrivacyInfo:
+    case AppListSearchResultType::kAssistantText:
+    case AppListSearchResultType::kHelpApp:
+    case AppListSearchResultType::kFileSearch:
+    case AppListSearchResultType::kDriveSearch:
+    case AppListSearchResultType::kKeyboardShortcut:
+    case AppListSearchResultType::kOpenTab:
+    case AppListSearchResultType::kGames:
     case AppListSearchResultType::kPersonalization:
       return false;
   }
@@ -200,11 +234,9 @@ SearchResultTag::SearchResultTag(int styles, uint32_t start, uint32_t end)
 SearchResultAction::SearchResultAction() = default;
 
 SearchResultAction::SearchResultAction(SearchResultActionType type,
-                                       const gfx::ImageSkia& image,
                                        const std::u16string& tooltip_text,
                                        bool visible_on_hover)
     : type(type),
-      image(image),
       tooltip_text(tooltip_text),
       visible_on_hover(visible_on_hover) {}
 
@@ -322,14 +354,16 @@ SearchResultTextItem& SearchResultTextItem::SetImage(gfx::ImageSkia icon) {
   return *this;
 }
 
-bool SearchResultTextItem::GetElidable() const {
+SearchResultTextItem::OverflowBehavior
+SearchResultTextItem::GetOverflowBehavior() const {
   DCHECK_EQ(item_type, SearchResultTextItemType::kString);
-  return elidable;
+  return overflow_behavior;
 }
 
-SearchResultTextItem& SearchResultTextItem::SetElidable(bool elidable) {
+SearchResultTextItem& SearchResultTextItem::SetOverflowBehavior(
+    SearchResultTextItem::OverflowBehavior overflow_behavior) {
   DCHECK_EQ(item_type, SearchResultTextItemType::kString);
-  this->elidable = elidable;
+  this->overflow_behavior = overflow_behavior;
   return *this;
 }
 

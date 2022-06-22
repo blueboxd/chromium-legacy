@@ -24,6 +24,7 @@
 #include "ash/shell.h"
 #include "ash/style/style_util.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_state.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
@@ -58,6 +59,12 @@ views::Widget* GetCameraPreviewWidget() {
 CameraPreviewView* GetCameraPreviewView() {
   auto* camera_controller = CaptureModeController::Get()->camera_controller();
   return camera_controller ? camera_controller->camera_preview_view() : nullptr;
+}
+
+// TODO(crbug.com/1318231) : Update the function to include scenarios when
+// `window` is occluded.
+bool IsCaptureWindowSelectable(aura::Window* window) {
+  return !WindowState::Get(window)->IsMinimized();
 }
 
 }  // namespace
@@ -121,7 +128,7 @@ void CaptureModeSessionFocusCycler::HighlightableView::ClickView() {
 }
 
 // -----------------------------------------------------------------------------
-// HighlightableWindow:
+// CaptureModeSessionFocusCycler::HighlightableWindow:
 
 CaptureModeSessionFocusCycler::HighlightableWindow::HighlightableWindow(
     aura::Window* window,
@@ -185,6 +192,8 @@ CaptureModeSessionFocusCycler::CaptureModeSessionFocusCycler(
       scoped_a11y_overrider_(
           std::make_unique<ScopedA11yOverrideWindowSetter>()) {
   for (auto* window : GetWindowListIgnoreModalForActiveDesk()) {
+    if (!IsCaptureWindowSelectable(window))
+      continue;
     highlightable_windows_.emplace(
         window, std::make_unique<HighlightableWindow>(window, session_));
   }
@@ -374,7 +383,15 @@ void CaptureModeSessionFocusCycler::OnWidgetClosing(views::Widget* widget) {
   // focused.
   if (current_focus_group_ == FocusGroup::kPendingSettings ||
       current_focus_group_ == FocusGroup::kSettingsMenu) {
-    ClearFocus();
+    // When the settings menu is closed while focus is in or about to be in it,
+    // we manually put the focus back on the settings button.
+    current_focus_group_ = FocusGroup::kSettingsClose;
+    focus_index_ = 0u;
+    const auto highlightable_views = GetGroupItems(current_focus_group_);
+    DCHECK_EQ(highlightable_views.size(), 2u);
+    scoped_a11y_overrider_->MaybeUpdateA11yOverrideWindow(
+        GetA11yOverrideWindow());
+    highlightable_views[focus_index_]->PseudoFocus();
   }
   UpdateA11yAnnotation();
 }
@@ -527,8 +544,13 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
     }
     case FocusGroup::kCameraPreview: {
       auto* camera_preview_view = GetCameraPreviewView();
-      if (camera_preview_view)
-        items = {camera_preview_view, camera_preview_view->resize_button()};
+      if (camera_preview_view) {
+        items.push_back(camera_preview_view);
+        // The resize button is forced to be hidden if the camera preview is not
+        // collapsible. Do not advance the focus to it in this case.
+        if (camera_preview_view->is_collapsible())
+          items.push_back(camera_preview_view->resize_button());
+      }
       break;
     }
   }

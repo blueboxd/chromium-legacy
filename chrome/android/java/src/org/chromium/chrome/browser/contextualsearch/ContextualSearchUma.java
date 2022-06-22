@@ -269,24 +269,6 @@ public class ContextualSearchUma {
         int NUM_ENTRIES = 6;
     }
 
-    // Constants used to log UMA "enum" histograms for HTTP / HTTPS.
-    @IntDef({Protocol.IS_HTTP, Protocol.NOT_HTTP})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface Protocol {
-        int IS_HTTP = 0;
-        int NOT_HTTP = 1;
-        int NUM_ENTRIES = 2;
-    }
-
-    // Constants used to log UMA "enum" histograms for single / multi-word.
-    @IntDef({ResolvedGranularity.SINGLE_WORD, ResolvedGranularity.MULTI_WORD})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ResolvedGranularity {
-        int SINGLE_WORD = 0;
-        int MULTI_WORD = 1;
-        int NUM_ENTRIES = 2;
-    }
-
     // Constants used to log UMA "enum" histograms for Quick Answers.
     @IntDef({QuickAnswerSeen.ACTIVATED_WAS_AN_ANSWER_SEEN,
             QuickAnswerSeen.ACTIVATED_WAS_AN_ANSWER_NOT_SEEN,
@@ -302,28 +284,6 @@ public class ContextualSearchUma {
         int NOT_ACTIVATED_SEEN = 4;
         int NOT_ACTIVATED_NOT_SEEN = 5;
         int NUM_ENTRIES = 6;
-    }
-
-    // Constants for "Bar Overlap" with triggering gesture, and whether the results were seen.
-    @IntDef({BarOverlapResults.BAR_OVERLAP_RESULTS_SEEN_FROM_TAP,
-            BarOverlapResults.BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP,
-            BarOverlapResults.NO_BAR_OVERLAP_RESULTS_SEEN_FROM_TAP,
-            BarOverlapResults.NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP,
-            BarOverlapResults.BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS,
-            BarOverlapResults.BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS,
-            BarOverlapResults.NO_BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS,
-            BarOverlapResults.NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface BarOverlapResults {
-        int BAR_OVERLAP_RESULTS_SEEN_FROM_TAP = 0;
-        int BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP = 1;
-        int NO_BAR_OVERLAP_RESULTS_SEEN_FROM_TAP = 2;
-        int NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP = 3;
-        int BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS = 4;
-        int BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS = 5;
-        int NO_BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS = 6;
-        int NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS = 7;
-        int NUM_ENTRIES = 8;
     }
 
     // Constants for quick action intent resolution histogram.
@@ -676,26 +636,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs whether the Search Term was single or multiword.
-     * @param isSingleWord Whether the resolved search term is a single word or not.
-     */
-    public static void logSearchTermResolvedWords(boolean isSingleWord) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchResolvedTermWords",
-                isSingleWord ? ResolvedGranularity.SINGLE_WORD : ResolvedGranularity.MULTI_WORD,
-                ResolvedGranularity.NUM_ENTRIES);
-    }
-
-    /**
-     * Logs whether the base page was using the HTTP protocol or not.
-     * @param isHttpBasePage Whether the base page was using the HTTP protocol or not (should
-     *        be false for HTTPS or other URIs).
-     */
-    public static void logBasePageProtocol(boolean isHttpBasePage) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBasePageProtocol",
-                isHttpBasePage ? Protocol.IS_HTTP : Protocol.NOT_HTTP, Protocol.NUM_ENTRIES);
-    }
-
-    /**
      * Logs changes to the Contextual Search preference, aside from those resulting from the first
      * run flow.
      * @param enabled Whether the preference is being enabled or disabled.
@@ -935,41 +875,6 @@ public class ContextualSearchUma {
         } else {
             RecordUserAction.record("ContextualSearch.SerpResultClicked");
         }
-    }
-
-    /**
-     * Logs the whether the panel was seen and the type of the trigger and if Bar nearly overlapped.
-     * If the panel was seen, logs the duration of the panel view into a BarOverlap or BarNoOverlap
-     * duration histogram.
-     * @param wasPanelSeen Whether the panel was seen.
-     * @param wasTap Whether the gesture was a Tap or not.
-     * @param wasBarOverlap Whether the trigger location overlapped the Bar area.
-     */
-    public static void logBarOverlapResultsSeen(
-            boolean wasPanelSeen, boolean wasTap, boolean wasBarOverlap) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBarOverlapSeen",
-                getBarOverlapEnum(wasBarOverlap, wasPanelSeen, wasTap),
-                BarOverlapResults.NUM_ENTRIES);
-    }
-
-    /**
-     * Logs the duration of the panel viewed in its Peeked state before being opened.
-     * @param wasBarOverlap Whether the trigger location overlapped the Bar area.
-     * @param panelPeekDurationMs The duration that the panel was peeking before being opened
-     *        by the user.
-     */
-    public static void logBarOverlapPeekDuration(boolean wasBarOverlap, long panelPeekDurationMs) {
-        String histogram = wasBarOverlap ? "Search.ContextualSearchBarOverlap.PeekDuration"
-                                         : "Search.ContextualSearchBarNoOverlap.PeekDuration";
-        RecordHistogram.recordMediumTimesHistogram(histogram, panelPeekDurationMs);
-    }
-
-    /**
-     * Log whether the UX was suppressed due to Bar overlap.
-     * @param wasSuppressed Whether showing the UX was suppressed.
-     */
-    public static void logBarOverlapSuppression(boolean wasSuppressed) {
-        RecordHistogram.recordBooleanHistogram("Search.ContextualSearchBarOverlap", wasSuppressed);
     }
 
     /**
@@ -1432,30 +1337,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs the number of impressions and CTR for the previous week for the current user.
-     * @param previousWeekImpressions The number of times the user saw the Contextual Search Bar.
-     * @param previousWeekCtr The CTR expressed as a percentage.
-     */
-    public static void logPreviousWeekCtr(int previousWeekImpressions, int previousWeekCtr) {
-        RecordHistogram.recordCount1MHistogram(
-                "Search.ContextualSearchPreviousWeekImpressions", previousWeekImpressions);
-        RecordHistogram.recordPercentageHistogram(
-                "Search.ContextualSearchPreviousWeekCtr", previousWeekCtr);
-    }
-
-    /**
-     * Logs the number of impressions and CTR for previous 28-day period for the current user.
-     * @param previous28DayImpressions The number of times the user saw the Contextual Search Bar.
-     * @param previous28DayCtr The CTR expressed as a percentage.
-     */
-    public static void logPrevious28DayCtr(int previous28DayImpressions, int previous28DayCtr) {
-        RecordHistogram.recordCount1MHistogram(
-                "Search.ContextualSearchPrevious28DayImpressions", previous28DayImpressions);
-        RecordHistogram.recordPercentageHistogram(
-                "Search.ContextualSearchPrevious28DayCtr", previous28DayCtr);
-    }
-
-    /**
      * Logs a duration since the outcomes (and associated timestamp) were saved in persistent
      * storage.
      * @param durationMs The duration to log, in milliseconds.
@@ -1467,37 +1348,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Get the encoded value to use for the Bar Overlap histogram by encoding all the input
-     * parameters.
-     * @param didBarOverlap Whether the selection overlapped the Bar position.
-     * @param wasPanelSeen Whether the panel content was seen.
-     * @param wasTap Whether the gesture was a Tap.
-     * @return The value for the enum histogram.
-     */
-    private static @BarOverlapResults int getBarOverlapEnum(
-            boolean didBarOverlap, boolean wasPanelSeen, boolean wasTap) {
-        if (wasTap) {
-            if (didBarOverlap) {
-                return wasPanelSeen ? BarOverlapResults.BAR_OVERLAP_RESULTS_SEEN_FROM_TAP
-                                    : BarOverlapResults.BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP;
-            } else {
-                return wasPanelSeen ? BarOverlapResults.NO_BAR_OVERLAP_RESULTS_SEEN_FROM_TAP
-                                    : BarOverlapResults.NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP;
-            }
-        } else {
-            if (didBarOverlap) {
-                return wasPanelSeen
-                        ? BarOverlapResults.BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS
-                        : BarOverlapResults.BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS;
-            } else {
-                return wasPanelSeen
-                        ? BarOverlapResults.NO_BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS
-                        : BarOverlapResults.NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS;
-            }
-        }
-    }
-
-    /**
      * Logs whether Contextual Cards data was shown. Should be logged on tap if Contextual
      * Cards integration is enabled.
      * @param shown Whether Contextual Cards data was shown in the Bar.
@@ -1505,16 +1355,6 @@ public class ContextualSearchUma {
     public static void logContextualCardsDataShown(boolean shown) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearchContextualCardsIntegration.DataShown", shown);
-    }
-
-    /**
-     * Logs whether results were seen when Contextual Cards data was shown.
-     * @param wasSeen Whether the search results were seen.
-     */
-    public static void logContextualCardsResultsSeen(boolean wasSeen) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "Search.ContextualSearchContextualCardsIntegration.ResultsSeen",
-                wasSeen ? Results.SEEN : Results.NOT_SEEN, Results.NUM_ENTRIES);
     }
 
     /**

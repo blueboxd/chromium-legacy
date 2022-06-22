@@ -27,7 +27,6 @@
 #include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/android/shell_descriptors.h"
@@ -55,7 +54,7 @@
 #include "ui/base/ime/init/input_method_initializer.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #elif BUILDFLAG(IS_LINUX)
@@ -66,9 +65,9 @@
 #include "chromeos/lacros/dbus/lacros_dbus_thread_manager.h"
 #endif
 
-#if BUILDFLAG(USE_GTK)
-#include "ui/gtk/gtk_ui_factory.h"
+#if BUILDFLAG(IS_LINUX)
 #include "ui/views/linux_ui/linux_ui.h"  // nogncheck
+#include "ui/views/linux_ui/linux_ui_factory.h"  // nogncheck
 #endif
 
 namespace content {
@@ -111,8 +110,7 @@ scoped_refptr<base::RefCountedMemory> PlatformResourceProvider(int key) {
 
 }  // namespace
 
-ShellBrowserMainParts::ShellBrowserMainParts(MainFunctionParams parameters)
-    : parameters_(std::move(parameters)) {}
+ShellBrowserMainParts::ShellBrowserMainParts() = default;
 
 ShellBrowserMainParts::~ShellBrowserMainParts() = default;
 
@@ -123,7 +121,7 @@ void ShellBrowserMainParts::PostCreateMainMessageLoop() {
   chromeos::LacrosDBusThreadManager::Initialize();
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   bluez::BluezDBusManager::InitializeFake();
 #elif BUILDFLAG(IS_LINUX)
   bluez::DBusBluezManagerWrapperLinux::Initialize();
@@ -151,16 +149,12 @@ void ShellBrowserMainParts::InitializeMessageLoopContext() {
                          gfx::Size());
 }
 
-// Copied from ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized().
-// See that function for details.
 void ShellBrowserMainParts::ToolkitInitialized() {
-#if BUILDFLAG(USE_GTK)
   if (switches::IsRunWebTestsSwitchPresent())
     return;
 
-  auto linux_ui = BuildGtkUi();
-  linux_ui->Initialize();
-  views::LinuxUI::SetInstance(std::move(linux_ui));
+#if BUILDFLAG(IS_LINUX)
+  views::LinuxUI::SetInstance(CreateLinuxUi());
 #endif
 }
 
@@ -189,8 +183,6 @@ int ShellBrowserMainParts::PreMainMessageLoopRun() {
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
   ShellDevToolsManagerDelegate::StartHttpHandler(browser_context_.get());
   InitializeMessageLoopContext();
-  // The First-Party Sets feature always expects to be initialized
-  FirstPartySetsHandler::GetInstance()->SetPublicFirstPartySets(base::File());
   return 0;
 }
 
@@ -204,14 +196,14 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   ShellDevToolsManagerDelegate::StopHttpHandler();
   browser_context_.reset();
   off_the_record_browser_context_.reset();
-#if BUILDFLAG(USE_GTK)
+#if BUILDFLAG(IS_LINUX)
   views::LinuxUI::SetInstance(nullptr);
 #endif
   performance_manager_lifetime_.reset();
 }
 
 void ShellBrowserMainParts::PostDestroyThreads() {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
 #elif BUILDFLAG(IS_LINUX)

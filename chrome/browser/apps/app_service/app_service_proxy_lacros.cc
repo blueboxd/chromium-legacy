@@ -29,6 +29,7 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/url_data_source.h"
@@ -609,13 +610,13 @@ void AppServiceProxyLacros::OnApps(std::vector<AppPtr> deltas,
 }
 
 void AppServiceProxyLacros::OnPreferredAppsChanged(
-    apps::mojom::PreferredAppChangesPtr changes) {
+    PreferredAppChangesPtr changes) {
   preferred_apps_list_.ApplyBulkUpdate(std::move(changes));
 }
 
 void AppServiceProxyLacros::InitializePreferredApps(
-    PreferredAppsList::PreferredApps preferred_apps) {
-  preferred_apps_list_.Init(preferred_apps);
+    PreferredApps preferred_apps) {
+  preferred_apps_list_.Init(std::move(preferred_apps));
 }
 
 }  // namespace apps

@@ -13,6 +13,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
+#include "chrome/browser/password_manager/android/fake_password_manager_lifecycle_helper.h"
 #include "chrome/browser/password_manager/android/password_manager_lifecycle_helper.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_bridge.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
@@ -101,27 +103,6 @@ PasswordForm FormWithDisabledAutoSignIn(const PasswordForm& form_to_update) {
   return result;
 }
 
-class FakeLifecycleHelper : public PasswordManagerLifecycleHelper {
- public:
-  FakeLifecycleHelper() {}
-
-  void RegisterObserver(
-      base::RepeatingClosure foregrounding_callback) override {
-    foregrounding_callback_ = std::move(foregrounding_callback);
-  }
-
-  void UnregisterObserver() override { foregrounding_callback_.Reset(); }
-
-  ~FakeLifecycleHelper() override {
-    DCHECK(foregrounding_callback_) << "Did not call UnregisterObserver!";
-  }
-
-  void OnForegroundSessionStart() { foregrounding_callback_.Run(); }
-
- private:
-  base::RepeatingClosure foregrounding_callback_;
-};
-
 class MockPasswordStoreAndroidBackendBridge
     : public PasswordStoreAndroidBackendBridge {
  public:
@@ -155,6 +136,7 @@ class PasswordStoreAndroidBackendTest : public testing::Test {
   }
 
   ~PasswordStoreAndroidBackendTest() override {
+    lifecycle_helper_->UnregisterObserver();
     lifecycle_helper_ = nullptr;
     testing::Mock::VerifyAndClearExpectations(bridge_);
   }
@@ -162,7 +144,9 @@ class PasswordStoreAndroidBackendTest : public testing::Test {
   PasswordStoreBackend& backend() { return *backend_; }
   PasswordStoreAndroidBackendBridge::Consumer& consumer() { return *backend_; }
   MockPasswordStoreAndroidBackendBridge* bridge() { return bridge_; }
-  FakeLifecycleHelper* lifecycle_helper() { return lifecycle_helper_; }
+  FakePasswordManagerLifecycleHelper* lifecycle_helper() {
+    return lifecycle_helper_;
+  }
   MockSyncDelegate* sync_delegate() { return sync_delegate_; }
   PasswordSyncControllerDelegateAndroid* sync_controller_delegate() {
     return sync_controller_delegate_;
@@ -197,7 +181,7 @@ class PasswordStoreAndroidBackendTest : public testing::Test {
   }
 
   std::unique_ptr<PasswordManagerLifecycleHelper> CreateFakeLifecycleHelper() {
-    auto new_helper = std::make_unique<FakeLifecycleHelper>();
+    auto new_helper = std::make_unique<FakePasswordManagerLifecycleHelper>();
     lifecycle_helper_ = new_helper.get();
     return new_helper;
   }
@@ -220,7 +204,7 @@ class PasswordStoreAndroidBackendTest : public testing::Test {
 
   std::unique_ptr<PasswordStoreAndroidBackend> backend_;
   raw_ptr<StrictMock<MockPasswordStoreAndroidBackendBridge>> bridge_;
-  raw_ptr<FakeLifecycleHelper> lifecycle_helper_;
+  raw_ptr<FakePasswordManagerLifecycleHelper> lifecycle_helper_;
   raw_ptr<PasswordSyncControllerDelegateAndroid> sync_controller_delegate_;
   raw_ptr<MockSyncDelegate> sync_delegate_;
 };
@@ -787,6 +771,53 @@ TEST_F(PasswordStoreAndroidBackendTest,
   backend().OnSyncServiceInitialized(&sync_service);
 
   EXPECT_TRUE(sync_service.HasObserver(sync_controller_delegate()));
+}
+
+TEST_F(PasswordStoreAndroidBackendTest, RecordClearedZombieTaskWithoutLatency) {
+  constexpr JobId kJobId{1337};
+  const char kDurationMetric[] =
+      "PasswordManager.PasswordStoreAndroidBackend.AddLoginAsync.Latency";
+  const char kSuccessMetric[] =
+      "PasswordManager.PasswordStoreAndroidBackend.AddLoginAsync.Success";
+  const char kErrorCodeMetric[] =
+      "PasswordManager.PasswordStoreAndroidBackend.ErrorCode";
+  base::HistogramTester histogram_tester;
+  backend().InitBackend(/*stored_passwords_changed=*/base::DoNothing(),
+                        /*sync_enabled_or_disabled_cb=*/base::DoNothing(),
+                        /*completion=*/base::DoNothing());
+
+  base::MockCallback<PasswordStoreChangeListReply> mock_reply;
+  EXPECT_CALL(*bridge(), AddLogin).WillOnce(Return(kJobId));
+  // Since tasks are cleaned up too early, the reply should never be called.
+  EXPECT_CALL(mock_reply, Run).Times(0);
+
+  backend().AddLoginAsync(
+      CreateTestLogin(kTestUsername, kTestPassword, kTestUrl, kTestDateCreated),
+      mock_reply.Get());
+
+  // If Chrome was only very briefly backgrounded, the task might still respond.
+  lifecycle_helper()->OnForegroundSessionStart();
+  task_environment_.FastForwardBy(base::Seconds(1));
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(kErrorCodeMetric),
+              testing::IsEmpty());  // No timeout yet.
+
+  // If Chrome did not receive a response after 30s, the task times out.
+  task_environment_.AdvanceClock(base::Seconds(29));
+  lifecycle_helper()->OnForegroundSessionStart();
+  task_environment_.FastForwardBy(base::Seconds(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples(kErrorCodeMetric),
+              ElementsAre(base::Bucket(8, 1)));  // Timeout now!.
+
+  // Clear the task queue to verify that a late answer doesn't record again.
+  consumer().OnLoginsChanged(kJobId, {});  // Can be delayed or never happen.
+  task_environment_.FastForwardUntilNoTasksRemain();  // For would-be response.
+
+  histogram_tester.ExpectTotalCount(kDurationMetric, 0);
+  EXPECT_THAT(histogram_tester.GetAllSamples(kSuccessMetric),
+              ElementsAre(base::Bucket(false, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(kErrorCodeMetric),
+              ElementsAre(base::Bucket(8, 1)));  // Record only once.
 }
 
 class PasswordStoreAndroidBackendTestForMetrics

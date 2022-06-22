@@ -447,7 +447,7 @@ PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
       force_encoded_video_insertable_streams);
 }
 
-const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&
+const rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>&
 PeerConnectionDependencyFactory::GetPcFactory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -666,7 +666,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   media_deps.video_decoder_factory = std::move(webrtc_decoder_factory);
   // Audio Processing Module (APM) instances are owned and handled by the Blink
   // media stream module.
-  DCHECK_EQ(media_deps.audio_processing, nullptr);
+  DCHECK_EQ(media_deps.audio_processing.get(), nullptr);
   pcf_deps.media_engine = cricket::CreateMediaEngine(std::move(media_deps));
   pc_factory_ = webrtc::CreateModularPeerConnectionFactory(std::move(pcf_deps));
   CHECK(pc_factory_.get());
@@ -912,17 +912,14 @@ void PeerConnectionDependencyFactory::CleanupPeerConnectionFactory() {
   if (signaling_thread) {
     // To avoid a PROXY block-invoke to ~webrtc::PeerConnectionFactory(), we
     // move our reference to the signaling thread in a PostTask.
-    scoped_refptr<webrtc::PeerConnectionFactoryInterface> pcf(
-        pc_factory_.get());  // rtc::scoped_refptr to scoped_refptr
-    pc_factory_ = nullptr;
     signaling_thread->PostTask(
         FROM_HERE,
         base::BindOnce(
-            [](scoped_refptr<webrtc::PeerConnectionFactoryInterface> pcf) {
+            [](rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pcf) {
               // The binding releases `pcf` on the signaling thread as this
               // method goes out of scope.
             },
-            std::move(pcf)));
+            std::move(pc_factory_)));
   } else {
     pc_factory_ = nullptr;
   }

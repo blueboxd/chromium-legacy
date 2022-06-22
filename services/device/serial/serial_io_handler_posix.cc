@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/device_event_log/device_event_log.h"
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -287,7 +286,15 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
 }
 
 bool SerialIoHandlerPosix::PostOpen() {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  // The base::File::FLAG_WIN_EXCLUSIVE_READ and
+  // base::File::FLAG_WIN_EXCLUSIVE_WRITE flags do nothing on POSIX-based
+  // systems. Request exclusive access to the terminal device here.
+  if (HANDLE_EINTR(ioctl(file().GetPlatformFile(), TIOCEXCL)) == -1) {
+    SERIAL_PLOG(DEBUG) << "Failed to put terminal in exclusive mode";
+    return false;
+  }
+
+#if BUILDFLAG(IS_CHROMEOS)
   // The Chrome OS permission broker does not open devices in async mode.
   return base::SetNonBlocking(file().GetPlatformFile());
 #else

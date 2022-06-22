@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
@@ -40,7 +41,7 @@ class EnterpriseProfileWelcomeHandler
   EnterpriseProfileWelcomeHandler(
       Browser* browser,
       EnterpriseProfileWelcomeUI::ScreenType type,
-      bool profile_creation_required_by_policy,
+      bool force_new_profile,
       const AccountInfo& account_info,
       absl::optional<SkColor> profile_color,
       signin::SigninChoiceCallback proceed_callback);
@@ -72,13 +73,15 @@ class EnterpriseProfileWelcomeHandler
   // Access to construction parameters for tests.
   EnterpriseProfileWelcomeUI::ScreenType GetTypeForTesting();
   void CallProceedCallbackForTesting(signin::SigninChoice choice);
+  void HandleProceedForTesting(bool should_link_data);
+  void set_web_ui_for_test(content::WebUI* web_ui) { set_web_ui(web_ui); }
 
  private:
   void HandleInitialized(const base::Value::List& args);
   // Handles the web ui message sent when the html content is done being laid
   // out and it's time to resize the native view hosting it to fit. |args| is
   // a single integer value for the height the native view should resize to.
-  void HandleInitializedWithSize(const base::ListValue* args);
+  void HandleInitializedWithSize(const base::Value::List& args);
   void HandleProceed(const base::Value::List& args);
   void HandleCancel(const base::Value::List& args);
 
@@ -110,7 +113,7 @@ class EnterpriseProfileWelcomeHandler
 
   raw_ptr<Browser> browser_ = nullptr;
   const EnterpriseProfileWelcomeUI::ScreenType type_;
-  const bool profile_creation_required_by_policy_;
+  const bool force_new_profile_;
   const std::u16string email_;
   const std::string domain_name_;
   const CoreAccountId account_id_;

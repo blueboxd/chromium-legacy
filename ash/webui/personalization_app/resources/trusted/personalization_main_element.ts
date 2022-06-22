@@ -40,12 +40,16 @@ export class PersonalizationMain extends WithPersonalizationStore {
     return isAmbientModeAllowed();
   }
 
+  private isRgbKeyboardEnabled_(): boolean {
+    return loadTimeData.getBoolean('isRgbKeyboardEnabled');
+  }
+
   private onClickUserSubpageLink_() {
-    PersonalizationRouter.instance().goToRoute(Paths.User);
+    PersonalizationRouter.instance().goToRoute(Paths.USER);
   }
 
   private onClickAmbientSubpageLink_() {
-    PersonalizationRouter.instance().goToRoute(Paths.Ambient);
+    PersonalizationRouter.instance().goToRoute(Paths.AMBIENT);
   }
 }
 

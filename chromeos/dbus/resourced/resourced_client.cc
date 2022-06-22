@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/process/process_metrics.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -262,6 +261,7 @@ void ResourcedClientImpl::HandleSetMemoryMarginBps(
   if (!reader.PopUint64(&critical) || !reader.PopUint64(&moderate)) {
     LOG(ERROR) << "Unable to read back uint64s from resourced";
     std::move(callback).Run(false, 0, 0);
+    return;
   }
 
   std::move(callback).Run(true, critical, moderate);

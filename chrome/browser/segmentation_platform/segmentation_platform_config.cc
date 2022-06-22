@@ -7,15 +7,17 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/segmentation_platform/default_model/low_user_engagement_model.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/model_provider.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
 #include "chrome/browser/flags/android/cached_feature_flags.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
@@ -31,9 +33,13 @@ namespace segmentation_platform {
 
 namespace {
 
+constexpr char kDefaultModelEnabledParam[] = "enable_default_model";
+
 // Default TTL for segment selection and unknown selection:
 
 constexpr int kDummyFeatureSelectionTTLDays = 1;
+
+constexpr int kChromeLowUserEngagementSelectionTTLDays = 30;
 
 #if BUILDFLAG(IS_ANDROID)
 
@@ -41,11 +47,6 @@ constexpr int kAdaptiveToolbarDefaultSelectionTTLDays = 28;
 
 constexpr int kChromeStartDefaultSelectionTTLDays = 30;
 constexpr int kChromeStartDefaultUnknownTTLDays = 7;
-constexpr char kChromeStartDefaultModelEnabledParam[] = "enable_default_model";
-
-constexpr int kChromeLowUserEngagementSelectionTTLDays = 30;
-
-constexpr char kQueryTilesDefaultModelEnabledParam[] = "enable_default_model";
 // See
 // https://source.chromium.org/chromium/chromium/src/+/main:chrome/android/java/src/org/chromium/chrome/browser/query_tiles/QueryTileUtils.java
 const char kNumDaysKeepShowingQueryTiles[] =
@@ -95,8 +96,8 @@ std::unique_ptr<Config> GetConfigForDummyFeature() {
 #if BUILDFLAG(IS_ANDROID)
 std::unique_ptr<ModelProvider> GetChromeStartAndroidModel() {
   if (!base::GetFieldTrialParamByFeatureAsBool(
-          chrome::android::kStartSurfaceAndroid,
-          kChromeStartDefaultModelEnabledParam, false)) {
+          chrome::android::kStartSurfaceAndroid, kDefaultModelEnabledParam,
+          false)) {
     return nullptr;
   }
   return std::make_unique<ChromeStartModel>();
@@ -124,7 +125,7 @@ std::unique_ptr<Config> GetConfigForChromeStartAndroid() {
 std::unique_ptr<ModelProvider> GetQueryTilesDefaultModel() {
   if (!base::GetFieldTrialParamByFeatureAsBool(
           query_tiles::features::kQueryTilesSegmentation,
-          kQueryTilesDefaultModelEnabledParam, false)) {
+          kDefaultModelEnabledParam, false)) {
     return nullptr;
   }
   return std::make_unique<QueryTilesModel>();
@@ -148,6 +149,30 @@ std::unique_ptr<Config> GetConfigForQueryTiles() {
   return config;
 }
 
+#endif  // BUILDFLAG(IS_ANDROID)
+
+std::unique_ptr<ModelProvider> GetLowEngagementDefaultModel() {
+  if (!base::GetFieldTrialParamByFeatureAsBool(
+          features::kSegmentationPlatformLowEngagementFeature,
+          kDefaultModelEnabledParam, false)) {
+    return nullptr;
+  }
+  return std::make_unique<LowUserEngagementModel>();
+}
+
+bool IsLowEngagementFeatureEnabled() {
+  // TODO(ssid): Remove this extra feature and change feature guide to use the
+  // segmentation defined feature.
+#if BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          feature_guide::features::kSegmentationModelLowEngagedUsers)) {
+    return true;
+  }
+#endif
+  return base::FeatureList::IsEnabled(
+      features::kSegmentationPlatformLowEngagementFeature);
+}
+
 std::unique_ptr<Config> GetConfigForChromeLowUserEngagement() {
   auto config = std::make_unique<Config>();
   config->segmentation_key = kChromeLowUserEngagementSegmentationKey;
@@ -156,15 +181,18 @@ std::unique_ptr<Config> GetConfigForChromeLowUserEngagement() {
           OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT,
   };
 
+#if BUILDFLAG(IS_ANDROID)
   int segment_selection_ttl_days = base::GetFieldTrialParamByFeatureAsInt(
       feature_guide::features::kSegmentationModelLowEngagedUsers,
       "segment_selection_ttl_days", kChromeLowUserEngagementSelectionTTLDays);
+#else
+  int segment_selection_ttl_days = kChromeLowUserEngagementSelectionTTLDays;
+#endif
+
   config->segment_selection_ttl = base::Days(segment_selection_ttl_days);
   config->unknown_selection_ttl = base::Days(segment_selection_ttl_days);
   return config;
 }
-
-#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 
@@ -186,16 +214,29 @@ std::vector<std::unique_ptr<Config>> GetSegmentationPlatformConfig() {
           query_tiles::features::kQueryTilesSegmentation)) {
     configs.emplace_back(GetConfigForQueryTiles());
   }
-  if (base::FeatureList::IsEnabled(
-          feature_guide::features::kSegmentationModelLowEngagedUsers)) {
+#endif
+  if (IsLowEngagementFeatureEnabled()) {
     configs.emplace_back(GetConfigForChromeLowUserEngagement());
   }
-#endif
   return configs;
 }
 
-std::unique_ptr<ModelProvider> GetSegmentationDefaultModelProvider(
+DefaultModelsRegister::DefaultModelsRegister() = default;
+DefaultModelsRegister::~DefaultModelsRegister() = default;
+
+DefaultModelsRegister& DefaultModelsRegister::GetInstance() {
+  static base::NoDestructor<DefaultModelsRegister> instance;
+  return *instance;
+}
+
+std::unique_ptr<ModelProvider> DefaultModelsRegister::GetModelProvider(
     optimization_guide::proto::OptimizationTarget target) {
+  auto it = providers_.find(target);
+  if (it != providers_.end()) {
+    DCHECK(it->second);
+    return std::move(it->second);
+  }
+
 #if BUILDFLAG(IS_ANDROID)
   if (target ==
       optimization_guide::proto::OPTIMIZATION_TARGET_SEGMENTATION_QUERY_TILES) {
@@ -206,7 +247,40 @@ std::unique_ptr<ModelProvider> GetSegmentationDefaultModelProvider(
     return GetChromeStartAndroidModel();
   }
 #endif
+  if (target ==
+      optimization_guide::proto::
+          OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT) {
+    return GetLowEngagementDefaultModel();
+  }
   return nullptr;
+}
+
+void DefaultModelsRegister::SetModelForTesting(
+    optimization_guide::proto::OptimizationTarget target,
+    std::unique_ptr<ModelProvider> provider) {
+  providers_[target] = std::move(provider);
+}
+
+FieldTrialRegisterImpl::FieldTrialRegisterImpl() = default;
+FieldTrialRegisterImpl::~FieldTrialRegisterImpl() = default;
+
+void FieldTrialRegisterImpl::RegisterFieldTrial(base::StringPiece trial_name,
+                                                base::StringPiece group_name) {
+  // The register method is called early in startup once the platform is
+  // initialized. So, in most cases the client will register the field trial
+  // before uploading the first UMA log of the current session. We do not want
+  // to annotate logs from the previous session. (These comes in two types:
+  // histograms persisted from the previous session or stability information
+  // about the previous session.) Groups are not stable across sessions; we
+  // don't know if the current segmentation applies to the previous session.
+  // Incidentally, the platform records metrics to track the movement between
+  // groups.
+  // TODO(ssid): Move to a MetricsProvider approach to fill the groups so we are
+  // able to track how often we miss the first session log due to delays in
+  // platform initialization.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      trial_name, group_name,
+      variations::SyntheticTrialAnnotationMode::kCurrentLog);
 }
 
 }  // namespace segmentation_platform

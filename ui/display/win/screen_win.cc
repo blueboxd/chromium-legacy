@@ -22,6 +22,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
+#include "ui/display/util/display_util.h"
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/local_process_window_finder_win.h"
@@ -219,17 +220,12 @@ gfx::DisplayColorSpaces CreateDisplayColorSpaces(
 
 // Updates |color_spaces| for HDR and WCG content usage with appropriate color
 // HDR spaces and given |sdr_white_level|.
-gfx::DisplayColorSpaces GetDisplayColorSpacesForHdr(float sdr_white_level) {
+gfx::DisplayColorSpaces GetDisplayColorSpacesForHdr(
+    float sdr_white_level,
+    float hdr_max_luminance_relative) {
   auto color_spaces =
       CreateDisplayColorSpaces(gfx::ColorSpace::CreateSRGB(), sdr_white_level);
-
-  // TODO(https://crbug.com/1299293): Retrieve the correct HDR maximum luminance
-  // value from DXGI_OUTPUT_DESC1. For now, just assume that it is the maximum
-  // of 1,000 nits and 150% of the SDR white level.
-  constexpr float kHDRMaxLuminanceNits = 1000;
-  constexpr float kHDRMinMaxLuminanceRelative = 1.5f;
-  color_spaces.SetHDRMaxLuminanceRelative(std::max(
-      kHDRMinMaxLuminanceRelative, kHDRMaxLuminanceNits / sdr_white_level));
+  color_spaces.SetHDRMaxLuminanceRelative(hdr_max_luminance_relative);
 
   // This will map to DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709. In that space,
   // the brightness of (1,1,1) is 80 nits.
@@ -265,9 +261,8 @@ gfx::DisplayColorSpaces GetDisplayColorSpacesForHdr(float sdr_white_level) {
 gfx::DisplayColorSpaces GetForcedDisplayColorSpaces() {
   // Adjust white level to a default value irrespective of whether the color
   // space is scRGB linear (defaults to 80 nits) or PQ (defaults to 100 nits).
-  const auto& color_space =
-      Display::GetForcedDisplayColorProfile().GetWithSDRWhiteLevel(
-          gfx::ColorSpace::kDefaultScrgbLinearSdrWhiteLevel);
+  const auto& color_space = GetForcedDisplayColorProfile().GetWithSDRWhiteLevel(
+      gfx::ColorSpace::kDefaultScrgbLinearSdrWhiteLevel);
   auto display_color_spaces = CreateDisplayColorSpaces(color_space);
   // Use the forced color profile's buffer format for all content usages.
   if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::PQ) {
@@ -283,7 +278,8 @@ gfx::DisplayColorSpaces GetForcedDisplayColorSpaces() {
 Display CreateDisplayFromDisplayInfo(
     const DisplayInfo& display_info,
     const ColorProfileReader* color_profile_reader,
-    bool hdr_enabled) {
+    const gfx::mojom::DXGIOutputDesc* dxgi_output_desc,
+    bool hdr_enabled_on_any_display) {
   const float scale_factor = display_info.device_scale_factor();
   const gfx::Rect bounds = gfx::ScaleToEnclosingRect(display_info.screen_rect(),
                                                      1.0f / scale_factor);
@@ -298,10 +294,19 @@ Display CreateDisplayFromDisplayInfo(
   // from the ICC profile provided by |color_profile_reader| for SDR content,
   // and HDR10 or scRGB linear for HDR and WCG content if HDR is enabled.
   gfx::DisplayColorSpaces color_spaces;
-  if (Display::HasForceDisplayColorProfile()) {
+  if (HasForceDisplayColorProfile()) {
     color_spaces = GetForcedDisplayColorSpaces();
-  } else if (hdr_enabled) {
-    color_spaces = GetDisplayColorSpacesForHdr(display_info.sdr_white_level());
+  } else if (hdr_enabled_on_any_display) {
+    const float sdr_white_level = display_info.sdr_white_level();
+    float hdr_max_luminance_relative = 0.f;
+    if (dxgi_output_desc) {
+      hdr_max_luminance_relative =
+          dxgi_output_desc->max_luminance / sdr_white_level;
+    }
+    hdr_max_luminance_relative = std::max(hdr_max_luminance_relative,
+                                          kMinHDRCapableMaxLuminanceRelative);
+    color_spaces = GetDisplayColorSpacesForHdr(sdr_white_level,
+                                               hdr_max_luminance_relative);
   } else {
     color_spaces = CreateDisplayColorSpaces(
         color_profile_reader->GetDisplayColorSpace(display.id()));
@@ -335,7 +340,7 @@ Display CreateDisplayFromDisplayInfo(
 std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
     const std::vector<DisplayInfo>& display_infos,
     ColorProfileReader* color_profile_reader,
-    bool hdr_enabled) {
+    gfx::mojom::DXGIInfo* dxgi_info) {
   if (display_infos.empty()) {
     return {};
   }
@@ -362,11 +367,23 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
     }
   }
 
+  // Construct a map from display IDs to DXGI output descriptors.
+  std::map<int64_t, const gfx::mojom::DXGIOutputDesc*> dxgi_output_descs;
+  bool hdr_enabled_on_any_display = false;
+  if (dxgi_info) {
+    for (const auto& dxgi_output_desc : dxgi_info->output_descs) {
+      hdr_enabled_on_any_display |= dxgi_output_desc->hdr_enabled;
+      dxgi_output_descs[DisplayInfo::DeviceIdFromDeviceName(
+          dxgi_output_desc->device_name.c_str())] = dxgi_output_desc.get();
+    }
+  }
+
   // Layout and create the ScreenWinDisplays.
   std::vector<Display> displays;
   for (const auto& display_info : display_infos) {
     displays.push_back(CreateDisplayFromDisplayInfo(
-        display_info, color_profile_reader, hdr_enabled));
+        display_info, color_profile_reader,
+        dxgi_output_descs[display_info.id()], hdr_enabled_on_any_display));
   }
   builder.Build()->ApplyToDisplayList(&displays, nullptr, 0);
 
@@ -660,9 +677,9 @@ void ScreenWin::SetRequestHDRStatusCallback(
 }
 
 // static
-void ScreenWin::SetHDREnabled(bool hdr_enabled) {
-  if (g_instance && (g_instance->hdr_enabled_ != hdr_enabled)) {
-    g_instance->hdr_enabled_ = hdr_enabled;
+void ScreenWin::SetDXGIInfo(gfx::mojom::DXGIInfoPtr dxgi_info) {
+  if (g_instance && !mojo::Equals(g_instance->dxgi_info_, dxgi_info)) {
+    g_instance->dxgi_info_ = std::move(dxgi_info);
     g_instance->UpdateAllDisplaysAndNotify();
   }
 }
@@ -774,15 +791,16 @@ gfx::Rect ScreenWin::DIPToScreenRectInWindow(gfx::NativeWindow window,
 void ScreenWin::UpdateFromDisplayInfos(
     const std::vector<DisplayInfo>& display_infos) {
   screen_win_displays_ = DisplayInfosToScreenWinDisplays(
-      display_infos, color_profile_reader_.get(), hdr_enabled_);
+      display_infos, color_profile_reader_.get(), dxgi_info_.get());
   displays_ = ScreenWinDisplaysToDisplays(screen_win_displays_);
+  std::vector<int64_t> internal_display_ids;
   for (const auto& display_info : display_infos) {
     if (IsInternalOutputTechnology(display_info.output_technology())) {
-      // TODO(crbug.com/1078903): Support multiple internal displays.
-      Display::SetInternalDisplayId(display_info.id());
+      internal_display_ids.push_back(display_info.id());
       break;
     }
   }
+  SetInternalDisplayIds(internal_display_ids);
 }
 
 void ScreenWin::Initialize() {

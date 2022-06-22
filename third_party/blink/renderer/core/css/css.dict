@@ -208,6 +208,8 @@
 "marktext"
 "menutext"
 "scrollbar"
+"selecteditem"
+"selecteditemtext"
 "threeddarkshadow"
 "threedface"
 "threedhighlight"
@@ -715,7 +717,6 @@
 "hsl"
 "hsla"
 "hwb"
-"hwba"
 "-internal-light-dark"
 "matrix"
 "matrix3d"
@@ -934,6 +935,7 @@
 "custom"
 "spelling-error"
 "grammar-error"
+"color-contrast"
 
 # at-rules
 "@charset"

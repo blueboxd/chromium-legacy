@@ -50,16 +50,6 @@ class NetworkScreen extends NetworkScreenBase {
       },
 
       /**
-       * Whether offline demo mode is enabled. If it is enabled offline setup
-       * option will be shown in UI.
-       * @type {boolean}
-       */
-      offlineDemoModeEnabled: {
-        type: Boolean,
-        value: false,
-      },
-
-      /**
        * Network error message.
        * @type {string}
        * @private
@@ -94,11 +84,11 @@ class NetworkScreen extends NetworkScreenBase {
   }
 
   static get observers() {
-    return ['onDemoModeSetupChanged_(isDemoModeSetup, offlineDemoModeEnabled)'];
+    return [];
   }
 
   get EXTERNAL_API() {
-    return ['setOfflineDemoModeEnabled', 'setError'];
+    return ['setError'];
   }
 
   /** Called when dialog is shown. */
@@ -122,9 +112,7 @@ class NetworkScreen extends NetworkScreenBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('NetworkScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('NetworkScreen');
     this.updateLocalizedContent();
   }
 
@@ -151,22 +139,15 @@ class NetworkScreen extends NetworkScreenBase {
   }
 
   /**
-   * Enables or disables the offline Demo Mode option.
-   * @param {boolean} enabled
-   */
-  setOfflineDemoModeEnabled(enabled) {
-    this.offlineDemoModeEnabled = enabled;
-  }
-
-  /**
    * Returns element of the network list selected by the query.
    * Used to simplify testing.
    * @param {string} query
    * @return {NetworkList.NetworkListItemType}
    */
   getNetworkListItemWithQueryForTest(query) {
-    let networkList =
-        this.$.networkSelectLogin.shadowRoot.querySelector('#networkSelect').getNetworkListForTest();
+    const networkList =
+        this.$.networkSelectLogin.shadowRoot.querySelector('#networkSelect')
+            .getNetworkListForTest();
     assert(networkList);
     return networkList.querySelector(query);
   }
@@ -189,10 +170,11 @@ class NetworkScreen extends NetworkScreenBase {
   onShown_() {
     this.$.networkSelectLogin.refresh();
     setTimeout(() => {
-      if (this.isConnected_)
+      if (this.isConnected_) {
         this.$.nextButton.focus();
-      else
+      } else {
         this.$.networkSelectLogin.focus();
+      }
     }, 300);
     // Timeout is a workaround to correctly propagate focus to
     // RendererFrameHostImpl see https://crbug.com/955129 for details.
@@ -212,16 +194,6 @@ class NetworkScreen extends NetworkScreenBase {
    */
   onBackClicked_() {
     chrome.send('login.NetworkScreen.userActed', ['back']);
-  }
-
-  /**
-   * Updates custom elements on network list when demo mode setup properties
-   * changed.
-   * @private
-   */
-  onDemoModeSetupChanged_() {
-    this.$.networkSelectLogin.isOfflineDemoModeSetup =
-        this.isDemoModeSetup && this.offlineDemoModeEnabled;
   }
 
   /**

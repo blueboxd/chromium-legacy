@@ -54,11 +54,11 @@ DefaultEventDelegate::~DefaultEventDelegate() {
 
 void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
                                           ui::IdleState new_state) {
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(IdleManager::CreateIdleValue(new_state));
-  auto event = std::make_unique<Event>(
-      events::IDLE_ON_STATE_CHANGED, idle::OnStateChanged::kEventName,
-      std::move(*args).TakeListDeprecated(), context_);
+  std::vector<base::Value> args;
+  args.emplace_back(IdleManager::CreateIdleValue(new_state));
+  auto event = std::make_unique<Event>(events::IDLE_ON_STATE_CHANGED,
+                                       idle::OnStateChanged::kEventName,
+                                       std::move(args), context_);
   EventRouter::Get(context_)
       ->DispatchEventToExtension(extension_id, std::move(event));
 }
@@ -201,8 +201,7 @@ base::TimeDelta IdleManager::GetAutoLockDelay() const {
 }
 
 // static
-std::unique_ptr<base::Value> IdleManager::CreateIdleValue(
-    ui::IdleState idle_state) {
+base::Value IdleManager::CreateIdleValue(ui::IdleState idle_state) {
   const char* description;
 
   if (idle_state == ui::IDLE_STATE_ACTIVE) {
@@ -213,7 +212,7 @@ std::unique_ptr<base::Value> IdleManager::CreateIdleValue(
     description = keys::kStateLocked;
   }
 
-  return std::make_unique<base::Value>(description);
+  return base::Value(description);
 }
 
 void IdleManager::SetEventDelegateForTest(

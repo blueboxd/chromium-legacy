@@ -582,7 +582,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.PSim.SetupFlowResult"
-    enum="PSimSetupFlowResult" expires_after="2022-05-01">
+    enum="PSimSetupFlowResult" expires_after="2022-11-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>hsuregan@chromium.org</owner>
@@ -593,7 +593,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Cellular.PSim.StatusAtLogin"
-    enum="NetworkCellularPSimActivationState" expires_after="2022-05-01">
+    enum="NetworkCellularPSimActivationState" expires_after="2022-11-01">
   <owner>azeemarshad@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>hsuregan@chromium.org</owner>
@@ -934,8 +934,24 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Network.DnsProxy.{Type}Query.ResultsWithRetries"
+    enum="DnsProxy.QueryResult" expires_after="2022-12-31">
+  <owner>garrick@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Diagnostic metric for Chrome OS DNS proxy that records the results of the
+    DNS queries made by the service. A value will be recorded whenever the
+    request completes. If there are retries, only the last result will be
+    recorded.
+  </summary>
+  <token key="Type">
+    <variant name="DnsOverHttps"/>
+    <variant name="PlainText"/>
+  </token>
+</histogram>
+
 <histogram name="Network.EarlyHints.Preload.RequestDestination"
-    enum="RequestDestination" expires_after="2022-08-21">
+    enum="RequestDestination" expires_after="2022-10-23">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>
@@ -1037,7 +1053,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Radio.SimpleURLLoaderIsThrottled" enum="Boolean"
-    expires_after="2022-08-15">
+    expires_after="2022-10-16">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>
@@ -1048,7 +1064,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Radio.SimpleURLLoaderThrottledTime" units="ms"
-    expires_after="2022-08-15">
+    expires_after="2022-10-16">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>
@@ -1169,19 +1185,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS cellular network metric that tracks the number of out-of-credits
     detected based on the cause that triggered the out-of-credits.
-
-    NOTE: This metric was expired from 2021-12-01 to 2022-04-01.
-  </summary>
-</histogram>
-
-<histogram name="Network.Shill.Cellular.PortalAttempts" units="units"
-    expires_after="2022-12-30">
-  <owner>ejcaruso@chromium.org</owner>
-  <owner>cros-network-metrics@google.com</owner>
-  <summary>
-    Chrome OS network diagnostic metric sampling the number of portal detection
-    attempts per pass for a cellular network. This includes failure, timeout and
-    successful attempts.
 
     NOTE: This metric was expired from 2021-12-01 to 2022-04-01.
   </summary>
@@ -1399,19 +1402,6 @@ chromium-metrics-reviews@google.com.
     Chrome OS network performance metric that tracks the length of a lease for
     an Ethernet network at the time it expired without the DHCP client being
     able to renew it.
-
-    NOTE: This metric was expired from 2021-12-01 to 2022-04-01.
-  </summary>
-</histogram>
-
-<histogram name="Network.Shill.Ethernet.PortalAttempts" units="units"
-    expires_after="2022-12-31">
-  <owner>hugobenichi@google.com</owner>
-  <owner>cros-network-metrics@google.com</owner>
-  <summary>
-    Chrome OS network diagnostic metric sampling the number of portal detection
-    attempts per pass for an Ethernet network. This includes failure, timeout
-    and successful attempts.
 
     NOTE: This metric was expired from 2021-12-01 to 2022-04-01.
   </summary>
@@ -2218,18 +2208,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Wifi.PortalAttempts" units="units"
-    expires_after="2022-12-01">
-  <owner>matthewmwang@chromium.org</owner>
-  <owner>stevenjb@chromium.org</owner>
-  <owner>cros-network-metrics@google.com</owner>
-  <summary>
-    Chrome OS network diagnostic metric sampling the number of portal detection
-    attempts per pass for an 802.11 wireless network. This includes failure,
-    timeout and successful attempts.
-  </summary>
-</histogram>
-
 <histogram name="Network.Shill.Wifi.PortalAttemptsToOnline" units="units"
     expires_after="2022-12-01">
   <owner>matthewmwang@chromium.org</owner>
@@ -2842,7 +2820,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.GrantSandboxResult"
-    enum="NetworkServiceSandboxGrantResult" expires_after="2022-08-21">
+    enum="NetworkServiceSandboxGrantResult" expires_after="2022-10-23">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -2854,7 +2832,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.GrantSandboxToCacheResult"
-    enum="NetworkServiceSandboxGrantResult" expires_after="2022-08-14">
+    enum="NetworkServiceSandboxGrantResult" expires_after="2022-10-16">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -2944,7 +2922,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToMigrateData" units="ms"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -2993,7 +2971,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.URLLoaderFactory.UpdateLoadInfo" units="ms"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>jam@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
   <summary>

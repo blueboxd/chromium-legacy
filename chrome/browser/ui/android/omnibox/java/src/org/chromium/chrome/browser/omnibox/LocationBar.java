@@ -33,12 +33,6 @@ public interface LocationBar {
     void setShowTitle(boolean showTitle);
 
     /**
-     * Sends an accessibility event to the URL bar to request accessibility focus on it (e.g. for
-     * TalkBack).
-     */
-    default void requestUrlBarAccessibilityFocus() {}
-
-    /**
      * Triggers the cursor to be visible in the UrlBar without triggering any of the focus animation
      * logic.
      *

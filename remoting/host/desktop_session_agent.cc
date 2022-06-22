@@ -356,8 +356,9 @@ void DesktopSessionAgent::OnDesktopDisplayChanged(
     LOG(INFO) << "   #" << display_id << " : "
               << " [" << track.x_dpi() << "," << track.y_dpi() << "]";
   }
-  SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_DisplayChanged>(
-      *layout.get()));
+  if (desktop_session_event_handler_) {
+    desktop_session_event_handler_->OnDesktopDisplayChanged(*layout);
+  }
 }
 
 void DesktopSessionAgent::Start(
@@ -506,8 +507,9 @@ void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
 
   std::unique_ptr<webrtc::MouseCursor> owned_cursor(cursor);
 
-  SendToNetwork(
-      std::make_unique<ChromotingDesktopNetworkMsg_MouseCursor>(*owned_cursor));
+  if (desktop_session_event_handler_) {
+    desktop_session_event_handler_->OnMouseCursorChanged(*owned_cursor);
+  }
 
   if (video_capturer_)
     video_capturer_->SetMouseCursor(std::move(owned_cursor));
@@ -734,9 +736,9 @@ void DesktopSessionAgent::LockWorkstation() {
 void DesktopSessionAgent::OnKeyboardLayoutChange(
     const protocol::KeyboardLayout& layout) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  SendToNetwork(
-      std::make_unique<ChromotingDesktopNetworkMsg_KeyboardChanged>(layout));
+  if (desktop_session_event_handler_) {
+    desktop_session_event_handler_->OnKeyboardLayoutChanged(layout);
+  }
 }
 
 void DesktopSessionAgent::OnSharedMemoryRegionCreated(

@@ -177,6 +177,79 @@ void IntentFilter::GetMimeTypesAndExtensions(
   }
 }
 
+std::set<std::string> IntentFilter::GetSupportedLinksForAppManagement() {
+  std::set<std::string> hosts;
+  std::set<std::string> paths;
+  bool is_http_or_https = false;
+
+  for (auto& condition : conditions) {
+    // For scheme conditions we check if it's http or https and set a Boolean
+    // if this intent filter is for one of those schemes.
+    if (condition->condition_type == ConditionType::kScheme) {
+      for (auto& condition_value : condition->condition_values) {
+        // We only care about http and https schemes.
+        if (condition_value->value == url::kHttpScheme ||
+            condition_value->value == url::kHttpsScheme) {
+          is_http_or_https = true;
+          break;
+        }
+      }
+
+      // There should only be one condition of type |kScheme| so if there
+      // aren't any http or https scheme values this indicates that no http or
+      // https scheme exists in the intent filter and thus we will have to
+      // return an empty list.
+      if (!is_http_or_https) {
+        break;
+      }
+    }
+
+    // For host conditions we add each value to the |hosts| set.
+    if (condition->condition_type == ConditionType::kHost) {
+      for (auto& condition_value : condition->condition_values) {
+        // Prepend the wildcard to indicate any subdomain in the hosts
+        std::string host = condition_value->value;
+        if (condition_value->match_type == PatternMatchType::kSuffix) {
+          host = "*" + host;
+        }
+        hosts.insert(host);
+      }
+    }
+
+    // For path conditions we add each value to the |paths| set.
+    if (condition->condition_type == ConditionType::kPattern) {
+      for (auto& condition_value : condition->condition_values) {
+        std::string value = condition_value->value;
+        // Glob and literal patterns can be printed exactly, but prefix
+        // patterns must have be appended with "*" to indicate that
+        // anything with that prefix can be matched.
+        if (condition_value->match_type == PatternMatchType::kPrefix) {
+          value.append("*");
+        }
+        paths.insert(value);
+      }
+    }
+  }
+
+  // We only care about http and https schemes.
+  if (!is_http_or_https) {
+    return std::set<std::string>();
+  }
+
+  std::set<std::string> supported_links;
+  for (auto& host : hosts) {
+    for (auto& path : paths) {
+      if (path.front() == '/') {
+        supported_links.insert(host + path);
+      } else {
+        supported_links.insert(host + "/" + path);
+      }
+    }
+  }
+
+  return supported_links;
+}
+
 bool IntentFilter::IsBrowserFilter() {
   if (GetFilterMatchLevel() !=
       static_cast<int>(IntentFilterMatchLevel::kScheme)) {
@@ -215,6 +288,15 @@ bool IntentFilter::IsFileExtensionsFilter() {
   return true;
 }
 
+bool IntentFilter::FilterNeedsUpgrade() {
+  for (const auto& condition : conditions) {
+    if (condition->condition_type == ConditionType::kAction) {
+      return false;
+    }
+  }
+  return true;
+}
+
 std::string IntentFilter::ToString() const {
   std::stringstream out;
   if (activity_name.has_value()) {
@@ -240,6 +322,15 @@ IntentFilters CloneIntentFilters(const IntentFilters& intent_filters) {
   return ret;
 }
 
+base::flat_map<std::string, IntentFilters> CloneIntentFiltersMap(
+    const base::flat_map<std::string, IntentFilters>& intent_filters_map) {
+  base::flat_map<std::string, IntentFilters> ret;
+  for (const auto& it : intent_filters_map) {
+    ret.insert(std::make_pair(it.first, CloneIntentFilters(it.second)));
+  }
+  return ret;
+}
+
 bool IsEqual(const IntentFilters& source, const IntentFilters& target) {
   if (source.size() != target.size()) {
     return false;
@@ -251,6 +342,16 @@ bool IsEqual(const IntentFilters& source, const IntentFilters& target) {
     }
   }
   return true;
+}
+
+bool Contains(const IntentFilters& intent_filters,
+              const IntentFilterPtr& intent_filter) {
+  for (const auto& filter : intent_filters) {
+    if (*filter == *intent_filter) {
+      return true;
+    }
+  }
+  return false;
 }
 
 ConditionType ConvertMojomConditionTypeToConditionType(
@@ -435,40 +536,6 @@ apps::mojom::IntentFilterPtr ConvertIntentFilterToMojomIntentFilter(
   mojom_intent_filter->activity_name = intent_filter->activity_name;
   mojom_intent_filter->activity_label = intent_filter->activity_label;
   return mojom_intent_filter;
-}
-
-base::flat_map<std::string, std::vector<apps::mojom::IntentFilterPtr>>
-ConvertIntentFiltersToMojomIntentFilters(
-    const base::flat_map<std::string, apps::IntentFilters>& intent_filter) {
-  base::flat_map<std::string, std::vector<apps::mojom::IntentFilterPtr>> ret;
-  for (const auto& it : intent_filter) {
-    std::vector<apps::mojom::IntentFilterPtr> mojom_filters;
-    for (const auto& filter_it : it.second) {
-      if (filter_it) {
-        mojom_filters.push_back(
-            ConvertIntentFilterToMojomIntentFilter(filter_it));
-      }
-    }
-    ret[it.first] = std::move(mojom_filters);
-  }
-  return ret;
-}
-
-base::flat_map<std::string, apps::IntentFilters>
-ConvertMojomIntentFiltersToIntentFilters(
-    const base::flat_map<std::string,
-                         std::vector<apps::mojom::IntentFilterPtr>>&
-        mojom_intent_filter) {
-  base::flat_map<std::string, apps::IntentFilters> ret;
-  for (const auto& it : mojom_intent_filter) {
-    apps::IntentFilters filters;
-    for (const auto& filter_it : it.second) {
-      if (filter_it)
-        filters.push_back(ConvertMojomIntentFilterToIntentFilter(filter_it));
-    }
-    ret[it.first] = std::move(filters);
-  }
-  return ret;
 }
 
 }  // namespace apps

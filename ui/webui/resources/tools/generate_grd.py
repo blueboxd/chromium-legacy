@@ -83,7 +83,7 @@ GRDP_END_TEMPLATE = '</grit-part>\n'
 def _generate_include_row(grd_prefix, filename, pathname, \
                           resource_path_rewrites, resource_path_prefix):
   name_suffix = filename.upper().replace('/', '_').replace('.', '_'). \
-          replace('-', '_')
+          replace('-', '_').replace('@', '_AT_')
   name = 'IDR_%s_%s' % (grd_prefix.upper(), name_suffix)
   extension = os.path.splitext(filename)[1]
   type = 'chrome_html' if extension == '.html' or extension == '.js' \
@@ -131,9 +131,7 @@ def main(argv):
   args = parser.parse_args(argv)
 
   grd_path = os.path.normpath(os.path.join(_CWD, args.out_grd))
-  with open(grd_path, 'w',
-            newline='') if sys.version_info.major == 3 else open(
-                grd_path, 'wb') as grd_file:
+  with open(grd_path, 'w', newline='') as grd_file:
     begin_template = GRDP_BEGIN_TEMPLATE if args.out_grd.endswith('.grdp') else \
         GRD_BEGIN_TEMPLATE
     grd_file.write(begin_template.format(prefix=args.grd_prefix,

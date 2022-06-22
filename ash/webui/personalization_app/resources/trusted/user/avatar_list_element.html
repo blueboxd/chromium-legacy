@@ -12,6 +12,7 @@
     width: 80px;
   }
   .image-container {
+    border-radius: 50%;
     cursor: pointer;
     height: 64px;
     position: relative;
@@ -85,7 +86,9 @@
     aria-setsize$="[[options_.length]]" grid>
   <template>
     <div class="option-container">
-      <div id$="[[item.id]]" class$="[[item.class]]" role="option"
+      <div id$="[[item.id]]"
+          class$="[[getOptionInnerContainerClass_(item, image_)]]"
+          role="option"
           on-click="onOptionSelected_" on-keypress="onOptionSelected_"
           tabindex$="[[tabIndex]]"
           aria-posinset$="[[getAriaIndex_(index)]]"

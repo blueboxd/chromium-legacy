@@ -121,7 +121,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   void BroadcastEventToRenderers(
       events::HistogramValue histogram_value,
       const std::string& event_name,
-      std::unique_ptr<base::ListValue> args,
+      base::Value::List args,
       bool dispatch_to_off_the_record_profiles) override;
   ExtensionCache* GetExtensionCache() override;
   bool IsBackgroundUpdateAllowed() override;
@@ -180,6 +180,13 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                                   const ExtensionId& extension_id,
                                   int vendor_id,
                                   int product_id) const override;
+  void GetFavicon(content::BrowserContext* browser_context,
+                  const Extension* extension,
+                  const GURL& url,
+                  base::CancelableTaskTracker* tracker,
+                  base::OnceCallback<
+                      void(scoped_refptr<base::RefCountedMemory> bitmap_data)>
+                      callback) const override;
 
  private:
   friend struct base::LazyInstanceTraitsBase<ChromeExtensionsBrowserClient>;

@@ -7,7 +7,7 @@
 namespace page_load_metrics {
 
 PageLoadMetricsForwardObserver::PageLoadMetricsForwardObserver(
-    base::WeakPtr<PageLoadMetricsObserver> parent_observer)
+    base::WeakPtr<PageLoadMetricsObserverInterface> parent_observer)
     : parent_observer_(std::move(parent_observer)) {
   DCHECK(parent_observer_);
 }
@@ -21,35 +21,42 @@ const char* PageLoadMetricsForwardObserver::GetObserverName() const {
   // forwarded to the parent page.
   if (parent_observer_)
     return parent_observer_->GetObserverName();
-  return PageLoadMetricsObserver::GetObserverName();
+  return nullptr;
 }
 
-// OnStart, OnFencedFramesStart, and OnPrerenderingStart should not be forwarded
-// as they are expected to be called only once at the beginning.
-PageLoadMetricsObserver::ObservePolicy PageLoadMetricsForwardObserver::OnStart(
+// Registration and initialization of PageLoadMetricsForwardObserver is
+// different from ones of other PageLoadMetricsObserver subclasses.
+// PageLoadMetricsForwardObserver is registered in
+// `components/page_load_metrics/browser/page_load_tracker.cc` and methods
+// OnStart, OnFencedFramesStart, and OnPrerenderingStart are never called.
+PageLoadMetricsObserverInterface::ObservePolicy
+PageLoadMetricsForwardObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
-  return CONTINUE_OBSERVING;
+  NOTREACHED();
+  return STOP_OBSERVING;
 }
 
-PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserverInterface::ObservePolicy
 PageLoadMetricsForwardObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
-  return CONTINUE_OBSERVING;
+  NOTREACHED();
+  return STOP_OBSERVING;
 }
 
-PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserverInterface::ObservePolicy
 PageLoadMetricsForwardObserver::OnPrerenderStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
-  return CONTINUE_OBSERVING;
+  NOTREACHED();
+  return STOP_OBSERVING;
 }
 
 // Main frame events will be converted as sub-frame events on forwarding, and
 // OnRedirect is an event only for the main frame. We just mask it here.
-PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserverInterface::ObservePolicy
 PageLoadMetricsForwardObserver::OnRedirect(
     content::NavigationHandle* navigation_handle) {
   return CONTINUE_OBSERVING;
@@ -58,7 +65,8 @@ PageLoadMetricsForwardObserver::OnRedirect(
 // OnCommit and OnDidInternalNavigationAbort are handled at PageLoadTracker to
 // forward events as a sub-frame navigation regardless of each observer's
 // policy.
-PageLoadMetricsObserver::ObservePolicy PageLoadMetricsForwardObserver::OnCommit(
+PageLoadMetricsObserverInterface::ObservePolicy
+PageLoadMetricsForwardObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   return CONTINUE_OBSERVING;
 }
@@ -84,17 +92,17 @@ void PageLoadMetricsForwardObserver::OnCommitSameDocumentNavigation(
 
 // Inner pages' OnHidden and OnShown are ignored to avoid duplicated calls in
 // the parent observer.
-PageLoadMetricsObserver::ObservePolicy PageLoadMetricsForwardObserver::OnHidden(
-    const mojom::PageLoadTiming& timing) {
+PageLoadMetricsObserverInterface::ObservePolicy
+PageLoadMetricsForwardObserver::OnHidden(const mojom::PageLoadTiming& timing) {
   return CONTINUE_OBSERVING;
 }
 
-PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserverInterface::ObservePolicy
 PageLoadMetricsForwardObserver::OnShown() {
   return CONTINUE_OBSERVING;
 }
 
-PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserverInterface::ObservePolicy
 PageLoadMetricsForwardObserver::OnEnterBackForwardCache(
     const mojom::PageLoadTiming& timing) {
   NOTREACHED() << "Not supported.";
@@ -107,7 +115,7 @@ void PageLoadMetricsForwardObserver::OnRestoreFromBackForwardCache(
   NOTREACHED() << "Not supported.";
 }
 
-PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserverInterface::ObservePolicy
 PageLoadMetricsForwardObserver::ShouldObserveMimeType(
     const std::string& mime_type) const {
   if (!parent_observer_ ||
@@ -148,12 +156,11 @@ void PageLoadMetricsForwardObserver::OnCpuTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const mojom::CpuTiming& timing) {}
 
+// OnUserInput is always dispatched only to the primary page.
 void PageLoadMetricsForwardObserver::OnUserInput(
     const blink::WebInputEvent& event,
     const mojom::PageLoadTiming& timing) {
-  if (!parent_observer_)
-    return;
-  parent_observer_->OnUserInput(event, timing);
+  NOTREACHED();
 }
 
 // Following events should be ignored as they are controlled at
@@ -248,17 +255,18 @@ void PageLoadMetricsForwardObserver::MediaStartedPlaying(
   parent_observer_->MediaStartedPlaying(video_type, render_frame_host);
 }
 
-void PageLoadMetricsForwardObserver::OnFrameIntersectionUpdate(
+void PageLoadMetricsForwardObserver::OnMainFrameIntersectionRectChanged(
     content::RenderFrameHost* rfh,
-    const mojom::FrameIntersectionUpdate& intersection_update) {
+    const gfx::Rect& main_frame_intersection_rect) {
   if (!parent_observer_)
     return;
-  parent_observer_->OnFrameIntersectionUpdate(rfh, intersection_update);
+  parent_observer_->OnMainFrameIntersectionRectChanged(
+      rfh, main_frame_intersection_rect);
 }
 
 // Don't need to forward FlushMetricsOnAppEnterBackground and OnComplete as they
 // are dispatched to all trackers.
-PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserverInterface::ObservePolicy
 PageLoadMetricsForwardObserver::FlushMetricsOnAppEnterBackground(
     const mojom::PageLoadTiming& timing) {
   return CONTINUE_OBSERVING;

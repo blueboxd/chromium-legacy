@@ -38,11 +38,12 @@ TEST_P(WaylandEventWatcherTest, CrashKeyResourceError) {
   auto* xdg_surface = mock_surface->xdg_surface();
 
   // Prepare the expectation error string.
-  const std::string expected_error_code =
-      base::StrCat({wl_resource_get_class(xdg_surface->resource()), ": error ",
-                    NumberToString(static_cast<uint32_t>(
-                        XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER)),
-                    ": ", kTestErrorString});
+  const std::string expected_error_code = base::StrCat(
+      {wl_resource_get_class(xdg_surface->resource()), "@",
+       NumberToString(wl_resource_get_id(xdg_surface->resource())), ": error ",
+       NumberToString(
+           static_cast<uint32_t>(XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER)),
+       ": ", kTestErrorString, "\n"});
 
   wl_resource_post_error(xdg_surface->resource(),
                          XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER, "%s",
@@ -61,9 +62,9 @@ TEST_P(WaylandEventWatcherTest, CrashKeyResourceNoMemory) {
 
   // Prepare the expectation error string.
   const std::string expected_error_code = base::StrCat(
-      {"wl_display: error ",
+      {"wl_display@1: error ",
        NumberToString(static_cast<uint32_t>(WL_DISPLAY_ERROR_NO_MEMORY)),
-       ": no memory"});
+       ": no memory\n"});
 
   wl_resource_post_no_memory(xdg_surface->resource());
 
@@ -75,9 +76,9 @@ TEST_P(WaylandEventWatcherTest, CrashKeyResourceNoMemory) {
 
 TEST_P(WaylandEventWatcherTest, CrashKeyClientNoMemoryError) {
   const std::string expected_error_code = base::StrCat(
-      {"wl_display: error ",
+      {"wl_display@1: error ",
        NumberToString(static_cast<uint32_t>(WL_DISPLAY_ERROR_NO_MEMORY)),
-       ": no memory"});
+       ": no memory\n"});
 
   wl_client_post_no_memory(server_.client());
 
@@ -90,9 +91,9 @@ TEST_P(WaylandEventWatcherTest, CrashKeyClientNoMemoryError) {
 TEST_P(WaylandEventWatcherTest, CrashKeyClientImplementationError) {
   const std::string kError = "A nice error.";
   const std::string expected_error_code = base::StrCat(
-      {"wl_display: error ",
+      {"wl_display@1: error ",
        NumberToString(static_cast<uint32_t>(WL_DISPLAY_ERROR_IMPLEMENTATION)),
-       ": ", kError});
+       ": ", kError, "\n"});
 
   wl_client_post_implementation_error(server_.client(), "%s", kError.c_str());
 

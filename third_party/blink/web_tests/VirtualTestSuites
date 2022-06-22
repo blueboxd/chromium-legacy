@@ -432,7 +432,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/direct-sockets",
     	      "wpt_internal/direct-sockets"],
-    "args": ["--restricted-api-origins=https://web-platform.test"]
+    "args": ["--isolated-app-origins=https://web-platform.test"]
   },
   {
     "prefix": "webrtc-wpt-plan-b",
@@ -816,12 +816,19 @@
     "prefix": "third-party-storage-partitioning",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
+      "wpt_internal/storage/quota/partitioned-webkitTemporaryStorage-usage-details.tentative.sub.html",
+      "wpt_internal/storage/quota/partitioned-webkitPersistentStorage-quota-usage-details.tentative.sub.html",
+      "wpt_internal/storage/quota/partitioned-webkitStorageInfo-temporary-quota-usage-details.tentative.sub.html",
+      "wpt_internal/storage/quota/partitioned-webkitStorageInfo-persistent-quota-usage-details.tentative.sub.html",
+      "external/wpt/storage/partitioned-estimate-usage-details-caches.tentative.https.sub.html",
+      "external/wpt/storage/partitioned-estimate-usage-details-indexeddb.tentative.https.sub.html",
+      "external/wpt/storage/partitioned-estimate-usage-details-service-workers.tentative.https.sub.html",
       "external/wpt/web-locks/partitioned-web-locks.tentative.https.html",
       "external/wpt/workers/shared-worker-partitioned.tentative.html",
-      "external/wpt/service-workers/service-worker/partitioned-service-worker.tentative.https.html",
-      "external/wpt/service-workers/service-worker/partitioned-service-worker-getRegistrations.tentative.https.html",
-      "external/wpt/service-workers/service-worker/partitioned-service-worker-matchAll.tentative.https.html",
-      "external/wpt/service-workers/service-worker/partitioned-service-worker-claim.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned-getRegistrations.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned-matchAll.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned-claim.tentative.https.html",
       "external/wpt/webstorage/localstorage-basic-partitioned.tentative.sub.html",
       "external/wpt/webmessaging/broadcastchannel/cross-partition.https.tentative.html",
       "external/wpt/IndexedDB/idb-partitioned-basic.tentative.sub.html",
@@ -982,12 +989,15 @@
               "accessibility/virtual-node-build-parent-multiple.html",
               "accessibility/virtual-node-removed-from-document.html",
               "accessibility/virtual-node-repair-document.html",
+              "dom/legacy_dom_conformance/html/level2/core/createAttributeNS06.html",
               "external/wpt/accessibility/crashtests/aria-hidden-with-select.html",
               "external/wpt/accessibility/crashtests/aria-owns-destroyed-by-content-replacement.html",
               "external/wpt/accessibility/crashtests/aria-owns-reparent.html",
+              "external/wpt/accessibility/crashtests/bdo-table-cell.html",
               "external/wpt/accessibility/crashtests/content-visibility-generated-content-removal.html",
               "external/wpt/accessibility/crashtests/included-descendant-dom-removal.html",
               "external/wpt/accessibility/crashtests/included-descendant-layout-removal.html",
+              "external/wpt/accessibility/crashtests/img-map-pseudo.html",
               "external/wpt/accessibility/crashtests/input-time-datalist.html",
               "external/wpt/accessibility/crashtests/map-inside-map.html",
               "external/wpt/accessibility/crashtests/map-inside-map-2.html",
@@ -995,6 +1005,7 @@
               "external/wpt/accessibility/crashtests/slot-assignment-lockup.html",
               "external/wpt/accessibility/crashtests/validation-message.html",
               "external/wpt/accessibility/crashtests/displaylocked-serialize.html",
+              "external/wpt/dom/ranges/Range-deleteContents.html",
               "editing/text-iterator/auto-expand-details.html",
               "editing/text-iterator/auto-expand-details-shadowdom.html"],
     "args": ["--force-renderer-accessibility"]
@@ -1018,12 +1029,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
     "args": ["--stable-release-mode"]
-  },
-  {
-    "prefix": "selectmenu-new-popup",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [],
-    "args": ["--enable-blink-features=HTMLSelectMenuElementUsesPopupAttribute"]
   },
   {
     "prefix": "dialogfocus-old-behavior",
@@ -1188,7 +1193,11 @@
     "bases": [
       "external/wpt/css/css-pseudo",
       "wpt_internal/css/css-pseudo",
-      "external/wpt/css/css-highlight-api"
+      "external/wpt/css/css-highlight-api",
+      "paint/markers/inline_spelling_markers.html",
+      "paint/markers/inline-spelling-markers-hidpi.html",
+      "paint/markers/inline-spelling-markers-hidpi-composited.html",
+      "paint/invalidation/selection/selection-after-remove.html"
     ],
     "args": ["--enable-blink-features=HighlightOverlayPainting"]
   },
@@ -1228,8 +1237,24 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "external/wpt/webauthn/remote-desktop-client-override.tentative.https.html" ],
     "args": [
-      "--webauthn-remote-desktop-support",
-      "--enable-blink-features=WebAuthenticationRemoteDesktopSupport"
+      "--webauthn-remote-desktop-support"
+    ]
+  },
+  {
+    "prefix": "mediastreamtrack-transfer",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "external/wpt/mediacapture-streams/MediaStreamTrack-iframe-transfer.https.html" ],
+    "args": [
+      "--enable-blink-features=MediaStreamTrackTransfer",
+      "--enable-features=MediaStreamTrackTransfer"
+    ]
+  },
+  {
+    "prefix": "insecure-battery-status-api",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "http/tests/security/powerfulFeatureRestrictions/" ],
+    "args": [
+      "--disable-blink-features=RestrictBatteryStatusToSecureContexts"
     ]
   }
 ]

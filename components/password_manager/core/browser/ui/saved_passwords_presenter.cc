@@ -186,12 +186,12 @@ bool SavedPasswordsPresenter::EditSavedPasswords(
     for (const auto& old_form : forms) {
       PasswordStoreInterface& store = GetStoreFor(old_form);
       PasswordForm new_form = old_form;
-      new_form.username_value = new_username;
-      new_form.password_value = new_password;
-      new_form.password_issues.clear();
 
-      if (password_changed)
+      if (password_changed) {
+        new_form.password_value = new_password;
         new_form.date_password_modified = base::Time::Now();
+        new_form.password_issues.clear();
+      }
 
       if (note_changed) {
         // if the old note is empty, the note is just created.
@@ -202,6 +202,11 @@ bool SavedPasswordsPresenter::EditSavedPasswords(
       }
 
       if (username_changed) {
+        new_form.username_value = new_username;
+        // Phished and leaked issues are no longer relevant on username change.
+        // Weak and reused issues are still relevant.
+        new_form.password_issues.erase(InsecureType::kPhished);
+        new_form.password_issues.erase(InsecureType::kLeaked);
         // Changing username requires deleting old form and adding new one. So
         // the different API should be called.
         store.UpdateLoginWithPrimaryKey(new_form, old_form);

@@ -104,18 +104,10 @@ void FaviconTabHelper::OnFaviconUpdated(
     delegate.OnFaviconChanged(favicon_);
 }
 
-void FaviconTabHelper::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
-  if (!navigation_handle->IsInPrimaryMainFrame() ||
-      !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
-      navigation_handle->IsSameDocument()) {
+void FaviconTabHelper::PrimaryPageChanged(content::Page& page) {
+  if (page.GetMainDocument().IsErrorDocument() || favicon_.IsEmpty()) {
     return;
   }
-  if (favicon_.IsEmpty())
-    return;
 
   favicon_ = gfx::Image();
   for (FaviconFetcherDelegate& delegate : delegates_)

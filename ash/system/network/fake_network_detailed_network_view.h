@@ -7,6 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/network/network_detailed_network_view.h"
+#include "ash/system/network/network_list_item_view.h"
+#include "ash/system/network/network_list_network_item_view.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -14,7 +16,8 @@ namespace ash {
 // Fake implementation of NetworkDetailedNetworkView.
 class ASH_EXPORT FakeNetworkDetailedNetworkView
     : public NetworkDetailedNetworkView,
-      public views::View {
+      public views::View,
+      public ViewClickListener {
  public:
   explicit FakeNetworkDetailedNetworkView(Delegate* delegate);
   FakeNetworkDetailedNetworkView(const FakeNetworkDetailedNetworkView&) =
@@ -23,9 +26,30 @@ class ASH_EXPORT FakeNetworkDetailedNetworkView
       const FakeNetworkDetailedNetworkView&) = delete;
   ~FakeNetworkDetailedNetworkView() override;
 
+  size_t notify_network_list_changed_call_count() {
+    return notify_network_list_changed_call_count_;
+  }
+
+  const NetworkListItemView* last_clicked_network_list_item() const {
+    return last_clicked_network_list_item_;
+  }
+
+  views::View* network_list() override;
+
  private:
   // NetworkDetailedNetworkView:
+  void NotifyNetworkListChanged() override;
   views::View* GetAsView() override;
+  NetworkListNetworkItemView* AddNetworkListItem() override;
+  NetworkListNetworkHeaderView* AddWifiSectionHeader() override;
+  NetworkListNetworkHeaderView* AddMobileSectionHeader() override;
+
+  // ViewClickListener:
+  void OnViewClicked(views::View* view) override;
+
+  std::unique_ptr<views::View> network_list_;
+  size_t notify_network_list_changed_call_count_;
+  NetworkListItemView* last_clicked_network_list_item_ = nullptr;
 };
 
 }  // namespace ash

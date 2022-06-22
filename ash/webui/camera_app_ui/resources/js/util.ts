@@ -10,7 +10,7 @@ import * as Comlink from './lib/comlink.js';
 import * as loadTimeData from './models/load_time_data.js';
 import * as state from './state.js';
 import * as tooltip from './tooltip.js';
-import {Facing} from './type.js';
+import {AspectRatioSet, Facing, Resolution} from './type.js';
 import {WaitableEvent} from './waitable_event.js';
 
 /**
@@ -102,7 +102,11 @@ export function getShortcutIdentifier(event: KeyboardEvent): string {
  */
 export function setupI18nElements(rootElement: DocumentFragment|Element): void {
   function getElements(attr: string) {
-    return dom.getAllFrom(rootElement, `[${attr}]`, HTMLElement);
+    const elements = [...dom.getAllFrom(rootElement, `[${attr}]`, HTMLElement)];
+    if (rootElement instanceof HTMLElement && rootElement.hasAttribute(attr)) {
+      elements.push(rootElement);
+    }
+    return elements;
   }
   function getMessage(element: HTMLElement, attr: string) {
     return loadTimeData.getI18nMessage(
@@ -337,4 +341,40 @@ export function assertEnumVariant<T extends string>(
   const ret = checkEnumVariant(enumType, value);
   assert(ret !== null, `${value} is not a valid enum variant`);
   return ret;
+}
+
+/**
+ * Crops out maximum possible centered square from the image blob.
+ *
+ * @return Promise with result cropped square image.
+ */
+export async function cropSquare(blob: Blob): Promise<Blob> {
+  const img = await blobToImage(blob);
+  try {
+    const side = Math.min(img.width, img.height);
+    const {canvas, ctx} = newDrawingCanvas({width: side, height: side});
+    ctx.drawImage(
+        img, Math.floor((img.width - side) / 2),
+        Math.floor((img.height - side) / 2), side, side, 0, 0, side, side);
+    // TODO(b/174190121): Patch important exif entries from input blob to
+    // result blob.
+    const croppedBlob = await canvasToJpegBlob(canvas);
+    return croppedBlob;
+  } finally {
+    URL.revokeObjectURL(img.src);
+  }
+}
+
+/**
+ * Returns the mapped aspect ratio set according to the given resolution.
+ */
+export function toAspectRatioSet(resolution: Resolution|null): AspectRatioSet {
+  switch (resolution?.aspectRatio) {
+    case 1.3333:
+      return AspectRatioSet.RATIO_4_3;
+    case 1.7778:
+      return AspectRatioSet.RATIO_16_9;
+    default:
+      return AspectRatioSet.RATIO_OTHER;
+  }
 }

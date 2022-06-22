@@ -9,7 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/bluetooth_chooser.h"
@@ -33,7 +36,6 @@ class PrefService;
 namespace base {
 class CommandLine;
 class FilePath;
-class ListValue;
 }  // namespace base
 
 namespace content {
@@ -55,11 +57,15 @@ class NetworkContext;
 
 namespace update_client {
 class UpdateClient;
-}
+}  // namespace update_client
 
 namespace url {
 class Origin;
-}
+}  // namespace url
+
+namespace base {
+class CancelableTaskTracker;
+}  // namespace base
 
 namespace extensions {
 
@@ -262,7 +268,7 @@ class ExtensionsBrowserClient {
   virtual void BroadcastEventToRenderers(
       events::HistogramValue histogram_value,
       const std::string& event_name,
-      std::unique_ptr<base::ListValue> args,
+      base::Value::List args,
       bool dispatch_to_off_the_record_profiles) = 0;
 
   // Gets the single ExtensionCache instance shared across the browser process.
@@ -412,6 +418,15 @@ class ExtensionsBrowserClient {
                                           const ExtensionId& extension_id,
                                           int vendor_id,
                                           int product_id) const;
+
+  // Populate callback with the asynchronously retrieved cached favicon image.
+  virtual void GetFavicon(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      const GURL& url,
+      base::CancelableTaskTracker* tracker,
+      base::OnceCallback<void(
+          scoped_refptr<base::RefCountedMemory> bitmap_data)> callback) const;
 
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;

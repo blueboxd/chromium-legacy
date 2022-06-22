@@ -135,6 +135,10 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
   rt += base::StringPrintf(", LUID={%ld,%lu}", gpu.luid.HighPart,
                            gpu.luid.LowPart);
 #endif
+  if (!gpu.driver_vendor.empty())
+    rt += ", DRIVER_VENDOR=" + gpu.driver_vendor;
+  if (!gpu.driver_version.empty())
+    rt += ", DRIVER_VERSION=" + gpu.driver_version;
   if (gpu.active)
     rt += " *ACTIVE*";
   return rt;
@@ -218,10 +222,6 @@ std::vector<base::Value> GetBasicGpuInfo(
       gpu::VulkanVersionToString(gpu_info.vulkan_version)));
 #endif
 
-  basic_info.push_back(
-      display::BuildGpuInfoEntry("Driver vendor", active_gpu.driver_vendor));
-  basic_info.push_back(
-      display::BuildGpuInfoEntry("Driver version", active_gpu.driver_version));
   basic_info.push_back(display::BuildGpuInfoEntry(
       "GPU CUDA compute capability major version",
       base::Value(active_gpu.cuda_compute_capability_major)));
@@ -458,6 +458,8 @@ const char* D3dFeatureLevelToString(D3D_FEATURE_LEVEL level) {
       return "12_0";
     case D3D_FEATURE_LEVEL_12_1:
       return "12_1";
+    case D3D_FEATURE_LEVEL_12_2:
+      return "12_2";
     default:
       NOTREACHED();
       return "";
@@ -558,6 +560,22 @@ const char* GetProfileName(gpu::VideoCodecProfile profile) {
       return "hevc main 10";
     case gpu::HEVCPROFILE_MAIN_STILL_PICTURE:
       return "hevc main still-picture";
+    case gpu::HEVCPROFILE_REXT:
+      return "hevc range extensions";
+    case gpu::HEVCPROFILE_HIGH_THROUGHPUT:
+      return "hevc high throughput";
+    case gpu::HEVCPROFILE_MULTIVIEW_MAIN:
+      return "hevc multiview main";
+    case gpu::HEVCPROFILE_SCALABLE_MAIN:
+      return "hevc scalable main";
+    case gpu::HEVCPROFILE_3D_MAIN:
+      return "hevc 3d main";
+    case gpu::HEVCPROFILE_SCREEN_EXTENDED:
+      return "hevc screen extended";
+    case gpu::HEVCPROFILE_SCALABLE_REXT:
+      return "hevc scalable range extensions";
+    case gpu::HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED:
+      return "hevc high throughput screen extended";
     case gpu::VP8PROFILE_ANY:
       return "vp8";
     case gpu::VP9PROFILE_PROFILE0:
@@ -892,6 +910,14 @@ void GpuMessageHandler::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) {
 // GpuInternalsUI
 //
 ////////////////////////////////////////////////////////////////////////////////
+
+GpuInternalsUIConfig::GpuInternalsUIConfig()
+    : WebUIConfig(kChromeUIScheme, kChromeUIGpuHost) {}
+
+std::unique_ptr<WebUIController> GpuInternalsUIConfig::CreateWebUIController(
+    WebUI* web_ui) {
+  return std::make_unique<GpuInternalsUI>(web_ui);
+}
 
 GpuInternalsUI::GpuInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {

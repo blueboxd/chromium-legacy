@@ -69,21 +69,36 @@ void HWDataCollectionScreen::OnViewDestroyed(HWDataCollectionView* view) {
 }
 
 bool HWDataCollectionScreen::MaybeSkip(WizardContext* context) {
+  if (!switches::IsRevenBranding() || !context->is_branded_build) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
+  }
   bool is_owner = false;
-  if (features::IsOobeConsolidatedConsentEnabled()) {
-    is_owner = context->is_owner_flow.value_or(false);
+  // Taking device ownership can take some time, so we can't rely on it here.
+  // However it can be already checked during ConsolidateConsentScreen.
+  if (context->is_owner_flow.has_value()) {
+    is_owner = context->is_owner_flow.value();
   } else {
+    // If no, check that the device is not managed and user is either already
+    // marked as an owner in user_manager or is the first on the device.
     policy::BrowserPolicyConnectorAsh* connector =
         g_browser_process->platform_part()->browser_policy_connector_ash();
-    // Taking device ownership can take some time, so we can't rely on it here.
-    // Check that the user is first and not managed instead.
-    is_owner = !connector->IsDeviceEnterpriseManaged();
     auto* user_manager = user_manager::UserManager::Get();
-    if (user_manager->GetUsers().size() > 1) {
-      is_owner = is_owner && user_manager->IsCurrentUserOwner();
-    }
+    is_owner = !connector->IsDeviceEnterpriseManaged() &&
+               (user_manager->IsCurrentUserOwner() ||
+                user_manager->GetUsers().size() == 1);
   }
-  if (!switches::IsRevenBranding() || !is_owner || !context->is_branded_build) {
+  if (!is_owner) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
+  }
+  if (context->skip_post_login_screens_for_tests) {
+    // Set a default value if the screen should be shown, but is skipped because
+    // of the test flow. This value is important, as we rely on it during update
+    // flow from CloudReady to Chrome OS Flex and it should be set after owner
+    // of the device has already logged in.
+    HWDataUsageController::Get()->Set(ProfileManager::GetActiveUserProfile(),
+                                      base::Value(false));
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }

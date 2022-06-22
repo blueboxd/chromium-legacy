@@ -60,9 +60,10 @@ import * as timertick from './camera/timertick.js';
 import {VideoEncoderOptions} from './camera/video_encoder_options.js';
 import {CropDocument} from './crop_document.js';
 import {Dialog} from './dialog.js';
+import {OptionPanel} from './option_panel.js';
 import {PTZPanel} from './ptz_panel.js';
 import * as review from './review.js';
-import {PrimarySettings} from './settings.js';
+import {PrimarySettings} from './settings/primary.js';
 import {View} from './view.js';
 import {WarningType} from './warning.js';
 
@@ -80,7 +81,7 @@ export class Camera extends View implements CameraViewUI {
   /**
    * Layout handler for the camera view.
    */
-  private readonly layoutHandler = new Layout();
+  private readonly layoutHandler: Layout;
 
   private readonly scanOptions: ScanOptions;
 
@@ -119,19 +120,22 @@ export class Camera extends View implements CameraViewUI {
 
   constructor(
       protected readonly resultSaver: ResultSaver,
-      private readonly cameraManager: CameraManager,
+      protected readonly cameraManager: CameraManager,
       readonly perfLogger: PerfLogger,
   ) {
     super(ViewName.CAMERA);
 
     this.subViews = [
       new PrimarySettings(this.cameraManager),
+      new OptionPanel(),
       new PTZPanel(),
       this.review,
       this.cropDocument,
       this.docModeDialogView,
       new View(ViewName.FLASH),
     ];
+
+    this.layoutHandler = new Layout(this.cameraManager);
 
     this.scanOptions = new ScanOptions(this.cameraManager);
 
@@ -479,6 +483,8 @@ export class Camera extends View implements CameraViewUI {
       resolution,
       shutterType: this.shutterType,
       isVideoSnapshot: true,
+      resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
+      aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
     });
     try {
       const name = (new Filenamer(timestamp)).newImageName();
@@ -500,6 +506,18 @@ export class Camera extends View implements CameraViewUI {
   async onPhotoCaptureDone(pendingPhotoResult: Promise<PhotoResult>):
       Promise<void> {
     state.set(PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, true);
+
+    if (this.cameraManager.preferSquarePhoto()) {
+      pendingPhotoResult = (async () => {
+        const photoResult = await pendingPhotoResult;
+        const croppedBlob = await util.cropSquare(photoResult.blob);
+        return {
+          ...photoResult,
+          blob: croppedBlob,
+        };
+      })();
+    }
+
     try {
       const {resolution, blob, timestamp, metadata} =
           await this.checkPhotoResult(pendingPhotoResult);
@@ -509,6 +527,8 @@ export class Camera extends View implements CameraViewUI {
         resolution,
         shutterType: this.shutterType,
         isVideoSnapshot: false,
+        resolutionLevel: this.cameraManager.getPhotoResolutionLevel(resolution),
+        aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
       });
 
       try {
@@ -542,6 +562,8 @@ export class Camera extends View implements CameraViewUI {
         resolution,
         shutterType: this.shutterType,
         isVideoSnapshot: false,
+        resolutionLevel: this.cameraManager.getPhotoResolutionLevel(resolution),
+        aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
       });
 
       // Save reference.
@@ -653,6 +675,10 @@ export class Camera extends View implements CameraViewUI {
             shutterType: this.shutterType,
             docResult,
             docFixType: fixType,
+            resolutionLevel: this.cameraManager.getPhotoResolutionLevel(
+                originImage.resolution),
+            aspectRatioSet:
+                this.cameraManager.getAspectRatioSet(originImage.resolution),
           });
         };
 
@@ -782,6 +808,8 @@ export class Camera extends View implements CameraViewUI {
         duration,
         shutterType: this.shutterType,
         gifResult,
+        resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
+        aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
       });
     };
 
@@ -827,6 +855,8 @@ export class Camera extends View implements CameraViewUI {
         resolution,
         shutterType: this.shutterType,
         everPaused,
+        resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
+        aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
       });
       await this.resultSaver.finishSaveVideo(videoSaver);
       state.set(

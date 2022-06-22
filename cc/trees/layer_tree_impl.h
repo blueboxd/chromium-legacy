@@ -165,6 +165,7 @@ class CC_EXPORT LayerTreeImpl {
       const scoped_refptr<DisplayItemList>& display_list);
   TargetColorParams GetTargetColorParams(
       gfx::ContentColorUsage content_color_usage) const;
+  bool IsReadyToActivate() const;
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------
@@ -221,9 +222,14 @@ class CC_EXPORT LayerTreeImpl {
   // Adapts an iterator of std::unique_ptr<LayerImpl> to an iterator of
   // LayerImpl*.
   template <typename Iterator>
-  class IteratorAdapter
-      : public std::iterator<std::forward_iterator_tag, LayerImpl*> {
+  class IteratorAdapter {
    public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = LayerImpl*;
+    using difference_type = std::ptrdiff_t;
+    using pointer = LayerImpl**;
+    using reference = LayerImpl*&;
+
     explicit IteratorAdapter(Iterator it) : it_(it) {}
     bool operator==(IteratorAdapter o) const { return it_ == o.it_; }
     bool operator!=(IteratorAdapter o) const { return !(*this == o); }
@@ -491,11 +497,6 @@ class CC_EXPORT LayerTreeImpl {
   }
 
   void ForceRedrawNextActivation() { next_activation_forces_redraw_ = true; }
-
-  void set_has_ever_been_drawn(bool has_drawn) {
-    has_ever_been_drawn_ = has_drawn;
-  }
-  bool has_ever_been_drawn() const { return has_ever_been_drawn_; }
 
   void set_ui_resource_request_queue(UIResourceRequestQueue queue);
 
@@ -895,8 +896,6 @@ class CC_EXPORT LayerTreeImpl {
   bool needs_surface_ranges_sync_;
 
   bool next_activation_forces_redraw_;
-
-  bool has_ever_been_drawn_;
 
   bool handle_visibility_changed_;
 

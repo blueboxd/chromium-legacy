@@ -496,8 +496,6 @@ void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
         /*update_theme_color_cache=*/true);
   } else if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
     GetDocument().ColorSchemeMetaChanged();
-  } else if (EqualIgnoringASCIICase(name_value, "battery-savings")) {
-    GetDocument().BatterySavingsMetaChanged();
   } else if (EqualIgnoringASCIICase(name_value, "supports-reduced-motion")) {
     GetDocument().SupportsReducedMotionMetaChanged();
   }
@@ -584,10 +582,6 @@ void HTMLMetaElement::ProcessContent() {
     GetDocument().ColorSchemeMetaChanged();
     return;
   }
-  if (EqualIgnoringASCIICase(name_value, "battery-savings")) {
-    GetDocument().BatterySavingsMetaChanged();
-    return;
-  }
 
   if (EqualIgnoringASCIICase(name_value, "supports-reduced-motion")) {
     GetDocument().SupportsReducedMotionMetaChanged();
@@ -624,7 +618,7 @@ void HTMLMetaElement::ProcessContent() {
     // TODO(1031476): The Web Monetization specification is an unofficial draft,
     // available at https://webmonetization.org/specification.html
     // For now, only use counters are implemented in Blink.
-    if (!GetDocument().ParentDocument()) {
+    if (GetDocument().IsInOutermostMainFrame()) {
       UseCounter::Count(&GetDocument(),
                         WebFeature::kHTMLMetaElementMonetization);
     }

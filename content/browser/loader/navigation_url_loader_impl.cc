@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/scoped_refptr.h"
@@ -983,11 +984,6 @@ void NavigationURLLoaderImpl::OnAcceptCHFrameReceived(
     const std::vector<network::mojom::WebClientHintsType>& accept_ch_frame,
     OnAcceptCHFrameReceivedCallback callback) {
   received_accept_ch_frame_ = true;
-  if (!base::FeatureList::IsEnabled(network::features::kAcceptCHFrame)) {
-    std::move(callback).Run(net::OK);
-    return;
-  }
-
   LogAcceptCHFrameStatus(AcceptCHFrameRestart::kFramePresent);
 
   // Given that this is happening in the middle of navigation, there should

@@ -21,7 +21,6 @@
 #include "chrome/browser/ash/policy/core/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_handler.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
-#include "chrome/browser/ash/policy/enrollment/tpm_enrollment_key_signing_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -137,13 +136,6 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingAttestation() {
   DoEnroll(policy::DMAuth::NoAuth());
 }
 
-void EnterpriseEnrollmentHelperImpl::EnrollForOfflineDemo() {
-  CHECK_EQ(enrollment_config_.mode,
-           policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
-  // The tokens are not used in offline demo mode.
-  DoEnroll(policy::DMAuth::NoAuth());
-}
-
 void EnterpriseEnrollmentHelperImpl::ClearAuth(base::OnceClosure callback) {
   if (oauth_status_ != OAUTH_NOT_STARTED) {
     if (oauth_fetcher_) {
@@ -168,8 +160,6 @@ void EnterpriseEnrollmentHelperImpl::ClearAuth(base::OnceClosure callback) {
 void EnterpriseEnrollmentHelperImpl::DoEnroll(policy::DMAuth auth_data) {
   DCHECK(auth_data_.empty() || auth_data_ == auth_data);
   DCHECK(enrollment_config_.is_mode_attestation() ||
-         enrollment_config_.mode ==
-             policy::EnrollmentConfig::MODE_OFFLINE_DEMO ||
          oauth_status_ == OAUTH_STARTED_WITH_AUTH_CODE ||
          oauth_status_ == OAUTH_STARTED_WITH_TOKEN);
   // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
@@ -206,8 +196,6 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(policy::DMAuth auth_data) {
   // attestation flow for testing.
   attestation::AttestationFlow* attestation_flow =
       connector->GetAttestationFlow();
-  auto signing_service =
-      std::make_unique<policy::TpmEnrollmentKeySigningService>();
   // DeviceDMToken callback is empty here because for device policies this
   // DMToken is already provided in the policy fetch requests.
   auto client = policy::CreateDeviceCloudPolicyClientAsh(
@@ -218,8 +206,7 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(policy::DMAuth auth_data) {
 
   enrollment_handler_ = std::make_unique<policy::EnrollmentHandler>(
       policy_manager->device_store(), InstallAttributes::Get(),
-      connector->GetStateKeysBroker(), attestation_flow,
-      std::move(signing_service), std::move(client),
+      connector->GetStateKeysBroker(), attestation_flow, std::move(client),
       policy::BrowserPolicyConnectorAsh::CreateBackgroundTaskRunner(),
       ad_join_delegate_, enrollment_config_, license_type_, auth_data_.Clone(),
       InstallAttributes::Get()->GetDeviceId(),
@@ -521,10 +508,6 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
       break;
     case policy::EnrollmentStatus::DM_TOKEN_STORE_FAILED:
       UMA(policy::kMetricEnrollmentStoreDMTokenFailed);
-      break;
-    case policy::EnrollmentStatus::OFFLINE_POLICY_LOAD_FAILED:
-    case policy::EnrollmentStatus::OFFLINE_POLICY_DECODING_FAILED:
-      UMA(policy::kMetricEnrollmentRegisterPolicyResponseInvalid);
       break;
     case policy::EnrollmentStatus::MAY_NOT_BLOCK_DEV_MODE:
       UMA(policy::kMetricEnrollmentMayNotBlockDevMode);

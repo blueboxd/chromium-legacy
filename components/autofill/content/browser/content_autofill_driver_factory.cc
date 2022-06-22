@@ -21,6 +21,34 @@
 
 namespace autofill {
 
+namespace {
+
+bool ShouldEnableHeavyFormDataScraping(const version_info::Channel channel) {
+  switch (channel) {
+    case version_info::Channel::CANARY:
+    case version_info::Channel::DEV:
+      return true;
+    case version_info::Channel::STABLE:
+    case version_info::Channel::BETA:
+    case version_info::Channel::UNKNOWN:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+}  // namespace
+
+void BrowserDriverInitHook(AutofillClient* client,
+                           const std::string& app_locale,
+                           ContentAutofillDriver* driver) {
+  driver->set_autofill_manager(std::make_unique<BrowserAutofillManager>(
+      driver, client, app_locale,
+      AutofillManager::EnableDownloadManager(true)));
+  if (client && ShouldEnableHeavyFormDataScraping(client->GetChannel()))
+    driver->GetAutofillAgent()->EnableHeavyFormDataScraping();
+}
+
 const char ContentAutofillDriverFactory::
     kContentAutofillDriverFactoryWebContentsUserDataKey[] =
         "web_contents_autofill_driver_factory";
@@ -29,19 +57,13 @@ const char ContentAutofillDriverFactory::
 void ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
     content::WebContents* contents,
     AutofillClient* client,
-    const std::string& app_locale,
-    BrowserAutofillManager::AutofillDownloadManagerState
-        enable_download_manager,
-    AutofillManager::AutofillManagerFactoryCallback
-        autofill_manager_factory_callback) {
+    DriverInitCallback driver_init_hook) {
   if (FromWebContents(contents))
     return;
 
-  contents->SetUserData(
-      kContentAutofillDriverFactoryWebContentsUserDataKey,
-      base::WrapUnique(new ContentAutofillDriverFactory(
-          contents, client, app_locale, enable_download_manager,
-          std::move(autofill_manager_factory_callback))));
+  contents->SetUserData(kContentAutofillDriverFactoryWebContentsUserDataKey,
+                        base::WrapUnique(new ContentAutofillDriverFactory(
+                            contents, client, std::move(driver_init_hook))));
 }
 
 // static
@@ -75,19 +97,19 @@ void ContentAutofillDriverFactory::BindAutofillDriver(
 ContentAutofillDriverFactory::ContentAutofillDriverFactory(
     content::WebContents* web_contents,
     AutofillClient* client,
-    const std::string& app_locale,
-    BrowserAutofillManager::AutofillDownloadManagerState
-        enable_download_manager,
-    AutofillManager::AutofillManagerFactoryCallback
-        autofill_manager_factory_callback)
+    DriverInitCallback driver_init_hook)
     : content::WebContentsObserver(web_contents),
       client_(client),
-      app_locale_(app_locale),
-      enable_download_manager_(enable_download_manager),
-      autofill_manager_factory_callback_(
-          std::move(autofill_manager_factory_callback)) {}
+      driver_init_hook_(std::move(driver_init_hook)) {}
 
 ContentAutofillDriverFactory::~ContentAutofillDriverFactory() = default;
+
+std::unique_ptr<ContentAutofillDriver>
+ContentAutofillDriverFactory::CreateDriver(content::RenderFrameHost* rfh) {
+  auto driver = std::make_unique<ContentAutofillDriver>(rfh, &router_);
+  driver_init_hook_.Run(driver.get());
+  return driver;
+}
 
 ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     content::RenderFrameHost* render_frame_host) {
@@ -116,9 +138,7 @@ ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     //    calls `DriverForFrame(render_frame_host)`.
     // 5. `render_frame_host->~RenderFrameHostImpl()` finishes.
     if (render_frame_host->IsRenderFrameCreated()) {
-      driver = std::make_unique<ContentAutofillDriver>(
-          render_frame_host, client(), app_locale_, &router_,
-          enable_download_manager_, autofill_manager_factory_callback_);
+      driver = CreateDriver(render_frame_host);
       DCHECK_EQ(driver_map_.find(render_frame_host)->second.get(),
                 driver.get());
     } else {
@@ -141,8 +161,10 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
   DCHECK(driver);
 
   if (render_frame_host->GetLifecycleState() !=
-      content::RenderFrameHost::LifecycleState::kPrerendering) {
-    driver->MaybeReportAutofillWebOTPMetrics();
+          content::RenderFrameHost::LifecycleState::kPrerendering &&
+      driver->autofill_manager()) {
+    driver->autofill_manager()->ReportAutofillWebOTPMetrics(
+        render_frame_host->DocumentUsedWebOTP());
   }
 
   // If the popup menu has been triggered from within an iframe and that
@@ -219,8 +241,6 @@ void ContentAutofillDriverFactory::ReadyToCommitNavigation(
       content::RenderFrameHost::LifecycleState::kPrerendering) {
     return;
   }
-  if (auto* driver = DriverForFrame(render_frame_host))
-    driver->MaybeReportAutofillWebOTPMetrics();
 }
 
 }  // namespace autofill

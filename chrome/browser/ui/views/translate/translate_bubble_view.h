@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/translate/target_language_combobox_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_test_utils.h"
-#include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -285,9 +284,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   raw_ptr<views::View> error_view_ = nullptr;
   raw_ptr<views::View> advanced_view_source_ = nullptr;
   raw_ptr<views::View> advanced_view_target_ = nullptr;
-
-  std::unique_ptr<SourceLanguageComboboxModel> source_language_combobox_model_;
-  std::unique_ptr<TargetLanguageComboboxModel> target_language_combobox_model_;
 
   raw_ptr<views::Combobox> source_language_combobox_ = nullptr;
   raw_ptr<views::Combobox> target_language_combobox_ = nullptr;

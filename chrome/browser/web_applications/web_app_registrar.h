@@ -15,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -64,7 +65,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // TODO(https://crbug.com/1182363): should be removed when id is introduced to
   // manifest.
   const WebApp* GetAppByStartUrl(const GURL& start_url) const;
-  std::vector<AppId> GetAppsFromSyncAndPendingInstallation();
+  std::vector<AppId> GetAppsFromSyncAndPendingInstallation() const;
 
   void Start();
   void Shutdown();
@@ -89,6 +90,11 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // like shortcuts. |IsLocallyInstalled| apps is a subset of |IsInstalled|
   // apps. On Chrome OS all apps are always locally installed.
   bool IsLocallyInstalled(const AppId& app_id) const;
+
+  // Returns true if the app was actively installed, meaning the app has
+  // involved some form of user or administrator action to either install it or
+  // configure it to behave like an app.
+  bool IsActivelyInstalled(const AppId& app_id) const;
 
   // Returns the permissions policy declared as declared in the manifest for
   // the app with |app_id|. This permissions policy is not yet parsed by the
@@ -142,6 +148,11 @@ class WebAppRegistrar : public ProfileManagerObserver {
   bool IsDisallowedLaunchProtocol(const AppId& app_id,
                                   const std::string& protocol_scheme) const;
 
+  // Returns true if the web app with the |app_id| has registered to handle
+  // |protocol_scheme|.
+  bool IsRegisteredLaunchProtocol(const AppId& app_id,
+                                  const std::string& protocol_scheme) const;
+
   // Gets all allowed launch protocols from all installed apps.
   base::flat_set<std::string> GetAllAllowedLaunchProtocols() const;
 
@@ -166,9 +177,9 @@ class WebAppRegistrar : public ProfileManagerObserver {
   const apps::ShareTarget* GetAppShareTarget(const AppId& app_id) const;
   blink::mojom::HandleLinks GetAppHandleLinks(const AppId& app_id) const;
   const apps::FileHandlers* GetAppFileHandlers(const AppId& app_id) const;
-  const apps::ProtocolHandlers* GetAppProtocolHandlers(
-      const AppId& app_id) const;
   bool IsAppFileHandlerPermissionBlocked(const web_app::AppId& app_id) const;
+  bool IsIsolated(const AppId& app_id) const;
+
   // Returns the state of the File Handling API for the given app.
   ApiApprovalState GetAppFileHandlerApprovalState(const AppId& app_id) const;
   // Returns true iff it's expected that File Handlers have been, **or are in
@@ -182,7 +193,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
   absl::optional<GURL> GetAppScopeInternal(const AppId& app_id) const;
 
   DisplayMode GetAppDisplayMode(const AppId& app_id) const;
-  DisplayMode GetAppUserDisplayMode(const AppId& app_id) const;
+  absl::optional<UserDisplayMode> GetAppUserDisplayMode(
+      const AppId& app_id) const;
   std::vector<DisplayMode> GetAppDisplayModeOverride(const AppId& app_id) const;
 
   // Returns the "url_handlers" field from the app manifest.
@@ -309,7 +321,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
   void NotifyWebAppInstallTimeChanged(const AppId& app_id,
                                       const base::Time& time);
   void NotifyWebAppUserDisplayModeChanged(const AppId& app_id,
-                                          DisplayMode user_display_mode);
+                                          UserDisplayMode user_display_mode);
   void NotifyWebAppRunOnOsLoginModeChanged(
       const AppId& app_id,
       RunOnOsLoginMode run_on_os_login_mode);
@@ -416,8 +428,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   bool registry_profile_being_deleted_ = false;
 
  private:
-  bool IsIsolated(const AppId& app_id) const;
-
   const raw_ptr<Profile> profile_;
   raw_ptr<WebAppPolicyManager> policy_manager_ = nullptr;
   raw_ptr<WebAppTranslationManager> translation_manager_ = nullptr;

@@ -252,6 +252,37 @@ TEST_F(BluetoothFlossTest, RemoveBonding) {
   EXPECT_FALSE(device->IsPaired());
 }
 
+TEST_F(BluetoothFlossTest, Disconnect) {
+  InitializeAdapter();
+  DiscoverDevices();
+
+  BluetoothDevice* device =
+      adapter_->GetDevice(FakeFlossAdapterClient::kJustWorksAddress);
+  ASSERT_TRUE(device);
+  ASSERT_FALSE(device->IsPaired());
+
+  StrictMock<MockPairingDelegate> pairing_delegate;
+  base::RunLoop run_loop;
+  device->Connect(
+      &pairing_delegate,
+      base::BindLambdaForTesting(
+          [&run_loop](absl::optional<BluetoothDevice::ConnectErrorCode> error) {
+            EXPECT_FALSE(error.has_value());
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  EXPECT_TRUE(device->IsPaired());
+
+  base::RunLoop run_loop2;
+  device->Disconnect(base::BindLambdaForTesting([&run_loop2]() {
+                       SUCCEED();
+                       run_loop2.Quit();
+                     }),
+                     base::BindLambdaForTesting([]() { FAIL(); }));
+  run_loop2.Run();
+}
+
 TEST_F(BluetoothFlossTest, UpdatesDeviceConnectionState) {
   InitializeAdapter();
   DiscoverDevices();
@@ -286,7 +317,7 @@ TEST_F(BluetoothFlossTest, AdapterInitialDevices) {
   // Simulate adapter enabled event.
   fake_floss_manager_client_->NotifyObservers(
       base::BindLambdaForTesting([](FlossManagerClient::Observer* observer) {
-        observer->AdapterEnabledChanged(/*hci=*/0, /*enabled=*/true);
+        observer->AdapterEnabledChanged(/*adapter=*/0, /*enabled=*/true);
       }));
   base::RunLoop().RunUntilIdle();
 
@@ -301,6 +332,77 @@ TEST_F(BluetoothFlossTest, AdapterInitialDevices) {
   EXPECT_TRUE(device2->IsPaired());
   EXPECT_TRUE(device1->IsConnected());
   EXPECT_FALSE(device2->IsConnected());
+  EXPECT_EQ(device1->GetBluetoothClass(),
+            FakeFlossAdapterClient::kHeadsetClassOfDevice);
+  EXPECT_EQ(device2->GetBluetoothClass(),
+            FakeFlossAdapterClient::kHeadsetClassOfDevice);
+  EXPECT_EQ(device1->GetType(),
+            device::BluetoothTransport::BLUETOOTH_TRANSPORT_LE);
+  EXPECT_EQ(device2->GetType(),
+            device::BluetoothTransport::BLUETOOTH_TRANSPORT_LE);
+}
+
+TEST_F(BluetoothFlossTest, DisabledAdapterClearsDevices) {
+  InitializeAdapter();
+  DiscoverDevices();
+
+  EXPECT_TRUE(adapter_->GetDevices().size() > 0);
+  // Simulate adapter enabled event.
+  fake_floss_manager_client_->NotifyObservers(
+      base::BindLambdaForTesting([](FlossManagerClient::Observer* observer) {
+        observer->AdapterEnabledChanged(/*adapter=*/0, /*enabled=*/false);
+      }));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(adapter_->GetDevices().empty());
+}
+
+TEST_F(BluetoothFlossTest, RepeatsDiscoverySession) {
+  InitializeAdapter();
+  DiscoverDevices();
+
+  EXPECT_TRUE(adapter_->IsDiscovering());
+
+  // Simulate discovery state changed to False.
+  fake_floss_adapter_client_->NotifyObservers(
+      base::BindLambdaForTesting([](FlossAdapterClient::Observer* observer) {
+        observer->AdapterDiscoveringChanged(false);
+      }));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(adapter_->IsDiscovering());
+
+  // Force discovery to fail after discovering is stopped.
+  fake_floss_adapter_client_->FailNextDiscovery();
+  fake_floss_adapter_client_->NotifyObservers(
+      base::BindLambdaForTesting([](FlossAdapterClient::Observer* observer) {
+        observer->AdapterDiscoveringChanged(false);
+      }));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(adapter_->IsDiscovering());
+}
+
+TEST_F(BluetoothFlossTest, HandlesClearedDevices) {
+  InitializeAdapter();
+  DiscoverDevices();
+
+  BluetoothDevice* device =
+      adapter_->GetDevice(FakeFlossAdapterClient::kJustWorksAddress);
+  EXPECT_TRUE(device != nullptr);
+
+  // Simulate clearing away a device.
+  fake_floss_adapter_client_->NotifyObservers(
+      base::BindLambdaForTesting([](FlossAdapterClient::Observer* observer) {
+        FlossDeviceId id{.address = FakeFlossAdapterClient::kJustWorksAddress,
+                         .name = ""};
+        observer->AdapterClearedDevice(id);
+      }));
+
+  base::RunLoop().RunUntilIdle();
+  BluetoothDevice* same_device =
+      adapter_->GetDevice(FakeFlossAdapterClient::kJustWorksAddress);
+  EXPECT_TRUE(same_device == nullptr);
 }
 
 }  // namespace floss

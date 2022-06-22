@@ -200,6 +200,30 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
 }
 
+// Tests that the closure provided to RunOrDeferUntilTransitionIsComplete is
+// run. Some platforms may be synchronous (lambda is executed immediately) and
+// others (e.g. Mac) will run it asynchronously (after the transition).
+IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
+                       RunOrDeferClosureDuringTransition) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  GetFullscreenController()->EnterFullscreenModeForTab(tab->GetMainFrame(), {});
+  ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
+
+  base::RunLoop run_loop;
+  bool lambda_called = false;
+  ASSERT_NO_FATAL_FAILURE(
+      GetFullscreenController()->RunOrDeferUntilTransitionIsComplete(
+          base::BindLambdaForTesting([&lambda_called, &run_loop]() {
+            lambda_called = true;
+            run_loop.Quit();
+          })));
+  // Lambda may run synchronously on some platforms. If it did not already run,
+  // block until it has.
+  if (!lambda_called)
+    run_loop.Run();
+  EXPECT_TRUE(lambda_called);
+}
+
 // Test is flaky on Lacros: https://crbug.com/1250091
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_BrowserFullscreenExit DISABLED_BrowserFullscreenExit
@@ -406,8 +430,14 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 }
 
 // Tests mouse lock then fullscreen.
+// TODO(crbug.com/1318638): Re-enable this test
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_MouseLockThenFullscreen DISABLED_MouseLockThenFullscreen
+#else
+#define MAYBE_MouseLockThenFullscreen MouseLockThenFullscreen
+#endif
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       MouseLockThenFullscreen) {
+                       MAYBE_MouseLockThenFullscreen) {
   auto test_server_handle = embedded_test_server()->StartAndReturnHandle();
   ASSERT_TRUE(test_server_handle);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(

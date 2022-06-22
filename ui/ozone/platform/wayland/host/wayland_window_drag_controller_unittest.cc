@@ -371,6 +371,8 @@ TEST_P(WaylandWindowDragControllerTest,
 
   Sync();
   // Verify that the proper window is being dragged.
+  EXPECT_EQ(window_2.get(),
+            window_manager()->GetCurrentPointerOrTouchFocusedWindow());
   EXPECT_EQ(window_2.get(), drag_controller()->origin_window_for_testing());
   Mock::VerifyAndClearExpectations(&delegate_);
 
@@ -868,7 +870,7 @@ TEST_P(WaylandWindowDragControllerTest, RestoreDuringWindowDragSession) {
   SendConfigureEvent(surface_->xdg_surface(), maximized_bounds.width(),
                      maximized_bounds.height(), 1, states.get());
   Sync();
-  auto restored_bounds = window_->GetRestoredBoundsInPixels();
+  auto restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(original_bounds, restored_bounds);
 
   // Start a window drag session.

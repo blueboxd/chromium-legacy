@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -36,6 +39,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ui/base/tablet_state.h"
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -126,10 +130,10 @@ AppServiceContextMenu::AppServiceContextMenu(
     Profile* profile,
     const std::string& app_id,
     AppListControllerDelegate* controller,
-    bool add_sort_options)
+    ash::AppListItemContext item_context)
     : AppContextMenu(delegate, profile, app_id, controller),
       proxy_(apps::AppServiceProxyFactory::GetForProfile(profile)),
-      add_sort_options_(add_sort_options) {
+      item_context_(item_context) {
   proxy_->AppRegistryCache().ForOneApp(
       app_id, [this](const apps::AppUpdate& update) {
         app_type_ = apps_util::IsInstalled(update.Readiness())
@@ -248,6 +252,10 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
     case ash::REORDER_BY_COLOR:
       RequestAppListSort(profile(), ash::AppListSortOrder::kColor);
+      break;
+
+    case ash::HIDE_CONTINUE_SECTION:
+      ash::AppListController::Get()->HideContinueSection();
       break;
 
     default:
@@ -392,9 +400,10 @@ void AppServiceContextMenu::OnGetMenuModel(
     }
   }
 
-  if (add_sort_options_) {
+  const ui::ColorId color_id = apps::GetColorIdForMenuItemIcon();
+  if (item_context_ == ash::AppListItemContext::kAppsGrid &&
+      ash::features::IsLauncherAppSortEnabled()) {
     reorder_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
-    const ui::ColorId color_id = apps::GetColorIdForMenuItemIcon();
     // As all the options below are only for tests and are expected to change in
     // the future, the strings are directly written as the parameters.
     reorder_submenu_->AddItemWithIcon(
@@ -418,6 +427,17 @@ void AppServiceContextMenu::OnGetMenuModel(
         reorder_submenu_.get(),
         ui::ImageModel::FromVectorIcon(
             GetMenuItemVectorIcon(ash::REORDER_SUBMENU, /*string_id=*/-1),
+            color_id));
+  }
+
+  if (item_context_ == ash::AppListItemContext::kRecentApps &&
+      ash::features::IsLauncherHideContinueSectionEnabled()) {
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model->AddItemWithIcon(
+        ash::HIDE_CONTINUE_SECTION,
+        l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_HIDE_CONTINUE_SECTION),
+        ui::ImageModel::FromVectorIcon(
+            GetMenuItemVectorIcon(ash::HIDE_CONTINUE_SECTION, /*string_id=*/-1),
             color_id));
   }
 

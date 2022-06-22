@@ -30,6 +30,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/notreached.h"
 #include "cc/input/scroll_snap_data.h"
+#include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -53,12 +54,12 @@ class SingleThreadTaskRunner;
 
 namespace cc {
 class AnimationHost;
+class AnimationTimeline;
 class Layer;
 }  // namespace cc
 
 namespace blink {
 class ChromeClient;
-class CompositorAnimationTimeline;
 class Document;
 class LayoutBox;
 class LayoutObject;
@@ -250,7 +251,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual cc::AnimationHost* GetCompositorAnimationHost() const {
     return nullptr;
   }
-  virtual CompositorAnimationTimeline* GetCompositorAnimationTimeline() const {
+  virtual cc::AnimationTimeline* GetCompositorAnimationTimeline() const {
     return nullptr;
   }
 

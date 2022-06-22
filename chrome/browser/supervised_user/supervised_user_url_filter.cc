@@ -177,29 +177,25 @@ namespace {
 const char kManagedSiteListConflictHistogramName[] =
     "FamilyUser.ManagedSiteList.Conflict";
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // UMA histogram FamilyUser.WebFilterType
 // Reports WebFilterType which indicates web filter behaviour are used for
-// current Family Link user on Chrome OS.
+// current Family Link user.
 constexpr char kWebFilterTypeHistogramName[] = "FamilyUser.WebFilterType";
 
 // UMA histogram FamilyUser.ManualSiteListType
 // Reports ManualSiteListType which indicates approved list and blocked list
-// usage for current Family Link user on Chrome OS.
+// usage for current Family Link user.
 constexpr char kManagedSiteListHistogramName[] = "FamilyUser.ManagedSiteList";
 
 // UMA histogram FamilyUser.ManagedSiteListCount.Approved
-// Reports the number of approved urls and domains for current Family Link user
-// on Chrome OS.
+// Reports the number of approved urls and domains for current Family Link user.
 constexpr char kApprovedSitesCountHistogramName[] =
     "FamilyUser.ManagedSiteListCount.Approved";
 
 // UMA histogram FamilyUser.ManagedSiteListCount.Blocked
-// Reports the number of blocked urls and domains for current Family Link user
-// on Chrome OS.
+// Reports the number of blocked urls and domains for current Family Link user.
 constexpr char kBlockedSitesCountHistogramName[] =
     "FamilyUser.ManagedSiteListCount.Blocked";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }  // namespace
 
 SupervisedUserURLFilter::SupervisedUserURLFilter()
@@ -213,7 +209,6 @@ SupervisedUserURLFilter::~SupervisedUserURLFilter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // static
 const char* SupervisedUserURLFilter::GetWebFilterTypeHistogramNameForTest() {
   return kWebFilterTypeHistogramName;
@@ -236,8 +231,6 @@ SupervisedUserURLFilter::GetBlockedSitesCountHistogramNameForTest() {
   return kBlockedSitesCountHistogramName;
 }
 
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 // static
 const char*
 SupervisedUserURLFilter::GetManagedSiteListConflictHistogramNameForTest() {
@@ -259,8 +252,8 @@ bool SupervisedUserURLFilter::ShouldSkipParentManualAllowlistFiltering(
 // static
 SupervisedUserURLFilter::FilteringBehavior
 SupervisedUserURLFilter::BehaviorFromInt(int behavior_value) {
-  DCHECK_GE(behavior_value, ALLOW);
-  DCHECK_LE(behavior_value, BLOCK);
+  DCHECK(behavior_value == ALLOW || behavior_value == BLOCK)
+      << "SupervisedUserURLFilter value not supported: " << behavior_value;
   return static_cast<FilteringBehavior>(behavior_value);
 }
 
@@ -569,7 +562,6 @@ void SupervisedUserURLFilter::SetBlockingTaskRunnerForTesting(
   blocking_task_runner_ = task_runner;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 SupervisedUserURLFilter::WebFilterType
 SupervisedUserURLFilter::GetWebFilterType() const {
   // If the default filtering behavior is not block, it means the web filter
@@ -640,7 +632,6 @@ void SupervisedUserURLFilter::ReportManagedSiteListMetrics() const {
 void SupervisedUserURLFilter::SetFilterInitialized(bool is_filter_initialized) {
   is_filter_initialized_ = is_filter_initialized;
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool SupervisedUserURLFilter::RunAsyncChecker(
     const GURL& url,

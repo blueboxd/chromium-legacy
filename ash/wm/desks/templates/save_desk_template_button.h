@@ -28,7 +28,8 @@ class ASH_EXPORT SaveDeskTemplateButton : public PillButton,
 
   SaveDeskTemplateButton(base::RepeatingClosure callback,
                          const std::u16string& text,
-                         Type button_type);
+                         Type button_type,
+                         const gfx::VectorIcon* icon);
   SaveDeskTemplateButton(const SaveDeskTemplateButton&) = delete;
   SaveDeskTemplateButton& operator=(const SaveDeskTemplateButton&) = delete;
   ~SaveDeskTemplateButton() override;
@@ -39,7 +40,7 @@ class ASH_EXPORT SaveDeskTemplateButton : public PillButton,
   // OverviewHighlightableView:
   views::View* GetView() override;
   void MaybeActivateHighlightedView() override;
-  void MaybeCloseHighlightedView() override;
+  void MaybeCloseHighlightedView(bool primary_action) override;
   void MaybeSwapHighlightedView(bool right) override;
   void OnViewHighlighted() override;
   void OnViewUnhighlighted() override;

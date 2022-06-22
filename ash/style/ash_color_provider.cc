@@ -20,7 +20,6 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -314,6 +313,9 @@ bool AshColorProvider::IsDarkModeEnabled() const {
     return false;
 
   if (features::IsDarkLightModeEnabled()) {
+    if (is_dark_mode_enabled_in_oobe_for_testing_.has_value())
+      return is_dark_mode_enabled_in_oobe_for_testing_.value();
+
     // Always use the LIGHT theme in all OOBE screens except the last two
     if (force_oobe_light_mode_)
       return false;
@@ -336,6 +338,12 @@ bool AshColorProvider::IsDarkModeEnabled() const {
 
 void AshColorProvider::SetDarkModeEnabledForTest(bool enabled) {
   DCHECK(features::IsDarkLightModeEnabled());
+  if (Shell::Get()->session_controller()->GetSessionState() ==
+      session_manager::SessionState::OOBE) {
+    auto closure = GetNotifyOnDarkModeChangeClosure();
+    is_dark_mode_enabled_in_oobe_for_testing_ = enabled;
+    return;
+  }
   if (IsDarkModeEnabled() != enabled) {
     ToggleColorMode();
   }
@@ -366,12 +374,10 @@ bool AshColorProvider::IsThemed() const {
 
 void AshColorProvider::ToggleColorMode() {
   DCHECK(active_user_pref_service_);
-  const bool value = !IsDarkModeEnabled();
-  active_user_pref_service_->SetBoolean(prefs::kDarkModeEnabled, value);
+  active_user_pref_service_->SetBoolean(prefs::kDarkModeEnabled,
+                                        !IsDarkModeEnabled());
   active_user_pref_service_->CommitPendingWrite();
   NotifyDarkModeEnabledPrefChange();
-  base::UmaHistogramBoolean("Ash.DarkTheme.SystemTray.IsDarkModeEnabled",
-                            value);
 }
 
 void AshColorProvider::UpdateColorModeThemed(bool is_themed) {
@@ -452,7 +458,6 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
       return gfx::kGoogleGrey500;
     case ContentLayerType::kIconColorSecondaryBackground:
       return use_dark_color ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
-    case ContentLayerType::kAppStateIndicatorColor:
     case ContentLayerType::kScrollBarColor:
     case ContentLayerType::kSliderColorInactive:
     case ContentLayerType::kRadioColorInactive:
@@ -470,6 +475,7 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
     case ContentLayerType::kProgressBarColorForeground:
       return use_dark_color ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
     case ContentLayerType::kProgressBarColorBackground:
+    case ContentLayerType::kCaptureRegionColor:
       return SkColorSetA(
           use_dark_color ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600, 0x4C);
     case ContentLayerType::kSwitchTrackColorActive:
@@ -491,6 +497,7 @@ SkColor AshColorProvider::GetContentLayerColorImpl(ContentLayerType type,
     case ContentLayerType::kHighlightColorHover:
       return use_dark_color ? SkColorSetA(SK_ColorWHITE, 0x0D)
                             : SkColorSetA(SK_ColorBLACK, 0x14);
+    case ContentLayerType::kAppStateIndicatorColor:
     case ContentLayerType::kButtonIconColor:
     case ContentLayerType::kButtonLabelColor:
       return use_dark_color ? gfx::kGoogleGrey200 : gfx::kGoogleGrey900;

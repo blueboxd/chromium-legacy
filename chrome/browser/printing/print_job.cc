@@ -17,11 +17,11 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/printed_document.h"
 
@@ -33,6 +33,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
+#include "printing/page_number.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/printed_page_win.h"
 #include "printing/printing_features.h"
@@ -131,11 +132,7 @@ void PrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
   std::unique_ptr<PrintSettings> settings = query->ExtractSettings();
 
 #if BUILDFLAG(IS_WIN)
-  pdf_page_mapping_ = PageRange::GetPages(settings->ranges());
-  if (pdf_page_mapping_.empty()) {
-    for (uint32_t i = 0; i < page_count; i++)
-      pdf_page_mapping_.push_back(i);
-  }
+  pdf_page_mapping_ = PageNumber::GetPages(settings->ranges(), page_count);
 #endif
 
   auto new_doc = base::MakeRefCounted<PrintedDocument>(std::move(settings),
@@ -211,13 +208,7 @@ void PrintJob::StartPrinting() {
   // Set the flag right now.
   is_job_pending_ = true;
 
-  // Tell everyone!
-  auto details = base::MakeRefCounted<JobEventDetails>(JobEventDetails::NEW_DOC,
-                                                       0, document_.get());
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PRINT_JOB_EVENT,
-      content::Source<PrintJob>(this),
-      content::Details<JobEventDetails>(details.get()));
+  print_job_manager_->OnStarted(this);
 }
 
 void PrintJob::Stop() {
@@ -514,12 +505,7 @@ void PrintJob::OnFailed() {
 
   Stop();
 
-  // Make sure a `Cancel()` is broadcast.
-  auto details = base::MakeRefCounted<JobEventDetails>(JobEventDetails::FAILED,
-                                                       0, nullptr);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PRINT_JOB_EVENT, content::Source<PrintJob>(this),
-      content::Details<JobEventDetails>(details.get()));
+  print_job_manager_->OnFailed(this);
 
   for (auto& observer : observers_) {
     observer.OnFailed();
@@ -529,11 +515,7 @@ void PrintJob::OnFailed() {
 void PrintJob::OnDocDone(int job_id, PrintedDocument* document) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  auto details = base::MakeRefCounted<JobEventDetails>(
-      JobEventDetails::DOC_DONE, job_id, document);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PRINT_JOB_EVENT, content::Source<PrintJob>(this),
-      content::Details<JobEventDetails>(details.get()));
+  print_job_manager_->OnDocDone(this, document, job_id);
 
   for (auto& observer : observers_) {
     observer.OnDocDone(job_id, document);
@@ -554,12 +536,7 @@ void PrintJob::OnDocumentDone() {
   // Stop the worker thread.
   Stop();
 
-  auto details = base::MakeRefCounted<JobEventDetails>(
-      JobEventDetails::JOB_DONE, 0, document_.get());
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PRINT_JOB_EVENT,
-      content::Source<PrintJob>(this),
-      content::Details<JobEventDetails>(details.get()));
+  print_job_manager_->OnJobDone(this);
 
   for (auto& observer : observers_) {
     observer.OnJobDone();
@@ -627,15 +604,5 @@ void PrintJob::AddObserver(Observer& observer) {
 void PrintJob::RemoveObserver(Observer& observer) {
   observers_.RemoveObserver(&observer);
 }
-
-JobEventDetails::JobEventDetails(Type type,
-                                 int job_id,
-                                 PrintedDocument* document)
-    : document_(document), type_(type), job_id_(job_id) {}
-
-JobEventDetails::~JobEventDetails() {
-}
-
-PrintedDocument* JobEventDetails::document() const { return document_.get(); }
 
 }  // namespace printing

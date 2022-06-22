@@ -30,22 +30,16 @@ if (is_ios) {
 
 declare_args() {
   # Set to true to use the android unwinder V2 implementation.
-  use_android_unwinder_v2 = false
-
-  # If this running on a GPU FYI bot.
-  # TODO(https://crbug.com/1233871): Remove this again.
-  is_gpu_fyi_bot = false
+  use_android_unwinder_v2 = true
 }
 
 declare_args() {
   # Set to true to use lld, the LLVM linker.
   # In late bring-up on macOS (see docs/mac_lld.md).
   # Tentatively used on iOS, except in cronet builds (cronet still supports
-  # 32-bit builds, which lld doesn't support) or when targeting "catalyst"
-  # (which lld doesn't support either).
+  # 32-bit builds, which lld doesn't support).
   # The default linker everywhere else.
-  use_lld = is_clang && !(is_mac && is_gpu_fyi_bot) && current_os != "zos" &&
-            !(is_ios && (is_cronet_build || target_environment == "catalyst"))
+  use_lld = is_clang && current_os != "zos" && !(is_ios && is_cronet_build)
 }
 
 declare_args() {

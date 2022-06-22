@@ -11,10 +11,14 @@ namespace printing {
 
 class PrintTestContentRendererClient : public content::ContentRendererClient {
  public:
-  PrintTestContentRendererClient();
+  explicit PrintTestContentRendererClient(bool generate_tagged_pdfs);
   ~PrintTestContentRendererClient() override;
 
+  // content::ContentRendererClient:
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
+
+ private:
+  const bool generate_tagged_pdfs_;
 };
 
 }  // namespace printing

@@ -9,8 +9,6 @@
 
 #include <string>
 
-#include "build/buildflag.h"
-#include "chrome/common/buildflags.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/template_expressions.h"
@@ -34,13 +32,11 @@ class TerminalSource : public content::URLDataSource {
  private:
   TerminalSource(Profile* profile,
                  std::string source,
-                 std::string default_file);
+                 std::string default_file,
+                 bool ssh_allowed);
 
   // content::URLDataSource:
   std::string GetSource() override;
-#if !BUILDFLAG(OPTIMIZE_WEBUI)
-  bool AllowCaching() override;
-#endif
   void StartDataRequest(
       const GURL& url,
       const content::WebContents::Getter& wc_getter,
@@ -54,6 +50,8 @@ class TerminalSource : public content::URLDataSource {
   Profile* profile_;
   std::string source_;
   std::string default_file_;
+  const bool ssh_allowed_;
+  const base::FilePath downloads_;
   ui::TemplateReplacements replacements_;
 };
 

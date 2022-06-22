@@ -29,8 +29,7 @@ class StyleDifference {
     kTextDecorationOrColorChanged = 1 << 5,
     kBlendModeChanged = 1 << 6,
     kMaskChanged = 1 << 7,
-    // Whether background-color changed alpha to or from 1.
-    kHasAlphaChanged = 1 << 8,
+    kBackgroundColorChanged = 1 << 8,
     // If you add a value here, be sure to update kPropertyDifferenceCount.
   };
 
@@ -152,11 +151,11 @@ class StyleDifference {
   }
   void SetMaskChanged() { property_specific_differences_ |= kMaskChanged; }
 
-  bool HasAlphaChanged() const {
-    return property_specific_differences_ & kHasAlphaChanged;
+  bool BackgroundColorChanged() const {
+    return property_specific_differences_ & kBackgroundColorChanged;
   }
-  void SetHasAlphaChanged() {
-    property_specific_differences_ |= kHasAlphaChanged;
+  void SetBackgroundColorChanged() {
+    property_specific_differences_ |= kBackgroundColorChanged;
   }
 
   bool ScrollAnchorDisablingPropertyChanged() const {

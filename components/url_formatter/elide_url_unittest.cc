@@ -9,11 +9,11 @@
 #include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
@@ -694,6 +694,29 @@ TEST(TextEliderTest, FormatUrlForDisplayOmitSchemePathAndTrivialSubdomains) {
       u"مثال.إختبار",
       url_formatter::FormatUrlForDisplayOmitSchemePathAndTrivialSubdomains(
           GURL("https://xn--mgbh0fb.xn--kgbechtv/")));
+}
+
+TEST(TextEliderTest,
+     FormatUrlForDisplayOmitSchemePathTrivialSubdomainsAndMobilePrefix) {
+#if BUILDFLAG(IS_IOS)
+  EXPECT_EQ(
+      u"google.com",
+      url_formatter::
+          FormatUrlForDisplayOmitSchemePathTrivialSubdomainsAndMobilePrefix(
+              GURL("http://m.google.com/example")));
+  EXPECT_EQ(
+      u"google.com",
+      url_formatter::
+          FormatUrlForDisplayOmitSchemePathTrivialSubdomainsAndMobilePrefix(
+              GURL("http://www.m.google.com/example")));
+  EXPECT_EQ(
+      u"google.com",
+      url_formatter::
+          FormatUrlForDisplayOmitSchemePathTrivialSubdomainsAndMobilePrefix(
+              GURL("http://m.www.google.com/example")));
+#else
+  GTEST_SKIP();
+#endif
 }
 
 }  // namespace

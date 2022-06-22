@@ -190,6 +190,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURL* GetTemplateURLForHost(const std::string& host);
   const TemplateURL* GetTemplateURLForHost(const std::string& host) const;
 
+  // Returns the number of TemplateURLs that match `host`. Used for logging.
+  // Caller must ensure TemplateURLService is loaded before calling this.
+  // TODO(crbug.com/1322216): Delete after bug is fixed.
+  size_t GetTemplateURLCountForHostForLogging(const std::string& host) const;
+
   // Adds a new TemplateURL to this model.
   //
   // This function guarantees that on return the model will not have two non-
@@ -683,6 +688,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns the TemplateURL corresponding to |prepopulated_id|, if any.
   TemplateURL* FindPrepopulatedTemplateURL(int prepopulated_id);
+
+  // Returns the TemplateURL corresponding to |starter_pack_id|, if any.
+  TemplateURL* FindStarterPackTemplateURL(int starter_pack_id);
 
   // Returns the TemplateURL associated with |extension_id|, if any.
   TemplateURL* FindTemplateURLForExtension(const std::string& extension_id,

@@ -64,7 +64,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetAlwaysShowContextMenuOnTouch(bool) override;
   void SetAntialiased2dCanvasEnabled(bool) override;
   void SetAntialiasedClips2dCanvasEnabled(bool) override;
-  void SetAutoZoomFocusedNodeToLegibleScale(bool) override;
+  void SetAutoZoomFocusedEditableToLegibleScale(bool) override;
   void SetClobberUserAgentInitialScaleQuirk(bool) override;
   void SetCookieEnabled(bool) override;
   void SetCaretBrowsingEnabled(bool) override;
@@ -90,6 +90,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetWebGL2Enabled(bool) override;
   void SetFantasyFontFamily(const WebString&,
                             UScriptCode = USCRIPT_COMMON) override;
+  void SetMathFontFamily(const WebString&,
+                         UScriptCode = USCRIPT_COMMON) override;
   void SetFixedFontFamily(const WebString&,
                           UScriptCode = USCRIPT_COMMON) override;
   void SetNetworkQuietTimeout(double timeout) override;
@@ -223,13 +225,12 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetSelectionClipboardBufferAvailable(bool) override;
   void SetAccessibilityIncludeSvgGElement(bool) override;
   void SetWebXRImmersiveArAllowed(bool webxr_immersive_ar_allowed) override;
-  void SetLitePageSubresourceRedirectOrigin(const WebString&) override;
 
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;
   }
-  bool AutoZoomFocusedNodeToLegibleScale() const {
-    return auto_zoom_focused_node_to_legible_scale_;
+  bool AutoZoomFocusedEditableToLegibleScale() const {
+    return auto_zoom_focused_editable_to_legible_scale_;
   }
   bool DoubleTapToZoomEnabled() const;
   bool SupportDeprecatedTargetDensityDPI() const {
@@ -250,7 +251,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   Settings* settings_;
   Persistent<DevToolsEmulator> dev_tools_emulator_;
   bool render_v_sync_notification_enabled_;
-  bool auto_zoom_focused_node_to_legible_scale_;
+  bool auto_zoom_focused_editable_to_legible_scale_;
   bool support_deprecated_target_density_dpi_;
   // This quirk is to maintain compatibility with Android apps built on
   // the Android SDK prior to and including version 18. Presumably, this

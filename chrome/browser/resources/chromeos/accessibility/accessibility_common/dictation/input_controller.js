@@ -22,12 +22,6 @@ export class InputController {
      */
     this.previousImeEngineId_ = '';
 
-    /**
-     * The current composition text, if any.
-     * @private {string}
-     */
-    this.currentComposition_ = '';
-
     /** @private {function():void} */
     this.stopDictationCallback_ = stopDictationCallback;
 
@@ -109,11 +103,6 @@ export class InputController {
    * composed, commits it.
    */
   disconnect() {
-    // Commit composition text, if any.
-    if (this.currentComposition_.length > 0) {
-      this.commitText(this.currentComposition_);
-    }
-
     // Clean up IME state and reset to the previous IME method.
     this.activeImeContextId_ = InputController.NO_ACTIVE_IME_CONTEXT_ID_;
     chrome.inputMethodPrivate.setCurrentInputMethod(this.previousImeEngineId_);
@@ -121,45 +110,16 @@ export class InputController {
   }
 
   /**
-   * @return {boolean} Whether any text is currently being composed.
-   */
-  hasCompositionText() {
-    return this.currentComposition_.length > 0;
-  }
-
-  /**
-   * TODO(crbug.com/1247299): Remove this unused method once Dictation commands
-   * are successfully launched.
-   * Displays current composition text for the current IME context.
-   */
-  displayCurrentComposition() {
-    if (!this.isActive()) {
-      return;
-    }
-
-    // Set the composition text for interim results.
-    // Later we will do this in Chrome OS UI so that if the
-    // result will become a command it will not appear and
-    // disappear from the composition text.
-    chrome.input.ime.setComposition({
-      contextID: this.activeImeContextId_,
-      cursor: this.currentComposition_.length,
-      text: this.currentComposition_
-    });
-  }
-
-  /**
    * Commits the given text to the active IME context.
    * @param {string} text The text to commit
    */
   commitText(text) {
-    if (!this.isActive()) {
+    if (!this.isActive() || !text) {
       return;
     }
 
     text = this.adjustCommitText_(text);
     chrome.input.ime.commitText({contextID: this.activeImeContextId_, text});
-    this.setCurrentComposition('');
   }
 
   /**
@@ -204,11 +164,6 @@ export class InputController {
     }
 
     this.editableNode_ = node;
-  }
-
-  /** @param {string} text */
-  setCurrentComposition(text) {
-    this.currentComposition_ = text;
   }
 
   /**

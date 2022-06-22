@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "cc/animation/animation_host.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/ukm_manager.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -67,7 +68,6 @@
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/core/page/page_popup_controller.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -194,16 +194,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     popup_->widget_base_->RequestAnimationAfterDelay(delay);
   }
 
-  void AttachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
+  void AttachCompositorAnimationTimeline(cc::AnimationTimeline* timeline,
                                          LocalFrame*) override {
-    popup_->widget_base_->AnimationHost()->AddAnimationTimeline(
-        timeline->GetAnimationTimeline());
+    popup_->widget_base_->AnimationHost()->AddAnimationTimeline(timeline);
   }
 
-  void DetachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
+  void DetachCompositorAnimationTimeline(cc::AnimationTimeline* timeline,
                                          LocalFrame*) override {
-    popup_->widget_base_->AnimationHost()->RemoveAnimationTimeline(
-        timeline->GetAnimationTimeline());
+    popup_->widget_base_->AnimationHost()->RemoveAnimationTimeline(timeline);
   }
 
   const display::ScreenInfo& GetScreenInfo(LocalFrame&) const override {
@@ -636,8 +634,8 @@ void WebPagePopupImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
     return;
   // Popups always update their lifecycle in the context of the containing
   // document's lifecycle, so explicitly override the reason.
-  PageWidgetDelegate::UpdateLifecycle(*page_, MainFrame(), requested_update,
-                                      DocumentUpdateReason::kPagePopup);
+  page_->UpdateLifecycle(MainFrame(), requested_update,
+                         DocumentUpdateReason::kPagePopup);
 }
 
 void WebPagePopupImpl::Resize(const gfx::Size& new_size_in_viewport) {
@@ -690,7 +688,7 @@ void WebPagePopupImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
     return;
   // FIXME: This should use lastFrameTimeMonotonic but doing so
   // breaks tests.
-  PageWidgetDelegate::Animate(*page_, base::TimeTicks::Now());
+  page_->Animate(base::TimeTicks::Now());
 }
 
 void WebPagePopupImpl::WillHandleGestureEvent(const WebGestureEvent& event,
@@ -777,7 +775,7 @@ void WebPagePopupImpl::HandleMouseDown(LocalFrame& main_frame,
     CheckScreenPointInOwnerWindowAndCount(
         event.PositionInScreen(),
         WebFeature::kPopupMouseDownExceedsOwnerWindowBounds);
-    PageWidgetEventHandler::HandleMouseDown(main_frame, event);
+    WidgetEventHandler::HandleMouseDown(main_frame, event);
   } else {
     Cancel();
   }
@@ -791,7 +789,7 @@ WebInputEventResult WebPagePopupImpl::HandleMouseWheel(
     CheckScreenPointInOwnerWindowAndCount(
         event.PositionInScreen(),
         WebFeature::kPopupMouseWheelExceedsOwnerWindowBounds);
-    return PageWidgetEventHandler::HandleMouseWheel(main_frame, event);
+    return WidgetEventHandler::HandleMouseWheel(main_frame, event);
   }
   Cancel();
   return WebInputEventResult::kNotHandled;
@@ -867,7 +865,7 @@ WebInputEventResult WebPagePopupImpl::HandleInputEvent(
   if (closing_)
     return WebInputEventResult::kNotHandled;
   DCHECK(!WebInputEvent::IsTouchEventType(event.Event().GetType()));
-  return PageWidgetDelegate::HandleInputEvent(*this, event, &MainFrame());
+  return WidgetEventHandler::HandleInputEvent(event, &MainFrame());
 }
 
 void WebPagePopupImpl::FocusChanged(mojom::blink::FocusState focus_state) {

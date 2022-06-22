@@ -6,7 +6,7 @@
  * @fileoverview Basic facillities to handle events from a single automation
  * node.
  */
-import {ChromeVoxEvent} from './custom_automation_event.js';
+import {ChromeVoxEvent} from '/chromevox/common/custom_automation_event.js';
 
 const ActionType = chrome.automation.ActionType;
 const AutomationEvent = chrome.automation.AutomationEvent;
@@ -14,18 +14,13 @@ const AutomationNode = chrome.automation.AutomationNode;
 const EventType = chrome.automation.EventType;
 
 export class BaseAutomationHandler {
-  /**
-   * @param {AutomationNode|undefined} node
-   */
+  /** @param {?AutomationNode} node */
   constructor(node) {
-    /**
-     * @type {AutomationNode|undefined}
-     */
+    /** @type {?AutomationNode} */
     this.node_ = node;
 
     /**
-     * @type {!Object<EventType,
-     *     function(!AutomationEvent): void>} @private
+     * @private {!Object<EventType, function(!AutomationEvent)>}
      */
     this.listeners_ = {};
   }
@@ -46,9 +41,7 @@ export class BaseAutomationHandler {
     this.listeners_[eventType] = listener;
   }
 
-  /**
-   * Removes all listeners from this handler.
-   */
+  /** Removes all listeners from this handler. */
   removeAllListeners() {
     for (const eventType in this.listeners_) {
       this.node_.removeEventListener(
@@ -63,13 +56,13 @@ export class BaseAutomationHandler {
    * @private
    */
   makeListener_(callback) {
-    return function(evt) {
+    return evt => {
       if (this.willHandleEvent_(evt)) {
         return;
       }
       callback(evt);
       this.didHandleEvent_(evt);
-    }.bind(this);
+    };
   }
 
   /**
@@ -135,6 +128,6 @@ export class BaseAutomationHandler {
 
 /**
  * Controls announcement of non-user-initiated events.
- * @type {boolean}
+ * @public {boolean}
  */
 BaseAutomationHandler.announceActions = false;

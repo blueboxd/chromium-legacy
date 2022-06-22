@@ -38,9 +38,16 @@ class TranslatePageLoadMetricsObserver
       const TranslatePageLoadMetricsObserver&) = delete;
 
   // page_load_metrics::PageLoadMetricsObserver
+  // TODO(https://crbug.com/1317494): Consider prerendering support. Now a page
+  // started with prerendering doesn't collect metrics. This class should return
+  // CONTINUE_OBSERVING for OnPrerenderStart() but keep being silent until
+  // DidActivatePrerenderedPage is called.
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
+  ObservePolicy OnFencedFramesStart(
+      content::NavigationHandle* navigation_handle,
+      const GURL& currently_committed_url) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   ObservePolicy OnHidden(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;

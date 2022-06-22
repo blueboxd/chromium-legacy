@@ -77,7 +77,10 @@ void TestSystemTrayClient::ShowEnterpriseInfo() {}
 void TestSystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
 }
 
-void TestSystemTrayClient::ShowNetworkCreate(const std::string& type) {}
+void TestSystemTrayClient::ShowNetworkCreate(const std::string& type) {
+  show_network_create_count_++;
+  last_network_type_ = type;
+}
 
 void TestSystemTrayClient::ShowSettingsCellularSetup(bool show_psim_flow) {}
 
@@ -108,7 +111,8 @@ void TestSystemTrayClient::RequestRestartForUpdate() {}
 void TestSystemTrayClient::SetLocaleAndExit(
     const std::string& locale_iso_code) {}
 
-void TestSystemTrayClient::ShowAccessCodeCastingDialog() {}
+void TestSystemTrayClient::ShowAccessCodeCastingDialog(
+    AccessCodeCastDialogOpenLocation open_location) {}
 
 void TestSystemTrayClient::ShowCalendarEvent(
     const absl::optional<GURL>& event_url,

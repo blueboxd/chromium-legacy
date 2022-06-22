@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_unittest.h"
 
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -122,6 +123,12 @@ void ExtensionsToolbarUnitTest::ClickButton(views::Button* button) const {
                                gfx::Point(), ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);
+}
+
+extensions::PermissionsManager::UserSiteSetting
+ExtensionsToolbarUnitTest::GetUserSiteSetting(const GURL& url) {
+  return extensions::PermissionsManager::Get(browser()->profile())
+      ->GetUserSiteSetting(url::Origin::Create(url));
 }
 
 std::vector<ToolbarActionView*>

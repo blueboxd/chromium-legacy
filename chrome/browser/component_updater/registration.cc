@@ -38,6 +38,7 @@
 #include "components/component_updater/installer_policies/optimization_hints_component_installer.h"
 #include "components/component_updater/installer_policies/safety_tips_component_installer.h"
 #include "components/nacl/common/buildflags.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/widevine/cdm/buildflags.h"
@@ -58,6 +59,7 @@
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/component_updater/crow_domain_list_component_installer.h"
 #include "chrome/browser/component_updater/desktop_sharing_hub_component_remover.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -90,9 +92,9 @@
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
 #endif  // BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
 
-#if BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 #include "chrome/browser/component_updater/screen_ai_component_installer.h"
-#endif  // BUILDFLAG(IS_LINUX)
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -210,13 +212,17 @@ void RegisterComponentsForUpdate() {
   RegisterCommerceHeuristicsComponent(cus);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_ANDROID)
+  RegisterCrowDomainListComponent(cus);
+#endif  // BUIDLFLAG(IS_ANDROID)
+
   RegisterAutofillStatesComponent(cus, g_browser_process->local_state());
 
   RegisterClientSidePhishingComponent(cus);
 
-#if BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   RegisterScreenAIComponent(cus, g_browser_process->local_state());
-#endif  // BUILDFLAG(IS_LINUX)
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   RegisterUrlParamClassificationComponent(cus);
 }

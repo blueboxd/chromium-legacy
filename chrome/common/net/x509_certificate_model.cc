@@ -306,14 +306,17 @@ absl::optional<std::string> ProcessBitStringExtension(
     net::der::Input extension_data,
     base::span<const int> string_map,
     char separator) {
-  net::der::BitString decoded;
   net::der::Input value;
   net::der::Parser parser(extension_data);
-  if (!parser.ReadTag(net::der::kBitString, &value) || parser.HasMore() ||
-      !net::der::ParseBitString(value, &decoded)) {
+  if (!parser.ReadTag(net::der::kBitString, &value) || parser.HasMore()) {
     return absl::nullopt;
   }
-  return ProcessBitField(decoded, string_map, separator);
+  absl::optional<net::der::BitString> decoded = net::der::ParseBitString(value);
+  if (!decoded) {
+    return absl::nullopt;
+  }
+
+  return ProcessBitField(decoded.value(), string_map, separator);
 }
 
 absl::optional<std::string> ProcessNSCertTypeExtension(
@@ -584,7 +587,7 @@ X509CertificateModel::X509CertificateModel(
       !net::ParseName(tbs_.issuer_tlv, &issuer_rdns_)) {
     return;
   }
-  if (tbs_.has_extensions && !ParseExtensions(tbs_.extensions_tlv)) {
+  if (tbs_.extensions_tlv && !ParseExtensions(tbs_.extensions_tlv.value())) {
     return;
   }
   parsed_successfully_ = true;

@@ -4,6 +4,7 @@
   }
 
   cr-input {
+    font-family: var(--shimless-hint-font-family);
     --cr-input-error-display: none;
   }
 
@@ -13,8 +14,6 @@
     font-size: var(--shimless-hint-font-size);
     font-weight: var(--shimless-medium-font-weight);
     line-height: var(--shimless-hint-line-height);
-    padding-bottom: 8px;
-    padding-top: 8px;
   }
 
   :host([rsu-code-invalid_]) #inputValidationLabel {
@@ -58,14 +57,18 @@
       <span inner-h-t-m-l="[[rsuInstructionsText_]]"></span>
     </div>
     <div id="inputContainer">
-      <div id="inputValidationLabel">[[i18n('rsuCodeLabelText')]]</div>
       <cr-input
           id="rsuCode"
           value="{{rsuCode_}}"
+          on-keydown="onKeyDown_"
           maxlength="[[rsuCodeExpectedLength_]]"
           invalid="[[rsuCodeInvalid_]]"
-          disabled="[[allButtonsDisabled]]">
+          disabled="[[allButtonsDisabled]]"
+          error-message="[[i18n('rsuCodeErrorLabelText')]]">
       </cr-input>
+      <div id="inputValidationLabel">
+        [[getRsuCodeLabelText_(rsuCodeInvalid_)]]
+      </div>
     </div>
   </div>
   <div slot="right-pane">

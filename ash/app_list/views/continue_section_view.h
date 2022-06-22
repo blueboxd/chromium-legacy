@@ -46,6 +46,9 @@ class ASH_EXPORT ContinueSectionView : public views::View,
   // Returns true if the continue section removal metrics should be logged.
   static bool EnableContinueSectionFileRemovalMetrics();
 
+  // Reset for the continue section file removal metric logging enabling.
+  static void ResetContinueSectionFileRemovalMetricEnabledForTest();
+
   // Called when the `suggestion_container_` finishes updating the tasks.
   void OnSearchResultContainerResultsChanged();
 
@@ -70,12 +73,17 @@ class ASH_EXPORT ContinueSectionView : public views::View,
 
   void SetNudgeController(AppListNudgeController* nudge_controller);
 
+  // Refresh the continue section element's visibility such as the privacy
+  // notice, the continue label and the continue section itself.
+  void UpdateElementsVisibility();
+
   ContinueTaskContainerView* suggestions_container() {
     return suggestions_container_;
   }
 
   // views::View:
   void AddedToWidget() override;
+  void OnThemeChanged() override;
   void RemovedFromWidget() override;
 
   // views::FocusChangeListener:
@@ -110,10 +118,6 @@ class ASH_EXPORT ContinueSectionView : public views::View,
   // section in the launcher.
   void MaybeCreatePrivacyNotice();
 
-  // Refresh the continue section element's visibility such as the privacy
-  // notice, the continue label and the continue section itself.
-  void UpdateElementsVisibility();
-
   // Removes the privacy notice from the view.
   void RemovePrivacyNotice();
 
@@ -136,6 +140,8 @@ class ASH_EXPORT ContinueSectionView : public views::View,
   // Starts the animation to dismiss the privacy notice toast only. This is used
   // when the privacy notice does not have enough items after an update.
   void MaybeAnimateOutPrivacyNotice();
+
+  AppListViewDelegate* const view_delegate_;
 
   // Controller for showing a modal dialog in the continue section.
   SearchResultPageDialogController* const dialog_controller_;

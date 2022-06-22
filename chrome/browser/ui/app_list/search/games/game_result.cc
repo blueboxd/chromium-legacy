@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/games/game_result.h"
 
+#include <cmath>
 #include <string>
 
 #include "ash/constants/ash_features.h"
@@ -13,47 +14,23 @@
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task/thread_pool.h"
-#include "base/time/time.h"
+#include "chrome/browser/apps/app_discovery_service/app_discovery_service.h"
 #include "chrome/browser/apps/app_discovery_service/game_extras.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/common/search_result_util.h"
-#include "chrome/browser/ui/app_list/search/search_tags_util.h"
-#include "chrome/browser/ui/ash/thumbnail_loader.h"
-#include "chromeos/components/string_matching/tokenized_string.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/chromeos/styles/cros_styles.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace app_list {
 namespace {
 
-constexpr char16_t kPlatformDelimiter[] = u", ";
-constexpr char16_t kDetailsDelimiter[] = u" - ";
 constexpr char16_t kA11yDelimiter[] = u", ";
-
-// TODO(crbug.com/1305880): Replace with launch URL once finalized.
-constexpr char kLaunchUrlPrefix[] = "https://todo.com?game=";
-
-GURL LaunchUrlFromId(const std::string& id) {
-  return GURL(base::StrCat({kLaunchUrlPrefix, id}));
-}
-
-std::u16string DisplayStringForGameSource(apps::GameExtras::Source source) {
-  // TODO(crbug.com/1305880): Replace with display string once finalized.
-  return u"[game source]";
-}
 
 bool IsDarkModeEnabled() {
   // TODO(crbug.com/1258415): Simplify this logic once the productivity launcher
@@ -72,6 +49,13 @@ bool IsDarkModeEnabled() {
          provider->IsDarkModeEnabled();
 }
 
+// Calculates the side length of the largest square that will fit in a circle of
+// the given diameter.
+int MaxSquareLengthForRadius(const int radius) {
+  const double hypotenuse = sqrt(2.0 * radius * radius);
+  return floor(hypotenuse);
+}
+
 }  // namespace
 
 GameResult::GameResult(Profile* profile,
@@ -82,10 +66,15 @@ GameResult::GameResult(Profile* profile,
                        const std::u16string& query)
     : profile_(profile),
       list_controller_(list_controller),
-      launch_url_(LaunchUrlFromId(game.GetAppId())) {
+      dimension_(GetAppIconDimension()) {
   DCHECK(profile);
   DCHECK(list_controller);
   DCHECK(app_discovery_service);
+  // GameResult requires that apps::Result has GameExtras populated.
+  DCHECK(game.GetSourceExtras());
+  DCHECK(game.GetSourceExtras()->AsGameExtras());
+
+  launch_url_ = game.GetSourceExtras()->AsGameExtras()->GetDeeplinkUrl();
 
   set_id(launch_url_.spec());
   set_relevance(relevance);
@@ -96,10 +85,9 @@ GameResult::GameResult(Profile* profile,
   SetCategory(Category::kGames);
 
   UpdateText(game, query);
-
-  SetGenericIcon();
-  // TODO(crbug.com/1305880): Request icon from app disocvery service once API
-  // added.
+  app_discovery_service->GetIcon(
+      game.GetAppId(), dimension_, apps::ResultType::kGameSearchCatalog,
+      base::BindOnce(&GameResult::OnIconLoaded, weak_factory_.GetWeakPtr()));
 }
 
 GameResult::~GameResult() = default;
@@ -111,62 +99,50 @@ void GameResult::Open(int event_flags) {
 
 void GameResult::UpdateText(const apps::Result& game,
                             const std::u16string& query) {
-  const apps::GameExtras* extras = game.GetSourceExtras()->AsGameExtras();
-
   SetTitle(game.GetAppTitle());
-  SetTitleTags(CalculateTags(query, title()));
 
-  std::vector<ash::SearchResultTextItem> details;
-  std::vector<std::u16string> accessible_name;
+  std::u16string source = game.GetSourceExtras()->AsGameExtras()->GetSource();
+  ash::SearchResultTextItem details_text =
+      CreateStringTextItem(source).SetOverflowBehavior(
+          ash::SearchResultTextItem::OverflowBehavior::kNoElide);
+  SetDetailsTextVector({details_text});
 
-  accessible_name.push_back(title());
-  accessible_name.push_back(kA11yDelimiter);
+  SetAccessibleName(
+      base::JoinString({game.GetAppTitle(), source}, kA11yDelimiter));
+}
 
-  std::u16string source = DisplayStringForGameSource(extras->GetSource());
-  details.push_back(CreateStringTextItem(source).SetElidable(false));
-  accessible_name.push_back(source);
-
-  const auto& platforms = extras->GetPlatforms();
-  if (platforms) {
-    std::u16string platforms_string =
-        base::JoinString(platforms.value(), kPlatformDelimiter);
-
-    details.push_back(CreateStringTextItem(kDetailsDelimiter));
-    details.push_back(
-        CreateStringTextItem(IDS_APP_LIST_SEARCH_GAME_PLATFORMS_PREFIX));
-    details.push_back(CreateStringTextItem(u" "));
-    details.push_back(CreateStringTextItem(platforms_string));
-
-    accessible_name.push_back(kA11yDelimiter);
-    accessible_name.push_back(
-        l10n_util::GetStringUTF16(IDS_APP_LIST_SEARCH_GAME_PLATFORMS_PREFIX));
-    accessible_name.push_back(u" ");
-    accessible_name.push_back(platforms_string);
+void GameResult::OnIconLoaded(const gfx::ImageSkia& image,
+                              apps::DiscoveryError error) {
+  // TODO(crbug.com/1305880): Report the error to UMA.
+  if (error != apps::DiscoveryError::kSuccess) {
+    SetGenericIcon();
+    return;
   }
 
-  SetDetailsTextVector(details);
-  SetAccessibleName(base::StrCat(accessible_name));
+  // TODO(crbug.com/1305880): This code resizes and sets the provided image into
+  // a white circle. This may change if more game sources are introduced.
+  const int radius = dimension_ / 2;
+  const int size = MaxSquareLengthForRadius(radius);
+  const gfx::ImageSkia resized_image =
+      gfx::ImageSkiaOperations::CreateResizedImage(
+          image, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
+          gfx::Size(size, size));
+
+  const gfx::ImageSkia icon =
+      gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
+          radius, SK_ColorWHITE, resized_image);
+
+  SetIcon(IconInfo(icon, GetAppIconDimension()));
 }
 
 void GameResult::SetGenericIcon() {
   const auto color = cros_styles::ResolveColor(
       cros_styles::ColorName::kIconColorPrimary, IsDarkModeEnabled(),
       /*use_debug_colors=*/false);
-  const gfx::IconDescription description(ash::kGameGenericIcon,
-                                         GetAppIconDimension(), color);
-  SetIcon(IconInfo(gfx::CreateVectorIcon(description), GetAppIconDimension(),
-                   IconShape::kRectangle));
-}
+  const gfx::ImageSkia icon =
+      gfx::CreateVectorIcon(ash::kGameGenericIcon, kSystemIconDimension, color);
 
-void GameResult::OnIconLoaded(const SkBitmap* bitmap) {
-  // TODO(crbug.com/1305880): This is not used yet. Should be passed as the
-  // callback to the app discovery icon fetching method once available.
-  if (!bitmap || bitmap->isNull())
-    return;
-  // TODO(crbug.com/1305880): Possibly change the icon shape to a square with a
-  // border circle, once UI decision is finalized.
-  SetIcon(IconInfo(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap),
-                   GetAppIconDimension(), IconShape::kRoundedRectangle));
+  SetIcon(IconInfo(icon, kSystemIconDimension));
 }
 
 }  // namespace app_list

@@ -8,11 +8,18 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_standard_protection_consumer.h"
+#import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_standard_protection_view_controller_delegate.h"
 
+class AuthenticationService;
 class PrefService;
 
+namespace signin {
+class IdentityManager;
+}
+
 // Mediator for the Google services settings.
-@interface SafeBrowsingStandardProtectionMediator : NSObject
+@interface SafeBrowsingStandardProtectionMediator
+    : NSObject <SafeBrowsingStandardProtectionViewControllerDelegate>
 
 // View controller.
 @property(nonatomic, weak) id<SafeBrowsingStandardProtectionConsumer> consumer;
@@ -20,11 +27,19 @@ class PrefService;
 // Designated initializer. All the parameters should not be null.
 // |userPrefService|: preference service from the browser state.
 // |localPrefService|: preference service from the application context.
+// |authService|: authentication service from browser state.
+// |identityManager|: identity manager from browser state.
 - (instancetype)initWithUserPrefService:(PrefService*)userPrefService
                        localPrefService:(PrefService*)localPrefService
+                            authService:(AuthenticationService*)authService
+                        identityManager:
+                            (signin::IdentityManager*)identityManager
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+// Disconnects observers.
+- (void)disconnect;
 
 @end
 

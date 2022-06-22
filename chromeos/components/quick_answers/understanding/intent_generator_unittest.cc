@@ -145,6 +145,27 @@ TEST_F(IntentGeneratorTest, TranslationIntent) {
   EXPECT_EQ("en", intent_info_.source_language);
 }
 
+TEST_F(IntentGeneratorTest, TranslationIntentWithSubtag) {
+  std::vector<TextLanguagePtr> languages;
+  languages.push_back(TextLanguage::New("en-US", /* confidence */ 1));
+  UseFakeServiceConnection({}, languages);
+
+  QuickAnswersRequest request;
+  request.selected_text = "quick answers";
+  fake_quick_answers_state()->set_application_locale("es");
+  fake_quick_answers_state()->set_preferred_languages("es");
+  intent_generator_->GenerateIntent(request);
+
+  FlushForTesting();
+
+  // Should generate translation intent.
+  EXPECT_EQ(IntentType::kTranslation, intent_info_.intent_type);
+  EXPECT_EQ("quick answers", intent_info_.intent_text);
+  EXPECT_EQ("es", intent_info_.device_language);
+  // Should drop substag for source language.
+  EXPECT_EQ("en", intent_info_.source_language);
+}
+
 TEST_F(IntentGeneratorTest, TranslationIntentSameLanguage) {
   std::vector<TextLanguagePtr> languages;
   languages.push_back(DefaultLanguage());
@@ -236,10 +257,10 @@ TEST_F(IntentGeneratorTest, TranslationIntentWithAnnotation) {
 
   // Create the test annotations.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("dictionary",             // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "dictionary",                            // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto dictionary_annotation = TextAnnotation::New(0,   // Start offset.
                                                    12,  // End offset.
@@ -285,10 +306,10 @@ TEST_F(IntentGeneratorTest, TextAnnotationDefinitionIntent) {
 
   // Create the test annotations.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("dictionary",             // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "dictionary",                            // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto dictionary_annotation = TextAnnotation::New(0,   // Start offset.
                                                    12,  // End offset.
@@ -316,10 +337,10 @@ TEST_F(IntentGeneratorTest,
 
   // Create the test annotations.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("dictionary",             // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "dictionary",                            // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto dictionary_annotation = TextAnnotation::New(1,   // Start offset.
                                                    13,  // End offset.
@@ -348,10 +369,10 @@ TEST_F(IntentGeneratorTest,
 
   // Create the test annotations.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("dictionary",             // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "dictionary",                            // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto dictionary_annotation = TextAnnotation::New(4,   // Start offset.
                                                    16,  // End offset.
@@ -379,10 +400,10 @@ TEST_F(IntentGeneratorTest, TextAnnotationUnitIntentExtraChars) {
 
   // Create the test annotations.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("unit",                   // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "unit",                                  // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto dictionary_annotation = TextAnnotation::New(0,  // Start offset.
                                                    5,  // End offset.
@@ -409,10 +430,10 @@ TEST_F(IntentGeneratorTest, TextAnnotationUnitIntentUtf16Char) {
 
   // Create the test annotations.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("unit",                   // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "unit",                                  // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto dictionary_annotation = TextAnnotation::New(0,  // Start offset.
                                                    5,  // End offset.
@@ -439,10 +460,10 @@ TEST_F(IntentGeneratorTest, TextAnnotationUnitIntentExtraCharsAboveThreshold) {
 
   // Create the test annotations.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("unit",                   // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "unit",                                  // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto dictionary_annotation = TextAnnotation::New(0,  // Start offset.
                                                    5,  // End offset.
@@ -508,10 +529,10 @@ TEST_F(IntentGeneratorTest, TextAnnotationIntentUnSupportedEntity) {
 
   // Create the test annotations.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("something_else",         // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "something_else",                        // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto some_annotation = TextAnnotation::New(4,   // Start offset.
                                              16,  // End offset.
@@ -593,10 +614,10 @@ TEST_F(
 
   // Annotation provided, and not add the word to the dictionary.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("dictionary",             // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "dictionary",                            // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto dictionary_annotation = TextAnnotation::New(0,   // Start offset.
                                                    12,  // End offset.
@@ -629,10 +650,10 @@ TEST_F(
 
   // Annotation provided, and not add the text to the dictionary.
   std::vector<TextEntityPtr> entities;
-  entities.emplace_back(
-      TextEntity::New("unit",                   // Entity name.
-                      1.0,                      // Confidence score.
-                      TextEntityData::New()));  // Data extracted.
+  entities.emplace_back(TextEntity::New(
+      "unit",                                  // Entity name.
+      1.0,                                     // Confidence score.
+      TextEntityData::NewNumericValue(0.0)));  // Data extracted.
 
   auto dictionary_annotation = TextAnnotation::New(0,  // Start offset.
                                                    4,  // End offset.

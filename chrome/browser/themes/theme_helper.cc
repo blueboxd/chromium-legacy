@@ -24,6 +24,10 @@
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 
+#if BUILDFLAG(IS_LINUX)
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
+
 namespace {
 
 using TP = ThemeProperties;
@@ -123,36 +127,6 @@ const std::array<SkColor, 2> GetTabGroupColors(int color_id) {
     default:
       return {gfx::kGoogleGrey700, gfx::kGoogleGrey300};
   }
-}
-
-// Chooses from |desired_dark_color| and |desired_light_color| based on whether
-// |background_color| is light or dark.
-//
-// If the resulting color will achieve sufficient contrast, returns it.
-// Otherwise, blends it towards |dark_extreme| if it's light, or |dark_extreme|
-// if it's dark until minimum contrast is achieved, and returns the result.
-SkColor AdjustHighlightColorForContrast(SkColor background_color,
-                                        SkColor desired_dark_color,
-                                        SkColor desired_light_color,
-                                        SkColor dark_extreme,
-                                        SkColor light_extreme) {
-  const SkColor contrasting_color = color_utils::PickContrastingColor(
-      desired_dark_color, desired_light_color, background_color);
-  const SkColor limit =
-      contrasting_color == desired_dark_color ? dark_extreme : light_extreme;
-  // Setting highlight color will set the text to the highlight color, and the
-  // background to the same color with a low alpha. This means that our target
-  // contrast is between the text (the highlight color) and a blend of the
-  // highlight color and the toolbar color.
-  const SkColor base_color = color_utils::AlphaBlend(
-      contrasting_color, background_color, SkAlpha{0x20});
-
-  // Add a fudge factor to the minimum contrast ratio since we'll actually be
-  // blending with the adjusted color.
-  return color_utils::BlendForMinContrast(
-             contrasting_color, base_color, limit,
-             color_utils::kMinimumReadableContrastRatio * 1.05)
-      .color;
 }
 
 SkColor IncreaseLightness(SkColor color, double percent) {
@@ -352,33 +326,6 @@ SkColor ThemeHelper::GetDefaultColor(
                     incognito, theme_supplier);
   };
   switch (id) {
-    case TP::COLOR_APP_MENU_HIGHLIGHT_SEVERITY_LOW:
-      return AdjustHighlightColorForContrast(
-          GetColor(TP::COLOR_TOOLBAR_BUTTON_BACKGROUND, incognito,
-                   theme_supplier),
-          gfx::kGoogleGreen600, gfx::kGoogleGreen300, gfx::kGoogleGreen900,
-          gfx::kGoogleGreen050);
-    case TP::COLOR_APP_MENU_HIGHLIGHT_SEVERITY_HIGH:
-    case TP::COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_ERROR:
-      return AdjustHighlightColorForContrast(
-          GetColor(TP::COLOR_TOOLBAR_BUTTON_BACKGROUND, incognito,
-                   theme_supplier),
-          gfx::kGoogleRed600, gfx::kGoogleRed300, gfx::kGoogleRed900,
-          gfx::kGoogleRed050);
-    case TP::COLOR_APP_MENU_HIGHLIGHT_SEVERITY_MEDIUM:
-      return AdjustHighlightColorForContrast(
-          GetColor(TP::COLOR_TOOLBAR_BUTTON_BACKGROUND, incognito,
-                   theme_supplier),
-          gfx::kGoogleYellow600, gfx::kGoogleYellow300, gfx::kGoogleYellow900,
-          gfx::kGoogleYellow050);
-    case TP::COLOR_AVATAR_BUTTON_HIGHLIGHT_NORMAL:
-    case TP::COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_PAUSED:
-    case TP::COLOR_READ_LATER_BUTTON_HIGHLIGHT:
-      return AdjustHighlightColorForContrast(
-          GetColor(TP::COLOR_TOOLBAR_BUTTON_BACKGROUND, incognito,
-                   theme_supplier),
-          gfx::kGoogleBlue600, gfx::kGoogleBlue300, gfx::kGoogleBlue900,
-          gfx::kGoogleBlue050);
     case TP::COLOR_BOOKMARK_BAR_BACKGROUND:
       return GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier);
     case TP::COLOR_BOOKMARK_FAVICON: {
@@ -408,24 +355,11 @@ SkColor ThemeHelper::GetDefaultColor(
     case TP::COLOR_TAB_STROKE_FRAME_INACTIVE:
       return GetColor(TP::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE, incognito,
                       theme_supplier);
-    case TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND:
-      return GetColor(TP::COLOR_DOWNLOAD_SHELF, incognito, theme_supplier);
-    case TP::COLOR_DOWNLOAD_SHELF_BUTTON_TEXT: {
-      const SkColor download_shelf_color =
-          GetColor(TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND, incognito,
-                   theme_supplier);
-      return color_utils::PickGoogleColor(
-          color_utils::IsDark(download_shelf_color) ? gfx::kGoogleBlue300
-                                                    : gfx::kGoogleBlue600,
-          download_shelf_color, color_utils::kMinimumReadableContrastRatio);
-    }
     case TP::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR:
       return color_utils::AlphaBlend(
           GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, incognito, theme_supplier),
           GetColor(TP::COLOR_DOWNLOAD_SHELF, incognito, theme_supplier),
           SkAlpha{0x3A});
-    case TP::COLOR_DOWNLOAD_SHELF_FOREGROUND:
-      return GetColor(TP::COLOR_TOOLBAR_TEXT, incognito, theme_supplier);
     case TP::COLOR_STATUS_BUBBLE_ACTIVE:
       return GetColor(TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE, incognito,
                       theme_supplier);
@@ -471,7 +405,6 @@ SkColor ThemeHelper::GetDefaultColor(
       return color_utils::HSLShift(get_frame_color(/*active=*/false),
                                    GetTint(ThemeProperties::TINT_BACKGROUND_TAB,
                                            incognito, theme_supplier));
-    case TP::COLOR_BOOKMARK_BUTTON_ICON:
     case TP::COLOR_TOOLBAR_BUTTON_ICON:
     case TP::COLOR_TOOLBAR_BUTTON_ICON_HOVERED:
     case TP::COLOR_TOOLBAR_BUTTON_ICON_PRESSED:
@@ -516,19 +449,10 @@ SkColor ThemeHelper::GetDefaultColor(
     case TP::COLOR_TOOLBAR_INK_DROP:
       return color_utils::GetColorWithMaxContrast(
           GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier));
-    case TP::COLOR_TOOLBAR_BUTTON_BACKGROUND:
-      return color_utils::GetColorWithMaxContrast(
-          GetColor(TP::COLOR_TOOLBAR_BUTTON_TEXT, incognito, theme_supplier));
     case TP::COLOR_TOOLBAR_BUTTON_BORDER:
       return SkColorSetA(
           GetColor(TP::COLOR_TOOLBAR_INK_DROP, incognito, theme_supplier),
           0x20);
-    case TP::COLOR_TOOLBAR_FEATURE_PROMO_HIGHLIGHT:
-      return AdjustHighlightColorForContrast(
-          GetColor(TP::COLOR_TOOLBAR_BUTTON_BACKGROUND, incognito,
-                   theme_supplier),
-          gfx::kGoogleBlue600, gfx::kGoogleGrey100, gfx::kGoogleBlue900,
-          SK_ColorWHITE);
     case TP::COLOR_INFOBAR_CONTENT_AREA_SEPARATOR:
       return color_utils::AlphaBlend(
           GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, incognito, theme_supplier),
@@ -561,8 +485,22 @@ SkColor ThemeHelper::GetDefaultColor(
 bool ThemeHelper::UseDarkModeColors(const CustomThemeSupplier* theme_supplier) {
   // Dark mode is disabled for custom themes so they apply atop a predictable
   // state.
-  return !IsCustomTheme(theme_supplier) &&
-         ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors();
+  if (IsCustomTheme(theme_supplier))
+    return false;
+
+  ui::NativeTheme const* native_theme =
+      ui::NativeTheme::GetInstanceForNativeUi();
+#if BUILDFLAG(IS_LINUX)
+  if (const auto* linux_ui = views::LinuxUI::instance()) {
+    // We rely on the fact that the system theme is in use iff `theme_supplier`
+    // is non-null, but this is cheating. In the future this might not hold
+    // after we fully migrate to the color provider and remove SystemThemeLinux.
+    native_theme = linux_ui->GetNativeTheme(
+        theme_supplier &&
+        theme_supplier->get_theme_type() == CustomThemeSupplier::NATIVE_X11);
+  }
+#endif
+  return native_theme->ShouldUseDarkColors();
 }
 
 gfx::Image ThemeHelper::GetImageNamed(
@@ -758,12 +696,6 @@ SkColor ThemeHelper::GetTabGroupColor(
     int tab_color_id = id < TP::COLOR_TAB_GROUP_TABSTRIP_FRAME_INACTIVE_GREY
                            ? TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE
                            : TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE;
-
-    // TODO(tluk) Change to ensure consistent color ids between WebUI and views
-    // tabstrip groups. Currently WebUI tabstrip groups always check active
-    // frame colors (https://crbug.com/1060398).
-    if (base::FeatureList::IsEnabled(features::kWebUITabStrip))
-      tab_color_id = TP::COLOR_FRAME_ACTIVE;
 
     return GetTabGroupColors(id)[color_utils::IsDark(
         GetColor(tab_color_id, incognito, theme_supplier))];

@@ -16,26 +16,28 @@
 #include "ui/events/event_utils.h"
 #include "ui/platform_window/wm/wm_move_resize_handler.h"
 #include "ui/views/linux_ui/linux_ui.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 
 WindowEventFilterLinux::WindowEventFilterLinux(
-    DesktopWindowTreeHostLinux* desktop_window_tree_host,
+    DesktopWindowTreeHostPlatform* desktop_window_tree_host,
     ui::WmMoveResizeHandler* handler)
-    : desktop_window_tree_host_(desktop_window_tree_host), handler_(handler) {}
+    : desktop_window_tree_host_(desktop_window_tree_host), handler_(handler) {
+  desktop_window_tree_host_->window()->AddPreTargetHandler(this);
+}
 
-WindowEventFilterLinux::~WindowEventFilterLinux() = default;
+WindowEventFilterLinux::~WindowEventFilterLinux() {
+  desktop_window_tree_host_->window()->RemovePreTargetHandler(this);
+}
 
 void WindowEventFilterLinux::HandleLocatedEventWithHitTest(
     int hit_test,
     ui::LocatedEvent* event) {
-  if (event->type() != ui::ET_MOUSE_PRESSED &&
-      event->type() != ui::ET_TOUCH_PRESSED) {
+  if (event->type() != ui::ET_MOUSE_PRESSED)
     return;
-  }
 
   if (event->IsMouseEvent() &&
       HandleMouseEventWithHitTest(hit_test, event->AsMouseEvent())) {
@@ -113,11 +115,7 @@ void WindowEventFilterLinux::OnClickedCaption(ui::MouseEvent* event,
       event->SetHandled();
       break;
     case LinuxUI::WindowFrameAction::kToggleMaximize:
-
-      if (content_window->GetProperty(aura::client::kResizeBehaviorKey) &
-          aura::client::kResizeBehaviorCanMaximize) {
-        ToggleMaximizedState();
-      }
+      MaybeToggleMaximizedState(content_window);
       event->SetHandled();
       break;
     case LinuxUI::WindowFrameAction::kMenu:
@@ -163,7 +161,12 @@ void WindowEventFilterLinux::OnClickedMaximizeButton(ui::MouseEvent* event) {
   }
 }
 
-void WindowEventFilterLinux::ToggleMaximizedState() {
+void WindowEventFilterLinux::MaybeToggleMaximizedState(aura::Window* window) {
+  if (!(window->GetProperty(aura::client::kResizeBehaviorKey) &
+        aura::client::kResizeBehaviorCanMaximize)) {
+    return;
+  }
+
   if (desktop_window_tree_host_->IsMaximized())
     desktop_window_tree_host_->Restore();
   else
@@ -171,16 +174,20 @@ void WindowEventFilterLinux::ToggleMaximizedState() {
 }
 
 void WindowEventFilterLinux::LowerWindow() {
+#if BUILDFLAG(OZONE_PLATFORM_X11)
   desktop_window_tree_host_->LowerWindow();
+#endif
 }
 
 void WindowEventFilterLinux::MaybeDispatchHostWindowDragMovement(
     int hittest,
     ui::LocatedEvent* event) {
-  if (!event->IsMouseEvent() && !event->IsTouchEvent())
+  if (!event->IsMouseEvent() && !event->IsGestureEvent())
     return;
+
   if (event->IsMouseEvent() && !event->AsMouseEvent()->IsLeftMouseButton())
     return;
+
   if (!handler_ || !ui::CanPerformDragOrResize(hittest))
     return;
 
@@ -192,7 +199,40 @@ void WindowEventFilterLinux::MaybeDispatchHostWindowDragMovement(
   auto screen_point_in_px = event->location();
   screen_point_in_px.Offset(bounds_in_px.x(), bounds_in_px.y());
   handler_->DispatchHostWindowDragMovement(hittest, screen_point_in_px);
-  event->StopPropagation();
+
+  // Stop the event propagation for mouse events only (not touch), given that
+  // it'd prevent the Gesture{Provider,Detector} machirery to get triggered,
+  // breaking gestures including tapping, double tapping, show press and
+  // long press.
+  if (event->IsMouseEvent())
+    event->StopPropagation();
+}
+
+void WindowEventFilterLinux::OnGestureEvent(ui::GestureEvent* event) {
+  auto* window = static_cast<aura::Window*>(event->target());
+  int hit_test_code =
+      window->delegate()
+          ? window->delegate()->GetNonClientComponent(event->location())
+          : HTNOWHERE;
+
+  // Double tap to maximize.
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    int previous_click_component = click_component_;
+    click_component_ = hit_test_code;
+
+    if (click_component_ == HTCAPTION &&
+        click_component_ == previous_click_component &&
+        event->details().tap_count() == 2) {
+      MaybeToggleMaximizedState(window);
+      click_component_ = HTNOWHERE;
+      event->StopPropagation();
+    }
+    return;
+  }
+
+  // Interactive window move.
+  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
+    MaybeDispatchHostWindowDragMovement(hit_test_code, event);
 }
 
 }  // namespace views

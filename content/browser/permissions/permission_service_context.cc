@@ -17,6 +17,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -104,9 +106,11 @@ PermissionServiceContext::~PermissionServiceContext() {
 void PermissionServiceContext::CreateService(
     mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
   DCHECK(render_frame_host_);
-  services_.Add(std::make_unique<PermissionServiceImpl>(
-                    this, render_frame_host_->GetLastCommittedOrigin()),
-                std::move(receiver));
+  services_.Add(
+      std::make_unique<PermissionServiceImpl>(
+          this, url::Origin::Create(PermissionUtil::GetLastCommittedOriginAsURL(
+                    render_frame_host_))),
+      std::move(receiver));
 }
 
 void PermissionServiceContext::CreateServiceForWorker(
@@ -117,7 +121,7 @@ void PermissionServiceContext::CreateServiceForWorker(
 }
 
 void PermissionServiceContext::CreateSubscription(
-    PermissionType permission_type,
+    blink::PermissionType permission_type,
     const url::Origin& origin,
     blink::mojom::PermissionStatus current_status,
     blink::mojom::PermissionStatus last_known_status,

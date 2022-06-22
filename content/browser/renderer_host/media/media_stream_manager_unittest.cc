@@ -34,6 +34,7 @@
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -220,7 +221,7 @@ class MediaStreamManagerTest : public ::testing::Test {
 
   MOCK_METHOD1(Response, void(int index));
   void ResponseCallback(int index,
-                        const blink::MediaStreamDevices& devices,
+                        const blink::mojom::StreamDevices& devices,
                         std::unique_ptr<MediaStreamUIProxy> ui_proxy) {
     Response(index);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
@@ -342,21 +343,20 @@ class MediaStreamManagerTest : public ::testing::Test {
       blink::MediaStreamDevice* video_device,
       blink::mojom::MediaStreamRequestResult result,
       const std::string& label,
-      const blink::MediaStreamDevices& audio_devices,
-      const blink::MediaStreamDevices& video_devices,
+      const blink::mojom::StreamDevicesPtr devices,
       bool pan_tilt_zoom_allowed) {
     if (request_audio) {
-      EXPECT_EQ(1u, audio_devices.size());
-      *audio_device = audio_devices[0];
+      ASSERT_TRUE(devices->audio_device.has_value());
+      *audio_device = devices->audio_device.value();
     } else {
-      EXPECT_EQ(0u, audio_devices.size());
+      ASSERT_FALSE(devices->audio_device.has_value());
     }
 
     if (request_video) {
-      ASSERT_EQ(1u, video_devices.size());
-      *video_device = video_devices[0];
+      ASSERT_TRUE(devices->video_device.has_value());
+      *video_device = devices->video_device.value();
     } else {
-      EXPECT_EQ(0u, video_devices.size());
+      ASSERT_FALSE(devices->video_device.has_value());
     }
 
     wait_loop->Quit();
@@ -366,9 +366,9 @@ class MediaStreamManagerTest : public ::testing::Test {
       blink::MediaStreamDevice* transferred_device,
       blink::mojom::MediaStreamRequestResult* result_out,
       blink::mojom::MediaStreamRequestResult result,
-      absl::optional<blink::mojom::GetOpenDeviceResponse> response) {
+      blink::mojom::GetOpenDeviceResponsePtr response) {
     *result_out = result;
-    if (response.has_value()) {
+    if (response) {
       *transferred_device = response->device;
     }
   }
@@ -740,8 +740,7 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequestCallsUIProxy) {
   MediaStreamManager::GenerateStreamCallback generate_stream_callback =
       base::BindOnce([](blink::mojom::MediaStreamRequestResult result,
                         const std::string& label,
-                        const blink::MediaStreamDevices& audio_devices,
-                        const blink::MediaStreamDevices& video_devices,
+                        blink::mojom::StreamDevicesPtr devices,
                         bool pan_tilt_zoom_allowed) {});
   EXPECT_CALL(
       *media_observer_,
@@ -911,7 +910,7 @@ TEST_F(MediaStreamManagerTest, GetOpenDeviceForExistingDeviceReturnsDevice) {
       blink::mojom::StreamSelectionStrategy::FORCE_NEW_STREAM, absl::nullopt);
 
   blink::MediaStreamDevice transferred_device;
-  auto result =
+  blink::mojom::MediaStreamRequestResult result =
       blink::mojom::MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS;
   EXPECT_EQ(original_device.id, "default");
   EXPECT_NE(transferred_device.id, original_device.id);

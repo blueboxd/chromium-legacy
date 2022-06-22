@@ -14,10 +14,15 @@
 #include "ash/app_list/views/apps_grid_context_menu.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_model_delegate.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/feature_discovery_duration_reporter.h"
+#include "ash/public/cpp/feature_discovery_metric_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -47,12 +52,15 @@ constexpr auto kReorderUndoInteriorMargin = gfx::Insets::TLBR(8, 16, 8, 8);
 AppListToastContainerView::AppListToastContainerView(
     AppListNudgeController* nudge_controller,
     AppListA11yAnnouncer* a11y_announcer,
+    AppListViewDelegate* view_delegate,
     Delegate* delegate,
     bool tablet_mode)
     : a11y_announcer_(a11y_announcer),
       tablet_mode_(tablet_mode),
+      view_delegate_(view_delegate),
       delegate_(delegate),
-      nudge_controller_(nudge_controller) {
+      nudge_controller_(nudge_controller),
+      current_toast_(AppListToastType::kNone) {
   DCHECK(a11y_announcer_);
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetMainAxisAlignment(views::LayoutAlignment::kCenter)
@@ -112,10 +120,10 @@ void AppListToastContainerView::MaybeUpdateReorderNudgeView() {
   // toast container, update the actual reorder nudge view in the toast
   // container.
   if (nudge_controller_->ShouldShowReorderNudge() &&
-      current_toast_ != ToastType::kReorderNudge) {
+      current_toast_ != AppListToastType::kReorderNudge) {
     CreateReorderNudgeView();
   } else if (!nudge_controller_->ShouldShowReorderNudge() &&
-             current_toast_ == ToastType::kReorderNudge) {
+             current_toast_ == AppListToastType::kReorderNudge) {
     RemoveReorderNudgeView();
   }
 }
@@ -136,9 +144,12 @@ void AppListToastContainerView::CreateReorderNudgeView() {
     toast_view_builder.SetButton(
         l10n_util::GetStringUTF16(
             IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_DISMISS_BUTTON),
-        base::BindRepeating(&AppListToastContainerView::DismissReorderNudgeView,
+        base::BindRepeating(&AppListToastContainerView::FadeOutToastView,
                             base::Unretained(this)));
   }
+
+  FeatureDiscoveryDurationReporter::GetInstance()->MaybeActivateObservation(
+      feature_discovery::TrackableFeature::kAppListReorderAfterEducationNudge);
 
   toast_view_ = AddChildView(
       toast_view_builder.SetStyleForTabletMode(tablet_mode_)
@@ -149,20 +160,14 @@ void AppListToastContainerView::CreateReorderNudgeView() {
                                         : &kReorderNudgeLightClamshellIcon)
           .SetIconBackground(true)
           .Build());
-  current_toast_ = ToastType::kReorderNudge;
-}
-
-void AppListToastContainerView::DismissReorderNudgeView() {
-  RemoveReorderNudgeView();
-  nudge_controller_->OnReorderNudgeConfirmed();
-  delegate_->OnNudgeRemoved();
+  current_toast_ = AppListToastType::kReorderNudge;
 }
 
 void AppListToastContainerView::RemoveReorderNudgeView() {
   // If the nudge is requested to be removed, it is likely that it won't be
   // shown to the user again. Therefore, the nudge child view is directly
   // removed instead of made invisible.
-  if (current_toast_ == ToastType::kReorderNudge)
+  if (current_toast_ == AppListToastType::kReorderNudge)
     RemoveCurrentView();
 }
 
@@ -171,7 +176,7 @@ void AppListToastContainerView::RemoveCurrentView() {
     RemoveChildViewT(toast_view_);
 
   toast_view_ = nullptr;
-  current_toast_ = ToastType::kNone;
+  current_toast_ = AppListToastType::kNone;
 }
 
 void AppListToastContainerView::UpdateVisibilityState(VisibilityState state) {
@@ -217,7 +222,13 @@ void AppListToastContainerView::OnTemporarySortOrderChanged(
     const absl::optional<AppListSortOrder>& new_order) {
   // Remove `toast_view_` when the temporary sorting order is cleared.
   if (!GetVisibilityForSortOrder(new_order)) {
-    RemoveCurrentView();
+    if (committing_sort_order_) {
+      // When the toast view is closed due to committing the sort  order via the
+      // close button , the toast view should be faded out with animation.
+      FadeOutToastView();
+    } else {
+      RemoveCurrentView();
+    }
     return;
   }
 
@@ -260,7 +271,7 @@ void AppListToastContainerView::OnTemporarySortOrderChanged(
       a11y_text_on_undo_button);
 
   toast_view_->UpdateInteriorMargins(kReorderUndoInteriorMargin);
-  current_toast_ = ToastType::kReorderUndo;
+  current_toast_ = AppListToastType::kReorderUndo;
 }
 
 bool AppListToastContainerView::GetVisibilityForSortOrder(
@@ -296,6 +307,33 @@ void AppListToastContainerView::OnReorderUndoButtonClicked() {
 }
 
 void AppListToastContainerView::OnReorderCloseButtonClicked() {
+  base::AutoReset auto_reset(&committing_sort_order_, true);
+  view_delegate_->CommitTemporarySortOrder();
+}
+
+void AppListToastContainerView::FadeOutToastView() {
+  if (!toast_view_->layer()) {
+    toast_view_->SetPaintToLayer();
+    toast_view_->layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(
+          base::BindOnce(&AppListToastContainerView::OnFadeOutToastViewComplete,
+                         weak_factory_.GetWeakPtr()))
+      .OnAborted(
+          base::BindOnce(&AppListToastContainerView::OnFadeOutToastViewComplete,
+                         weak_factory_.GetWeakPtr()))
+      .Once()
+      .SetDuration(base::Milliseconds(200))
+      .SetOpacity(toast_view_->layer(), 0.0f, gfx::Tween::LINEAR);
+}
+
+void AppListToastContainerView::OnFadeOutToastViewComplete() {
+  if (current_toast_ == AppListToastType::kReorderNudge)
+    nudge_controller_->OnReorderNudgeConfirmed();
   RemoveCurrentView();
   delegate_->OnNudgeRemoved();
 }

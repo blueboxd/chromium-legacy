@@ -89,6 +89,7 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/base_paths_win.h"
 #include "ui/display/win/screen_win.h"
+#include "ui/gfx/mojom/dxgi_info.mojom.h"
 #endif  // BUILDFLAG(IS_WIN)
 #if BUILDFLAG(IS_CHROMECAST)
 #include "chromecast/chromecast_buildflags.h"
@@ -493,6 +494,22 @@ gpu::VideoCodecProfile ToGpuVideoCodecProfile(
       return gpu::HEVCPROFILE_MAIN10;
     case media::HEVCPROFILE_MAIN_STILL_PICTURE:
       return gpu::HEVCPROFILE_MAIN_STILL_PICTURE;
+    case media::HEVCPROFILE_REXT:
+      return gpu::HEVCPROFILE_REXT;
+    case media::HEVCPROFILE_HIGH_THROUGHPUT:
+      return gpu::HEVCPROFILE_HIGH_THROUGHPUT;
+    case media::HEVCPROFILE_MULTIVIEW_MAIN:
+      return gpu::HEVCPROFILE_MULTIVIEW_MAIN;
+    case media::HEVCPROFILE_SCALABLE_MAIN:
+      return gpu::HEVCPROFILE_SCALABLE_MAIN;
+    case media::HEVCPROFILE_3D_MAIN:
+      return gpu::HEVCPROFILE_3D_MAIN;
+    case media::HEVCPROFILE_SCREEN_EXTENDED:
+      return gpu::HEVCPROFILE_SCREEN_EXTENDED;
+    case media::HEVCPROFILE_SCALABLE_REXT:
+      return gpu::HEVCPROFILE_SCALABLE_REXT;
+    case media::HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED:
+      return gpu::HEVCPROFILE_HIGH_THROUGHPUT_SCREEN_EXTENDED;
     case media::DOLBYVISION_PROFILE0:
       return gpu::DOLBYVISION_PROFILE0;
     case media::DOLBYVISION_PROFILE4:
@@ -545,15 +562,14 @@ class HDRProxy {
         GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, false);
     if (gpu_process_host) {
       auto* gpu_service = gpu_process_host->gpu_host()->gpu_service();
-      gpu_service->RequestHDRStatus(base::BindOnce(&HDRProxy::GotResult));
+      gpu_service->RequestDXGIInfo(base::BindOnce(&HDRProxy::GotResult));
     } else {
-      bool hdr_enabled = false;
-      GotResult(hdr_enabled);
+      GotResult(gfx::mojom::DXGIInfo::New());
     }
   }
 
-  static void GotResult(bool hdr_enabled) {
-    display::win::ScreenWin::SetHDREnabled(hdr_enabled);
+  static void GotResult(gfx::mojom::DXGIInfoPtr dxgi_info) {
+    display::win::ScreenWin::SetDXGIInfo(std::move(dxgi_info));
   }
 };
 
@@ -1126,10 +1142,11 @@ void GpuDataManagerImplPrivate::UpdateOverlayInfo(
   NotifyGpuInfoUpdate();
 }
 
-void GpuDataManagerImplPrivate::UpdateHDRStatus(bool hdr_enabled) {
+void GpuDataManagerImplPrivate::UpdateDXGIInfo(
+    gfx::mojom::DXGIInfoPtr dxgi_info) {
   // This is running on the main thread;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  HDRProxy::GotResult(hdr_enabled);
+  HDRProxy::GotResult(std::move(dxgi_info));
 }
 
 void GpuDataManagerImplPrivate::UpdateDxDiagNodeRequestStatus(
@@ -1460,12 +1477,12 @@ void GpuDataManagerImplPrivate::ProcessCrashed() {
 std::unique_ptr<base::ListValue> GpuDataManagerImplPrivate::GetLogMessages()
     const {
   auto value = std::make_unique<base::ListValue>();
-  for (size_t ii = 0; ii < log_messages_.size(); ++ii) {
-    auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetInteger("level", log_messages_[ii].level);
-    dict->SetString("header", log_messages_[ii].header);
-    dict->SetString("message", log_messages_[ii].message);
-    value->Append(std::move(dict));
+  for (const auto& log_message : log_messages_) {
+    base::Value::Dict dict;
+    dict.Set("level", log_message.level);
+    dict.Set("header", log_message.header);
+    dict.Set("message", log_message.message);
+    value->GetList().Append(std::move(dict));
   }
   return value;
 }

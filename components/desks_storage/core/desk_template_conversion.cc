@@ -4,7 +4,6 @@
 
 #include "components/desks_storage/core/desk_template_conversion.h"
 
-#include "ash/public/cpp/desk_template.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/values_util.h"
@@ -45,6 +44,7 @@ constexpr char kDeskTypeTemplate[] = "TEMPLATE";
 constexpr char kDeskTypeSaveAndRecall[] = "SAVE_AND_RECALL";
 constexpr char kDisplayId[] = "display_id";
 constexpr char kEventFlag[] = "event_flag";
+constexpr char kIsAppTypeBrowser[] = "is_app";
 constexpr char kLaunchContainer[] = "launch_container";
 constexpr char kLaunchContainerWindow[] = "LAUNCH_CONTAINER_WINDOW";
 constexpr char kLaunchContainerUnspecified[] = "LAUNCH_CONTAINER_UNSPECIFIED";
@@ -96,6 +96,29 @@ constexpr char kZIndex[] = "z_index";
 // Valid value sets.
 const std::set<std::string> kValidDeskTypes = {kDeskTypeTemplate,
                                                kDeskTypeSaveAndRecall};
+const std::set<std::string> kValidLaunchContainers = {
+    kLaunchContainerWindow, kLaunchContainerPanelDeprecated,
+    kLaunchContainerTab, kLaunchContainerNone, kLaunchContainerUnspecified};
+const std::set<std::string> kValidWindowOpenDispositions = {
+    kWindowOpenDispositionUnknown,
+    kWindowOpenDispositionCurrentTab,
+    kWindowOpenDispositionSingletonTab,
+    kWindowOpenDispositionNewForegroundTab,
+    kWindowOpenDispositionNewBackgroundTab,
+    kWindowOpenDispositionNewPopup,
+    kWindowOpenDispositionNewWindow,
+    kWindowOpenDispositionSaveToDisk,
+    kWindowOpenDispositionOffTheRecord,
+    kWindowOpenDispositionIgnoreAction,
+    kWindowOpenDispositionSwitchToTab,
+    kWindowOpenDispositionNewPictureInPicture};
+const std::set<std::string> kValidWindowStates = {kWindowStateNormal,
+                                                  kWindowStateMinimized,
+                                                  kWindowStateMaximized,
+                                                  kWindowStateFullscreen,
+                                                  kWindowStatePrimarySnapped,
+                                                  kWindowStateSecondarySnapped,
+                                                  kZIndex};
 
 // Version number.
 constexpr int kVersionNum = 1;
@@ -130,6 +153,20 @@ bool GetInt(const base::Value& dict, const char* key, int* out) {
   return GetInt(&dict, key, out);
 }
 
+bool GetBool(const base::Value* dict, const char* key, bool* out) {
+  const base::Value* value =
+      dict->FindKeyOfType(key, base::Value::Type::BOOLEAN);
+  if (!value)
+    return false;
+
+  *out = value->GetBool();
+  return true;
+}
+
+bool GetBool(const base::Value& dict, const char* key, bool* out) {
+  return GetBool(&dict, key, out);
+}
+
 // Get App ID from App proto.
 std::string GetJsonAppId(const base::Value& app) {
   std::string app_type;
@@ -154,11 +191,7 @@ std::string GetJsonAppId(const base::Value& app) {
 
 // Returns true if launch container string value is valid.
 bool IsValidLaunchContainer(const std::string& launch_container) {
-  return launch_container == kLaunchContainerWindow ||
-         launch_container == kLaunchContainerPanelDeprecated ||
-         launch_container == kLaunchContainerTab ||
-         launch_container == kLaunchContainerNone ||
-         launch_container == kLaunchContainerUnspecified;
+  return base::Contains(kValidLaunchContainers, launch_container);
 }
 
 // Returns a casted apps::mojom::LaunchContainer to be set as an app restore
@@ -189,18 +222,7 @@ int32_t StringToLaunchContainer(const std::string& launch_container) {
 
 // Returns true if the disposition is a valid value.
 bool IsValidWindowOpenDisposition(const std::string& disposition) {
-  return disposition == kWindowOpenDispositionUnknown ||
-         disposition == kWindowOpenDispositionCurrentTab ||
-         disposition == kWindowOpenDispositionSingletonTab ||
-         disposition == kWindowOpenDispositionNewForegroundTab ||
-         disposition == kWindowOpenDispositionNewBackgroundTab ||
-         disposition == kWindowOpenDispositionNewPopup ||
-         disposition == kWindowOpenDispositionNewWindow ||
-         disposition == kWindowOpenDispositionSaveToDisk ||
-         disposition == kWindowOpenDispositionOffTheRecord ||
-         disposition == kWindowOpenDispositionIgnoreAction ||
-         disposition == kWindowOpenDispositionSwitchToTab ||
-         disposition == kWindowOpenDispositionNewPictureInPicture;
+  return base::Contains(kValidWindowOpenDispositions, disposition);
 }
 
 // Returns a casted WindowOpenDisposition to be set in the app restore data.
@@ -285,6 +307,10 @@ std::unique_ptr<app_restore::AppLaunchInfo> ConvertJsonToAppLaunchInfo(
   // TODO(crbug.com/1311801): Add support for actual event_flag values.
   app_launch_info->event_flag = 0;
 
+  bool app_type_browser;
+  if (GetBool(app, kIsAppTypeBrowser, &app_type_browser))
+    app_launch_info->app_type_browser = app_type_browser;
+
   if (app_type == kAppTypeBrowser) {
     int active_tab_index;
     if (GetInt(app, kActiveTabIndex, &active_tab_index))
@@ -308,12 +334,7 @@ std::unique_ptr<app_restore::AppLaunchInfo> ConvertJsonToAppLaunchInfo(
 }
 
 bool IsValidWindowState(const std::string& window_state) {
-  return window_state == kWindowStateNormal ||
-         window_state == kWindowStateMinimized ||
-         window_state == kWindowStateMaximized ||
-         window_state == kWindowStateFullscreen ||
-         window_state == kWindowStatePrimarySnapped ||
-         window_state == kWindowStateSecondarySnapped;
+  return base::Contains(kValidWindowStates, window_state);
 }
 
 // Convert JSON string WindowState |state| to ui::WindowShowState used by
@@ -676,6 +697,11 @@ base::Value ConvertWindowToDeskApp(const std::string& app_id,
                     base::Value(app->active_tab_index.value()));
   }
 
+  if (app->app_type_browser.has_value()) {
+    app_data.SetKey(kIsAppTypeBrowser,
+                    base::Value(app->app_type_browser.value()));
+  }
+
   if (app_type != kAppTypeBrowser)
     app_data.SetKey(kAppId, base::Value(app_id));
 
@@ -771,8 +797,9 @@ int64_t TimeToProtoTime(const base::Time& t) {
   return t.ToDeltaSinceWindowsEpoch().InMicroseconds();
 }
 
-std::unique_ptr<ash::DeskTemplate> ParseDeskTemplateFromPolicy(
-    const base::Value& policy_json) {
+std::unique_ptr<ash::DeskTemplate> ParseDeskTemplateFromSource(
+    const base::Value& policy_json,
+    ash::DeskTemplateSource source) {
   if (!policy_json.is_dict())
     return nullptr;
 
@@ -809,11 +836,11 @@ std::unique_ptr<ash::DeskTemplate> ParseDeskTemplateFromPolicy(
 
   std::unique_ptr<ash::DeskTemplate> desk_template =
       std::make_unique<ash::DeskTemplate>(
-          uuid, ash::DeskTemplateSource::kPolicy, name, created_time);
+          uuid, source, name, created_time,
+          GetDeskTypeFromString(desk_type_string));
 
   desk_template->set_updated_time(updated_time);
   desk_template->set_desk_restore_data(ConvertJsonToRestoreData(desk));
-  desk_template->set_type(GetDeskTypeFromString(desk_type_string));
 
   return desk_template;
 }

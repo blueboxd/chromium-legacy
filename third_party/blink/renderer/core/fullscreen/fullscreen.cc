@@ -198,6 +198,11 @@ void GoFullscreen(Element& element,
   else
     DCHECK(!HasFullscreenFlag(element));
 
+  // If there are any open popups, close them, unless this fullscreen
+  // element is a descendant of an open popup.
+  if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled())
+    document.HideAllPopupsUntil(&element);
+
   // To fullscreen an |element| within a |document|, set the |element|'s
   // fullscreen flag and add it to |document|'s top layer.
   SetFullscreenFlag(element, request_type, options);
@@ -318,6 +323,13 @@ bool AllowedToRequestFullscreen(Document& document) {
   if (LocalFrame::HasTransientUserActivation(document.GetFrame()))
     return true;
 
+  // The algorithm is triggered by a fullscreen request capability delegation.
+  if (RuntimeEnabledFeatures::CapabilityDelegationFullscreenRequestEnabled(
+          document.GetExecutionContext()) &&
+      document.domWindow()->IsFullscreenRequestTokenActive()) {
+    return true;
+  }
+
   // The algorithm is triggered by a user-generated orientation change.
   if (ScopedAllowFullscreen::FullscreenAllowedReason() ==
       ScopedAllowFullscreen::kOrientationChange) {
@@ -383,7 +395,7 @@ bool RequestFullscreenConditionsMet(Element& pending, Document& document) {
     return false;
 
   // |pending| is not a dialog or popup element.
-  if (IsA<HTMLDialogElement>(pending) || IsA<HTMLPopupElement>(pending))
+  if (IsA<HTMLDialogElement>(pending) || pending.HasValidPopupAttribute())
     return false;
 
   // The fullscreen element ready check for |pending| returns false.
@@ -699,8 +711,10 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
 
     // After the first fullscreen request, the user activation should be
     // consumed, and the following fullscreen requests should receive an error.
-    if (!for_cross_process_descendant)
+    if (!for_cross_process_descendant) {
       LocalFrame::ConsumeTransientUserActivation(&frame);
+      window.ConsumeFullscreenRequestToken();
+    }
   } else {
     // Note: Although we are past the "in parallel" point, it's OK to continue
     // synchronously because when |error| is true, |ContinueRequestFullscreen()|

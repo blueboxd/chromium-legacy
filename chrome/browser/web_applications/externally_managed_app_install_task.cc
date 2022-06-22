@@ -16,13 +16,16 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/web_applications/commands/install_web_app_with_params_command.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app_installation_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_manager.h"
@@ -67,6 +70,11 @@ void ExternallyManagedAppInstallTask::Install(
       base::BindOnce(&ExternallyManagedAppInstallTask::OnWebContentsReady,
                      weak_ptr_factory_.GetWeakPtr(), web_contents,
                      std::move(result_callback)));
+}
+
+void ExternallyManagedAppInstallTask::SetDataRetrieverFactoryForTesting(
+    DataRetrieverFactory data_retriever_factory) {
+  data_retriever_factory_ = std::move(data_retriever_factory);
 }
 
 void ExternallyManagedAppInstallTask::OnWebContentsReady(
@@ -158,6 +166,7 @@ void ExternallyManagedAppInstallTask::InstallFromInfo(
   for (std::string& search_term : install_params.additional_search_terms) {
     web_app_info->additional_search_terms.push_back(std::move(search_term));
   }
+  web_app_info->install_url = install_params.install_url;
   install_manager_->InstallWebAppFromInfo(
       std::move(web_app_info),
       /*overwrite_existing_manifest_fields=*/install_params.force_reinstall,
@@ -213,11 +222,22 @@ void ExternallyManagedAppInstallTask::ContinueWebAppInstall(
   auto install_source = ConvertExternalInstallSourceToInstallSource(
       install_options_.install_source);
 
-  install_manager_->InstallWebAppWithParams(
-      web_contents, install_params, install_source,
-      base::BindOnce(&ExternallyManagedAppInstallTask::OnWebAppInstalled,
-                     weak_ptr_factory_.GetWeakPtr(), /*is_placeholder=*/false,
-                     /*offline_install=*/false, std::move(result_callback)));
+  WebAppProvider* provider = WebAppProvider::GetForLocalAppsUnchecked(profile_);
+
+  if (!data_retriever_factory_) {
+    data_retriever_factory_ = base::BindRepeating(
+        []() { return std::make_unique<WebAppDataRetriever>(); });
+  }
+
+  provider->command_manager().ScheduleCommand(
+      std::make_unique<InstallWebAppWithParamsCommand>(
+          web_contents->GetWeakPtr(), install_params, install_source,
+          install_finalizer_, registrar_,
+          base::BindOnce(&ExternallyManagedAppInstallTask::OnWebAppInstalled,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         /*is_placeholder=*/false,
+                         /*offline_install=*/false, std::move(result_callback)),
+          data_retriever_factory_.Run()));
 }
 
 void ExternallyManagedAppInstallTask::InstallPlaceholder(
@@ -297,6 +317,7 @@ void ExternallyManagedAppInstallTask::FinalizePlaceholderInstall(
 #endif  // defined(CHROMEOS)
 
   web_app_info.start_url = install_options_.install_url;
+  web_app_info.install_url = install_options_.install_url;
 
   web_app_info.user_display_mode = install_options_.user_display_mode;
 
@@ -310,6 +331,8 @@ void ExternallyManagedAppInstallTask::FinalizePlaceholderInstall(
   options.add_to_applications_menu = install_options_.add_to_applications_menu;
   options.add_to_desktop = install_options_.add_to_desktop;
   options.add_to_quick_launch_bar = install_options_.add_to_quick_launch_bar;
+
+  web_app_info.is_placeholder = true;
 
   install_finalizer_->FinalizeInstall(
       web_app_info, options,

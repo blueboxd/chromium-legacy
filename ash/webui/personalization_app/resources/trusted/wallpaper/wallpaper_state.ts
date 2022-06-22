@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 
+import {DefaultImageSymbol, DisplayableImage, kDefaultImageSymbol} from '../../common/constants.js';
 import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperImage} from '../personalization_app.mojom-webui.js';
 
 /**
@@ -18,8 +19,6 @@ export interface BackdropState {
  * Stores Google Photos state.
  * |enabled| is whether the user is allowed to access Google Photos. It is
  * undefined only until it has been initialized.
- * |count| is the count of Google Photos photos. It is undefined only until it
- * has been initialized, then either null (in error state) or a valid integer.
  * |albums| is the list of Google Photos albums. It is undefined only until it
  * has been initialized, then either null (in error state) or a valid Array.
  * |photos| is the list of Google Photos photos. It is undefined only until it
@@ -30,7 +29,6 @@ export interface BackdropState {
  */
 export interface GooglePhotosState {
   enabled: GooglePhotosEnablementState|undefined;
-  count: number|null|undefined;
   albums: GooglePhotosAlbum[]|null|undefined;
   photos: GooglePhotosPhoto[]|null|undefined;
   photosByAlbumId: Record<string, GooglePhotosPhoto[]|null|undefined>;
@@ -62,13 +60,15 @@ export interface GooglePhotosState {
 export interface LoadingState {
   collections: boolean;
   images: Record<WallpaperCollection['id'], boolean>;
-  local: {images: boolean, data: Record<FilePath['path'], boolean>};
+  local: {
+    images: boolean,
+    data: Record<FilePath['path']|DefaultImageSymbol, boolean>,
+  };
   refreshWallpaper: boolean;
   selected: boolean;
   setImage: number;
   googlePhotos: {
     enabled: boolean,
-    count: boolean,
     albums: boolean,
     photos: boolean,
     photosByAlbumId: Record<string, boolean>,
@@ -76,16 +76,28 @@ export interface LoadingState {
 }
 
 /**
- * |images| stores the list of images on local disk.
- * |data| stores a mapping of image.path to a thumbnail data url.
+ * |images| stores the list of images on local disk. The image in index 0 may be
+ * a special case for default image thumbnail.
+ * |data| stores a mapping of image.path to a thumbnail data url. There is also
+ * a special key to represent the default image thumbnail.
  */
 export interface LocalState {
-  images: Array<FilePath>|null;
-  data: Record<FilePath['path'], string>;
+  images: Array<FilePath|DefaultImageSymbol>|null;
+  data: Record<FilePath['path']|DefaultImageSymbol, string>;
 }
 
+export enum DailyRefreshType {
+  GOOGLE_PHOTOS = 'daily_refresh_google_photos',
+  BACKDROP = 'daily_refresh_backdrop',
+}
+
+/**
+ * |id| stores either a Backdrop collection id or a Google Photos album id.
+ * |type| stores which type of daily refresh and type of id this is.
+ */
 export interface DailyRefreshState {
-  collectionId: string|null;
+  id: string;
+  type: DailyRefreshType;
 }
 
 export interface WallpaperState {
@@ -93,8 +105,8 @@ export interface WallpaperState {
   loading: LoadingState;
   local: LocalState;
   currentSelected: CurrentWallpaper|null;
-  pendingSelected: WallpaperImage|FilePath|GooglePhotosPhoto|null;
-  dailyRefresh: DailyRefreshState;
+  pendingSelected: DisplayableImage|null;
+  dailyRefresh: DailyRefreshState|null;
   fullscreen: boolean;
   googlePhotos: GooglePhotosState;
 }
@@ -105,26 +117,24 @@ export function emptyState(): WallpaperState {
     loading: {
       collections: true,
       images: {},
-      local: {images: false, data: {}},
+      local: {images: false, data: {[kDefaultImageSymbol]: false}},
       refreshWallpaper: false,
       selected: false,
       setImage: 0,
       googlePhotos: {
         enabled: false,
-        count: false,
         albums: false,
         photos: false,
         photosByAlbumId: {},
       },
     },
-    local: {images: null, data: {}},
+    local: {images: null, data: {[kDefaultImageSymbol]: ''}},
     currentSelected: null,
     pendingSelected: null,
-    dailyRefresh: {collectionId: null},
+    dailyRefresh: null,
     fullscreen: false,
     googlePhotos: {
       enabled: undefined,
-      count: undefined,
       albums: undefined,
       photos: undefined,
       photosByAlbumId: {},

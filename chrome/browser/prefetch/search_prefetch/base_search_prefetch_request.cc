@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefetch/prefetch_headers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,8 +106,10 @@ std::string GetUserAgentValue(const net::HttpRequestHeaders& headers) {
 
 BaseSearchPrefetchRequest::BaseSearchPrefetchRequest(
     const GURL& prefetch_url,
+    bool navigation_prefetch,
     base::OnceCallback<void(bool)> report_error_callback)
     : prefetch_url_(prefetch_url),
+      navigation_prefetch_(navigation_prefetch),
       report_error_callback_(std::move(report_error_callback)) {}
 
 BaseSearchPrefetchRequest::~BaseSearchPrefetchRequest() = default;
@@ -150,6 +153,7 @@ BaseSearchPrefetchRequest::NetworkAnnotationForPrefetch() {
 }
 
 bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
+  TRACE_EVENT0("loading", "BaseSearchPrefetchRequest::StartPrefetchRequest");
   net::NetworkTrafficAnnotationTag network_traffic_annotation =
       NetworkAnnotationForPrefetch();
 
@@ -159,7 +163,8 @@ bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
   // This prefetch is not as high priority as navigation, but due to its
   // navigation speeding and relatively high likelihood of being served to a
   // navigation, the request is relatively high priority.
-  resource_request->priority = net::MEDIUM;
+  resource_request->priority =
+      navigation_prefetch_ ? net::HIGHEST : net::MEDIUM;
   resource_request->url = prefetch_url_;
   resource_request->credentials_mode =
       network::mojom::CredentialsMode::kInclude;
@@ -235,26 +240,38 @@ bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
       &prefetch_url_search_terms);
 
   bool should_defer = false;
-  for (auto& throttle : throttles) {
-    CheckForCancelledOrPausedDelegate cancel_or_pause_delegate;
-    throttle->set_delegate(&cancel_or_pause_delegate);
-    throttle->WillStartRequest(resource_request.get(), &should_defer);
-    // Make sure throttles are deleted before |cancel_or_pause_delegate| in case
-    // they call into the delegate in the destructor.
-    throttle.reset();
+  {
+    TRACE_EVENT0(
+        "loading",
+        "BaseSearchPrefetchRequest::StartPrefetchRequest.ExecuteThrottles");
+    for (auto& throttle : throttles) {
+      CheckForCancelledOrPausedDelegate cancel_or_pause_delegate;
+      throttle->set_delegate(&cancel_or_pause_delegate);
 
-    std::u16string new_url_search_terms;
+      {
+        TRACE_EVENT0(
+            "loading",
+            "BaseSearchPrefetchRequest::StartPrefetchRequest.WillStartRequest");
+        throttle->WillStartRequest(resource_request.get(), &should_defer);
+      }
 
-    // Check that search terms still match. Google URLs can be changed by
-    // by safe search (and other features as well) Make sure the URL still has
-    // the same search terms for the DSE.
-    default_search->ExtractSearchTermsFromURL(
-        resource_request->url, template_url_service->search_terms_data(),
-        &new_url_search_terms);
+      // Make sure throttles are deleted before |cancel_or_pause_delegate| in
+      // case they call into the delegate in the destructor.
+      throttle.reset();
 
-    if (should_defer || new_url_search_terms != prefetch_url_search_terms ||
-        cancel_or_pause_delegate.cancelled_or_paused()) {
-      return false;
+      std::u16string new_url_search_terms;
+
+      // Check that search terms still match. Google URLs can be changed by
+      // by safe search (and other features as well) Make sure the URL still has
+      // the same search terms for the DSE.
+      default_search->ExtractSearchTermsFromURL(
+          resource_request->url, template_url_service->search_terms_data(),
+          &new_url_search_terms);
+
+      if (should_defer || new_url_search_terms != prefetch_url_search_terms ||
+          cancel_or_pause_delegate.cancelled_or_paused()) {
+        return false;
+      }
     }
   }
 
@@ -298,4 +315,10 @@ void BaseSearchPrefetchRequest::MarkPrefetchAsComplete() {
 void BaseSearchPrefetchRequest::MarkPrefetchAsClicked() {
   DCHECK(current_status_ == SearchPrefetchStatus::kCanBeServed);
   current_status_ = SearchPrefetchStatus::kCanBeServedAndUserClicked;
+}
+
+void BaseSearchPrefetchRequest::MarkPrefetchAsServed() {
+  DCHECK(current_status_ == SearchPrefetchStatus::kCanBeServedAndUserClicked ||
+         current_status_ == SearchPrefetchStatus::kComplete);
+  current_status_ = SearchPrefetchStatus::kServed;
 }

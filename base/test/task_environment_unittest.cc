@@ -782,7 +782,10 @@ TEST_F(TaskEnvironmentTest, MultiThreadedMockTimeAndThreadPoolQueuedMode) {
       TaskEnvironment::TimeSource::MOCK_TIME,
       TaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
-  int count = 0;
+  // Atomic because it's updated from concurrent tasks in the ThreadPool
+  // (could use std::memory_order_releaxed on all accesses but keeping implicit
+  // operators because the test reads better that way).
+  std::atomic_int count = 0;
   const TimeTicks start_time = task_environment.NowTicks();
 
   RunLoop run_loop;
@@ -1376,7 +1379,13 @@ TEST_F(TaskEnvironmentTest, NoCOMEnvironment) {
 }
 #endif  // BUILDFLAG(IS_WIN)
 
-TEST_F(TaskEnvironmentTest, ParallelExecutionFence) {
+// TODO(crbug.com/1318840): Re-enable this test
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+#define MAYBE_ParallelExecutionFence DISABLED_ParallelExecutionFence
+#else
+#define MAYBE_ParallelExecutionFence ParallelExecutionFence
+#endif
+TEST_F(TaskEnvironmentTest, MAYBE_ParallelExecutionFence) {
   TaskEnvironment task_environment;
 
   constexpr int kNumParallelTasks =

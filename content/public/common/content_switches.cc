@@ -55,11 +55,6 @@ const char kChangeStackGuardOnForkDisabled[] = "disable";
 // Causes the Conversion Measurement API to run without delays or noise.
 const char kConversionsDebugMode[] = "conversions-debug-mode";
 
-// Enable restricted APIs for a set of origins, specified as a
-// comma-separated list. For example:
-//   --restricted-api-origins=https://www.foo.com,https://www.bar.com
-const char kRestrictedApiOrigins[] = "restricted-api-origins";
-
 // Enables gating of getDisplayMedia by the display-capture permissions-policy.
 // This switch supports the shipping of display-capture, as it allows admins to
 // temporarily disable display-capture gating with an Enterprise policy.
@@ -483,12 +478,6 @@ const char kForcePresentationReceiverForTesting[] =
 // overrides this if present.
 const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
 
-// For development / testing only. When running content_browsertests,
-// saves output of failing accessibility tests to their expectations files in
-// content/test/data/accessibility/, overwriting existing file content.
-const char kGenerateAccessibilityTestExpectations[] =
-    "generate-accessibility-test-expectations";
-
 // Extra command line options for launching the GPU process (normally used
 // for debugging). Use like renderer-cmd-prefix.
 const char kGpuLauncher[]                   = "gpu-launcher";
@@ -508,6 +497,11 @@ const char kInProcessGPU[]                  = "in-process-gpu";
 // Overrides the timeout, in seconds, that a child process waits for a
 // connection from the browser before killing itself.
 const char kIPCConnectionTimeout[]          = "ipc-connection-timeout";
+
+// Enable Isolated App restrictions for a set of origins, specified as a
+// comma-separated list. For example:
+//   --isolated-app-origins=https://www.foo.com,https://www.bar.com
+const char kIsolatedAppOrigins[] = "isolated-app-origins";
 
 // Require dedicated processes for a set of origins, specified as a
 // comma-separated list. For example:

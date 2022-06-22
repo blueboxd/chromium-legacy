@@ -178,6 +178,8 @@ cc_component("cc") {
     "metrics/compositor_frame_reporting_controller.h",
     "metrics/compositor_timing_history.cc",
     "metrics/compositor_timing_history.h",
+    "metrics/custom_metrics_recorder.cc",
+    "metrics/custom_metrics_recorder.h",
     "metrics/dropped_frame_counter.cc",
     "metrics/dropped_frame_counter.h",
     "metrics/event_latency_tracing_recorder.cc",
@@ -993,9 +995,6 @@ if (is_android) {
     # Right now, this only includes the Java switches. But if we need more Java
     # files, they should be added here as necessary.
     srcjar_deps = [ ":cc_android_java_enums_srcjar" ]
-    deps = [
-      "//base:base_java",
-      "//third_party/androidx:androidx_annotation_annotation_java",
-    ]
+    deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
   }
 }

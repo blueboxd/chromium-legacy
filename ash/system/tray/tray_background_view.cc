@@ -219,7 +219,7 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf,
     // Note the ink drop style is ignored.
     : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
       shelf_(shelf),
-      tray_container_(new TrayContainer(shelf)),
+      tray_container_(new TrayContainer(shelf, this)),
       is_active_(false),
       separator_visible_(true),
       visible_preferred_(false),
@@ -240,11 +240,9 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf,
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetInstallFocusRingOnFocus(true);
 
-  views::FocusRing* const focus_ring = views::FocusRing::Get(this);
-  focus_ring->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kFocusRingColor));
-  focus_ring->SetPathGenerator(std::make_unique<HighlightPathGenerator>(
-      this, kTrayBackgroundFocusPadding));
+  views::FocusRing::Get(this)->SetPathGenerator(
+      std::make_unique<HighlightPathGenerator>(this,
+                                               kTrayBackgroundFocusPadding));
   SetFocusPainter(nullptr);
 
   views::HighlightPathGenerator::Install(
@@ -494,6 +492,9 @@ void TrayBackgroundView::OnThemeChanged() {
   StyleUtil::ConfigureInkDropAttributes(this, StyleUtil::kBaseColor |
                                                   StyleUtil::kInkDropOpacity |
                                                   StyleUtil::kHighlightOpacity);
+  views::FocusRing::Get(this)->SetColor(
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
 void TrayBackgroundView::OnVirtualKeyboardVisibilityChanged() {

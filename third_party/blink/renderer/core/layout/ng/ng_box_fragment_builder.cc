@@ -424,14 +424,10 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
         child_layout_result.TallestUnbreakableBlockSize());
   }
 
-  if (child_layout_result.HasForcedBreak()) {
+  if (child_layout_result.HasForcedBreak())
     SetHasForcedBreak();
-  } else if (!IsInitialColumnBalancingPass()) {
-    LayoutUnit space_shortage = child_layout_result.MinimalSpaceShortage();
-    // Only nodes that fragmented report any useful space shortage.
-    if (space_shortage)
-      PropagateSpaceShortage(space_shortage);
-  }
+  else if (!IsInitialColumnBalancingPass())
+    PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
 
   // If a spanner was found inside the child, we need to finish up and propagate
   // the spanner to the column layout algorithm, so that it can take care of it.
@@ -447,12 +443,6 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
     }
   } else {
     DCHECK(!child_layout_result.ColumnSpannerPath());
-  }
-
-  if (!child_box_fragment->IsFragmentainerBox() &&
-      !HasOutOfFlowInFragmentainerSubtree()) {
-    SetHasOutOfFlowInFragmentainerSubtree(
-        child_box_fragment->HasOutOfFlowInFragmentainerSubtree());
   }
 }
 
@@ -678,7 +668,7 @@ void NGBoxFragmentBuilder::CheckNoBlockFragmentation() const {
   DCHECK(!DidBreakSelf());
   DCHECK(!has_forced_break_);
   DCHECK(!HasBreakTokenData());
-  DCHECK_EQ(minimal_space_shortage_, LayoutUnit::Max());
+  DCHECK_EQ(minimal_space_shortage_, kIndefiniteSize);
   if (ConstraintSpace() &&
       !ConstraintSpace()->ShouldPropagateChildBreakValues()) {
     DCHECK(!initial_break_before_);

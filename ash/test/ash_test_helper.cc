@@ -36,6 +36,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
+#include "chromeos/ash/components/dbus/rgbkbd/rgbkbd_client.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -45,10 +46,10 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/ash/mock_input_method_manager.h"
-#include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/util/display_util.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
@@ -108,6 +109,7 @@ AshTestHelper::AshTestHelper(ui::ContextFactory* context_factory)
   TabletModeController::SetUseScreenshotForTest(false);
 
   display::ResetDisplayIdForTest();
+  display::SetInternalDisplayIds({});
 
   chromeos::CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
@@ -166,6 +168,7 @@ void AshTestHelper::TearDown() {
   // shut the controller down first.
   power_policy_controller_initializer_.reset();
   chromeos::PowerManagerClient::Shutdown();
+  RgbkbdClient::Shutdown();
 
   TabletModeController::SetUseScreenshotForTest(true);
 
@@ -239,6 +242,8 @@ void AshTestHelper::SetUp(InitParams init_params) {
     bluez_dbus_manager_initializer_ =
         std::make_unique<BluezDBusManagerInitializer>();
   }
+  if (!RgbkbdClient::Get())
+    RgbkbdClient::InitializeFake();
   if (!chromeos::PowerManagerClient::Get())
     chromeos::PowerManagerClient::InitializeFake();
   if (!chromeos::PowerPolicyController::IsInitialized()) {

@@ -8,11 +8,6 @@ import("//device/bluetooth/cast_bluetooth.gni")
 if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
-if (is_chromeos) {
-  import("//chromeos/dbus/config/use_real_dbus_clients.gni")
-} else if (use_bluez) {
-  use_real_dbus_clients = false
-}
 
 config("bluetooth_config") {
   if (is_win) {
@@ -25,7 +20,7 @@ config("bluetooth_config") {
       "/DELAYLOAD:setupapi.dll",
     ]
   }
-  if ((is_linux || is_chromeos) && is_chromecast) {
+  if ((is_linux || is_chromeos) && is_castos) {
     defines = [ "USE_CAST_BLUETOOTH_ADAPTER" ]
   }
 }
@@ -457,6 +452,7 @@ component("bluetooth") {
         "floss/floss_manager_client.h",
       ]
       if (is_chromeos) {
+        import("//chromeos/dbus/config/use_real_dbus_clients.gni")
         configs += [ "//chromeos/dbus/config:use_real_dbus_clients_config" ]
         sources += [
           "chromeos/bluetooth_connection_logger.cc",
@@ -468,8 +464,11 @@ component("bluetooth") {
         if (is_chromeos_lacros) {
           deps += [ "//chromeos/lacros" ]
         }
+      } else {
+        use_real_dbus_clients = false
       }
       if (!use_real_dbus_clients) {
+        # Use fake D-Bus clients instead of real ones.
         sources += [
           "dbus/fake_bluetooth_adapter_client.cc",
           "dbus/fake_bluetooth_adapter_client.h",
@@ -523,8 +522,10 @@ component("bluetooth") {
           "floss/fake_floss_manager_client.h",
         ]
       }
-      deps += [ "//dbus" ]
-    } else {  # !use_dbus
+      if (use_dbus) {
+        deps += [ "//dbus" ]
+      }
+    } else {  # !use_bluez
       defines += [ "LINUX_WITHOUT_DBUS" ]
       sources += [
         "dbus/dbus_bluez_manager_wrapper_linux.h",
@@ -535,7 +536,7 @@ component("bluetooth") {
     # force_cast_bluetooth is used to compile with both cast & BlueZ, by
     # omitting the stubs that would otherwise be added in.
     if (!use_bluez || force_cast_bluetooth) {
-      if (is_chromecast && (is_linux || is_chromeos)) {
+      if (is_castos && (is_linux || is_chromeos)) {
         sources += [
           "cast/bluetooth_adapter_cast.cc",
           "cast/bluetooth_adapter_cast.h",
@@ -625,6 +626,8 @@ if (is_android) {
     sources = java_sources_needing_jni
     deps = [
       "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
       "//components/location/android:location_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
     ]

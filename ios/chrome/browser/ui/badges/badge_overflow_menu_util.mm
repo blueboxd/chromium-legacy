@@ -10,6 +10,8 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badges_histograms.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/infobar_icon.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -56,22 +58,29 @@ UIAction* GetOverflowMenuElementForBadgeType(
       action_identifier = kBadgeButtonSaveAddressProfileActionIdentifier;
       title =
           l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_ADDRESS_PROMPT_TITLE);
-      image = [[UIImage imageNamed:@"ic_place"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
+      image = UseSymbols() ? DefaultSymbolWithPointSize(kPinSymbol,
+                                                        kSymbolImagePointSize)
+                           : [UIImage imageNamed:@"ic_place"];
+      image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       histogram_type = MobileMessagesInfobarType::AutofillSaveAddressProfile;
       break;
     case kBadgeTypeSaveCard:
       action_identifier = kBadgeButtonSaveCardActionIdentifier;
       title = l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
-      image = [[UIImage imageNamed:@"infobar_save_card_icon"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      image = UseSymbols() ? DefaultSymbolWithPointSize(kCreditCardSymbol,
+                                                        kSymbolImagePointSize)
+                           : [UIImage imageNamed:@"infobar_save_card_icon"];
+      image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       histogram_type = MobileMessagesInfobarType::SaveCard;
       break;
     case kBadgeTypeTranslate:
       action_identifier = kBadgeButtonTranslateActionIdentifier;
       title = l10n_util::GetNSString(IDS_IOS_TRANSLATE_INFOBAR_MODAL_TITLE);
-      image = [[UIImage imageNamed:@"infobar_translate_icon"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      image = UseSymbols() ? CustomSymbolWithPointSize(kTranslateSymbol,
+                                                       kSymbolImagePointSize)
+                           : [UIImage imageNamed:@"infobar_translate_icon"];
+      image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       break;
     case kBadgeTypeAddToReadingList:
       action_identifier = kBadgeButtonReadingListActionIdentifier;
@@ -84,7 +93,7 @@ UIAction* GetOverflowMenuElementForBadgeType(
       action_identifier = kBadgeButtonPermissionsActionIdentifier;
       title = l10n_util::GetNSString(
           IDS_IOS_PERMISSIONS_INFOBAR_OVERFLOW_POPUP_TITLE);
-      image = [[UIImage imageNamed:@"infobar_permissions_camera"]
+      image = [CustomSymbolWithPointSize(kCameraSymbol, kSymbolImagePointSize)
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       histogram_type = MobileMessagesInfobarType::Permissions;
       break;
@@ -92,8 +101,8 @@ UIAction* GetOverflowMenuElementForBadgeType(
       action_identifier = kBadgeButtonPermissionsActionIdentifier;
       title = l10n_util::GetNSString(
           IDS_IOS_PERMISSIONS_INFOBAR_OVERFLOW_POPUP_TITLE);
-      image = [[UIImage systemImageNamed:@"mic"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      image = DefaultSymbolTemplateWithPointSize(kMicrophoneSymbol,
+                                                 kSymbolImagePointSize);
       histogram_type = MobileMessagesInfobarType::Permissions;
       break;
     case kBadgeTypeIncognito:

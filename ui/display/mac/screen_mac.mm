@@ -23,6 +23,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/display/mac/display_link_mac.h"
+#include "ui/display/util/display_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -101,21 +102,14 @@ DisplayMac BuildDisplayForScreen(NSScreen* screen) {
   bool enable_hdr = false;
   float hdr_max_lum_relative = 1.f;
   if (@available(macOS 10.15, *)) {
-    // It can be the case that `max_potential_edr_value` > 1, but
-    // `max_edr_value` == 1. This happens, e.g, when an HDR capable Macbook Pro
-    // display is set to maximum brightness. This can create the confusing
-    // appearance that the display is rapidly fluctuating between being HDR
-    // capable and HDR incapable. To avoid this confusion, set a minimum value
-    // to report when `max_potential_edr_value` > 1.
-    constexpr float kMinMaxEdrValueForHDR = 1.0625;
-
     const float max_potential_edr_value =
         [screen maximumPotentialExtendedDynamicRangeColorComponentValue];
     const float max_edr_value =
         [screen maximumExtendedDynamicRangeColorComponentValue];
     if (max_potential_edr_value > 1.f) {
       enable_hdr = true;
-      hdr_max_lum_relative = std::max(kMinMaxEdrValueForHDR, max_edr_value);
+      hdr_max_lum_relative =
+          std::max(kMinHDRCapableMaxLuminanceRelative, max_edr_value);
     }
   }
 
@@ -134,7 +128,7 @@ DisplayMac BuildDisplayForScreen(NSScreen* screen) {
   }
   gfx::DisplayColorSpaces display_color_spaces(icc_profile.GetColorSpace(),
                                                gfx::BufferFormat::RGBA_8888);
-  if (Display::HasForceDisplayColorProfile()) {
+  if (HasForceDisplayColorProfile()) {
     if (Display::HasEnsureForcedColorProfile()) {
       if (display_color_spaces != display.color_spaces()) {
         LOG(FATAL) << "The display's color space does not match the color "
@@ -173,7 +167,7 @@ DisplayMac BuildDisplayForScreen(NSScreen* screen) {
 
   // TODO(crbug.com/1078903): Support multiple internal displays.
   if (CGDisplayIsBuiltin(display_id))
-    Display::SetInternalDisplayId(display_id);
+    SetInternalDisplayIds({display_id});
 
   return DisplayMac{display, screen};
 }

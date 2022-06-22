@@ -149,8 +149,10 @@ class ActionTap::ActionTapView : public ActionView {
     if (mouse_action != kPrimaryClick && mouse_action != kSecondaryClick)
       return;
     const auto& binding = action_->GetCurrentDisplayedBinding();
-    if (IsMouseBound(binding) && binding.mouse_action() == mouse_action)
+    if (IsMouseBound(binding) &&
+        binding.mouse_action() == ConvertToMouseActionEnum(mouse_action)) {
       return;
+    }
 
     auto input_element =
         InputElement::CreateActionTapMouseElement(mouse_action);
@@ -260,28 +262,12 @@ std::unique_ptr<ActionView> ActionTap::CreateView(
   return view;
 }
 
-bool ActionTap::RequireInputElement(const InputElement& input_element,
-                                    Action** overlapped_action) {
-  DCHECK(current_binding_);
-  if (!current_binding_)
-    return false;
-  auto& binding = GetCurrentDisplayedBinding();
-  if (binding.IsOverlapped(input_element))
-    *overlapped_action = this;
-  // For ActionTap, other actions can take its binding.
-  return false;
-}
-
-void ActionTap::Unbind() {
-  DCHECK(action_view_);
-  if (!action_view_)
-    return;
+void ActionTap::Unbind(const InputElement& input_element) {
   if (pending_binding_)
     pending_binding_.reset();
   pending_binding_ = std::make_unique<InputElement>();
-  auto bounds = CalculateWindowContentBounds(target_window_);
-  action_view_->SetViewContent(BindingOption::kPending, bounds);
-  action_view_->SetDisplayMode(DisplayMode::kEditedUnbound);
+
+  PostUnbindProcess();
 }
 
 bool ActionTap::RewriteKeyEvent(const ui::KeyEvent* key_event,

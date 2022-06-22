@@ -40,7 +40,9 @@ class AppListFolderController;
 class AppListNudgeController;
 class AppListViewDelegate;
 class ContinueSectionView;
+class PillButton;
 class RecentAppsView;
+class RoundedScrollBar;
 class SearchResultPageDialogController;
 class SearchBoxView;
 class ScrollableAppsGridView;
@@ -113,6 +115,7 @@ class ASH_EXPORT AppListBubbleAppsPage
   // views::View:
   void Layout() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
+  void OnThemeChanged() override;
 
   // view::ViewObserver:
   void OnViewVisibilityChanged(views::View* observed_view,
@@ -138,6 +141,9 @@ class ASH_EXPORT AppListBubbleAppsPage
   bool HandleMovingFocusToRecents(int column);
   bool HandleMovingFocusToAppsGrid(int column);
 
+  // Updates the visibility of the continue section based on user preference.
+  void UpdateContinueSectionVisibility();
+
   views::ScrollView* scroll_view() { return scroll_view_; }
   ScrollableAppsGridView* scrollable_apps_grid_view() {
     return scrollable_apps_grid_view_;
@@ -146,6 +152,9 @@ class ASH_EXPORT AppListBubbleAppsPage
   // Which layer animates is an implementation detail.
   ui::Layer* GetPageAnimationLayerForTest();
 
+  PillButton* show_continue_section_button_for_test() {
+    return show_continue_section_button_;
+  }
   RecentAppsView* recent_apps_for_test() { return recent_apps_; }
   views::Separator* separator_for_test() { return separator_; }
   AppListToastContainerView* toast_container_for_test() {
@@ -198,8 +207,13 @@ class ASH_EXPORT AppListBubbleAppsPage
                              int vertical_offset,
                              base::TimeDelta duration);
 
+  // Button press callback for `show_continue_section_button_`.
+  void OnPressShowContinueSection(const ui::Event& event);
+
   AppListViewDelegate* view_delegate_ = nullptr;
   views::ScrollView* scroll_view_ = nullptr;
+  RoundedScrollBar* scroll_bar_ = nullptr;
+  PillButton* show_continue_section_button_ = nullptr;
   ContinueSectionView* continue_section_ = nullptr;
   RecentAppsView* recent_apps_ = nullptr;
   views::Separator* separator_ = nullptr;

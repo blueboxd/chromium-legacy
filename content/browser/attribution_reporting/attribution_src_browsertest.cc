@@ -26,6 +26,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/gurl.h"
@@ -42,17 +43,10 @@ using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::Pointee;
 using ::testing::SizeIs;
+using ::testing::UnorderedElementsAre;
 
 MATCHER_P(AggregatableKeyIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.key, result_listener);
-}
-
-MATCHER_P(AggregatableKeyHighBitsIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.high_bits, result_listener);
-}
-
-MATCHER_P(AggregatableKeyLowBitsIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.low_bits, result_listener);
 }
 
 MATCHER_P(SourceKeysAre, matcher, "") {
@@ -240,6 +234,44 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   // AttributionsBrowserTest.
 }
 
+// See crbug.com/1322450
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       AttributionSrcWindowOpen_URLEncoded_SourceRegistered) {
+  // Create a separate server as we cannot register a `ControllableHttpResponse`
+  // after the server starts.
+  auto https_server = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server->ServeFilesFromSourceDirectory(
+      "content/test/data/attribution_reporting");
+
+  auto register_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server.get(), "/register_source?a=b&c=d");
+  ASSERT_TRUE(https_server->Start());
+
+  GURL page_url =
+      https_server->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  TestNavigationObserver observer(web_contents());
+
+  // This attributionsrc will only be handled properly if the value is
+  // URL-decoded before being passed to the attributionsrc loader.
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+  window.open("page_with_conversion_redirect.html", "_top",
+  "attributionsrc=register_source%3Fa%3Db%26c%3Dd");)"));
+
+  register_response->WaitForRequest();
+  register_response->Done();
+
+  // TODO(crbug.com/1322525): Remove this once we use a pure mock.
+  observer.Wait();
+
+  EXPECT_EQ(register_response->http_request()->relative_url,
+            "/register_source?a=b&c=d");
+}
+
 IN_PROC_BROWSER_TEST_F(
     AttributionSrcBrowserTest,
     AttributionSrcWindowOpenNoUserGesture_SourceNotRegistered) {
@@ -341,21 +373,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(source_data.front()->priority, 0);
   EXPECT_EQ(source_data.front()->expiry, absl::nullopt);
   EXPECT_FALSE(source_data.front()->debug_key);
-  EXPECT_THAT(
-      source_data.front()->aggregatable_source->keys,
-      UnorderedElementsAre(
-          Pair("key1",
-               Pointee(AllOf(
-                   Field(&blink::mojom::AttributionAggregatableKey::high_bits,
-                         0),
-                   Field(&blink::mojom::AttributionAggregatableKey::low_bits,
-                         5)))),
-          Pair("key2",
-               Pointee(AllOf(
-                   Field(&blink::mojom::AttributionAggregatableKey::high_bits,
-                         0),
-                   Field(&blink::mojom::AttributionAggregatableKey::low_bits,
-                         345))))));
+  EXPECT_THAT(source_data.front()->aggregatable_source->keys,
+              UnorderedElementsAre(
+                  Pair("key1", absl::MakeUint128(/*high=*/0, /*low=*/5)),
+                  Pair("key2", absl::MakeUint128(/*high=*/0, /*low=*/345))));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -485,6 +506,36 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
             url::Origin::Create(GURL("https://d.test")));
 }
 
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest, NoReferrer) {
+  // Create a separate server as we cannot register a `ControllableHttpResponse`
+  // after the server starts.
+  auto https_server = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  net::test_server::RegisterDefaultHandlers(https_server.get());
+  https_server->ServeFilesFromSourceDirectory(
+      "content/test/data/attribution_reporting");
+  https_server->ServeFilesFromSourceDirectory("content/test/data");
+
+  auto register_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server.get(), "/register_source");
+  ASSERT_TRUE(https_server->Start());
+
+  GURL page_url =
+      https_server->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  GURL register_url = https_server->GetURL("d.test", "/register_source");
+  EXPECT_TRUE(ExecJs(web_contents(),
+                     JsReplace("createAttributionSrcImg($1);", register_url)));
+
+  register_response->WaitForRequest();
+  const net::test_server::HttpRequest* request =
+      register_response->http_request();
+  EXPECT_TRUE(request->headers.find("Referer") == request->headers.end());
+}
+
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
                        AttributionSrcImg_TriggerRegistered) {
   GURL page_url =
@@ -601,12 +652,10 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
       event_trigger_datas.back()->not_filters->filter_values,
       ElementsAre(Pair("d", ElementsAre("e", "f")), Pair("g", IsEmpty())));
 
-  EXPECT_THAT(
-      trigger_data.front()->aggregatable_trigger->trigger_data,
-      ElementsAre(Pointee(
-          AllOf(AggregatableKeyIs(Pointee(AllOf(AggregatableKeyHighBitsIs(0),
-                                                AggregatableKeyLowBitsIs(1)))),
-                SourceKeysAre(ElementsAre("key"))))));
+  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->trigger_data,
+              ElementsAre(Pointee(AllOf(
+                  AggregatableKeyIs(absl::MakeUint128(/*high=*/0, /*low=*/1)),
+                  SourceKeysAre(ElementsAre("key"))))));
 
   EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values,
               ElementsAre(Pair("key", 123)));
@@ -647,16 +696,14 @@ IN_PROC_BROWSER_TEST_F(
       trigger_data.front()->aggregatable_trigger->trigger_data,
       ElementsAre(
           Pointee(AllOf(
-              AggregatableKeyIs(Pointee(AllOf(AggregatableKeyHighBitsIs(0),
-                                              AggregatableKeyLowBitsIs(1)))),
+              AggregatableKeyIs(absl::MakeUint128(/*high=*/0, /*low=*/1)),
               SourceKeysAre(ElementsAre("key1")),
               FiltersAre(Pointee(
                   FilterValuesAre(ElementsAre(Pair("a", ElementsAre("b")))))),
               NotFiltersAre(Pointee(
                   FilterValuesAre(ElementsAre(Pair("c", IsEmpty()))))))),
           Pointee(AllOf(
-              AggregatableKeyIs(Pointee(AllOf(AggregatableKeyHighBitsIs(0),
-                                              AggregatableKeyLowBitsIs(0)))),
+              AggregatableKeyIs(absl::MakeUint128(/*high=*/0, /*low=*/0)),
               SourceKeysAre(IsEmpty()),
               FiltersAre(Pointee(FilterValuesAre(IsEmpty()))),
               NotFiltersAre(Pointee(

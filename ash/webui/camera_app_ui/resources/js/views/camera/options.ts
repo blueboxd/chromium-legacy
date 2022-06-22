@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import * as animate from '../../animation.js';
-import {assert, assertInstanceof} from '../../assert.js';
+import {assert} from '../../assert.js';
 import {
   CameraConfig,
   CameraInfo,
@@ -16,14 +16,9 @@ import * as localStorage from '../../models/local_storage.js';
 import * as nav from '../../nav.js';
 import * as newFeatureToast from '../../new_feature_toast.js';
 import * as state from '../../state.js';
-import {Facing, Mode, Resolution, ViewName} from '../../type.js';
+import {Facing, Mode, ViewName} from '../../type.js';
 import * as util from '../../util.js';
-import {PTZPanelOptions} from '../view.js';
-
-/**
- * All supported constant fps options of video recording.
- */
-const SUPPORTED_CONSTANT_FPS = [30, 60];
+import {OptionPanelOptions, PTZPanelOptions, StateOption} from '../view.js';
 
 /**
  * Creates a controller for the options of Camera view.
@@ -31,9 +26,14 @@ const SUPPORTED_CONSTANT_FPS = [30, 60];
 export class Options implements CameraUI {
   private readonly toggleMic = dom.get('#toggle-mic', HTMLInputElement);
 
-  private readonly toggleMirror = dom.get('#toggle-mirror', HTMLInputElement);
+  private readonly openMirrorPanel =
+      dom.get('#open-mirror-panel', HTMLButtonElement);
 
-  private readonly toggleFps = dom.get('#toggle-fps', HTMLInputElement);
+  private readonly openGridPanel =
+      dom.get('#open-grid-panel', HTMLButtonElement);
+
+  private readonly openTimerPanel =
+      dom.get('#open-timer-panel', HTMLButtonElement);
 
   private readonly openPTZPanel = dom.get('#open-ptz-panel', HTMLButtonElement);
 
@@ -75,16 +75,11 @@ export class Options implements CameraUI {
         .addEventListener('click', () => nav.open(ViewName.SETTINGS));
 
     this.toggleMic.addEventListener('click', () => this.updateAudioByMic());
-    this.toggleMirror.addEventListener('click', () => this.saveMirroring());
 
+    this.initOpenMirrorPanel();
+    this.initOpenGridPanel();
+    this.initOpenTimerPanel();
     this.initOpenPTZPanel();
-
-    util.bindElementAriaLabelWithState({
-      element: dom.get('#toggle-timer', Element),
-      state: state.State.TIMER_3SEC,
-      onLabel: I18nString.TOGGLE_TIMER_3S_BUTTON,
-      offLabel: I18nString.TOGGLE_TIMER_10S_BUTTON,
-    });
 
     // Restore saved mirroring states per video device.
     this.mirroringToggles = localStorage.getObject('mirroringToggles');
@@ -94,30 +89,142 @@ export class Options implements CameraUI {
     state.addObserver(state.State.TAKING, () => {
       this.updateOptionAvailability();
     });
-    this.toggleFps.addEventListener('click', (e) => {
-      if (state.get(state.State.TAKING) || !this.cameraAvailable) {
-        e.preventDefault();
-        return;
-      }
+
+    util.bindElementAriaLabelWithState({
+      element: this.toggleMic,
+      state: state.State.MIC,
+      onLabel: I18nString.ARIA_MUTE_OFF,
+      offLabel: I18nString.ARIA_MUTE_ON,
     });
-    this.toggleFps.addEventListener('change', () => {
-      if (this.currentConfig === null) {
-        return;
+  }
+
+  private setAriaLabelForOptionButton(
+      element: HTMLElement, titleLabel: I18nString,
+      stateOptions: StateOption[]) {
+    element.setAttribute('i18n-label', titleLabel);
+    for (const {ariaLabel, state: targetState, isDisableOption} of
+             stateOptions) {
+      const stateEnabled = state.get(targetState);
+      if ((stateEnabled && !isDisableOption) ||
+          (!stateEnabled && isDisableOption)) {
+        element.setAttribute('i18n-aria', ariaLabel);
+        break;
       }
-      const prefFps = this.toggleFps.checked ? 60 : 30;
-      this.updateVideoConstFpsOption(prefFps);
-      const resolution = assertInstanceof(
-          this.cameraManager.getCaptureResolution(), Resolution);
-      const reconfiguring = this.cameraManager.setPrefVideoConstFps(
-          this.currentConfig.deviceId, resolution, prefFps);
-      if (reconfiguring === null) {
-        return;
-      }
-      state.set(state.State.MODE_SWITCHING, true);
-      (async () => {
-        const hasError = !await reconfiguring;
-        state.set(state.State.MODE_SWITCHING, false, {hasError});
-      })();
+    }
+    util.setupI18nElements(element);
+  }
+
+  private initOpenMirrorPanel() {
+    const stateOptions = [
+      {
+        label: I18nString.LABEL_OFF,
+        ariaLabel: I18nString.ARIA_MIRROR_OFF,
+        state: state.State.MIRROR,
+        isDisableOption: true,
+      },
+      {
+        label: I18nString.LABEL_ON,
+        ariaLabel: I18nString.ARIA_MIRROR_ON,
+        state: state.State.MIRROR,
+      },
+    ];
+    const titleLabel = I18nString.OPEN_MIRROR_PANEL_BUTTON;
+    this.setAriaLabelForOptionButton(
+        this.openMirrorPanel, titleLabel, stateOptions);
+    this.openMirrorPanel.addEventListener('click', () => {
+      nav.open(ViewName.OPTION_PANEL, new OptionPanelOptions({
+                 triggerButton: this.openMirrorPanel,
+                 titleLabel,
+                 stateOptions,
+                 onStateChanged: (newState) => {
+                   const enabled = newState !== null;
+                   state.set(state.State.MIRROR, enabled);
+                   this.saveMirroring(enabled);
+                 },
+               }));
+    });
+  }
+
+  private initOpenGridPanel() {
+    const stateOptions = [
+      {
+        label: I18nString.LABEL_OFF,
+        ariaLabel: I18nString.ARIA_GRID_OFF,
+        state: state.State.GRID,
+        isDisableOption: true,
+      },
+      {
+        label: I18nString.LABEL_GRID_3X3,
+        ariaLabel: I18nString.ARIA_GRID_3X3,
+        state: state.State.GRID_3x3,
+      },
+      {
+        label: I18nString.LABEL_GRID_4X4,
+        ariaLabel: I18nString.ARIA_GRID_4X4,
+        state: state.State.GRID_4x4,
+      },
+      {
+        label: I18nString.LABEL_GRID_GOLDEN,
+        ariaLabel: I18nString.LABEL_GRID_GOLDEN,
+        state: state.State.GRID_GOLDEN,
+      },
+    ];
+    const titleLabel = I18nString.OPEN_GRID_PANEL_BUTTON;
+    this.setAriaLabelForOptionButton(
+        this.openGridPanel, titleLabel, stateOptions);
+    this.openGridPanel.addEventListener('click', () => {
+      nav.open(ViewName.OPTION_PANEL, new OptionPanelOptions({
+                 triggerButton: this.openGridPanel,
+                 titleLabel,
+                 stateOptions,
+                 onStateChanged: (newState) => {
+                   state.set(state.State.GRID, newState !== null);
+                   for (const s
+                            of [state.State.GRID_3x3, state.State.GRID_4x4,
+                                state.State.GRID_GOLDEN]) {
+                     state.set(s, newState === s);
+                   }
+                 },
+               }));
+    });
+  }
+
+  private initOpenTimerPanel() {
+    const stateOptions = [
+      {
+        label: I18nString.LABEL_OFF,
+        ariaLabel: I18nString.ARIA_TIMER_OFF,
+        state: state.State.TIMER,
+        isDisableOption: true,
+      },
+      {
+        label: I18nString.LABEL_TIMER_3S,
+        ariaLabel: I18nString.ARIA_TIMER_3S,
+        state: state.State.TIMER_3SEC,
+      },
+      {
+        label: I18nString.LABEL_TIMER_10S,
+        ariaLabel: I18nString.ARIA_TIMER_10S,
+        state: state.State.TIMER_10SEC,
+      },
+    ];
+    const titleLabel = I18nString.OPEN_TIMER_PANEL_BUTTON;
+    this.setAriaLabelForOptionButton(
+        this.openTimerPanel, titleLabel, stateOptions);
+    this.openTimerPanel.addEventListener('click', () => {
+      nav.open(
+          ViewName.OPTION_PANEL, new OptionPanelOptions({
+            triggerButton: this.openTimerPanel,
+            titleLabel,
+            stateOptions,
+            onStateChanged: (newState) => {
+              state.set(state.State.TIMER, newState !== null);
+              for (const s
+                       of [state.State.TIMER_3SEC, state.State.TIMER_10SEC]) {
+                state.set(s, newState === s);
+              }
+            },
+          }));
     });
   }
 
@@ -162,13 +269,6 @@ export class Options implements CameraUI {
     });
   }
 
-  private updateVideoConstFpsOption(prefFps: number|null) {
-    this.toggleFps.checked = prefFps === 60;
-    for (const fps of SUPPORTED_CONSTANT_FPS) {
-      state.set(state.assertState(`fps-${fps}`), fps === prefFps);
-    }
-  }
-
   onUpdateCapability(cameraInfo: CameraInfo): void {
     state.set(state.State.MULTI_CAMERA, cameraInfo.devicesInfo.length >= 2);
   }
@@ -178,36 +278,6 @@ export class Options implements CameraUI {
     this.updateMirroring();
     this.audioTrack = this.cameraManager.getAudioTrack();
     this.updateAudioByMic();
-
-    for (const fps of SUPPORTED_CONSTANT_FPS) {
-      state.set(
-          state.assertState(`fps-${fps}`),
-          fps === this.cameraManager.getConstFps());
-    }
-
-    this.toggleFps.hidden = (() => {
-      if (config.mode !== Mode.VIDEO) {
-        return true;
-      }
-      if (config.facing !== Facing.EXTERNAL) {
-        return true;
-      }
-      if (this.currentConfig === null) {
-        return true;
-      }
-      const info = this.cameraManager.getCameraInfo().getCamera3DeviceInfo(
-          this.currentConfig.deviceId);
-      if (info === null) {
-        return true;
-      }
-      const constFpses = info.fpsRanges.filter(
-          ({minFps, maxFps}) =>
-              minFps === maxFps && SUPPORTED_CONSTANT_FPS.includes(minFps));
-      return constFpses.length <= 1;
-    })();
-    if (!this.toggleFps.hidden) {
-      this.updateVideoConstFpsOption(this.cameraManager.getConstFps());
-    }
   }
 
   onCameraAvailable(): void {
@@ -221,9 +291,7 @@ export class Options implements CameraUI {
   }
 
   private updateOptionAvailability(): void {
-    this.toggleMirror.disabled = !this.allowModifyMirrorState();
-    this.toggleFps.disabled =
-        !this.cameraAvailable || state.get(state.State.TAKING);
+    this.openMirrorPanel.disabled = !this.allowModifyMirrorState();
   }
 
   /**
@@ -251,16 +319,18 @@ export class Options implements CameraUI {
     if (deviceId in this.mirroringToggles && this.allowModifyMirrorState()) {
       enabled = this.mirroringToggles[deviceId];
     }
-    util.toggleChecked(this.toggleMirror, enabled);
+
+    state.set(state.State.MIRROR, enabled);
   }
 
   /**
    * Saves the toggled mirror state for the current video device.
+   *
+   * @param enabled Whether the mirroring is enabled.
    */
-  private saveMirroring() {
+  private saveMirroring(enabled: boolean) {
     if (this.currentConfig !== null) {
-      this.mirroringToggles[this.currentConfig.deviceId] =
-          this.toggleMirror.checked;
+      this.mirroringToggles[this.currentConfig.deviceId] = enabled;
       localStorage.set('mirroringToggles', this.mirroringToggles);
     }
   }

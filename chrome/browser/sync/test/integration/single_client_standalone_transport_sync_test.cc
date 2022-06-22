@@ -176,21 +176,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
   // Trigger a "Reset Sync" from the dashboard and wait for it to apply. This
-  // involves clearing the server data so that the birthday gets incremented,
-  // and also sending an appropriate error.
+  // involves clearing the server data so that the birthday gets incremented.
   GetFakeServer()->ClearServerData();
-  GetFakeServer()->TriggerActionableError(
-      sync_pb::SyncEnums::NOT_MY_BIRTHDAY, "Reset Sync from Dashboard",
-      "https://chrome.google.com/sync", sync_pb::SyncEnums::UNKNOWN_ACTION);
   EXPECT_TRUE(SyncDisabledByUserChecker(GetSyncService(0)).Wait());
-  GetFakeServer()->ClearActionableError();
 
   // On all platforms, Sync-the-feature should now be disabled.
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   // On ChromeOS, the primary account should remain, and Sync should start up
   // again in standalone transport mode.
   // TODO(https://crbug.com/1233933): Update this when Lacros profiles support

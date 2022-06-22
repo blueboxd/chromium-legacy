@@ -166,6 +166,11 @@ feedwire::Request CreateFeedQueryRequest(
     feed_request.add_client_capability(Capability::ON_DEVICE_USER_PROFILE);
   }
 
+  if (base::FeatureList::IsEnabled(kInfoCardAcknowledgementTracking)) {
+    feed_request.add_client_capability(
+        Capability::INFO_CARD_ACKNOWLEDGEMENT_TRACKING);
+  }
+
   *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
   feedwire::FeedQuery& query = *feed_request.mutable_feed_query();
   query.set_reason(request_reason);
@@ -228,6 +233,17 @@ void SetCardSpecificNoticeAcknowledged(
         ->mutable_feed_query()
         ->mutable_chrome_fulfillment_info()
         ->add_acknowledged_notice_key(key);
+  }
+}
+
+void SetInfoCardTrackingStates(feedwire::Request* request,
+                               const RequestMetadata& request_metadata) {
+  for (const auto& state : request_metadata.info_card_tracking_states) {
+    request->mutable_feed_request()
+        ->mutable_feed_query()
+        ->mutable_chrome_fulfillment_info()
+        ->add_info_card_tracking_state()
+        ->CopyFrom(state);
   }
 }
 
@@ -327,6 +343,7 @@ feedwire::Request CreateFeedQueryRefreshRequest(
   }
   SetNoticeCardAcknowledged(&request, request_metadata);
   SetCardSpecificNoticeAcknowledged(&request, request_metadata);
+  SetInfoCardTrackingStates(&request, request_metadata);
   return request;
 }
 

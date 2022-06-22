@@ -86,7 +86,7 @@ class InputMethodManagerImpl : public InputMethodManager,
     void EnableLoginLayouts(
         const std::string& language_code,
         const std::vector<std::string>& initial_layouts) override;
-    void EnableLockScreenLayouts() override;
+    void DisableNonLockScreenLayouts() override;
     void GetInputMethodExtensions(InputMethodDescriptors* result) override;
     std::unique_ptr<InputMethodDescriptors>
     GetEnabledInputMethodsSortedByLocalizedDisplayNames() const override;
@@ -106,9 +106,9 @@ class InputMethodManagerImpl : public InputMethodManager,
     bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_enabled_input_method_ids) override;
     bool SetAllowedInputMethods(
-        const std::vector<std::string>& new_allowed_input_method_ids,
-        bool enable_allowed_input_methods) override;
+        const std::vector<std::string>& new_allowed_input_method_ids) override;
     const std::vector<std::string>& GetAllowedInputMethodIds() const override;
+    std::string GetAllowedFallBackKeyboardLayout() const override;
     void EnableInputView() override;
     void DisableInputView() override;
     const GURL& GetInputViewUrl() const override;
@@ -133,10 +133,6 @@ class InputMethodManagerImpl : public InputMethodManager,
     // called, the passed keyboard layout input methods are allowed and all
     // non-keyboard input methods remain to be allowed.
     bool IsInputMethodAllowed(const std::string& input_method_id) const;
-
-    // Returns the first hardware input method that is allowed or the first
-    // allowed input method, if no hardware input method is allowed.
-    std::string GetAllowedFallBackKeyboardLayout() const;
 
     // Returns Input Method that best matches given id.
     const InputMethodDescriptor* LookupInputMethod(

@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
 
 #include <memory>
+
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
@@ -39,9 +40,11 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/sizes_attribute_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
+#include "third_party/blink/renderer/core/html/blocking_attribute.h"
 #include "third_party/blink/renderer/core/html/client_hints_util.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/html_dimension.h"
@@ -177,11 +180,14 @@ class TokenPreloadScanner::StartTagScanner {
     }
     if (!Match(tag_impl_, html_names::kInputTag) &&
         !Match(tag_impl_, html_names::kScriptTag) &&
-        !Match(tag_impl_, html_names::kVideoTag))
+        !Match(tag_impl_, html_names::kVideoTag) &&
+        !Match(tag_impl_, html_names::kStyleTag))
       tag_impl_ = nullptr;
   }
 
   enum URLReplacement { kAllowURLReplacement, kDisallowURLReplacement };
+
+  bool GetMatched() const { return matched_; }
 
   void ProcessAttributes(const HTMLToken::AttributeList& attributes) {
     DCHECK(IsMainThread());
@@ -299,12 +305,18 @@ class TokenPreloadScanner::StartTagScanner {
     RenderBlockingBehavior render_blocking_behavior =
         RenderBlockingBehavior::kUnset;
     if (request_type == PreloadRequest::kRequestTypeLinkRelPreload) {
-      render_blocking_behavior = RenderBlockingBehavior::kNonBlocking;
+      render_blocking_behavior = BlockingAttribute::IsExplicitlyRenderBlocking(
+                                     blocking_attribute_value_)
+                                     ? RenderBlockingBehavior::kBlocking
+                                     : RenderBlockingBehavior::kNonBlocking;
     } else if (is_script &&
                (is_module || defer_ == FetchParameters::kLazyLoad)) {
       render_blocking_behavior =
-          is_async_ ? RenderBlockingBehavior::kPotentiallyBlocking
-                    : RenderBlockingBehavior::kNonBlocking;
+          BlockingAttribute::IsExplicitlyRenderBlocking(
+              blocking_attribute_value_)
+              ? RenderBlockingBehavior::kBlocking
+              : (is_async_ ? RenderBlockingBehavior::kPotentiallyBlocking
+                           : RenderBlockingBehavior::kNonBlocking);
     } else if (is_script || type == ResourceType::kCSSStyleSheet) {
       // CSS here is render blocking, as non blocking doesn't get preloaded.
       // JS here is a blocking one, as others would've been caught by the
@@ -326,7 +338,8 @@ class TokenPreloadScanner::StartTagScanner {
     // TODO(crbug.com/981419): Honor the integrity attribute value for all
     // supported preload destinations, not just the destinations that support
     // SRI in the first place.
-    if (type == ResourceType::kScript || type == ResourceType::kCSSStyleSheet) {
+    if (type == ResourceType::kScript || type == ResourceType::kCSSStyleSheet ||
+        type == ResourceType::kFont) {
       request->SetIntegrityMetadata(integrity_metadata_);
     }
 
@@ -372,6 +385,9 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, html_names::kFetchpriorityAttr) &&
                priority_hints_origin_trial_enabled_) {
       SetFetchPriorityHint(attribute_value);
+    } else if (RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
+               Match(attribute_name, html_names::kBlockingAttr)) {
+      blocking_attribute_value_ = attribute_value;
     }
   }
 
@@ -437,6 +453,16 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
   template <typename NameType>
+  void ProcessStyleAttribute(const NameType& attribute_name,
+                             const String& attribute_value) {
+    if (Match(attribute_name, html_names::kMediaAttr)) {
+      matched_ &= MediaAttributeMatches(*media_values_, attribute_value);
+    }
+    // No need to parse the `blocking` attribute. Parser-created style elements
+    // are implicitly render-blocking as long as the media attribute matches.
+  }
+
+  template <typename NameType>
   void ProcessLinkAttribute(const NameType& attribute_name,
                             const String& attribute_value) {
     // FIXME - Don't set rel/media/crossorigin multiple times.
@@ -483,6 +509,9 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, html_names::kFetchpriorityAttr) &&
                priority_hints_origin_trial_enabled_) {
       SetFetchPriorityHint(attribute_value);
+    } else if (RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
+               Match(attribute_name, html_names::kBlockingAttr)) {
+      blocking_attribute_value_ = attribute_value;
     }
   }
 
@@ -550,6 +579,8 @@ class TokenPreloadScanner::StartTagScanner {
       ProcessSourceAttribute(attribute_name, attribute_value);
     else if (Match(tag_impl_, html_names::kVideoTag))
       ProcessVideoAttribute(attribute_name, attribute_value);
+    else if (Match(tag_impl_, html_names::kStyleTag))
+      ProcessStyleAttribute(attribute_name, attribute_value);
   }
 
   bool IsLazyLoadImageDeferable(
@@ -734,6 +765,7 @@ class TokenPreloadScanner::StartTagScanner {
   String as_attribute_value_;
   String type_attribute_value_;
   String language_attribute_value_;
+  String blocking_attribute_value_;
   AtomicString scopes_attribute_value_;
   AtomicString resources_attribute_value_;
   bool nomodule_attribute_value_ = false;
@@ -957,12 +989,12 @@ void TokenPreloadScanner::ScanCommon(
       }
       if (template_count_)
         return;
-      if (Match(tag_impl, html_names::kStyleTag)) {
-        in_style_ = true;
-        return;
-      }
       // Don't early return, because the StartTagScanner needs to look at these
       // too.
+      if (Match(tag_impl, html_names::kStyleTag)) {
+        in_style_ = true;
+        css_scanner_.SetInBody(seen_img_ || seen_body_);
+      }
       if (Match(tag_impl, html_names::kScriptTag)) {
         in_script_ = true;
 
@@ -1038,6 +1070,8 @@ void TokenPreloadScanner::ScanCommon(
 
       if (in_picture_ && media_values_->Width())
         scanner.HandlePictureSourceURL(picture_data_);
+      if (in_style_)
+        css_scanner_.SetMediaMatches(scanner.GetMatched());
       std::unique_ptr<PreloadRequest> request = scanner.CreatePreloadRequest(
           predicted_base_element_url_, source, client_hints_preferences_,
           picture_data_, *document_parameters_, exclusion_info_.get(),

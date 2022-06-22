@@ -23,6 +23,7 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "components/app_restore/window_properties.h"
 #include "components/exo/buffer.h"
 #include "components/exo/permission.h"
 #include "components/exo/shell_surface_util.h"
@@ -357,9 +358,7 @@ TEST_F(ShellSurfaceTest, Restore) {
 
 TEST_F(ShellSurfaceTest, RestoreFromFullscreen) {
   std::unique_ptr<ShellSurface> shell_surface =
-      test::ShellSurfaceBuilder({256, 256})
-          .SetMaximumSize(gfx::Size(10, 10))
-          .BuildShellSurface();
+      test::ShellSurfaceBuilder({256, 256}).BuildShellSurface();
 
   // Act: Restore after fullscreen
   shell_surface->SetFullscreen(true);
@@ -2262,6 +2261,27 @@ TEST_F(ShellSurfaceTest, InitialCenteredBoundsWithConfigure) {
   expected.ClampToCenteredSize(size);
   EXPECT_EQ(expected, shell_surface->GetWidget()->GetWindowBoundsInScreen());
 }
+// Test that restore info is set correctly.
+TEST_F(ShellSurfaceTest, SetRestoreInfo) {
+  int32_t restore_session_id = 200;
+  int32_t restore_window_id = 100;
+
+  gfx::Size size(20, 30);
+  auto shell_surface =
+      test::ShellSurfaceBuilder(size).SetNoCommit().BuildShellSurface();
+
+  shell_surface->SetRestoreInfo(restore_session_id, restore_window_id);
+  shell_surface->Restore();
+  shell_surface->root_surface()->Commit();
+
+  EXPECT_TRUE(shell_surface->GetWidget()->IsVisible());
+  EXPECT_EQ(restore_session_id,
+            shell_surface->GetWidget()->GetNativeWindow()->GetProperty(
+                app_restore::kWindowIdKey));
+  EXPECT_EQ(restore_window_id,
+            shell_surface->GetWidget()->GetNativeWindow()->GetProperty(
+                app_restore::kRestoreWindowIdKey));
+}
 
 // Surfaces without non-client view should not crash.
 TEST_F(ShellSurfaceTest, NoNonClientViewWithConfigure) {
@@ -2285,6 +2305,21 @@ TEST_F(ShellSurfaceTest, WindowIsResizableWithEmptySizeConstraints) {
                            .SetMaximumSize(gfx::Size(0, 0))
                            .BuildShellSurface();
   EXPECT_TRUE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+}
+
+TEST_F(ShellSurfaceTest, SetSystemModal) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256})
+          .SetMaximumSize(gfx::Size(10, 10))
+          .SetUseSystemModalContainer()
+          .SetNoCommit()
+          .BuildShellSurface();
+
+  shell_surface->SetSystemModal(true);
+  shell_surface->root_surface()->Commit();
+
+  EXPECT_EQ(ui::MODAL_TYPE_SYSTEM, shell_surface->GetModalType());
+  EXPECT_FALSE(shell_surface->frame_enabled());
 }
 
 }  // namespace exo

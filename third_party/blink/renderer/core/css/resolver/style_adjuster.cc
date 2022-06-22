@@ -92,9 +92,8 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
     // Body scrolls overflow if html root overflow is not visible or the
     // propagation of overflow is stopped by containment.
     if (parent_style.IsOverflowVisibleAlongBothAxes()) {
-      if (!RuntimeEnabledFeatures::CSSContainedBodyPropagationEnabled() ||
-          (!parent_style.ShouldApplyAnyContainment(*document_element) &&
-           !style.ShouldApplyAnyContainment(*element))) {
+      if (!parent_style.ShouldApplyAnyContainment(*document_element) &&
+          !style.ShouldApplyAnyContainment(*element)) {
         scrolls_overflow = false;
       }
     }
@@ -424,9 +423,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     // the page zoom factor in the effective zoom, which is safe because it
     // comes from user intervention. crbug.com/1285327
     style.SetEffectiveZoom(
-        element.GetDocument().GetFrame() && !element.GetDocument().Printing()
-            ? element.GetDocument().GetFrame()->PageZoomFactor()
-            : 1);
+        element.GetDocument().GetStyleResolver().InitialZoom());
 
     if (!features::IsFencedFramesMPArchBased()) {
       // Force the inside-display to `flow`, but honors the outside-display.
@@ -842,12 +839,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       style.OverflowY() != EOverflow::kVisible)
     AdjustOverflow(style, element);
 
-  // TODO(rego): When HighlightInheritance (https://crbug.com/1024156) is
-  // enabled, we're going to inherit the text decorations from the parent
-  // elements, that would cause that we paint the decorations more than once in
-  // the highlight pseudos. This doesn't seem right and there's a spec issue
-  // (https://github.com/w3c/csswg-drafts/issues/6829) about not propagating
-  // text decorations on highlights pseudos.
+  // Highlight pseudos propagate decorations with inheritance only.
   if (StopPropagateTextDecorations(style, element) || state.IsForHighlight())
     style.ClearAppliedTextDecorations();
   else

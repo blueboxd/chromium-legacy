@@ -3,16 +3,15 @@
     border-color: var(--google-blue-600);
   }
 
-  #updateStatusDiv {
-    align-items: center;
-    display: flex;
+  #restartIcon {
+    padding-inline-start: 8px;
   }
 
   #updateIcon {
     color: var(--cros-icon-color-secondary);
   }
 </style>
-<base-page>
+<base-page equal-panes>
   <div slot="left-pane">
     <h1>[[i18n('osUpdateTitleText')]]</h1>
     <div id="updateInstructionsDiv" hidden$="[[updateInProgress_]]">
@@ -23,8 +22,9 @@
       <div hidden$="[[!isCompliant_]]" class="instructions">
         [[i18n('osUpdateOutOfDateDescriptionText')]]
       </div>
-      <div id="versionInfo">
-        <iron-icon id="updateIcon" class="small-icon" icon="shimless-icon:info">
+      <div id="versionInfo" class="icon-message">
+        <iron-icon id="updateIcon" class="small-icon"
+            icon="shimless-icon:info">
         </iron-icon>
         <span class="instructions">[[currentVersionText_]]</span>
       </div>
@@ -35,15 +35,14 @@
           on-click="onUpdateButtonClicked_">
           [[updateVersionButtonLabel_]]
         <iron-icon id="restartIcon" icon="shimless-icon:update"
-            class="small-icon">
+            class="small-icon-base">
         </iron-icon>
       </cr-button>
     </div>
-    <div id="updateStatusDiv" class="instructions"
-        hidden$="[[!updateInProgress_]]">
+    <div id="updateStatusDiv" class="icon-message" hidden$="[[!updateInProgress_]]">
        <paper-spinner-lite class="small-spinner" active>
       </paper-spinner-lite>
-      <span>[[i18n('updatingOsVersionText')]]</span>
+      <span class="instructions">[[i18n('updatingOsVersionText')]]</span>
     </div>
   </div>
   <div slot="right-pane">

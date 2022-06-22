@@ -142,6 +142,8 @@ class NotificationTextButton : public views::MdTextButton {
     label()->SetAutoColorReadabilityEnabled(true);
   }
 
+  absl::optional<SkColor> color() const { return color_; }
+
  private:
   absl::optional<SkColor> color_;
 };
@@ -271,6 +273,8 @@ NotificationView::NotificationView(
   header_row->ConfigureLabelsStyle(font_list, text_view_padding, false);
   header_row->SetPreferredSize(header_row->GetPreferredSize() -
                                gfx::Size(GetInsets().width(), 0));
+  header_row->SetCallback(base::BindRepeating(
+      &NotificationView::HeaderRowPressed, base::Unretained(this)));
   header_row->AddChildView(CreateControlButtonsBuilder().Build());
 
   auto content_row = CreateContentRowBuilder()
@@ -314,6 +318,13 @@ NotificationView::~NotificationView() {
   // gets called in the destructor of InkDrop which would've called the wrong
   // override if it destroys in a parent destructor.
   views::InkDrop::Remove(this);
+}
+
+SkColor NotificationView::GetActionButtonColorForTesting(
+    views::LabelButton* action_button) {
+  NotificationTextButton* button =
+      static_cast<NotificationTextButton*>(action_button);
+  return button->color().value_or(SkColor());
 }
 
 void NotificationView::CreateOrUpdateHeaderView(
@@ -650,6 +661,23 @@ void NotificationView::RemoveBackgroundAnimation() {
 std::vector<views::View*> NotificationView::GetChildrenForLayerAdjustment() {
   return {header_row(), block_all_button_, dont_block_button_,
           settings_done_button_};
+}
+
+void NotificationView::HeaderRowPressed() {
+  if (!IsExpandable() || !content_row()->GetVisible())
+    return;
+
+  // Tapping anywhere on |header_row_| can expand the notification, though only
+  // |expand_button| can be focused by TAB.
+  SetManuallyExpandedOrCollapsed(true);
+  auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
+  SetExpanded(!IsExpanded());
+  // Check |this| is valid before continuing, because ToggleExpanded() might
+  // cause |this| to be deleted.
+  if (!weak_ptr)
+    return;
+  Layout();
+  SchedulePaint();
 }
 
 }  // namespace message_center

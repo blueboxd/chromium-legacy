@@ -33,6 +33,16 @@ import SwiftUI
     return suggestion.supportsDeletion
   }
 
+  /// Some suggestions are answers that are displayed inline, such as for weather or calculator.
+  var hasAnswer: Bool {
+    return suggestion.hasAnswer
+  }
+
+  /// Suggested number of lines to format |detailText|.
+  var numberOfLines: Int {
+    return suggestion.numberOfLines
+  }
+
   /// The pedal for this suggestion.
   var pedal: OmniboxPedal? {
     return suggestion.pedal
@@ -61,15 +71,16 @@ extension PopupMatch {
     let icon: OmniboxIcon?
     let pedal: (OmniboxIcon & OmniboxPedal)?
 
-    let hasAnswer = false
+    let hasAnswer: Bool
     let isURL = false
-    let numberOfLines = 1
+    let numberOfLines: Int
     let isTailSuggestion = false
     let commonPrefix = ""
 
     init(
       text: String, detailText: String? = nil, isAppendable: Bool = false, isTabMatch: Bool = false,
-      supportsDeletion: Bool = false, icon: OmniboxIcon? = nil, pedal: OmniboxPedalData? = nil
+      supportsDeletion: Bool = false, icon: OmniboxIcon? = nil, hasAnswer: Bool = false,
+      numberOfLines: Int = 1, pedal: OmniboxPedalData? = nil
     ) {
       self.text = NSAttributedString(string: text, attributes: [:])
       self.detailText = detailText.flatMap { string in
@@ -80,12 +91,15 @@ extension PopupMatch {
       self.supportsDeletion = supportsDeletion
       self.icon = icon
       self.pedal = pedal
+      self.hasAnswer = hasAnswer
+      self.numberOfLines = numberOfLines
     }
 
     init(
       attributedText: NSAttributedString, attributedDetailText: NSAttributedString? = nil,
-      isAppendable: Bool = false, isTabMatch: Bool = false,
-      supportsDeletion: Bool = false, icon: OmniboxIcon? = nil, pedal: OmniboxPedalData? = nil
+      isAppendable: Bool = false, isTabMatch: Bool = false, hasAnswer: Bool = false,
+      supportsDeletion: Bool = false, icon: OmniboxIcon? = nil, numberOfLines: Int = 1,
+      pedal: OmniboxPedalData? = nil
     ) {
       self.text = attributedText
       self.detailText = attributedDetailText
@@ -94,6 +108,8 @@ extension PopupMatch {
       self.supportsDeletion = supportsDeletion
       self.icon = icon
       self.pedal = pedal
+      self.hasAnswer = hasAnswer
+      self.numberOfLines = numberOfLines
     }
   }
 
@@ -107,13 +123,22 @@ extension PopupMatch {
       text: "1292459 - Overflow menu is displayed on top of NTP ...",
       detailText: "bugs.chromium.org/p/chromium/issues/detail?id=1292459",
       icon: FakeOmniboxIcon.favicon))
+  static let arabic = PopupMatch(
+    suggestion: FakeAutocompleteSuggestion(
+      text: "ععععععععع ععععععععع ععععععععع عععععععع عععععععع عععععععع عععععععع عععععع عععععععل",
+      detailText: "letter ع many times, and a single ل in the end",
+      pedal: OmniboxPedalData(
+        title: "Click here", subtitle: "PAR → NYC",
+        accessibilityHint: "a11y hint", imageName: "pedal_dino", type: 123, incognito: false,
+        action: { print("dino pedal clicked") })))
   static let pedal = PopupMatch(
     suggestion: FakeAutocompleteSuggestion(
       text: "This has pedal attached",
       detailText: "no pedal button in current design",
       pedal: OmniboxPedalData(
         title: "Click here", subtitle: "PAR → NYC",
-        accessibilityHint: "a11y hint", imageName: "pedal_dino",
+        accessibilityHint: "a11y hint", imageName: "pedal_dino", type: 123,
+        incognito: false,
         action: { print("dino pedal clicked") })))
   static let appendable = PopupMatch(
     suggestion: FakeAutocompleteSuggestion(
@@ -129,13 +154,23 @@ extension PopupMatch {
       text: "New Match",
       pedal: OmniboxPedalData(
         title: "Click here", subtitle: "NYC → PAR",
-        accessibilityHint: "a11y hint", imageName: "pedal_dino", action: {})))
+        accessibilityHint: "a11y hint", imageName: "pedal_dino", type: 123, incognito: false,
+        action: {})))
   static let supportsDeletion = PopupMatch(
     suggestion: FakeAutocompleteSuggestion(
       text: "supports deletion",
       isAppendable: true,
       supportsDeletion: true))
-
+  static let definition = PopupMatch(
+    suggestion: FakeAutocompleteSuggestion(
+      text: "Answer: definition",
+      detailText:
+        "this is a definition suggestion that has a very long text that should span multiple lines and not have a gradient fade out",
+      isAppendable: true,
+      supportsDeletion: false,
+      hasAnswer: true,
+      numberOfLines: 3
+    ))
   // The blue attribued string is used to verify that keyboard highlighting overrides the attributes.
   static let blueAttributedText = PopupMatch(
     suggestion: FakeAutocompleteSuggestion(
@@ -148,7 +183,8 @@ extension PopupMatch {
       supportsDeletion: true))
 
   static let previews = [
-    short, long, pedal, appendable, tabMatch, supportsDeletion, blueAttributedText,
+    short, definition, long, arabic, pedal, appendable, tabMatch, supportsDeletion,
+    blueAttributedText,
   ]
 
 }

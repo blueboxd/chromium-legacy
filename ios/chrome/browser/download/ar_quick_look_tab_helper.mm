@@ -42,7 +42,7 @@ const char kContentScalingSearchKey[] = "allowsContentScaling";
 // |download_task|.
 std::string GetMimeTypeSuffix(web::DownloadTask* download_task) {
   DCHECK(IsUsdzFileFormat(download_task->GetOriginalMimeType(),
-                          download_task->GetSuggestedFilename()));
+                          download_task->GenerateFileName()));
   return kUsdzMimeTypeHistogramSuffix;
 }
 
@@ -70,7 +70,7 @@ IOSDownloadARModelState GetHistogramEnum(web::DownloadTask* download_task) {
   }
   DCHECK(download_task->IsDone());
   if (!IsUsdzFileFormat(download_task->GetMimeType(),
-                        download_task->GetSuggestedFilename())) {
+                        download_task->GenerateFileName())) {
     return IOSDownloadARModelState::kWrongMimeTypeFailure;
   }
   if (download_task->GetHttpCode() == 401 ||
@@ -115,24 +115,28 @@ void ARQuickLookTabHelper::CreateForWebState(web::WebState* web_state) {
 void ARQuickLookTabHelper::Download(
     std::unique_ptr<web::DownloadTask> download_task) {
   DCHECK(download_task);
-  LogHistogram(download_task.get());
+  if (download_task_) {
+    RemoveCurrentDownload();
+  }
 
   base::FilePath download_dir;
   if (!GetTempDownloadsDirectory(&download_dir)) {
     return;
   }
 
-  if (download_task_) {
-    RemoveCurrentDownload();
-  }
   // Take ownership of |download_task| and start the download.
   download_task_ = std::move(download_task);
+  LogHistogram(download_task_.get());
   download_task_->AddObserver(this);
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&base::CreateDirectory, download_dir),
-      base::BindOnce(&ARQuickLookTabHelper::DownloadWithDestinationDir,
-                     AsWeakPtr(), download_dir, download_task_.get()));
+
+  download_task_->Start(
+      download_dir.Append(download_task_->GenerateFileName()));
+
+  // Calling DownloadTask::Start() may cause the task to be immediately
+  // destroyed (e.g. if it is in error). Only call `LogHistogram` is it
+  // is still valid and owned by the current object.
+  if (download_task_)
+    LogHistogram(download_task_.get());
 }
 
 void ARQuickLookTabHelper::DidFinishDownload() {
@@ -141,7 +145,7 @@ void ARQuickLookTabHelper::DidFinishDownload() {
   if (download_task_->GetHttpCode() == 401 ||
       download_task_->GetHttpCode() == 403 || download_task_->GetErrorCode() ||
       !IsUsdzFileFormat(download_task_->GetMimeType(),
-                        download_task_->GetSuggestedFilename())) {
+                        download_task_->GenerateFileName())) {
     return;
   }
 
@@ -171,28 +175,6 @@ void ARQuickLookTabHelper::DidFinishDownload() {
 void ARQuickLookTabHelper::RemoveCurrentDownload() {
   download_task_->RemoveObserver(this);
   download_task_.reset();
-}
-
-void ARQuickLookTabHelper::DownloadWithDestinationDir(
-    const base::FilePath& destination_dir,
-    web::DownloadTask* download_task,
-    bool directory_created) {
-  // Return early if |download_task_| has changed.
-  if (download_task != download_task_.get()) {
-    return;
-  }
-
-  if (!directory_created) {
-    RemoveCurrentDownload();
-    return;
-  }
-
-  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-  std::u16string file_name = download_task_->GetSuggestedFilename();
-  base::FilePath path = destination_dir.Append(base::UTF16ToUTF8(file_name));
-  download_task->Start(path, web::DownloadTask::Destination::kToDisk);
-  LogHistogram(download_task_.get());
 }
 
 void ARQuickLookTabHelper::OnDownloadUpdated(web::DownloadTask* download_task) {

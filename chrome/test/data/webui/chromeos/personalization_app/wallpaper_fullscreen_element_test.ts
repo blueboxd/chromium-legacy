@@ -7,7 +7,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {CurrentWallpaper, DisplayableImage, WallpaperFullscreen, WallpaperLayout, WallpaperType} from 'chrome://personalization/trusted/personalization_app.js';
+import {CurrentWallpaper, DailyRefreshType, DisplayableImage, WallpaperFullscreen, WallpaperLayout, WallpaperType} from 'chrome://personalization/trusted/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
@@ -175,23 +175,64 @@ suite('WallpaperFullscreenTest', function() {
     await exitFullscreenPromise;
   });
 
-  test('shows layout options for custom images', async () => {
-    wallpaperFullscreenElement = initElement(WallpaperFullscreen);
-    await waitAfterNextRender(wallpaperFullscreenElement);
+  [{pendingSelectedImage: pendingSelectedCustomImage, shouldShow: true},
+   {pendingSelectedImage: /*Online:*/ {assetId: 0n}, shouldShow: false},
+   {pendingSelectedImage: /*Google Photos:*/ {id: 'test_id'}, shouldShow: true}]
+      .forEach(
+          testCase => test(
+              'shows layout options for custom and Google Photos images',
+              async () => {
+                wallpaperFullscreenElement = initElement(WallpaperFullscreen);
+                await waitAfterNextRender(wallpaperFullscreenElement);
 
-    assertEquals(
-        null,
-        wallpaperFullscreenElement.shadowRoot!.getElementById('layoutButtons'));
+                assertEquals(
+                    null,
+                    wallpaperFullscreenElement.shadowRoot!.getElementById(
+                        'layoutButtons'));
 
-    personalizationStore.data.wallpaper.pendingSelected =
-        pendingSelectedCustomImage;
-    personalizationStore.notifyObservers();
+                // Select a wallpaper in preview mode from a starting state
+                // where the layout buttons have not been created.
+                personalizationStore.data.wallpaper.pendingSelected =
+                    testCase.pendingSelectedImage;
+                personalizationStore.notifyObservers();
+                await waitAfterNextRender(wallpaperFullscreenElement);
 
-    await waitAfterNextRender(wallpaperFullscreenElement);
+                // Verify whether layout buttons are created.
+                let layoutButtonsEl =
+                    wallpaperFullscreenElement.shadowRoot!.getElementById(
+                        'layoutButtons');
+                assertEquals(!!layoutButtonsEl, testCase.shouldShow);
 
-    assertTrue(!!wallpaperFullscreenElement.shadowRoot!.getElementById(
-        'layoutButtons'));
-  });
+                // Select a custom wallpaper to make sure that layout buttons
+                // are shown.
+                personalizationStore.data.wallpaper.pendingSelected =
+                    pendingSelectedCustomImage;
+                personalizationStore.notifyObservers();
+                await waitAfterNextRender(wallpaperFullscreenElement);
+
+                layoutButtonsEl =
+                    wallpaperFullscreenElement.shadowRoot!.getElementById(
+                        'layoutButtons');
+                assertTrue(!!layoutButtonsEl);
+
+                // Select a wallpaper in preview mode from a starting state
+                // where the layout buttons have been created.
+                personalizationStore.data.wallpaper.pendingSelected =
+                    testCase.pendingSelectedImage;
+                personalizationStore.notifyObservers();
+                await waitAfterNextRender(wallpaperFullscreenElement);
+
+                // The layout buttons will still exist from having been added to
+                // the shadow DOM already, so now we test whether they are
+                // actually showing.
+                layoutButtonsEl =
+                    wallpaperFullscreenElement.shadowRoot!.getElementById(
+                        'layoutButtons');
+                assertTrue(!!layoutButtonsEl);
+                assertEquals(
+                    getComputedStyle(layoutButtonsEl).display,
+                    testCase.shouldShow ? 'grid' : 'none');
+              }));
 
   test('clicking layout option selects image with new layout', async () => {
     wallpaperFullscreenElement = initElement(WallpaperFullscreen);
@@ -275,8 +316,10 @@ suite('WallpaperFullscreenTest', function() {
       ...personalizationStore.data.wallpaper.currentSelected,
       type: WallpaperType.kDaily,
     };
-    personalizationStore.data.wallpaper.dailyRefresh.collectionId =
-        wallpaperProvider.collections![0]!.id;
+    personalizationStore.data.wallpaper.dailyRefresh = {
+      id: wallpaperProvider.collections![0]!.id,
+      type: DailyRefreshType.BACKDROP,
+    };
     personalizationStore.data.wallpaper.pendingSelected =
         wallpaperProvider.images![1];
     personalizationStore.notifyObservers();

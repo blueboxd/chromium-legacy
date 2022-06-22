@@ -14,6 +14,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/feature_pod_button.h"
+#include "base/metrics/histogram_functions.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -49,13 +50,20 @@ FeaturePodButton* DarkModeFeaturePodController::CreateButton() {
 }
 
 void DarkModeFeaturePodController::OnIconPressed() {
-  AshColorProvider::Get()->ToggleColorMode();
+  // Toggling Dark theme feature pod button inside quick settings should cancel
+  // auto scheduling. This ensures that on and off states of the pod button
+  // match the non-scheduled states of Dark and Light buttons in
+  // personalization hub respectively.
+  ash::Shell::Get()->dark_mode_controller()->SetAutoScheduleEnabled(
+      /*enabled=*/false);
+  auto* color_provider = AshColorProvider::Get();
+  color_provider->ToggleColorMode();
+  base::UmaHistogramBoolean("Ash.DarkTheme.SystemTray.IsDarkModeEnabled",
+                            color_provider->IsDarkModeEnabled());
 }
 
 void DarkModeFeaturePodController::OnLabelPressed() {
-  // TODO(crbug.com/1279850): Link to Personalization Hub instead of Chrome
-  // settings page.
-  if (TrayPopupUtils::CanOpenWebUISettings())
+  if (ash::features::IsPersonalizationHubEnabled())
     Shell::Get()->system_tray_model()->client()->ShowDarkModeSettings();
 }
 

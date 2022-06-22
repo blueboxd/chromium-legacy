@@ -283,8 +283,7 @@ class DirectSocketsTcpBrowserTest : public ContentBrowserTest {
     std::string origin_list =
         GetTestOpenPageURL().spec() + "," + GetTestPageURL().spec();
 
-    command_line->AppendSwitchASCII(switches::kRestrictedApiOrigins,
-                                    origin_list);
+    command_line->AppendSwitchASCII(switches::kIsolatedAppOrigins, origin_list);
   }
 
  private:
@@ -324,8 +323,9 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsTcpBrowserTest, OpenTcp_Success_Global) {
               StartsWith("openTcp succeeded"));
 }
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_FUCHSIA)
 // https://crbug.com/1211492 Keep failing on Mac11.3
+// TODO(https://crbug.com/1303020): Fails on Fuchsia.
 #define MAYBE_OpenTcp_MDNS DISABLED_OpenTcp_MDNS
 #else
 #define MAYBE_OpenTcp_MDNS OpenTcp_MDNS

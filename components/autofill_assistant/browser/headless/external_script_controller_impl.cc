@@ -11,10 +11,17 @@
 namespace autofill_assistant {
 
 ExternalScriptControllerImpl::ExternalScriptControllerImpl(
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    ExternalActionDelegate* action_extension_delegate)
     : web_contents_(web_contents) {
   DCHECK(web_contents_);
-  client_ = std::make_unique<ClientHeadless>(web_contents);
+
+  auto* starter = Starter::FromWebContents(web_contents_);
+  if (starter) {
+    client_ = std::make_unique<ClientHeadless>(web_contents,
+                                               starter->GetCommonDependencies(),
+                                               action_extension_delegate);
+  }
 }
 
 ExternalScriptControllerImpl::~ExternalScriptControllerImpl() = default;
@@ -29,8 +36,9 @@ void ExternalScriptControllerImpl::StartScript(
     return;
   }
   auto* starter = Starter::FromWebContents(web_contents_);
-  // The starter has not yet been initialized.
-  if (!starter) {
+  // The starter has not yet been initialized or was not initialized at the
+  // time the constructor was called.
+  if (!starter || !client_) {
     std::move(script_ended_callback).Run({false});
     return;
   }
@@ -40,8 +48,7 @@ void ExternalScriptControllerImpl::StartScript(
   auto trigger_context = std::make_unique<TriggerContext>(
       std::move(parameters),
       /* experiment_ids = */ "",
-      // TODO(b/201964911): set the right value for Android flows
-      /*is_cct = */ false,
+      starter->GetPlatformDependencies()->IsCustomTab(*web_contents_),
       /*onboarding_shown = */ false,
       /*is_direct_action = */ false,
       /* initial_url = */ "",

@@ -20,7 +20,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/federated_identity_active_session_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_api_permission_context_delegate.h"
-#include "content/public/browser/federated_identity_request_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_sharing_permission_context_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -36,15 +35,17 @@ using blink::mojom::LogoutRpsStatus;
 using blink::mojom::LogoutStatus;
 using blink::mojom::RequestIdTokenStatus;
 using blink::mojom::RevokeStatus;
-using LoginState = content::IdentityRequestAccount::LoginState;
-using SignInMode = content::IdentityRequestAccount::SignInMode;
+using FederatedApiPermissionStatus =
+    content::FederatedIdentityApiPermissionContextDelegate::PermissionStatus;
 using IdTokenStatus = content::FedCmRequestIdTokenStatus;
+using LoginState = content::IdentityRequestAccount::LoginState;
 using RevokeStatusForMetrics = content::FedCmRevokeStatus;
+using SignInMode = content::IdentityRequestAccount::SignInMode;
 
 namespace content {
 
 namespace {
-static constexpr base::TimeDelta kIdTokenRequestDelay = base::Seconds(3);
+static constexpr base::TimeDelta kDefaultIdTokenRequestDelay = base::Seconds(3);
 // TODO(yigu): We need to make sure the delay is greater than the time required
 // for a successful flow based on `Blink.FedCm.Timing.TurnaroundTime`.
 // https://crbug.com/1298316.
@@ -230,7 +231,8 @@ FederatedAuthRequestImpl::FederatedAuthRequestImpl(RenderFrameHostImpl* host,
       delay_timer_(FROM_HERE,
                    kRequestRejectionDelay,
                    this,
-                   &FederatedAuthRequestImpl::OnRejectRequest) {}
+                   &FederatedAuthRequestImpl::OnRejectRequest),
+      id_token_request_delay_(kDefaultIdTokenRequestDelay) {}
 
 FederatedAuthRequestImpl::~FederatedAuthRequestImpl() {
   // Ensures key data members are destructed in proper order and resolves any
@@ -274,25 +276,12 @@ void FederatedAuthRequestImpl::RequestIdToken(
   start_time_ = base::TimeTicks::Now();
   delay_timer_.Reset();
 
-  if (!IsFedCmEnabled()) {
-    RecordRequestIdTokenStatus(IdTokenStatus::kDisabledInFlags,
-                               render_frame_host_->GetPageUkmSourceId());
+  if (!GetApiPermissionContext()) {
     CompleteRequest(FederatedAuthRequestResult::kError, "",
-                    /*should_call_callback=*/false);
+                    /*should_call_callback=*/true);
     return;
   }
 
-  // TODO(npm): FedCM is currently restricted to contexts where third party
-  // cookies are not blocked.  Once the privacy improvements for the API are
-  // implemented, remove this restriction. See https://crbug.com/1304396.
-  if (GetApiPermissionContext() &&
-      GetApiPermissionContext()->AreThirdPartyCookiesBlocked()) {
-    RecordRequestIdTokenStatus(IdTokenStatus::kThirdPartyCookiesBlocked,
-                               render_frame_host_->GetPageUkmSourceId());
-    CompleteRequest(FederatedAuthRequestResult::kError, "",
-                    /*should_call_callback=*/false);
-    return;
-  }
   network_manager_ = CreateNetworkManager(provider);
   if (!network_manager_) {
     RecordRequestIdTokenStatus(IdTokenStatus::kNoNetworkManager,
@@ -304,12 +293,40 @@ void FederatedAuthRequestImpl::RequestIdToken(
     return;
   }
 
-  if (GetApiPermissionContext() &&
-      !GetApiPermissionContext()->HasApiPermission()) {
-    RecordRequestIdTokenStatus(IdTokenStatus::kDisabledInSettings,
+  FederatedApiPermissionStatus permission_status =
+      GetApiPermissionContext()->GetApiPermissionStatus(origin_);
+
+  absl::optional<IdTokenStatus> error_id_token_status;
+  FederatedAuthRequestResult request_result =
+      FederatedAuthRequestResult::kError;
+
+  switch (permission_status) {
+    case FederatedApiPermissionStatus::BLOCKED_VARIATIONS:
+      error_id_token_status = IdTokenStatus::kDisabledInFlags;
+      break;
+    case FederatedApiPermissionStatus::BLOCKED_THIRD_PARTY_COOKIES_BLOCKED:
+      error_id_token_status = IdTokenStatus::kThirdPartyCookiesBlocked;
+      break;
+    case FederatedApiPermissionStatus::BLOCKED_SETTINGS:
+      error_id_token_status = IdTokenStatus::kDisabledInSettings;
+      request_result = FederatedAuthRequestResult::kErrorDisabledInSettings;
+      break;
+    case FederatedApiPermissionStatus::BLOCKED_EMBARGO:
+      error_id_token_status = IdTokenStatus::kDisabledEmbargo;
+      request_result = FederatedAuthRequestResult::kErrorDisabledInSettings;
+      break;
+    case FederatedApiPermissionStatus::GRANTED:
+      // Intentional fall-through.
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  if (error_id_token_status) {
+    RecordRequestIdTokenStatus(*error_id_token_status,
                                render_frame_host_->GetPageUkmSourceId());
-    CompleteRequest(FederatedAuthRequestResult::kErrorDisabledInSettings, "",
-                    /*should_call_callback=*/false);
+    CompleteRequest(request_result, "", /*should_call_callback=*/false);
     return;
   }
 
@@ -321,22 +338,6 @@ void FederatedAuthRequestImpl::RequestIdToken(
 void FederatedAuthRequestImpl::CancelTokenRequest() {
   if (!auth_request_callback_)
     return;
-
-  if (!IsFedCmEnabled()) {
-    RecordRequestIdTokenStatus(IdTokenStatus::kDisabledInFlags,
-                               render_frame_host_->GetPageUkmSourceId());
-    CompleteRequest(FederatedAuthRequestResult::kError, "",
-                    /*should_call_callback=*/false);
-  }
-
-  if (GetApiPermissionContext() &&
-      !GetApiPermissionContext()->HasApiPermission()) {
-    RecordRequestIdTokenStatus(IdTokenStatus::kDisabledInSettings,
-                               render_frame_host_->GetPageUkmSourceId());
-    CompleteRequest(FederatedAuthRequestResult::kErrorDisabledInSettings, "",
-                    /*should_call_callback=*/false);
-    return;
-  }
 
   // Dialog will be hidden by the destructor for request_dialog_controller_,
   // triggered by CompleteRequest.
@@ -364,9 +365,7 @@ void FederatedAuthRequestImpl::Revoke(
   delay_timer_.Reset();
   revoke_callback_ = std::move(callback);
 
-  if (!IsFedCmEnabled()) {
-    RecordRevokeStatus(RevokeStatusForMetrics::kDisabledInFlags,
-                       render_frame_host_->GetPageUkmSourceId());
+  if (!GetApiPermissionContext()) {
     CompleteRevokeRequest(RevokeStatus::kError,
                           /*should_call_callback=*/false);
     return;
@@ -381,16 +380,38 @@ void FederatedAuthRequestImpl::Revoke(
     return;
   }
 
-  if (GetApiPermissionContext() &&
-      !GetApiPermissionContext()->HasApiPermission()) {
-    RecordRevokeStatus(RevokeStatusForMetrics::kDisabledInSettings,
+  FederatedApiPermissionStatus permission_status =
+      GetApiPermissionContext()->GetApiPermissionStatus(origin_);
+
+  absl::optional<RevokeStatusForMetrics> error_revoke_status;
+  switch (permission_status) {
+    case FederatedApiPermissionStatus::BLOCKED_VARIATIONS:
+      error_revoke_status = RevokeStatusForMetrics::kDisabledInFlags;
+      break;
+    case FederatedApiPermissionStatus::BLOCKED_THIRD_PARTY_COOKIES_BLOCKED:
+      error_revoke_status = RevokeStatusForMetrics::kThirdPartyCookiesBlocked;
+      break;
+    case FederatedApiPermissionStatus::BLOCKED_SETTINGS:
+    case FederatedApiPermissionStatus::BLOCKED_EMBARGO:
+      error_revoke_status = RevokeStatusForMetrics::kDisabledInSettings;
+      break;
+    case FederatedApiPermissionStatus::GRANTED:
+      // Intentional fall-through.
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  if (error_revoke_status) {
+    RecordRevokeStatus(*error_revoke_status,
                        render_frame_host_->GetPageUkmSourceId());
     CompleteRevokeRequest(RevokeStatus::kError, /*should_call_callback=*/false);
     return;
   }
 
-  if (!GetRequestPermissionContext() ||
-      !GetRequestPermissionContext()->HasRequestPermission(
+  if (!GetSharingPermissionContext() ||
+      !GetSharingPermissionContext()->HasSharingPermissionForAnyAccount(
           origin_, url::Origin::Create(provider_))) {
     RecordRevokeStatus(RevokeStatusForMetrics::kNoAccountToRevoke,
                        render_frame_host_->GetPageUkmSourceId());
@@ -408,11 +429,18 @@ void FederatedAuthRequestImpl::Logout(
     blink::mojom::FederatedAuthRequest::LogoutCallback callback) {
   url::Origin idp_origin(url::Origin::Create(provider));
   auto* context = GetActiveSessionPermissionContext();
-  if (!context || !context->HasActiveSession(origin_, idp_origin, account_id) ||
-      !IsFedCmEnabled()) {
+  if (!context || !context->HasActiveSession(origin_, idp_origin, account_id)) {
     std::move(callback).Run(LogoutStatus::kNotLoggedIn);
     return;
   }
+
+  if (!GetApiPermissionContext() ||
+      GetApiPermissionContext()->GetApiPermissionStatus(origin_) !=
+          FederatedApiPermissionStatus::GRANTED) {
+    std::move(callback).Run(LogoutStatus::kNotLoggedIn);
+    return;
+  }
+
   context->RevokeActiveSession(origin_, idp_origin, account_id);
   std::move(callback).Run(LogoutStatus::kSuccess);
 }
@@ -426,16 +454,6 @@ void FederatedAuthRequestImpl::Logout(
 void FederatedAuthRequestImpl::LogoutRps(
     std::vector<blink::mojom::LogoutRpsRequestPtr> logout_requests,
     blink::mojom::FederatedAuthRequest::LogoutRpsCallback callback) {
-  if (!IsFedCmEnabled()) {
-    std::move(callback).Run(LogoutRpsStatus::kError);
-    return;
-  }
-
-  if (!IsFedCmIdpSignoutEnabled()) {
-    std::move(callback).Run(LogoutRpsStatus::kError);
-    return;
-  }
-
   if (HasPendingRequest()) {
     std::move(callback).Run(LogoutRpsStatus::kErrorTooManyRequests);
     return;
@@ -444,12 +462,6 @@ void FederatedAuthRequestImpl::LogoutRps(
   DCHECK(logout_requests_.empty());
 
   logout_callback_ = std::move(callback);
-
-  if (GetApiPermissionContext() &&
-      !GetApiPermissionContext()->HasApiPermission()) {
-    CompleteLogoutRequest(LogoutRpsStatus::kError);
-    return;
-  }
 
   if (logout_requests.empty()) {
     CompleteLogoutRequest(LogoutRpsStatus::kError);
@@ -470,7 +482,18 @@ void FederatedAuthRequestImpl::LogoutRps(
   }
 
   network_manager_ = CreateNetworkManager(origin_.GetURL());
-  if (!network_manager_) {
+  if (!network_manager_ || !GetApiPermissionContext()) {
+    CompleteLogoutRequest(LogoutRpsStatus::kError);
+    return;
+  }
+
+  if (!IsFedCmIdpSignoutEnabled()) {
+    CompleteLogoutRequest(LogoutRpsStatus::kError);
+    return;
+  }
+
+  if (GetApiPermissionContext()->GetApiPermissionStatus(origin_) !=
+      FederatedApiPermissionStatus::GRANTED) {
     CompleteLogoutRequest(LogoutRpsStatus::kError);
     return;
   }
@@ -543,7 +566,7 @@ void FederatedAuthRequestImpl::FetchManifest(FetchManifestType type) {
 
 void FederatedAuthRequestImpl::OnManifestListFetched(
     IdpNetworkRequestManager::FetchStatus status,
-    const std::set<std::string>& urls) {
+    const std::set<GURL>& urls) {
   switch (status) {
     case IdpNetworkRequestManager::FetchStatus::kHttpNotFoundError: {
       RecordRequestIdTokenStatus(IdTokenStatus::kManifestListHttpNotFound,
@@ -608,18 +631,10 @@ void FederatedAuthRequestImpl::OnManifestListFetched(
   // Besides, for GURL without path, |provider_.spec()| will append a trailing
   // slash automatically. Therefore we relax the requirement by allowing
   // mismatch on trailing slash.
-  std::string provider_url = provider_.spec();
-  if (provider_.path().empty() || provider_.path().back() != '/') {
-    std::string new_path = provider_.path() + '/';
-    GURL::Replacements replacements;
-    replacements.SetPathStr(new_path);
-    provider_url = provider_.ReplaceComponents(replacements).spec();
-  }
-  DCHECK_EQ(provider_url.back(), '/');
+  GURL provider_url = IdpNetworkRequestManager::FixupProviderUrl(provider_);
+  DCHECK_EQ(provider_url.path().back(), '/');
 
   bool provider_url_is_valid = (urls.count(provider_url) != 0);
-  provider_url.pop_back();
-  provider_url_is_valid |= (urls.count(provider_url) != 0);
 
   if (!provider_url_is_valid) {
     RecordRequestIdTokenStatus(IdTokenStatus::kManifestNotInManifestList,
@@ -637,7 +652,7 @@ void FederatedAuthRequestImpl::OnManifestListFetched(
 
 void FederatedAuthRequestImpl::OnManifestListFetchedForRevoke(
     IdpNetworkRequestManager::FetchStatus status,
-    const std::set<std::string>& urls) {
+    const std::set<GURL>& urls) {
   switch (status) {
     case IdpNetworkRequestManager::FetchStatus::kHttpNotFoundError: {
       RecordRevokeStatus(RevokeStatusForMetrics::kManifestListHttpNotFound,
@@ -677,7 +692,8 @@ void FederatedAuthRequestImpl::OnManifestListFetchedForRevoke(
     return;
   }
 
-  if (urls.count(provider_.spec()) == 0) {
+  GURL provider_url = IdpNetworkRequestManager::FixupProviderUrl(provider_);
+  if (urls.count(provider_url) == 0) {
     RecordRevokeStatus(RevokeStatusForMetrics::kManifestNotInManifestList,
                        render_frame_host_->GetPageUkmSourceId());
     CompleteRevokeRequest(RevokeStatus::kError,
@@ -844,10 +860,6 @@ void FederatedAuthRequestImpl::OnRevokeResponse(
   if (status == RevokeStatus::kSuccess) {
     url::Origin idp_origin{url::Origin::Create(provider_)};
     // Since the account is now deleted, revoke the permission.
-    if (GetRequestPermissionContext()) {
-      GetRequestPermissionContext()->RevokeRequestPermission(origin_,
-                                                             idp_origin);
-    }
     if (GetSharingPermissionContext()) {
       GetSharingPermissionContext()->RevokeSharingPermission(origin_,
                                                              idp_origin, hint_);
@@ -872,8 +884,6 @@ void FederatedAuthRequestImpl::CompleteRevokeRequest(
   if (!revoke_callback_)
     return;
 
-  bool should_run_callback = should_call_callback ||
-                             network_manager_->IsMockIdpNetworkRequestManager();
   network_manager_.reset();
   provider_ = GURL();
   hint_ = std::string();
@@ -881,7 +891,7 @@ void FederatedAuthRequestImpl::CompleteRevokeRequest(
   manifest_list_checked_ = false;
   idp_metadata_.reset();
 
-  if (should_run_callback)
+  if (should_call_callback)
     std::move(revoke_callback_).Run(status);
 }
 
@@ -1076,7 +1086,8 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
 }
 
 void FederatedAuthRequestImpl::OnAccountSelected(const std::string& account_id,
-                                                 bool is_sign_in) {
+                                                 bool is_sign_in,
+                                                 bool should_embargo) {
   // This could happen if user didn't select any accounts.
   if (account_id.empty()) {
     base::TimeTicks dismiss_dialog_time = base::TimeTicks::Now();
@@ -1084,6 +1095,11 @@ void FederatedAuthRequestImpl::OnAccountSelected(const std::string& account_id,
                              render_frame_host_->GetPageUkmSourceId());
     RecordRequestIdTokenStatus(IdTokenStatus::kNotSelectAccount,
                                render_frame_host_->GetPageUkmSourceId());
+
+    if (should_embargo && GetApiPermissionContext()) {
+      GetApiPermissionContext()->RecordDismissAndEmbargo(origin_);
+    }
+
     CompleteRequest(FederatedAuthRequestResult::kError, "",
                     /*should_call_callback=*/false);
     return;
@@ -1091,11 +1107,8 @@ void FederatedAuthRequestImpl::OnAccountSelected(const std::string& account_id,
 
   RecordIsSignInUser(is_sign_in);
 
-  // Account selection is considered sufficient for granting request permission
-  // (which also implies the logout permission).
-  if (GetRequestPermissionContext()) {
-    GetRequestPermissionContext()->GrantRequestPermission(
-        origin_, url::Origin::Create(provider_));
+  if (GetApiPermissionContext()) {
+    GetApiPermissionContext()->RemoveEmbargoAndResetCounts(origin_);
   }
 
   account_id_ = account_id;
@@ -1117,10 +1130,10 @@ void FederatedAuthRequestImpl::OnTokenResponseReceived(
   // When fetching id tokens we show a "Verify" sheet to users in case fetching
   // takes a long time due to latency etc.. In case that the fetching process is
   // fast, we still want to show the "Verify" sheet for at least
-  // |kIdTokenRequestDelay| seconds for better UX.
+  // |id_token_request_delay_| seconds for better UX.
   id_token_response_time_ = base::TimeTicks::Now();
   base::TimeDelta fetch_time = id_token_response_time_ - select_account_time_;
-  if (fetch_time >= kIdTokenRequestDelay) {
+  if (fetch_time >= id_token_request_delay_) {
     CompleteIdTokenRequest(status, id_token);
     return;
   }
@@ -1129,7 +1142,7 @@ void FederatedAuthRequestImpl::OnTokenResponseReceived(
       FROM_HERE,
       base::BindOnce(&FederatedAuthRequestImpl::CompleteIdTokenRequest,
                      weak_ptr_factory_.GetWeakPtr(), status, id_token),
-      kIdTokenRequestDelay - fetch_time);
+      id_token_request_delay_ - fetch_time);
 }
 
 void FederatedAuthRequestImpl::CompleteIdTokenRequest(
@@ -1254,7 +1267,10 @@ void FederatedAuthRequestImpl::CompleteRequest(
   if (!auth_request_callback_)
     return;
 
-  if (result != FederatedAuthRequestResult::kSuccess) {
+  if (!errors_logged_to_console_ &&
+      result != FederatedAuthRequestResult::kSuccess) {
+    errors_logged_to_console_ = true;
+
     // It would be possible to add this inspector issue on the renderer, which
     // will receive the callback. However, it is preferable to do so on the
     // browser because this is closer to the source, which means adding
@@ -1266,12 +1282,11 @@ void FederatedAuthRequestImpl::CompleteRequest(
     AddConsoleErrorMessage(result);
   }
 
-  bool should_run_callback =
-      should_call_callback ||
-      (network_manager_ && network_manager_->IsMockIdpNetworkRequestManager());
   CleanUp();
 
-  if (should_run_callback) {
+  if (should_call_callback) {
+    errors_logged_to_console_ = false;
+
     RequestIdTokenStatus status =
         FederatedAuthRequestResultToRequestIdTokenStatus(result);
     std::move(auth_request_callback_).Run(status, id_token);
@@ -1348,6 +1363,11 @@ FederatedAuthRequestImpl::CreateDialogController() {
   return GetContentClient()->browser()->CreateIdentityRequestDialogController();
 }
 
+void FederatedAuthRequestImpl::SetIdTokenRequestDelayForTests(
+    base::TimeDelta delay) {
+  id_token_request_delay_ = delay;
+}
+
 void FederatedAuthRequestImpl::SetNetworkManagerForTests(
     std::unique_ptr<IdpNetworkRequestManager> manager) {
   mock_network_manager_ = std::move(manager);
@@ -1362,12 +1382,6 @@ void FederatedAuthRequestImpl::SetActiveSessionPermissionDelegateForTests(
     FederatedIdentityActiveSessionPermissionContextDelegate*
         active_session_permission_delegate) {
   active_session_permission_delegate_ = active_session_permission_delegate;
-}
-
-void FederatedAuthRequestImpl::SetRequestPermissionDelegateForTests(
-    FederatedIdentityRequestPermissionContextDelegate*
-        request_permission_delegate) {
-  request_permission_delegate_ = request_permission_delegate;
 }
 
 void FederatedAuthRequestImpl::SetSharingPermissionDelegateForTests(
@@ -1398,16 +1412,6 @@ FederatedAuthRequestImpl::GetApiPermissionContext() {
                                    ->GetFederatedIdentityApiPermissionContext();
   }
   return api_permission_delegate_;
-}
-
-FederatedIdentityRequestPermissionContextDelegate*
-FederatedAuthRequestImpl::GetRequestPermissionContext() {
-  if (!request_permission_delegate_) {
-    request_permission_delegate_ =
-        render_frame_host_->GetBrowserContext()
-            ->GetFederatedIdentityRequestPermissionContext();
-  }
-  return request_permission_delegate_;
 }
 
 FederatedIdentitySharingPermissionContextDelegate*

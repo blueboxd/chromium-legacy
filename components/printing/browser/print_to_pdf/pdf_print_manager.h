@@ -34,6 +34,7 @@ class PdfPrintManager : public printing::PrintManager,
     METAFILE_GET_DATA_ERROR,
     SIMULTANEOUS_PRINT_ACTIVE,
     PAGE_RANGE_SYNTAX_ERROR,
+    PAGE_RANGE_INVALID_RANGE,
     PAGE_COUNT_EXCEEDED,
   };
 
@@ -55,7 +56,6 @@ class PdfPrintManager : public printing::PrintManager,
 
   void PrintToPdf(content::RenderFrameHost* rfh,
                   const std::string& page_ranges,
-                  bool ignore_invalid_page_ranges,
                   printing::mojom::PrintPagesParamsPtr print_page_params,
                   PrintToPdfCallback callback);
 
@@ -74,7 +74,8 @@ class PdfPrintManager : public printing::PrintManager,
   void ScriptedPrint(printing::mojom::ScriptedPrintParamsPtr params,
                      ScriptedPrintCallback callback) override;
   void ShowInvalidPrinterSettingsError() override;
-  void PrintingFailed(int32_t cookie) override;
+  void PrintingFailed(int32_t cookie,
+                      printing::mojom::PrintFailureReason reason) override;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void UpdatePrintSettings(int32_t cookie,
                            base::Value::Dict job_settings,
@@ -101,9 +102,6 @@ class PdfPrintManager : public printing::PrintManager,
   void ReleaseJob(PrintResult result);
 
   raw_ptr<content::RenderFrameHost> printing_rfh_ = nullptr;
-  std::string page_ranges_;
-  bool ignore_invalid_page_ranges_ = false;
-  printing::mojom::PrintPagesParamsPtr print_pages_params_;
   PrintToPdfCallback callback_;
   std::string data_;
 

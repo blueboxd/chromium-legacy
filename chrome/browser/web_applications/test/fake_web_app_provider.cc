@@ -178,11 +178,6 @@ AbstractWebAppDatabaseFactory& FakeWebAppProvider::GetDatabaseFactory() const {
   return *database_factory_;
 }
 
-void FakeWebAppProvider::SkipAwaitingExtensionSystem() {
-  CheckNotStarted();
-  skip_awaiting_extension_system_ = true;
-}
-
 void FakeWebAppProvider::StartWithSubsystems() {
   CheckNotStarted();
   SetRunSubsystemStartupTasks(true);
@@ -200,10 +195,6 @@ void FakeWebAppProvider::SetDefaultFakeSubsystems() {
   // that don't need them.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableDefaultApps);
-
-  // Default to not wait for a test extension system, that is usually never
-  // started in web app tests.
-  SkipAwaitingExtensionSystem();
 
   SetRegistrar(std::make_unique<WebAppRegistrarMutable>(profile_));
   SetDatabaseFactory(std::make_unique<FakeWebAppDatabaseFactory>());
@@ -235,7 +226,7 @@ void FakeWebAppProvider::SetDefaultFakeSubsystems() {
   SetSystemWebAppManager(
       std::make_unique<web_app::TestSystemWebAppManager>(profile_));
 
-  SetCommandManager(std::make_unique<WebAppCommandManager>());
+  SetCommandManager(std::make_unique<WebAppCommandManager>(profile_));
 
   ON_CALL(processor(), IsTrackingMetadata())
       .WillByDefault(testing::Return(true));

@@ -31,6 +31,7 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -67,16 +68,16 @@ constexpr char kIconUrl[] = "https://example.com/app.ico";
 
 std::unique_ptr<WebAppInstallInfo> ConvertWebAppToRendererWebAppInstallInfo(
     const WebApp& app) {
-  auto web_application_info = std::make_unique<WebAppInstallInfo>();
+  auto install_info = std::make_unique<WebAppInstallInfo>();
   // Most fields are expected to be populated by a manifest data in a subsequent
   // override install process data flow. TODO(loyso): Make it more robust.
-  web_application_info->description =
-      base::UTF8ToUTF16(app.untranslated_description());
+  install_info->description = base::UTF8ToUTF16(app.untranslated_description());
   // |user_display_mode| is a user's display mode value and it is typically
   // populated by a UI dialog in production code. We set it here for testing
   // purposes.
-  web_application_info->user_display_mode = app.user_display_mode();
-  return web_application_info;
+  CHECK(app.user_display_mode().has_value());
+  install_info->user_display_mode = *app.user_display_mode();
+  return install_info;
 }
 
 std::vector<blink::Manifest::ImageResource> ConvertWebAppIconsToImageResources(
@@ -140,7 +141,6 @@ std::unique_ptr<WebAppDataRetriever> CreateEmptyDataRetriever() {
 std::unique_ptr<WebAppInstallTask> CreateDummyTask() {
   return std::make_unique<WebAppInstallTask>(
       /*profile=*/nullptr,
-      /*install_manager=*/nullptr,
       /*install_finalizer=*/nullptr,
       /*data_retriever=*/nullptr,
       /*registrar=*/nullptr, webapps::WebappInstallSource::SYNC);
@@ -234,7 +234,7 @@ class WebAppInstallManagerTest
   std::unique_ptr<WebApp> CreateWebAppFromSyncAndPendingInstallation(
       const GURL& start_url,
       const std::string& app_name,
-      DisplayMode user_display_mode,
+      absl::optional<UserDisplayMode> user_display_mode,
       SkColor theme_color,
       bool is_locally_installed,
       const GURL& scope,
@@ -242,7 +242,8 @@ class WebAppInstallManagerTest
     auto web_app = test::CreateWebApp(start_url, WebAppManagement::kSync);
     web_app->SetIsFromSyncAndPendingInstallation(true);
     web_app->SetIsLocallyInstalled(is_locally_installed);
-    web_app->SetUserDisplayMode(user_display_mode);
+    DCHECK(user_display_mode.has_value());
+    web_app->SetUserDisplayMode(*user_display_mode);
 
     WebApp::SyncFallbackData sync_fallback_data;
     sync_fallback_data.name = app_name;
@@ -294,7 +295,7 @@ class WebAppInstallManagerTest
     InstallResult result;
     base::RunLoop run_loop;
     install_manager().InstallWebAppFromManifestWithFallback(
-        web_contents(), WebAppInstallManager::WebAppInstallFlow::kInstallSite,
+        web_contents(), WebAppInstallFlow::kInstallSite,
         webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindOnce(test::TestAcceptDialogCallback),
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
@@ -344,13 +345,13 @@ class WebAppInstallManagerTest
   }
 
   InstallResult InstallWebAppFromInfo(
-      std::unique_ptr<WebAppInstallInfo> web_application_info,
+      std::unique_ptr<WebAppInstallInfo> install_info,
       bool overwrite_existing_manifest_fields,
       webapps::WebappInstallSource install_source) {
     InstallResult result;
     base::RunLoop run_loop;
     install_manager().InstallWebAppFromInfo(
-        std::move(web_application_info), overwrite_existing_manifest_fields,
+        std::move(install_info), overwrite_existing_manifest_fields,
         ForInstallableSite::kYes, install_source,
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        webapps::InstallResultCode code) {
@@ -481,11 +482,11 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   const AppId app2_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url2);
   {
     std::unique_ptr<WebApp> app1 = CreateWebAppFromSyncAndPendingInstallation(
-        url1, "Name1 from sync", DisplayMode::kStandalone, SK_ColorRED,
+        url1, "Name1 from sync", UserDisplayMode::kStandalone, SK_ColorRED,
         /*is_locally_installed=*/false, /*scope=*/GURL(), /*icon_infos=*/{});
 
     std::unique_ptr<WebApp> app2 = CreateWebAppFromSyncAndPendingInstallation(
-        url2, "Name2 from sync", DisplayMode::kBrowser, SK_ColorGREEN,
+        url2, "Name2 from sync", UserDisplayMode::kBrowser, SK_ColorGREEN,
         /*is_locally_installed=*/true, /*scope=*/GURL(), /*icon_infos=*/{});
 
     Registry registry;
@@ -628,7 +629,8 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   {
     std::unique_ptr<WebApp> app_in_sync_install =
         CreateWebAppFromSyncAndPendingInstallation(
-            start_url, "Name from sync", DisplayMode::kStandalone, SK_ColorRED,
+            start_url, "Name from sync", UserDisplayMode::kStandalone,
+            SK_ColorRED,
             /*is_locally_installed=*/true, /*scope=*/GURL(), /*icon_infos=*/{});
 
     InitRegistrarWithApp(std::move(app_in_sync_install));
@@ -698,7 +700,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly, InstallWebAppsAfterSync_Success) {
   expected_app->SetDescription("Description");
   expected_app->SetThemeColor(SK_ColorCYAN);
   expected_app->SetDisplayMode(DisplayMode::kBrowser);
-  expected_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  expected_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
 
   std::vector<apps::IconInfo> manifest_icons;
   std::vector<int> sizes;
@@ -721,6 +723,8 @@ TEST_P(WebAppInstallManagerTest_SyncOnly, InstallWebAppsAfterSync_Success) {
     sync_fallback_data.icon_infos = expected_app->manifest_icons();
     expected_app->SetSyncFallbackData(std::move(sync_fallback_data));
   }
+
+  ASSERT_TRUE(expected_app->user_display_mode().has_value());
 
   std::unique_ptr<const WebApp> app_in_sync_install =
       CreateWebAppFromSyncAndPendingInstallation(
@@ -768,7 +772,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly, InstallWebAppsAfterSync_Fallback) {
   expected_app->SetName("Name from sync");
   expected_app->SetScope(url);
   expected_app->SetDisplayMode(DisplayMode::kBrowser);
-  expected_app->SetUserDisplayMode(DisplayMode::kBrowser);
+  expected_app->SetUserDisplayMode(UserDisplayMode::kBrowser);
   expected_app->SetIsLocallyInstalled(expect_locally_installed);
   expected_app->SetInstallSourceForMetrics(webapps::WebappInstallSource::SYNC);
   expected_app->SetThemeColor(SK_ColorRED);
@@ -843,7 +847,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
        UninstallFromSyncAfterRegistryUpdate) {
   std::unique_ptr<WebApp> app = test::CreateWebApp(
       GURL("https://example.com/path"), WebAppManagement::kSync);
-  app->SetUserDisplayMode(DisplayMode::kStandalone);
+  app->SetUserDisplayMode(UserDisplayMode::kStandalone);
 
   const AppId app_id = app->app_id();
   InitRegistrarWithApp(std::move(app));
@@ -851,10 +855,10 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   file_utils().SetNextDeleteFileRecursivelyResult(true);
 
   enum Event {
-    kUninstallWithoutRegistryUpdateFromSync,
+    kUninstallFromSync,
     kObserver_OnWebAppWillBeUninstalled,
     kObserver_OnWebAppUninstalled,
-    kUninstallWithoutRegistryUpdateFromSync_Callback
+    kUninstallFromSync_Callback
   };
   std::vector<Event> event_order;
 
@@ -871,37 +875,32 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
       }));
 
   base::RunLoop run_loop;
-  controller().SetUninstallWithoutRegistryUpdateFromSyncDelegate(
-      base::BindLambdaForTesting(
-          [&](const std::vector<AppId>& apps_to_uninstall,
-              SyncInstallDelegate::RepeatingUninstallCallback callback) {
-            ASSERT_FALSE(apps_to_uninstall.empty());
-            EXPECT_EQ(apps_to_uninstall[0], app_id);
-            event_order.push_back(
-                Event::kUninstallWithoutRegistryUpdateFromSync);
-            install_manager().UninstallWithoutRegistryUpdateFromSync(
-                std::move(apps_to_uninstall),
-                base::BindLambdaForTesting([&, callback](
-                                               const AppId& uninstalled_app_id,
-                                               bool uninstalled) {
+  controller().SetUninstallFromSyncDelegate(base::BindLambdaForTesting(
+      [&](const std::vector<AppId>& apps_to_uninstall,
+          SyncInstallDelegate::RepeatingUninstallCallback callback) {
+        ASSERT_FALSE(apps_to_uninstall.empty());
+        EXPECT_EQ(apps_to_uninstall[0], app_id);
+        event_order.push_back(Event::kUninstallFromSync);
+        install_manager().UninstallFromSync(
+            std::move(apps_to_uninstall),
+            base::BindLambdaForTesting(
+                [&, callback](const AppId& uninstalled_app_id,
+                              bool uninstalled) {
                   EXPECT_EQ(uninstalled_app_id, app_id);
                   EXPECT_TRUE(uninstalled);
-                  event_order.push_back(
-                      Event::kUninstallWithoutRegistryUpdateFromSync_Callback);
+                  event_order.push_back(Event::kUninstallFromSync_Callback);
                   run_loop.Quit();
                   callback.Run(uninstalled_app_id, uninstalled);
                 }));
-          }));
+      }));
 
   // The sync server sends a change to delete the app.
   sync_bridge_test_utils::DeleteApps(controller().sync_bridge(), {app_id});
   run_loop.Run();
 
   const std::vector<Event> expected_event_order{
-      Event::kUninstallWithoutRegistryUpdateFromSync,
-      Event::kObserver_OnWebAppWillBeUninstalled,
-      Event::kObserver_OnWebAppUninstalled,
-      Event::kUninstallWithoutRegistryUpdateFromSync_Callback};
+      Event::kUninstallFromSync, Event::kObserver_OnWebAppWillBeUninstalled,
+      Event::kObserver_OnWebAppUninstalled, Event::kUninstallFromSync_Callback};
   EXPECT_EQ(expected_event_order, event_order);
 }
 
@@ -909,7 +908,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
        UninstallFromSyncAfterRegistryUpdateInstallManagerObserver) {
   std::unique_ptr<WebApp> app = test::CreateWebApp(
       GURL("https://example.com/path"), WebAppManagement::kSync);
-  app->SetUserDisplayMode(DisplayMode::kStandalone);
+  app->SetUserDisplayMode(UserDisplayMode::kStandalone);
 
   const AppId app_id = app->app_id();
   InitRegistrarWithApp(std::move(app));
@@ -917,10 +916,10 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   file_utils().SetNextDeleteFileRecursivelyResult(true);
 
   enum Event {
-    kUninstallWithoutRegistryUpdateFromSync,
+    kUninstallFromSync,
     kObserver_OnWebAppWillBeUninstalled,
     kObserver_OnWebAppUninstalled,
-    kUninstallWithoutRegistryUpdateFromSync_Callback
+    kUninstallFromSync_Callback
   };
   std::vector<Event> event_order;
 
@@ -937,37 +936,32 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
       }));
 
   base::RunLoop run_loop;
-  controller().SetUninstallWithoutRegistryUpdateFromSyncDelegate(
-      base::BindLambdaForTesting(
-          [&](const std::vector<AppId>& apps_to_uninstall,
-              SyncInstallDelegate::RepeatingUninstallCallback callback) {
-            ASSERT_FALSE(apps_to_uninstall.empty());
-            EXPECT_EQ(apps_to_uninstall[0], app_id);
-            event_order.push_back(
-                Event::kUninstallWithoutRegistryUpdateFromSync);
-            install_manager().UninstallWithoutRegistryUpdateFromSync(
-                std::move(apps_to_uninstall),
-                base::BindLambdaForTesting([&, callback](
-                                               const AppId& uninstalled_app_id,
-                                               bool uninstalled) {
+  controller().SetUninstallFromSyncDelegate(base::BindLambdaForTesting(
+      [&](const std::vector<AppId>& apps_to_uninstall,
+          SyncInstallDelegate::RepeatingUninstallCallback callback) {
+        ASSERT_FALSE(apps_to_uninstall.empty());
+        EXPECT_EQ(apps_to_uninstall[0], app_id);
+        event_order.push_back(Event::kUninstallFromSync);
+        install_manager().UninstallFromSync(
+            std::move(apps_to_uninstall),
+            base::BindLambdaForTesting(
+                [&, callback](const AppId& uninstalled_app_id,
+                              bool uninstalled) {
                   EXPECT_EQ(uninstalled_app_id, app_id);
                   EXPECT_TRUE(uninstalled);
-                  event_order.push_back(
-                      Event::kUninstallWithoutRegistryUpdateFromSync_Callback);
+                  event_order.push_back(Event::kUninstallFromSync_Callback);
                   run_loop.Quit();
                   callback.Run(uninstalled_app_id, uninstalled);
                 }));
-          }));
+      }));
 
   // The sync server sends a change to delete the app.
   sync_bridge_test_utils::DeleteApps(controller().sync_bridge(), {app_id});
   run_loop.Run();
 
   const std::vector<Event> expected_event_order{
-      Event::kUninstallWithoutRegistryUpdateFromSync,
-      Event::kObserver_OnWebAppWillBeUninstalled,
-      Event::kObserver_OnWebAppUninstalled,
-      Event::kUninstallWithoutRegistryUpdateFromSync_Callback};
+      Event::kUninstallFromSync, Event::kObserver_OnWebAppWillBeUninstalled,
+      Event::kObserver_OnWebAppUninstalled, Event::kUninstallFromSync_Callback};
   EXPECT_EQ(expected_event_order, event_order);
 }
 
@@ -976,7 +970,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   std::unique_ptr<WebApp> policy_and_user_app = test::CreateWebApp(
       GURL("https://example.com/path"), WebAppManagement::kSync);
   policy_and_user_app->AddSource(WebAppManagement::kPolicy);
-  policy_and_user_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  policy_and_user_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
 
   const AppId app_id = policy_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/policy");
@@ -1013,7 +1007,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   std::unique_ptr<WebApp> policy_and_user_app = test::CreateWebApp(
       GURL("https://example.com/path"), WebAppManagement::kSync);
   policy_and_user_app->AddSource(WebAppManagement::kPolicy);
-  policy_and_user_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  policy_and_user_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
 
   const AppId app_id = policy_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/policy");
@@ -1049,7 +1043,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly, DefaultAndUser_UninstallWebApp) {
   std::unique_ptr<WebApp> default_and_user_app = test::CreateWebApp(
       GURL("https://example.com/path"), WebAppManagement::kSync);
   default_and_user_app->AddSource(WebAppManagement::kDefault);
-  default_and_user_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  default_and_user_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
 
   const AppId app_id = default_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/default");
@@ -1060,6 +1054,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly, DefaultAndUser_UninstallWebApp) {
 
   EXPECT_TRUE(finalizer().CanUserUninstallWebApp(app_id));
   EXPECT_FALSE(finalizer().WasPreinstalledWebAppUninstalled(app_id));
+  EXPECT_TRUE(registrar().IsActivelyInstalled(app_id));
 
   WebAppInstallManagerObserverAdapter observer(&install_manager());
 
@@ -1079,6 +1074,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly, DefaultAndUser_UninstallWebApp) {
   EXPECT_TRUE(observer_uninstalled_called);
   EXPECT_FALSE(finalizer().CanUserUninstallWebApp(app_id));
   EXPECT_TRUE(finalizer().WasPreinstalledWebAppUninstalled(app_id));
+  EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));
 }
 
 TEST_P(WebAppInstallManagerTest_SyncOnly,
@@ -1086,7 +1082,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   std::unique_ptr<WebApp> default_and_user_app = test::CreateWebApp(
       GURL("https://example.com/path"), WebAppManagement::kSync);
   default_and_user_app->AddSource(WebAppManagement::kDefault);
-  default_and_user_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  default_and_user_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
 
   const AppId app_id = default_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/default");
@@ -1097,6 +1093,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
 
   EXPECT_TRUE(finalizer().CanUserUninstallWebApp(app_id));
   EXPECT_FALSE(finalizer().WasPreinstalledWebAppUninstalled(app_id));
+  EXPECT_TRUE(registrar().IsActivelyInstalled(app_id));
 
   WebAppInstallManagerObserverAdapter observer(&install_manager());
 
@@ -1116,6 +1113,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   EXPECT_TRUE(observer_uninstalled_called);
   EXPECT_FALSE(finalizer().CanUserUninstallWebApp(app_id));
   EXPECT_TRUE(finalizer().WasPreinstalledWebAppUninstalled(app_id));
+  EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));
 }
 
 TEST_P(WebAppInstallManagerTest, InstallWebAppFromInfo) {
@@ -1129,17 +1127,22 @@ TEST_P(WebAppInstallManagerTest, InstallWebAppFromInfo) {
   server_web_app_info->start_url = url;
   server_web_app_info->scope = url;
   server_web_app_info->title = u"Test web app";
+  server_web_app_info->install_url = url;
 
   const webapps::WebappInstallSource install_source =
       AreSystemWebAppsSupported()
           ? webapps::WebappInstallSource::SYSTEM_DEFAULT
           : webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON;
 
+  EXPECT_FALSE(registrar().IsActivelyInstalled(expected_app_id));
+
   InstallResult result = InstallWebAppFromInfo(
       std::move(server_web_app_info),
       /*overwrite_existing_manifest_fields=*/false, install_source);
   EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, result.code);
   EXPECT_EQ(expected_app_id, result.app_id);
+
+  EXPECT_TRUE(registrar().IsActivelyInstalled(expected_app_id));
 
   const WebApp* web_app = registrar().GetAppById(expected_app_id);
   ASSERT_TRUE(web_app);
@@ -1194,6 +1197,22 @@ TEST_P(WebAppInstallManagerTest, TaskQueueWebContentsReadyRace) {
   EXPECT_FALSE(task_c_started);
 }
 
+TEST_P(WebAppInstallManagerTest, DefaultNotActivelyInstalled) {
+  std::unique_ptr<WebApp> default_app = test::CreateWebApp(
+      GURL("https://example.com/path"), WebAppManagement::kDefault);
+  default_app->SetDisplayMode(DisplayMode::kStandalone);
+  default_app->SetUserDisplayMode(UserDisplayMode::kBrowser);
+
+  const AppId app_id = default_app->app_id();
+  const GURL external_app_url("https://example.com/path/default");
+
+  externally_installed_app_prefs().Insert(
+      external_app_url, app_id, ExternalInstallSource::kExternalDefault);
+  InitRegistrarWithApp(std::move(default_app));
+
+  EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));
+}
+
 TEST_P(WebAppInstallManagerTest_SyncOnly,
        InstallWebAppFromManifestWithFallback_OverwriteIsLocallyInstalled) {
   const GURL start_url{"https://example.com/path"};
@@ -1203,7 +1222,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
     std::unique_ptr<WebApp> app_in_sync_install =
         CreateWebAppFromSyncAndPendingInstallation(
             start_url, "Name from sync",
-            /*user_display_mode=*/DisplayMode::kStandalone, SK_ColorRED,
+            /*user_display_mode=*/UserDisplayMode::kStandalone, SK_ColorRED,
             /*is_locally_installed=*/false, /*scope=*/GURL(),
             /*icon_infos=*/{});
 
@@ -1211,6 +1230,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   }
 
   EXPECT_FALSE(registrar().IsLocallyInstalled(app_id));
+  EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));
   EXPECT_EQ(DisplayMode::kBrowser,
             registrar().GetAppEffectiveDisplayMode(app_id));
 
@@ -1223,6 +1243,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
 
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   EXPECT_TRUE(registrar().IsLocallyInstalled(app_id));
+  EXPECT_TRUE(registrar().IsActivelyInstalled(app_id));
   // InstallWebAppFromManifestWithFallback sets user_display_mode to kBrowser
   // because TestAcceptDialogCallback doesn't set open_as_window to true.
   EXPECT_EQ(DisplayMode::kBrowser,
@@ -1237,18 +1258,18 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
 
   // Reproduces `ApkWebAppInstaller` install parameters.
-  auto apk_web_application_info = std::make_unique<WebAppInstallInfo>();
-  apk_web_application_info->start_url = start_url;
-  apk_web_application_info->scope = GURL("https://example.com/apk_scope");
-  apk_web_application_info->title = u"Name from APK";
-  apk_web_application_info->theme_color = SK_ColorWHITE;
-  apk_web_application_info->display_mode = DisplayMode::kStandalone;
-  apk_web_application_info->user_display_mode = DisplayMode::kStandalone;
-  AddGeneratedIcon(&apk_web_application_info->icon_bitmaps.any, icon_size::k128,
+  auto apk_install_info = std::make_unique<WebAppInstallInfo>();
+  apk_install_info->start_url = start_url;
+  apk_install_info->scope = GURL("https://example.com/apk_scope");
+  apk_install_info->title = u"Name from APK";
+  apk_install_info->theme_color = SK_ColorWHITE;
+  apk_install_info->display_mode = DisplayMode::kStandalone;
+  apk_install_info->user_display_mode = UserDisplayMode::kStandalone;
+  AddGeneratedIcon(&apk_install_info->icon_bitmaps.any, icon_size::k128,
                    SK_ColorYELLOW);
 
   InstallResult result =
-      InstallWebAppFromInfo(std::move(apk_web_application_info),
+      InstallWebAppFromInfo(std::move(apk_install_info),
                             /*overwrite_existing_manifest_fields=*/false,
                             webapps::WebappInstallSource::ARC);
 
@@ -1274,7 +1295,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
             web_app->sync_fallback_data().scope.spec());
 
   EXPECT_EQ(DisplayMode::kStandalone, web_app->display_mode());
-  EXPECT_EQ(DisplayMode::kStandalone, web_app->user_display_mode());
+  EXPECT_EQ(UserDisplayMode::kStandalone, web_app->user_display_mode());
 
   EXPECT_TRUE(web_app->manifest_icons().empty());
   EXPECT_TRUE(web_app->sync_fallback_data().icon_infos.empty());
@@ -1288,7 +1309,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
     synced_specifics_data->SetStartUrl(start_url);
 
     synced_specifics_data->AddSource(WebAppManagement::kSync);
-    synced_specifics_data->SetUserDisplayMode(DisplayMode::kBrowser);
+    synced_specifics_data->SetUserDisplayMode(UserDisplayMode::kBrowser);
     synced_specifics_data->SetName("Name From Sync");
 
     WebApp::SyncFallbackData sync_fallback_data;
@@ -1322,7 +1343,8 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   EXPECT_FALSE(web_app->is_from_sync_and_pending_installation());
 
   EXPECT_EQ(DisplayMode::kStandalone, web_app->display_mode());
-  EXPECT_EQ(DisplayMode::kBrowser, web_app->user_display_mode());
+  EXPECT_EQ(UserDisplayMode::kBrowser, web_app->user_display_mode());
+  EXPECT_TRUE(registrar().IsActivelyInstalled(app_id));
 
   ASSERT_TRUE(web_app->theme_color().has_value());
   EXPECT_EQ(SK_ColorWHITE, web_app->theme_color().value());
@@ -1371,6 +1393,7 @@ TEST_P(WebAppInstallManagerTest_SyncOnly, InstallSubApp) {
   EXPECT_TRUE(registrar().IsLocallyInstalled(app_id));
   EXPECT_EQ(DisplayMode::kStandalone,
             registrar().GetAppEffectiveDisplayMode(app_id));
+  EXPECT_TRUE(registrar().IsActivelyInstalled(app_id));
 
   const WebApp* app = registrar().GetAppById(app_id);
   EXPECT_EQ(parent_app_id, app->parent_app_id());

@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -45,6 +46,11 @@ CSSAtRuleID CssAtRuleID(StringView name) {
   if (EqualIgnoringASCIICase(name, "scroll-timeline")) {
     if (RuntimeEnabledFeatures::CSSScrollTimelineEnabled())
       return kCSSAtRuleScrollTimeline;
+    return kCSSAtRuleInvalid;
+  }
+  if (EqualIgnoringASCIICase(name, "scope")) {
+    if (RuntimeEnabledFeatures::CSSScopeEnabled())
+      return kCSSAtRuleScope;
     return kCSSAtRuleInvalid;
   }
   if (EqualIgnoringASCIICase(name, "supports"))
@@ -95,6 +101,9 @@ void CountAtRule(const CSSParserContext* context, CSSAtRuleID rule_id) {
       return;
     case kCSSAtRuleCounterStyle:
       feature = WebFeature::kCSSAtRuleCounterStyle;
+      break;
+    case kCSSAtRuleScope:
+      feature = WebFeature::kCSSAtRuleScope;
       break;
     case kCSSAtRuleScrollTimeline:
       feature = WebFeature::kCSSAtRuleScrollTimeline;

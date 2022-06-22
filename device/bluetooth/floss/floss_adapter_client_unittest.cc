@@ -46,6 +46,11 @@ constexpr bool kFakeBoolParam = true;
 constexpr char kFakeDeviceAddr[] = "11:22:33:44:55:66";
 constexpr char kFakeDeviceName[] = "Some Device";
 constexpr uint8_t kFakeBytes[] = {1, 1, 2, 3, 5, 8, 13};
+constexpr uint8_t kFakeUuidByteArray[] = {0, 1, 2,  3,  4,  5,  6,  7,
+                                          8, 9, 10, 11, 12, 13, 14, 15};
+constexpr char kFakeUuidStr[] = "00010203-0405-0607-0809-0a0b0c0d0e0f";
+constexpr floss::FlossAdapterClient::BluetoothDeviceType kFakeType =
+    floss::FlossAdapterClient::BluetoothDeviceType::kBle;
 
 }  // namespace
 
@@ -80,6 +85,11 @@ class TestAdapterObserver : public FlossAdapterClient::Observer {
     found_device_ = device_found;
   }
 
+  void AdapterClearedDevice(const FlossDeviceId& device_cleared) override {
+    cleared_device_count_++;
+    cleared_device_ = device_cleared;
+  }
+
   void AdapterSspRequest(const FlossDeviceId& remote_device,
                          uint32_t cod,
                          FlossAdapterClient::BluetoothSspVariant variant,
@@ -96,6 +106,7 @@ class TestAdapterObserver : public FlossAdapterClient::Observer {
   bool discoverable_;
   bool discovering_state_ = false;
   FlossDeviceId found_device_;
+  FlossDeviceId cleared_device_;
 
   FlossDeviceId ssp_device_;
   uint32_t cod_ = 0;
@@ -107,6 +118,7 @@ class TestAdapterObserver : public FlossAdapterClient::Observer {
   int discoverable_changed_count_ = 0;
   int discovering_changed_count_ = 0;
   int found_device_count_ = 0;
+  int cleared_device_count_ = 0;
   int ssp_request_count_ = 0;
 
  private:
@@ -134,7 +146,7 @@ class FlossAdapterClientTest : public testing::Test {
 
     // Make sure we export all callbacks. This will need to be updated once new
     // callbacks are added.
-    EXPECT_CALL(*exported_callbacks_.get(), ExportMethod).Times(9);
+    EXPECT_CALL(*exported_callbacks_.get(), ExportMethod).Times(10);
 
     // Handle method calls on the object proxy
     ON_CALL(
@@ -345,6 +357,22 @@ class FlossAdapterClientTest : public testing::Test {
     client_->OnDeviceFound(&method_call, std::move(response));
   }
 
+  void SendDeviceClearedCallback(
+      bool error,
+      const FlossDeviceId& device_id,
+      dbus::ExportedObject::ResponseSender response) {
+    dbus::MethodCall method_call(adapter::kCallbackInterface,
+                                 adapter::kOnDeviceFound);
+    method_call.SetSerial(serial_++);
+
+    dbus::MessageWriter writer(&method_call);
+    EncodeFlossDeviceId(&writer, device_id,
+                        /*include_required_keys=*/!error,
+                        /*include_extra_keys=*/true);
+
+    client_->OnDeviceCleared(&method_call, std::move(response));
+  }
+
   void SendSspRequestCallback(bool error,
                               const FlossDeviceId& device_id,
                               uint32_t cod,
@@ -536,6 +564,29 @@ TEST_F(FlossAdapterClientTest, HandlesFoundDevices) {
   EXPECT_EQ(test_observer.found_device_count_, 1);
   EXPECT_EQ(test_observer.found_device_.name, device_id.name);
   EXPECT_EQ(test_observer.found_device_.address, device_id.address);
+}
+
+TEST_F(FlossAdapterClientTest, HandlesClearedDevices) {
+  TestAdapterObserver test_observer(client_.get());
+  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+  EXPECT_EQ(test_observer.cleared_device_count_, 0);
+
+  FlossDeviceId device_id = {.address = "66:55:44:33:22:11", .name = "First"};
+
+  SendDeviceClearedCallback(
+      /*error=*/true, device_id,
+      base::BindOnce(&FlossAdapterClientTest::ExpectErrorResponse,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  EXPECT_EQ(test_observer.cleared_device_count_, 0);
+  SendDeviceClearedCallback(
+      /*error=*/false, device_id,
+      base::BindOnce(&FlossAdapterClientTest::ExpectNormalResponse,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  EXPECT_EQ(test_observer.cleared_device_count_, 1);
+  EXPECT_EQ(test_observer.cleared_device_.name, device_id.name);
+  EXPECT_EQ(test_observer.cleared_device_.address, device_id.address);
 }
 
 TEST_F(FlossAdapterClientTest, HandlesSsp) {
@@ -756,7 +807,8 @@ TEST_F(FlossAdapterClientTest, GenericMethodGetConnectionState) {
   run_loop.Run();
 }
 
-TEST_F(FlossAdapterClientTest, GenericMethodConnectAllEnabledProfiles) {
+TEST_F(FlossAdapterClientTest,
+       GenericMethodConnectAndDisconnectAllEnabledProfiles) {
   client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
 
   // Method of 1 parameter with no return.
@@ -777,8 +829,34 @@ TEST_F(FlossAdapterClientTest, GenericMethodConnectAllEnabledProfiles) {
         auto response = ::dbus::Response::CreateEmpty();
         std::move(*cb).Run(response.get(), /*err=*/nullptr);
       });
+  EXPECT_CALL(*adapter_object_proxy_.get(),
+              DoCallMethodWithErrorResponse(
+                  HasMemberOf(adapter::kDisconnectAllEnabledProfiles), _, _))
+      .WillOnce([](::dbus::MethodCall* method_call, int timeout_ms,
+                   ::dbus::ObjectProxy::ResponseOrErrorCallback* cb) {
+        dbus::MessageReader msg(method_call);
+        // D-Bus method call should have 1 parameter.
+        FlossDeviceId param1;
+        ASSERT_TRUE(FlossAdapterClient::ParseFlossDeviceId(&msg, &param1));
+        EXPECT_EQ(FlossDeviceId(
+                      {.address = kFakeDeviceAddr, .name = kFakeDeviceName}),
+                  param1);
+        EXPECT_FALSE(msg.HasMoreData());
+        // Create a fake response with no return value.
+        auto response = ::dbus::Response::CreateEmpty();
+        std::move(*cb).Run(response.get(), /*err=*/nullptr);
+      });
   base::RunLoop run_loop;
   client_->ConnectAllEnabledProfiles(
+      base::BindLambdaForTesting([&run_loop](const absl::optional<Void>& ret,
+                                             const absl::optional<Error>& err) {
+        // Check that there should be no return and error.
+        EXPECT_FALSE(err.has_value());
+        EXPECT_FALSE(ret.has_value());
+        run_loop.Quit();
+      }),
+      FlossDeviceId({.address = kFakeDeviceAddr, .name = kFakeDeviceName}));
+  client_->DisconnectAllEnabledProfiles(
       base::BindLambdaForTesting([&run_loop](const absl::optional<Void>& ret,
                                              const absl::optional<Error>& err) {
         // Check that there should be no return and error.
@@ -870,6 +948,90 @@ TEST_F(FlossAdapterClientTest, GenericMethodSetPasskey) {
       FlossDeviceId({.address = kFakeDeviceAddr, .name = kFakeDeviceName}),
       kFakeBoolParam,
       std::vector<uint8_t>(kFakeBytes, kFakeBytes + sizeof(kFakeBytes)));
+  run_loop.Run();
+}
+
+TEST_F(FlossAdapterClientTest, GenericMethodGetRemoteUuids) {
+  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+
+  // Method of 1 parameter with UUID response.
+  EXPECT_CALL(*adapter_object_proxy_.get(),
+              DoCallMethodWithErrorResponse(
+                  HasMemberOf(adapter::kGetRemoteUuids), _, _))
+      .WillOnce([](::dbus::MethodCall* method_call, int timeout_ms,
+                   ::dbus::ObjectProxy::ResponseOrErrorCallback* cb) {
+        dbus::MessageReader msg(method_call);
+        // D-Bus method call should have 1 parameter.
+        FlossDeviceId param1;
+        ASSERT_TRUE(FlossAdapterClient::ParseFlossDeviceId(&msg, &param1));
+        EXPECT_EQ(FlossDeviceId(
+                      {.address = kFakeDeviceAddr, .name = kFakeDeviceName}),
+                  param1);
+        EXPECT_FALSE(msg.HasMoreData());
+        // Create a response with valid UUID. Format is array of UUIDs (array of
+        // bytes)
+        auto response = ::dbus::Response::CreateEmpty();
+        dbus::MessageWriter writer(response.get());
+        dbus::MessageWriter array_writer(nullptr);
+        writer.OpenArray("ay", &array_writer);
+        array_writer.AppendArrayOfBytes(kFakeUuidByteArray,
+                                        sizeof(kFakeUuidByteArray));
+        writer.CloseContainer(&array_writer);
+        std::move(*cb).Run(response.get(), /*err=*/nullptr);
+      });
+  base::RunLoop run_loop;
+  client_->GetRemoteUuids(
+      base::BindLambdaForTesting(
+          [&run_loop](
+              const absl::optional<device::BluetoothDevice::UUIDList>& ret,
+              const absl::optional<Error>& err) {
+            // Check that there is no error.
+            EXPECT_FALSE(err.has_value());
+            // Check we parse the returned UUID correctly
+            device::BluetoothDevice::UUIDList uuid_list = *ret;
+            EXPECT_EQ(uuid_list[0], device::BluetoothUUID(kFakeUuidStr));
+            run_loop.Quit();
+          }),
+      FlossDeviceId({.address = kFakeDeviceAddr, .name = kFakeDeviceName}));
+  run_loop.Run();
+}
+
+TEST_F(FlossAdapterClientTest, GenericMethodGetRemoteType) {
+  client_->Init(bus_.get(), kAdapterInterface, adapter_path_.value());
+
+  // Method of 1 parameter with UUID response.
+  EXPECT_CALL(
+      *adapter_object_proxy_.get(),
+      DoCallMethodWithErrorResponse(HasMemberOf(adapter::kGetRemoteType), _, _))
+      .WillOnce([](::dbus::MethodCall* method_call, int timeout_ms,
+                   ::dbus::ObjectProxy::ResponseOrErrorCallback* cb) {
+        dbus::MessageReader msg(method_call);
+        // D-Bus method call should have 1 parameter.
+        FlossDeviceId param1;
+        ASSERT_TRUE(FlossAdapterClient::ParseFlossDeviceId(&msg, &param1));
+        EXPECT_EQ(FlossDeviceId(
+                      {.address = kFakeDeviceAddr, .name = kFakeDeviceName}),
+                  param1);
+        EXPECT_FALSE(msg.HasMoreData());
+        // Create a response with valid BluetoothDeviceType
+        auto response = ::dbus::Response::CreateEmpty();
+        dbus::MessageWriter writer(response.get());
+        writer.AppendUint32(static_cast<uint32_t>(kFakeType));
+        std::move(*cb).Run(response.get(), /*err=*/nullptr);
+      });
+  base::RunLoop run_loop;
+  client_->GetRemoteType(
+      base::BindLambdaForTesting(
+          [&run_loop](const absl::optional<
+                          floss::FlossAdapterClient::BluetoothDeviceType>& ret,
+                      const absl::optional<Error>& err) {
+            // Check that there is no error.
+            EXPECT_FALSE(err.has_value());
+            // Check we parse the returned type correctly
+            EXPECT_EQ(*ret, kFakeType);
+            run_loop.Quit();
+          }),
+      FlossDeviceId({.address = kFakeDeviceAddr, .name = kFakeDeviceName}));
   run_loop.Run();
 }
 

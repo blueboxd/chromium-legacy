@@ -27,11 +27,11 @@ DeskActionView::DeskActionView(
     const std::u16string& initial_combine_desks_target_name,
     base::RepeatingClosure combine_desks_callback,
     base::RepeatingClosure close_all_callback)
-    : close_all_button_(AddChildView(
-          std::make_unique<CloseButton>(std::move(close_all_callback),
-                                        CloseButton::Type::kMediumFloating))),
-      combine_desks_button_(AddChildView(
+    : combine_desks_button_(AddChildView(
           std::make_unique<CloseButton>(std::move(combine_desks_callback),
+                                        CloseButton::Type::kMediumFloating))),
+      close_all_button_(AddChildView(
+          std::make_unique<CloseButton>(std::move(close_all_callback),
                                         CloseButton::Type::kMediumFloating))) {
   SetOrientation(views::BoxLayout::Orientation::kHorizontal);
   SetInsideBorderInsets(gfx::Insets(kButtonMargin));
@@ -54,6 +54,10 @@ void DeskActionView::UpdateCombineDesksTooltip(
     const std::u16string& new_combine_desks_target_name) {
   combine_desks_button_->SetTooltipText(l10n_util::GetStringFUTF16(
       IDS_ASH_DESKS_COMBINE_DESKS_DESCRIPTION, new_combine_desks_target_name));
+}
+
+void DeskActionView::SetCombineDesksButtonVisibility(bool visible) {
+  combine_desks_button_->SetVisible(visible);
 }
 
 BEGIN_METADATA(DeskActionView, views::BoxLayoutView)

@@ -5,6 +5,7 @@
 #include "ash/capture_mode/capture_mode_util.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_session.h"
@@ -12,6 +13,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
 #include "ash/public/cpp/style/scoped_light_mode_as_default.h"
+#include "ash/public/cpp/window_finder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -22,8 +24,10 @@
 #include "base/notreached.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/views/notification_background_painter.h"
 #include "ui/views/controls/image_view.h"
@@ -36,12 +40,21 @@ namespace {
 constexpr int kBannerViewTopRadius = 0;
 constexpr int kBannerViewBottomRadius = 8;
 
+// Returns the target visibility of the camera preview, given the
+// `confine_bounds_short_side_length`. The out parameter
+// `out_is_surface_too_small` will be set to true if the preview should be
+// hidden due to the surface within which it's confined is too small. Otherwise,
+// it's unchanged.
 bool CalculateCameraPreviewTargetVisibility(
-    int confine_bounds_short_side_length) {
+    int confine_bounds_short_side_length,
+    bool* out_is_surface_too_small) {
+  DCHECK(out_is_surface_too_small);
+
   // If the short side of the bounds within which the camera preview should be
   // confined is too small, the camera should be hidden.
   if (confine_bounds_short_side_length <
       capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera) {
+    *out_is_surface_too_small = true;
     return false;
   }
 
@@ -52,6 +65,11 @@ bool CalculateCameraPreviewTargetVisibility(
   return !controller->IsActive() ||
          controller->capture_mode_session()
              ->CalculateCameraPreviewTargetVisibility();
+}
+
+// Returns the local center point of the given `layer`.
+gfx::Point GetLocalCenterPoint(ui::Layer* layer) {
+  return gfx::Rect(layer->GetTargetBounds().size()).CenterPoint();
 }
 
 }  // namespace
@@ -100,26 +118,29 @@ bool IsCornerFineTunePosition(FineTunePosition position) {
   return false;
 }
 
-void SetStopRecordingButtonVisibility(aura::Window* root, bool visible) {
+StopRecordingButtonTray* GetStopRecordingButtonForRoot(aura::Window* root) {
   DCHECK(root);
   DCHECK(root->IsRootWindow());
 
   // Recording can end when a display being fullscreen-captured gets removed, in
   // this case, we don't need to hide the button.
-  if (root->is_destroying()) {
-    DCHECK(!visible);
-    return;
-  }
+  if (root->is_destroying())
+    return nullptr;
 
   // Can be null while shutting down.
   auto* root_window_controller = RootWindowController::ForWindow(root);
   if (!root_window_controller)
-    return;
+    return nullptr;
 
   auto* stop_recording_button = root_window_controller->GetStatusAreaWidget()
                                     ->stop_recording_button_tray();
   DCHECK(stop_recording_button);
-  stop_recording_button->SetVisiblePreferred(visible);
+  return stop_recording_button;
+}
+
+void SetStopRecordingButtonVisibility(aura::Window* root, bool visible) {
+  if (auto* stop_recording_button = GetStopRecordingButtonForRoot(root))
+    stop_recording_button->SetVisiblePreferred(visible);
 }
 
 void TriggerAccessibilityAlert(const std::string& message) {
@@ -132,13 +153,16 @@ void TriggerAccessibilityAlert(int message_id) {
   TriggerAccessibilityAlert(l10n_util::GetStringUTF8(message_id));
 }
 
-void TriggerAccessibilityAlertSoon(int message_id) {
+void TriggerAccessibilityAlertSoon(const std::string& message) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &AccessibilityControllerImpl::TriggerAccessibilityAlertWithMessage,
-          Shell::Get()->accessibility_controller()->GetWeakPtr(),
-          l10n_util::GetStringUTF8(message_id)));
+          Shell::Get()->accessibility_controller()->GetWeakPtr(), message));
+}
+
+void TriggerAccessibilityAlertSoon(int message_id) {
+  TriggerAccessibilityAlertSoon(l10n_util::GetStringUTF8(message_id));
 }
 
 CameraPreviewSnapPosition GetCameraNextHorizontalSnapPosition(
@@ -272,6 +296,10 @@ std::unique_ptr<views::View> CreatePlayIconView() {
   return play_view;
 }
 
+gfx::Transform GetScaleTransformAboutCenter(ui::Layer* layer, float scale) {
+  return gfx::GetScaleTransform(GetLocalCenterPoint(layer), scale);
+}
+
 CameraPreviewSizeSpecs CalculateCameraPreviewSizeSpecs(
     const gfx::Size& confine_bounds_size,
     bool is_collapsed) {
@@ -298,11 +326,36 @@ CameraPreviewSizeSpecs CalculateCameraPreviewSizeSpecs(
           : std::max(expanded_diameter / capture_mode::kCollapsedPreviewDivider,
                      capture_mode::kMinCameraPreviewDiameter);
 
+  bool is_surface_too_small = false;
   const bool should_be_visible =
-      CalculateCameraPreviewTargetVisibility(short_side);
+      CalculateCameraPreviewTargetVisibility(short_side, &is_surface_too_small);
+
+  // If the surface was determined to be too small, the preview should be
+  // hidden.
+  DCHECK(!is_surface_too_small || !should_be_visible);
 
   return CameraPreviewSizeSpecs{gfx::Size(diameter, diameter), is_collapsible,
-                                should_be_visible};
+                                should_be_visible, is_surface_too_small};
+}
+
+aura::Window* GetTopMostCapturableWindowAtPoint(
+    const gfx::Point& screen_point) {
+  auto* controller = CaptureModeController::Get();
+  std::set<aura::Window*> ignore_windows;
+  auto* camera_controller = controller->camera_controller();
+  if (camera_controller && camera_controller->camera_preview_widget()) {
+    ignore_windows.insert(
+        camera_controller->camera_preview_widget()->GetNativeWindow());
+  }
+
+  if (controller->IsActive()) {
+    if (auto* capture_label_widget =
+            controller->capture_mode_session()->capture_label_widget()) {
+      ignore_windows.insert(capture_label_widget->GetNativeWindow());
+    }
+  }
+
+  return GetTopmostWindowAtPoint(screen_point, ignore_windows);
 }
 
 }  // namespace ash::capture_mode_util

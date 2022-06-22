@@ -39,8 +39,9 @@ class SuggestionChipContainerView;
 class GradientLayerDelegate;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
-// app items, and a AppListFolderView to render the app items inside the
-// active folder.
+// app items, and a AppListFolderView to render the app items inside the active
+// folder. With productivity launcher, it also contains the continue section,
+// recent apps, and an optional separator.
 class ASH_EXPORT AppsContainerView
     : public AppListPage,
       public AppListModelProvider::Observer,
@@ -82,9 +83,9 @@ class ASH_EXPORT AppsContainerView
   // is enough space to fit page switcher next to the apps grid.
   int GetMinHorizontalMarginForAppsGrid() const;
 
-  // The minimal top margin for the apps grids (measured from the top of the
-  // apps container). Set to accommodate min apps container margins, search box
-  // and suggestion chips.
+  // The minimal top margin for the apps grid (measured from the top of the
+  // search box to the top of the apps grid). This margin includes space for
+  // search box and suggestion chips.
   // For productivity launcher UI, this will not include space for continue
   // section and recent apps.
   int GetMinTopMarginForAppsGrid(const gfx::Size& search_box_size) const;
@@ -96,15 +97,12 @@ class ASH_EXPORT AppsContainerView
   int GetIdealHorizontalMargin() const;
   int GetIdealVerticalMargin() const;
 
-  // Calculates the apps container or apps grid margin depending on the
-  // available content bounds, and search box size.
-  // |available_bounds| - The bounds available to lay out either full apps
-  //      container or apps grid (depending on |for_full_contaier_bounds|).
+  // Calculates the apps container margins depending on the available content
+  // bounds, and search box size.
+  // |available_bounds| - The bounds available to lay out the full apps
+  //      container.
   // |search_box_size| - The expected search box size. Used to determine the
   //      the amount of space in apps container available to the apps grid
-  //      (if calaulating margins for apps grid, |available_bounds| should
-  //      not contain the search box, so this value will not be used in that
-  //      case).
   //
   // NOTE: This should not call into ContentsView::GetSearchBoxBounds*()
   // methods, as CalculateMarginsForAvailableBounds is used to calculate the
@@ -188,10 +186,8 @@ class ASH_EXPORT AppsContainerView
       base::OnceClosure update_position_closure,
       base::OnceClosure animation_done_closure);
 
-  // Called when the app list temporary sort order changes. If `new_order` is
-  // null, the temporary sort order is cleared.
-  void OnTemporarySortOrderChanged(
-      const absl::optional<AppListSortOrder>& new_order);
+  // Updates the continue section visibility based on user preference.
+  void UpdateContinueSectionVisibility();
 
   // Called by app list controller when the app list visibility is about to
   // change - when the app list is about to be shown, initiates zero state
@@ -239,6 +235,8 @@ class ASH_EXPORT AppsContainerView
 
   // Gets the height of the `separator_` including its vertical margin.
   int GetSeparatorHeight();
+
+  views::View* GetShowContinueSectionButtonForTest();
 
   SearchResultPageAnchoredDialog* dialog_for_test() {
     return dialog_controller_->dialog();

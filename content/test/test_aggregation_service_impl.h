@@ -45,11 +45,11 @@ class TestAggregationServiceImpl : public AggregationServiceStorageContext,
   // TestAggregationService:
   void SetDisablePayloadEncryption(bool should_disable) override;
   void SetPublicKeys(const GURL& url,
-                     const std::string& json_string,
+                     const base::FilePath& json_file,
                      base::OnceCallback<void(bool)> callback) override;
   void AssembleReport(
       AssembleRequest request,
-      base::OnceCallback<void(base::Value::DictStorage)> callback) override;
+      base::OnceCallback<void(base::Value::Dict)> callback) override;
   void SendReport(const GURL& url,
                   const base::Value& contents,
                   base::OnceCallback<void(bool)> callback) override;

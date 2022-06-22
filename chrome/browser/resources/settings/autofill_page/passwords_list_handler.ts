@@ -23,28 +23,28 @@ import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
+import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {StoredAccount, SyncBrowserProxyImpl} from '../people_page/sync_browser_proxy.js';
+import {routes} from '../route.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordDialogMode} from './password_edit_dialog.js';
 import {PasswordListItemElement, PasswordMoreActionsClickedEvent} from './password_list_item.js';
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+import {PasswordRemovalMixin, PasswordRemovalMixinInterface} from './password_removal_mixin.js';
 import {PasswordRemoveDialogPasswordsRemovedEvent} from './password_remove_dialog.js';
-import {PasswordRequestorMixin} from './password_requestor_mixin.js';
+import {PasswordRequestorMixin, PasswordRequestorMixinInterface} from './password_requestor_mixin.js';
+import {PasswordRemovalUrlParams} from './password_view.js';
 import {getTemplate} from './passwords_list_handler.html.js';
-import {PasswordShowPasswordClickedEvent} from './show_password_mixin.js';
 
 declare global {
   interface HTMLElementEventMap {
     'password-more-actions-clicked': PasswordMoreActionsClickedEvent;
-    'password-remove-dialog-passwords-removed':
-        PasswordRemoveDialogPasswordsRemovedEvent;
-    'password-show-password-clicked': PasswordShowPasswordClickedEvent;
   }
 }
 
@@ -62,7 +62,12 @@ export interface PasswordsListHandlerElement {
 }
 
 const PasswordsListHandlerElementBase =
-    PasswordRequestorMixin(WebUIListenerMixin(I18nMixin(PolymerElement)));
+    RouteObserverMixin(PasswordRemovalMixin(PasswordRequestorMixin(
+        WebUIListenerMixin(I18nMixin(PolymerElement))))) as {
+      new (): PolymerElement & I18nMixinInterface &
+          WebUIListenerMixinInterface & PasswordRequestorMixinInterface &
+          PasswordRemovalMixinInterface & RouteObserverMixinInterface,
+    };
 
 export class PasswordsListHandlerElement extends
     PasswordsListHandlerElementBase {
@@ -121,8 +126,6 @@ export class PasswordsListHandlerElement extends
 
       showPasswordMoveToAccountDialog_: {type: Boolean, value: false},
 
-      showPasswordRemoveDialog_: {type: Boolean, value: false},
-
       showPasswordSendButton_: {
         type: Boolean,
         value() {
@@ -163,7 +166,6 @@ export class PasswordsListHandlerElement extends
   private requestedDialogMode_: PasswordDialogMode|null;
   private showPasswordEditDialog_: boolean;
   private showPasswordMoveToAccountDialog_: boolean;
-  private showPasswordRemoveDialog_: boolean;
   private showSendPasswordButton_: boolean;
   private activeDialogAnchor_: HTMLElement|null;
   private removalNotification_: string;
@@ -177,11 +179,6 @@ export class PasswordsListHandlerElement extends
     this.addEventListener(
         'password-more-actions-clicked',
         this.passwordMoreActionsClickedHandler_);
-    this.addEventListener(
-        'password-remove-dialog-passwords-removed',
-        this.passwordRemoveDialogPasswordsRemovedHandler_);
-    this.addEventListener(
-        'password-show-password-clicked', this.onPasswordShowPasswordClicked_);
   }
 
   override connectedCallback() {
@@ -194,6 +191,22 @@ export class PasswordsListHandlerElement extends
     SyncBrowserProxyImpl.getInstance().getStoredAccounts().then(
         extractFirstAccountEmail);
     this.addWebUIListener('stored-accounts-updated', extractFirstAccountEmail);
+  }
+
+  override currentRouteChanged(route: Route): void {
+    if (route !== routes.PASSWORDS && route !== routes.DEVICE_PASSWORDS) {
+      return;
+    }
+
+    const params = Router.getInstance().getQueryParameters();
+    if (!params.get(PasswordRemovalUrlParams.REMOVED_FROM_ACCOUNT) ||
+        !params.get(PasswordRemovalUrlParams.REMOVED_FROM_DEVICE)) {
+      return;
+    }
+
+    this.displayRemovalNotification_(
+        params.get(PasswordRemovalUrlParams.REMOVED_FROM_ACCOUNT) === 'true',
+        params.get(PasswordRemovalUrlParams.REMOVED_FROM_DEVICE) === 'true');
   }
 
   override disconnectedCallback() {
@@ -221,26 +234,9 @@ export class PasswordsListHandlerElement extends
     this.activeDialogAnchor_ = target;
   }
 
-  /**
-   * Opens the password view dialog.
-   */
-  private onPasswordShowPasswordClicked_(event:
-                                             PasswordShowPasswordClickedEvent) {
-    const target = event.target;
-    this.activePassword_ = target;
-    this.requestPlaintextPassword(
-            this.activePassword_!.entry.getAnyId(),
-            chrome.passwordsPrivate.PlaintextReason.VIEW)
-        .then(password => {
-          this.set('activePassword_.entry.password', password);
-          this.requestedDialogMode_ = PasswordDialogMode.PASSWORD_VIEW;
-          this.activeDialogAnchor_ = target;
-          this.showPasswordEditDialog_ = true;
-        });
-  }
-
-  private passwordRemoveDialogPasswordsRemovedHandler_(
+  override onPasswordRemoveDialogPasswordsRemoved(
       event: PasswordRemoveDialogPasswordsRemovedEvent) {
+    super.onPasswordRemoveDialogPasswordsRemoved(event);
     this.displayRemovalNotification_(
         event.detail.removedFromAccount, event.detail.removedFromDevice);
   }
@@ -258,7 +254,7 @@ export class PasswordsListHandlerElement extends
             this.set('activePassword_.entry.password', password);
             this.requestedDialogMode_ = PasswordDialogMode.EDIT;
             this.showPasswordEditDialog_ = true;
-          });
+          }, () => {});
     } else {
       this.requestedDialogMode_ = PasswordDialogMode.FEDERATED_VIEW;
       this.showPasswordEditDialog_ = true;
@@ -306,32 +302,21 @@ export class PasswordsListHandlerElement extends
         .then((_: string) => {
           this.activePassword_ = null;
           this.displayCopyNotification_();
-        });
+        }, () => {});
 
     this.$.menu.close();
   }
 
-  /**
-   * Handler for the remove option in the overflow menu. If the password only
-   * exists in one location, deletes it directly. Otherwise, opens the remove
-   * dialog to allow choosing from which locations to remove.
-   */
-  private onMenuRemovePasswordTap_() {
+  /** Handler for the remove option in the overflow menu. */
+  private onMenuRemovePasswordClick_() {
     this.$.menu.close();
-
-    if (this.activePassword_!.entry.isPresentOnDevice() &&
-        this.activePassword_!.entry.isPresentInAccount()) {
-      this.showPasswordRemoveDialog_ = true;
+    const password = this.activePassword_!.entry;
+    assert(password);
+    if (!this.removePassword(password)) {
       return;
     }
-
-    const idToRemove = this.activePassword_!.entry.isPresentInAccount() ?
-        this.activePassword_!.entry.accountId :
-        this.activePassword_!.entry.deviceId;
-    this.passwordManager_.removeSavedPassword(idToRemove!);
     this.displayRemovalNotification_(
-        this.activePassword_!.entry.isPresentInAccount(),
-        this.activePassword_!.entry.isPresentOnDevice());
+        password.isPresentInAccount(), password.isPresentOnDevice());
     this.activePassword_ = null;
   }
 
@@ -392,8 +377,8 @@ export class PasswordsListHandlerElement extends
     this.activeDialogAnchor_ = null;
   }
 
-  private onPasswordRemoveDialogClosed_() {
-    this.showPasswordRemoveDialog_ = false;
+  override onPasswordRemoveDialogClose() {
+    super.onPasswordRemoveDialogClose();
     this.activePassword_ = null;
 
     // A removal possibly happened, so don't reset the focus.

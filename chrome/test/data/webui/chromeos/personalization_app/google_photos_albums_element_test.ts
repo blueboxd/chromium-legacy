@@ -5,8 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {getCountText, GooglePhotosAlbum, GooglePhotosAlbums, initializeGooglePhotosData, PersonalizationRouter, WallpaperGridItem} from 'chrome://personalization/trusted/personalization_app.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {getCountText, GooglePhotosAlbum, GooglePhotosAlbums, initializeGooglePhotosData, PersonalizationActionName, PersonalizationRouter, SetErrorAction, WallpaperGridItem} from 'chrome://personalization/trusted/personalization_app.js';
 import {assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
@@ -19,14 +18,6 @@ suite('GooglePhotosAlbumsTest', function() {
   let googlePhotosAlbumsElement: GooglePhotosAlbums|null;
   let personalizationStore: TestPersonalizationStore;
   let wallpaperProvider: TestWallpaperProvider;
-
-  /**
-   * Returns the match for |selector| in |googlePhotosAlbumsElement|'s shadow
-   * DOM.
-   */
-  function querySelector(selector: string): Element|null {
-    return googlePhotosAlbumsElement!.shadowRoot!.querySelector(selector);
-  }
 
   /**
    * Returns all matches for |selector| in |googlePhotosAlbumsElement|'s shadow
@@ -45,8 +36,6 @@ suite('GooglePhotosAlbumsTest', function() {
   }
 
   setup(() => {
-    loadTimeData.overrideValues({'isGooglePhotosIntegrationEnabled': true});
-
     const mocks = baseSetup();
     personalizationStore = mocks.personalizationStore;
     personalizationStore.setReducersEnabled(true);
@@ -82,11 +71,6 @@ suite('GooglePhotosAlbumsTest', function() {
 
     // Set values returned by |wallpaperProvider|.
     wallpaperProvider.setGooglePhotosAlbums(albums);
-    wallpaperProvider.setGooglePhotosCount(
-        albums.reduce((photosCount, album) => {
-          photosCount += album.photoCount;
-          return photosCount;
-        }, 0));
 
     // Initialize |googlePhotosAlbumsElement|.
     googlePhotosAlbumsElement =
@@ -116,6 +100,57 @@ suite('GooglePhotosAlbumsTest', function() {
     });
   });
 
+
+  [true, false].forEach(
+      (dismissFromUser: boolean) =>
+          test('displays error when albums fail to load', async () => {
+            // Set values returned by |wallpaperProvider|.
+            wallpaperProvider.setGooglePhotosAlbums(undefined);
+
+            // Initialize |googlePhotosAlbumsElement|.
+            googlePhotosAlbumsElement =
+                initElement(GooglePhotosAlbums, {hidden: false});
+            await waitAfterNextRender(googlePhotosAlbumsElement);
+
+            // Initialize Google Photos data in the |personalizationStore| and
+            // expect an |error|.
+            personalizationStore.expectAction(
+                PersonalizationActionName.SET_ERROR);
+            await initializeGooglePhotosData(
+                wallpaperProvider, personalizationStore);
+            const {error} =
+                await personalizationStore.waitForAction(
+                    PersonalizationActionName.SET_ERROR) as SetErrorAction;
+
+            // Verify |error| expectations.
+            assertEquals(error.message, 'Something went wrong.');
+            assertEquals(error.dismiss?.message, 'Retry');
+            assertNotEquals(error.dismiss?.callback, undefined);
+
+            wallpaperProvider.reset();
+
+            // Simulate dismissal of |error| conditionally |fromUser| and verify
+            // expected interactions with wallpaper provider.
+            error.dismiss?.callback?.(/*fromUser=*/ dismissFromUser);
+            await new Promise<void>(resolve => setTimeout(resolve));
+            assertEquals(
+                wallpaperProvider.getCallCount('fetchGooglePhotosAlbums'),
+                dismissFromUser ? 1 : 0);
+
+            wallpaperProvider.reset();
+
+            // Simulate hiding |googlePhotosAlbumsElement| and verify the
+            // |error| is dismissed though not |fromUser|.
+            const dismissCallbackPromise = new Promise<boolean>(resolve => {
+              personalizationStore.data.error!.dismiss!.callback = resolve;
+            });
+            googlePhotosAlbumsElement.hidden = true;
+            assertEquals(await dismissCallbackPromise, /*fromUser=*/ false);
+            await new Promise<void>(resolve => setTimeout(resolve));
+            assertEquals(
+                wallpaperProvider.getCallCount('fetchGooglePhotosAlbums'), 0);
+          }));
+
   test('displays placeholders until albums are present', async () => {
     // Prepare Google Photos data.
     const photosCount = 5;
@@ -137,7 +172,13 @@ suite('GooglePhotosAlbumsTest', function() {
     const albumSelector = `${selector}:not([placeholder])`;
     const placeholderSelector = `${selector}[placeholder]`;
     assertEquals(querySelectorAll(albumSelector)!.length, 0);
-    assertNotEquals(querySelectorAll(placeholderSelector)!.length, 0);
+    const placeholderEls = querySelectorAll(placeholderSelector);
+    assertNotEquals(placeholderEls!.length, 0);
+
+    // Placeholders should be aria-labeled.
+    placeholderEls!.forEach(placeholderEl => {
+      assertEquals(placeholderEl.getAttribute('aria-label'), 'Loading');
+    });
 
     // Mock singleton |PersonalizationRouter|.
     const router = TestBrowserProxy.fromClass(PersonalizationRouter);
@@ -150,30 +191,31 @@ suite('GooglePhotosAlbumsTest', function() {
     };
 
     // Clicking a placeholder should do nothing.
-    (querySelector(placeholderSelector) as HTMLElement).click();
+    (placeholderEls![0] as HTMLElement).click();
     await new Promise<void>(resolve => setTimeout(resolve));
     assertEquals(selectedGooglePhotosAlbum, undefined);
 
     // Provide Google Photos data.
-    personalizationStore.data.wallpaper.googlePhotos.count = photosCount;
     personalizationStore.data.wallpaper.googlePhotos.albums = albums;
     personalizationStore.notifyObservers();
 
     // Only albums should be present.
     await waitAfterNextRender(googlePhotosAlbumsElement);
-    assertNotEquals(querySelectorAll(albumSelector)!.length, 0);
+    const albumEls = querySelectorAll(albumSelector);
+    assertNotEquals(albumEls!.length, 0);
     assertEquals(querySelectorAll(placeholderSelector)!.length, 0);
 
+    // Albums should be aria-labeled.
+    albumEls!.forEach((albumEl, i) => {
+      assertEquals(albumEl.getAttribute('aria-label'), albums[i]!.title);
+    });
+
     // Clicking an album should do something.
-    (querySelector(albumSelector) as HTMLElement).click();
+    (albumEls![0] as HTMLElement).click();
     assertEquals(selectedGooglePhotosAlbum, albums[0]);
   });
 
   test('incrementally loads albums', async () => {
-    // Set photos count returned by |wallpaperProvider|.
-    const photosCount = 200;
-    wallpaperProvider.setGooglePhotosCount(photosCount);
-
     // Set initial list of albums returned by |wallpaperProvider|.
     const albumsCount = 200;
     let nextAlbumId = 1;
@@ -182,7 +224,7 @@ suite('GooglePhotosAlbumsTest', function() {
           return {
             id: `id-${nextAlbumId}`,
             title: `title-${nextAlbumId}`,
-            photoCount: photosCount / albumsCount,
+            photoCount: 1,
             preview: {url: `url-${nextAlbumId++}`}
           };
         }));
@@ -207,7 +249,7 @@ suite('GooglePhotosAlbumsTest', function() {
           return {
             id: `id-${nextAlbumId}`,
             title: `title-${nextAlbumId}`,
-            photoCount: photosCount / albumsCount,
+            photoCount: 1,
             preview: {url: `url-${nextAlbumId++}`}
           };
         }));

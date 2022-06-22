@@ -26,6 +26,24 @@ constexpr int64_t kUnifiedDisplayId = -10;
 // Invalid year of manufacture of the display.
 constexpr int32_t kInvalidYearOfManufacture = -1;
 
+// The minimum HDR headroom for an HDR capable display. On macOS, when a
+// display's brightness is set to maximum, it can report that there is no
+// HDR headroom via maximumExtendedDynamicRangeColorComponentValue being 1.
+// On Windows, when the SDR slider is at its maximum, it is possible for the
+// reported SDR white level to be brighter than the maximum brightness of the
+// display. These situations can create appearance that a display is rapidly
+// fluctuating between being HDR capable and HDR incapable. To avoid this
+// confusion, set this as the minimum maximum relative luminance for HDR
+// capable displays.
+constexpr float kMinHDRCapableMaxLuminanceRelative = 1.0625;
+// Set SDR content to 75% of display brightness so SDR colors look good
+// and there is no perceived brightness change during SDR-HDR.
+constexpr float kSDRJoint = 0.75;
+
+// Set the HDR level multiplier to 4x so that the bright areas of the videos
+// are not overexposed, and maintain local contrast.
+constexpr float kHDRLevel = 4.0;
+
 // Used to describe the state of a multi-display configuration.
 enum MultipleDisplayState {
   MULTIPLE_DISPLAY_STATE_INVALID,

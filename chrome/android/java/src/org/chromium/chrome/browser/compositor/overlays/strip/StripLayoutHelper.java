@@ -51,7 +51,9 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class handles managing the positions and behavior of all tabs in a tab strip.  It is
@@ -176,6 +178,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
     private Context mContext;
 
+    // Id of the selected tab that was closed.
+    private Integer mSelectedTabIdWhenTabClosed;
+    private Boolean mClosedAllTabs;
+    private final Set<Integer> mTabsClosedFromTabStrip;
+
     /**
      * Creates an instance of the {@link StripLayoutHelper}.
      * @param context         The current Android {@link Context}.
@@ -189,6 +196,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             LayoutRenderHost renderHost, boolean incognito, CompositorButton modelSelectorButton) {
         mTabOverlapWidth = TAB_OVERLAP_WIDTH_DP;
         mNewTabButtonWidth = NEW_TAB_BUTTON_WIDTH_DP;
+        mTabsClosedFromTabStrip = new HashSet<>();
         mModelSelectorButton = modelSelectorButton;
 
         mRightMargin = LocalizationUtils.isLayoutRtl() ? 0 : mNewTabButtonWidth;
@@ -572,19 +580,45 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     /**
      * Called when all tabs are closed at once.
      */
-    public void allTabsClosed() {
+    public void willCloseAllTabs(boolean tabSwitcherActive) {
+        if (!mIncognito) {
+            int selTabIndex = mModel.index();
+            mClosedAllTabs = true;
+            if (selTabIndex > -1 && selTabIndex < mModel.getCount()) {
+                Tab tab = mModel.getTabAt(selTabIndex);
+                if (tab != null) {
+                    mSelectedTabIdWhenTabClosed = tab.getId();
+                    if (!tabSwitcherActive) mTabsClosedFromTabStrip.add(tab.getId());
+                }
+            }
+        }
         computeAndUpdateTabOrders(true);
         mUpdateHost.requestUpdate();
     }
 
     /**
-     * Called when a tab close has been undone and the tab has been restored.
+     * Called when a tab close has been undone and the tab has been restored. This also reselects
+     * the last tab the user was on before the tab was closed.
      * @param time The current time of the app in ms.
      * @param id   The id of the Tab.
      */
     public void tabClosureCancelled(long time, int id) {
         final boolean selected = TabModelUtils.getCurrentTabId(mModel) == id;
         tabCreated(time, id, Tab.INVALID_TAB_ID, selected);
+        if (mSelectedTabIdWhenTabClosed != null && mSelectedTabIdWhenTabClosed == id) {
+            TabModelUtils.setIndex(mModel,
+                    TabModelUtils.getTabIndexById(mModel, mSelectedTabIdWhenTabClosed), false);
+            resetSelectionsForUndo();
+        }
+        if (mTabsClosedFromTabStrip.contains(id)) {
+            RecordUserAction.record("TabletTabStrip.UndoCloseTab");
+            mTabsClosedFromTabStrip.remove(id);
+        }
+    }
+
+    protected void tabClosureCommited() {
+        resetSelectionsForUndo();
+        mTabsClosedFromTabStrip.clear();
     }
 
     /**
@@ -619,11 +653,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         }
 
         if (!mShouldCascadeTabs) {
-            int selIndex = mModel.index();
-            if (CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS) && !selected
-                && selIndex >= 0 && selIndex < mStripTabs.length) {
+            if (CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS)
+                    && !selected) {
                 // Prioritize focusing on selected tab over newly created unselected tabs.
-                fastExpandTab = mStripTabs[selIndex];
+                fastExpandTab = mStripTabs[mModel.index()];
             } else {
                 fastExpandTab = tab;
             }
@@ -669,10 +702,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         for (int i = 0; i < count; i++) {
             final StripLayoutTab tab = mStripTabs[i];
             if (TabUiFeatureUtilities.getTabMinWidth() == TAB_WIDTH_MEDIUM) {
-                mStripTabs[i].setCanShowCloseButton(shouldShowCloseButton(tab, i));
+                mStripTabs[i].setCanShowCloseButton(shouldShowCloseButton(tab));
             } else if (TabUiFeatureUtilities.getTabMinWidth() == TAB_WIDTH_SMALL) {
                 mStripTabs[i].setCanShowCloseButton(tab.getWidth() >= TAB_WIDTH_MEDIUM
-                        || (tab.getId() == selectedTab.getId() && shouldShowCloseButton(tab, i)));
+                        || (tab.getId() == selectedTab.getId() && shouldShowCloseButton(tab)));
             }
         }
     }
@@ -681,31 +714,19 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
      * Checks whether a tab at the edge of the strip is partially hidden, in which case the
      * close button will be hidden to avoid accidental clicks.
      * @param tab The tab to check.
-     * @param index The index of the tab.
      * @return Whether the close button should be shown for this tab.
      */
-    private boolean shouldShowCloseButton(StripLayoutTab tab, int index) {
+    private boolean shouldShowCloseButton(StripLayoutTab tab) {
         boolean tabStartHidden;
         boolean tabEndHidden;
-        boolean isLastTab = index == mStripTabs.length - 1;
         if (LocalizationUtils.isLayoutRtl()) {
-            if (isLastTab) {
-                tabStartHidden = tab.getDrawX() + mTabOverlapWidth
-                        < mNewTabButton.getX() + mNewTabButton.getWidth();
-            } else {
-                tabStartHidden =
-                        tab.getDrawX() + mTabOverlapWidth < getCloseBtnVisibilityThreshold(false);
-            }
+            tabStartHidden =
+                    tab.getDrawX() + mTabOverlapWidth < getCloseBtnVisibilityThreshold(false);
             tabEndHidden = tab.getDrawX() > mWidth - getCloseBtnVisibilityThreshold(true);
         } else {
             tabStartHidden = tab.getDrawX() + tab.getWidth() < getCloseBtnVisibilityThreshold(true);
-            if (isLastTab) {
-                tabEndHidden =
-                        tab.getDrawX() + tab.getWidth() - mTabOverlapWidth > mNewTabButton.getX();
-            } else {
-                tabEndHidden = (tab.getDrawX() + tab.getWidth() - mTabOverlapWidth
-                        > mWidth - getCloseBtnVisibilityThreshold(false));
-            }
+            tabEndHidden = (tab.getDrawX() + tab.getWidth() - mTabOverlapWidth
+                    > mWidth - getCloseBtnVisibilityThreshold(false));
         }
         return !tabStartHidden && !tabEndHidden;
     }
@@ -987,7 +1008,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         tab.setIsDying(true);
 
         // 3. Fake a selection on the next tab now.
-        Tab nextTab = mModel.getNextTabIfClosed(tab.getId());
+        Tab nextTab = mModel.getNextTabIfClosed(tab.getId(), /*uponExit=*/false);
         if (nextTab != null) tabSelected(time, nextTab.getId(), tab.getId());
     }
 
@@ -1024,6 +1045,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             clickedTab.getCloseButton().handleClick(time);
         } else {
             RecordUserAction.record("MobileTabSwitched.TabletTabStrip");
+            // Undoing a selected tab closure, after manually switching tabs shouldn't switch focus
+            // to the reopened tab.
+            resetSelectionsForUndo();
             recordTabSwitchTimeHistogram();
             clickedTab.handleClick(time);
         }
@@ -1412,6 +1436,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             boolean canExpandLeft, boolean canExpandRight, boolean selected) {
         if (tab == null) return 0.f;
         final int selIndex = mModel.index();
+        StripLayoutTab currentlyFocusedTab = mStripTabs[selIndex];
+
         final int index = TabModelUtils.getTabIndexById(mModel, tab.getId());
 
         // 1. The selected tab is always visible.  Early out unless we want to unstack it.
@@ -1431,10 +1457,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 3. Account for the selected tab always being visible. Need to buffer by one extra
         // tab width depending on if the tab is to the left or right of the selected tab.
-        StripLayoutTab currentlyFocusedTab = null;
-        if (selIndex >= 0 && selIndex < mStripTabs.length) {
-            currentlyFocusedTab = mStripTabs[selIndex];
-        }
         if (CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS)
                 && currentlyFocusedTab != null
                 && isSelectedTabCompletelyVisible(currentlyFocusedTab) && !selected) {
@@ -1721,6 +1743,39 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     protected void scrollTabToView(long time, boolean requestUpdate) {
         bringSelectedTabToVisibleArea(time, true);
         if (requestUpdate) mUpdateHost.requestUpdate();
+    }
+
+    /**
+     * When a tab is being closed, this keeps track of whether it was selected or not. If the tab
+     * closure is undone, that helps us decide whether to select it or not.
+     * @param tabId Id of the tab that will be closed.
+     * @param tabSwitcherActive If the tab switcher interface is showing. This is used to identify
+     *         the tabs closed from the tab strip for metrics.
+     */
+    protected void willCloseTab(int tabId, boolean tabSwitcherActive) {
+        // If all tabs are closed, return early as this method gets called multiple times and the
+        // mModel.index() value is inaccurate. allTabsClosed() method handles that case.
+        if (mClosedAllTabs != null) return;
+        if (!tabSwitcherActive) {
+            mTabsClosedFromTabStrip.add(tabId);
+        }
+
+        int selTabIndex = mModel.index();
+        if (selTabIndex > -1 && selTabIndex < mModel.getCount()) {
+            Tab tab = mModel.getTabAt(selTabIndex);
+            if (tab != null && tabId == tab.getId()) {
+                mSelectedTabIdWhenTabClosed = tabId;
+            }
+        }
+    }
+
+    /**
+     * After a tab closure has been committed or user manually selects a different tab, these values
+     * should be reset so the next undo closure action does not reselect the reopened tab.
+     */
+    private void resetSelectionsForUndo() {
+        mSelectedTabIdWhenTabClosed = null;
+        mClosedAllTabs = null;
     }
 
     @SuppressLint("HandlerLeak")

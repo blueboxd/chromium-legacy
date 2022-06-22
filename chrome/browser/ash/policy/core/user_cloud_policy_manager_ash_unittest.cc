@@ -37,7 +37,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/enterprise/browser/reporting/report_scheduler.h"
@@ -73,33 +73,29 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace em = enterprise_management;
-
-using testing::_;
-using testing::AnyNumber;
-using testing::AtLeast;
-using testing::AtMost;
-using testing::DoAll;
-using testing::Mock;
-using testing::SaveArg;
+namespace policy {
 
 namespace {
+
+namespace em = ::enterprise_management;
+
+using ::testing::_;
+using ::testing::DoAll;
+using ::testing::Mock;
+using ::testing::SaveArg;
 
 const char kUMAReregistrationResult[] =
     "Enterprise.UserPolicyChromeOS.ReregistrationResult";
 
 enum PolicyRequired { POLICY_NOT_REQUIRED, POLICY_REQUIRED };
 
-void SendJobOKNowForBinding(
-    policy::FakeDeviceManagementService* service,
-    policy::DeviceManagementService::JobForTesting job,
-    const enterprise_management::DeviceManagementResponse& response) {
+void SendJobOKNowForBinding(FakeDeviceManagementService* service,
+                            DeviceManagementService::JobForTesting job,
+                            const em::DeviceManagementResponse& response) {
   service->SendJobOKNow(&job, response);
 }
 
 }  // namespace
-
-namespace policy {
 
 using PolicyEnforcement = UserCloudPolicyManagerAsh::PolicyEnforcement;
 

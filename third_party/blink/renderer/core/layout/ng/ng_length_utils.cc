@@ -860,14 +860,6 @@ LogicalSize ComputeReplacedSize(const NGBlockNode& node,
                                 ReplacedSizeMode mode) {
   DCHECK(node.IsReplaced());
 
-  // TODO(crbug.com/1203464): <frame> elements can be dynamically inserted
-  // into the DOM even though they really only make sense within a <frameset>.
-  // Today, outside a <frameset> they are always 0x0 (even ignoring
-  // border/padding). When outside a <frameset> they likely should create a
-  // LayoutInline instead.
-  if (node.IsFrame())
-    return LogicalSize();
-
   LogicalSize size_override = node.GetReplacedSizeOverrideIfAny(space);
   if (!size_override.IsEmpty()) {
     DCHECK_GE(size_override.block_size, border_padding.BlockSum());
@@ -1244,12 +1236,8 @@ NGBoxStrut ComputeMarginsFor(const NGConstraintSpace& constraint_space,
 namespace {
 
 NGBoxStrut ComputeBordersInternal(const ComputedStyle& style) {
-  NGBoxStrut borders;
-  borders.inline_start = LayoutUnit(style.BorderStartWidth());
-  borders.inline_end = LayoutUnit(style.BorderEndWidth());
-  borders.block_start = LayoutUnit(style.BorderBeforeWidth());
-  borders.block_end = LayoutUnit(style.BorderAfterWidth());
-  return borders;
+  return {style.BorderStartWidth(), style.BorderEndWidth(),
+          style.BorderBeforeWidth(), style.BorderAfterWidth()};
 }
 
 }  // namespace
@@ -1274,6 +1262,10 @@ NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
 }
 
 NGBoxStrut ComputeBordersForInline(const ComputedStyle& style) {
+  return ComputeBordersInternal(style);
+}
+
+NGBoxStrut ComputeNonCollapsedTableBorders(const ComputedStyle& style) {
   return ComputeBordersInternal(style);
 }
 
@@ -1561,6 +1553,12 @@ LogicalSize CalculateReplacedChildPercentageSize(
   // Anonymous block or spaces should pass the percent size straight through.
   if (space.IsAnonymous() || node.IsAnonymousBlock())
     return space.ReplacedPercentageResolutionSize();
+
+  // Table cell children don't apply the "percentage-quirk". I.e. if their
+  // percentage resolution block-size is indefinite, they don't pass through
+  // their parent's percentage resolution block-size.
+  if (space.IsTableCellChild())
+    return child_available_size;
 
   // Replaced descendants of a table-cell which has a definite block-size,
   // always resolve their percentages against this size (even during the

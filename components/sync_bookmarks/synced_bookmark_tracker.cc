@@ -235,8 +235,6 @@ void SyncedBookmarkTracker::Update(const SyncedBookmarkTrackerEntity* entity,
                 mutable_entity->metadata()->mutable_specifics_hash());
   mutable_entity->metadata()->set_bookmark_favicon_hash(
       base::PersistentHash(specifics.bookmark().favicon()));
-  // TODO(crbug.com/516866): in case of conflict, the entity might exist in
-  // |ordered_local_tombstones_| as well if it has been locally deleted.
 }
 
 void SyncedBookmarkTracker::UpdateServerVersion(
@@ -305,8 +303,6 @@ void SyncedBookmarkTracker::IncrementSequenceNumber(
   DCHECK(!entity->bookmark_node() ||
          !entity->bookmark_node()->is_permanent_node());
 
-  // TODO(crbug.com/516866): Update base hash specifics here if the entity is
-  // not already out of sync.
   AsMutableEntity(entity)->metadata()->set_sequence_number(
       entity->metadata()->sequence_number() + 1);
 }
@@ -677,7 +673,6 @@ void SyncedBookmarkTracker::UpdateUponCommitResponse(
     const std::string& sync_id,
     int64_t server_version,
     int64_t acked_sequence_number) {
-  // TODO(crbug.com/516866): Update specifics if we decide to keep it.
   DCHECK(entity);
 
   SyncedBookmarkTrackerEntity* mutable_entity = AsMutableEntity(entity);
@@ -774,32 +769,22 @@ void SyncedBookmarkTracker::ClearSpecificsHashForTest(
 
 void SyncedBookmarkTracker::CheckAllNodesTracked(
     const bookmarks::BookmarkModel* bookmark_model) const {
-  // TODO(crbug.com/516866): The method is added to debug some crashes.
-  // Since it's relatively expensive, it should run on debug enabled
-  // builds only after the root cause is found.
-  CHECK(GetEntityForBookmarkNode(bookmark_model->bookmark_bar_node()));
-  CHECK(GetEntityForBookmarkNode(bookmark_model->other_node()));
-  CHECK(GetEntityForBookmarkNode(bookmark_model->mobile_node()));
+#if DCHECK_IS_ON()
+  DCHECK(GetEntityForBookmarkNode(bookmark_model->bookmark_bar_node()));
+  DCHECK(GetEntityForBookmarkNode(bookmark_model->other_node()));
+  DCHECK(GetEntityForBookmarkNode(bookmark_model->mobile_node()));
 
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
       bookmark_model->root_node());
   while (iterator.has_next()) {
     const bookmarks::BookmarkNode* node = iterator.Next();
     if (!bookmark_model->client()->CanSyncNode(node)) {
-      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
-      // Should be converted to a DCHECK after the root cause if found.
-      CHECK(!GetEntityForBookmarkNode(node));
+      DCHECK(!GetEntityForBookmarkNode(node));
       continue;
     }
-    // Root node is usually tracked, unless the sync data has been provided by
-    // the USS migrator.
-    if (node == bookmark_model->root_node()) {
-      continue;
-    }
-    // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
-    // Should be converted to a DCHECK after the root cause if found.
-    CHECK(GetEntityForBookmarkNode(node));
+    DCHECK(GetEntityForBookmarkNode(node));
   }
+#endif  // DCHECK_IS_ON()
 }
 
 }  // namespace sync_bookmarks

@@ -7,6 +7,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -176,7 +177,8 @@ void LinkStyle::AddPendingSheet(PendingSheetType type) {
 
   if (pending_sheet_type_ == PendingSheetType::kNonBlocking)
     return;
-  GetDocument().GetStyleEngine().AddPendingSheet(*owner_);
+  GetDocument().GetStyleEngine().AddPendingBlockingSheet(*owner_,
+                                                         pending_sheet_type_);
 }
 
 void LinkStyle::RemovePendingSheet() {
@@ -192,7 +194,7 @@ void LinkStyle::RemovePendingSheet() {
     return;
   }
 
-  GetDocument().GetStyleEngine().RemovePendingSheet(*owner_);
+  GetDocument().GetStyleEngine().RemovePendingBlockingSheet(*owner_, type);
 }
 
 void LinkStyle::SetDisabledState(bool disabled) {
@@ -275,18 +277,14 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
     media_query_matches = evaluator.Eval(*media);
   }
 
-  bool is_in_body = owner_->IsDescendantOf(owner_->GetDocument().body());
-
   // Don't hold up layout tree construction and script execution on
   // stylesheets that are not needed for the layout at the moment.
   bool critical_style = media_query_matches && !owner_->IsAlternate();
-  bool render_blocking =
-      critical_style && (owner_->IsCreatedByParser() ||
-                         (RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
-                          owner_->blocking().IsRenderBlocking()));
+  auto type_and_behavior = ComputePendingSheetTypeAndRenderBlockingBehavior(
+      *owner_, critical_style, owner_->IsCreatedByParser());
+  PendingSheetType type = type_and_behavior.first;
 
-  AddPendingSheet(render_blocking ? PendingSheetType::kBlocking
-                                  : PendingSheetType::kNonBlocking);
+  AddPendingSheet(type);
 
   // Load stylesheets that are not needed for the layout immediately with low
   // priority.  When the link element is created by scripts, load the
@@ -294,14 +292,7 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   FetchParameters::DeferOption defer_option =
       !critical_style ? FetchParameters::kLazyLoad : FetchParameters::kNoDefer;
 
-  render_blocking_behavior_ =
-      !critical_style
-          ? RenderBlockingBehavior::kNonBlocking
-          : (render_blocking
-                 ? (is_in_body ? RenderBlockingBehavior::kInBodyParserBlocking
-                               : RenderBlockingBehavior::kBlocking)
-                 : RenderBlockingBehavior::kNonBlockingDynamic);
-
+  render_blocking_behavior_ = type_and_behavior.second;
   owner_->LoadStylesheet(params, charset, defer_option, this,
                          render_blocking_behavior_);
 
@@ -387,6 +378,15 @@ void LinkStyle::OwnerRemoved() {
 
   if (sheet_)
     ClearSheet();
+}
+
+void LinkStyle::UnblockRenderingForPendingSheet() {
+  DCHECK(StyleSheetIsLoading());
+  if (pending_sheet_type_ == PendingSheetType::kDynamicRenderBlocking) {
+    GetDocument().GetStyleEngine().RemovePendingBlockingSheet(
+        *owner_, pending_sheet_type_);
+    pending_sheet_type_ = PendingSheetType::kNonBlocking;
+  }
 }
 
 void LinkStyle::Trace(Visitor* visitor) const {

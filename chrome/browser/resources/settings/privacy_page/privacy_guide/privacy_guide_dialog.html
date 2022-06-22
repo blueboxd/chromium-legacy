@@ -12,7 +12,14 @@
   cr-dialog::part(dialog) {
     border-radius: 0;
     height: 100vh;
+    overflow: auto;
     width: 100vw;
+  }
+
+  cr-dialog::part(wrapper),
+  cr-dialog::part(body-container) {
+    max-height: none;
+    overflow: visible;
   }
 
   settings-privacy-guide-page {
@@ -38,6 +45,6 @@
     <h1 class="cr-title-text">$i18n{privacyGuideLabel}</h1>
   </div>
   <settings-privacy-guide-page on-close="onClose_" prefs="{{prefs}}"
-      slot="body">
+      slot="body" is-privacy-guide-v2="true">
   </settings-privacy-guide-page>
 </cr-dialog>

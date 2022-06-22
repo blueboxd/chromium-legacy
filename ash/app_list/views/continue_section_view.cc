@@ -90,8 +90,10 @@ ContinueSectionView::ContinueSectionView(
     SearchResultPageDialogController* dialog_controller,
     int columns,
     bool tablet_mode)
-    : dialog_controller_(dialog_controller), tablet_mode_(tablet_mode) {
-  DCHECK(view_delegate);
+    : view_delegate_(view_delegate),
+      dialog_controller_(dialog_controller),
+      tablet_mode_(tablet_mode) {
+  DCHECK(view_delegate_);
 
   AppListModelProvider::Get()->AddObserver(this);
 
@@ -153,6 +155,12 @@ bool ContinueSectionView::EnableContinueSectionFileRemovalMetrics() {
   return g_continue_section_files_shown;
 }
 
+// static
+void ContinueSectionView::
+    ResetContinueSectionFileRemovalMetricEnabledForTest() {
+  g_continue_section_files_shown = false;
+}
+
 void ContinueSectionView::UpdateSuggestionTasks() {
   suggestions_container_->SetResults(
       AppListModelProvider::Get()->search_model()->results());
@@ -164,7 +172,7 @@ void ContinueSectionView::OnSearchResultContainerResultsChanged() {
 }
 
 bool ContinueSectionView::HasMinimumFilesToShow() const {
-  return suggestions_container_->num_results() >=
+  return suggestions_container_->num_file_results() >=
          (tablet_mode_ ? kMinFilesForContinueSectionTabletMode
                        : kMinFilesForContinueSectionClamshellMode);
 }
@@ -229,8 +237,8 @@ void ContinueSectionView::AnimateDismissToast(base::RepeatingClosure callback) {
   PrepareForLayerAnimation(privacy_toast_);
 
   views::AnimationBuilder animation_builder;
-  animation_builder.OnEnded(std::move(callback));
-  animation_builder.OnAborted(std::move(callback));
+  animation_builder.OnEnded(callback);
+  animation_builder.OnAborted(callback);
 
   animation_builder
       .SetPreemptionStrategy(
@@ -400,6 +408,18 @@ void ContinueSectionView::MaybeAnimateOutPrivacyNotice() {
 }
 
 void ContinueSectionView::UpdateElementsVisibility() {
+  // If the user chose to hide the section, set visibility false and reset the
+  // privacy toast.
+  if (view_delegate_->ShouldHideContinueSection()) {
+    SetVisible(false);
+    if (privacy_toast_) {
+      RemoveChildViewT(privacy_toast_);
+      privacy_toast_ = nullptr;
+      nudge_controller_->SetPrivacyNoticeShown(false);
+      privacy_notice_shown_timer_.AbandonAndStop();
+    }
+    return;
+  }
   const bool show_files_section = ShouldShowFilesSection();
   const bool show_privacy_notice = ShouldShowPrivacyNotice();
 
@@ -420,6 +440,14 @@ void ContinueSectionView::UpdateElementsVisibility() {
 
 void ContinueSectionView::AddedToWidget() {
   GetFocusManager()->AddFocusChangeListener(this);
+}
+
+void ContinueSectionView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  if (continue_label_) {
+    bubble_utils::ApplyStyle(continue_label_,
+                             bubble_utils::LabelStyle::kSubtitle);
+  }
 }
 
 void ContinueSectionView::RemovedFromWidget() {

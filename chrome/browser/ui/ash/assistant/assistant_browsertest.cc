@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/components/audio/cras_audio_handler.h"
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/test/app_list_test_api.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -13,6 +16,7 @@
 #include "chromeos/assistant/test_support/expect_utils.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/assistant/public/cpp/switches.h"
 #include "chromeos/services/assistant/service.h"
 #include "content/public/test/browser_test.h"
 
@@ -48,6 +52,11 @@ class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
     // TODO(b/190633242): enable sandbox in browser tests.
     feature_list_.InitAndDisableFeature(
         chromeos::assistant::features::kEnableLibAssistantSandbox);
+
+    // Do not log to file in test. Otherwise multiple tests may create/delete
+    // the log file at the same time. See http://crbug.com/1307868.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableLibAssistantLogfile);
   }
 
   AssistantBrowserTest(const AssistantBrowserTest&) = delete;
@@ -60,6 +69,13 @@ class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
   void ShowAssistantUi() {
     if (!tester()->IsVisible())
       tester()->PressAssistantKey();
+
+    // Make sure that the app list bubble finished showing when productivity
+    // launcher is enabled.
+    if (ash::features::IsProductivityLauncherEnabled()) {
+      ash::AppListTestApi().WaitForBubbleWindow(
+          /*wait_for_opening_animation=*/false);
+    }
   }
 
   void CloseAssistantUi() {
@@ -132,12 +148,18 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
 
   tester()->PressAssistantKey();
 
+  // Make sure that the app list bubble finished showing when productivity
+  // launcher is enabled (the app list view gets created asynchronously for
+  // productivity launcher).
+  if (ash::features::IsProductivityLauncherEnabled()) {
+    ash::AppListTestApi().WaitForBubbleWindow(
+        /*wait_for_opening_animation=*/false);
+  }
+
   EXPECT_TRUE(tester()->IsVisible());
 }
 
-// TODO(b/184802501): Fix this flaky test.
-IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
-                       DISABLED_ShouldDisplayTextResponse) {
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayTextResponse) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -152,9 +174,7 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
   });
 }
 
-// Flaky. See https://crbug.com/1196560.
-IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
-                       DISABLED_ShouldDisplayCardResponse) {
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayCardResponse) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();

@@ -765,13 +765,13 @@ void AppListItemView::ShowContextMenuForViewImpl(
     return;
   waiting_for_context_menu_options_ = true;
 
-  // If this item view is in the AppsGridView with the app sort feature enabled,
-  // request the context menu model to add sort options that can sort the app
-  // list.
-  bool add_sort_options = features::IsLauncherAppSortEnabled() &&
-                          context_ == Context::kAppsGridView;
+  // When the context menu comes from the apps grid it has sorting options. When
+  // it comes from recent apps it has an option to hide the continue section.
+  AppListItemContext item_context = context_ == Context::kAppsGridView
+                                        ? AppListItemContext::kAppsGrid
+                                        : AppListItemContext::kRecentApps;
   view_delegate_->GetContextMenuModel(
-      item_weak_->id(), add_sort_options,
+      item_weak_->id(), item_context,
       base::BindOnce(&AppListItemView::OnContextMenuModelReceived,
                      weak_ptr_factory_.GetWeakPtr(), point, source_type));
 }
@@ -862,10 +862,13 @@ void AppListItemView::Layout() {
 
   gfx::Rect title_bounds = GetTitleBoundsForTargetViewBounds(
       app_list_config_, rect, title_->GetPreferredSize(), icon_scale_);
-  // Reserve space for the new install dot if it is visible. Otherwise it
-  // extends outside the app grid tile bounds and gets clipped.
-  if (new_install_dot_ && new_install_dot_->GetVisible())
-    title_bounds.Inset(gfx::Insets::TLBR(0, kNewInstallDotSize, 0, 0));
+  if (new_install_dot_ && new_install_dot_->GetVisible()) {
+    // If the new install dot is showing, and the dot would extend outside the
+    // left edge of the tile, inset the title bounds to make space for the dot.
+    int dot_x = title_bounds.x() - kNewInstallDotSize - kNewInstallDotPadding;
+    if (dot_x < 0)
+      title_bounds.Inset(gfx::Insets::TLBR(0, kNewInstallDotSize, 0, 0));
+  }
   title_->SetBoundsRect(title_bounds);
 
   if (new_install_dot_) {
@@ -1015,6 +1018,8 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
 
 void AppListItemView::OnThemeChanged() {
   views::Button::OnThemeChanged();
+  if (item_weak_)
+    item_weak_->RequestFolderIconUpdate();
   title_->SetEnabledColor(AppListColorProvider::Get()->GetAppListItemTextColor(
       grid_delegate_->IsInFolder()));
   SchedulePaint();
@@ -1103,6 +1108,37 @@ bool AppListItemView::IsNotificationIndicatorShownForTest() const {
 void AppListItemView::SetContextMenuShownCallbackForTest(
     base::RepeatingClosure closure) {
   context_menu_shown_callback_ = std::move(closure);
+}
+
+gfx::Rect AppListItemView::GetDefaultTitleBoundsForTest() {
+  return GetTitleBoundsForTargetViewBounds(
+      app_list_config_, GetContentsBounds(), title_->GetPreferredSize(),
+      icon_scale_);
+}
+
+void AppListItemView::SetMostRecentGridIndex(GridIndex new_grid_index,
+                                             int columns) {
+  if (new_grid_index == most_recent_grid_index_) {
+    has_pending_row_change_ = false;
+    return;
+  }
+
+  if (most_recent_grid_index_.IsValid()) {
+    // Set row change only for items which move to a new row and a new column.
+    // This is done because row change animations should not be shown when
+    // animating items up from the next page into a new row but on the same
+    // column, which could happen when closing a reorder toast.
+    if ((most_recent_grid_index_.slot / columns !=
+         new_grid_index.slot / columns) &&
+        (most_recent_grid_index_.slot % columns !=
+         new_grid_index.slot % columns)) {
+      has_pending_row_change_ = true;
+    } else {
+      has_pending_row_change_ = false;
+    }
+  }
+
+  most_recent_grid_index_ = new_grid_index;
 }
 
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
@@ -1243,7 +1279,7 @@ void AppListItemView::ItemIsNewInstallChanged() {
   DCHECK(item_weak_);
   if (new_install_dot_) {
     new_install_dot_->SetVisible(item_weak_->is_new_install());
-    InvalidateLayout();
+    Layout();
   }
 }
 

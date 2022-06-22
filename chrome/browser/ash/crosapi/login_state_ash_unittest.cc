@@ -21,7 +21,7 @@ void EvaluateGetSessionStateResult(base::OnceClosure closure,
                                    mojom::GetSessionStateResultPtr expected,
                                    mojom::GetSessionStateResultPtr found) {
   ASSERT_EQ(expected->which(), found->which());
-  if (expected->which() == mojom::GetSessionStateResult::Tag::ERROR_MESSAGE) {
+  if (expected->which() == mojom::GetSessionStateResult::Tag::kErrorMessage) {
     ASSERT_EQ(expected->get_error_message(), found->get_error_message());
   } else {
     ASSERT_EQ(expected->get_session_state(), found->get_session_state());
@@ -90,8 +90,7 @@ TEST_F(LoginStateAshTest, GetSessionState) {
     session_manager_->SetSessionState(test.session_state);
 
     mojom::GetSessionStateResultPtr expected_result_ptr =
-        mojom::GetSessionStateResult::New();
-    expected_result_ptr->set_session_state(test.expected);
+        mojom::GetSessionStateResult::NewSessionState(test.expected);
 
     base::RunLoop run_loop;
     login_state_remote_->GetSessionState(

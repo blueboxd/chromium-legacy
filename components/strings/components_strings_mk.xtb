@@ -472,7 +472,6 @@
 <translation id="2185836064961771414">Американски фудбал</translation>
 <translation id="2187317261103489799">Откриј (стандардно)</translation>
 <translation id="2188375229972301266">Повеќе дупки долу</translation>
-<translation id="2188852899391513400">Отркиено е дека лозинката која штотуку ја употребивте е меѓу лозинките откриени при упад во податоците. За да ја задржите безбедноста на сметките, „Управникот со лозинки на Google“ препорачува веднаш да ја промените, а потоа да ги проверите зачуваните лозинки.</translation>
 <translation id="219906046732893612">Реновирање на домот</translation>
 <translation id="2202020181578195191">Внесете важечка година на истекување</translation>
 <translation id="22081806969704220">Фиока 3</translation>
@@ -1056,6 +1055,7 @@
 <translation id="3810973564298564668">Управувај</translation>
 <translation id="3816482573645936981">Вредност (заменета)</translation>
 <translation id="382518646247711829">Ако користите прокси сервер...</translation>
+<translation id="3826050100957962900">Најавување на трети страни</translation>
 <translation id="3827112369919217609">Апсолутна</translation>
 <translation id="3827666161959873541">Семејни филмови</translation>
 <translation id="3828924085048779000">Не е дозволена празна лозинка.</translation>
@@ -1065,6 +1065,7 @@
 <translation id="3835233591525155343">Користење на уредот</translation>
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете го копчето Tab, а потоа копчето Enter за да набрзина создадете нов документ на Google</translation>
 <translation id="385051799172605136">Назад</translation>
+<translation id="3851515670389017037">Патувањата се затворени</translation>
 <translation id="3858027520442213535">Ажурирај датум и време</translation>
 <translation id="3858860766373142691">Име</translation>
 <translation id="3872834068356954457">Наука</translation>
@@ -1334,6 +1335,7 @@
 <translation id="4607603470419975064">Копче за гледање совети за Chrome, притиснете го копчето Enter за да дознаете за функциите на Chrome</translation>
 <translation id="4607608436550361748">Видете ги советите за Chrome</translation>
 <translation id="4617273035598175554">Графички и анимациски софтвер</translation>
+<translation id="4627165777145349100">Повеќе за страницава</translation>
 <translation id="4627675673814409125">Правилово не може да се постави на ниво на профил на Chrome и ќе се игнорира.</translation>
 <translation id="4628948037717959914">Фотографија</translation>
 <translation id="4631649115723685955">Со поврат на готовина</translation>
@@ -1364,6 +1366,7 @@
 <translation id="470284880436071933">Криминал и правда</translation>
 <translation id="4704732901923281920">Биолошки науки</translation>
 <translation id="4708268264240856090">Врската беше прекината</translation>
+<translation id="4709819737903924300">Патувањата се отворени на цел екран</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />да извршите дијагностика на мрежата на Windows<ph name="END_LINK" /></translation>
 <translation id="4722735765955348426">Лозинка за <ph name="USERNAME" /></translation>
@@ -1827,6 +1830,7 @@
 <translation id="5989320800837274978">Не се наведени ниту прокси-сервери ниту URL на скрипта .pac.</translation>
 <translation id="5992691462791905444">Инженерско Z-превиткување</translation>
 <translation id="5995727681868049093">Управувајте со податоците, приватноста и безбедноста на вашата сметка на Google</translation>
+<translation id="5997247540087773573">Откриено е дека лозинката која штотуку ја употребивте е меѓу лозинките откриени при упад во податоците. За да ја задржите безбедноста на сметките, Google Password Manager препорачува веднаш да ја промените и да ги проверите зачуваните лозинки.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> резултати за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6006484371116297560">Класична</translation>
 <translation id="6008122969617370890">Редослед N-до-1</translation>
@@ -1865,6 +1869,7 @@
 <translation id="6061154937977953833">Борење</translation>
 <translation id="6064217302520318294">Заклучување екран</translation>
 <translation id="6064602040258638498">Купони и попусти</translation>
+<translation id="6078813287646374487">Прикажи повеќе информации за страницава</translation>
 <translation id="6080696365213338172">Пристапивте до содржина со помош на сертификат обезбеден за администратор. Податоците што ќе ги дадете на <ph name="DOMAIN" /> може да ги пресретне администраторот.</translation>
 <translation id="6087312102907839798">Слични пребарувања</translation>
 <translation id="6094273045989040137">Стави прибелешка</translation>
@@ -1975,7 +1980,6 @@
 <translation id="643051589346665201">Променете ја лозинката на Google</translation>
 <translation id="6433490469411711332">Уредете ги информациите за контакт</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> одби да се поврзе.</translation>
-<translation id="6438025220577812695">Ќе ја променам самостојно</translation>
 <translation id="6440503408713884761">Игнориран</translation>
 <translation id="6443406338865242315">кои екстензии и приклучоци ги имате инсталирано</translation>
 <translation id="6446163441502663861">Kahu (плик)</translation>
@@ -2604,6 +2608,7 @@
 <translation id="8163866351304776260">Четири дупки лево</translation>
 <translation id="8175796834047840627">Chrome нуди да ви ги зачува картичките во вашата сметка на Google бидејќи сте најавени. Ваквото однесување може да го смените во поставки.</translation>
 <translation id="8176440868214972690">Администраторот на уредов испратил одредени информации на следниве веб-сајтови, како поставки или правила.</translation>
+<translation id="8179003511148538426">Патувањата се отворени на половина екран</translation>
 <translation id="8184538546369750125">Користи глобална стандардна поставка (Дозволи)</translation>
 <translation id="8186706823560132848">Софтвер</translation>
 <translation id="8190193880870196235">Управувано од екстензија</translation>

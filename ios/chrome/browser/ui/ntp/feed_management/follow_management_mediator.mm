@@ -18,6 +18,9 @@
 
 @interface FollowManagementMediator ()
 
+// The current BrowserState.
+@property(nonatomic, assign) ChromeBrowserState* browserState;
+
 // FaviconLoader retrieves favicons for a given page URL.
 @property(nonatomic, assign) FaviconLoader* faviconLoader;
 
@@ -47,11 +50,11 @@
 
 - (void)faviconForURL:(CrURL*)URL
            completion:(void (^)(FaviconAttributes*))completion {
-  self.faviconLoader->FaviconForPageUrl(
-      URL.gurl, kDesiredSmallFaviconSizePt, kMinFaviconSizePt,
-      /*fallback_to_google_server=*/false, ^(FaviconAttributes* attributes) {
-        completion(attributes);
-      });
+  self.faviconLoader->FaviconForIconUrl(URL.gurl, kDesiredSmallFaviconSizePt,
+                                        kMinFaviconSizePt,
+                                        ^(FaviconAttributes* attributes) {
+                                          completion(attributes);
+                                        });
 }
 
 @end

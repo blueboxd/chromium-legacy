@@ -182,6 +182,24 @@ bool ShouldSkipSubtree(const LayoutObject* object) {
          !style.IsContentVisibilityVisible();
 }
 
+void UnionAllChildren(const LayoutObject* parent, gfx::RectF& rect) {
+  const LayoutObject* obj = parent;
+  while (obj) {
+    blink::GetRootNodeOptions options;
+    if (obj->GetNode() &&
+        obj->GetNode()->getRootNode(&options)->IsInUserAgentShadowRoot()) {
+      obj = obj->NextInPreOrderAfterChildren(parent);
+    } else if (ShouldSkipSubtree(obj)) {
+      obj = obj->NextInPreOrderAfterChildren(parent);
+    } else {
+      if (auto* element = DynamicTo<HTMLElement>(obj->GetNode())) {
+        rect.Union(element->GetBoundingClientRectNoLifecycleUpdate());
+      }
+      obj = obj->NextInPreOrder(parent);
+    }
+  }
+}
+
 // Appends |object| to evaluation targets if the object is a tap target.
 // Returns false only if |object| is already inserted.
 bool AddElement(const LayoutObject* object,
@@ -193,13 +211,22 @@ bool AddElement(const LayoutObject* object,
   if (!node || !IsTapTargetCandidate(node))
     return true;
 
-  if (Element* element = DynamicTo<Element>(object->GetNode())) {
-    // Expand each corner by the size of fingertips.
-    const gfx::RectF rect = element->GetBoundingClientRectNoLifecycleUpdate();
+  if (auto* element = DynamicTo<HTMLElement>(object->GetNode())) {
+    // Ignore body tag even if it is a tappable element because majority of such
+    // case does not mean "bad" tap target.
+    if (element->IsHTMLBodyElement())
+      return true;
+
     if (!tap_targets->insert(object).is_new_entry)
       return false;
 
-    if (!rect.IsEmpty()) {
+    gfx::RectF rect = element->GetBoundingClientRectNoLifecycleUpdate();
+    if (auto* anchor = DynamicTo<HTMLAnchorElement>(element))
+      UnionAllChildren(object, rect);
+
+    if (!rect.IsEmpty() && !isnan(rect.x()) && !isnan(rect.y()) &&
+        !isnan(rect.right()) && !isnan(rect.bottom())) {
+      // Expand each corner by the size of fingertips.
       const int top = ClampTo<int>(rect.y() - finger_radius);
       const int bottom = ClampTo<int>(rect.bottom() + finger_radius);
       const int left = ClampTo<int>(rect.x() - finger_radius);

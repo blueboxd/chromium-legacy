@@ -14,6 +14,7 @@ const base::Feature kEnableAutomaticSnooze{"EnableAutomaticSnooze",
 const base::Feature kIPHDemoMode{"IPH_DemoMode",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHSnooze{"IPH_Snooze", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableIPH{"EnableIPH", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kUseClientConfigIPH{"UseClientConfigIPH",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -83,6 +84,8 @@ const base::Feature kIPHAutoDarkUserEducationMessageFeature{
     "IPH_AutoDarkUserEducationMessage", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHAutoDarkUserEducationMessageOptInFeature{
     "IPH_AutoDarkUserEducationMessageOptIn", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHCrowFeature{"IPH_Crow",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverDetailFeature{
     "IPH_DataSaverDetail", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverMilestonePromoFeature{
@@ -208,7 +211,7 @@ const base::Feature kIPHPageInfoStoreInfoFeature{
 const base::Feature kIPHPreviewsOmniboxUIFeature{
     "IPH_PreviewsOmniboxUI", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHShoppingListMenuItemFeature{
-    "IPH_ShoppingListMenuItem", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_ShoppingListMenuItem", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsQuicklyComparePagesFeature{
     "IPH_TabGroupsQuicklyComparePages", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature{
@@ -286,15 +289,14 @@ const base::Feature kIPHDefaultSiteViewFeature{
     "IPH_DefaultSiteView", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHPasswordSuggestionsFeature{
     "IPH_PasswordSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHFollowWhileBrowsingFeature{
+    "IPH_FollowWhileBrowsing", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
 const base::Feature kIPHAutofillVirtualCardSuggestionFeature{
     "IPH_AutofillVirtualCardSuggestion", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature{
-    "IPH_UpdatedConnectionSecurityIndicators",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)

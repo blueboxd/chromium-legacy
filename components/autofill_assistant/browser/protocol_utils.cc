@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/actions/edit_password_action.h"
 #include "components/autofill_assistant/browser/actions/execute_js_action.h"
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
+#include "components/autofill_assistant/browser/actions/external_action.h"
 #include "components/autofill_assistant/browser/actions/generate_password_for_form_field_action.h"
 #include "components/autofill_assistant/browser/actions/get_element_status_action.h"
 #include "components/autofill_assistant/browser/actions/js_flow_action.h"
@@ -30,6 +31,7 @@
 #include "components/autofill_assistant/browser/actions/popup_message_action.h"
 #include "components/autofill_assistant/browser/actions/presave_generated_password_action.h"
 #include "components/autofill_assistant/browser/actions/prompt_action.h"
+#include "components/autofill_assistant/browser/actions/register_password_reset_request_action.h"
 #include "components/autofill_assistant/browser/actions/release_elements_action.h"
 #include "components/autofill_assistant/browser/actions/reset_pending_credentials_action.h"
 #include "components/autofill_assistant/browser/actions/save_generated_password_action.h"
@@ -453,6 +455,11 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return std::make_unique<ExecuteJsAction>(delegate, action);
     case ActionProto::ActionInfoCase::kJsFlow:
       return std::make_unique<JsFlowAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kExternalAction:
+      return std::make_unique<ExternalAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kRegisterPasswordResetRequest:
+      return std::make_unique<RegisterPasswordResetRequestAction>(delegate,
+                                                                  action);
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
       VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
       return std::make_unique<UnsupportedAction>(delegate, action);
@@ -717,6 +724,15 @@ absl::optional<ActionProto> ProtocolUtils::ParseFromString(
       success = ParseActionFromString(action_id, bytes, error_message,
                                       proto.mutable_js_flow());
       break;
+    case ActionProto::ActionInfoCase::kExternalAction:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_external_action());
+      break;
+    case ActionProto::ActionInfoCase::kRegisterPasswordResetRequest:
+      success = ParseActionFromString(
+          action_id, bytes, error_message,
+          proto.mutable_register_password_reset_request());
+      break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       // This is an "unknown action", handled as such in CreateAction.
       return proto;
@@ -942,15 +958,23 @@ std::string ProtocolUtils::CreateGetUserDataRequest(
     bool request_email,
     bool request_phone,
     bool request_shipping,
+    const std::vector<std::string>& preexisting_address_ids,
     bool request_payment_methods,
     const std::vector<std::string>& supported_card_networks,
+    const std::vector<std::string>& preexisting_payment_instrument_ids,
     const std::string& client_token) {
   GetUserDataRequestProto request_proto;
   request_proto.set_run_id(run_id);
   request_proto.set_request_name(request_name);
   request_proto.set_request_email(request_email);
   request_proto.set_request_phone(request_phone);
-  request_proto.set_request_addresses(request_shipping);
+
+  if (request_shipping) {
+    auto* address_request = request_proto.mutable_request_shipping_addresses();
+    for (const std::string& id : preexisting_address_ids) {
+      address_request->add_preexisting_ids(id);
+    }
+  }
 
   if (request_payment_methods) {
     auto* payment_methods_request =
@@ -959,6 +983,9 @@ std::string ProtocolUtils::CreateGetUserDataRequest(
     for (const std::string& supported_card_network : supported_card_networks) {
       payment_methods_request->add_supported_card_networks(
           supported_card_network);
+    }
+    for (const std::string& id : preexisting_payment_instrument_ids) {
+      payment_methods_request->add_preexisting_ids(id);
     }
   }
 

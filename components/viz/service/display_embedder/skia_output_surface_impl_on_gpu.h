@@ -184,9 +184,7 @@ class SkiaOutputSurfaceImplOnGpu
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
           image_contexts);
-  void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays,
-                        std::vector<ImageContextImpl*> image_contexts,
-                        base::OnceClosure on_finished);
+  void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
 
   void SetEnableDCLayers(bool enable);
   void SetGpuVSyncEnabled(bool enabled);
@@ -336,17 +334,17 @@ class SkiaOutputSurfaceImplOnGpu
   // |surface| into |dest_surface|'s canvas, cropping and scaling the results
   // appropriately. |source_selection| is the area of the |surface| that will be
   // rendered to the destination.
-  // |begin_semaphores| will be submitted to the GPU backend prior to issuing
-  // draw calls to the |dest_surface|.
-  // |end_semaphores| will be submitted to the GPU backend alongside the draw
-  // calls to the |dest_surface|.
-  bool RenderSurface(SkSurface* surface,
+  void RenderSurface(SkSurface* surface,
                      const SkIRect& source_selection,
                      absl::optional<SkVector> scaling,
                      bool is_downscale_or_identity_in_both_dimensions,
-                     SkSurface* dest_surface,
-                     std::vector<GrBackendSemaphore>& begin_semaphores,
-                     std::vector<GrBackendSemaphore>& end_semaphores);
+                     SkSurface* dest_surface);
+
+  // Helper for `CopyOutputNV12()` & `CopyOutputRGBA()` methods, flushes writes
+  // to |surface| with |end_semaphores| and |end_state|.
+  bool FlushSurface(SkSurface* surface,
+                    std::vector<GrBackendSemaphore>& end_semaphores,
+                    std::unique_ptr<GrBackendSurfaceMutableState> end_state);
 
   // Creates surfaces needed to store the data in NV12 format.
   // |plane_access_datas| will be populated with information needed to access
@@ -381,12 +379,6 @@ class SkiaOutputSurfaceImplOnGpu
   void CheckReadbackCompletion();
 
   void ReleaseAsyncReadResultHelpers();
-
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
-  std::unique_ptr<gpu::SharedImageRepresentationSkia>
-  GetOrCreateRenderPassOverlayBacking(
-      const SkSurfaceCharacterization& characterization);
-#endif
 
   class ReleaseCurrent {
    public:
@@ -466,7 +458,9 @@ class SkiaOutputSurfaceImplOnGpu
     base::flat_set<ImageContextImpl*> image_contexts_;
   };
   PromiseImageAccessHelper promise_image_access_helper_{this};
-  base::flat_set<ImageContextImpl*> image_contexts_with_end_access_state_;
+  base::flat_set<std::pair<ImageContextImpl*,
+                           std::unique_ptr<GrBackendSurfaceMutableState>>>
+      image_contexts_with_end_access_state_;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
   std::unique_ptr<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;
@@ -487,34 +481,6 @@ class SkiaOutputSurfaceImplOnGpu
 
   // Tracking for ongoing AsyncReadResults.
   base::flat_set<AsyncReadResultHelper*> async_read_result_helpers_;
-
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
-  using UniqueBackingPtr = std::unique_ptr<gpu::SharedImageRepresentationSkia>;
-  class BackingComparator {
-   public:
-    using is_transparent = void;
-    bool operator()(const UniqueBackingPtr& lhs,
-                    const UniqueBackingPtr& rhs) const {
-      return lhs->mailbox() < rhs->mailbox();
-    }
-    bool operator()(const UniqueBackingPtr& lhs,
-                    const gpu::Mailbox& rhs) const {
-      return lhs->mailbox() < rhs;
-    }
-    bool operator()(const gpu::Mailbox& lhs,
-                    const UniqueBackingPtr& rhs) const {
-      return lhs < rhs->mailbox();
-    }
-  };
-  // Render pass overlay backings are in flight.
-  // The base::flat_set uses backing->mailbox() as the unique key.
-  base::flat_set<UniqueBackingPtr, BackingComparator>
-      in_flight_render_pass_overlay_backings_;
-
-  // Render pass overlay backings are available for reusing.
-  std::vector<std::unique_ptr<gpu::SharedImageRepresentationSkia>>
-      available_render_pass_overlay_backings_;
-#endif
 
   THREAD_CHECKER(thread_checker_);
 

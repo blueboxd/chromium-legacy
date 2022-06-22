@@ -59,8 +59,12 @@
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/gfx/geometry/rect.h"
 
+template <typename T>
+class sk_sp;
+
 namespace cc {
 class AnimationHost;
+class AnimationTimeline;
 class Layer;
 class PaintOpBuffer;
 enum class PaintHoldingCommitTrigger;
@@ -79,7 +83,6 @@ class Cursor;
 namespace blink {
 class AXObjectCache;
 class ChromeClient;
-class CompositorAnimationTimeline;
 class DeferredShapingDisallowScope;
 class DeferredShapingMinimumTopScope;
 class DeferredShapingViewportScope;
@@ -506,6 +509,12 @@ class CORE_EXPORT LocalFrameView final
                                bool value) {
     allow_deferred_shaping_ = value;
   }
+  // Disable deferred shaping on this frame persistently.
+  // This function should not be called during laying out.
+  void DisallowDeferredShaping();
+  bool DefaultAllowDeferredShaping() const {
+    return default_allow_deferred_shaping_;
+  }
   void RequestToLockDeferred(Element& element);
   bool LockDeferredRequested(Element& element) const;
 
@@ -733,7 +742,7 @@ class CORE_EXPORT LocalFrameView final
 
   ScrollingCoordinatorContext* GetScrollingContext() const;
   cc::AnimationHost* GetCompositorAnimationHost() const;
-  CompositorAnimationTimeline* GetCompositorAnimationTimeline() const;
+  cc::AnimationTimeline* GetCompositorAnimationTimeline() const;
 
   LayoutShiftTracker& GetLayoutShiftTracker() { return *layout_shift_tracker_; }
   PaintTimingDetector& GetPaintTimingDetector() const {
@@ -1059,6 +1068,7 @@ class CORE_EXPORT LocalFrameView final
   LayoutUnit current_viewport_bottom_ = kIndefiniteSize;
   LayoutUnit current_minimum_top_;
   bool allow_deferred_shaping_ = false;
+  bool default_allow_deferred_shaping_ = true;
 
   bool can_have_scrollbars_;
 

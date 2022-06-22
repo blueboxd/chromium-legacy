@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/elapsed_timer.h"
@@ -404,6 +403,60 @@ MoveMigrator::TaskResult MoveMigrator::SetupAshSplitDir(
     return {TaskStatus::kSetupAshDirCreateSplitDirFailed, errno};
   }
 
+  // Copy extensions that have to be in both Ash and Lacros.
+  const base::FilePath original_extensions_dir = original_profile_dir.Append(
+      browser_data_migrator_util::kExtensionsFilePath);
+  if (base::PathExists(original_extensions_dir)) {
+    const base::FilePath split_extensions_dir =
+        tmp_split_dir.Append(browser_data_migrator_util::kExtensionsFilePath);
+    if (!base::CreateDirectory(split_extensions_dir)) {
+      PLOG(ERROR) << "CreateDirectory() failed for  "
+                  << split_extensions_dir.value();
+      return {TaskStatus::kSetupAshDirCreateDirFailed, errno};
+    }
+
+    for (const char* extension_id :
+         browser_data_migrator_util::kExtensionsBothChromes) {
+      base::FilePath original_extension_path =
+          original_extensions_dir.Append(extension_id);
+
+      if (base::PathExists(original_extension_path)) {
+        base::FilePath split_extension_path =
+            split_extensions_dir.Append(extension_id);
+
+        if (!base::CopyDirectory(original_extension_path, split_extension_path,
+                                 /*recursive=*/true)) {
+          PLOG(ERROR) << "Failed copying " << original_extension_path.value()
+                      << " to " << split_extension_path.value();
+          return {TaskStatus::kSetupAshDirCopyExtensionsFailed, errno};
+        }
+      }
+    }
+  }
+
+  // Copy IndexedDB objects for extensions that have to be both in
+  // Ash and Lacros.
+  const base::FilePath original_indexed_db_dir = original_profile_dir.Append(
+      browser_data_migrator_util::kIndexedDBFilePath);
+  if (base::PathExists(original_profile_dir)) {
+    const base::FilePath split_indexed_db_dir =
+        tmp_split_dir.Append(browser_data_migrator_util::kIndexedDBFilePath);
+    if (!base::CreateDirectory(split_indexed_db_dir)) {
+      PLOG(ERROR) << "CreateDirectory() failed for "
+                  << split_indexed_db_dir.value();
+      return {TaskStatus::kSetupAshDirCreateDirFailed, errno};
+    }
+
+    for (const char* extension_id :
+         browser_data_migrator_util::kExtensionsBothChromes) {
+      if (!browser_data_migrator_util::MigrateAshIndexedDB(
+              original_profile_dir, split_indexed_db_dir, extension_id,
+              /*copy=*/true)) {
+        return {TaskStatus::kSetupAshDirCopyIndexedDBFailed, errno};
+      }
+    }
+  }
+
   // Create Ash's version of `Local Storage`, holding *only* the keys
   // associated to the extensions that have to stay in Ash.
   if (base::PathExists(
@@ -442,6 +495,25 @@ MoveMigrator::TaskResult MoveMigrator::SetupAshSplitDir(
           tmp_profile_dir.Append(chrome::kPreferencesFilename))) {
     LOG(ERROR) << "MigratePreferences() failed.";
     return {TaskStatus::kSetupAshDirMigratePreferencesFailed};
+  }
+
+  // Split Sync Data.
+  if (base::PathExists(
+          original_profile_dir
+              .Append(browser_data_migrator_util::kSyncDataFilePath)
+              .Append(browser_data_migrator_util::kSyncDataLeveldbName))) {
+    if (!browser_data_migrator_util::MigrateSyncData(
+            original_profile_dir
+                .Append(browser_data_migrator_util::kSyncDataFilePath)
+                .Append(browser_data_migrator_util::kSyncDataLeveldbName),
+            tmp_split_dir.Append(browser_data_migrator_util::kSyncDataFilePath)
+                .Append(browser_data_migrator_util::kSyncDataLeveldbName),
+            tmp_profile_dir
+                .Append(browser_data_migrator_util::kSyncDataFilePath)
+                .Append(browser_data_migrator_util::kSyncDataLeveldbName))) {
+      LOG(ERROR) << "MigrateSyncData() failed";
+      return {TaskStatus::kSetupAshDirMigrateSyncDataFailed};
+    }
   }
 
   return {TaskStatus::kSucceeded};
@@ -545,6 +617,12 @@ MoveMigrator::TaskResult MoveMigrator::MoveSplitItemsToOriginalDir(
 
   for (base::FilePath path = e.Next(); !path.empty(); path = e.Next()) {
     base::FilePath ash_path = original_profile_dir.Append(path.BaseName());
+    if (base::DirectoryExists(ash_path) && !DeletePathRecursively(ash_path)) {
+      PLOG(ERROR) << "Failed deleting " << ash_path.value();
+      return {TaskStatus::kMoveSplitItemsToOriginalDirMoveSplitItemsFailed,
+              errno};
+    }
+
     if (!base::Move(path, ash_path)) {
       PLOG(ERROR) << "Failed moving " << path.value() << " to "
                   << ash_path.value();
@@ -570,6 +648,7 @@ MoveMigrator::TaskResult MoveMigrator::MoveSplitItemsToOriginalDir(
       return {TaskStatus::kMoveSplitItemsToOriginalDirCreateDirFailed, errno};
     }
 
+    // Move Ash-only extensions.
     for (const char* extension_id :
          browser_data_migrator_util::kExtensionsAshOnly) {
       base::FilePath lacros_path = lacros_extensions_dir.Append(extension_id);
@@ -585,8 +664,8 @@ MoveMigrator::TaskResult MoveMigrator::MoveSplitItemsToOriginalDir(
     }
   }
 
-  // Move IndexedDB objects related to extensions in the keeplist back to
-  // Ash's profile directory.
+  // Move IndexedDB objects related to extensions in the keeplist back to Ash's
+  // profile directory.
   const base::FilePath lacros_indexed_db_dir =
       tmp_profile_dir.Append(browser_data_migrator_util::kIndexedDBFilePath);
   if (base::PathExists(lacros_indexed_db_dir)) {
@@ -600,28 +679,11 @@ MoveMigrator::TaskResult MoveMigrator::MoveSplitItemsToOriginalDir(
 
     for (const char* extension_id :
          browser_data_migrator_util::kExtensionsAshOnly) {
-      const auto& [blob_path, leveldb_path] =
-          browser_data_migrator_util::GetIndexedDBPaths(tmp_profile_dir,
-                                                        extension_id);
-      if (base::PathExists(blob_path)) {
-        const base::FilePath ash_blob_path =
-            ash_indexed_db_dir.Append(blob_path.BaseName());
-        if (!base::Move(blob_path, ash_blob_path)) {
-          PLOG(ERROR) << "Failed moving " << blob_path.value() << " to "
-                      << ash_blob_path.value();
-          return {TaskStatus::kMoveSplitItemsToOriginalDirMoveIndexedDBFailed,
-                  errno};
-        }
-      }
-      if (base::PathExists(leveldb_path)) {
-        const base::FilePath ash_leveldb_path =
-            ash_indexed_db_dir.Append(leveldb_path.BaseName());
-        if (!base::Move(leveldb_path, ash_indexed_db_dir)) {
-          PLOG(ERROR) << "Failed moving " << leveldb_path.value() << " to "
-                      << ash_leveldb_path.value();
-          return {TaskStatus::kMoveSplitItemsToOriginalDirMoveIndexedDBFailed,
-                  errno};
-        }
+      if (!browser_data_migrator_util::MigrateAshIndexedDB(
+              tmp_profile_dir, ash_indexed_db_dir, extension_id,
+              /*copy=*/false)) {
+        return {TaskStatus::kMoveSplitItemsToOriginalDirMoveIndexedDBFailed,
+                errno};
       }
     }
   }
@@ -732,6 +794,10 @@ MoveMigrator::ToBrowserDataMigratorMigrationResult(TaskResult result) {
     case TaskStatus::kMoveSplitItemsToOriginalDirMoveExtensionsFailed:
     case TaskStatus::kMoveSplitItemsToOriginalDirMoveIndexedDBFailed:
     case TaskStatus::kMoveTmpDirToLacrosDirMoveFailed:
+    case TaskStatus::kSetupAshDirCreateDirFailed:
+    case TaskStatus::kSetupAshDirCopyExtensionsFailed:
+    case TaskStatus::kSetupAshDirCopyIndexedDBFailed:
+    case TaskStatus::kSetupAshDirMigrateSyncDataFailed:
       return {BrowserDataMigratorImpl::DataWipeResult::kSucceeded,
               {BrowserDataMigratorImpl::ResultKind::kFailed}};
   }
@@ -775,6 +841,10 @@ std::string MoveMigrator::TaskStatusToString(TaskStatus task_status) {
     MAPPING(MoveSplitItemsToOriginalDirMoveExtensionsFailed);
     MAPPING(MoveSplitItemsToOriginalDirMoveIndexedDBFailed);
     MAPPING(MoveTmpDirToLacrosDirMoveFailed);
+    MAPPING(SetupAshDirCreateDirFailed);
+    MAPPING(SetupAshDirCopyExtensionsFailed);
+    MAPPING(SetupAshDirCopyIndexedDBFailed);
+    MAPPING(SetupAshDirMigrateSyncDataFailed);
 #undef MAPPING
   }
 }

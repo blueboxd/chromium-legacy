@@ -34,9 +34,7 @@ class WrongHWID extends WrongHWIDBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('WrongHWIDMessageScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('WrongHWIDMessageScreen');
   }
 
   /** Initial UI State for screen */
@@ -46,10 +44,6 @@ class WrongHWID extends WrongHWIDBase {
 
   onSkip_() {
     this.userActed('skip-screen');
-  }
-
-  formattedFirstPart_(locale) {
-    return this.i18nAdvanced('wrongHWIDMessageFirstPart');
   }
 }
 

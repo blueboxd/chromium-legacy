@@ -9,7 +9,6 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -66,15 +65,11 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   void Initialize(
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
-      network::mojom::IPAddressSpace response_address_space,
       Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
       const Vector<String>* response_origin_trial_tokens) override {
     InitializeURL(response_url);
     SetReferrerPolicy(response_referrer_policy);
-    SetAddressSpace(response_address_space);
 
-    // These should be called after SetAddressSpace() to correctly override the
-    // address space by the "treat-as-public-address" CSP directive.
     InitContentSecurityPolicyFromVector(std::move(response_csp));
     BindContentSecurityPolicyToExecutionContext();
 
@@ -148,7 +143,6 @@ class WorkerThreadForTest : public WorkerThread {
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin), worker_clients,
         nullptr /* content_settings_client */,
-        network::mojom::IPAddressSpace::kLocal,
         nullptr /* inherited_trial_features */,
         base::UnguessableToken::Create(),
         std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
@@ -194,17 +188,15 @@ class MockWorkerReportingProxy final : public WorkerReportingProxy {
   ~MockWorkerReportingProxy() override = default;
 
   MOCK_METHOD1(DidCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
-  MOCK_METHOD2(WillEvaluateClassicScriptMock,
-               void(size_t scriptSize, size_t cachedMetadataSize));
+  MOCK_METHOD0(WillEvaluateClassicScriptMock, void());
   MOCK_METHOD1(DidEvaluateTopLevelScript, void(bool success));
   MOCK_METHOD0(DidCloseWorkerGlobalScope, void());
   MOCK_METHOD0(WillDestroyWorkerGlobalScope, void());
   MOCK_METHOD0(DidTerminateWorkerThread, void());
 
-  void WillEvaluateClassicScript(size_t script_size,
-                                 size_t cached_metadata_size) override {
+  void WillEvaluateClassicScript() override {
     script_evaluation_event_.Signal();
-    WillEvaluateClassicScriptMock(script_size, cached_metadata_size);
+    WillEvaluateClassicScriptMock();
   }
 
   void WaitUntilScriptEvaluation() { script_evaluation_event_.Wait(); }

@@ -88,6 +88,12 @@ export class FakeShimlessRmaService {
      */
     this.resolveMethodDelayMs_ = 0;
 
+    /**
+     * The result of calling trackConfiguredNetworks.
+     * @private {boolean}
+     */
+    this.trackConfiguredNetworksCalled_ = false;
+
     this.reset();
   }
 
@@ -181,6 +187,14 @@ export class FakeShimlessRmaService {
   beginFinalization() {
     return this.getNextStateForMethod_(
         'beginFinalization', State.kWelcomeScreen);
+  }
+
+  trackConfiguredNetworks() {
+    this.trackConfiguredNetworksCalled_ = true;
+  }
+
+  getTrackConfiguredNetworks() {
+    return this.trackConfiguredNetworksCalled_;
   }
 
   /**
@@ -1207,6 +1221,7 @@ export class FakeShimlessRmaService {
 
     this.methods_.register('beginFinalization');
 
+    this.methods_.register('trackConfiguredNetworks');
     this.methods_.register('networkSelectionComplete');
 
     this.methods_.register('getCurrentOsVersion');
@@ -1216,6 +1231,7 @@ export class FakeShimlessRmaService {
 
     this.methods_.register('setSameOwner');
     this.methods_.register('setDifferentOwner');
+    this.methods_.register('setWipeDevice');
 
     this.methods_.register('chooseManuallyDisableWriteProtect');
     this.methods_.register('chooseRsuDisableWriteProtect');
@@ -1301,10 +1317,10 @@ export class FakeShimlessRmaService {
   }
 
   /**
-   * @private
    * @param {string} method
    * @param {!State} expectedState
    * @returns {!Promise<!StateResult>}
+   * @private
    */
   getNextStateForMethod_(method, expectedState) {
     if (this.states_.length === 0) {
@@ -1342,11 +1358,11 @@ export class FakeShimlessRmaService {
 
   /**
    * Sets the value that will be returned when calling getCurrent().
-   * @private
    * @param {!State} state
    * @param {boolean} canCancel,
    * @param {boolean} canGoBack,
    * @param {!RmadErrorCode} error
+   * @private
    */
   setFakeCurrentState_(state, canCancel, canGoBack, error) {
     this.setFakeStateForMethod_(
@@ -1356,11 +1372,11 @@ export class FakeShimlessRmaService {
   /**
    * Sets the value that will be returned when calling
    * transitionPreviousState().
-   * @private
    * @param {!State} state
    * @param {boolean} canCancel,
    * @param {boolean} canGoBack,
    * @param {!RmadErrorCode} error
+   * @private
    */
   setFakePrevState_(state, canCancel, canGoBack, error) {
     this.setFakeStateForMethod_(
@@ -1370,12 +1386,12 @@ export class FakeShimlessRmaService {
   /**
    * Sets the value that will be returned when calling state specific functions
    * that update state. e.g. setSameOwner()
-   * @private
    * @param {string} method
    * @param {!State} state
    * @param {boolean} canCancel,
    * @param {boolean} canGoBack,
    * @param {!RmadErrorCode} error
+   * @private
    */
   setFakeStateForMethod_(method, state, canCancel, canGoBack, error) {
     this.methods_.setResult(method, /** @type {!StateResult} */ ({

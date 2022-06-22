@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
 
 #include "base/bind.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/base/escape.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,6 +28,8 @@
 #include "chrome/browser/ui/browser_finder.h"            // nogncheck
 #include "chrome/browser/ui/browser_navigator.h"         // nogncheck
 #include "chrome/browser/ui/browser_navigator_params.h"  // nogncheck
+#include "chromeos/crosapi/mojom/url_handler.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
@@ -96,7 +98,7 @@ void QuickAnswersUiController::OnQuickAnswersViewPressed() {
   controller_->DismissQuickAnswers(QuickAnswersExitPoint::kQuickAnswersClick);
 
   OpenUrl(GURL(kGoogleSearchUrlPrefix +
-               net::EscapeUrlEncodedData(query_, /*use_plus=*/true)));
+               base::EscapeUrlEncodedData(query_, /*use_plus=*/true)));
   controller_->OnQuickAnswerClick();
 }
 
@@ -167,7 +169,18 @@ void QuickAnswersUiController::OnSettingsButtonPressed() {
   // Route dismissal through |controller_| for logging impressions.
   controller_->DismissQuickAnswers(QuickAnswersExitPoint::kSettingsButtonClick);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   OpenUrl(GURL(kQuickAnswersSettingsUrl));
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // OS settings app is implemented in Ash, but OpenUrl here does not qualify
+  // for redirection in Lacros due to security limitations. Thus we need to
+  // explicitly send the request to Ash to launch the OS settings app.
+  chromeos::LacrosService* service = chromeos::LacrosService::Get();
+  DCHECK(service->IsAvailable<crosapi::mojom::UrlHandler>());
+
+  service->GetRemote<crosapi::mojom::UrlHandler>()->OpenUrl(
+      GURL(kQuickAnswersSettingsUrl));
+#endif
 }
 
 void QuickAnswersUiController::OnReportQueryButtonPressed() {

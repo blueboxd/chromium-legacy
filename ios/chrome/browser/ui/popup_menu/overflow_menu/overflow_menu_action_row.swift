@@ -34,7 +34,7 @@ struct OverflowMenuActionRow: View {
     )
     .accessibilityIdentifier(action.accessibilityIdentifier)
     .disabled(!action.enabled || action.enterpriseDisabled)
-    .accentColor(.cr_textPrimaryColor)
-    .listRowSeparatorTint(.overflowMenuSeparatorColor)
+    .accentColor(.textPrimary)
+    .listRowSeparatorTint(.overflowMenuSeparator)
   }
 }

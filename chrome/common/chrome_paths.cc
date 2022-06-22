@@ -43,7 +43,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/common/chrome_paths_lacros.h"  // nogncheck
+#include "chromeos/lacros/lacros_paths.h"
 #endif
 
 namespace {
@@ -367,20 +367,16 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    case chrome::FILE_FALLBACK_RESOURCES_PACK:
+    case chrome::FILE_RESOURCES_FOR_SHARING_PACK:
       if (!GetDefaultUserDataDirectory(&cur))
         return false;
-      cur = cur.Append(FILE_PATH_LITERAL("resources_fallback.pak"));
+      cur = cur.Append(FILE_PATH_LITERAL("resources_for_sharing.rspak"));
       break;
     case chrome::FILE_ASH_RESOURCES_PACK:
-      if (!chrome::GetAshResourcesPath(&cur))
+      if (!base::PathService::Get(chromeos::lacros_paths::ASH_RESOURCES_DIR,
+                                  &cur))
         return false;
       cur = cur.Append("resources.pak");
-      break;
-    case chrome::FILE_RESOURCES_MAP:
-      if (!GetDefaultUserDataDirectory(&cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("resources.map"));
       break;
 #endif
 

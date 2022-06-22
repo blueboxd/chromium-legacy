@@ -20,11 +20,14 @@
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/address_pool_manager_bitmap.h"
 #include "base/allocator/partition_allocator/allocation_guard.h"
-#include "base/allocator/partition_allocator/base/bits.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/bits.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/cpu.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/debug/alias.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/no_destructor.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
@@ -41,13 +44,9 @@
 #include "base/allocator/partition_allocator/tagging.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
 #include "base/compiler_specific.h"
-#include "base/cpu.h"
-#include "base/debug/alias.h"
 #include "base/immediate_crash.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/no_destructor.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -70,7 +69,7 @@ using ::base::RefCountedThreadSafe;
 }  // namespace base
 
 [[noreturn]] NOINLINE NOT_TAIL_CALLED void DoubleFreeAttempt() {
-  NO_CODE_FOLDING();
+  PA_NO_CODE_FOLDING();
   IMMEDIATE_CRASH();
 }
 
@@ -1183,7 +1182,7 @@ class PCScan::PCScanThread final {
 
   static PCScanThread& Instance() {
     // Lazily instantiate the scanning thread.
-    static base::NoDestructor<PCScanThread> instance;
+    static internal::base::NoDestructor<PCScanThread> instance;
     return *instance;
   }
 
@@ -1209,7 +1208,7 @@ class PCScan::PCScanThread final {
   }
 
  private:
-  friend class base::NoDestructor<PCScanThread>;
+  friend class internal::base::NoDestructor<PCScanThread>;
 
   PCScanThread() {
     ScopedAllowAllocations allow_allocations_within_std_thread;

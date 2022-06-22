@@ -47,6 +47,8 @@ enum TimeUnit {
 
 message UMAFeature {
   // The type of signal this feature refers to.
+  // Note: SignalType::UKM_EVENT type is only used for SignalStorageConfig and
+  // should not be used as uma feature's signal type.
   optional SignalType type = 1;
 
   // The human readable name of the histogram or user action.
@@ -87,7 +89,16 @@ message CustomInput {
     UNKNOWN_FILL_POLICY = 0;
     // Output is the time at which model prediction is needed. Can be used to
     // bind TIME type param to queries.
+    // Output type: Time
+    // Output length: 1
     FILL_PREDICTION_TIME = 1;
+    // Output is two timestamps, the beginning and the end of last x days. Can
+    // be used to bind TIME type param to query within a time interval.
+    // Output type: Time
+    // Output length: 2
+    // Additional arg:
+    //   `bucket_count`: Required. Number of buckets to include in the result.
+    TIME_RANGE_BEFORE_PREDICTION = 2;
   }
 
   // The fill type of the custom input.
@@ -98,6 +109,9 @@ message CustomInput {
   // will not run due to missing input. The number of entries should be equal to
   // the |tensor_length|.
   repeated float default_value = 3;
+
+  // If the fill type need additional arguments, use this value.
+  map<string, string> additional_args = 4;
 }
 
 // Configuration for storing signals in the SQL database.
@@ -106,11 +120,10 @@ message SignalFilterConfig {
   message UkmEvent {
     // Event hash of the UKM event.
     optional uint64 event_hash = 1;
-    // List of metric hashes for the event, to store in the database. If
-    // empty, the database will store all the metrics for the UKM event. It is
-    // is recommended to provide list of necessary metrics, unless it is clear
-    // that the list of metrics of the event is easily trackable and doesn't
-    // grow over time.
+    // List of metric hashes for the event, to store in the database. It is
+    // is required to provide list of necessary metrics.
+    // TODO: Support empty metric hash list, the database will store all the
+    // metrics for the UKM event.
     repeated uint64 metric_hash_filter = 2;
   }
   // List of UKM events to store in the database.

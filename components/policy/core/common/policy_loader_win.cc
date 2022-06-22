@@ -175,13 +175,15 @@ void CollectEnterpriseUMAs() {
                             base::win::OSInfo::GetInstance()->version_type(),
                             base::win::SUITE_LAST);
 
+  base::UmaHistogramBoolean("EnterpriseCheck.IsManagedOrEnterpriseDevice",
+                            base::IsManagedOrEnterpriseDevice());
   base::UmaHistogramBoolean("EnterpriseCheck.IsDomainJoined", IsDomainJoined());
   base::UmaHistogramBoolean("EnterpriseCheck.InDomain",
                             base::win::IsEnrolledToDomain());
   base::UmaHistogramBoolean("EnterpriseCheck.IsManaged2",
                             base::win::IsDeviceRegisteredWithManagement());
   base::UmaHistogramBoolean("EnterpriseCheck.IsEnterpriseUser",
-                            base::IsMachineExternallyManaged());
+                            base::IsEnterpriseDevice());
   base::UmaHistogramBoolean("EnterpriseCheck.IsJoinedToAzureAD",
                             base::win::IsJoinedToAzureAD());
 
@@ -221,7 +223,8 @@ void CollectEnterpriseUMAs() {
 PolicyLoaderWin::PolicyLoaderWin(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     ManagementService* management_service,
-    const std::wstring& chrome_policy_key)
+    const std::wstring& chrome_policy_key,
+    bool is_dev_registry_key_supported)
     : AsyncPolicyLoader(task_runner,
                         management_service,
                         /*periodic_updates=*/true),
@@ -234,7 +237,10 @@ PolicyLoaderWin::PolicyLoaderWin(
           base::WaitableEvent::ResetPolicy::AUTOMATIC,
           base::WaitableEvent::InitialState::NOT_SIGNALED),
       user_policy_watcher_failed_(false),
-      machine_policy_watcher_failed_(false) {
+      machine_policy_watcher_failed_(false),
+      registry_watcher_(
+          RegistryWatcherWin::MaybeCreate(chrome_policy_key,
+                                          is_dev_registry_key_supported)) {
   if (!::RegisterGPNotification(user_policy_changed_event_.handle(), false)) {
     DPLOG(WARNING) << "Failed to register user group policy notification";
     user_policy_watcher_failed_ = true;
@@ -267,9 +273,11 @@ PolicyLoaderWin::~PolicyLoaderWin() {
 std::unique_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     ManagementService* management_service,
-    const std::wstring& chrome_policy_key) {
+    const std::wstring& chrome_policy_key,
+    bool is_dev_registry_key_supported) {
   return std::make_unique<PolicyLoaderWin>(task_runner, management_service,
-                                           chrome_policy_key);
+                                           chrome_policy_key,
+                                           is_dev_registry_key_supported);
 }
 
 void PolicyLoaderWin::InitOnBackgroundThread() {
@@ -405,6 +413,11 @@ void PolicyLoaderWin::SetupWatches() {
           machine_policy_changed_event_.handle(), this)) {
     DLOG(WARNING) << "Failed to start watch for machine policy change event";
     machine_policy_watcher_failed_ = true;
+  }
+
+  if (registry_watcher_) {
+    registry_watcher_->StartWatching(base::BindRepeating(
+        &PolicyLoaderWin::Reload, base::Unretained(this), false /* force */));
   }
 }
 

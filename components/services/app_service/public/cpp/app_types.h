@@ -200,6 +200,10 @@ struct COMPONENT_EXPORT(APP_TYPES) App {
   // There is no guarantee that this is sorted by any criteria.
   Shortcuts shortcuts;
 
+  // Storage space size for app and associated data.
+  absl::optional<uint64_t> app_size_in_bytes;
+  absl::optional<uint64_t> data_size_in_bytes;
+
   // When adding new fields to the App type, the `Clone` function and the
   // `AppUpdate` class should also be updated.
 };
@@ -212,7 +216,7 @@ COMPONENT_EXPORT(APP_TYPES)
 AppType ConvertMojomAppTypToAppType(apps::mojom::AppType mojom_app_type);
 
 COMPONENT_EXPORT(APP_TYPES)
-mojom::AppType ConvertAppTypeToMojomAppType(AppType mojom_app_type);
+mojom::AppType ConvertAppTypeToMojomAppType(AppType app_type);
 
 COMPONENT_EXPORT(APP_TYPES)
 Readiness ConvertMojomReadinessToReadiness(

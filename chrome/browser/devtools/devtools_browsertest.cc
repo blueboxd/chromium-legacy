@@ -1905,8 +1905,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest,
   autofill::ContentAutofillDriver* autofill_driver =
       autofill::ContentAutofillDriverFactory::FromWebContents(GetInspectedTab())
           ->DriverForFrame(GetInspectedTab()->GetMainFrame());
-  autofill::BrowserAutofillManager* autofill_manager =
-      autofill_driver->browser_autofill_manager();
+  auto* autofill_manager = static_cast<autofill::BrowserAutofillManager*>(
+      autofill_driver->autofill_manager());
   BrowserAutofillManagerTestDelegateDevtoolsImpl autoFillTestDelegate(
       GetInspectedTab());
   autofill_manager->SetTestDelegate(&autoFillTestDelegate);
@@ -1983,7 +1983,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestToolboxLoadedUndocked) {
 }
 
 // Tests that toolbox window is not loaded when DevTools window is docked.
-IN_PROC_BROWSER_TEST_F(DevToolsTest, TestToolboxNotLoadedDocked) {
+// TODO(crbug.com/1320168): Re-enable this test
+IN_PROC_BROWSER_TEST_F(DevToolsTest, DISABLED_TestToolboxNotLoadedDocked) {
   OpenDevToolsWindow(kDebuggerTestPage, true);
   ASSERT_FALSE(toolbox_web_contents());
   DevToolsWindow* on_self =

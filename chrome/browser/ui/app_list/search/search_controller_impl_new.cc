@@ -42,41 +42,9 @@
 namespace app_list {
 namespace {
 
-bool IsPartOfContinueSection(ProviderType type) {
-  switch (type) {
-    case ash::AppListSearchResultType::kZeroStateFile:
-    case ash::AppListSearchResultType::kZeroStateDrive:
-      return true;
-    case ash::AppListSearchResultType::kUnknown:
-    case ash::AppListSearchResultType::kInstalledApp:
-    case ash::AppListSearchResultType::kPlayStoreApp:
-    case ash::AppListSearchResultType::kInstantApp:
-    case ash::AppListSearchResultType::kInternalApp:
-    case ash::AppListSearchResultType::kOmnibox:
-    case ash::AppListSearchResultType::kLauncher:
-    case ash::AppListSearchResultType::kAnswerCard:
-    case ash::AppListSearchResultType::kPlayStoreReinstallApp:
-    case ash::AppListSearchResultType::kArcAppShortcut:
-    case ash::AppListSearchResultType::kFileChip:
-    case ash::AppListSearchResultType::kDriveChip:
-    case ash::AppListSearchResultType::kAssistantChip:
-    case ash::AppListSearchResultType::kOsSettings:
-    case ash::AppListSearchResultType::kInternalPrivacyInfo:
-    case ash::AppListSearchResultType::kAssistantText:
-    case ash::AppListSearchResultType::kHelpApp:
-    case ash::AppListSearchResultType::kFileSearch:
-    case ash::AppListSearchResultType::kDriveSearch:
-    case ash::AppListSearchResultType::kKeyboardShortcut:
-    case ash::AppListSearchResultType::kOpenTab:
-    case ash::AppListSearchResultType::kGames:
-    case ash::AppListSearchResultType::kPersonalization:
-      return false;
-  }
-}
-
 void ClearAllResultsExceptContinue(ResultsMap& results) {
   for (auto it = results.begin(); it != results.end();) {
-    if (!IsPartOfContinueSection(it->first)) {
+    if (!ash::IsContinueSectionResultType(it->first)) {
       it = results.erase(it);
     } else {
       ++it;
@@ -510,11 +478,6 @@ void SearchControllerImplNew::Train(LaunchData&& launch_data) {
 
   // Train all search result ranking models.
   ranker_->Train(launch_data);
-}
-
-void SearchControllerImplNew::AppListShown() {
-  for (const auto& provider : providers_)
-    provider->AppListShown();
 }
 
 void SearchControllerImplNew::ViewClosing() {

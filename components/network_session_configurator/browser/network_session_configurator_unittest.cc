@@ -97,6 +97,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_TRUE(params_.quic_host_allowlist.empty());
   EXPECT_TRUE(quic_params_.retransmittable_on_wire_timeout.is_zero());
   EXPECT_FALSE(quic_params_.disable_tls_zero_rtt);
+  EXPECT_TRUE(quic_params_.allow_port_migration);
 
   EXPECT_EQ(net::DefaultSupportedQuicVersions(),
             quic_params_.supported_versions);
@@ -106,6 +107,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(
       quic_params_.initial_delay_for_broken_alternative_service.has_value());
   EXPECT_FALSE(quic_params_.exponential_backoff_on_initial_delay.has_value());
+  EXPECT_TRUE(quic_params_.delay_main_job_with_available_spdy_session);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialGroupNameDoesNotMatter) {
@@ -297,6 +299,29 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ASSERT_TRUE(quic_params_.exponential_backoff_on_initial_delay.has_value());
   EXPECT_FALSE(quic_params_.exponential_backoff_on_initial_delay.value());
+}
+
+TEST_F(NetworkSessionConfiguratorTest, DelayMainJobWithAvailableSpdySession) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["delay_main_job_with_available_spdy_session"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(quic_params_.delay_main_job_with_available_spdy_session);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       NotDelayMainJobWithAvailableSpdySession) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["delay_main_job_with_available_spdy_session"] = "false";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_FALSE(quic_params_.delay_main_job_with_available_spdy_session);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -501,15 +526,15 @@ TEST_F(
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
-       QuicAllowPortMigrationFromFieldTrialParams) {
+       DisableQuicAllowPortMigrationFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
-  field_trial_params["allow_port_migration"] = "true";
+  field_trial_params["allow_port_migration"] = "false";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(quic_params_.allow_port_migration);
+  EXPECT_FALSE(quic_params_.allow_port_migration);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

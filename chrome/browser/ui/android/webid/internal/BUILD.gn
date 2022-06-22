@@ -12,6 +12,7 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//build/android:build_java",
     "//chrome/android:chrome_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/profiles/android:java",
@@ -51,7 +52,6 @@ android_resources("java_resources") {
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//components/browser_ui/widget/android:java_resources",
-    "//third_party/android_deps:android_support_v7_appcompat_java",
     "//ui/android:ui_java_resources",
   ]
   sources = [
@@ -108,6 +108,7 @@ android_library("javatests") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//build/android:build_java",
 
     # TODO(majidvp): Remove this dependency after test clean up. https://crbug.com/1214820
     "//chrome/android:chrome_java",
@@ -119,7 +120,9 @@ android_library("javatests") {
     "//components/browser_ui/bottomsheet/android:java",
     "//components/browser_ui/bottomsheet/android/test:java",
     "//content/public/test/android:content_java_test_support",
+    "//net/android:net_java_test_support",
     "//third_party/android_deps:espresso_java",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit",

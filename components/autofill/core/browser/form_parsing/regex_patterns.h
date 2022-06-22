@@ -7,12 +7,11 @@
 
 #include "base/containers/span.h"
 #include "base/strings/string_piece.h"
-#include "base/types/strong_alias.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
+#include "components/autofill/core/browser/form_parsing/buildflags.h"
 #include "components/autofill/core/common/language_code.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-#include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
 
 namespace autofill {
 
@@ -51,9 +50,8 @@ class MatchPatternRef {
   using UnderlyingType = int16_t;
 
   // A wrapper of the constructor used by the code generation.
-  friend constexpr inline MatchPatternRef MakeMatchPatternRef(
-      bool is_supplementary,
-      UnderlyingType index);
+  friend constexpr MatchPatternRef MakeMatchPatternRef(bool is_supplementary,
+                                                       UnderlyingType index);
   friend class MatchPatternRefTestApi;
 
   constexpr MatchPatternRef(bool supplementary, UnderlyingType index)
@@ -69,6 +67,32 @@ class MatchPatternRef {
   UnderlyingType value_;
 };
 
+// The different sets of patterns that are available.
+// Each enum constant corresponds to a JSON file.
+enum class PatternSource {
+#if !BUILDFLAG(USE_INTERNAL_AUTOFILL_HEADERS)
+  // Patterns whose stability is above suspicion.
+  kLegacy,
+  kMaxValue = kLegacy
+#else
+  // Patterns whose stability is above suspicion.
+  kLegacy,
+  // The patterns applied for most users.
+  kDefault,
+  // Patterns that are being verified experimentally.
+  kExperimental,
+  // One step before `kExperimental`. These patterns are used only for
+  // non-user-visible metrics.
+  kNextGen,
+  kMaxValue = kNextGen
+#endif
+};
+
+// The active pattern and the available patterns depend on the build config and
+// the Finch config.
+PatternSource GetActivePatternSource();
+DenseSet<PatternSource> GetNonActivePatternSources();
+
 // Looks up the patterns for the given name and language.
 // The name is typically a field type.
 //
@@ -81,11 +105,13 @@ class MatchPatternRef {
 // decreasing order.
 base::span<const MatchPatternRef> GetMatchPatterns(
     base::StringPiece name,
-    absl::optional<LanguageCode> language);
+    absl::optional<LanguageCode> language,
+    PatternSource pattern_source);
 
 base::span<const MatchPatternRef> GetMatchPatterns(
     ServerFieldType type,
-    absl::optional<LanguageCode> language);
+    absl::optional<LanguageCode> language,
+    PatternSource pattern_source);
 
 }  // namespace autofill
 

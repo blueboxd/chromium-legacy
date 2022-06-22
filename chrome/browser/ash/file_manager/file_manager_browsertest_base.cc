@@ -42,6 +42,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -99,7 +100,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_switches.h"
-#include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/cros_disks/fake_cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -127,7 +128,6 @@
 #include "google_apis/common/test_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "media/base/media_switches.h"
-#include "net/base/escape.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -736,6 +736,25 @@ struct GetTotalHistogramSum {
   }
 
   std::string histogram_name;
+};
+
+struct ExpectHistogramTotalCountMessage {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               ExpectHistogramTotalCountMessage* message) {
+    base::JSONValueConverter<ExpectHistogramTotalCountMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<ExpectHistogramTotalCountMessage>* converter) {
+    converter->RegisterStringField(
+        "histogramName", &ExpectHistogramTotalCountMessage::histogram_name);
+    converter->RegisterIntField("count",
+                                &ExpectHistogramTotalCountMessage::count);
+  }
+
+  std::string histogram_name;
+  int count = 0;
 };
 
 struct GetUserActionCountMessage {
@@ -1820,10 +1839,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   // Make sure to run the ARC storage UI toast tests.
   enabled_features.push_back(arc::kUsbStorageUIFeature);
 
-  // FileManager tests exist for the deprecated audio player app, which will be
-  // removed, along with the kMediaAppHandlesAudio flag at ~M100.
-  disabled_features.push_back(ash::features::kMediaAppHandlesAudio);
-
   if (options.files_swa) {
     enabled_features.push_back(chromeos::features::kFilesSWA);
   } else {
@@ -2240,7 +2255,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       std::string json_args;
       base::JSONWriter::Write(arg_value, &json_args);
       search = base::StrCat(
-          {"?", net::EscapeUrlEncodedData(json_args, /*use_plus=*/false)});
+          {"?", base::EscapeUrlEncodedData(json_args, /*use_plus=*/false)});
     }
 
     std::string baseURL = ash::file_manager::kChromeUIFileManagerURL;
@@ -2280,7 +2295,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     }
   }
 
-  if (name == "getActiveTabURL") {
+  if (name == "getLastActiveTabURL") {
     BrowserList* browser_list = BrowserList::GetInstance();
     Browser* browser = browser_list->GetLastActive();
     if (!browser) {
@@ -2289,6 +2304,20 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     content::WebContents* active_web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     *output = active_web_contents->GetVisibleURL().spec();
+    return;
+  }
+
+  if (name == "expectWindowURL") {
+    const std::string* expected_url = value.FindStringKey("expectedUrl");
+    EXPECT_TRUE(expected_url);
+    for (auto* web_contents : GetAllWebContents()) {
+      const std::string& url = web_contents->GetVisibleURL().spec();
+      if (url == *expected_url) {
+        *output = "true";
+        return;
+      }
+    }
+    *output = "false";
     return;
   }
 
@@ -3009,6 +3038,15 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         base::Value(base::NumberToString(
             histograms_.GetTotalSum(message.histogram_name))),
         output);
+    return;
+  }
+
+  if (name == "expectHistogramTotalCount") {
+    ExpectHistogramTotalCountMessage message;
+    ASSERT_TRUE(
+        ExpectHistogramTotalCountMessage::ConvertJSONValue(value, &message));
+    histograms_.ExpectTotalCount(message.histogram_name, message.count);
+
     return;
   }
 

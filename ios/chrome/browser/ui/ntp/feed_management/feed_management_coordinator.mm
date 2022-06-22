@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/ntp/feed_management/follow_management_view_controller.h"
 #include "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/follow/follow_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -44,6 +46,9 @@
   [self.baseViewController presentViewController:self.navigationController
                                         animated:YES
                                       completion:nil];
+  // Set the browser to Follow Provider Delegate when starting the coordinator.
+  ios::GetChromeBrowserProvider().GetFollowProvider()->SetFollowEventDelegate(
+      self.browser);
 }
 
 - (void)stop {
@@ -77,8 +82,21 @@
   self.followManagementMediator = mediator;
   followManagementViewController.feedMetricsRecorder = self.feedMetricsRecorder;
 
+  ios::GetChromeBrowserProvider()
+      .GetFollowProvider()
+      ->AddFollowManagementUIUpdater(followManagementViewController);
+
   [self.navigationController pushViewController:followManagementViewController
                                        animated:YES];
+}
+
+#pragma mark - FollowManagementViewDelegate
+
+- (void)followManagementViewControllerWillDismiss:
+    (FollowManagementViewController*)viewController {
+  ios::GetChromeBrowserProvider()
+      .GetFollowProvider()
+      ->RemoveFollowManagementUIUpdater(viewController);
 }
 
 @end

@@ -7,7 +7,7 @@
  * auditory cues.
  */
 
-import {EarconEngine} from './earcon_engine.js';
+import {EarconEngine} from '/chromevox/background/earcon_engine.js';
 
 export class Earcons extends AbstractEarcons {
   constructor() {
@@ -52,7 +52,7 @@ export class Earcons extends AbstractEarcons {
       return;
     }
     if (localStorage['enableEarconLogging'] === 'true') {
-      LogStore.getInstance().writeTextLog(earcon, LogStore.LogType.EARCON);
+      LogStore.getInstance().writeTextLog(earcon, LogType.EARCON);
       console.log('Earcon ' + earcon);
     }
     if (ChromeVoxState.instance.currentRange &&

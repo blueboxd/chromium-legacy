@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/constants/app_types.h"
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -353,7 +354,8 @@ void LaunchCrostiniAppWithIntent(Profile* profile,
     return std::move(callback).Run(false, "Crostini UI not allowed");
   }
 
-  if (app_id == kCrostiniTerminalSystemAppId) {
+  if (!base::FeatureList::IsEnabled(ash::features::kTerminalSSH) &&
+      app_id == kCrostiniTerminalSystemAppId) {
     // Terminal supports a single directory as arg.  If it exists, convert it
     // to an intent file.
     // TODO(crbug.com/1028898): This can be deleted when TerminalSSH flag
@@ -390,6 +392,8 @@ void LaunchCrostiniAppWithIntent(Profile* profile,
                            registration->ContainerName());
 
   if (crostini_manager->IsUncleanStartup()) {
+    VLOG(1) << "Unclean startup for " << container_id
+            << " - showing recovery view";
     // Prompt for user-restart.
     return ShowCrostiniRecoveryView(
         profile, crostini::CrostiniUISurface::kAppList, app_id, display_id,

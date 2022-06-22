@@ -182,17 +182,23 @@ std::string EnvironmentProvider::GetDeviceAccountPolicy() {
   return device_account_policy_blob_;
 }
 
-const MojoPolicyMap& EnvironmentProvider::GetDeviceAccountComponentPolicy() {
+const policy::ComponentPolicyMap&
+EnvironmentProvider::GetDeviceAccountComponentPolicy() {
   return component_policy_;
 }
 
 void EnvironmentProvider::SetDeviceAccountComponentPolicy(
-    MojoPolicyMap component_policy) {
+    policy::ComponentPolicyMap component_policy) {
   component_policy_ = std::move(component_policy);
 }
 
-bool EnvironmentProvider::GetUseNewAccountManager() {
-  return true;
+base::Time EnvironmentProvider::GetLastPolicyFetchAttemptTimestamp() {
+  return last_policy_fetch_attempt_;
+}
+
+void EnvironmentProvider::SetLastPolicyFetchAttemptTimestamp(
+    const base::Time& timestamp) {
+  last_policy_fetch_attempt_ = timestamp;
 }
 
 }  // namespace crosapi

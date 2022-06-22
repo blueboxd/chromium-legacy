@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/services/storage/public/cpp/buckets/bucket_info.h"
+#include "components/services/storage/public/cpp/buckets/bucket_init_params.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/quota_error_or.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
@@ -105,6 +106,12 @@ struct UsageInfo {
   }
 };
 
+struct AccumulateQuotaInternalsInfo {
+  int64_t total_space = 0;
+  int64_t available_space = 0;
+  int64_t temp_pool_size = 0;
+};
+
 // Entry point into the Quota System
 //
 // Each StoragePartition has exactly one QuotaManagerImpl instance, which
@@ -175,8 +182,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // operation has failed.
   // This method is declared as virtual to allow test code to override it.
   virtual void GetOrCreateBucket(
-      const blink::StorageKey& storage_key,
-      const std::string& bucket_name,
+      const BucketInitParams& bucket_params,
       base::OnceCallback<void(QuotaErrorOr<BucketInfo>)>);
   // Same as GetOrCreateBucket but takes in StorageType. This should only be
   // used by FileSystem, and is expected to be removed when
@@ -352,7 +358,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                              base::OnceClosure callback);
 
   // storage::mojom::QuotaInternalsHandler implementation
-  void GetDiskAvailability(GetDiskAvailabilityCallback callback) override;
+  void GetDiskAvailabilityAndTempPoolSize(
+      GetDiskAvailabilityAndTempPoolSizeCallback callback) override;
   void GetStatistics(GetStatisticsCallback callback) override;
   void RetrieveBucketsTable(RetrieveBucketsTableCallback callback) override;
   void GetHostUsageForInternals(
@@ -372,6 +379,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void GetHostUsageWithBreakdown(const std::string& host,
                                  blink::mojom::StorageType type,
                                  UsageWithBreakdownCallback callback);
+  void GetBucketUsageWithBreakdown(const BucketLocator& bucket,
+                                   UsageWithBreakdownCallback callback);
 
   bool IsStorageUnlimited(const blink::StorageKey& storage_key,
                           blink::mojom::StorageType type) const;
@@ -549,6 +558,16 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
       GetHostUsageForInternalsCallback callback,
       int64_t usage,
       blink::mojom::UsageBreakdownPtr usage_breakdown);
+  void UpdateQuotaInternalsDiskAvailability(base::OnceClosure barrier_callback,
+                                            AccumulateQuotaInternalsInfo* info,
+                                            int64_t total_space,
+                                            int64_t available_space);
+  void UpdateQuotaInternalsTempPoolSpace(base::OnceClosure barrier_callback,
+                                         AccumulateQuotaInternalsInfo* info,
+                                         const QuotaSettings& settings);
+  void FinallySendDiskAvailabilityAndTempPoolSize(
+      GetDiskAvailabilityAndTempPoolSizeCallback callback,
+      std::unique_ptr<AccumulateQuotaInternalsInfo> info);
 
   // Runs BucketDataDeleter which calls QuotaClients to clear data for the
   // bucket. Once the task is complete, calls the QuotaDatabase to delete the
@@ -577,7 +596,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   // Methods for eviction logic.
   void StartEviction();
-  void DeleteBucketFromDatabase(BucketId bucket_id,
+  void DeleteBucketFromDatabase(const BucketLocator& bucket,
                                 base::OnceCallback<void(QuotaError)> callback);
 
   void DidBucketDataEvicted(QuotaDatabase::BucketTableEntry entry,

@@ -6,9 +6,12 @@
 #define PDF_TEST_TEST_HELPERS_H_
 
 #include "base/files/file_path.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkBitmap;
+class SkImage;
+class SkSurface;
 
 namespace gfx {
 class Size;
@@ -20,8 +23,18 @@ namespace chrome_pdf {
 // the empty path if the source root can't be found.
 base::FilePath GetTestDataFilePath(const base::FilePath& path);
 
-// Creates a Skia-format `Image` of a given size filled with a given color.
-SkBitmap CreateSkiaImageForTesting(const gfx::Size& size, SkColor color);
+// Matches `actual_image` against the PNG at the file path `expected_png_file`.
+// The path must be relative to //pdf/test/data.
+testing::AssertionResult MatchesPngFile(
+    const SkImage* actual_image,
+    const base::FilePath& expected_png_file);
+
+// Creates a Skia surface with dimensions `size` and filled with `color`.
+sk_sp<SkSurface> CreateSkiaSurfaceForTesting(const gfx::Size& size,
+                                             SkColor color);
+
+// Creates a Skia image with dimensions `size` and filled with `color`.
+sk_sp<SkImage> CreateSkiaImageForTesting(const gfx::Size& size, SkColor color);
 
 }  // namespace chrome_pdf
 

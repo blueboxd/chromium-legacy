@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/form_parsing/field_candidates.h"
+#include "components/autofill/core/browser/form_parsing/regex_patterns.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -53,10 +53,8 @@ class AutofillField : public FormFieldData {
       FieldSignature field_signature);
 
   ServerFieldType heuristic_type() const;
+  ServerFieldType heuristic_type(PatternSource s) const;
   ServerFieldType server_type() const;
-  ServerFieldType get_prediction(PredictionSource s) const {
-    return local_type_predictions_[static_cast<size_t>(s)];
-  }
   bool server_type_prediction_is_override() const;
   const std::vector<
       AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction>&
@@ -79,15 +77,12 @@ class AutofillField : public FormFieldData {
   bool only_fill_when_focused() const { return only_fill_when_focused_; }
 
   // Setters for the detected types.
-  void set_heuristic_type(ServerFieldType type);
+  void set_heuristic_type(PatternSource s, ServerFieldType t);
   void add_possible_types_validities(
       const ServerFieldTypeValidityStateMap& possible_types_validities);
   void set_server_predictions(
       std::vector<AutofillQueryResponse::FormSuggestion::FieldSuggestion::
                       FieldPrediction> predictions);
-  void set_prediction(PredictionSource s, ServerFieldType t) {
-    local_type_predictions_[static_cast<size_t>(s)] = t;
-  }
 
   void set_may_use_prefilled_placeholder(bool may_use_prefilled_placeholder) {
     may_use_prefilled_placeholder_ = may_use_prefilled_placeholder;
@@ -258,8 +253,7 @@ class AutofillField : public FormFieldData {
   // Predictions which where calculated on the client. This is initialized to
   // `NO_SERVER_DATA`, which means "NO_DATA", i.e. no classification was
   // attempted.
-  std::array<ServerFieldType,
-             static_cast<size_t>(PredictionSource::kMaxValue) + 1>
+  std::array<ServerFieldType, static_cast<size_t>(PatternSource::kMaxValue) + 1>
       local_type_predictions_;
 
   // The type of the field. Overrides all other types (html_type_,

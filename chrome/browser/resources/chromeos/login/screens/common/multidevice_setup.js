@@ -65,8 +65,9 @@ class MultiDeviceSetupScreenDelegate {
  * @polymer
  */
 class MultiDeviceSetupScreen extends MultiDeviceSetupScreenBase {
-
-  static get is() { return 'multidevice-setup-element'; }
+  static get is() {
+    return 'multidevice-setup-element';
+  }
 
   /* #html_template_placeholder */
 
@@ -140,7 +141,7 @@ class MultiDeviceSetupScreen extends MultiDeviceSetupScreenBase {
   /** @override */
   ready() {
     super.ready();
-    this.initializeLoginScreen('MultiDeviceSetupScreen', {});
+    this.initializeLoginScreen('MultiDeviceSetupScreen');
     this.updateLocalizedContent();
   }
 

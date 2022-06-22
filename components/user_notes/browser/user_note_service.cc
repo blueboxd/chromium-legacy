@@ -5,7 +5,7 @@
 #include "components/user_notes/browser/user_note_service.h"
 
 #include "base/notreached.h"
-#include "components/user_notes/browser/user_notes_manager.h"
+#include "components/user_notes/browser/user_note_manager.h"
 #include "components/user_notes/user_notes_features.h"
 #include "content/public/browser/render_frame_host.h"
 
@@ -25,21 +25,25 @@ void UserNoteService::OnFrameNavigated(content::RenderFrameHost* rfh) {
   DCHECK(IsUserNotesEnabled());
 
   // For now, Notes are only supported in the main frame.
+  // TODO(crbug.com/1313967): This will need to be changed when User Notes are
+  // supported in subframes and / or AMP viewers.
   if (!rfh->IsInPrimaryMainFrame()) {
     return;
   }
 
+  // TODO(crbug.com/1313967): Should non-web URLs such as chrome:// and
+  // file:/// also be ignored here?
   if (rfh->GetPage().GetMainDocument().IsErrorDocument()) {
     return;
   }
 
-  DCHECK(UserNotesManager::GetForPage(rfh->GetPage()));
+  DCHECK(UserNoteManager::GetForPage(rfh->GetPage()));
   NOTIMPLEMENTED();
 }
 
 void UserNoteService::OnNoteInstanceAddedToPage(
     const base::UnguessableToken& id,
-    UserNotesManager* manager) {
+    UserNoteManager* manager) {
   DCHECK(IsUserNotesEnabled());
   const auto& entry_it = model_map_.find(id);
   DCHECK(entry_it != model_map_.end())
@@ -50,7 +54,7 @@ void UserNoteService::OnNoteInstanceAddedToPage(
 
 void UserNoteService::OnNoteInstanceRemovedFromPage(
     const base::UnguessableToken& id,
-    UserNotesManager* manager) {
+    UserNoteManager* manager) {
   DCHECK(IsUserNotesEnabled());
 
   const auto& entry_it = model_map_.find(id);

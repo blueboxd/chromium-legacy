@@ -295,8 +295,7 @@ void TestWrappedVideoFrameImageReuse(V8TestingScope& scope,
 
 // Wraps an ImageBitmap in a VideoFrame and checks for SkImage re-use where
 // feasible.
-// TODO(crbug.com/1316089): Re-enable this test when code is fixed.
-TEST_F(VideoFrameTest, DISABLED_ImageReuse_VideoFrameFromImage) {
+TEST_F(VideoFrameTest, ImageReuse_VideoFrameFromImage) {
   V8TestingScope scope;
 
   sk_sp<SkSurface> surface(SkSurface::MakeRaster(
@@ -522,6 +521,68 @@ TEST_F(VideoFrameTest, VideoFrameMonitoring) {
   // update the monitor.
   blink::WebHeap::CollectAllGarbageForTesting();
   EXPECT_TRUE(monitor.IsEmpty());
+}
+
+TEST_F(VideoFrameTest, TestExternalAllocatedMemoryIsReportedCorrectlyOnClose) {
+  V8TestingScope scope;
+
+  scoped_refptr<media::VideoFrame> media_frame = CreateBlackMediaVideoFrame(
+      base::Microseconds(1000), media::PIXEL_FORMAT_I420,
+      gfx::Size(112, 208) /* coded_size */,
+      gfx::Size(100, 200) /* visible_size */);
+
+  int64_t initial_external_memory =
+      v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(0);
+
+  VideoFrame* blink_frame =
+      CreateBlinkVideoFrame(media_frame, scope.GetExecutionContext());
+
+  EXPECT_GT(v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(0),
+            initial_external_memory);
+
+  // Calling close should decrement externally allocated memory.
+  blink_frame->close();
+
+  EXPECT_EQ(v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(0),
+            initial_external_memory);
+
+  // Calling close another time should not decrement external memory twice.
+  blink_frame->close();
+
+  EXPECT_EQ(v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(0),
+            initial_external_memory);
+
+  blink_frame = nullptr;
+  blink::WebHeap::CollectAllGarbageForTesting();
+
+  // Check the destructor does not double decrement the external memory.
+  EXPECT_EQ(v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(0),
+            initial_external_memory);
+}
+
+TEST_F(VideoFrameTest,
+       TestExternalAllocatedMemoryIsReportedCorrectlyOnDestruction) {
+  V8TestingScope scope;
+
+  scoped_refptr<media::VideoFrame> media_frame = CreateBlackMediaVideoFrame(
+      base::Microseconds(1000), media::PIXEL_FORMAT_I420,
+      gfx::Size(112, 208) /* coded_size */,
+      gfx::Size(100, 200) /* visible_size */);
+
+  int64_t initial_external_memory =
+      v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(0);
+
+  CreateBlinkVideoFrame(media_frame, scope.GetExecutionContext());
+
+  EXPECT_GT(v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(0),
+            initial_external_memory);
+
+  blink::WebHeap::CollectAllGarbageForTesting();
+
+  // Check the destructor correctly decrements the reported
+  // externally allocated memory  when close has not been called before.
+  EXPECT_EQ(v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(0),
+            initial_external_memory);
 }
 
 }  // namespace

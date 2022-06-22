@@ -41,6 +41,7 @@ export function createTestApp(): App {
     hidePinToShelf: false,
     isPreferredApp: false,
     windowMode: WindowMode.kWindow,
+    hideWindowMode: false,
     resizeLocked: false,
     hideResizeLocked: true,
     supportedLinks: [],
@@ -53,6 +54,9 @@ export function createTestApp(): App {
       learnMoreUrl: {url: 'https://google.com/'},
     },
     installSource: InstallSource.kUnknown,
+    appSize: undefined,
+    dataSize: undefined,
+    publisherId: '',
   };
 
   const permissionTypes = [

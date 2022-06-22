@@ -97,28 +97,6 @@ AX_BASE_EXPORT bool IsDockedMagnifierResizingEnabled();
 
 AX_BASE_EXPORT bool IsDictationOfflineAvailable();
 
-// Enables text-editing commands in the dictation.
-AX_BASE_EXPORT extern const base::Feature
-    kExperimentalAccessibilityDictationCommands;
-
-// Returns true if the expeirmental accessibility feature to enable dictation
-// text editing commands is enabled.
-AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationCommandsEnabled();
-
-// Enables the accessibility Dictation extension.
-AX_BASE_EXPORT extern const base::Feature
-    kExperimentalAccessibilityDictationExtension;
-
-// Returns true if experimental accessibility dictation extension is enabled.
-AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationExtensionEnabled();
-
-// Enables accessibility Dictation UI hints.
-AX_BASE_EXPORT extern const base::Feature
-    kExperimentalAccessibilityDictationHints;
-
-// Returns true if experimental accessibility dictation hints is enabled.
-AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationHintsEnabled();
-
 // Enables accessibility Dictation with the pumpkin semantic parser.
 AX_BASE_EXPORT extern const base::Feature
     kExperimentalAccessibilityDictationWithPumpkin;
@@ -183,19 +161,28 @@ AX_BASE_EXPORT extern const base::Feature kComputeAXMode;
 AX_BASE_EXPORT bool IsComputeAXModeEnabled();
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if !BUILDFLAG(IS_ANDROID)
 AX_BASE_EXPORT extern const base::Feature kReadAnything;
 
 // Returns true if read anything is enabled. This feature shows users websites,
 // such as articles, in a comfortable reading experience in a side panel.
 AX_BASE_EXPORT bool IsReadAnythingEnabled();
 
-#if !BUILDFLAG(IS_ANDROID)
+AX_BASE_EXPORT extern const base::Feature kReadAnythingWithScreen2x;
+
+// Returns true if read anything is enabled with screen2x integration, which
+// distills web pages using an ML model.
+AX_BASE_EXPORT bool IsReadAnythingWithScreen2xEnabled();
+
 // Enables using Screen AI library to add metadata for accessibility tools.
 AX_BASE_EXPORT extern const base::Feature kScreenAI;
 
 // Returns true if Screen AI feature is enabled. This feature uses a local
 // machine intelligence library to process browser screenshots and add metadata
 // to the accessibility tree.
+// TODO(https://crbug.com/1278249): Rename to IsScreenAIVisualAnnotationsEnabled
+// and add a new function that covers this and
+// IsReadAnythingWithScreen2xEnabled.
 AX_BASE_EXPORT bool IsScreenAIEnabled();
 
 // Enables a feature whereby inaccessible (i.e. untagged) PDFs are made

@@ -28,17 +28,6 @@ suite('GooglePhotosCollectionTest', function() {
   }
 
   setup(() => {
-    // Google Photos strings are only supplied when the Google Photos
-    // integration feature flag is enabled.
-    loadTimeData.overrideValues({
-      'googlePhotosLabel': 'Google Photos',
-      'googlePhotosAlbumsTabLabel': 'Albums',
-      'googlePhotosPhotosTabLabel': 'Photos',
-      'googlePhotosZeroStateMessage':
-          'No image available. To add photos, go to $1',
-      'isGooglePhotosIntegrationEnabled': true,
-    });
-
     const mocks = baseSetup();
     personalizationStore = mocks.personalizationStore;
     personalizationStore.setReducersEnabled(true);
@@ -53,7 +42,6 @@ suite('GooglePhotosCollectionTest', function() {
   test('displays only photos content', async () => {
     // Tabs and albums content are not displayed if albums are absent.
     wallpaperProvider.setGooglePhotosAlbums(undefined);
-    wallpaperProvider.setGooglePhotosCount(1);
     wallpaperProvider.setGooglePhotosPhotos([{
       id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
       name: 'foo',
@@ -84,6 +72,71 @@ suite('GooglePhotosCollectionTest', function() {
     assertEquals(querySelector('#photosByAlbumId'), null);
   });
 
+  test('displays tabs and content for only albums', async () => {
+    // NOTE: Intentionally set photos count to a non-zero value while setting an
+    // empty array of photos to simulate an unlikely but possible scenario in
+    // which server-side APIs temporarily disagree with one another.
+    wallpaperProvider.setGooglePhotosPhotos([]);
+    wallpaperProvider.setGooglePhotosAlbums([{
+      id: '1',
+      title: '',
+      photoCount: 0,
+      preview: {url: ''},
+    }]);
+
+    // Initialize |googlePhotosCollectionElement|.
+    googlePhotosCollectionElement =
+        initElement(GooglePhotosCollection, {hidden: false});
+    await wallpaperProvider.whenCalled('fetchGooglePhotosAlbums');
+    await waitAfterNextRender(googlePhotosCollectionElement);
+
+    // Photos tab should be present and selected.
+    assertEquals(
+        querySelector('#photosTab')?.getAttribute('aria-pressed'), 'true');
+
+    // Photos content should be hidden.
+    assertEquals(querySelector('#photosContent')?.hidden, true);
+
+    // Albums tab should be present and *not* selected.
+    assertEquals(
+        querySelector('#albumsTab')?.getAttribute('aria-pressed'), 'false');
+
+    // Albums content should be hidden.
+    assertEquals(querySelector('#albumsContent')?.hidden, true);
+
+    // Photos by album id content should be hidden.
+    assertEquals(querySelector('#photosByAlbumIdContent')?.hidden, true);
+
+    // Zero state should be present and visible.
+    assertEquals(querySelector('#zeroState')?.hidden, false);
+
+    // Click the albums tab.
+    querySelector('#albumsTab')?.click();
+    await waitAfterNextRender(googlePhotosCollectionElement);
+
+    // Photos tab should be present and *not* selected.
+    assertEquals(
+        querySelector('#photosTab')?.getAttribute('aria-pressed'), 'false');
+
+    // Photos content should be hidden.
+    assertEquals(querySelector('#photosContent')?.hidden, true);
+
+    // Albums tab should be present and selected.
+    assertEquals(
+        querySelector('#albumsTab')?.getAttribute('aria-pressed'), 'true');
+
+    // Albums content should be present and visible.
+    assertEquals(querySelector('#albumsContent')?.hidden, false);
+
+    // Photos by album id content should be hidden.
+    assertEquals(querySelector('#photosByAlbumIdContent')?.hidden, true);
+
+    // Zero state should be hidden.
+    const zeroState = querySelector('#zeroState');
+    assertTrue(!!zeroState);
+    assertEquals(window.getComputedStyle(zeroState)!.display, 'none');
+  });
+
   test('displays tabs and content for photos and albums', async () => {
     // Tabs and albums content are only displayed if albums are present.
     const albums: GooglePhotosAlbum[] = [{
@@ -93,7 +146,6 @@ suite('GooglePhotosCollectionTest', function() {
       preview: {url: 'foo.com'}
     }];
     wallpaperProvider.setGooglePhotosAlbums(albums);
-    wallpaperProvider.setGooglePhotosCount(1);
     wallpaperProvider.setGooglePhotosPhotos([{
       id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
       name: 'foo',
@@ -198,7 +250,6 @@ suite('GooglePhotosCollectionTest', function() {
 
   test('displays zero state when there is no content', async () => {
     wallpaperProvider.setGooglePhotosAlbums([]);
-    wallpaperProvider.setGooglePhotosCount(0);
     wallpaperProvider.setGooglePhotosPhotos([]);
 
     googlePhotosCollectionElement =
@@ -208,8 +259,43 @@ suite('GooglePhotosCollectionTest', function() {
     // Photos tab should be absent.
     assertEquals(querySelector('#photosTab'), null);
 
-    // Photos content should be absent.
-    assertEquals(querySelector('#photosContent'), null);
+    // Photos content should be hidden.
+    assertEquals(querySelector('#photosContent')?.hidden, true);
+
+    // Albums tab should be absent.
+    assertEquals(querySelector('#albumsTab'), null);
+
+    // Albums content should be absent.
+    assertEquals(querySelector('#albumsContent'), null);
+
+    // Photos by album id content should be absent.
+    assertEquals(querySelector('#photosByAlbumIdContent'), null);
+
+    // Zero state should be present and visible.
+    const zeroState = querySelector('#zeroState');
+    assertTrue(!!zeroState);
+    assertFalse(zeroState.hidden);
+  });
+
+  test('displays zero state when photos by album id is empty', async () => {
+    const album = new GooglePhotosAlbum();
+    album.id = '1';
+
+    // Initialize Google Photos data in the |personalizationStore|.
+    personalizationStore.data.wallpaper.googlePhotos.photosByAlbumId[album.id] =
+        [];
+
+    // Initialize |googlePhotosCollectionElement| and select |album|.
+    googlePhotosCollectionElement =
+        initElement(GooglePhotosCollection, {hidden: false});
+    googlePhotosCollectionElement.setAttribute('album-id', album.id);
+    await waitAfterNextRender(googlePhotosCollectionElement);
+
+    // Photos tab should be absent.
+    assertEquals(querySelector('#photosTab'), null);
+
+    // Photos content should be hidden.
+    assertEquals(querySelector('#photosContent')?.hidden, true);
 
     // Albums tab should be absent.
     assertEquals(querySelector('#albumsTab'), null);
@@ -258,7 +344,7 @@ suite('GooglePhotosCollectionTest', function() {
 
                 // Select Google Photos collection.
                 googlePhotosCollectionElement.setAttribute(
-                    'path', Paths.GooglePhotosCollection);
+                    'path', Paths.GOOGLE_PHOTOS_COLLECTION);
                 await waitAfterNextRender(googlePhotosCollectionElement);
 
                 // Verify redirect expecations.

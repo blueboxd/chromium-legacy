@@ -264,9 +264,14 @@ bool HTMLFormElement::ValidateInteractively() {
       String message(
           "An invalid form control with name='%name' is not focusable.");
       message.Replace("%name", unhandled->GetName());
-      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-          mojom::ConsoleMessageSource::kRendering,
-          mojom::ConsoleMessageLevel::kError, message));
+
+      ConsoleMessage* console_message = MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kRendering,
+          mojom::blink::ConsoleMessageLevel::kError, message);
+      console_message->SetNodes(
+          GetDocument().GetFrame(),
+          {DOMNodeIds::IdForNode(&unhandled->ToHTMLElement())});
+      GetDocument().AddConsoleMessage(console_message);
     }
   }
   return false;
@@ -350,6 +355,12 @@ void HTMLFormElement::PrepareForSubmission(
     }
   }
   if (should_submit) {
+    // If this form already made a request to navigate another frame which is
+    // still pending, then we should cancel that one.
+    if (cancel_last_submission_ &&
+        RuntimeEnabledFeatures::CancelFormSubmissionInDefaultHandlerEnabled()) {
+      std::move(cancel_last_submission_).Run();
+    }
     ScheduleFormSubmission(event, submit_button);
   }
 }
@@ -554,7 +565,8 @@ void HTMLFormElement::ScheduleFormSubmission(
     target_local_frame->Loader().CancelClientNavigation();
   }
 
-  target_frame->ScheduleFormSubmission(scheduler, form_submission);
+  cancel_last_submission_ =
+      target_frame->ScheduleFormSubmission(scheduler, form_submission);
 }
 
 FormData* HTMLFormElement::ConstructEntryList(

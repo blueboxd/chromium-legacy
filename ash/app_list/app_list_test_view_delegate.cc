@@ -112,7 +112,7 @@ void AppListTestViewDelegate::ActivateItem(
 
 void AppListTestViewDelegate::GetContextMenuModel(
     const std::string& id,
-    bool add_sort_options,
+    AppListItemContext item_context,
     GetContextMenuModelCallback callback) {
   AppListItem* item = model_->FindItem(id);
   // TODO(stevenjb/jennyz): Implement this for folder items
@@ -156,6 +156,12 @@ int AppListTestViewDelegate::AdjustAppListViewScrollOffset(int offset,
 bool AppListTestViewDelegate::HasValidProfile() const {
   return true;
 }
+
+bool AppListTestViewDelegate::ShouldHideContinueSection() const {
+  return false;
+}
+
+void AppListTestViewDelegate::SetHideContinueSection(bool hide) {}
 
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(
     const std::string& result_id,

@@ -61,9 +61,6 @@
 
 namespace blink {
 
-const base::Feature kRemoveWebCodecsSpecViolations{
-    "RemoveWebCodecsSpecViolations", base::FEATURE_ENABLED_BY_DEFAULT};
-
 namespace {
 
 media::VideoPixelFormat ToMediaPixelFormat(V8VideoPixelFormat::Enum fmt) {
@@ -447,8 +444,7 @@ VideoFrame::VideoFrame(scoped_refptr<VideoFrameHandle> handle)
 }
 
 VideoFrame::~VideoFrame() {
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-      -external_allocated_memory_);
+  ResetExternalMemory();
 }
 
 // static
@@ -456,7 +452,6 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
                                const V8CanvasImageSource* source,
                                const VideoFrameInit* init,
                                ExceptionState& exception_state) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   auto* image_source = ToCanvasImageSource(source, exception_state);
   if (!image_source) {
     // ToCanvasImageSource() will throw a source appropriate exception.
@@ -544,15 +539,9 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
         V8CanvasImageSource::ContentType::kVideoFrame) {
       auto local_handle =
           source->GetAsVideoFrame()->handle()->CloneForInternalUse();
-      if (!local_handle) {
-        // It's possible for another realm (Worker) to destroy our handle if
-        // this frame was transferred via BroadcastChannel to multiple realms.
-        exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                          "Source VideoFrame was closed");
-        return nullptr;
-      }
-
-      if (local_handle->sk_image() && !force_opaque &&
+      // Note: It's possible for another realm (Worker) to destroy our handle if
+      // this frame was transferred via BroadcastChannel to multiple realms.
+      if (local_handle && local_handle->sk_image() && !force_opaque &&
           !init->hasVisibleRect() && !init->hasDisplayWidth() &&
           !init->hasDisplayHeight()) {
         sk_image = local_handle->sk_image();
@@ -580,13 +569,8 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
   const auto timestamp = base::Microseconds(
       (init && init->hasTimestamp()) ? init->timestamp() : 0);
   if (!init || !init->hasTimestamp()) {
-    Deprecation::CountDeprecation(
-        execution_context, WebFeature::kWebCodecsVideoFrameDefaultTimestamp);
-
-    if (base::FeatureList::IsEnabled(kRemoveWebCodecsSpecViolations)) {
-      exception_state.ThrowTypeError("VideoFrameInit must provide timestamp");
-      return nullptr;
-    }
+    exception_state.ThrowTypeError("VideoFrameInit must provide timestamp");
+    return nullptr;
   }
 
   const auto paint_image = image->PaintImageForCurrentFrame();
@@ -688,6 +672,13 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
     // Above format determination unfortunately uses a bit of internal knowledge
     // from CreateFromSkImage(). Make sure they stay in sync.
     DCHECK(!frame || frame->format() == format);
+
+    // If |sk_image| isn't rendered identically to |frame|, don't pass it along
+    // when creating the blink::VideoFrame below.
+    if (force_opaque || parsed_init.visible_rect != default_visible_rect ||
+        parsed_init.display_size != default_display_size) {
+      sk_image.reset();
+    }
   }
 
   if (!frame) {
@@ -1054,6 +1045,7 @@ ScriptPromise VideoFrame::copyTo(ScriptState* script_state,
 
 void VideoFrame::close() {
   handle_->Invalidate();
+  ResetExternalMemory();
 }
 
 VideoFrame* VideoFrame::clone(ExceptionState& exception_state) {
@@ -1154,6 +1146,14 @@ bool VideoFrame::IsAccelerated() const {
                                      local_handle->frame().get());
   }
   return false;
+}
+
+void VideoFrame::ResetExternalMemory() {
+  if (external_allocated_memory_) {
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+        -external_allocated_memory_);
+    external_allocated_memory_ = 0;
+  }
 }
 
 gfx::Size VideoFrame::BitmapSourceSize() const {

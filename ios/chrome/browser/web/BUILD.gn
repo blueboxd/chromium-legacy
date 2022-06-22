@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ios/web/js_compile.gni")
+import("//ios/web/public/js_messaging/optimize_js.gni")
 
 source_set("web") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -195,14 +195,11 @@ source_set("unit_tests") {
   ]
 }
 
-js_compile_bundle("chrome_bundle_main_frame") {
-  closure_entry_point = "__crWeb.chromeBundleMainFrame"
-  sources = [
-    "//components/translate/ios/browser/resources/language_detection.js",
-    "//third_party/text-fragments-polyfill/src/src/fragment-generation-utils.js",
-    "//third_party/text-fragments-polyfill/src/src/text-fragment-utils.js",
-    "resources/chrome_bundle_main_frame.js",
-  ]
+optimize_js("chrome_bundle_main_frame") {
+  primary_script =
+      "//components/translate/ios/browser/resources/language_detection.js"
+  sources =
+      [ "//components/translate/ios/browser/resources/language_detection.js" ]
 }
 
 source_set("web_internal") {
@@ -245,7 +242,6 @@ source_set("web_internal") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/infobars/coordinators",
-    "//ios/chrome/browser/ui/infobars/resources:infobar_popup_blocker",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web:feature_flags",
     "//ios/chrome/browser/web/font_size",
@@ -380,6 +376,7 @@ source_set("eg_app_support+eg2") {
     ":constants",
     "//base",
     "//components/lookalikes/core",
+    "//ios/chrome/browser/https_upgrades",
     "//ios/chrome/test/app:test_support",
     "//ios/components/security_interstitials/https_only_mode",
     "//ios/components/security_interstitials/lookalikes",
@@ -433,6 +430,7 @@ source_set("eg2_tests") {
     "//components/version_info:version_info",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/metrics:eg_test_support+eg2",
     "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/popup_menu:constants",

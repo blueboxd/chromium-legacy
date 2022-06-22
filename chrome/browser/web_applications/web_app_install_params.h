@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -68,7 +68,8 @@ struct WebAppInstallParams {
   // Whether the app should be reinstalled even if it is already installed.
   bool force_reinstall = false;
 
-  DisplayMode user_display_mode = DisplayMode::kUndefined;
+  // See `WebAppInstallTask::ApplyParamsToWebAppInstallInfo`
+  absl::optional<UserDisplayMode> user_display_mode = absl::nullopt;
 
   // URL to be used as start_url if manifest is unavailable.
   GURL fallback_start_url;
@@ -111,6 +112,23 @@ struct WebAppInstallParams {
 
   // Set for SUB_APP API installs.
   absl::optional<AppId> parent_app_id;
+
+  // The install URL for the app. This does not always need to be
+  // populated (especially for user installed or sync installed apps)
+  // in which case the URL will not be written to the web_app DB.
+  GURL install_url;
+};
+
+// The different UI flows that exist for creating a web app.
+enum class WebAppInstallFlow {
+  // TODO(crbug.com/1216457): This should be removed by adding all known flows
+  // to this enum.
+  kUnknown,
+  // The 'Create Shortcut' flow for adding the current page as a shortcut app.
+  kCreateShortcut,
+  // The 'Install Site' flow for installing the current site with an app
+  // experience determined by the site.
+  kInstallSite,
 };
 
 }  // namespace web_app

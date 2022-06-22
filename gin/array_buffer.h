@@ -8,8 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory_mapper.h"
 #include "gin/converter.h"
 #include "gin/gin_export.h"
 #include "v8/include/v8-array-buffer.h"
@@ -24,6 +26,21 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   void Free(void* data, size_t length) override;
 
   GIN_EXPORT static ArrayBufferAllocator* SharedInstance();
+
+ private:
+  friend class V8Initializer;
+
+  // Initialize the PartitionAlloc partition from which instances of this class
+  // allocate memory. This is called after initializing V8 since, when enabled,
+  // the V8 sandbox must be initialized first.
+  static void InitializePartition();
+
+  // The PartitionAlloc partition that instances of this class allocate memory
+  // chunks from. When the V8 sandbox is enabled, this partition must be placed
+  // inside of it. For that, PA's ConfigurablePool is created inside the V8
+  // sandbox during initialization of V8, and this partition is then placed
+  // inside the configurable pool during InitializePartition().
+  static base::ThreadSafePartitionRoot* partition_;
 };
 
 class GIN_EXPORT ArrayBuffer {
@@ -75,6 +92,8 @@ struct GIN_EXPORT Converter<ArrayBufferView> {
   static bool FromV8(v8::Isolate* isolate, v8::Local<v8::Value> val,
                      ArrayBufferView* out);
 };
+
+GIN_EXPORT base::SharedMemoryMapper* GetSharedMemoryMapperForArrayBuffers();
 
 }  // namespace gin
 

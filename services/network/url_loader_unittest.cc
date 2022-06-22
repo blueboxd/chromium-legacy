@@ -24,6 +24,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -42,7 +43,6 @@
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/completion_repeating_callback.h"
-#include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -618,13 +618,13 @@ StartMonitorBodyReadFromNetBeforePausedHistogram(
 
 std::string CookieOrLineToString(const mojom::CookieOrLinePtr& cookie_or_line) {
   switch (cookie_or_line->which()) {
-    case mojom::CookieOrLine::Tag::COOKIE:
+    case mojom::CookieOrLine::Tag::kCookie:
       return base::StrCat({
           cookie_or_line->get_cookie().Name(),
           "=",
           cookie_or_line->get_cookie().Value(),
       });
-    case mojom::CookieOrLine::Tag::COOKIE_STRING:
+    case mojom::CookieOrLine::Tag::kCookieString:
       return cookie_or_line->get_cookie_string();
   }
 }
@@ -686,8 +686,7 @@ class URLLoaderTest : public testing::Test {
     net::URLRequestFailedJob::AddUrlHandler();
 
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kAcceptCHFrame,
-                              net::features::kRecordRadioWakeupTrigger},
+        /*enabled_features=*/{net::features::kRecordRadioWakeupTrigger},
         /*disabled_features=*/{});
   }
   ~URLLoaderTest() override {
@@ -4510,7 +4509,7 @@ TEST_F(URLLoaderTest, ClientAuthRespondTwice) {
   ResourceRequest request = CreateResourceRequest(
       "GET",
       test_server_1.GetURL("/server-redirect-307?" +
-                           net::EscapeQueryParamValue(
+                           base::EscapeQueryParamValue(
                                test_server_2.GetURL("/echo").spec(), true)));
 
   base::RunLoop delete_run_loop;
@@ -5118,7 +5117,7 @@ TEST_F(URLLoaderTest, CookieReporting) {
         cookie_observer.observed_cookies(),
         testing::ElementsAre(MatchesCookieDetails(
             CookieAccessType::kChange,
-            CookieOrLine("a=b", mojom::CookieOrLine::Tag::COOKIE), true)));
+            CookieOrLine("a=b", mojom::CookieOrLine::Tag::kCookie), true)));
   }
 
   {
@@ -5151,7 +5150,7 @@ TEST_F(URLLoaderTest, CookieReporting) {
         cookie_observer.observed_cookies(),
         testing::ElementsAre(MatchesCookieDetails(
             CookieAccessType::kRead,
-            CookieOrLine("a=b", mojom::CookieOrLine::Tag::COOKIE), true)));
+            CookieOrLine("a=b", mojom::CookieOrLine::Tag::kCookie), true)));
   }
 
   {
@@ -5185,11 +5184,11 @@ TEST_F(URLLoaderTest, CookieReporting) {
         testing::ElementsAre(
             MatchesCookieDetails(
                 CookieAccessType::kRead,
-                CookieOrLine("a=b", mojom::CookieOrLine::Tag::COOKIE), true),
+                CookieOrLine("a=b", mojom::CookieOrLine::Tag::kCookie), true),
             MatchesCookieDetails(
                 CookieAccessType::kChange,
                 CookieOrLine("invalid=foo;SameParty",
-                             mojom::CookieOrLine::Tag::COOKIE_STRING),
+                             mojom::CookieOrLine::Tag::kCookieString),
                 false)));
   }
 }
@@ -5230,7 +5229,7 @@ TEST_F(URLLoaderTest, CookieReportingRedirect) {
               testing::ElementsAre(MatchesCookieDetails(
                   CookieAccessType::kChange,
                   CookieOrLine("server-redirect=true",
-                               mojom::CookieOrLine::Tag::COOKIE),
+                               mojom::CookieOrLine::Tag::kCookie),
                   true)));
   // Make sure that this has the pre-redirect URL, not the post-redirect one.
   EXPECT_EQ(redirecting_url, cookie_observer.observed_cookies()[0].url);
@@ -5273,7 +5272,7 @@ TEST_F(URLLoaderTest, CookieReportingAuth) {
                 testing::ElementsAre(MatchesCookieDetails(
                     CookieAccessType::kChange,
                     CookieOrLine("got_challenged=true",
-                                 mojom::CookieOrLine::Tag::COOKIE),
+                                 mojom::CookieOrLine::Tag::kCookie),
                     true)));
   }
 }
@@ -5788,7 +5787,7 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     EXPECT_THAT(cookie_observer.observed_cookies(),
                 testing::ElementsAre(MatchesCookieDetails(
                     CookieAccessType::kChange,
-                    CookieOrLine("a=b", mojom::CookieOrLine::Tag::COOKIE),
+                    CookieOrLine("a=b", mojom::CookieOrLine::Tag::kCookie),
                     false /* is_included */)));
     EXPECT_TRUE(cookie_observer.observed_cookies()[0]
                     .status.HasExactlyExclusionReasonsForTesting(
@@ -5839,7 +5838,7 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
         cookie_observer.observed_cookies(),
         testing::ElementsAre(MatchesCookieDetails(
             CookieAccessType::kChange,
-            CookieOrLine("a=b", mojom::CookieOrLine::Tag::COOKIE), false)));
+            CookieOrLine("a=b", mojom::CookieOrLine::Tag::kCookie), false)));
     EXPECT_TRUE(
         cookie_observer.observed_cookies()[0]
             .status.HasExactlyExclusionReasonsForTesting(
@@ -5881,7 +5880,7 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
         cookie_observer.observed_cookies(),
         testing::ElementsAre(MatchesCookieDetails(
             CookieAccessType::kChange,
-            CookieOrLine("d=e", mojom::CookieOrLine::Tag::COOKIE), true)));
+            CookieOrLine("d=e", mojom::CookieOrLine::Tag::kCookie), true)));
   }
 }
 

@@ -42,6 +42,7 @@
 #include "url/gurl.h"
 
 namespace policy {
+
 namespace {
 
 using ::ash::MagnifierType;
@@ -50,7 +51,7 @@ const char kSubkeyURL[] = "url";
 const char kSubkeyHash[] = "hash";
 
 absl::optional<std::string> GetSubkeyString(const base::Value& dict,
-                                            policy::PolicyErrorMap* errors,
+                                            PolicyErrorMap* errors,
                                             const std::string& policy,
                                             const std::string& subkey) {
   const base::Value* policy_value = dict.FindKey(subkey);
@@ -208,7 +209,6 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
       chromeos::onc::ReadDictionaryFromJson(value->GetString());
   if (!root_dict.is_dict()) {
     errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_PARSE_FAILED);
-    errors->SetDebugInfo(policy_name(), "ERROR: JSON parse error");
     return false;
   }
 
@@ -243,12 +243,8 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
     errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED,
                      debug_info);
 
-  if (!validator.validation_issues().empty())
-    errors->SetDebugInfo(policy_name(), debug_info);
-
   // In any case, don't reject the policy as some networks or certificates could
   // still be applied.
-
   return true;
 }
 

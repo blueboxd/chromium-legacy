@@ -4,7 +4,7 @@
 """Definitions of builders in the chromium.android.fyi builder group."""
 
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os")
+load("//lib/builders.star", "os")
 load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
 
@@ -13,10 +13,11 @@ ci.defaults.set(
     cores = 8,
     executable = ci.DEFAULT_EXECUTABLE,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
-    goma_backend = goma.backend.RBE_PROD,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     pool = ci.DEFAULT_POOL,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 consoles.console_view(
@@ -35,8 +36,6 @@ ci.builder(
     # Higher build timeout since dbg ASAN builds can take a while on a clobber
     # build.
     execution_timeout = 4 * time.hour,
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = 150,
     schedule = "triggered",  # triggered manually via Scheduler UI
 )
 
@@ -46,9 +45,6 @@ ci.builder(
         category = "wpt|webview",
         short_name = "p-arm64",
     ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -57,12 +53,9 @@ ci.builder(
         category = "wpt|chrome",
         short_name = "p-x86",
     ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
-ci.builder(
+ci.thin_tester(
     name = "android-weblayer-11-x86-rel-tests",
     console_view_entry = consoles.console_view_entry(
         category = "tester|weblayer",
@@ -78,9 +71,6 @@ ci.builder(
         category = "wpt|weblayer",
         short_name = "p-x86",
     ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -89,9 +79,6 @@ ci.builder(
         category = "wpt|weblayer",
         short_name = "p-x86",
     ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -100,9 +87,6 @@ ci.builder(
         category = "wpt|webview",
         short_name = "p-x86",
     ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -111,9 +95,6 @@ ci.builder(
         category = "builder|weblayer_with_aosp_webview",
         short_name = "x86",
     ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -122,9 +103,8 @@ ci.builder(
         category = "reviver",
         short_name = "M",
     ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    # To avoid peak hours, we run it at 1 AM, 4 AM, 7 AM, 10AM, 1 PM UTC.
+    schedule = "0 1,4,7,10,13 * * *",
     # Set to an empty list to avoid chromium-gitiles-trigger triggering new
     # builds. Also we don't set any `schedule` since this builder is for
     # reference only and should not run any new builds.
@@ -154,9 +134,6 @@ ci.builder(
         short_name = "N",
     ),
     execution_timeout = 4 * time.hour,
-    goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = rbe_jobs.DEFAULT,
 )
 
 # TODO(crbug.com/1022533#c40): Remove this builder once there are no associated
@@ -167,33 +144,26 @@ ci.builder(
         category = "emulator|x86|rel",
         short_name = "P",
     ),
-    goma_jobs = goma.jobs.J150,
     # Set to an empty list to avoid chromium-gitiles-trigger triggering new
     # builds. Also we don't set any `schedule` since this builder is for
     # reference only and should not run any new builds.
     triggered_by = [],
 )
 
-ci.builder(
-    name = "android-10-x86-fyi-rel-tests",
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|10",
-        short_name = "10",
-    ),
-    triggered_by = ["android-x86-fyi-rel"],
-)
-
-# TODO(crbug.com/1137474, crbug.com/1250464): Remove this builder once there are no associated
-# disabled tests.
+# TODO(crbug.com/1137474): This and android-12-x64-fyi-rel
+# are being kept around so that build links in the related
+# bugs are accessible
+# Remove these once the bugs are closed
 ci.builder(
     name = "android-11-x86-fyi-rel",
     console_view_entry = consoles.console_view_entry(
         category = "emulator|x86|rel",
         short_name = "11",
     ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
+    # Set to an empty list to avoid chromium-gitiles-trigger triggering new
+    # builds. Also we don't set any `schedule` since this builder is for
+    # reference only and should not run any new builds.
+    triggered_by = [],
 )
 
 ci.builder(
@@ -202,6 +172,10 @@ ci.builder(
         category = "emulator|x64|rel",
         short_name = "12",
     ),
+    # Android x64 builds take longer than x86 builds to compile
+    # So they need longer timeouts
+    # Matching the execution time out of the android-12-x64-rel
+    execution_timeout = 4 * time.hour,
     # Set to an empty list to avoid chromium-gitiles-trigger triggering new
     # builds. Also we don't set any `schedule` since this builder is for
     # reference only and should not run any new builds.
@@ -215,24 +189,10 @@ ci.builder(
         short_name = "and",
     ),
     notifies = ["annotator-rel"],
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "android-x86-fyi-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "builder|x86",
-        short_name = "x86",
-    ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 # TODO(crbug.com/1299910): Move to non-FYI once the tester works fine.
-ci.builder(
+ci.thin_tester(
     name = "android-webview-12-x64-dbg-tests",
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
@@ -261,7 +221,7 @@ ci.builder(
 )
 
 # TODO(crbug.com/1299910): Move to non-FYI once the tester works fine.
-ci.builder(
+ci.thin_tester(
     name = "android-12-x64-dbg-tests",
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
@@ -311,7 +271,4 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "cronet|asan",
     ),
-    goma_backend = None,
-    reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = rbe_jobs.DEFAULT,
 )

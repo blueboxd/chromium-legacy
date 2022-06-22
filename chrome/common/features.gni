@@ -9,6 +9,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/features.gni")
 import("//components/feed/features.gni")
+import("//components/nacl/features.gni")
 import("//components/safe_browsing/buildflags.gni")
 import("//crypto/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
@@ -34,8 +35,8 @@ declare_args() {
   builtin_cert_verifier_policy_supported = is_mac
 
   # Enables support for background apps.
-  enable_background_contents = !is_android && !is_chromecast
-  enable_background_mode = !is_android && !is_chromecast && !is_chromeos
+  enable_background_contents = !is_android && !is_castos
+  enable_background_mode = !is_android && !is_castos && !is_chromeos
 
   # Enable the printing system dialog for platforms that support printing
   # and have a system dialog.
@@ -52,16 +53,13 @@ declare_args() {
   enable_hangout_services_extension = is_chrome_branded
 
   enable_one_click_signin = is_win || is_mac || is_fuchsia ||
-                            ((is_linux && !is_chromecast) || is_chromeos_lacros)
+                            ((is_linux && !is_castos) || is_chromeos_lacros)
 
   enable_service_discovery = (enable_mdns && !is_android) || is_mac
 
   # Enables use of the session service, which is enabled by default.
   # Android stores them separately on the Java side.
-  enable_session_service = !is_android && !is_chromecast
-
-  # Enables usage of the side search feature, which is disabled by default.
-  enable_side_search = toolkit_views
+  enable_session_service = !is_android && !is_castos
 
   # Enables supervision for Family Link users.
   # Supervision is only supported on Chrome OS and Android.
@@ -86,14 +84,14 @@ chrome_grit_defines = [
   "enable_arcore=$enable_arcore",
   "enable_background_mode=$enable_background_mode",
   "enable_background_contents=$enable_background_contents",
+  "enable_basic_printing=$enable_basic_printing",
   "enable_extensions=$enable_extensions",
   "enable_hangout_services_extension=$enable_hangout_services_extension",
+  "enable_nacl=$enable_nacl",
   "enable_plugins=$enable_plugins",
   "enable_pdf=$enable_pdf",
   "enable_print_preview=$enable_print_preview",
-  "enable_printing=$enable_basic_printing",
   "enable_service_discovery=$enable_service_discovery",
-  "enable_side_search=$enable_side_search",
   "enable_supervised_users=$enable_supervised_users",
   "enable_vr=$enable_vr",
   "enable_webui_tab_strip=$enable_webui_tab_strip",

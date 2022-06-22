@@ -46,6 +46,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -95,7 +96,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "media/base/mime_util.h"
-#include "net/base/escape.h"
 #include "net/http/http_status_code.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -543,7 +543,8 @@ std::unique_ptr<NavigationEntry> NavigationController::CreateNavigationEntry(
   return NavigationControllerImpl::CreateNavigationEntry(
       url, referrer, std::move(initiator_origin),
       nullptr /* source_site_instance */, transition, is_renderer_initiated,
-      extra_headers, browser_context, std::move(blob_url_loader_factory));
+      extra_headers, browser_context, std::move(blob_url_loader_factory),
+      true /* rewrite_virtual_urls */);
 }
 
 // static
@@ -557,13 +558,15 @@ NavigationControllerImpl::CreateNavigationEntry(
     bool is_renderer_initiated,
     const std::string& extra_headers,
     BrowserContext* browser_context,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
-  GURL url_to_load;
-  GURL virtual_url;
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    bool rewrite_virtual_urls) {
+  GURL url_to_load = url;
+  GURL virtual_url = url;
   bool reverse_on_redirect = false;
-  RewriteUrlForNavigation(url, browser_context, &url_to_load, &virtual_url,
-                          &reverse_on_redirect);
-
+  if (rewrite_virtual_urls) {
+    RewriteUrlForNavigation(url, browser_context, &url_to_load, &virtual_url,
+                            &reverse_on_redirect);
+  }
   // Let the NTP override the navigation params and pretend that this is a
   // browser-initiated, bookmark-like navigation.
   GetContentClient()->browser()->OverrideNavigationParams(
@@ -1392,6 +1395,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   details->is_prerender_activation =
       navigation_request->IsPrerenderedPageActivation();
+  details->is_in_active_page = navigation_request->GetRenderFrameHost()
+                                   ->GetOutermostMainFrame()
+                                   ->IsInPrimaryMainFrame();
 
   // Make sure we do not discard the pending entry for a different ongoing
   // navigation when a same document commit comes in unexpectedly from the
@@ -2649,7 +2655,8 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
           GURL(url::kAboutBlankURL), referrer, initiator_origin,
           source_site_instance, page_transition, is_renderer_initiated,
           extra_headers, browser_context_,
-          nullptr /* blob_url_loader_factory */));
+          nullptr /* blob_url_loader_factory */,
+          false /* rewrite_virtual_urls */));
     }
     // TODO(arthursonzogni): What about |is_renderer_initiated|?
     // Renderer-initiated navigation that target a remote frame are currently
@@ -2671,10 +2678,15 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
         nullptr /* policy_container_policies */);
   } else {
     // Main frame case.
+    // If `node` is the outermost main frame, it rewrites a virtual url in order
+    // to adjust the original input url if needed. For inner frames such as
+    // fenced frames or subframes, they don't rewrite urls as the urls are not
+    // input urls by users.
+    bool rewrite_virtual_urls = node->IsOutermostMainFrame();
     entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
         url, referrer, initiator_origin, source_site_instance, page_transition,
         is_renderer_initiated, extra_headers, browser_context_,
-        blob_url_loader_factory));
+        blob_url_loader_factory, rewrite_virtual_urls));
     entry->root_node()->frame_entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(source_site_instance));
     entry->root_node()->frame_entry->set_method(method);
@@ -3401,7 +3413,7 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
       if (previous_frame_entry &&
           previous_frame_entry->policy_container_policies()) {
         pending_entry_->GetFrameEntry(node)->set_policy_container_policies(
-            previous_frame_entry->policy_container_policies()->Clone());
+            previous_frame_entry->policy_container_policies()->ClonePtr());
       }
     }
   }
@@ -3421,7 +3433,7 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
           node->current_frame_host()
               ->policy_container_host()
               ->policies()
-              .Clone());
+              .ClonePtr());
     }
   }
 
@@ -3528,7 +3540,7 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
           GURL(url::kAboutBlankURL), params.referrer, params.initiator_origin,
           params.source_site_instance.get(), params.transition_type,
           params.is_renderer_initiated, extra_headers_crlf, browser_context_,
-          blob_url_loader_factory));
+          blob_url_loader_factory, false /* rewrite_virtual_urls */));
     }
     entry->AddOrUpdateFrameEntry(
         node, NavigationEntryImpl::UpdatePolicy::kReplace, -1, -1, "", nullptr,
@@ -3543,11 +3555,16 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
         nullptr /* policy_container_policies */);
   } else {
     // Otherwise, create a pending entry for the main frame.
+    // If `node` is the outermost main frame, it rewrites a virtual url in order
+    // to adjust the original input url if needed. For inner frames such as
+    // fenced frames or subframes, they don't rewrite urls as the urls are not
+    // input urls by users.
+    bool rewrite_virtual_urls = node->IsOutermostMainFrame();
     entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
         params.url, params.referrer, params.initiator_origin,
         params.source_site_instance.get(), params.transition_type,
         params.is_renderer_initiated, extra_headers_crlf, browser_context_,
-        blob_url_loader_factory));
+        blob_url_loader_factory, rewrite_virtual_urls));
     entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
     entry->SetRedirectChain(params.redirect_chain);
@@ -3611,9 +3628,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   // For main frames, rewrite the URL if necessary and compute the virtual URL
   // that should be shown in the address bar.
-  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
-  // so IsMainFrame should not be used to identify subframes. Follow up to
-  // confirm correctness.
   if (node->IsOutermostMainFrame()) {
     bool ignored_reverse_on_redirect = false;
     RewriteUrlForNavigation(params.url, browser_context_, &url_to_load,
@@ -4247,10 +4261,10 @@ NavigationControllerImpl::ComputePolicyContainerPoliciesForFrameEntry(
       return nullptr;
 
     // Make a copy of the policy container for the new FrameNavigationEntry.
-    return previous_policies->Clone();
+    return previous_policies->ClonePtr();
   }
 
-  return rfh->policy_container_host()->policies().Clone();
+  return rfh->policy_container_host()->policies().ClonePtr();
 }
 
 void NavigationControllerImpl::BroadcastHistoryOffsetAndLength() {
@@ -4415,27 +4429,39 @@ NavigationControllerImpl::GetNavigationApiHistoryEntryVectors(
   scoped_refptr<SiteInstance> site_instance =
       node->current_frame_host()->GetSiteInstance();
 
-  // NOTE: |entry_index| is an estimate of the index where this entry will
-  // commit, but it may be wrong in corner cases (e.g., if we are at the max
-  // entry limit, the earliest entry will be dropped). This is ok because this
-  // algorithm only uses |entry_index| to walk the entry list as it stands right
-  // now, and it isn't saved for anything post-commit.
-  int entry_index = GetPendingEntryIndex();
-  bool will_create_new_entry = false;
-  if (!request ||
-      NavigationTypeUtils::IsReload(request->common_params().navigation_type) ||
-      request->common_params().should_replace_current_entry ||
-      request->common_params().is_history_navigation_in_new_child_frame) {
-    entry_index = GetLastCommittedEntryIndex();
-  } else if (entry_index == -1) {
-    will_create_new_entry = true;
-    entry_index = GetLastCommittedEntryIndex() + 1;
-  }
-
+  // NOTE: |entry_index| is the index where this entry will commit if no
+  // modifications are made between now and DidCommitNavigation. This is used to
+  // walk |entries_| and determine which entries should be exposed by the
+  // navigation API. It is important to calculate this correctly, because blink
+  // will cancel a same-document history commit if it's not present in the
+  // entries blink knows about.
+  int entry_index = GetLastCommittedEntryIndex();
   int64_t pending_item_sequence_number = 0;
   int64_t pending_document_sequence_number = 0;
-  if (auto* pending_entry = GetPendingEntry()) {
-    if (auto* frame_entry = pending_entry->GetFrameEntry(node)) {
+  bool will_create_new_entry = false;
+  if (GetPendingEntryIndex() != -1) {
+    entry_index = GetPendingEntryIndex();
+    if (auto* frame_entry = GetPendingEntry()->GetFrameEntry(node)) {
+      pending_item_sequence_number = frame_entry->item_sequence_number();
+      pending_document_sequence_number =
+          frame_entry->document_sequence_number();
+    }
+  } else if (request &&
+             !NavigationTypeUtils::IsReload(
+                 request->common_params().navigation_type) &&
+             !NavigationTypeUtils::IsHistory(
+                 request->common_params().navigation_type) &&
+             !request->common_params().should_replace_current_entry &&
+             !request->common_params()
+                  .is_history_navigation_in_new_child_frame) {
+    will_create_new_entry = true;
+    entry_index = GetLastCommittedEntryIndex() + 1;
+    // Don't set pending_item_sequence_number or
+    // pending_document_sequence_number in this case - a new unique isn/dsn will
+    // be calculated in the renderer later.
+  } else if (GetLastCommittedEntryIndex() != -1) {
+    entry_index = GetLastCommittedEntryIndex();
+    if (auto* frame_entry = GetLastCommittedEntry()->GetFrameEntry(node)) {
       pending_item_sequence_number = frame_entry->item_sequence_number();
       pending_document_sequence_number =
           frame_entry->document_sequence_number();
@@ -4443,6 +4469,12 @@ NavigationControllerImpl::GetNavigationApiHistoryEntryVectors(
   }
 
   auto entry_arrays = blink::mojom::NavigationApiHistoryEntryArrays::New();
+  if (entry_index == -1) {
+    // TODO(rakina): Exit early when there is no last committed entry.
+    // Remove when InitialNavigationEntry ships.
+    return entry_arrays;
+  }
+
   entry_arrays->back_entries = PopulateSingleNavigationApiHistoryEntryVector(
       Direction::kBack, entry_index, pending_origin, node, site_instance.get(),
       pending_item_sequence_number, pending_document_sequence_number);

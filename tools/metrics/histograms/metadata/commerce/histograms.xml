@@ -123,6 +123,39 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
   </summary>
 </histogram>
 
+<histogram name="Commerce.Heuristics.CartExtractionScriptSource"
+    enum="CommerceHeuristicsDataSource" expires_after="2022-10-01">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Logged when we try to get cart extraction script to record the source of
+    this script data.
+  </summary>
+</histogram>
+
+<histogram name="Commerce.Heuristics.CheckoutURLGeneralPatternSource"
+    enum="CommerceHeuristicsDataSource" expires_after="2022-10-01">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Logged when we try to get general checkout URL detection pattern to record
+    the source of this pattern data.
+  </summary>
+</histogram>
+
+<histogram name="Commerce.Heuristics.MerchantNameSource"
+    enum="CommerceHeuristicsDataSource" expires_after="2022-10-01">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Logged when we try to get merchant name of a domain to record the source of
+    this name data.
+  </summary>
+</histogram>
+
 <histogram name="Commerce.PDPStateOnNavigation" enum="ShoppingPDPState"
     expires_after="2023-02-01">
   <owner>ayman@chromium.org</owner>
@@ -159,7 +192,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.PowerBookmarks.ShoppingDataProvider.IsProductPage"
-    enum="Boolean" expires_after="2022-08-28">
+    enum="Boolean" expires_after="2022-10-30">
   <owner>ayman@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
   <summary>
@@ -263,7 +296,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 
 <histogram
     name="Commerce.PriceDrops.{TabUsageStatus}{LocationIdentifier}.ContainsPrice"
-    enum="BooleanContainsPrice" expires_after="2022-06-07">
+    enum="BooleanContainsPrice" expires_after="2023-04-25">
   <owner>davidjm@chromium.org</owner>
   <owner>ayman@chromium.org</owner>
   <owner>dtrainor@chromium.org</owner>
@@ -279,7 +312,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 
 <histogram
     name="Commerce.PriceDrops.{TabUsageStatus}{LocationIdentifier}.ContainsPriceDrop"
-    enum="BooleanContainsPriceDrop" expires_after="2022-06-07">
+    enum="BooleanContainsPriceDrop" expires_after="2023-04-25">
   <owner>davidjm@chromium.org</owner>
   <owner>ayman@chromium.org</owner>
   <owner>dtrainor@chromium.org</owner>
@@ -296,7 +329,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 
 <histogram
     name="Commerce.PriceDrops.{TabUsageStatus}{LocationIdentifier}.IsProductDetailPage"
-    enum="BooleanIsProductDetailPage" expires_after="2022-06-07">
+    enum="BooleanIsProductDetailPage" expires_after="2023-04-25">
   <owner>davidjm@chromium.org</owner>
   <owner>ayman@chromium.org</owner>
   <owner>dtrainor@chromium.org</owner>
@@ -308,18 +341,6 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
   </summary>
   <token key="LocationIdentifier" variants="LocationIdentifiers"/>
   <token key="TabUsageStatus" variants="TabUsageStatuses"/>
-</histogram>
-
-<histogram name="Commerce.SignIn.AccountWaaStatus"
-    enum="AccountWaaStatusForCommerce" expires_after="2022-10-01">
-  <owner>zhiyuancai@chromium.org</owner>
-  <owner>ayman@chromium.org</owner>
-  <owner>chrome-shopping@google.com</owner>
-  <summary>
-    Records the web and app activity status of user account. Emitted for clients
-    in our experiment when Chrome is foregrounded. Recorded at most once in a
-    one-day moving window. Implemented for Android.
-  </summary>
 </histogram>
 
 <histogram name="Commerce.Subscriptions.TabEligible" enum="Boolean"
@@ -463,7 +484,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="MerchantTrust.MessageImpact.BrowsingTime" units="ms"
-    expires_after="M105">
+    expires_after="2022-10-30">
   <owner>zhiyuancai@chromium.org</owner>
   <owner>ayman@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -490,7 +511,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="MerchantTrust.MessageImpact.NavigationCount"
-    units="navigations" expires_after="M105">
+    units="navigations" expires_after="2022-10-30">
   <owner>zhiyuancai@chromium.org</owner>
   <owner>ayman@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>

@@ -38,15 +38,6 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGBlock,
   explicit LayoutNGTable(Element*);
   ~LayoutNGTable() override;
 
-  // TODO(atotic) Replace all H/VBorderSpacing with BorderSpacing?
-  LogicalSize BorderSpacing() const {
-    NOT_DESTROYED();
-    if (ShouldCollapseBorders())
-      return LogicalSize();
-    return LogicalSize(LayoutUnit(HBorderSpacing()),
-                       LayoutUnit(VBorderSpacing()));
-  }
-
   wtf_size_t ColumnCount() const;
 
   const NGTableBorders* GetCachedTableBorders() const {
@@ -201,30 +192,18 @@ class CORE_EXPORT LayoutNGTable : public LayoutNGBlock,
 
   LayoutNGTableSectionInterface* FirstBodyInterface() const final;
 
-  LayoutNGTableSectionInterface* TopSectionInterface() const final;
+  LayoutNGTableSectionInterface* FirstSectionInterface() const final;
+  LayoutNGTableSectionInterface* FirstNonEmptySectionInterface() const final;
+  LayoutNGTableSectionInterface* LastSectionInterface() const final;
+  LayoutNGTableSectionInterface* LastNonEmptySectionInterface() const final;
 
-  LayoutNGTableSectionInterface* SectionBelowInterface(
+  LayoutNGTableSectionInterface* NextSectionInterface(
       const LayoutNGTableSectionInterface*,
       SkipEmptySectionsValue) const final;
 
-  // Following methods are called during printing, not in TablesNG.
-  LayoutNGTableSectionInterface* TopNonEmptySectionInterface() const final {
-    NOT_DESTROYED();
-    NOTREACHED();
-    return nullptr;
-  }
-
-  LayoutNGTableSectionInterface* BottomSectionInterface() const final {
-    NOT_DESTROYED();
-    NOTREACHED();
-    return nullptr;
-  }
-
-  LayoutNGTableSectionInterface* BottomNonEmptySectionInterface() const final {
-    NOT_DESTROYED();
-    NOTREACHED();
-    return nullptr;
-  }
+  LayoutNGTableSectionInterface* PreviousSectionInterface(
+      const LayoutNGTableSectionInterface*,
+      SkipEmptySectionsValue) const final;
 
   // LayoutNGTableInterface methods end.
 

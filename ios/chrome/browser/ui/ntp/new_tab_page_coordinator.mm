@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
 #import "ios/chrome/browser/discover_feed/feed_model_configuration.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -90,7 +91,6 @@ namespace {
 }  // namespace
 
 @interface NewTabPageCoordinator () <AppStateObserver,
-                                     BooleanObserver,
                                      ContentSuggestionsHeaderCommands,
                                      DiscoverFeedDelegate,
                                      DiscoverFeedObserverBridgeDelegate,
@@ -157,11 +157,7 @@ namespace {
 // change depending on Feed visibility).
 @property(nonatomic, strong) UIViewController* containerViewController;
 
-// The coordinator contained ViewController. It can be either a
-// NewTabPageViewController (When the Discover Feed is being shown) or a
-// ContentSuggestionsViewController (When the Discover Feed is hidden or when
-// the non refactored NTP is being used.)
-// TODO(crbug.com/1114792): Update this comment when the NTP refactors launches.
+// The coordinator contained ViewController.
 @property(nonatomic, strong) UIViewController* containedViewController;
 
 // PrefService used by this Coordinator.
@@ -271,13 +267,13 @@ namespace {
   self.feedExpandedPref = [[PrefBackedBoolean alloc]
       initWithPrefService:_prefService
                  prefName:feed::prefs::kArticlesListVisible];
-  [self.feedExpandedPref setObserver:self];
 
   // Start observing DiscoverFeedService.
   _discoverFeedObserverBridge = std::make_unique<DiscoverFeedObserverBridge>(
       self, self.discoverFeedService);
 
   self.feedMetricsRecorder = self.discoverFeedService->GetFeedMetricsRecorder();
+  self.feedMetricsRecorder.selectedFeedType = self.selectedFeed;
 
   if (IsContentSuggestionsHeaderMigrationEnabled()) {
     self.headerController =
@@ -395,7 +391,6 @@ namespace {
     [omniboxCommandHandler cancelOmniboxEdit];
   }
 
-  [self.feedExpandedPref setObserver:nil];
   self.feedExpandedPref = nil;
 
   _prefChangeRegistrar.reset();
@@ -579,6 +574,12 @@ namespace {
   menuButtonGuide.constrainedView = self.feedHeaderViewController.menuButton;
 }
 
+- (void)updateFollowingFeedHasUnseenContent:(BOOL)hasUnseenContent {
+  DCHECK(IsWebChannelsEnabled());
+  [self.feedHeaderViewController
+      updateFollowingSegmentDotForUnseenContent:hasUnseenContent];
+}
+
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
     if (visible && self.started) {
@@ -591,8 +592,6 @@ namespace {
             (FollowingFeedSortType)self.prefService->GetInteger(
                 prefs::kNTPFollowingFeedSortType);
       }
-    } else if (IsSingleNtpEnabled()) {
-      [self.ntpMediator saveContentOffsetForWebState:self.webState];
     }
   }
   self.viewPresented = visible;
@@ -603,14 +602,24 @@ namespace {
 
 - (void)handleFeedSelected:(FeedType)feedType {
   DCHECK(IsWebChannelsEnabled());
+
+  // Saves scroll position before changing feed.
+  CGFloat scrollPosition = [self.ntpViewController scrollPosition];
+
   if (feedType == FeedTypeFollowing) {
     // Clears dot and notifies service that the Following feed content has been
     // seen.
-    self.feedHeaderViewController.followingSegmentDotVisible = NO;
+    [self.feedHeaderViewController
+        updateFollowingSegmentDotForUnseenContent:NO];
     self.discoverFeedService->SetFollowingFeedContentSeen();
   }
   self.selectedFeed = feedType;
   [self updateNTPForFeed];
+  [self updateFeedLayout];
+
+  // Scroll position resets when changing the feed, so we set it back to what it
+  // was.
+  [self.ntpViewController setContentOffsetUpToTopOfFeed:scrollPosition];
 }
 
 - (void)handleSortTypeForFollowingFeed:(FollowingFeedSortType)sortType {
@@ -618,6 +627,10 @@ namespace {
   self.prefService->SetInteger(prefs::kNTPFollowingFeedSortType, sortType);
   self.discoverFeedService->SetFollowingFeedSortType(sortType);
   self.feedHeaderViewController.followingFeedSortType = sortType;
+}
+
+- (BOOL)shouldFeedBeVisible {
+  return [self isFeedHeaderVisible] && [self.feedExpandedPref value];
 }
 
 #pragma mark - FeedMenuCommands
@@ -642,7 +655,6 @@ namespace {
                              IDS_IOS_DISCOVER_FEED_MENU_TURN_OFF_ITEM)
                   action:^{
                     [weakSelf setFeedVisibleFromHeader:NO];
-                    [weakSelf updateNTPForFeed];
                   }
                    style:UIAlertActionStyleDestructive];
   } else {
@@ -651,7 +663,6 @@ namespace {
                              IDS_IOS_DISCOVER_FEED_MENU_TURN_ON_ITEM)
                   action:^{
                     [weakSelf setFeedVisibleFromHeader:YES];
-                    [weakSelf updateNTPForFeed];
                   }
                    style:UIAlertActionStyleDefault];
   }
@@ -758,12 +769,6 @@ namespace {
     transitionedToActivationLevel:(SceneActivationLevel)level {
   self.sceneInForeground = level >= SceneActivationLevelForegroundInactive;
   [self updateVisible];
-}
-
-#pragma mark - BooleanObserver
-
-- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  [self updateNTPForFeed];
 }
 
 #pragma mark - DiscoverFeedDelegate
@@ -976,10 +981,8 @@ namespace {
   self.ntpViewController.feedHeaderViewController =
       self.feedHeaderViewController;
 
-  [self updateFeedHeaderLabelText:self.feedHeaderViewController];
-
   // Requests feeds here if the correct flags and prefs are enabled.
-  if ([self shouldFeedBeFetched]) {
+  if ([self shouldFeedBeVisible]) {
     FeedModelConfiguration* discoverFeedConfiguration =
         [FeedModelConfiguration discoverFeedModelConfiguration];
     self.discoverFeedService->CreateFeedModel(discoverFeedConfiguration);
@@ -1024,14 +1027,9 @@ namespace {
          self.prefService->GetBoolean(prefs::kNTPContentSuggestionsEnabled);
 }
 
-// Determines whether the feed should be fetched based on the user prefs.
-- (BOOL)shouldFeedBeFetched {
-  return [self isFeedHeaderVisible] && [self.feedExpandedPref value];
-}
-
 // Returns |YES| if the feed is currently visible on the NTP.
 - (BOOL)isFeedVisible {
-  return [self shouldFeedBeFetched] && self.discoverFeedViewController;
+  return [self shouldFeedBeVisible] && self.discoverFeedViewController;
 }
 
 // Creates, configures and returns a Discover feed view controller.
@@ -1069,12 +1067,7 @@ namespace {
 
 // Handles how the NTP reacts when the default search engine is changed.
 - (void)defaultSearchEngineDidChange {
-  [self updateFeedHeaderLabelText:self.feedHeaderViewController];
-  if (IsWebChannelsEnabled()) {
-    [self.feedHeaderViewController updateForDefaultSearchEngineChanged];
-    [self.feedHeaderViewController.view setNeedsLayout];
-    [self.feedHeaderViewController.view layoutIfNeeded];
-  }
+  [self.feedHeaderViewController updateForDefaultSearchEngineChanged];
   [self.ntpViewController updateNTPLayout];
   [self updateFeedLayout];
   [self.ntpViewController setContentOffsetToTop];
@@ -1082,9 +1075,12 @@ namespace {
 
 // Toggles feed visibility between hidden or expanded using the feed header
 // menu. A hidden feed will continue to show the header, with a modified label.
+// TODO(crbug.com/1304382): Modify this comment when Web Channels is launched.
 - (void)setFeedVisibleFromHeader:(BOOL)visible {
   [self.feedExpandedPref setValue:visible];
   [self.feedMetricsRecorder recordDiscoverFeedVisibilityChanged:visible];
+  [self updateNTPForFeed];
+  [self.feedHeaderViewController updateForFeedVisibilityChanged];
 }
 
 // Configures and returns the NTP mediator.
@@ -1105,6 +1101,7 @@ namespace {
   ntpMediator.browser = self.browser;
   ntpMediator.ntpViewController = self.ntpViewController;
   ntpMediator.headerCollectionInteractionHandler = self.headerSynchronizer;
+  ntpMediator.feedControlDelegate = self;
   return ntpMediator;
 }
 
@@ -1129,26 +1126,6 @@ namespace {
   return contentSuggestionsCoordinator;
 }
 
-// Sets a header's text based on feed visibility and default search engine
-// prefs.
-- (void)updateFeedHeaderLabelText:(FeedHeaderViewController*)feedHeader {
-  if (!self.templateURLService) {
-    return;
-  }
-  NSString* feedHeaderTitleText =
-      [self isGoogleDefaultSearchEngine]
-          ? l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_TITLE)
-          : l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_TITLE_NON_DSE);
-  feedHeaderTitleText =
-      [self shouldFeedBeFetched]
-          ? feedHeaderTitleText
-          : [NSString
-                stringWithFormat:@"%@ – %@", feedHeaderTitleText,
-                                 l10n_util::GetNSString(
-                                     IDS_IOS_DISCOVER_FEED_TITLE_OFF_LABEL)];
-  [feedHeader setTitleText:feedHeaderTitleText];
-}
-
 - (void)handleFeedManageTapped {
   [self.feedMetricsRecorder recordHeaderMenuManageTapped];
   [self.feedManagementCoordinator stop];
@@ -1168,12 +1145,11 @@ namespace {
   DCHECK(!self.browser->GetBrowserState()->IsOffTheRecord());
   if (!_feedHeaderViewController) {
     _feedHeaderViewController = [[FeedHeaderViewController alloc]
-               initWithSelectedFeed:self.selectedFeed
-              followingFeedSortType:(FollowingFeedSortType)
-                                        self.prefService->GetInteger(
-                                            prefs::kNTPFollowingFeedSortType)
-         followingSegmentDotVisible:self.discoverFeedService
-                                        ->GetFollowingFeedHasUnseenContent()];
+        initWithFollowingFeedSortType:(FollowingFeedSortType)
+                                          self.prefService->GetInteger(
+                                              prefs::kNTPFollowingFeedSortType)
+           followingSegmentDotVisible:self.discoverFeedService
+                                          ->GetFollowingFeedHasUnseenContent()];
     _feedHeaderViewController.feedControlDelegate = self;
     _feedHeaderViewController.ntpDelegate = self;
     [_feedHeaderViewController.menuButton
@@ -1182,6 +1158,13 @@ namespace {
         forControlEvents:UIControlEventTouchUpInside];
   }
   return _feedHeaderViewController;
+}
+
+#pragma mark - Setters
+
+- (void)setSelectedFeed:(FeedType)selectedFeed {
+  _selectedFeed = selectedFeed;
+  self.feedMetricsRecorder.selectedFeedType = selectedFeed;
 }
 
 #pragma mark - DiscoverFeedWrapperViewControllerDelegate

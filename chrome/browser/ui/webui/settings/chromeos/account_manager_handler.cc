@@ -20,7 +20,6 @@
 #include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/account_manager/account_manager_welcome_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager/account_migration_welcome_dialog.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
@@ -144,6 +143,11 @@ class AccountBuilder {
     return *this;
   }
 
+  AccountBuilder& SetIsManaged(const bool& value) {
+    account_.SetBoolKey("isManaged", value);
+    return *this;
+  }
+
   AccountBuilder& SetPic(const std::string& value) {
     account_.SetStringKey("pic", value);
     return *this;
@@ -228,11 +232,6 @@ void AccountManagerUIHandler::RegisterMessages() {
       base::BindRepeating(&AccountManagerUIHandler::HandleRemoveAccount,
                           weak_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
-      "showWelcomeDialogIfRequired",
-      base::BindRepeating(
-          &AccountManagerUIHandler::HandleShowWelcomeDialogIfRequired,
-          weak_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
       "changeArcAvailability",
       base::BindRepeating(&AccountManagerUIHandler::HandleChangeArcAvailability,
                           weak_factory_.GetWeakPtr()));
@@ -313,16 +312,19 @@ void AccountManagerUIHandler::FinishHandleGetAccounts(
       std::string organization = kFamilyLink;
       // Replace space with the non-breaking space.
       base::ReplaceSubstringsAfterOffset(&organization, 0, " ", "&nbsp;");
-      device_account.SetOrganization(organization);
+      device_account.SetOrganization(organization).SetIsManaged(true);
     } else if (user->IsActiveDirectoryUser()) {
-      device_account.SetOrganization(
-          chrome::enterprise_util::GetDomainFromEmail(user->GetDisplayEmail()));
+      device_account
+          .SetOrganization(chrome::enterprise_util::GetDomainFromEmail(
+              user->GetDisplayEmail()))
+          .SetIsManaged(true);
     } else if (profile_->GetProfilePolicyConnector()->IsManaged()) {
-      device_account.SetOrganization(
-          chrome::enterprise_util::GetDomainFromEmail(
+      device_account
+          .SetOrganization(chrome::enterprise_util::GetDomainFromEmail(
               identity_manager_
                   ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
-                  .email));
+                  .email))
+          .SetIsManaged(true);
     }
 
     // Device account must show up at the top.
@@ -365,6 +367,7 @@ base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
         .SetFullName(maybe_account_info.full_name)
         .SetEmail(stored_account.raw_email)
         .SetUnmigrated(!is_child_user && account_token_pair.second)
+        .SetIsManaged(maybe_account_info.IsManaged())
         .SetIsSignedIn(!identity_manager_
                             ->HasAccountWithRefreshTokenInPersistentErrorState(
                                 maybe_account_info.account_id));
@@ -452,11 +455,6 @@ void AccountManagerUIHandler::HandleRemoveAccount(
             l10n_util::GetStringFUTF16(
                 IDS_SETTINGS_ACCOUNT_MANAGER_ACCOUNT_REMOVED_MESSAGE,
                 base::UTF8ToUTF16(email)));
-}
-
-void AccountManagerUIHandler::HandleShowWelcomeDialogIfRequired(
-    const base::Value::List& args) {
-  chromeos::AccountManagerWelcomeDialog::ShowIfRequired();
 }
 
 void AccountManagerUIHandler::HandleChangeArcAvailability(

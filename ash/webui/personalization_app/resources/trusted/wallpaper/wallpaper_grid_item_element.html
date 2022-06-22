@@ -28,7 +28,7 @@
 
   .item {
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.12);
+    background-color: var(--personalization-app-grid-item-background-color);
     border-radius: var(--personalization-app-grid-item-border-radius);
     box-sizing: border-box;
     cursor: pointer;
@@ -141,7 +141,9 @@
 <div class="item" aria-selected$="[[selected]]"
      style$="[[getItemPlaceholderAnimationDelay_(index)]]">
   <template is="dom-if" if="[[isImageVisible_(imageSrc)]]">
-    <img is="cr-auto-img" auto-src="[[imageSrc]]" clear-src with-cookies></img>
+    <img is="cr-auto-img" aria-hidden="true" auto-src="[[imageSrc]]" clear-src
+      is-google-photos>
+    </img>
   </template>
   <template is="dom-if" if="[[isTextVisible_(primaryText, secondaryText)]]">
     <div class="text">

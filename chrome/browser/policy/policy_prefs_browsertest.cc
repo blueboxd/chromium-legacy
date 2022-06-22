@@ -116,7 +116,8 @@ class PolicyPrefsTest : public PlatformBrowserTest {
 // and that the user can't override that setting.
 // README SHERIFFs: This test encapsulates a whole suite of individual browser
 // tests for performance reasons and therefore has an increased chance of
-// failure/flakiness. Please add hendrich@chromium.org on any related bugs when
+// failure/flakiness.
+// IPORTANT: Please add hendrich@chromium.org on any related bugs when
 // disabling this test.
 // Flake on linux-chromeos-dbg: crbug.com/1294825
 #if (BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG))

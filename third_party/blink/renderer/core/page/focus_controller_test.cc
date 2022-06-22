@@ -23,7 +23,7 @@ TEST_F(FocusControllerTest, SetInitialFocus) {
   GetDocument().body()->setInnerHTML("<input><textarea>");
   auto* input = To<Element>(GetDocument().body()->firstChild());
   // Set sequential focus navigation point before the initial focus.
-  input->focus();
+  input->Focus();
   input->blur();
   GetFocusController().SetInitialFocus(mojom::blink::FocusType::kForward);
   EXPECT_EQ(input, GetDocument().FocusedElement())
@@ -176,6 +176,61 @@ TEST_F(FocusControllerTest, NextFocusableElementForIME_NoFormTag) {
 
   EXPECT_EQ(nullptr, GetFocusController().NextFocusableElementForIME(
                          password, mojom::blink::FocusType::kForward));
+  EXPECT_EQ(username, GetFocusController().NextFocusableElementForIME(
+                          password, mojom::blink::FocusType::kBackward));
+}
+
+// Ignore a checkbox to streamline form submission.
+TEST_F(FocusControllerTest, NextFocusableElementForIME_Checkbox) {
+  GetDocument().body()->setInnerHTML(
+      "<form>"
+      "  <input type='text' id='username'>"
+      "  <input type='password' id='password'>"
+      "  <input type='checkbox' id='remember-me'>"
+      "  <input type='submit' value='Login'>"
+      "</form>");
+  Element* username = GetElementById("username");
+  Element* password = GetElementById("password");
+  ASSERT_TRUE(username);
+  ASSERT_TRUE(password);
+
+  EXPECT_EQ(password, GetFocusController().NextFocusableElementForIME(
+                          username, mojom::blink::FocusType::kForward));
+  EXPECT_EQ(nullptr, GetFocusController().NextFocusableElementForIME(
+                         username, mojom::blink::FocusType::kBackward));
+
+  EXPECT_EQ(nullptr, GetFocusController().NextFocusableElementForIME(
+                         password, mojom::blink::FocusType::kForward));
+  EXPECT_EQ(username, GetFocusController().NextFocusableElementForIME(
+                          password, mojom::blink::FocusType::kBackward));
+}
+
+// A <select> element should block a form submission.
+TEST_F(FocusControllerTest, NextFocusableElementForIME_Select) {
+  GetDocument().body()->setInnerHTML(
+      "<form>"
+      "  <input type='text' id='username'>"
+      "  <input type='password' id='password'>"
+      "  <select id='login_type'>"
+      "    <option value='regular'>Regular</option>"
+      "    <option value='invisible'>Invisible</option>"
+      "  </select>"
+      "  <input type='submit' value='Login'>"
+      "</form>");
+  Element* username = GetElementById("username");
+  Element* password = GetElementById("password");
+  Element* login_type = GetElementById("login_type");
+  ASSERT_TRUE(username);
+  ASSERT_TRUE(password);
+  ASSERT_TRUE(login_type);
+
+  EXPECT_EQ(password, GetFocusController().NextFocusableElementForIME(
+                          username, mojom::blink::FocusType::kForward));
+  EXPECT_EQ(nullptr, GetFocusController().NextFocusableElementForIME(
+                         username, mojom::blink::FocusType::kBackward));
+
+  EXPECT_EQ(login_type, GetFocusController().NextFocusableElementForIME(
+                            password, mojom::blink::FocusType::kForward));
   EXPECT_EQ(username, GetFocusController().NextFocusableElementForIME(
                           password, mojom::blink::FocusType::kBackward));
 }

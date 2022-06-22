@@ -17,12 +17,10 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/ash/release_notes/release_notes_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
@@ -30,10 +28,8 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
-#include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,39 +39,10 @@
 namespace app_list {
 namespace {
 
-constexpr char kHelpAppDiscoverResult[] = "help-app://discover";
-constexpr char kHelpAppUpdatesResult[] = "help-app://updates";
-
 constexpr size_t kMinQueryLength = 3u;
 constexpr double kMinScore = 0.4;
 constexpr size_t kNumRequestedResults = 5u;
 constexpr size_t kMaxShownResults = 2u;
-
-// Whether we should show the Discover Tab suggestion chip.
-bool ShouldShowDiscoverTabSuggestionChip(Profile* profile) {
-  if (!base::FeatureList::IsEnabled(ash::features::kHelpAppDiscoverTab)) {
-    return false;
-  }
-  const int times_left_to_show = profile->GetPrefs()->GetInteger(
-      prefs::kDiscoverTabSuggestionChipTimesLeftToShow);
-  return times_left_to_show > 0;
-}
-
-// Decrements the times left to show the Discover Tab suggestion chip in
-// PrefService.
-void DecreaseTimesLeftToShowDiscoverTabSuggestionChip(Profile* profile) {
-  const int times_left_to_show = profile->GetPrefs()->GetInteger(
-      prefs::kDiscoverTabSuggestionChipTimesLeftToShow);
-  profile->GetPrefs()->SetInteger(
-      prefs::kDiscoverTabSuggestionChipTimesLeftToShow, times_left_to_show - 1);
-}
-
-// Sets the times left to show the Discover Tab suggestion chip to 0 in
-// PrefService.
-void StopShowingDiscoverTabSuggestionChip(Profile* profile) {
-  profile->GetPrefs()->SetInteger(
-      prefs::kDiscoverTabSuggestionChipTimesLeftToShow, 0);
-}
 
 // The end result of a list search. Logged once per time a list search finishes.
 // Not logged if the search is canceled by a new search starting. Not logged for
@@ -98,32 +65,6 @@ void LogListSearchResultState(ListSearchResultState state) {
 }
 
 }  // namespace
-
-HelpAppResult::HelpAppResult(Profile* profile,
-                             const std::string& id,
-                             const std::u16string& title,
-                             const gfx::ImageSkia& icon)
-    : profile_(profile) {
-  DCHECK(profile_);
-  set_id(id);
-  SetCategory(Category::kHelp);
-  SetTitle(title);
-  // Show this in the first position, in front of any other chips that may be
-  // also claiming the first slot.
-  SetDisplayIndex(DisplayIndex::kFirstIndex);
-  SetPositionPriority(1.0f);
-  SetResultType(ResultType::kHelpApp);
-  SetDisplayType(DisplayType::kChip);
-  // Some chips have different metrics types.
-  if (id == kHelpAppDiscoverResult) {
-    SetMetricsType(ash::HELP_APP_DISCOVER);
-  } else if (id == kHelpAppUpdatesResult) {
-    SetMetricsType(ash::HELP_APP_UPDATES);
-  } else {
-    SetMetricsType(ash::HELP_APP_DEFAULT);
-  }
-  SetChipIcon(icon);
-}
 
 HelpAppResult::HelpAppResult(
     const float& relevance,
@@ -150,34 +91,6 @@ HelpAppResult::~HelpAppResult() = default;
 
 void HelpAppResult::Open(int event_flags) {
   // Note: event_flags is ignored, LaunchSWA doesn't need it.
-  if (id() == kHelpAppDiscoverResult) {
-    // Launch discover tab suggestion chip.
-    web_app::SystemAppLaunchParams params;
-    params.url = GURL("chrome://help-app/discover");
-    params.launch_source =
-        apps::mojom::LaunchSource::kFromAppListRecommendation;
-    web_app::LaunchSystemWebAppAsync(
-        profile_, web_app::SystemAppType::HELP, params,
-        apps::MakeWindowInfo(display::kDefaultDisplayId));
-
-    StopShowingDiscoverTabSuggestionChip(profile_);
-    return;
-  } else if (id() == kHelpAppUpdatesResult) {
-    // Launch release notes suggestion chip.
-    base::RecordAction(
-        base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
-
-    web_app::SystemAppLaunchParams params;
-    params.url = GURL("chrome://help-app/updates");
-    params.launch_source =
-        apps::mojom::LaunchSource::kFromAppListRecommendation;
-    web_app::LaunchSystemWebAppAsync(
-        profile_, web_app::SystemAppType::HELP, params,
-        apps::MakeWindowInfo(display::kDefaultDisplayId));
-
-    ash::ReleaseNotesStorage(profile_).StopShowingSuggestionChip();
-    return;
-  }
   // Launch list result.
   web_app::SystemAppLaunchParams params;
   params.url = GURL(ash::kChromeUIHelpAppURL + url_path_);
@@ -255,22 +168,8 @@ void HelpAppProvider::Start(const std::u16string& query) {
 }
 
 void HelpAppProvider::StartZeroState() {
-  SearchProvider::Results search_results;
   ClearResultsSilently();
   last_query_.clear();
-
-  if (ShouldShowDiscoverTabSuggestionChip(profile_)) {
-    search_results.emplace_back(std::make_unique<HelpAppResult>(
-        profile_, kHelpAppDiscoverResult,
-        l10n_util::GetStringUTF16(IDS_HELP_APP_DISCOVER_TAB_SUGGESTION_CHIP),
-        icon_));
-  } else if (ash::ReleaseNotesStorage(profile_).ShouldShowSuggestionChip()) {
-    search_results.emplace_back(std::make_unique<HelpAppResult>(
-        profile_, kHelpAppUpdatesResult,
-        l10n_util::GetStringUTF16(IDS_HELP_APP_WHATS_NEW_SUGGESTION_CHIP),
-        icon_));
-  }
-  SwapResults(&search_results);
 }
 
 void HelpAppProvider::ViewClosing() {
@@ -304,25 +203,8 @@ void HelpAppProvider::OnSearchReturned(
   SwapResults(&search_results);
 }
 
-// TODO(b/171828539): Consider using AppListNotifier for better proxy of
-// impressions.
-void HelpAppProvider::AppListShown() {
-  for (auto& result : results()) {
-    if (result->id() == kHelpAppDiscoverResult) {
-      DecreaseTimesLeftToShowDiscoverTabSuggestionChip(profile_);
-    } else if (result->id() == kHelpAppUpdatesResult) {
-      ash::ReleaseNotesStorage(profile_)
-          .DecreaseTimesLeftToShowSuggestionChip();
-    }
-  }
-}
-
 ash::AppListSearchResultType HelpAppProvider::ResultType() const {
   return ash::AppListSearchResultType::kHelpApp;
-}
-
-bool HelpAppProvider::ShouldBlockZeroState() const {
-  return true;
 }
 
 void HelpAppProvider::OnAppUpdate(const apps::AppUpdate& update) {

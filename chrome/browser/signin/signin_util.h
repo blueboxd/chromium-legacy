@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/tribool.h"
 
@@ -86,6 +87,7 @@ void SetUserSignoutAllowedForProfile(Profile* profile, bool is_allowed);
 void EnsureUserSignoutAllowedIsInitializedForProfile(Profile* profile);
 
 #if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS)
 // Returns true if profile separation is enforced by policy.
 bool ProfileSeparationEnforcedByPolicy(
     Profile* profile,
@@ -94,12 +96,12 @@ bool ProfileSeparationEnforcedByPolicy(
 bool ProfileSeparationAllowsKeepingUnmanagedBrowsingDataInManagedProfile(
     Profile* profile,
     const std::string& intercepted_account_level_policy_value);
-
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 // Records a UMA metric if the user accepts or not to create an enterprise
 // profile.
 void RecordEnterpriseProfileCreationUserChoice(bool enforced_by_policy,
                                                bool created);
-#endif
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace signin_util
 

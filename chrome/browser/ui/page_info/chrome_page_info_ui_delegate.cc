@@ -20,7 +20,6 @@
 #include "components/permissions/permission_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -101,13 +100,25 @@ ChromePageInfoUiDelegate::GetAboutThisSiteInfo() {
   if (auto* service =
           AboutThisSiteServiceFactory::GetForProfile(GetProfile())) {
     return service->GetAboutThisSiteInfo(
-        site_url_, ukm::GetSourceIdForWebContentsDocument(web_contents_));
+        site_url_, web_contents_->GetMainFrame()->GetPageUkmSourceId());
   }
   return absl::nullopt;
 }
 
 void ChromePageInfoUiDelegate::AboutThisSiteSourceClicked(
     GURL url,
+    const ui::Event& event) {
+  // TODO(crbug.com/1250653): Consider moving this to presenter as other methods
+  // that open web pages.
+  web_contents_->OpenURL(content::OpenURLParams(
+      url, content::Referrer(),
+      ui::DispositionFromEventFlags(event.flags(),
+                                    WindowOpenDisposition::NEW_FOREGROUND_TAB),
+      ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
+}
+
+void ChromePageInfoUiDelegate::OpenMoreAboutThisPageUrl(
+    const GURL& url,
     const ui::Event& event) {
   // TODO(crbug.com/1250653): Consider moving this to presenter as other methods
   // that open web pages.

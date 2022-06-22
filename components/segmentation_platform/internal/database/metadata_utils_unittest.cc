@@ -7,7 +7,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/database/ukm_types.h"
-#include "components/segmentation_platform/internal/execution/query_processor.h"
+#include "components/segmentation_platform/internal/execution/processing/query_processor.h"
 #include "components/segmentation_platform/internal/proto/aggregation.pb.h"
 #include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,6 +87,10 @@ TEST_F(MetadataUtilsTest, MetadataUmaFeatureValidation) {
             metadata_utils::ValidateMetadataUmaFeature(feature));
 
   feature.set_type(proto::SignalType::UNKNOWN_SIGNAL_TYPE);
+  EXPECT_EQ(metadata_utils::ValidationResult::kSignalTypeInvalid,
+            metadata_utils::ValidateMetadataUmaFeature(feature));
+
+  feature.set_type(proto::SignalType::UKM_EVENT);
   EXPECT_EQ(metadata_utils::ValidationResult::kSignalTypeInvalid,
             metadata_utils::ValidateMetadataUmaFeature(feature));
 
@@ -237,8 +241,8 @@ TEST_F(MetadataUtilsTest, MetadataCustomInputValidation) {
   EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
             metadata_utils::ValidateMetadataCustomInput(custom_input));
 
-  // When fill policy is current time, the custom input is invalid if the tensor
-  // length is bigger than 1.
+  // When default value is filled, tensor length must be smaller or equal than
+  // the default value list size.
   custom_input.set_fill_policy(proto::CustomInput::FILL_PREDICTION_TIME);
   custom_input.set_tensor_length(2);
   EXPECT_EQ(metadata_utils::ValidationResult::kCustomInputInvalid,
@@ -350,13 +354,13 @@ TEST_F(MetadataUtilsTest, ValidateMetadataAndInputFeatures) {
 
 TEST_F(MetadataUtilsTest, MetadataIndexedTensorsValidation) {
   // Empty indexed tensors are valid.
-  QueryProcessor::IndexedTensors tensor;
+  processing::QueryProcessor::IndexedTensors tensor;
   EXPECT_EQ(
       metadata_utils::ValidationResult::kValidationSuccess,
       metadata_utils::ValidateIndexedTensors(tensor, /* expected_size */ 0));
 
   // Not continuously indexed tensors are invalid.
-  const std::vector<ProcessedValue> value;
+  const std::vector<processing::ProcessedValue> value;
   tensor[0] = value;
   tensor[1] = value;
   tensor[3] = value;

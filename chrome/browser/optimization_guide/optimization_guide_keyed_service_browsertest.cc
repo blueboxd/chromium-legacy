@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/history_clusters/core/on_device_clustering_features.h"
 #include "components/optimization_guide/core/command_line_top_host_provider.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -39,7 +41,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/base/escape.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -282,7 +283,7 @@ class OptimizationGuideKeyedServiceBrowserTest
 
     GURL request_url = request.GetURL();
     std::string dest =
-        net::UnescapeBinaryURLComponent(request_url.query_piece());
+        base::UnescapeBinaryURLComponent(request_url.query_piece());
 
     auto http_response =
         std::make_unique<net::test_server::BasicHttpResponse>();
@@ -324,7 +325,10 @@ class OptimizationGuideKeyedServiceWithoutRegistrationsBrowserTest
     : public OptimizationGuideKeyedServiceBrowserTest {
  public:
   OptimizationGuideKeyedServiceWithoutRegistrationsBrowserTest() {
-    feature_list_.InitWithFeatures({}, {page_info::kPageInfoAboutThisSite});
+    feature_list_.InitWithFeatures(
+        {}, {history_clusters::features::kOnDeviceClusteringBlocklists,
+             page_info::kPageInfoAboutThisSiteEn,
+             page_info::kPageInfoAboutThisSiteNonEn});
   }
 
  private:
@@ -442,8 +446,14 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       ukm::builders::OptimizationGuide::kRegisteredOptimizationTypesName));
 
   int64_t expected_types = 1 << OptimizationType::NOSCRIPT;
-  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite))
+  if (page_info::IsAboutThisSiteFeatureEnabled(
+          g_browser_process->GetApplicationLocale())) {
     expected_types |= 1 << OptimizationType::ABOUT_THIS_SITE;
+  }
+  if (base::FeatureList::IsEnabled(
+          history_clusters::features::kOnDeviceClusteringBlocklists)) {
+    expected_types |= 1 << OptimizationType::HISTORY_CLUSTERS;
+  }
   ukm_recorder.ExpectEntryMetric(
       entry, ukm::builders::OptimizationGuide::kRegisteredOptimizationTypesName,
       expected_types);
@@ -482,8 +492,14 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       entry,
       ukm::builders::OptimizationGuide::kRegisteredOptimizationTypesName));
   int64_t expected_types = 1 << OptimizationType::NOSCRIPT;
-  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite))
+  if (page_info::IsAboutThisSiteFeatureEnabled(
+          g_browser_process->GetApplicationLocale())) {
     expected_types |= 1 << OptimizationType::ABOUT_THIS_SITE;
+  }
+  if (base::FeatureList::IsEnabled(
+          history_clusters::features::kOnDeviceClusteringBlocklists)) {
+    expected_types |= 1 << OptimizationType::HISTORY_CLUSTERS;
+  }
   ukm_recorder.ExpectEntryMetric(
       entry, ukm::builders::OptimizationGuide::kRegisteredOptimizationTypesName,
       expected_types);

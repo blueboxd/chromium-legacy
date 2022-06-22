@@ -94,6 +94,8 @@
 <translation id="1742316578210444689">İvrit dilində Transliterasiya</translation>
 <translation id="1747761757048858544">Holland (Niderland)</translation>
 <translation id="174937106936716857">Ümumi fayl sayı</translation>
+<translation id="1755345808328621801">Bu fayl Windows proqram təminatından istifadə edən stolüstü kompüter üçündür, ChromeOS işlədən cihazınız üçün uyğun deyil.</translation>
+<translation id="1757915090001272240">Enli Latın</translation>
 <translation id="1773212559869067373">Doğrulama təsdiqi lokal olaraq ləğv edildi</translation>
 <translation id="1775381402323441512">Video məlumatı</translation>
 <translation id="180035236176489073">Bu fayllara daxil olmaq üçün onlayn olmalısınız.</translation>
@@ -103,6 +105,7 @@
 <translation id="1813278315230285598">Xidmətlər</translation>
 <translation id="1829129547161959350">Pinqvin</translation>
 <translation id="183183971458492120">İnfo yüklənir...</translation>
+<translation id="1832073788765803750">Yarım enli katakana</translation>
 <translation id="1834290891154666894">Subyektin alternativ adının uyğunluğu yanlış daxil edilib</translation>
 <translation id="1838709767668011582">Google site</translation>
 <translation id="1844692022597038441">Bu fayl oflayn olaraq əlçatan deyil.</translation>
@@ -117,7 +120,6 @@
 <translation id="1936717151811561466">Fin</translation>
 <translation id="1942765061641586207">Şəkil dəqiqliyi</translation>
 <translation id="1972984168337863910">Faylların rəy panelini genişləndirin</translation>
-<translation id="1984456723671657197">Bu fayl növü dəstəklənmir. Chrome OS'də faylların açılması barədə <ph name="BEGIN_LINK_HELP" />ətraflı məlumat<ph name="END_LINK_HELP" />.</translation>
 <translation id="1995337122023280937">Faylın yerinə keçin</translation>
 <translation id="2001796770603320721">Diskdə idarə edin</translation>
 <translation id="2009067268969781306">Formatdan sonra diskdə saxlanılan bütün data silinəcək. Bu əməliyyat geri qaytarıla bilməz.</translation>
@@ -199,8 +201,6 @@
 <translation id="2649120831653069427">Göyqurşaqlı balıq</translation>
 <translation id="2663066752008346276">Myansan klaviaturası ilə Birma/Myanma dili</translation>
 <translation id="2664412712123763093">Faylın yeri</translation>
-<translation id="2672394958563893062">Xəta oldu. Əvvəldən başlamaq üçün klikləyin.</translation>
-<translation id="2676946222714718093">Playing</translation>
 <translation id="2718540689505416944">Linux ilə tətbiqi quraşdırın</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Detallar</translation>
 <translation id="2724954091494693138">F klaviaturası ilə Türk dili</translation>
@@ -226,6 +226,7 @@
 <translation id="2943503720238418293">Qısa ad istifadə edin</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" /> formatlanır...</translation>
 <translation id="2951236788251446349">Meduza</translation>
+<translation id="2977940621473452797">Bu fayl Macintosh proqram təminatından istifadə edən kompüter üçündür. Bu, ChromeOS işlədən cihazınız üçün uyğun deyil.</translation>
 <translation id="2984337792991268709">Bu gün <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2994320653639462337"><ph name="COUNT" /> element bərpa edilir...</translation>
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> faylını yedəkləmək alınmadı</translation>
@@ -341,7 +342,6 @@
 <translation id="3901991538546252627"><ph name="NAME" /> qoşulur</translation>
 <translation id="3906232975181435906">Mobil profil quraşdırılır, Şəbəkə <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3930521966936686665">Burada oxudun:</translation>
 <translation id="3943857333388298514">Yapışdırın.</translation>
 <translation id="3952872973865944257">Teluqu (Fonetik)</translation>
 <translation id="3958548648197196644">Kivi</translation>
@@ -413,7 +413,6 @@
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4642769377300286600">Mobil profil quraşdırılır, Şəbəkə <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">Qwerty klaviaturası ilə Çex dili</translation>
-<translation id="4656293982926141856">Bu kompüter</translation>
 <translation id="4656777537938206294">Faylları oflayn əlçatan edin</translation>
 <translation id="4658782175094886150">Qarda adam</translation>
 <translation id="4669606053856530811">"<ph name="SOURCE_NAME" />" bu element onlarla paylaşılmadığı halda, daxil ola bilməyəcəklər.</translation>
@@ -423,13 +422,13 @@
 <translation id="4694604912444486114">Meymun</translation>
 <translation id="469612310041132144">Çin dili (Sürətli)</translation>
 <translation id="4697043402264950621">Fayllar <ph name="COLUMN_NAME" /> tərəfindən azalan sıra ilə çeşidlənib.</translation>
+<translation id="469897186246626197">Bu fayl Windows proqram təminatından istifadə edən stolüstü kompüter üçündür. Bu, ChromeOS işlədən cihazınız üçün uyğun deyil. ChromeOS'də faylların açılması barədə <ph name="BEGIN_LINK_HELP" />ətraflı məlumat<ph name="END_LINK_HELP" />.</translation>
 <translation id="4706042980341760088">Typewriter klaviaturası ilə Tamil dili</translation>
 <translation id="4711094779914110278">Türk</translation>
 <translation id="4712283082407695269">"<ph name="PATH" />" açılır</translation>
 <translation id="4720185134442950733">Mobil data şəbəkəsi</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> foto yedəkləndi</translation>
 <translation id="4725511304875193254">Korqi</translation>
-<translation id="4732760563705710320">Üzr istəyirik, bu video yayım cihazınız tərəfindən dəstəklənmir.</translation>
 <translation id="4737050008115666127">Eniş</translation>
 <translation id="4747271164117300400">Makedoniya</translation>
 <translation id="4759238208242260848">Endirmələr</translation>
@@ -519,6 +518,7 @@
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> element <ph name="BEGIN_LINK" />Google Diskə<ph name="END_LINK" /> yedəklənir</translation>
 <translation id="535792325654997756">Pişiklərin əhatəsində olan adam</translation>
 <translation id="5358764674931277">Çərçivə nisbəti</translation>
+<translation id="5363339716524495120">Daxiletmə dili Çin dilidir</translation>
 <translation id="5368191757080475556">Linux'da qovluq paylaşın</translation>
 <translation id="5402367795255837559">Brayl</translation>
 <translation id="5411472733320185105">Bu host və domenlər üçün proksi ayarlarını istifadə etməyin:</translation>
@@ -541,8 +541,10 @@
 <translation id="5534520101572674276">Ölçü hesablanılır</translation>
 <translation id="554153475311314364">Yunan dilində Transliterasiya</translation>
 <translation id="5583640892426849032">Geri silmə</translation>
+<translation id="5583664733673201137">Durğu işarələrinin eni Tamdır</translation>
 <translation id="5602622065581044566">Fonetik klaviatura ilə Bolqar dili</translation>
 <translation id="5605830556594064952">ABŞ Dvorak</translation>
+<translation id="5618330573454123917">Bu fayl Macintosh proqram təminatından istifadə edən kompüter üçündür. Bu, ChromeOS işlədən cihazınız üçün uyğun deyil. ChromeOS'də faylların açılması barədə <ph name="BEGIN_LINK_HELP" />ətraflı məlumat<ph name="END_LINK_HELP" />.</translation>
 <translation id="5625294776298156701">Tamil99 klaviaturası ilə Tamil dili</translation>
 <translation id="5633226425545095130">Bu elementi köçürsəniz, '<ph name="DESTINATION_NAME" />' paylaşılan qovluğunu görə bilən hər kəslə paylaşacaqdır.</translation>
 <translation id="5649768706273821470">Dinləyin</translation>
@@ -618,7 +620,6 @@
 <translation id="6224253798271602650"><ph name="DRIVE_NAME" /> cihazını format edin</translation>
 <translation id="6227235786875481728">Bu fayl oynadıla bilmədi.</translation>
 <translation id="6241349547798190358">Holland dili (Belçika)</translation>
-<translation id="6248400709929739064">Subtitri aktiv edin</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="PHONE_NAME" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Telefonun Batareyası <ph name="BATTERY_STATUS" />%, Qoşulun</translation>
 <translation id="6269630227984243955">Malay</translation>
 <translation id="6287852322318138013">Bu faylı açmaq üçün bir tətbiq seçin</translation>
@@ -636,7 +637,6 @@
 <translation id="637062427944097960">Bu fayl başqa masaüstündə açıldı. Ona baxmaq üçün <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) köçürün.</translation>
 <translation id="6394388407447716302">Yalnız oxunan</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> element</translation>
-<translation id="6398765197997659313">Tam ekrandan çıxın</translation>
 <translation id="642282551015776456">Bu ad qovluq adının faylı kimi istifadə edilə bilməz</translation>
 <translation id="6423031066725912715">TCVN klaviaturası ilə Vyetnam dili</translation>
 <translation id="6485131920355264772">Boşluq infosunu əldə etmək alınmadı</translation>
@@ -672,7 +672,6 @@
 <translation id="6820687829547641339">Gzip sıxılmış tar arxivi</translation>
 <translation id="6823166707458800069">Bu qovluqda saxlanan bütün fayllar avtomatik olaraq onlayn yedəklənir.</translation>
 <translation id="6825883775269213504">Rus</translation>
-<translation id="6827236167376090743">Bu video uzun müddət ərzində göstəriləcək.</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> seçimdən silindi.</translation>
 <translation id="6856459657722366306"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Detallar</translation>
 <translation id="6861394552169064235">Fars</translation>
@@ -701,7 +700,6 @@
 <translation id="6970230597523682626">Bolqar</translation>
 <translation id="6973630695168034713">Qovluqlar</translation>
 <translation id="6976795442547527108">Aslan</translation>
-<translation id="6978611942794658017">Bu fayl Windows proqram təminatından istifadə edən stolüstü kompüter üçündür, Chrome OS işlədən cihazınız üçün uyğun deyil.</translation>
 <translation id="6979158407327259162">Google Disk</translation>
 <translation id="6989942356279143254">İsveç</translation>
 <translation id="6990081529015358884">Boş yer bitdi</translation>
@@ -712,6 +710,7 @@
 <translation id="7037472120706603960">Tamil dilində Transliterasiya</translation>
 <translation id="7040138676081995583">Bununla açın...</translation>
 <translation id="7048024426273850086"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Telefonun Batareyası <ph name="BATTERY_STATUS" />%, Qoşulun</translation>
+<translation id="7070804685954057874">Birbaşa daxiletmə</translation>
 <translation id="7075931588889865715">TIS 820-2531 klaviaturası ilə Tay dili</translation>
 <translation id="708278670402572152">Skanı aktiv etmək üçün bağlantını kəsin</translation>
 <translation id="7086590977277044826">InScript klaviaturası ilə Tamil dili</translation>
@@ -739,6 +738,7 @@
 <translation id="7309413087278791451">Alman dili (Belçika)</translation>
 <translation id="7339898014177206373">Yeni pəncərə</translation>
 <translation id="7343393116438664539">Vyetnam dili (Teleks)</translation>
+<translation id="7357762654218998920">Bu fayl növü dəstəklənmir. ChromeOS'də faylların açılması barədə <ph name="BEGIN_LINK_HELP" />ətraflı məlumat<ph name="END_LINK_HELP" />.</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> element kopyalanır...</translation>
 <translation id="7375951387215729722">Fayllar <ph name="COLUMN_NAME" /> üzrə artan sıra ilə çeşidlənib.</translation>
 <translation id="7402503521691663770">ChromeOS Flex cihazları</translation>
@@ -751,6 +751,7 @@
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> nəticə
     <ph name="LINE_BREAK1" />
     <ph name="BEGIN_LINK" />Google Diskə<ph name="END_LINK" /> yedəkləmək üçün hazırdır</translation>
+<translation id="749452993132003881">Hiraqana</translation>
 <translation id="7495372004724182530">Malayalam Fonetikası</translation>
 <translation id="7505167922889582512">Gizlədilmiş faylları göstərin</translation>
 <translation id="7514365320538308">Endirmə</translation>
@@ -808,8 +809,8 @@
 <translation id="7857117644404132472">İstisna əlavə edin</translation>
 <translation id="7868774406711971383">Polyak</translation>
 <translation id="7874321682039004450">Filippin</translation>
-<translation id="7881969471599061635">Subtitri deaktiv edin</translation>
 <translation id="78946041517601018">Paylaşılmış disklər</translation>
+<translation id="7903984238293908205">Katakana</translation>
 <translation id="7908793776359722643">Hissənin format edilməsi ilə orada saxlanılan bütün data silinəcək. Bu əməliyyat geri qaytarıla bilməz.</translation>
 <translation id="7925247922861151263">AAA yoxlanışı uğursuz oldu</translation>
 <translation id="7925686952655276919">Sinxronizasiya üçün mobil data istifadə etməyin</translation>
@@ -821,7 +822,6 @@
 <translation id="7972920761225148017">Fransız (İsveçrə)</translation>
 <translation id="7973962044839454485">PPP identifikasiyası yanlış istifadəçi adı və ya parol səbəbindən uğursuz oldu</translation>
 <translation id="7980421588063892270">Colemak klaviaturası ilə İngilis dili (ABŞ)</translation>
-<translation id="79907182588096956">Bu fayl Windows proqram təminatından istifadə edən stolüstü kompüter üçündür. Bu, Chrome OS işlədən cihazınız üçün uyğun deyil. Chrome OS'də faylların açılması barədə <ph name="BEGIN_LINK_HELP" />ətraflı məlumat<ph name="END_LINK_HELP" />.</translation>
 <translation id="8000066093800657092">Şəbəkə yoxdur</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
 <translation id="8028993641010258682">Ölçü</translation>
@@ -838,6 +838,7 @@
 <translation id="8128733386027980860">Dvorak klaviaturası ilə İngilis dili (BK)</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" Sizinlə paylaşılıb. Onun sahibi olmadığınız üçün onu silə bilməzsiniz.</translation>
 <translation id="813913629614996137">Başladılır...</translation>
+<translation id="8147028810663464959">Simvol eni Tamdır</translation>
 <translation id="8151638057146502721">Konfiqurasiya edin</translation>
 <translation id="8154842056504218462">Bütün daxiletmələri seçin</translation>
 <translation id="8157684860301034423">Tətbiq məlumatını əldə etmək alınmadı.</translation>
@@ -847,6 +848,7 @@
 <translation id="8208580316430297579">Sənət əsəri</translation>
 <translation id="8223479393428528563">Bu faylları oflayn istifadəyə saxlamaq üçün onlayn olun, faylları sağ klikləyin və <ph name="OFFLINE_CHECKBOX_NAME" /> seçimini edin.</translation>
 <translation id="8249296373107784235">Dayandırın</translation>
+<translation id="8250690786522693009">Latın</translation>
 <translation id="8250920743982581267">Sənədlər</translation>
 <translation id="8261506727792406068">Silin</translation>
 <translation id="8261561378965667560">Çin dili (Array)</translation>
@@ -886,7 +888,6 @@
 <translation id="8492972329130824181">Ev şəbəkəsi əlçatan deyil. Qoşulmaq üçün mobil data rouminqi aktiv edilməlidir.</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> element çıxarılır...</translation>
 <translation id="8521441079177373948">Böyük Britaniya</translation>
-<translation id="8525306231823319788">Tam ekran</translation>
 <translation id="853494022971700746">Fransız (Fransa)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Detallar</translation>
 <translation id="8545476925160229291">İngilis (ABŞ)</translation>
@@ -932,7 +933,6 @@
 <translation id="8912078710089354287">Quyruğunu tərpədən it</translation>
 <translation id="8919081441417203123">Danimarka</translation>
 <translation id="8965697826696209160">Yer çatmır.</translation>
-<translation id="8970501467542182729">Bu fayl Macintosh proqram təminatından istifadə edən kompüter üçündür. Bu, Chrome OS işlədən cihazınız üçün uyğun deyil. Chrome OS'də faylların açılması barədə <ph name="BEGIN_LINK_HELP" />ətraflı məlumat<ph name="END_LINK_HELP" />.</translation>
 <translation id="8997962250644902079">Çin dili (Ənənəvi) Pinyin</translation>
 <translation id="9003940392834790328"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Administratorunuz tərəfindən idarə olunur, Detallar</translation>
 <translation id="9017798300203431059">Rus fonetikası</translation>
@@ -951,7 +951,6 @@
 <translation id="9130775360844693113">"<ph name="DESTINATION_NAME" />" üzvləri bu elementlərə daxil ola biləcək.</translation>
 <translation id="9131598836763251128">Bir və ya daha çox fayl seçin</translation>
 <translation id="9133055936679483811">Sızlaşdırma uğursuz oldu. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">Bu fayl Macintosh proqram təminatından istifadə edən kompüter üçündür. Bu, Chrome OS işlədən cihazınız üçün uyğun deyil.</translation>
 <translation id="9144340019284012223">Katalan</translation>
 <translation id="914873105831852105">Yanlış PIN. 1 cəhdiniz qalıb.</translation>
 <translation id="9153934054460603056">Şəxsiyyət və parolu yadda saxlayın</translation>

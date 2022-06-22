@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events/credit_card_form_event_logger.h"
+#include "components/autofill/core/browser/metrics/form_interactions_counter.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
@@ -59,6 +60,30 @@ class FormStructureBrowserTest;
 
 struct FormData;
 struct FormFieldData;
+struct SuggestionsContext;
+
+// Use <Phone><WebOTP><OTC> as the bit pattern to identify the metrics state.
+enum class PhoneCollectionMetricState {
+  kNone = 0,    // Site did not collect phone, not use OTC, not use WebOTP
+  kOTC = 1,     // Site used OTC only
+  kWebOTP = 2,  // Site used WebOTP only
+  kWebOTPPlusOTC = 3,  // Site used WebOTP and OTC
+  kPhone = 4,          // Site collected phone, not used neither WebOTP nor OTC
+  kPhonePlusOTC = 5,   // Site collected phone number and used OTC
+  kPhonePlusWebOTP = 6,         // Site collected phone number and used WebOTP
+  kPhonePlusWebOTPPlusOTC = 7,  // Site collected phone number and used both
+  kMaxValue = kPhonePlusWebOTPPlusOTC,
+};
+
+namespace phone_collection_metric {
+constexpr uint32_t kOTCUsed = 1 << 0;
+constexpr uint32_t kWebOTPUsed = 1 << 1;
+constexpr uint32_t kPhoneCollected = 1 << 2;
+}  // namespace phone_collection_metric
+
+namespace metrics {
+class AutofillMetricsBaseTest;
+}
 
 // We show the credit card signin promo only a certain number of times.
 constexpr int kCreditCardSigninPromoImpressionLimit = 3;
@@ -81,7 +106,7 @@ class BrowserAutofillManager : public AutofillManager,
   BrowserAutofillManager(AutofillDriver* driver,
                          AutofillClient* client,
                          const std::string& app_locale,
-                         AutofillDownloadManagerState enable_download_manager);
+                         EnableDownloadManager enable_download_manager);
 
   BrowserAutofillManager(const BrowserAutofillManager&) = delete;
   BrowserAutofillManager& operator=(const BrowserAutofillManager&) = delete;
@@ -136,20 +161,20 @@ class BrowserAutofillManager : public AutofillManager,
                                  const FormData& form,
                                  const FormFieldData& field,
                                  int unique_id);
-  virtual void FillCreditCardForm(int query_id,
-                                  const FormData& form,
-                                  const FormFieldData& field,
-                                  const CreditCard& credit_card,
-                                  const std::u16string& cvc);
+  void FillCreditCardForm(int query_id,
+                          const FormData& form,
+                          const FormFieldData& field,
+                          const CreditCard& credit_card,
+                          const std::u16string& cvc) override;
   void DidShowSuggestions(bool has_autofill_suggestions,
                           const FormData& form,
                           const FormFieldData& field);
 
   // Called only from Autofill Assistant through
   // ContentAutofillDriver::FillFormForAssistant().
-  virtual void FillProfileForm(const autofill::AutofillProfile& profile,
-                               const FormData& form,
-                               const FormFieldData& field);
+  void FillProfileForm(const AutofillProfile& profile,
+                       const FormData& form,
+                       const FormFieldData& field) override;
 
   // Fetches the related virtual card information given the related actual card
   // |guid| and fills the information into the form.
@@ -184,20 +209,6 @@ class BrowserAutofillManager : public AutofillManager,
   virtual void OnUserHideSuggestions(const FormData& form,
                                      const FormFieldData& field);
 
-  // Returns true only if the previewed form should be cleared.
-  bool ShouldClearPreviewedForm();
-
-  AutofillOfferManager* offer_manager() { return offer_manager_; }
-
-  CreditCardAccessManager* credit_card_access_manager() {
-    return credit_card_access_manager_.get();
-  }
-
-  payments::FullCardRequest* GetOrCreateFullCardRequest();
-
-  base::WeakPtr<payments::FullCardRequest::UIDelegate>
-  GetAsFullCardRequestUIDelegate();
-
   const std::string& app_locale() const { return app_locale_; }
 
   // Only for testing.
@@ -223,6 +234,9 @@ class BrowserAutofillManager : public AutofillManager,
   void DidSuppressPopup(const FormData& form, const FormFieldData& field);
 
   // AutofillManager:
+  AutofillOfferManager* GetOfferManager() override;
+  CreditCardAccessManager* GetCreditCardAccessManager() override;
+  bool ShouldClearPreviewedForm() override;
   void OnFocusNoLongerOnForm(bool had_interacted_form) override;
   void OnFocusOnFormFieldImpl(const FormData& form,
                               const FormFieldData& field,
@@ -272,6 +286,13 @@ class BrowserAutofillManager : public AutofillManager,
     return has_observed_one_time_code_field_;
   }
 
+  // Reports whether a document collects phone numbers, uses one time code, uses
+  // WebOTP. There are cases that the reporting is not expected:
+  //   1. some unit tests do not set necessary members,
+  //   |browser_autofill_manager_|
+  //   2. there is no form and WebOTP is not used
+  void ReportAutofillWebOTPMetrics(bool used_web_otp) override;
+
 #if defined(UNIT_TEST)
   void SetExternalDelegateForTest(
       std::unique_ptr<AutofillExternalDelegate> external_delegate) {
@@ -316,14 +337,6 @@ class BrowserAutofillManager : public AutofillManager,
 #endif
 
  protected:
-  // Test code should prefer to use this constructor.
-  BrowserAutofillManager(AutofillDriver* driver,
-                         AutofillClient* client,
-                         PersonalDataManager* personal_data,
-                         const std::string app_locale = "en-US",
-                         AutofillDownloadManagerState enable_download_manager =
-                             DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
-
   // Uploads the form data to the Autofill server. |observed_submission|
   // indicates that upload is the result of a submission event.
   virtual void UploadFormData(const FormStructure& submitted_form,
@@ -433,57 +446,6 @@ class BrowserAutofillManager : public AutofillManager,
     base::OneShotTimer on_refill_timer;
     // The field type groups that were initially filled.
     std::set<FieldTypeGroup> type_groups_originally_filled;
-  };
-
-  // Indicates the reason why autofill suggestions are suppressed.
-  enum class SuppressReason {
-    kNotSuppressed,
-    // Suggestions are not shown because an ablation experiment is enabled.
-    kAblation,
-    // Address suggestions are not shown because the field is annotated with
-    // autocomplete=off and the directive is being observed by the browser.
-    kAutocompleteOff,
-    // Suggestions are not shown because this form is on a secure site, but
-    // submits insecurely. This is only used when the user has started typing,
-    // otherwise a warning is shown.
-    kInsecureForm,
-    // Suggestions are not shown because the field is annotated with
-    // an unrecognized autocompelte attribute and the field is not credit card
-    // related. For credit card fields, the unrecognized attribute is ignored.
-    kAutocompleteUnrecognized,
-  };
-
-  // The context for the list of suggestions available for a given field to be
-  // returned by GetAvailableSuggestions().
-  struct SuggestionsContext {
-    FormStructure* form_structure = nullptr;
-    AutofillField* focused_field = nullptr;
-    bool is_autofill_available = false;
-    bool is_context_secure = false;
-    bool is_filling_credit_card = false;
-    // Flag to indicate whether all suggestions come from Google Payments.
-    bool should_display_gpay_logo = false;
-    SuppressReason suppress_reason = SuppressReason::kNotSuppressed;
-    // Indicates whether the form filling is under ablation, meaning that
-    // autofill popups are suppressed.
-    AblationGroup ablation_group = AblationGroup::kDefault;
-    // Indicates whether the form filling is under ablation, under the condition
-    // that the user has data to fill on file. All users that don't have data
-    // to fill are in the AbationGroup::kDefault.
-    // Note that it is possible (due to implementation details) that this is
-    // incorrectly set to kDefault: If the user has typed some characters into a
-    // text field, it may look like no suggestions are available, but in
-    // practice the suggestions are just filtered out (Autofill only suggests
-    // matches that start with the typed prefix). Any consumers of the
-    // conditional_ablation_group attribute should monitor it over time.
-    // Any transitions of conditional_ablation_group from {kAblation,
-    // kControl} to kDefault should just be ignored and the previously reported
-    // value should be used. As the ablation experience is stable within a day,
-    // such a transition typically indicates that the user has type a prefix
-    // which led to the filtering of all autofillable data. In short: once
-    // either kAblation or kControl were reported, consumers should stick to
-    // that.
-    AblationGroup conditional_ablation_group = AblationGroup::kDefault;
   };
 
   // CreditCardAccessManager::Accessor
@@ -765,11 +727,28 @@ class BrowserAutofillManager : public AutofillManager,
   // interaction and re-used throughout the context of this manager.
   AutofillSyncSigninState sync_state_ = AutofillSyncSigninState::kNumSyncStates;
 
+  // Used to keep track of user interactions with text fields, Autocomplete and
+  // Autofill.
+  std::unique_ptr<FormInteractionsCounter> form_interactions_counter_;
+
+  // Helps with measuring whether phone number is collected and whether it is in
+  // conjunction with WebOTP or OneTimeCode (OTC).
+  // value="0" label="Phone Not Collected, WebOTP Not Used, OTC Not Used"
+  // value="1" label="Phone Not Collected, WebOTP Not Used, OTC Used"
+  // value="2" label="Phone Not Collected, WebOTP Used, OTC Not Used"
+  // value="3" label="Phone Not Collected, WebOTP Used, OTC Used"
+  // value="4" label="Phone Collected, WebOTP Not Used, OTC Not Used"
+  // value="5" label="Phone Collected, WebOTP Not Used, OTC Used"
+  // value="6" label="Phone Collected, WebOTP Used, OTC Not Used"
+  // value="7" label="Phone Collected, WebOTP Used, OTC Used"
+  uint32_t phone_collection_metric_state_ = 0;
+
   base::WeakPtrFactory<BrowserAutofillManager> weak_ptr_factory_{this};
 
   friend class AutofillAssistantTest;
   friend class BrowserAutofillManagerTest;
   friend class AutofillMetricsTest;
+  friend class metrics::AutofillMetricsBaseTest;
   friend class FormStructureBrowserTest;
   friend class GetMatchingTypesTest;
   friend class CreditCardAccessoryControllerTest;

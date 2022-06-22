@@ -20,8 +20,9 @@ const AppDownloadingBase = Polymer.mixinBehaviors(
   Polymer.Element);
 
 class AppDownloading extends AppDownloadingBase {
-
-  static get is() { return 'app-downloading-element'; }
+  static get is() {
+    return 'app-downloading-element';
+  }
 
   /* #html_template_placeholder */
 
@@ -31,9 +32,7 @@ class AppDownloading extends AppDownloadingBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('AppDownloadingScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('AppDownloadingScreen');
   }
 
   /** Initial UI State for screen */

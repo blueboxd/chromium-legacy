@@ -96,7 +96,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
   size_t BadgedItemCount() override;
   void GetContextMenuModel(const std::string& id,
-                           bool add_sort_options,
+                           ash::AppListItemContext item_context,
                            GetMenuModelCallback callback) override;
   syncer::StringOrdinal GetPositionBeforeFirstItem() const override;
 
@@ -108,6 +108,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   void NotifyProcessSyncChangesFinished() override;
 
   void OnAppListHidden() override;
+  void CommitTemporarySortOrder() override;
 
   void AddObserver(AppListModelUpdaterObserver* observer) override;
   void RemoveObserver(AppListModelUpdaterObserver* observer) override;

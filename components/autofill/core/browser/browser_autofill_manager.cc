@@ -31,6 +31,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/ranges/algorithm.h"
@@ -72,6 +73,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
+#include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -297,7 +299,7 @@ AutofillField* GetBestPossibleCVCFieldForUpload(
 
 // Some autofill types are detected based on values and not based on form
 // features. We may decide that it's an autofill form after submission.
-bool ContainsAutofillableValue(const autofill::FormStructure& form) {
+bool ContainsAutofillableValue(const FormStructure& form) {
   return base::ranges::any_of(form, [](const auto& field) {
     return base::Contains(field->possible_types(), UPI_VPA) ||
            IsUPIVirtualPaymentAddress(field->value);
@@ -411,24 +413,15 @@ BrowserAutofillManager::BrowserAutofillManager(
     AutofillDriver* driver,
     AutofillClient* client,
     const std::string& app_locale,
-    AutofillDownloadManagerState enable_download_manager)
-    : BrowserAutofillManager(driver,
-                             client,
-                             client->GetPersonalDataManager(),
-                             app_locale,
-                             enable_download_manager) {}
-
-BrowserAutofillManager::BrowserAutofillManager(
-    AutofillDriver* driver,
-    AutofillClient* client,
-    PersonalDataManager* personal_data,
-    const std::string app_locale,
-    AutofillDownloadManagerState enable_download_manager)
-    : AutofillManager(driver, client, enable_download_manager),
+    EnableDownloadManager enable_download_manager)
+    : AutofillManager(driver,
+                      client,
+                      client->GetChannel(),
+                      enable_download_manager),
       external_delegate_(
           std::make_unique<AutofillExternalDelegate>(this, driver)),
       app_locale_(app_locale),
-      personal_data_(personal_data),
+      personal_data_(client->GetPersonalDataManager()),
       field_filler_(app_locale, client->GetAddressNormalizer()),
       single_field_form_fill_router_(client->GetSingleFieldFormFillRouter()),
       suggestion_generator_(
@@ -445,6 +438,8 @@ BrowserAutofillManager::BrowserAutofillManager(
 
   CountryNames::SetLocaleString(app_locale_);
   offer_manager_ = client->GetAutofillOfferManager();
+
+  form_interactions_counter_ = std::make_unique<FormInteractionsCounter>();
 }
 
 BrowserAutofillManager::~BrowserAutofillManager() {
@@ -457,6 +452,14 @@ BrowserAutofillManager::~BrowserAutofillManager() {
   }
 
   single_field_form_fill_router_->CancelPendingQueries(this);
+}
+
+AutofillOfferManager* BrowserAutofillManager::GetOfferManager() {
+  return offer_manager_;
+}
+
+CreditCardAccessManager* BrowserAutofillManager::GetCreditCardAccessManager() {
+  return credit_card_access_manager_.get();
 }
 
 void BrowserAutofillManager::ShowAutofillSettings(
@@ -932,6 +935,9 @@ void BrowserAutofillManager::OnTextFieldDidChangeImpl(
   }
 
   UpdateInitialInteractionTimestamp(timestamp);
+
+  form_interactions_counter_->OnTextFieldDidChange(
+      autofill_field->GetFieldSignature());
 }
 
 bool BrowserAutofillManager::IsFormNonSecure(const FormData& form) const {
@@ -1171,10 +1177,9 @@ void BrowserAutofillManager::FillCreditCardForm(int query_id,
                              autofill_field);
 }
 
-void BrowserAutofillManager::FillProfileForm(
-    const autofill::AutofillProfile& profile,
-    const FormData& form,
-    const FormFieldData& field) {
+void BrowserAutofillManager::FillProfileForm(const AutofillProfile& profile,
+                                             const FormData& form,
+                                             const FormFieldData& field) {
   FillOrPreviewProfileForm(mojom::RendererFormDataAction::kFill,
                            /*query_id=*/kNoQueryId, form, field, profile);
 }
@@ -1328,7 +1333,7 @@ void BrowserAutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
   }
 
   if (autofill_field->Type().group() == FieldTypeGroup::kCreditCard &&
-      ::autofill::IsCreditCardFidoAuthenticationEnabled()) {
+      IsCreditCardFidoAuthenticationEnabled()) {
     credit_card_access_manager_->PrepareToFetchCreditCard();
   }
 }
@@ -1420,6 +1425,7 @@ void BrowserAutofillManager::RemoveCurrentSingleFieldSuggestion(
 void BrowserAutofillManager::OnSingleFieldSuggestionSelected(
     const std::u16string& value) {
   single_field_form_fill_router_->OnSingleFieldSuggestionSelected(value);
+  form_interactions_counter_->OnAutocompleteFill();
 }
 
 void BrowserAutofillManager::OnUserHideSuggestions(const FormData& form,
@@ -1436,18 +1442,6 @@ void BrowserAutofillManager::OnUserHideSuggestions(const FormData& form,
 
 bool BrowserAutofillManager::ShouldClearPreviewedForm() {
   return credit_card_access_manager_->ShouldClearPreviewedForm();
-}
-
-payments::FullCardRequest*
-BrowserAutofillManager::GetOrCreateFullCardRequest() {
-  return credit_card_access_manager_->GetOrCreateCVCAuthenticator()
-      ->GetFullCardRequest();
-}
-
-base::WeakPtr<payments::FullCardRequest::UIDelegate>
-BrowserAutofillManager::GetAsFullCardRequestUIDelegate() {
-  return credit_card_access_manager_->GetOrCreateCVCAuthenticator()
-      ->GetAsFullCardRequestUIDelegate();
 }
 
 void BrowserAutofillManager::SetTestDelegate(
@@ -1532,11 +1526,11 @@ bool BrowserAutofillManager::IsAutofillEnabled() const {
 }
 
 bool BrowserAutofillManager::IsAutofillProfileEnabled() const {
-  return ::autofill::prefs::IsAutofillProfileEnabled(client()->GetPrefs());
+  return prefs::IsAutofillProfileEnabled(client()->GetPrefs());
 }
 
 bool BrowserAutofillManager::IsAutofillCreditCardEnabled() const {
-  return ::autofill::prefs::IsAutofillCreditCardEnabled(client()->GetPrefs());
+  return prefs::IsAutofillCreditCardEnabled(client()->GetPrefs());
 }
 
 const FormData& BrowserAutofillManager::last_query_form() const {
@@ -1572,7 +1566,7 @@ void BrowserAutofillManager::UploadFormDataAsyncCallback(
     submitted_form->LogQualityMetrics(
         submitted_form->form_parsed_timestamp(), interaction_time,
         submission_time, form_interactions_ukm_logger(), did_show_suggestions_,
-        observed_submission);
+        observed_submission, form_interactions_counter_->GetCounts());
   }
   if (submitted_form->ShouldBeUploaded())
     UploadFormData(*submitted_form, observed_submission);
@@ -1632,6 +1626,7 @@ void BrowserAutofillManager::Reset() {
   initial_interaction_timestamp_ = TimeTicks();
   external_delegate_->Reset();
   filling_context_.clear();
+  form_interactions_counter_ = std::make_unique<FormInteractionsCounter>();
 }
 
 bool BrowserAutofillManager::RefreshDataModels() {
@@ -1945,12 +1940,14 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
       credit_card_form_event_logger_->OnDidFillSuggestion(
           credit_card_, *form_structure, *autofill_field, newly_filled_fields,
           base::flat_set<FieldGlobalId>(std::move(safe_fields)), sync_state_);
+      form_interactions_counter_->OnAutofillFill();
     }
 
     if (!is_credit_card) {
       address_form_event_logger_->OnDidFillSuggestion(
           *absl::get<const AutofillProfile*>(profile_or_credit_card),
           *form_structure, *autofill_field, sync_state_);
+      form_interactions_counter_->OnAutofillFill();
     }
   }
 
@@ -2032,9 +2029,11 @@ std::vector<Suggestion> BrowserAutofillManager::GetProfileSuggestions(
       if (profile) {
         const std::u16string phone_home_city_and_number =
             profile->GetInfo(PHONE_HOME_CITY_AND_NUMBER, app_locale_);
-        suggestion.value = FieldFiller::GetPhoneNumberValueForInput(
-            autofill_field, suggestion.value, phone_home_city_and_number,
-            field);
+        suggestion.main_text =
+            Suggestion::Text(FieldFiller::GetPhoneNumberValueForInput(
+                                 autofill_field, suggestion.main_text.value,
+                                 phone_home_city_and_number, field),
+                             Suggestion::Text::IsPrimary(true));
       }
     }
   }
@@ -2820,6 +2819,31 @@ void BrowserAutofillManager::PreProcessStateMatchingTypes(
       }
     }
   }
+}
+
+void BrowserAutofillManager::ReportAutofillWebOTPMetrics(bool used_web_otp) {
+  // It's possible that a frame without any form uses WebOTP. e.g. a server may
+  // send the verification code to a phone number that was collected beforehand
+  // and uses the WebOTP API for authentication purpose without user manually
+  // entering the code.
+  if (!has_parsed_forms() && !used_web_otp)
+    return;
+
+  if (has_observed_phone_number_field())
+    phone_collection_metric_state_ |= phone_collection_metric::kPhoneCollected;
+  if (has_observed_one_time_code_field())
+    phone_collection_metric_state_ |= phone_collection_metric::kOTCUsed;
+  if (used_web_otp)
+    phone_collection_metric_state_ |= phone_collection_metric::kWebOTPUsed;
+
+  ukm::UkmRecorder* recorder = client()->GetUkmRecorder();
+  ukm::SourceId source_id = client()->GetUkmSourceId();
+  AutofillMetrics::LogWebOTPPhoneCollectionMetricStateUkm(
+      recorder, source_id, phone_collection_metric_state_);
+
+  base::UmaHistogramEnumeration(
+      "Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+      static_cast<PhoneCollectionMetricState>(phone_collection_metric_state_));
 }
 
 }  // namespace autofill

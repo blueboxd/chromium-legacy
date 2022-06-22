@@ -11,7 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/autofill_assistant/browser/android/dependencies.h"
+#include "components/autofill_assistant/browser/android/dependencies_android.h"
 #include "components/autofill_assistant/browser/android/ui_controller_android.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/controller.h"
@@ -126,7 +126,7 @@ class ClientAndroid : public Client,
   void DestroyUI() override;
   version_info::Channel GetChannel() const override;
   std::string GetEmailAddressForAccessTokenAccount() const override;
-  std::string GetChromeSignedInEmailAddress() const override;
+  std::string GetSignedInEmail() const override;
   absl::optional<std::pair<int, int>> GetWindowSize() const override;
   ClientContextProto::ScreenOrientation GetScreenOrientation() const override;
   void FetchPaymentsClientToken(
@@ -146,6 +146,7 @@ class ClientAndroid : public Client,
   void RecordDropOut(Metrics::DropOutReason reason) override;
   bool HasHadUI() const override;
   ScriptExecutorUiDelegate* GetScriptExecutorUiDelegate() override;
+  bool MustUseBackendData() const override;
 
   // Overrides AccessTokenFetcher
   void FetchAccessToken(
@@ -182,7 +183,7 @@ class ClientAndroid : public Client,
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   // Contains AssistantStaticDependencies which do not change.
-  const std::unique_ptr<const Dependencies> dependencies_;
+  const std::unique_ptr<const DependenciesAndroid> dependencies_;
   // Can change based on activity attachment.
   const base::android::ScopedJavaGlobalRef<jobject> jdependencies_;
 

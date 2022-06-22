@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
@@ -205,8 +206,8 @@ WebVector<WebFormElement> WebDocument::Forms() const {
   form_elements.ReserveCapacity(forms->length());
   for (Element* element : *forms) {
     auto* html_form_element = blink::DynamicTo<HTMLFormElement>(element);
-    // TODO(https://crbug.com/1293602): Make this a CHECK instead of a DCHECK.
-    DCHECK(html_form_element)
+    // TODO(https://crbug.com/1293602): Make this a To<> instead of a CHECK.
+    CHECK(html_form_element)
         << "Document::forms() returned a non-form element! " << element;
     if (html_form_element)
       form_elements.emplace_back(html_form_element);

@@ -64,9 +64,9 @@ public class MojoPaymentRequestGateKeeper implements PaymentRequest {
 
     // Implement PaymentRequest:
     @Override
-    public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
+    public void show(boolean waitForUpdatedDetails) {
         if (mPaymentRequestService == null) return;
-        mPaymentRequestService.show(isUserGesture, waitForUpdatedDetails);
+        mPaymentRequestService.show(waitForUpdatedDetails);
     }
 
     // Implement PaymentRequest:

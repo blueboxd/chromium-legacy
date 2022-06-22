@@ -190,7 +190,7 @@ void ServiceWorkerRegistry::CreateNewRegistration(
   if (quota_manager_proxy_) {
     // Can be nullptr in tests.
     quota_manager_proxy_->GetOrCreateBucket(
-        key, storage::kDefaultBucketName, base::ThreadTaskRunnerHandle::Get(),
+        storage::BucketInitParams(key), base::ThreadTaskRunnerHandle::Get(),
         base::BindOnce(
             &ServiceWorkerRegistry::CreateNewRegistrationWithBucketInfo,
             weak_factory_.GetWeakPtr(), std::move(options), key,
@@ -209,7 +209,11 @@ void ServiceWorkerRegistry::CreateNewRegistrationWithBucketInfo(
     const blink::StorageKey& key,
     NewRegistrationCallback callback,
     storage::QuotaErrorOr<storage::BucketInfo> result) {
-  DCHECK(result.ok());
+  // Return nullptr if GetOrCreateBucket fails.
+  if (!result.ok()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
   CreateInvokerAndStartRemoteCall(
       &storage::mojom::ServiceWorkerStorageControl::GetNewRegistrationId,
       base::BindOnce(&ServiceWorkerRegistry::DidGetNewRegistrationId,

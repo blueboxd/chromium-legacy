@@ -11,12 +11,7 @@ ModelNeutralState::ModelNeutralState()
       num_successful_bookmark_commits(0),
       num_updates_downloaded_total(0),
       num_tombstone_updates_downloaded_total(0),
-      num_reflected_updates_downloaded_total(0),
-      num_encryption_conflicts(0),
       num_server_conflicts(0),
-      num_hierarchy_conflicts(0),
-      num_local_overwrites(0),
-      num_server_overwrites(0),
       items_committed(false) {}
 
 ModelNeutralState::ModelNeutralState(const ModelNeutralState& other) = default;

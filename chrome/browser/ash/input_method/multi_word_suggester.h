@@ -33,7 +33,8 @@ class MultiWordSuggester : public Suggester {
       const std::vector<ime::TextSuggestion>& suggestions) override;
   SuggestionStatus HandleKeyEvent(const ui::KeyEvent& event) override;
   bool TrySuggestWithSurroundingText(const std::u16string& text,
-                                     size_t cursor_pos) override;
+                                     int cursor_pos,
+                                     int anchor_pos) override;
   bool AcceptSuggestion(size_t index = 0) override;
   void DismissSuggestion() override;
   AssistiveType GetProposeActionType() override;
@@ -143,8 +144,8 @@ class MultiWordSuggester : public Suggester {
   // Announce the given message to the user.
   void Announce(const std::u16string& message);
 
-  // The currently focused input (zero if none are focused)
-  int focused_context_id_ = 0;
+  // The currently focused input (nullopt if none are focused)
+  absl::optional<int> focused_context_id_;
 
   // Not owned by this class
   SuggestionHandlerInterface* suggestion_handler_;

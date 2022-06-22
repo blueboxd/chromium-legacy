@@ -20,6 +20,55 @@ source_set("follow") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("utils") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "follow_util.h",
+    "follow_util.mm",
+  ]
+  deps = [
+    ":enums",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ntp:features",
+    "//ios/chrome/browser/signin",
+    "//ios/web/public",
+    "//url",
+  ]
+}
+
+source_set("enums") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "follow_action_state.h" ]
+  deps = []
+}
+
+source_set("tab_helper") {
+  sources = [
+    "follow_iph_presenter.h",
+    "follow_menu_updater.h",
+    "follow_tab_helper.h",
+    "follow_tab_helper.mm",
+  ]
+  deps = [
+    ":follow",
+    "//base",
+    "//components/feature_engagement/public",
+    "//components/feature_engagement/public",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/feature_engagement",
+    "//ios/chrome/browser/follow:enums",
+    "//ios/chrome/browser/follow:utils",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/follow",
+    "//ios/web/public",
+    "//ios/web/public/js_messaging",
+    "//ui/base",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 optimize_js("rss_link_js") {
   visibility = [ ":follow" ]
 

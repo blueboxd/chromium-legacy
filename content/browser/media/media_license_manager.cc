@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -33,6 +34,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/cdm_info.h"
+#include "content/public/common/content_features.h"
 #include "media/cdm/cdm_type.h"
 #include "media/media_buildflags.h"
 #include "net/base/io_buffer.h"
@@ -299,7 +301,13 @@ MediaLicenseManager::MediaLicenseManager(
         {blink::mojom::StorageType::kTemporary});
   }
 
-  // TODO(crbug.com/1231162): Consider migrating media licenses here.
+  if (base::FeatureList::IsEnabled(features::kMediaLicenseBackend)) {
+    // Ensure the file system context is kept alive until we're done migrating
+    // media license data from the Plugin Private File System to this backend.
+    MigrateMediaLicenses(
+        base::BindOnce([](scoped_refptr<storage::FileSystemContext>) {},
+                       base::WrapRefCounted(context().get())));
+  }
 }
 
 MediaLicenseManager::~MediaLicenseManager() = default;
@@ -342,7 +350,7 @@ void MediaLicenseManager::DidGetMediaLicenses(
     }
     const blink::StorageKey& storage_key = storage_key_and_files.first;
     quota_manager_proxy()->GetOrCreateBucket(
-        storage_key, storage::kDefaultBucketName,
+        storage::BucketInitParams(storage_key),
         base::SequencedTaskRunnerHandle::Get(),
         base::BindOnce(&MediaLicenseManager::OpenPluginFileSystemsForStorageKey,
                        weak_factory_.GetWeakPtr(), storage_key,
@@ -482,7 +490,7 @@ void MediaLicenseManager::DidClearPluginPrivateData() {
     const auto& storage_key = receivers.first;
     // Get the default bucket for `storage_key`.
     quota_manager_proxy()->GetOrCreateBucket(
-        storage_key, storage::kDefaultBucketName,
+        storage::BucketInitParams(storage_key),
         base::SequencedTaskRunnerHandle::Get(),
         base::BindOnce(&MediaLicenseManager::DidGetBucket,
                        weak_factory_.GetWeakPtr(), storage_key));
@@ -515,7 +523,7 @@ void MediaLicenseManager::OpenCdmStorage(
 
   // Get the default bucket for `storage_key`.
   quota_manager_proxy()->GetOrCreateBucket(
-      storage_key, storage::kDefaultBucketName,
+      storage::BucketInitParams(storage_key),
       base::SequencedTaskRunnerHandle::Get(),
       base::BindOnce(&MediaLicenseManager::DidGetBucket,
                      weak_factory_.GetWeakPtr(), storage_key));
@@ -619,6 +627,13 @@ void MediaLicenseManager::OnHostReceiverDisconnect(
     base::PassKey<MediaLicenseStorageHost> pass_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(host);
+
+  if (in_memory()) {
+    // Don't delete `host` for an in-memory profile, since the data is not safe
+    // to delete yet. For example, a site may be re-visited within the same
+    // incognito session. `host` will be destroyed when `this` is destroyed.
+    return;
+  }
 
   DCHECK_GT(hosts_.count(host->storage_key()), 0ul);
   DCHECK_EQ(hosts_[host->storage_key()].get(), host);

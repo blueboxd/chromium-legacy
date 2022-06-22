@@ -26,7 +26,6 @@ namespace content {
 
 class FederatedIdentityActiveSessionPermissionContextDelegate;
 class FederatedIdentityApiPermissionContextDelegate;
-class FederatedIdentityRequestPermissionContextDelegate;
 class FederatedIdentitySharingPermissionContextDelegate;
 class RenderFrameHostImpl;
 
@@ -62,14 +61,13 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
   void LogoutRps(std::vector<blink::mojom::LogoutRpsRequestPtr> logout_requests,
                  blink::mojom::FederatedAuthRequest::LogoutRpsCallback);
 
+  void SetIdTokenRequestDelayForTests(base::TimeDelta delay);
   void SetNetworkManagerForTests(
       std::unique_ptr<IdpNetworkRequestManager> manager);
   void SetDialogControllerForTests(
       std::unique_ptr<IdentityRequestDialogController> controller);
   void SetActiveSessionPermissionDelegateForTests(
       FederatedIdentityActiveSessionPermissionContextDelegate*);
-  void SetRequestPermissionDelegateForTests(
-      FederatedIdentityRequestPermissionContextDelegate*);
   void SetSharingPermissionDelegateForTests(
       FederatedIdentitySharingPermissionContextDelegate*);
   void SetApiPermissionDelegateForTests(
@@ -88,10 +86,10 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
   enum FetchManifestType { kForToken, kForRevoke };
   void FetchManifest(FetchManifestType type);
   void OnManifestListFetched(IdpNetworkRequestManager::FetchStatus status,
-                             const std::set<std::string>& urls);
+                             const std::set<GURL>& urls);
   void OnManifestListFetchedForRevoke(
       IdpNetworkRequestManager::FetchStatus status,
-      const std::set<std::string>& urls);
+      const std::set<GURL>& urls);
   void OnManifestFetched(IdpNetworkRequestManager::FetchStatus status,
                          IdpNetworkRequestManager::Endpoints,
                          IdentityProviderMetadata idp_metadata);
@@ -115,7 +113,9 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
       IdentityProviderMetadata idp_metadata,
       IdpNetworkRequestManager::FetchStatus status,
       IdpNetworkRequestManager::AccountList accounts);
-  void OnAccountSelected(const std::string& account_id, bool is_sign_in);
+  void OnAccountSelected(const std::string& account_id,
+                         bool is_sign_in,
+                         bool should_embargo);
   void CompleteIdTokenRequest(IdpNetworkRequestManager::FetchStatus status,
                               const std::string& id_token);
   void OnTokenResponseReceived(IdpNetworkRequestManager::FetchStatus status,
@@ -147,8 +147,6 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
   FederatedIdentityActiveSessionPermissionContextDelegate*
   GetActiveSessionPermissionContext();
   FederatedIdentityApiPermissionContextDelegate* GetApiPermissionContext();
-  FederatedIdentityRequestPermissionContextDelegate*
-  GetRequestPermissionContext();
   FederatedIdentitySharingPermissionContextDelegate*
   GetSharingPermissionContext();
 
@@ -207,8 +205,6 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
       active_session_permission_delegate_ = nullptr;
   raw_ptr<FederatedIdentityApiPermissionContextDelegate>
       api_permission_delegate_ = nullptr;
-  raw_ptr<FederatedIdentityRequestPermissionContextDelegate>
-      request_permission_delegate_ = nullptr;
   raw_ptr<FederatedIdentitySharingPermissionContextDelegate>
       sharing_permission_delegate_ = nullptr;
 
@@ -223,6 +219,8 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
   base::TimeTicks select_account_time_;
   base::TimeTicks id_token_response_time_;
   base::DelayTimer delay_timer_;
+  base::TimeDelta id_token_request_delay_;
+  bool errors_logged_to_console_{false};
   blink::mojom::FederatedAuthRequest::RequestIdTokenCallback
       auth_request_callback_;
 

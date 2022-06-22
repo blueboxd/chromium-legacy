@@ -7,7 +7,7 @@
  * the background context (background page or options page).
  *
  */
-import {ConsoleTts} from './console_tts.js';
+import {ConsoleTts} from '/chromevox/background/console_tts.js';
 
 /**
  * This object has default values of preferences and contains the common
@@ -58,7 +58,8 @@ export class ChromeVoxPrefs {
 
   /**
    * Get the prefs (not including keys).
-   * @return {Object} A map of all prefs except the key map from localStorage.
+   * @return {Object<string, string>} A map of all prefs except the key map from
+   *     localStorage.
    */
   getPrefs() {
     const prefs = {};
@@ -72,7 +73,7 @@ export class ChromeVoxPrefs {
   /**
    * Set the value of a pref.
    * @param {string} key The pref key.
-   * @param {Object|string|boolean} value The new value of the pref.
+   * @param {Object|string|number|boolean} value The new value of the pref.
    */
   setPref(key, value) {
     if (localStorage[key] !== value) {
@@ -198,3 +199,13 @@ ChromeVoxPrefs.loggingPrefs = {
 
 /** @type {!ChromeVoxPrefs} */
 ChromeVoxPrefs.instance = new ChromeVoxPrefs();
+
+BridgeHelper.registerHandler(
+    BridgeTarget.CHROMEVOX_PREFS, BridgeAction.GET_PREFS,
+    () => ChromeVoxPrefs.instance.getPrefs());
+BridgeHelper.registerHandler(
+    BridgeTarget.CHROMEVOX_PREFS, BridgeAction.SET_LOGGING_PREFS,
+    ({key, value}) => ChromeVoxPrefs.instance.setLoggingPrefs(key, value));
+BridgeHelper.registerHandler(
+    BridgeTarget.CHROMEVOX_PREFS, BridgeAction.SET_PREF,
+    ({key, value}) => ChromeVoxPrefs.instance.setPref(key, value));

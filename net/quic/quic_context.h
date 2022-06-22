@@ -135,7 +135,7 @@ struct NET_EXPORT QuicParams {
   bool migrate_idle_sessions = false;
   // If true, sessions with open streams will attempt to migrate to a different
   // port when the current path is poor.
-  bool allow_port_migration = false;
+  bool allow_port_migration = true;
   // A session can be migrated if its idle time is within this period.
   base::TimeDelta idle_session_migration_period =
       kDefaultIdleSessionMigrationPeriod;
@@ -183,6 +183,9 @@ struct NET_EXPORT QuicParams {
   // (1 << broken_count). Otherwise, the delay would be initial_delay, 5min,
   // 10min and so on.
   absl::optional<bool> exponential_backoff_on_initial_delay;
+  // If true, delay main job even the request can be sent immediately on an
+  // available SPDY session.
+  bool delay_main_job_with_available_spdy_session = true;
 };
 
 // QuicContext contains QUIC-related variables that are shared across all of the

@@ -83,7 +83,6 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/region_capture_bounds.h"
-#include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
@@ -215,6 +214,11 @@ class LayerTreeHostImplTest : public testing::Test,
     did_notify_ready_to_activate_ = true;
     host_impl_->ActivateSyncTree();
   }
+  bool IsReadyToActivate() override {
+    // in NotifyReadyToActivate(), call ActivateSyncTree() directly
+    // so this is always false
+    return false;
+  }
   void NotifyReadyToDraw() override {}
   void SetNeedsRedrawOnImplThread() override { did_request_redraw_ = true; }
   void SetNeedsOneBeginImplFrameOnImplThread() override {
@@ -225,6 +229,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void SetNeedsCommitOnImplThread() override { did_request_commit_ = true; }
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override {}
+  void SetDeferBeginMainFrameFromImpl(bool defer_begin_main_frame) override {}
   bool IsInsideDraw() override { return false; }
   void RenewTreePriority() override {}
   void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
@@ -11278,11 +11283,6 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   DrawFrameAndTestDamage(no_damage, child);
 }
 
-class GLRendererWithSetupQuadForAntialiasing : public viz::GLRenderer {
- public:
-  using viz::GLRenderer::ShouldAntialiasQuad;
-};
-
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   // Due to precision issues (especially on Android), sometimes far
   // away quads can end up thinking they need AA.
@@ -11334,16 +11334,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   ASSERT_LE(1u, frame.render_passes[0]->quad_list.size());
   const viz::DrawQuad* quad = frame.render_passes[0]->quad_list.front();
 
-  bool clipped = false, force_aa = false;
-  gfx::QuadF device_layer_quad = MathUtil::MapQuad(
+  bool clipped = false;
+  MathUtil::MapQuad(
       quad->shared_quad_state->quad_to_target_transform,
       gfx::QuadF(gfx::RectF(quad->shared_quad_state->visible_quad_layer_rect)),
       &clipped);
   EXPECT_FALSE(clipped);
-  bool antialiased =
-      GLRendererWithSetupQuadForAntialiasing::ShouldAntialiasQuad(
-          device_layer_quad, clipped, force_aa);
-  EXPECT_FALSE(antialiased);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -13777,12 +13773,45 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, AutoscrollOnDeletedScrollbar) {
                   ->AutoscrollTaskIsScheduled());
 
   // If a call comes in to delete the scrollbar layer for which the autoscroll
-  // was scheduled, the autoscroll task should be cancelled.
-  host_impl_->DidUnregisterScrollbarLayer(scroll_layer->element_id(),
-                                          ScrollbarOrientation::VERTICAL);
-  EXPECT_FALSE(GetInputHandler()
-                   .scrollbar_controller_for_testing()
-                   ->AutoscrollTaskIsScheduled());
+  // was scheduled, the autoscroll task should set a waiting state instead of
+  // initiating an autoscroll, in case the scrollbar comes back.
+  layer_tree_impl->UnregisterScrollbar(scrollbar);
+
+  EXPECT_TRUE(GetInputHandler()
+                  .scrollbar_controller_for_testing()
+                  ->AutoscrollTaskIsScheduled());
+
+  GetInputHandler()
+      .scrollbar_controller_for_testing()
+      ->cancelable_autoscroll_task_->callback()
+      .Run();
+  GetInputHandler()
+      .scrollbar_controller_for_testing()
+      ->cancelable_autoscroll_task_.reset();
+  EXPECT_EQ(GetInputHandler()
+                .scrollbar_controller_for_testing()
+                ->autoscroll_state_->status,
+            ScrollbarController::AutoScrollStatus::AUTOSCROLL_READY);
+
+  // Re-register the scrollbar. An autoscroll task should be posted that
+  // actually starts a scroll animation
+  layer_tree_impl->RegisterScrollbar(scrollbar);
+
+  EXPECT_TRUE(GetInputHandler()
+                  .scrollbar_controller_for_testing()
+                  ->AutoscrollTaskIsScheduled());
+
+  GetInputHandler()
+      .scrollbar_controller_for_testing()
+      ->cancelable_autoscroll_task_->callback()
+      .Run();
+  GetInputHandler()
+      .scrollbar_controller_for_testing()
+      ->cancelable_autoscroll_task_.reset();
+  EXPECT_EQ(GetInputHandler()
+                .scrollbar_controller_for_testing()
+                ->autoscroll_state_->status,
+            ScrollbarController::AutoScrollStatus::AUTOSCROLL_SCROLLING);
 
   // End the scroll.
   GetInputHandler().MouseUp(gfx::PointF(350, 580));
@@ -14454,10 +14483,16 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
     // existing scroll offset animations are aborted and a new autoscroll
     // animation is created. Test passes if unit test doesn't hit any DCHECK
     // failures.
+    GetInputHandler().scrollbar_controller_for_testing()->autoscroll_state_ =
+        ScrollbarController::AutoScrollState();
     GetInputHandler()
         .scrollbar_controller_for_testing()
-        ->StartAutoScrollAnimation(/*scroll_velocity*/ 800,
-                                   ScrollbarPart::FORWARD_TRACK);
+        ->autoscroll_state_->velocity = 800;
+    GetInputHandler()
+        .scrollbar_controller_for_testing()
+        ->autoscroll_state_->pressed_scrollbar_part =
+        ScrollbarPart::FORWARD_TRACK;
+    GetInputHandler().scrollbar_controller_for_testing()->StartAutoScroll();
     EXPECT_TRUE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
   }
 
@@ -16303,7 +16338,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorSpaceHDR) {
   EXPECT_EQ(wcg_params.sdr_max_luminance_nits, kCustomWhiteLevel);
   EXPECT_EQ(wcg_params.hdr_max_luminance_relative, 1.f);
 
-  EXPECT_EQ(hdr_params.color_space, hdr);
+  EXPECT_EQ(hdr_params.color_space, gfx::ColorSpace::CreateExtendedSRGB());
   EXPECT_EQ(hdr_params.sdr_max_luminance_nits, kCustomWhiteLevel);
   EXPECT_EQ(hdr_params.hdr_max_luminance_relative, kHDRMaxLuminanceRelative);
 }
@@ -18295,4 +18330,62 @@ TEST_F(LayerTreeHostImplTest, CollectRegionCaptureBounds) {
             collected_bounds.bounds().find(kFourthId)->second);
 }
 
+// Check if picturelayer's ScrollInteractionInProgress() return true even when
+// BrowserControl is consuming ScrollUpdate.
+TEST_P(LayerTreeHostImplBrowserControlsTest,
+       BrowserControlsScrollInteractionInProgress) {
+  gfx::Size inner_size = gfx::Size(100, 100);
+  gfx::Size outer_size = gfx::Size(100, 100);
+  gfx::Size content_size = gfx::Size(100, 200);
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(inner_size, outer_size,
+                                                        content_size);
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+
+  // Create a content layer beneath the outer viewport scroll layer.
+  scoped_refptr<FakeRasterSource> raster_source(
+      FakeRasterSource::CreateFilled(content_size));
+
+  auto* picture_layer =
+      AddLayer<FakePictureLayerImpl>(host_impl_->active_tree(), raster_source);
+  CopyProperties(OuterViewportScrollLayer(), picture_layer);
+  picture_layer->SetBounds(content_size);
+  picture_layer->SetDrawsContent(true);
+  picture_layer->SetNeedsPushProperties();
+  active_tree->PushPageScaleFromMainThread(1.0f, 1.0f, 2.0f);
+  DrawFrame();
+
+  EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD,
+            GetInputHandler()
+                .ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, 50),
+                                        ui::ScrollInputType::kTouchscreen)
+                                 .get(),
+                             ui::ScrollInputType::kTouchscreen)
+                .thread);
+  // shownratio == 1
+  EXPECT_EQ(1, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), false);
+
+  // 0 < shownratio <1
+  GetInputHandler().ScrollUpdate(UpdateState(gfx::Point(),
+                                             gfx::Vector2dF(0, 25),
+                                             ui::ScrollInputType::kTouchscreen)
+                                     .get());
+  EXPECT_GT(host_impl_->active_tree()->CurrentTopControlsShownRatio(), 0);
+  EXPECT_LT(host_impl_->active_tree()->CurrentTopControlsShownRatio(), 1);
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), true);
+
+  GetInputHandler().ScrollUpdate(UpdateState(gfx::Point(),
+                                             gfx::Vector2dF(0, 30),
+                                             ui::ScrollInputType::kTouchscreen)
+                                     .get());
+  // now shownratio == 0
+  EXPECT_EQ(0, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), true);
+
+  GetInputHandler().ScrollEnd();
+  // scroll end, shownratio == 0
+  EXPECT_EQ(0, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), false);
+}
 }  // namespace cc

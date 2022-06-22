@@ -33,6 +33,8 @@ enum class IntentFilterMatchLevel {
 
 // The type of a condition in an IntentFilter, which determines what Intent
 // field will be matched against.
+// Values are persisted to disk by preferred_apps_converter.h, so should not be
+// changed or removed without migrating existing data.
 ENUM(ConditionType,
      // Matches the URL scheme (e.g. https, tel).
      kScheme,
@@ -52,6 +54,8 @@ ENUM(ConditionType,
      kFile)
 
 // Describes what pattern matching rules are applied to a ConditionValue.
+// Values are persisted to disk by preferred_apps_converter.h, so should not be
+// changed or removed without migrating existing data.
 enum class PatternMatchType {
   kNone = 0,
   // The ConditionValue is a literal string which must match the value in the
@@ -161,12 +165,19 @@ struct COMPONENT_EXPORT(APP_TYPES) IntentFilter {
   void GetMimeTypesAndExtensions(std::set<std::string>& mime_types,
                                  std::set<std::string>& file_extensions);
 
+  // Returns all of the links that this intent filter would accept, to be used
+  // in listing all of the supported links for a given app.
+  std::set<std::string> GetSupportedLinksForAppManagement();
+
   // Returns true if the filter is a browser filter, i.e. can handle all https
   // or http scheme.
   bool IsBrowserFilter();
 
   // Returns true if the filter only contains file extension pattern matches.
   bool IsFileExtensionsFilter();
+
+  // Checks if the filter is the older version that doesn't contain action.
+  bool FilterNeedsUpgrade();
 
   std::string ToString() const;
 
@@ -189,8 +200,18 @@ using IntentFilters = std::vector<IntentFilterPtr>;
 COMPONENT_EXPORT(APP_TYPES)
 IntentFilters CloneIntentFilters(const IntentFilters& intent_filters);
 
+// Creates a deep copy of `intent_filters` map.
+COMPONENT_EXPORT(APP_TYPES)
+base::flat_map<std::string, IntentFilters> CloneIntentFiltersMap(
+    const base::flat_map<std::string, IntentFilters>& intent_filters_map);
+
 COMPONENT_EXPORT(APP_TYPES)
 bool IsEqual(const IntentFilters& source, const IntentFilters& target);
+
+// Returns true if `intent_filters` contains `intent_filter`.
+COMPONENT_EXPORT(APP_TYPES)
+bool Contains(const IntentFilters& intent_filters,
+              const IntentFilterPtr& intent_filter);
 
 // TODO(crbug.com/1253250): Remove these functions after migrating to non-mojo
 // AppService.
@@ -233,18 +254,6 @@ IntentFilterPtr ConvertMojomIntentFilterToIntentFilter(
 COMPONENT_EXPORT(APP_TYPES)
 apps::mojom::IntentFilterPtr ConvertIntentFilterToMojomIntentFilter(
     const IntentFilterPtr& intent_filter);
-
-COMPONENT_EXPORT(APP_TYPES)
-base::flat_map<std::string, std::vector<apps::mojom::IntentFilterPtr>>
-ConvertIntentFiltersToMojomIntentFilters(
-    const base::flat_map<std::string, apps::IntentFilters>& intent_filter);
-
-COMPONENT_EXPORT(APP_TYPES)
-base::flat_map<std::string, apps::IntentFilters>
-ConvertMojomIntentFiltersToIntentFilters(
-    const base::flat_map<std::string,
-                         std::vector<apps::mojom::IntentFilterPtr>>&
-        mojom_intent_filter);
 
 }  // namespace apps
 

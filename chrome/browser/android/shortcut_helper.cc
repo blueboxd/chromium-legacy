@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "chrome/android/chrome_jni_headers/ShortcutHelper_jni.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/web_contents.h"
@@ -23,6 +22,7 @@
 #include "ui/android/color_utils_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -102,8 +102,7 @@ void RecordAddToHomeScreenUKM(
   if (!web_contents)
     return;
 
-  ukm::SourceId source_id =
-      ukm::GetSourceIdForWebContentsDocument(web_contents);
+  ukm::SourceId source_id = web_contents->GetMainFrame()->GetPageUkmSourceId();
   ukm::builders::Webapp_AddToHomeScreen(source_id)
       .SetDisplayMode(static_cast<int>(info.display))
       .SetShortcutReason(static_cast<int>(installable_status))
@@ -134,11 +133,6 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
   AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap, is_icon_maskable);
 }
 
-void ShortcutHelper::ShowWebApkInstallInProgressToast() {
-  Java_ShortcutHelper_showWebApkInstallInProgressToast(
-      base::android::AttachCurrentThread());
-}
-
 // static
 void ShortcutHelper::StoreWebappSplashImage(const std::string& webapp_id,
                                             const SkBitmap& splash_image) {
@@ -160,7 +154,8 @@ bool ShortcutHelper::DoesOriginContainAnyInstalledWebApk(const GURL& origin) {
   DCHECK_EQ(origin, origin.DeprecatedGetOriginAsURL());
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> java_origin =
-      base::android::ConvertUTF8ToJavaString(env, origin.spec());
+      base::android::ConvertUTF8ToJavaString(
+          env, url::Origin::Create(origin).Serialize());
   return Java_ShortcutHelper_doesOriginContainAnyInstalledWebApk(env,
                                                                  java_origin);
 }
@@ -170,7 +165,8 @@ bool ShortcutHelper::DoesOriginContainAnyInstalledTrustedWebActivity(
   DCHECK_EQ(origin, origin.DeprecatedGetOriginAsURL());
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> java_origin =
-      base::android::ConvertUTF8ToJavaString(env, origin.spec());
+      base::android::ConvertUTF8ToJavaString(
+          env, url::Origin::Create(origin).Serialize());
   return Java_ShortcutHelper_doesOriginContainAnyInstalledTwa(env, java_origin);
 }
 

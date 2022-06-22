@@ -4,7 +4,10 @@
 
 #include "content/browser/attribution_reporting/attribution_storage_sql.h"
 
+#include <stdint.h>
+
 #include <functional>
+#include <limits>
 #include <memory>
 
 #include "base/bind.h"
@@ -32,9 +35,29 @@ namespace content {
 
 namespace {
 
+using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::SizeIs;
+
+struct AggregatableReportMetadataRecord {
+  int64_t aggregation_id;
+  int64_t source_id;
+  base::Time trigger_time;
+  absl::optional<int64_t> debug_key;
+  std::string external_report_id;
+  base::Time report_time;
+  int failed_send_attempts = 0;
+  base::Time initial_report_time;
+};
+
+struct AggregatableContributionRecord {
+  int64_t contribution_id;
+  int64_t aggregation_id;
+  int64_t key_high_bits;
+  int64_t key_low_bits;
+  int64_t value;
+};
 
 class AttributionStorageSqlTest : public testing::Test {
  public:
@@ -104,6 +127,47 @@ class AttributionStorageSqlTest : public testing::Test {
   AttributionTrigger::EventLevelResult MaybeCreateAndStoreEventLevelReport(
       const AttributionTrigger& conversion) {
     return storage_->MaybeCreateAndStoreReport(conversion).event_level_status();
+  }
+
+  void StoreAggregatableReportMetadata(
+      const AggregatableReportMetadataRecord& record) {
+    sql::Database raw_db;
+    ASSERT_TRUE(raw_db.Open(db_path()));
+
+    static constexpr char kStoreMetadataSql[] =
+        "INSERT INTO aggregatable_report_metadata "
+        "VALUES(?,?,?,?,?,?,?,?)";
+    sql::Statement statement(raw_db.GetUniqueStatement(kStoreMetadataSql));
+    statement.BindInt64(0, record.aggregation_id);
+    statement.BindInt64(1, record.source_id);
+    statement.BindTime(2, record.trigger_time);
+    if (record.debug_key) {
+      statement.BindInt64(3, *record.debug_key);
+    } else {
+      statement.BindNull(3);
+    }
+    statement.BindString(4, record.external_report_id);
+    statement.BindTime(5, record.report_time);
+    statement.BindInt(6, record.failed_send_attempts);
+    statement.BindTime(7, record.initial_report_time);
+    ASSERT_TRUE(statement.Run());
+  }
+
+  void StoreAggregatableContribution(
+      const AggregatableContributionRecord& record) {
+    sql::Database raw_db;
+    ASSERT_TRUE(raw_db.Open(db_path()));
+
+    static constexpr char kStoreContributionSql[] =
+        "INSERT INTO aggregatable_contributions "
+        "VALUES(?,?,?,?,?)";
+    sql::Statement statement(raw_db.GetUniqueStatement(kStoreContributionSql));
+    statement.BindInt64(0, record.contribution_id);
+    statement.BindInt64(1, record.aggregation_id);
+    statement.BindInt64(2, record.key_high_bits);
+    statement.BindInt64(3, record.key_low_bits);
+    statement.BindInt64(4, record.value);
+    ASSERT_TRUE(statement.Run());
   }
 
  protected:
@@ -223,34 +287,48 @@ TEST_F(AttributionStorageSqlTest, VersionTooNew_RazesDB) {
   ASSERT_THAT(storage()->GetAttributionReports(base::Time::Now()), IsEmpty());
 }
 
-// Create an impression with three conversions and craft a query that will
-// target all.
+// Create a source with three triggers and craft a query that will target all.
 TEST_F(AttributionStorageSqlTest, ClearDataRangeMultipleReports) {
   base::HistogramTester histograms;
 
   OpenDatabase();
 
   base::Time start = base::Time::Now();
-  auto impression = SourceBuilder(start).SetExpiry(base::Days(30)).Build();
-  storage()->StoreSource(impression);
+  auto source = TestAggregatableSourceProvider()
+                    .GetBuilder(start)
+                    .SetExpiry(base::Days(30))
+                    .Build();
+  storage()->StoreSource(source);
 
   task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
 
   task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
 
   task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
 
-  // Use a time range that targets all conversions.
+  // Use a time range that targets all triggers.
   storage()->ClearData(
       base::Time::Min(), base::Time::Max(),
       base::BindRepeating(std::equal_to<url::Origin>(),
-                          impression.common_info().impression_origin()));
+                          source.common_info().impression_origin()));
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
   CloseDatabase();
@@ -264,31 +342,44 @@ TEST_F(AttributionStorageSqlTest, ClearDataRangeMultipleReports) {
       "Conversions.ReportsDeletedInDataClearOperation", 3, 1);
 }
 
-//  Create an impression with two conversions (C1 and C2). Craft a query that
-//  will target C2, which will in turn delete the impression. We should ensure
-//  that C1 is properly deleted (conversions should not be stored unattributed).
+//  Create a source with two triggers resulting in two event-level reports (C1
+//  and C2) and two aggregatable reports (A1 and A2). Craft a query that  will
+//  target C2 and A2, which will in turn delete the source. We should ensure
+//  that C1 and A1 are properly deleted (reports should not be stored
+//  unattributed).
 TEST_F(AttributionStorageSqlTest, ClearDataWithVestigialConversion) {
   base::HistogramTester histograms;
 
   OpenDatabase();
 
   base::Time start = base::Time::Now();
-  auto impression = SourceBuilder(start).SetExpiry(base::Days(30)).Build();
-  storage()->StoreSource(impression);
+  auto source = TestAggregatableSourceProvider()
+                    .GetBuilder(start)
+                    .SetExpiry(base::Days(30))
+                    .Build();
+  storage()->StoreSource(source);
 
   task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
 
   task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
 
-  // Use a time range that only intersects the last conversion.
+  // Use a time range that only intersects the last trigger.
   storage()->ClearData(
       base::Time::Now(), base::Time::Now(),
       base::BindRepeating(std::equal_to<url::Origin>(),
-                          impression.common_info().impression_origin()));
+                          source.common_info().impression_origin()));
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
   CloseDatabase();
@@ -309,20 +400,31 @@ TEST_F(AttributionStorageSqlTest, ClearAllDataWithVestigialConversion) {
   OpenDatabase();
 
   base::Time start = base::Time::Now();
-  auto impression = SourceBuilder(start).SetExpiry(base::Days(30)).Build();
-  storage()->StoreSource(impression);
+  auto source = TestAggregatableSourceProvider()
+                    .GetBuilder(start)
+                    .SetExpiry(base::Days(30))
+                    .Build();
+  storage()->StoreSource(source);
 
   task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
 
   task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
 
-  // Use a time range that only intersects the last conversion.
-  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
-  storage()->ClearData(base::Time::Now(), base::Time::Now(), null_filter);
+  // Use a time range that only intersects the last trigger.
+  storage()->ClearData(base::Time::Now(), base::Time::Now(),
+                       base::NullCallback());
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
   CloseDatabase();
@@ -344,19 +446,31 @@ TEST_F(AttributionStorageSqlTest, DeleteEverything) {
 
   base::Time start = base::Time::Now();
   for (int i = 0; i < 10; i++) {
-    auto impression = SourceBuilder(start).SetExpiry(base::Days(30)).Build();
-    storage()->StoreSource(impression);
+    auto source = TestAggregatableSourceProvider()
+                      .GetBuilder(start)
+                      .SetExpiry(base::Days(30))
+                      .Build();
+    storage()->StoreSource(source);
     task_environment_.FastForwardBy(base::Days(1));
   }
 
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
 
-  auto null_filter = base::RepeatingCallback<bool(const url::Origin&)>();
-  storage()->ClearData(base::Time::Min(), base::Time::Max(), null_filter);
+  task_environment_.FastForwardBy(base::Days(1));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
+
+  storage()->ClearData(base::Time::Min(), base::Time::Max(),
+                       base::NullCallback());
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
   CloseDatabase();
@@ -368,175 +482,6 @@ TEST_F(AttributionStorageSqlTest, DeleteEverything) {
       "Conversions.ImpressionsDeletedInDataClearOperation", 1, 1);
   histograms.ExpectUniqueSample(
       "Conversions.ReportsDeletedInDataClearOperation", 2, 1);
-}
-
-// Create a source with three aggregatable attributions and craft a query that
-// will target all.
-TEST_F(AttributionStorageSqlTest,
-       ClearDataRangeMultipleAggregatableAttributions) {
-  OpenDatabase();
-
-  SourceBuilder source_builder;
-  storage()->StoreSource(source_builder.SetExpiry(base::Days(30)).Build());
-
-  auto stored_source =
-      source_builder.SetSourceId(StoredSource::Id(1)).BuildStored();
-  AttributionInfoBuilder attribution_info_builder(stored_source);
-
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(attribution_info_builder.SetTime(base::Time::Now()).Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
-          .BuildAggregatableAttribution()));
-
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(attribution_info_builder.SetTime(base::Time::Now()).Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/3, /*value=*/4),
-               AggregatableHistogramContribution(/*key=*/5, /*value=*/6)})
-          .BuildAggregatableAttribution()));
-
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(attribution_info_builder.SetTime(base::Time::Now()).Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/7, /*value=*/8)})
-          .BuildAggregatableAttribution()));
-
-  // Use a time range that targets all aggregatable attributions.
-  storage()->ClearData(
-      base::Time::Min(), base::Time::Max(),
-      base::BindRepeating(std::equal_to<url::Origin>(),
-                          stored_source.common_info().impression_origin()));
-  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
-
-  CloseDatabase();
-
-  // Verify that everything is deleted.
-  ExpectAllTablesEmpty();
-}
-
-// Create a source with two aggregatable attributions (A1 and A2). Craft a query
-// that will target A2, which will in turn delete the source. We should ensure
-// that A1 is properly deleted (aggregatable attributions should not be stored
-// unattributed).
-TEST_F(AttributionStorageSqlTest,
-       ClearDataWithVestigialAggregatableAttribution) {
-  OpenDatabase();
-
-  SourceBuilder source_builder;
-  storage()->StoreSource(source_builder.SetExpiry(base::Days(30)).Build());
-
-  auto stored_source =
-      source_builder.SetSourceId(StoredSource::Id(1)).BuildStored();
-  AttributionInfoBuilder attribution_info_builder(stored_source);
-
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(attribution_info_builder.SetTime(base::Time::Now()).Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
-          .BuildAggregatableAttribution()));
-
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(attribution_info_builder.SetTime(base::Time::Now()).Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/3, /*value=*/4),
-               AggregatableHistogramContribution(/*key=*/5, /*value=*/6)})
-          .BuildAggregatableAttribution()));
-
-  // Use a time range that only intersects the last aggregatable attribution.
-  storage()->ClearData(
-      base::Time::Now(), base::Time::Now(),
-      base::BindRepeating(std::equal_to<url::Origin>(),
-                          stored_source.common_info().impression_origin()));
-  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
-
-  CloseDatabase();
-
-  // Verify that everything is deleted.
-  ExpectAllTablesEmpty();
-}
-
-// Same as the above test, but with a null filter.
-TEST_F(AttributionStorageSqlTest,
-       ClearAllDataWithVestigialAggregatableAttribution) {
-  OpenDatabase();
-
-  SourceBuilder source_builder;
-  storage()->StoreSource(source_builder.SetExpiry(base::Days(30)).Build());
-
-  AttributionInfoBuilder attribution_info_builder(
-      source_builder.SetSourceId(StoredSource::Id(1)).BuildStored());
-
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(attribution_info_builder.SetTime(base::Time::Now()).Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
-          .BuildAggregatableAttribution()));
-
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(attribution_info_builder.SetTime(base::Time::Now()).Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/3, /*value=*/4),
-               AggregatableHistogramContribution(/*key=*/5, /*value=*/6)})
-          .BuildAggregatableAttribution()));
-
-  // Use a time range that only intersects the last aggregatable attribution.
-  storage()->ClearData(base::Time::Now(), base::Time::Now(),
-                       base::NullCallback());
-  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
-
-  CloseDatabase();
-
-  // Verify that everything is deleted.
-  ExpectAllTablesEmpty();
-}
-
-// The max time range with a null filter should delete everything.
-TEST_F(AttributionStorageSqlTest, DeleteEverythingWithAggregatableAttribution) {
-  OpenDatabase();
-
-  base::Time start = base::Time::Now();
-  for (int i = 0; i < 5; i++) {
-    storage()->StoreSource(
-        SourceBuilder(start).SetExpiry(base::Days(30)).Build());
-    task_environment_.FastForwardBy(base::Days(1));
-  }
-
-  AttributionInfoBuilder attribution_info_builder(
-      SourceBuilder(start)
-          .SetExpiry(base::Days(30))
-          .SetSourceId(StoredSource::Id(1))
-          .BuildStored());
-
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(attribution_info_builder.SetTime(base::Time::Now()).Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/1, /*value=*/2),
-               AggregatableHistogramContribution(/*key=*/3, /*value=*/4)})
-          .BuildAggregatableAttribution()));
-
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(attribution_info_builder.SetTime(base::Time::Now()).Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/5, /*value=*/6)})
-          .BuildAggregatableAttribution()));
-
-  storage()->ClearData(base::Time::Min(), base::Time::Max(),
-                       base::NullCallback());
-  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
-
-  CloseDatabase();
-
-  // Verify that everything is deleted.
-  ExpectAllTablesEmpty();
 }
 
 TEST_F(AttributionStorageSqlTest, MaxSourcesPerOrigin) {
@@ -839,8 +784,7 @@ TEST_F(AttributionStorageSqlTest, ExpiredImpressionWithSentConversion_Deleted) {
   std::vector<AttributionReport> reports =
       storage()->GetAttributionReports(base::Time::Now());
   EXPECT_THAT(reports, SizeIs(1));
-  EXPECT_TRUE(storage()->DeleteReport(
-      *(absl::get<AttributionReport::EventLevelData>(reports[0].data()).id)));
+  EXPECT_TRUE(storage()->DeleteReport(reports[0].ReportId()));
   // Store another impression to trigger the expiry logic.
   storage()->StoreSource(
       SourceBuilder().SetExpiry(base::Milliseconds(3)).Build());
@@ -852,21 +796,30 @@ TEST_F(AttributionStorageSqlTest, ExpiredImpressionWithSentConversion_Deleted) {
 TEST_F(AttributionStorageSqlTest, DeleteAggregatableAttributionReport) {
   OpenDatabase();
 
-  storage()->StoreSource(SourceBuilder().Build());
+  storage()->StoreSource(TestAggregatableSourceProvider().GetBuilder().Build());
 
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(
-          AttributionInfoBuilder(
-              SourceBuilder().SetSourceId(StoredSource::Id(1)).BuildStored())
-              .Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/1, /*value=*/2),
-               AggregatableHistogramContribution(/*key=*/3, /*value=*/4)})
-          .BuildAggregatableAttribution()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
+
+  std::vector<AttributionReport> reports =
+      storage()->GetAttributionReports(base::Time::Max());
+
+  EXPECT_THAT(
+      reports,
+      ElementsAre(
+          ReportTypeIs(AttributionReport::ReportType::kEventLevel),
+          ReportTypeIs(
+              AttributionReport::ReportType::kAggregatableAttribution)));
 
   EXPECT_TRUE(storage()->DeleteReport(
       AttributionReport::AggregatableAttributionData::Id(1)));
-  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
+  EXPECT_THAT(
+      storage()->GetAttributionReports(base::Time::Max()),
+      ElementsAre(ReportTypeIs(AttributionReport::ReportType::kEventLevel)));
 
   CloseDatabase();
 
@@ -877,18 +830,30 @@ TEST_F(AttributionStorageSqlTest,
        ExpiredSourceWithPendingAggregatableAttribution_NotDeleted) {
   OpenDatabase();
 
-  SourceBuilder source_builder;
-  storage()->StoreSource(
-      source_builder.SetExpiry(base::Milliseconds(3)).Build());
+  storage()->StoreSource(TestAggregatableSourceProvider()
+                             .GetBuilder()
+                             .SetExpiry(base::Milliseconds(3))
+                             .Build());
 
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(
-          AttributionInfoBuilder(
-              source_builder.SetSourceId(StoredSource::Id(1)).BuildStored())
-              .Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
-          .BuildAggregatableAttribution()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
+
+  std::vector<AttributionReport> reports =
+      storage()->GetAttributionReports(base::Time::Max());
+
+  EXPECT_THAT(
+      reports,
+      ElementsAre(
+          ReportTypeIs(AttributionReport::ReportType::kEventLevel),
+          ReportTypeIs(
+              AttributionReport::ReportType::kAggregatableAttribution)));
+
+  EXPECT_TRUE(
+      storage()->DeleteReport(AttributionReport::EventLevelData::Id(1)));
 
   task_environment_.FastForwardBy(base::Milliseconds(3));
   // Store another source to trigger the expiry logic.
@@ -903,23 +868,32 @@ TEST_F(AttributionStorageSqlTest,
        ExpiredSourceWithSentAggregatableAttribution_Deleted) {
   OpenDatabase();
 
-  SourceBuilder source_builder;
-  storage()->StoreSource(
-      source_builder.SetExpiry(base::Milliseconds(3)).Build());
+  storage()->StoreSource(TestAggregatableSourceProvider()
+                             .GetBuilder()
+                             .SetExpiry(base::Milliseconds(3))
+                             .Build());
 
-  EXPECT_TRUE(storage()->AddAggregatableAttributionForTesting(
-      ReportBuilder(
-          AttributionInfoBuilder(
-              source_builder.SetSourceId(StoredSource::Id(1)).BuildStored())
-              .Build())
-          .SetAggregatableHistogramContributions(
-              {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
-          .BuildAggregatableAttribution()));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
+
+  std::vector<AttributionReport> reports =
+      storage()->GetAttributionReports(base::Time::Max());
+
+  EXPECT_THAT(
+      reports,
+      ElementsAre(
+          ReportTypeIs(AttributionReport::ReportType::kEventLevel),
+          ReportTypeIs(
+              AttributionReport::ReportType::kAggregatableAttribution)));
 
   task_environment_.FastForwardBy(base::Milliseconds(3));
 
-  EXPECT_TRUE(storage()->DeleteReport(
-      AttributionReport::AggregatableAttributionData::Id(1)));
+  EXPECT_TRUE(storage()->DeleteReport(reports[0].ReportId()));
+  EXPECT_TRUE(storage()->DeleteReport(reports[1].ReportId()));
 
   // Store another source to trigger the expiry logic.
   storage()->StoreSource(
@@ -958,6 +932,55 @@ TEST_F(AttributionStorageSqlTest,
 
     OpenDatabase();
     ASSERT_THAT(storage()->GetActiveSources(), IsEmpty()) << update_sql;
+    storage()->ClearData(base::Time::Min(), base::Time::Max(),
+                         base::NullCallback());
+    CloseDatabase();
+  }
+}
+
+TEST_F(AttributionStorageSqlTest,
+       InvalidAggregatableValue_FailsDeserialization) {
+  const struct {
+    int64_t value;
+    int64_t budget;
+    bool valid;
+  } kTestCases[] = {
+      {-1, 10, false},
+      {0, 10, false},
+      {10, 10, true},
+      {11, 10, false},
+      {std::numeric_limits<uint32_t>::max(),
+       std::numeric_limits<int64_t>::max(), true},
+      {std::numeric_limits<uint32_t>::max() + 1,
+       std::numeric_limits<int64_t>::max(), false},
+  };
+
+  for (auto test_case : kTestCases) {
+    OpenDatabase();
+    storage()->StoreSource(SourceBuilder().Build());
+    auto sources = storage()->GetActiveSources();
+    ASSERT_THAT(sources, SizeIs(1));
+    CloseDatabase();
+
+    StoreAggregatableReportMetadata(AggregatableReportMetadataRecord{
+        .aggregation_id = 1,
+        .source_id = *sources.front().source_id(),
+        .external_report_id = DefaultExternalReportID().AsLowercaseString(),
+    });
+
+    StoreAggregatableContribution(
+        AggregatableContributionRecord{.contribution_id = 1,
+                                       .aggregation_id = 1,
+                                       .key_high_bits = 0,
+                                       .key_low_bits = 0,
+                                       .value = test_case.value});
+
+    OpenDatabase();
+    delegate()->set_aggregatable_budget_per_source(test_case.budget);
+    EXPECT_THAT(
+        storage()->GetAttributionReports(/*max_report_time=*/base::Time::Max()),
+        SizeIs(test_case.valid))
+        << test_case.value << "," << test_case.budget;
     storage()->ClearData(base::Time::Min(), base::Time::Max(),
                          base::NullCallback());
     CloseDatabase();

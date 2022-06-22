@@ -16,6 +16,7 @@
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/scoped_guest_button_blocker.h"
+#include "ash/shelf/kiosk_app_instruction_bubble.h"
 #include "ash/shelf/shelf_shutdown_confirmation_bubble.h"
 #include "ash/shutdown_controller_impl.h"
 #include "ash/tray_action/tray_action.h"
@@ -82,10 +83,12 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // then notifies LoginShelfView to update its own UI.
   void UpdateAfterSessionChange();
 
-  // Sets the contents of the kiosk app menu, as well as the callback used when
-  // a menu item is selected.
-  void SetKioskApps(
-      const std::vector<KioskAppMenuEntry>& kiosk_apps,
+  // Sets the contents of the kiosk app menu.
+  void SetKioskApps(const std::vector<KioskAppMenuEntry>& kiosk_apps);
+
+  // Sets the callback used when a menu item is selected, as well as when the
+  // kiosk menu is opened.
+  void ConfigureKioskCallbacks(
       const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
       const base::RepeatingClosure& on_show_menu);
 
@@ -116,7 +119,11 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Sets and animates the opacity of login shelf buttons.
   void SetButtonOpacity(float target_opacity);
 
+  // Test API. Set device to have kiosk license.
+  void SetKioskLicenseModeForTesting(bool is_kiosk_license_mode);
+
   // views::View:
+  void AddedToWidget() override;
   const char* GetClassName() const override;
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
@@ -159,7 +166,10 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // strings.
   void HandleLocaleChange();
 
-  // Returns true if the shutdown confirmation is visible
+  // Returns the Kiosk instruction bubble.
+  KioskAppInstructionBubble* GetKioskInstructionBubbleForTesting();
+
+  // Returns the shutdown confirmation bubble.
   ShelfShutdownConfirmationBubble* GetShutdownConfirmationBubbleForTesting();
 
  private:
@@ -207,10 +217,16 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // number of dropped calls exceeds 'kMaxDroppedCallsWhenDisplaysOff'
   void CallIfDisplayIsOn(const base::RepeatingClosure& closure);
 
+  // Helper function which calls on_kiosk_menu_shown when kiosk menu is shown.
+  void OnKioskMenuShown(const base::RepeatingClosure& on_kiosk_menu_shown);
+  void OnKioskMenuclosed();
+
   OobeDialogState dialog_state_ = OobeDialogState::HIDDEN;
   bool allow_guest_ = true;
   bool is_first_signin_step_ = false;
   bool show_parent_access_ = false;
+  // TODO(crbug.com/1307303): Determine if this is a kiosk license device.
+  bool kiosk_license_mode_ = false;
   // When the Gaia screen is active during Login, the guest-login button should
   // appear if there are no user views.
   bool login_screen_has_users_ = false;
@@ -234,6 +250,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // The kiosk app button will only be created for the primary display's login
   // shelf.
   KioskAppsButton* kiosk_apps_button_ = nullptr;
+
+  // The kiosk app instruction will be shown if the kiosk app button is visible.
+  KioskAppInstructionBubble* kiosk_instruction_bubble_ = nullptr;
 
   // This is used in tests to check if the confirmation bubble is visible and to
   // click its buttons.

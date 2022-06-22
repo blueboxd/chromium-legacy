@@ -5,7 +5,7 @@
   }
 
   #navigationButtonWrapper {
-    bottom: var(--footer-height);
+    bottom: var(--header-footer-height);
     position: absolute;
   }
 
@@ -15,11 +15,12 @@
 </style>
 <base-page>
   <div slot="left-pane">
-    <iron-icon slot="optional-icon" icon="shimless-icon:warning"
-        class="warning-icon">
-    </iron-icon>
     <h1>[[i18n('criticalErrorTitleText')]]</h1>
-    <div class="instructions">[[i18n('criticalErrorMessageText')]]</div>
+    <div class="icon-message">
+      <iron-icon icon="shimless-icon:warning" class="warning-icon small-icon">
+      </iron-icon>
+      <div class="instructions">[[i18n('criticalErrorMessageText')]]</div>
+    </div>
     <div id="writeProtectStatus">[[statusString_]]</div>
     <div id="navigationButtonWrapper">
       <cr-button id="rebootButton" class="action-button"

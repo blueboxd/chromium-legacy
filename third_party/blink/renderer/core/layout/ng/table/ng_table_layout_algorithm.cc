@@ -347,7 +347,7 @@ class ColumnGeometriesBuilder {
     col.GetLayoutBox()->SetLogicalHeight(table_grid_block_size);
     column_geometries.emplace_back(start_column_index, span,
                                    column_locations[start_column_index].offset -
-                                       border_spacing.inline_size,
+                                       column_locations[0].offset,
                                    column_inline_size, col);
   }
 
@@ -368,7 +368,7 @@ class ColumnGeometriesBuilder {
     colgroup.GetLayoutBox()->SetLogicalHeight(table_grid_block_size);
     column_geometries.emplace_back(start_column_index, span,
                                    column_locations[start_column_index].offset -
-                                       border_spacing.inline_size,
+                                       column_locations[0].offset,
                                    colgroup_size, colgroup);
   }
 
@@ -402,15 +402,12 @@ class ColumnGeometriesBuilder {
   }
 
   ColumnGeometriesBuilder(const Vector<NGTableColumnLocation>& column_locations,
-                          LayoutUnit table_grid_block_size,
-                          const LogicalSize& border_spacing)
+                          LayoutUnit table_grid_block_size)
       : column_locations(column_locations),
-        table_grid_block_size(table_grid_block_size),
-        border_spacing(border_spacing) {}
+        table_grid_block_size(table_grid_block_size) {}
   NGTableFragmentData::ColumnGeometries column_geometries;
   const Vector<NGTableColumnLocation>& column_locations;
   const LayoutUnit table_grid_block_size;
-  const LogicalSize& border_spacing;
 };
 
 LayoutUnit ComputeTableSizeFromColumns(
@@ -727,15 +724,14 @@ void NGTableLayoutAlgorithm::ComputeTableSpecificFragmentData(
     const NGTableTypes::Rows& rows,
     const NGTableBorders& table_borders,
     const PhysicalRect& table_grid_rect,
-    const LogicalSize& border_spacing,
     const LayoutUnit table_grid_block_size) {
   container_builder_.SetTableGridRect(table_grid_rect);
   container_builder_.SetTableColumnCount(column_locations.size());
   container_builder_.SetHasCollapsedBorders(table_borders.IsCollapsed());
   // Column geometries.
   if (grouped_children.columns.size() > 0) {
-    ColumnGeometriesBuilder geometry_builder(
-        column_locations, table_grid_block_size, border_spacing);
+    ColumnGeometriesBuilder geometry_builder(column_locations,
+                                             table_grid_block_size);
     VisitLayoutNGTableColumn(grouped_children.columns, column_locations.size(),
                              &geometry_builder);
     geometry_builder.Sort();
@@ -893,10 +889,9 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
 
   // Generate section fragments, and also caption fragments, if we need to
   // regenerate them (block fragmentation).
-  LogicalOffset section_offset;
-  section_offset.inline_offset =
-      border_padding.inline_start + border_spacing.inline_size;
-  section_offset.block_offset = child_block_offset + border_padding.block_start;
+  LogicalOffset section_offset = {
+      border_padding.inline_start + border_spacing.inline_size,
+      border_padding.block_start + child_block_offset};
 
   absl::optional<LayoutUnit> table_baseline;
 
@@ -909,6 +904,17 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   for (auto entry = child_iterator.NextChild();
        NGBlockNode child = entry.GetNode();
        entry = child_iterator.NextChild()) {
+    const NGEarlyBreak* early_break_in_child = nullptr;
+    if (UNLIKELY(early_break_)) {
+      if (IsEarlyBreakTarget(*early_break_, container_builder_, child)) {
+        container_builder_.AddBreakBeforeChild(child, kBreakAppealPerfect,
+                                               /* is_forced_break */ false);
+        broke_inside = true;
+        break;
+      }
+      early_break_in_child = EnterEarlyBreakInChild(child, *early_break_);
+    }
+
     const NGBlockBreakToken* child_break_token = entry.GetBreakToken();
     const NGLayoutResult* child_result;
     LayoutUnit child_inline_offset;
@@ -957,7 +963,8 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
 
       NGConstraintSpace child_space = CreateSectionConstraintSpace(
           child, child_block_offset, entry.GetSectionIndex());
-      child_result = child.Layout(child_space, child_break_token);
+      child_result =
+          child.Layout(child_space, child_break_token, early_break_in_child);
       child_inline_offset = section_offset.inline_offset;
     }
     if (ConstraintSpace().HasBlockFragmentation()) {
@@ -966,10 +973,15 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
       NGBreakStatus break_status = BreakBeforeChildIfNeeded(
           ConstraintSpace(), child, *child_result, fragmentainer_block_offset,
           has_processed_first_child, &container_builder_);
-      if (break_status != NGBreakStatus::kContinue) {
+      if (break_status == NGBreakStatus::kNeedsEarlierBreak) {
+        return RelayoutAndBreakEarlier<NGTableLayoutAlgorithm>(
+            container_builder_.EarlyBreak());
+      }
+      if (break_status == NGBreakStatus::kBrokeBefore) {
         broke_inside = true;
         break;
       }
+      DCHECK_EQ(break_status, NGBreakStatus::kContinue);
     }
 
     const auto& physical_fragment =
@@ -1012,8 +1024,17 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
 
   if (!child_iterator.NextChild())
     container_builder_.SetHasSeenAllChildren();
-  if (broke_inside)
+
+  // If we had (any) break inside, we don't need end border-spacing, and should
+  // be at-least the fragmentainer size (if definite).
+  if (broke_inside) {
+    if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
+      section_offset.block_offset =
+          std::max(section_offset.block_offset,
+                   FragmentainerSpaceAtBfcStart(ConstraintSpace()));
+    }
     needs_end_border_spacing = false;
+  }
 
   if (needs_end_border_spacing)
     section_offset.block_offset += border_spacing.block_size;
@@ -1058,10 +1079,9 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
       ToPhysicalSize(container_builder_.Size(),
                      table_writing_direction.GetWritingMode()));
 
-  ComputeTableSpecificFragmentData(grouped_children, column_locations, rows,
-                                   table_borders,
-                                   grid_converter.ToPhysical(table_grid_rect),
-                                   border_spacing, column_block_size);
+  ComputeTableSpecificFragmentData(
+      grouped_children, column_locations, rows, table_borders,
+      grid_converter.ToPhysical(table_grid_rect), column_block_size);
 
   if (RuntimeEnabledFeatures::MathMLCoreEnabled() && Node().GetDOMNode() &&
       Node().GetDOMNode()->HasTagName(mathml_names::kMtableTag))

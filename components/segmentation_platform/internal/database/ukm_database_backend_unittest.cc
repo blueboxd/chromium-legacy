@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/segmentation_platform/internal/database/ukm_database_test_utils.h"
 #include "components/segmentation_platform/internal/database/ukm_metrics_table.h"
 #include "components/segmentation_platform/internal/database/ukm_url_table.h"
@@ -21,6 +22,14 @@ using ::testing::Contains;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::UnorderedElementsAre;
+
+// Set path to protected file which fails to open the database.
+#if BUILDFLAG(IS_POSIX)
+constexpr base::FilePath::CharType kBadFilePath[] = FILE_PATH_LITERAL("/usr");
+#else
+constexpr base::FilePath::CharType kBadFilePath[] =
+    FILE_PATH_LITERAL("C:\\Windows");
+#endif
 
 // Stats about the database tables.
 struct DatabaseStats {
@@ -94,6 +103,24 @@ class UkmDatabaseBackendTest : public testing::Test {
     backend_.reset();
     task_runner_.reset();
     ASSERT_TRUE(temp_dir_.Delete());
+  }
+
+  void ExpectQueryResult(UkmDatabase::QueryList&& queries,
+                         bool expect_success,
+                         const processing::IndexedTensors& expected_values) {
+    base::RunLoop wait_for_query3;
+    backend_->RunReadonlyQueries(
+        std::move(queries),
+        base::BindOnce(
+            [](base::OnceClosure quit, bool expect_success,
+               const processing::IndexedTensors& expected_values, bool success,
+               processing::IndexedTensors tensors) {
+              EXPECT_EQ(expect_success, success);
+              EXPECT_EQ(expected_values, tensors);
+              std::move(quit).Run();
+            },
+            wait_for_query3.QuitClosure(), expect_success, expected_values));
+    wait_for_query3.Run();
   }
 
  protected:
@@ -276,8 +303,8 @@ TEST_F(UkmDatabaseBackendTest, RemoveUrls) {
   EXPECT_EQ(stats1.metric_count_for_url_id.size(), 4u);
 
   // Removing URLs that were not added does nothing.
-  backend_->RemoveUrls({GURL()});
-  backend_->RemoveUrls({GURL("https://www.other.com")});
+  backend_->RemoveUrls({GURL()}, /*all_urls=*/false);
+  backend_->RemoveUrls({GURL("https://www.other.com")}, /*all_urls=*/false);
 
   DatabaseStats stats2 = GetDatabaseStats(backend_->db());
   EXPECT_EQ(stats2.total_metrics, 12);
@@ -285,7 +312,7 @@ TEST_F(UkmDatabaseBackendTest, RemoveUrls) {
   EXPECT_EQ(stats2.metric_count_for_url_id.size(), 4u);
 
   // Removing non-validated URL removes from metrics table.
-  backend_->RemoveUrls({kUrl3});
+  backend_->RemoveUrls({kUrl3}, /*all_urls=*/false);
   DatabaseStats stats3 = GetDatabaseStats(backend_->db());
   EXPECT_EQ(stats3.total_metrics, 9);
   EXPECT_EQ(stats3.metric_count_for_event_id.size(), 3u);
@@ -298,13 +325,239 @@ TEST_F(UkmDatabaseBackendTest, RemoveUrls) {
                                 UrlMatcher{.url_id = kUrlId2, .url = kUrl2}});
 
   // Removing validated URL removes from url and metrics table.
-  backend_->RemoveUrls({kUrl1, kUrl2});
+  backend_->RemoveUrls({kUrl1, kUrl2}, /*all_urls=*/false);
   DatabaseStats stats4 = GetDatabaseStats(backend_->db());
   EXPECT_EQ(stats4.total_metrics, 3);
   EXPECT_EQ(stats4.metric_count_for_event_id.size(), 1u);
   EXPECT_THAT(stats4.metric_count_for_url_id,
               UnorderedElementsAre(std::make_pair(UrlId(), 3)));
   test_util::AssertUrlsInTable(backend_->db(), {});
+}
+
+TEST_F(UkmDatabaseBackendTest, DeleteAllUrls) {
+  const GURL kUrl1("https://www.url1.com");
+  const GURL kUrl2("https://www.url2.com");
+  const GURL kUrl3("https://www.url3.com");
+  const UrlId kUrlId1 = UkmUrlTable::GenerateUrlId(kUrl1);
+  const UrlId kUrlId2 = UkmUrlTable::GenerateUrlId(kUrl2);
+  const ukm::SourceId kSourceId1 = 10;
+  const ukm::SourceId kSourceId2 = 20;
+  const ukm::SourceId kSourceId3 = 30;
+  const ukm::SourceId kSourceId4 = 40;
+
+  ukm::mojom::UkmEntryPtr entry1 = GetSampleUkmEntry(kSourceId1);
+  ukm::mojom::UkmEntryPtr entry2 = GetSampleUkmEntry(kSourceId2);
+  ukm::mojom::UkmEntryPtr entry3 = GetSampleUkmEntry(kSourceId3);
+  ukm::mojom::UkmEntryPtr entry4 = GetSampleUkmEntry(kSourceId4);
+
+  // Delete on empty database does not crash.
+  backend_->RemoveUrls({}, /*all_urls=*/true);
+
+  backend_->UpdateUrlForUkmSource(kSourceId1, kUrl1, true);
+  backend_->UpdateUrlForUkmSource(kSourceId2, kUrl2, true);
+  backend_->UpdateUrlForUkmSource(kSourceId3, kUrl3, false);
+  backend_->StoreUkmEntry(std::move(entry1));
+  backend_->StoreUkmEntry(std::move(entry2));
+  backend_->StoreUkmEntry(std::move(entry3));
+  backend_->StoreUkmEntry(std::move(entry4));
+
+  test_util::AssertUrlsInTable(backend_->db(),
+                               {UrlMatcher{.url_id = kUrlId1, .url = kUrl1},
+                                UrlMatcher{.url_id = kUrlId2, .url = kUrl2}});
+  DatabaseStats stats1 = GetDatabaseStats(backend_->db());
+  EXPECT_EQ(stats1.total_metrics, 12);
+  EXPECT_EQ(stats1.metric_count_for_event_id.size(), 4u);
+  EXPECT_EQ(stats1.metric_count_for_url_id.size(), 4u);
+
+  // Only one event with 3 metrics and without URL is left.
+  backend_->RemoveUrls({}, /*all_urls=*/true);
+  test_util::AssertUrlsInTable(backend_->db(), {});
+  DatabaseStats stats2 = GetDatabaseStats(backend_->db());
+  EXPECT_EQ(stats2.total_metrics, 3);
+  EXPECT_EQ(stats2.metric_count_for_event_id.size(), 1u);
+  const base::flat_map<UrlId, int> no_url_metrics({{UrlId(), 3}});
+  EXPECT_EQ(stats2.metric_count_for_url_id, no_url_metrics);
+
+  // Delete on table with all metrics without URL ID does nothing.
+  backend_->RemoveUrls({}, /*all_urls=*/true);
+  test_util::AssertUrlsInTable(backend_->db(), {});
+  DatabaseStats stats3 = GetDatabaseStats(backend_->db());
+  EXPECT_EQ(stats3.total_metrics, 3);
+  EXPECT_EQ(stats3.metric_count_for_event_id.size(), 1u);
+  EXPECT_EQ(stats2.metric_count_for_url_id, no_url_metrics);
+}
+
+TEST_F(UkmDatabaseBackendTest, DeleteOldEntries) {
+  const GURL kUrl1("https://www.url1.com");
+  const GURL kUrl2("https://www.url2.com");
+  const GURL kUrl3("https://www.url3.com");
+  const GURL kUrl4("https://www.url4.com");
+  const UrlId kUrlId1 = UkmUrlTable::GenerateUrlId(kUrl1);
+  const UrlId kUrlId2 = UkmUrlTable::GenerateUrlId(kUrl2);
+  const UrlId kUrlId3 = UkmUrlTable::GenerateUrlId(kUrl3);
+  const UrlId kUrlId4 = UkmUrlTable::GenerateUrlId(kUrl4);
+  const ukm::SourceId kSourceId1 = 10;
+  const ukm::SourceId kSourceId2 = 20;
+  const ukm::SourceId kSourceId3 = 30;
+  const ukm::SourceId kSourceId4 = 40;
+  const ukm::SourceId kSourceId5 = 50;
+
+  ukm::mojom::UkmEntryPtr entry1 = GetSampleUkmEntry(kSourceId1);
+  ukm::mojom::UkmEntryPtr entry2 = GetSampleUkmEntry(kSourceId2);
+  ukm::mojom::UkmEntryPtr entry3 = GetSampleUkmEntry(kSourceId3);
+  ukm::mojom::UkmEntryPtr entry4 = GetSampleUkmEntry(kSourceId4);
+
+  backend_->UpdateUrlForUkmSource(kSourceId1, kUrl1, true);
+  backend_->UpdateUrlForUkmSource(kSourceId2, kUrl2, true);
+  backend_->UpdateUrlForUkmSource(kSourceId3, kUrl3, true);
+  backend_->UpdateUrlForUkmSource(kSourceId4, kUrl1, true);
+  backend_->UpdateUrlForUkmSource(kSourceId5, kUrl4, true);
+  backend_->StoreUkmEntry(std::move(entry1));
+  backend_->StoreUkmEntry(std::move(entry2));
+  backend_->StoreUkmEntry(std::move(entry3));
+  backend_->StoreUkmEntry(std::move(entry4));
+
+  test_util::AssertUrlsInTable(backend_->db(),
+                               {
+                                   UrlMatcher{.url_id = kUrlId1, .url = kUrl1},
+                                   UrlMatcher{.url_id = kUrlId2, .url = kUrl2},
+                                   UrlMatcher{.url_id = kUrlId3, .url = kUrl3},
+                                   UrlMatcher{.url_id = kUrlId4, .url = kUrl4},
+                               });
+
+  backend_->DeleteEntriesOlderThan(base::Time::Max());
+  test_util::AssertUrlsInTable(backend_->db(), {});
+}
+
+TEST_F(UkmDatabaseBackendTest, ReadOnlyQueries) {
+  const GURL kUrl1("https://www.url1.com");
+  const GURL kUrl2("https://www.url2.com");
+  const GURL kUrl3("https://www.url3.com");
+  const UrlId kUrlId2 = UkmUrlTable::GenerateUrlId(kUrl2);
+  const ukm::SourceId kSourceId1 = 10;
+  const ukm::SourceId kSourceId2 = 20;
+  const ukm::SourceId kSourceId3 = 30;
+  const ukm::SourceId kSourceId4 = 40;
+
+  ukm::mojom::UkmEntryPtr entry1 = GetSampleUkmEntry(kSourceId1);
+  ukm::mojom::UkmEntryPtr entry2 = GetSampleUkmEntry(kSourceId2);
+  ukm::mojom::UkmEntryPtr entry3 = GetSampleUkmEntry(kSourceId3);
+  ukm::mojom::UkmEntryPtr entry4 = GetSampleUkmEntry(kSourceId4);
+
+  backend_->UpdateUrlForUkmSource(kSourceId1, kUrl1, true);
+  base::Time after1 = base::Time::Now();
+  backend_->UpdateUrlForUkmSource(kSourceId2, kUrl2, true);
+  backend_->UpdateUrlForUkmSource(kSourceId3, kUrl3, true);
+  backend_->UpdateUrlForUkmSource(kSourceId4, kUrl1, true);
+  backend_->StoreUkmEntry(std::move(entry1));
+  backend_->StoreUkmEntry(std::move(entry2));
+  backend_->StoreUkmEntry(std::move(entry3));
+  backend_->StoreUkmEntry(std::move(entry4));
+
+  UkmDatabase::QueryList queries;
+  queries.emplace(0, UkmDatabase::CustomSqlQuery(
+                         "SELECT AVG(metric_value) FROM metrics",
+                         std::vector<processing::ProcessedValue>()));
+  ExpectQueryResult(std::move(queries), true,
+                    {{0, {processing::ProcessedValue(101.00f)}}});
+
+  constexpr char kBindValuesQuery[] =
+      // clang-format off
+      "SELECT CASE WHEN ? THEN SUM(metric_value) ELSE AVG(metric_value) END "
+      "FROM metrics m "
+      "LEFT JOIN urls u "
+        "ON m.url_id = u.url_id "
+      "WHERE "
+        "ukm_source_id/2=? "
+        "AND metric_hash=? "
+        "AND url=? "
+        "AND u.url_id=? "
+        "AND event_timestamp>=?";
+  // clang-format on
+  std::vector<processing::ProcessedValue> bind_values{
+      processing::ProcessedValue(true),
+      processing::ProcessedValue(10.00),
+      processing::ProcessedValue(std::string("1E")),
+      processing::ProcessedValue(std::string("https://www.url2.com/")),
+      processing::ProcessedValue(
+          static_cast<int64_t>(kUrlId2.GetUnsafeValue())),
+      processing::ProcessedValue(after1)};
+  UkmDatabase::QueryList queries2;
+  queries2.emplace(0, UkmDatabase::CustomSqlQuery(
+                          "SELECT AVG(metric_value) FROM metrics",
+                          std::vector<processing::ProcessedValue>()));
+  queries2.emplace(
+      1, UkmDatabase::CustomSqlQuery(kBindValuesQuery, std::move(bind_values)));
+
+  ExpectQueryResult(std::move(queries2), true,
+                    {{0, {processing::ProcessedValue(101.00f)}},
+                     {1, {processing::ProcessedValue(100.00f)}}});
+
+  UkmDatabase::QueryList queries3;
+  queries3.emplace(0, UkmDatabase::CustomSqlQuery("SELECT bad query", {}));
+  ExpectQueryResult(std::move(queries3), false, {});
+
+  UkmDatabase::QueryList queries4;
+  queries4.emplace(
+      0, UkmDatabase::CustomSqlQuery(
+             "SELECT metric_value FROM metrics WHERE metric_hash=?", {}));
+  ExpectQueryResult(std::move(queries4), false, {});
+
+  UkmDatabase::QueryList queries5;
+  queries5.emplace(0, UkmDatabase::CustomSqlQuery("DROP TABLE metrics", {}));
+  ExpectQueryResult(std::move(queries5), false, {});
+
+  // Database should not have changed.
+  DatabaseStats stats = GetDatabaseStats(backend_->db());
+  EXPECT_EQ(12, stats.total_metrics);
+  EXPECT_EQ(4u, stats.metric_count_for_event_id.size());
+
+  UkmDatabase::QueryList queries6;
+  queries6.emplace(
+      0, UkmDatabase::CustomSqlQuery(
+             "INSERT INTO urls(url_id, url) VALUES(1,'not_added')", {}));
+  ExpectQueryResult(std::move(queries6), false, {});
+
+  // Database should not have changed.
+  DatabaseStats stats1 = GetDatabaseStats(backend_->db());
+  EXPECT_EQ(12, stats1.total_metrics);
+  EXPECT_EQ(4u, stats1.metric_count_for_event_id.size());
+}
+
+class FailedUkmDatabaseTest : public UkmDatabaseBackendTest {
+ public:
+  void SetUp() override {
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner({});
+    backend_ = std::make_unique<UkmDatabaseBackend>(
+        base::FilePath(kBadFilePath), task_runner_);
+    base::RunLoop wait_for_init;
+    backend_->InitDatabase(base::BindOnce(
+        [](base::OnceClosure quit,
+           scoped_refptr<base::SequencedTaskRunner> task_runner, bool success) {
+          EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
+          std::move(quit).Run();
+          ASSERT_FALSE(success);
+        },
+        wait_for_init.QuitClosure(), task_runner_));
+    wait_for_init.Run();
+  }
+  void TearDown() override {
+    backend_.reset();
+    task_runner_.reset();
+  }
+};
+
+TEST_F(FailedUkmDatabaseTest, QueriesAreNoop) {
+  const GURL kUrl1("https://www.url1.com");
+  backend_->OnUrlValidated(kUrl1);
+  backend_->StoreUkmEntry(GetSampleUkmEntry());
+  backend_->UpdateUrlForUkmSource(10, kUrl1, true);
+  backend_->RemoveUrls({kUrl1}, /*all_urls=*/false);
+  backend_->RemoveUrls({kUrl1}, /*all_urls=*/true);
+
+  UkmDatabase::QueryList queries;
+  queries.emplace(0, UkmDatabase::CustomSqlQuery("SELECT bad query", {}));
+  ExpectQueryResult(std::move(queries), false, {});
 }
 
 }  // namespace segmentation_platform

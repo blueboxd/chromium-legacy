@@ -202,7 +202,9 @@ void AccessibilityTreeFormatterFuchsia::AddDefaultFilters(
 
 base::Value AccessibilityTreeFormatterFuchsia::BuildTree(
     ui::AXPlatformNodeDelegate* root) const {
-  CHECK(root);
+  if (!root) {
+    return base::Value(base::Value::Type::DICTIONARY);
+  }
 
   BrowserAccessibility* root_internal =
       BrowserAccessibility::FromAXPlatformNodeDelegate(root);
@@ -222,7 +224,7 @@ void AccessibilityTreeFormatterFuchsia::RecursiveBuildTree(
   if (!ShouldDumpChildren(node))
     return;
 
-  base::ListValue children;
+  base::Value::List children;
 
   fuchsia::accessibility::semantics::Node fuchsia_node =
       static_cast<const BrowserAccessibilityFuchsia&>(node).ToFuchsiaNodeData();
@@ -239,9 +241,9 @@ void AccessibilityTreeFormatterFuchsia::RecursiveBuildTree(
     std::unique_ptr<base::DictionaryValue> child_dict(
         new base::DictionaryValue);
     RecursiveBuildTree(*child_browser_accessibility, child_dict.get());
-    children.Append(std::move(child_dict));
+    children.Append(base::Value::FromUniquePtrValue(std::move(child_dict)));
   }
-  dict->SetKey(kChildrenDictAttr, std::move(children));
+  dict->GetDict().Set(kChildrenDictAttr, std::move(children));
 }
 
 base::Value AccessibilityTreeFormatterFuchsia::BuildNode(

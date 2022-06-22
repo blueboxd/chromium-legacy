@@ -4,12 +4,27 @@
 
 #include "weblayer/browser/autofill_assistant/weblayer_dependencies.h"
 
+#include "base/android/jni_string.h"
+#include "base/android/locale_utils.h"
+#include "components/autofill_assistant/browser/android/dependencies_android.h"
+#include "components/autofill_assistant/browser/common_dependencies.h"
+#include "components/autofill_assistant/browser/dependencies_util.h"
+#include "components/autofill_assistant/browser/platform_dependencies.h"
+#include "components/keyed_service/core/simple_factory_key.h"
+#include "components/version_info/android/channel_getter.h"
 #include "weblayer/browser/autofill_assistant/weblayer_assistant_field_trial_util.h"
+#include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/java/jni/WebLayerAssistantStaticDependencies_jni.h"
+#include "weblayer/browser/profile_impl.h"
 
-using ::autofill_assistant::Dependencies;
+using ::autofill_assistant::CommonDependencies;
+using ::autofill_assistant::DependenciesAndroid;
+using ::autofill_assistant::PlatformDependencies;
+using ::base::android::AttachCurrentThread;
+using ::base::android::ConvertJavaStringToUTF8;
 using ::base::android::JavaParamRef;
+using ::base::android::ScopedJavaLocalRef;
 
 namespace weblayer {
 
@@ -17,15 +32,51 @@ static jlong JNI_WebLayerAssistantStaticDependencies_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& jstatic_dependencies) {
   // The dynamic_cast is necessary here to safely cast the resulting intptr back
-  // to Dependencies using reinterpret_cast.
-  return reinterpret_cast<intptr_t>(dynamic_cast<Dependencies*>(
+  // to DependenciesAndroid using reinterpret_cast.
+  return reinterpret_cast<intptr_t>(dynamic_cast<DependenciesAndroid*>(
       new WebLayerDependencies(env, jstatic_dependencies)));
+}
+
+static ScopedJavaLocalRef<jobject>
+JNI_WebLayerAssistantStaticDependencies_GetJavaProfile(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& java_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(java_web_contents);
+  if (!web_contents) {
+    return nullptr;
+  }
+  return ScopedJavaLocalRef<jobject>(
+      ProfileImpl::FromBrowserContext(web_contents->GetBrowserContext())
+          ->GetJavaProfile());
+}
+
+static jlong JNI_WebLayerAssistantStaticDependencies_GetSimpleFactoryKey(
+    JNIEnv* env,
+    jlong browser_context_ptr) {
+  content::BrowserContext* browser_context =
+      reinterpret_cast<content::BrowserContext*>(browser_context_ptr);
+  if (!browser_context) {
+    return 0;
+  }
+  SimpleFactoryKey* key =
+      static_cast<BrowserContextImpl*>(browser_context)->simple_factory_key();
+  return reinterpret_cast<intptr_t>(key);
 }
 
 WebLayerDependencies::WebLayerDependencies(
     JNIEnv* env,
     const JavaParamRef<jobject>& jstatic_dependencies)
-    : Dependencies(env, jstatic_dependencies) {}
+    : DependenciesAndroid(env, jstatic_dependencies) {}
+
+const CommonDependencies* WebLayerDependencies::GetCommonDependencies() const {
+  return this;
+}
+
+const PlatformDependencies* WebLayerDependencies::GetPlatformDependencies()
+    const {
+  return this;
+}
 
 std::unique_ptr<::autofill_assistant::AssistantFieldTrialUtil>
 WebLayerDependencies::CreateFieldTrialUtil() const {
@@ -45,15 +96,24 @@ WebLayerDependencies::GetPasswordManagerClient(
   return nullptr;
 }
 
-std::string WebLayerDependencies::GetChromeSignedInEmailAddress(
+std::string WebLayerDependencies::GetSignedInEmail(
     content::WebContents* web_contents) const {
-  return "";
-  // TODO(b/222671580): Implement
+  ProfileImpl* profile =
+      ProfileImpl::FromBrowserContext(web_contents->GetBrowserContext());
+  const ScopedJavaLocalRef<jstring> email =
+      Java_WebLayerAssistantStaticDependencies_getEmailOrNull(
+          AttachCurrentThread(), jstatic_dependencies_,
+          profile->GetJavaProfile());
+  return email.is_null() ? "" : ConvertJavaStringToUTF8(email);
 }
 
-variations::VariationsService* WebLayerDependencies::GetVariationsService()
-    const {
-  return FeatureListCreator::GetInstance()->variations_service();
+std::string WebLayerDependencies::GetLocale() const {
+  return base::android::GetDefaultLocaleString();
+}
+
+std::string WebLayerDependencies::GetCountryCode() const {
+  return autofill_assistant::dependencies_util::GetCountryCode(
+      FeatureListCreator::GetInstance()->variations_service());
 }
 
 ::autofill_assistant::AnnotateDomModelService*
@@ -70,6 +130,16 @@ bool WebLayerDependencies::IsCustomTab(
 
 bool WebLayerDependencies::IsWebLayer() const {
   return true;
+}
+
+signin::IdentityManager* WebLayerDependencies::GetIdentityManager(
+    content::BrowserContext* browser_context) const {
+  // TODO(b/222671580): implement.
+  return nullptr;
+}
+
+version_info::Channel WebLayerDependencies::GetChannel() const {
+  return version_info::android::GetChannel();
 }
 
 }  // namespace weblayer

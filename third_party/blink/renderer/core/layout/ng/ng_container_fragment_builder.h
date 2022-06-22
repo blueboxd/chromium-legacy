@@ -184,16 +184,6 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     has_out_of_flow_fragment_child_ = has_out_of_flow_fragment_child;
   }
 
-  bool HasOutOfFlowInFragmentainerSubtree() const {
-    return has_out_of_flow_in_fragmentainer_subtree_;
-  }
-
-  void SetHasOutOfFlowInFragmentainerSubtree(
-      bool has_out_of_flow_in_fragmentainer_subtree) {
-    has_out_of_flow_in_fragmentainer_subtree_ =
-        has_out_of_flow_in_fragmentainer_subtree;
-  }
-
   void SwapOutOfFlowPositionedCandidates(
       HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates);
 
@@ -330,6 +320,12 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     should_force_same_fragmentation_flow_ = true;
   }
 
+  // Specify that all child break tokens be added manually, instead of being
+  // added automatically as part of adding child fragments.
+  void SetShouldAddBreakTokensManually() {
+    should_add_break_tokens_manually_ = true;
+  }
+
   // See NGLayoutResult::AnnotationOverflow().
   void SetAnnotationOverflow(LayoutUnit overflow) {
     annotation_overflow_ = overflow;
@@ -442,10 +438,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   bool has_column_spanner_ = false;
   bool is_empty_spanner_parent_ = false;
   bool should_force_same_fragmentation_flow_ = false;
+  bool should_add_break_tokens_manually_ = false;
 
   bool has_oof_candidate_that_needs_block_offset_adjustment_ = false;
   bool has_out_of_flow_fragment_child_ = false;
-  bool has_out_of_flow_in_fragmentainer_subtree_ = false;
 
 #if DCHECK_IS_ON()
   bool is_may_have_descendant_above_block_start_explicitly_set_ = false;

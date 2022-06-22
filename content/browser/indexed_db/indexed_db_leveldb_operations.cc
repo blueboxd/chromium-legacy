@@ -15,6 +15,7 @@
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_iterator.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
+#include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_env.h"
@@ -53,47 +54,54 @@ const base::FilePath::CharType kLevelDBExtension[] =
     FILE_PATH_LITERAL(".leveldb");
 
 // static
-base::FilePath GetBlobStoreFileName(const blink::StorageKey& storage_key) {
-  std::string storage_key_id;
-  if (storage_key.IsFirstPartyContext()) {
-    storage_key_id = storage::GetIdentifierFromOrigin(storage_key.origin());
+base::FilePath GetBlobStoreFileName(
+    const storage::BucketLocator& bucket_locator) {
+  // TODO(crbug.com/1315371): Allow custom bucket names.
+  if (bucket_locator.storage_key.IsFirstPartyContext()) {
+    // First-party blob files, for legacy reasons, are stored at:
+    // {{first_party_data_path}}/{{serialized_origin}}.indexeddb.blob
+    return base::FilePath()
+        .AppendASCII(storage::GetIdentifierFromOrigin(
+            bucket_locator.storage_key.origin()))
+        .AddExtension(kIndexedDBExtension)
+        .AddExtension(kBlobExtension);
   } else {
-    // TODO(crbug.com/1218100): This is a stop-gap to prevent crashes, we need
-    // to point to a real storage bucket here not a transient one. We only
-    // hit this case when `kThirdPartyStoragePartitioning` is enabled.
-    storage_key_id = storage::GetIdentifierFromOrigin(url::Origin());
+    // Third-party blob files are stored at:
+    // {{third_party_data_path}}/indexeddb.blob
+    // TODO(crbug.com/1218100): Support the correct third-party blob path.
+    return base::FilePath()
+        .AppendASCII(storage::GetIdentifierFromOrigin(url::Origin()))
+        .AddExtension(kIndexedDBExtension)
+        .AddExtension(kBlobExtension);
   }
-  // TODO(crbug.com/1218100): Desired first and third party paths:
-  // {{storage_partition}}/IndexedDB/{{serialized_origin}}.blob/
-  // {{storage_partition}}/WebStorage/{{bucket_id}}/IndexedDB/indexeddb.blob/
-  return base::FilePath()
-      .AppendASCII(storage_key_id)
-      .AddExtension(kIndexedDBExtension)
-      .AddExtension(kBlobExtension);
 }
 
 // static
-base::FilePath GetLevelDBFileName(const blink::StorageKey& storage_key) {
-  std::string storage_key_id;
-  if (storage_key.IsFirstPartyContext()) {
-    storage_key_id = storage::GetIdentifierFromOrigin(storage_key.origin());
+base::FilePath GetLevelDBFileName(
+    const storage::BucketLocator& bucket_locator) {
+  // TODO(crbug.com/1315371): Allow custom bucket names.
+  if (bucket_locator.storage_key.IsFirstPartyContext()) {
+    // First-party leveldb files, for legacy reasons, are stored at:
+    // {{first_party_data_path}}/{{serialized_origin}}.indexeddb.leveldb
+    return base::FilePath()
+        .AppendASCII(storage::GetIdentifierFromOrigin(
+            bucket_locator.storage_key.origin()))
+        .AddExtension(kIndexedDBExtension)
+        .AddExtension(kLevelDBExtension);
   } else {
-    // TODO(crbug.com/1218100): This is a stop-gap to prevent crashes, we need
-    // to point to a real storage bucket here not a transient one. We only
-    // hit this case when `kThirdPartyStoragePartitioning` is enabled.
-    storage_key_id = storage::GetIdentifierFromOrigin(url::Origin());
+    // Third-party leveldb files are stored at:
+    // {{unique_bucket_path}}/indexeddb.leveldb
+    // TODO(crbug.com/1218100): Support the correct third-party leveldb path.
+    return base::FilePath()
+        .AppendASCII(storage::GetIdentifierFromOrigin(url::Origin()))
+        .AddExtension(kIndexedDBExtension)
+        .AddExtension(kLevelDBExtension);
   }
-  // TODO(crbug.com/1218100): Desired first and third party paths:
-  // {{storage_partition}}/IndexedDB/{{serialized_origin}}.leveldb/
-  // {{storage_partition}}/WebStorage/{{bucket_id}}/IndexedDB/indexeddb.leveldb/
-  return base::FilePath()
-      .AppendASCII(storage_key_id)
-      .AddExtension(kIndexedDBExtension)
-      .AddExtension(kLevelDBExtension);
 }
 
-base::FilePath ComputeCorruptionFileName(const blink::StorageKey& storage_key) {
-  return GetLevelDBFileName(storage_key)
+base::FilePath ComputeCorruptionFileName(
+    const storage::BucketLocator& bucket_locator) {
+  return GetLevelDBFileName(bucket_locator)
       .Append(FILE_PATH_LITERAL("corruption_info.json"));
 }
 
@@ -128,9 +136,9 @@ bool IsPathTooLong(storage::FilesystemProxy* filesystem,
 
 std::string ReadCorruptionInfo(storage::FilesystemProxy* filesystem_proxy,
                                const base::FilePath& path_base,
-                               const blink::StorageKey& storage_key) {
+                               const storage::BucketLocator& bucket_locator) {
   const base::FilePath info_path =
-      path_base.Append(indexed_db::ComputeCorruptionFileName(storage_key));
+      path_base.Append(indexed_db::ComputeCorruptionFileName(bucket_locator));
   std::string message;
   if (IsPathTooLong(filesystem_proxy, info_path))
     return message;

@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action_move.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action_tap.h"
@@ -19,6 +20,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace arc {
 namespace input_overlay {
@@ -33,10 +38,22 @@ constexpr int kInterestingFlagsMask =
 // Default mouse lock key.
 constexpr ui::DomCode kDefaultMouseLockCode = ui::DomCode::ESCAPE;
 
-// UI strings.
-// TODO(cuicuiruan): move the strings to chrome/app/generated_resources.grd
-// after UX/UI strings are confirmed.
-constexpr base::StringPiece kEditErrorNotAllowedKey("Not allowed key");
+// Remove extra Actions with the same ID.
+void RemoveActionsWithSameID(std::vector<std::unique_ptr<Action>>& actions) {
+  base::flat_set<int> ids;
+  auto it = actions.begin();
+  while (it != actions.end()) {
+    int id = it->get()->id();
+    if (ids.find(id) == ids.end()) {
+      ids.insert(id);
+      it++;
+    } else {
+      LOG(ERROR) << "Remove action with duplicated ID {" << it->get()->name()
+                 << "}.";
+      actions.erase(it);
+    }
+  }
+}
 
 // Parse Json to different types of actions.
 std::vector<std::unique_ptr<Action>> ParseJsonToActions(
@@ -67,8 +84,12 @@ std::vector<std::unique_ptr<Action>> ParseJsonToActions(
   }
 
   // TODO(cuicuiruan): parse more actions.
+
+  RemoveActionsWithSameID(actions);
+
   return actions;
 }
+
 }  // namespace
 
 // Calculate the window content bounds (excluding caption if it exists) in the
@@ -114,15 +135,19 @@ class TouchInjector::KeyCommand {
   base::RepeatingClosure callback_;
 };
 
-TouchInjector::TouchInjector(aura::Window* top_level_window)
-    : target_window_(top_level_window) {}
+TouchInjector::TouchInjector(aura::Window* top_level_window,
+                             OnSaveProtoFileCallback save_file_callback)
+    : target_window_(top_level_window),
+      save_file_callback_(save_file_callback) {}
 
 TouchInjector::~TouchInjector() {
   UnRegisterEventRewriter();
 }
 
 void TouchInjector::ParseActions(const base::Value& root) {
-  ParseMouseLock(root);
+  if (enable_mouse_lock_)
+    ParseMouseLock(root);
+
   auto parsed_actions = ParseJsonToActions(target_window_, root);
   if (!parsed_actions.empty()) {
     std::move(parsed_actions.begin(), parsed_actions.end(),
@@ -149,31 +174,35 @@ void TouchInjector::UnRegisterEventRewriter() {
   observation_.Reset();
 }
 
-void TouchInjector::OnBindingChange(
-    Action* target_action,
-    std::unique_ptr<InputElement> input_element) {
-  display_overlay_controller_->RemoveEditErrorMsg();
+void TouchInjector::OnBindingChange(Action* target_action,
+                                    std::unique_ptr<InputElement> input_element,
+                                    DisplayMode mode) {
+  if (display_overlay_controller_)
+    display_overlay_controller_->RemoveEditErrorMsg();
   Action* overlapped_action = nullptr;
   for (auto& action : actions_) {
     if (action.get() == target_action)
       continue;
-    if (action->RequireInputElement(*input_element, &overlapped_action)) {
-      display_overlay_controller_->AddEditErrorMsg(target_action->action_view(),
-                                                   kEditErrorNotAllowedKey);
-      return;
+    if (action->IsOverlapped(*input_element)) {
+      overlapped_action = action.get();
+      break;
     }
   }
-  target_action->PrepareToBind(std::move(input_element));
 
-  // Takes the key away if there is duplicated.
+  // Partially unbind or completely unbind the |overlapped_action| if it
+  // conflicts with |input_element|.
   if (overlapped_action)
-    overlapped_action->Unbind();
+    overlapped_action->Unbind(*input_element);
+
+  target_action->PrepareToBind(std::move(input_element), mode);
 }
 
 void TouchInjector::OnBindingSave() {
   for (auto& action : actions_)
     action->BindPending();
-  display_overlay_controller_->SetDisplayMode(DisplayMode::kView);
+  if (display_overlay_controller_)
+    display_overlay_controller_->SetDisplayMode(DisplayMode::kView);
+  OnSaveProtoFile();
 }
 
 void TouchInjector::OnBindingCancel() {
@@ -191,6 +220,20 @@ void TouchInjector::OnBindingRestore() {
 
 const std::string* TouchInjector::GetPackageName() const {
   return target_window_->GetProperty(ash::kArcPackageNameKey);
+}
+
+void TouchInjector::OnProtoDataAvailable(std::unique_ptr<AppDataProto> proto) {
+  for (const ActionProto& action_proto : proto->actions()) {
+    auto* action = GetActionById(action_proto.id());
+    DCHECK(action);
+    if (!action)
+      return;
+    auto input_element =
+        InputElement::ConvertFromProto(action_proto.input_element());
+    DCHECK(input_element);
+    OnBindingChange(action, std::move(input_element), DisplayMode::kView);
+  }
+  OnBindingSave();
 }
 
 void TouchInjector::DispatchTouchCancelEvent() {
@@ -487,6 +530,26 @@ std::unique_ptr<ui::TouchEvent> TouchInjector::CreateTouchEvent(
       touch_event->type(), root_location_f, root_location_f,
       touch_event->time_stamp(),
       ui::PointerDetails(ui::EventPointerType::kTouch, managed_touch_id)));
+}
+
+Action* TouchInjector::GetActionById(int id) {
+  for (auto& action : actions_) {
+    if (action->id() == id)
+      return action.get();
+  }
+  return nullptr;
+}
+
+void TouchInjector::OnSaveProtoFile() {
+  auto app_data_proto = std::make_unique<AppDataProto>();
+  for (auto& action : actions_) {
+    auto customized_proto = action->ConvertToProtoIfCustomized();
+    if (customized_proto)
+      *app_data_proto->add_actions() = *customized_proto;
+  }
+
+  std::string package_name(*GetPackageName());
+  save_file_callback_.Run(std::move(app_data_proto), package_name);
 }
 
 int TouchInjector::GetRewrittenTouchIdForTesting(ui::PointerId original_id) {

@@ -21,6 +21,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
 #include "base/fuchsia/process_lifecycle.h"
@@ -626,9 +627,9 @@ class ChromeBrowserMainPartsFuchsia::ViewProviderRouter
 // ChromeBrowserMainPartsFuchsia -----------------------------------------------
 
 ChromeBrowserMainPartsFuchsia::ChromeBrowserMainPartsFuchsia(
-    content::MainFunctionParams parameters,
+    bool is_integration_test,
     StartupData* startup_data)
-    : ChromeBrowserMainParts(std::move(parameters), startup_data) {}
+    : ChromeBrowserMainParts(is_integration_test, startup_data) {}
 
 ChromeBrowserMainPartsFuchsia::~ChromeBrowserMainPartsFuchsia() = default;
 
@@ -672,9 +673,9 @@ int ChromeBrowserMainPartsFuchsia::PreMainMessageLoopRun() {
   ZX_CHECK(status == ZX_OK, status);
 
   // Publish the fuchsia.process.lifecycle.Lifecycle service to allow graceful
-  // teardown. If there is a |ui_task| then this is a browser-test and graceful
-  // shutdown is not required.
-  if (!parameters().ui_task) {
+  // teardown. If this is an integration test then graceful shutdown is not
+  // required.
+  if (!is_integration_test()) {
     if (enable_cfv2) {
       // chrome::ExitIgnoreUnloadHandlers() will perform a graceful shutdown,
       // flushing any pending data.  All Browser windows will then be closed,

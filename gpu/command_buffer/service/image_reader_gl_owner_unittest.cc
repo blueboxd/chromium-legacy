@@ -44,7 +44,8 @@ class ImageReaderGLOwnerTest : public testing::Test {
         /*init_extensions=*/true,
         /*system_device_id=*/0);
 
-    surface_ = new gl::PbufferGLSurfaceEGL(gfx::Size(320, 240));
+    surface_ = new gl::PbufferGLSurfaceEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(),
+                                           gfx::Size(320, 240));
     surface_->Initialize();
 
     share_group_ = new gl::GLShareGroup();
@@ -53,7 +54,6 @@ class ImageReaderGLOwnerTest : public testing::Test {
     ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
 
     GpuDriverBugWorkarounds workarounds;
-    workarounds.max_texture_size = INT_MAX - 1;
     auto context_state = base::MakeRefCounted<SharedContextState>(
         share_group_, surface_, context_,
         false /* use_virtualized_gl_contexts */, base::DoNothing());
@@ -141,8 +141,8 @@ TEST_F(ImageReaderGLOwnerTest, DestructionWorksWithWrongContext) {
   if (!IsImageReaderSupported())
     return;
 
-  scoped_refptr<gl::GLSurface> new_surface(
-      new gl::PbufferGLSurfaceEGL(gfx::Size(320, 240)));
+  scoped_refptr<gl::GLSurface> new_surface(new gl::PbufferGLSurfaceEGL(
+      gl::GLSurfaceEGL::GetGLDisplayEGL(), gfx::Size(320, 240)));
   new_surface->Initialize();
 
   scoped_refptr<gl::GLShareGroup> new_share_group(new gl::GLShareGroup());

@@ -55,16 +55,7 @@ namespace {
 unsigned MaximumSpecificity(const CSSSelectorList* list) {
   if (!list)
     return 0;
-
-  unsigned result = 0;
-  const CSSSelector* selector;
-  for (selector = list->First(); selector;
-       selector = CSSSelectorList::Next(*selector)) {
-    unsigned specificity = selector->Specificity();
-    if (result < specificity)
-      result = specificity;
-  }
-  return result;
+  return list->MaximumSpecificity();
 }
 
 }  // namespace
@@ -563,14 +554,8 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(const AtomicString& name,
     return CSSSelector::kPseudoUnknown;
 
   if (match->type == CSSSelector::kPseudoPopupOpen &&
-      !RuntimeEnabledFeatures::HTMLPopupElementEnabled() &&
       !RuntimeEnabledFeatures::HTMLPopupAttributeEnabled())
     return CSSSelector::kPseudoUnknown;
-
-  if (match->type == CSSSelector::kPseudoTargetText &&
-      !RuntimeEnabledFeatures::CSSTargetTextPseudoElementEnabled()) {
-    return CSSSelector::kPseudoUnknown;
-  }
 
   if (match->type == CSSSelector::kPseudoHighlight &&
       !RuntimeEnabledFeatures::HighlightAPIEnabled()) {

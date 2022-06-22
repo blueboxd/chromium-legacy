@@ -819,28 +819,22 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
     }
   }
 
-  bool payment_request_allowed = has_transient_user_activation;
+  bool payment_request_allowed =
+      has_transient_user_activation || payment_request_token_active;
+  DomWindow()->ConsumePaymentRequestToken();
 
-  if (RuntimeEnabledFeatures::CapabilityDelegationPaymentRequestEnabled(
-          GetExecutionContext())) {
-    payment_request_allowed |= payment_request_token_active;
-    DomWindow()->ConsumePaymentRequestToken();
-  }
-  if (RuntimeEnabledFeatures::PaymentRequestRequiresUserActivationEnabled(
-          GetExecutionContext())) {
-    if (payment_request_allowed) {
-      LocalFrame::ConsumeTransientUserActivation(local_frame);
-    } else {
-      String message =
-          "PaymentRequest.show() requires either transient user activation or "
-          "delegated payment request capability";
-      GetExecutionContext()->AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::blink::ConsoleMessageSource::kJavaScript,
-              mojom::blink::ConsoleMessageLevel::kWarning, message));
-      exception_state.ThrowSecurityError(message);
-      return ScriptPromise();
-    }
+  if (payment_request_allowed) {
+    LocalFrame::ConsumeTransientUserActivation(local_frame);
+  } else {
+    String message =
+        "PaymentRequest.show() requires either transient user activation or "
+        "delegated payment request capability";
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning, message));
+    exception_state.ThrowSecurityError(message);
+    return ScriptPromise();
   }
 
   // TODO(crbug.com/779126): add support for handling payment requests in
@@ -856,8 +850,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
   UseCounter::Count(GetExecutionContext(), WebFeature::kPaymentRequestShow);
 
   is_waiting_for_show_promise_to_resolve_ = !details_promise.IsEmpty();
-  payment_provider_->Show(payment_request_allowed,
-                          is_waiting_for_show_promise_to_resolve_);
+  payment_provider_->Show(is_waiting_for_show_promise_to_resolve_);
   if (is_waiting_for_show_promise_to_resolve_) {
     // If the website does not calculate the final shopping cart contents within
     // 10 seconds, abort payment.

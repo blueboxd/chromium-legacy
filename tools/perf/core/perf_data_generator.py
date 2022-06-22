@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -927,7 +927,7 @@ BUILDERS = {
             'gpu':
             '8086:1626',
             'os':
-            'Mac-10.12.6',
+            'Mac-12.3',
             'pool':
             'chrome.tests.perf',
             'synthetic_product_name':
@@ -1074,6 +1074,32 @@ BUILDERS = {
                 'resultdb': {
                     'has_native_resultdb_integration': True,
                 },
+                'extra_args': [
+                    '--arch=amd64',
+                ],
+            },
+        ],
+        'dimension': {
+            'cpu': 'x86-64',
+            'os': 'Ubuntu-18.04',
+            'pool': 'chrome.tests',
+        },
+        'perf_trigger':
+        False,
+    },
+    'chromeos-arm-generic-lacros-builder-perf': {
+        'additional_compile_targets': ['chrome', 'lacros_version_metadata'],
+        'tests': [
+            {
+                'name': 'resource_sizes_lacros_chrome',
+                'isolate': 'resource_sizes_lacros_chrome',
+                'type': TEST_TYPES.GENERIC,
+                'resultdb': {
+                    'has_native_resultdb_integration': True,
+                },
+                'extra_args': [
+                    '--arch=arm32',
+                ],
             },
         ],
         'dimension': {

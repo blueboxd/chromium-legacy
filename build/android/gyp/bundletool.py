@@ -8,6 +8,8 @@
 Bundletool is distributed as a versioned jar file. This script abstracts the
 location and version of this jar file, as well as the JVM invokation."""
 
+# Warning: Check if still being run as python2: https://crbug.com/1322618
+
 import logging
 import os
 import sys

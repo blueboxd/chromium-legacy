@@ -95,11 +95,6 @@ const CheckingDownloadingUpdateBase = Polymer.mixinBehaviors(
       downloadingUpdatesKey: String,
 
       /**
-       * ID of the localized string for update cancellation message.
-       */
-      cancelHintKey: String,
-
-      /**
        * Message "3 minutes left".
        */
       estimatedTimeLeftMsg_: {
@@ -121,8 +116,9 @@ const CheckingDownloadingUpdateBase = Polymer.mixinBehaviors(
 
   computeProgressMessage_(
       hasEstimate, defaultProgressMessage, estimatedTimeLeftMsg_) {
-    if (hasEstimate)
+    if (hasEstimate) {
       return estimatedTimeLeftMsg_;
+    }
     return defaultProgressMessage;
   }
 
@@ -130,8 +126,8 @@ const CheckingDownloadingUpdateBase = Polymer.mixinBehaviors(
    * Sets estimated time left until download will complete.
    */
   computeEstimatedTimeLeftMsg_(estimatedTimeLeft) {
-    let seconds = estimatedTimeLeft;
-    let minutes = Math.ceil(seconds / 60);
+    const seconds = estimatedTimeLeft;
+    const minutes = Math.ceil(seconds / 60);
     var message = '';
     if (minutes > 60) {
       message = loadTimeData.getString('downloadingTimeLeftLong');

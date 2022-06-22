@@ -47,7 +47,6 @@ namespace wallpaper_handlers {
 class BackdropCollectionInfoFetcher;
 class BackdropImageInfoFetcher;
 class GooglePhotosAlbumsFetcher;
-class GooglePhotosCountFetcher;
 class GooglePhotosEnabledFetcher;
 class GooglePhotosPhotosFetcher;
 }  // namespace wallpaper_handlers
@@ -101,8 +100,6 @@ class PersonalizationAppWallpaperProviderImpl
       const absl::optional<std::string>& resume_token,
       FetchGooglePhotosAlbumsCallback callback) override;
 
-  void FetchGooglePhotosCount(FetchGooglePhotosCountCallback callback) override;
-
   void FetchGooglePhotosEnabled(
       FetchGooglePhotosEnabledCallback callback) override;
 
@@ -111,6 +108,9 @@ class PersonalizationAppWallpaperProviderImpl
       const absl::optional<std::string>& album_id,
       const absl::optional<std::string>& resume_token,
       FetchGooglePhotosPhotosCallback callback) override;
+
+  void GetDefaultImageThumbnail(
+      GetDefaultImageThumbnailCallback callback) override;
 
   void GetLocalImages(GetLocalImagesCallback callback) override;
 
@@ -132,6 +132,8 @@ class PersonalizationAppWallpaperProviderImpl
                        bool preview_mode,
                        SelectWallpaperCallback callback) override;
 
+  void SelectDefaultImage(SelectDefaultImageCallback callback) override;
+
   void SelectLocalImage(const base::FilePath& path,
                         ash::WallpaperLayout layout,
                         bool preview_mode,
@@ -142,6 +144,13 @@ class PersonalizationAppWallpaperProviderImpl
       ash::WallpaperLayout layout,
       bool preview_mode,
       SelectGooglePhotosPhotoCallback callback) override;
+
+  void SelectGooglePhotosAlbum(
+      const std::string& id,
+      SelectGooglePhotosAlbumCallback callback) override;
+
+  void GetGooglePhotosDailyRefreshAlbumId(
+      GetGooglePhotosDailyRefreshAlbumIdCallback callback) override;
 
   void SetCurrentWallpaperLayout(ash::WallpaperLayout layout) override;
 
@@ -162,10 +171,6 @@ class PersonalizationAppWallpaperProviderImpl
   wallpaper_handlers::GooglePhotosAlbumsFetcher*
   SetGooglePhotosAlbumsFetcherForTest(
       std::unique_ptr<wallpaper_handlers::GooglePhotosAlbumsFetcher> fetcher);
-
-  wallpaper_handlers::GooglePhotosCountFetcher*
-  SetGooglePhotosCountFetcherForTest(
-      std::unique_ptr<wallpaper_handlers::GooglePhotosCountFetcher> fetcher);
 
   wallpaper_handlers::GooglePhotosEnabledFetcher*
   SetGooglePhotosEnabledFetcherForTest(
@@ -192,6 +197,9 @@ class PersonalizationAppWallpaperProviderImpl
       FetchGooglePhotosEnabledCallback callback,
       ash::personalization_app::mojom::GooglePhotosEnablementState state);
 
+  void OnGetDefaultImage(GetDefaultImageThumbnailCallback callback,
+                         const gfx::ImageSkia& image);
+
   void OnGetLocalImages(GetLocalImagesCallback callback,
                         const std::vector<base::FilePath>& images);
 
@@ -206,6 +214,10 @@ class PersonalizationAppWallpaperProviderImpl
   // Called after attempting to select a Google Photos wallpaper. Will be
   // dropped if new requests come in.
   void OnGooglePhotosWallpaperSelected(bool success);
+
+  // Called after attempting to select a Google Photos album for daily refresh.
+  // Will be dropped if new requests come in.
+  void OnGooglePhotosAlbumSelected(bool success);
 
   // Called after attempting to select a local image. Will be dropped if new
   // requests come in.
@@ -258,13 +270,6 @@ class PersonalizationAppWallpaperProviderImpl
   std::unique_ptr<wallpaper_handlers::GooglePhotosAlbumsFetcher>
       google_photos_albums_fetcher_;
 
-  // Fetches the number of photos in the user's Google Photos library.
-  // Constructed lazily at the time of the first request and then persists for
-  // the rest of the delegate's lifetime, unless preemptively or subsequently
-  // replaced by a mock in a test.
-  std::unique_ptr<wallpaper_handlers::GooglePhotosCountFetcher>
-      google_photos_count_fetcher_;
-
   // Fetches the state of the user's permission to access Google Photos data.
   // Constructed lazily at the time of the first request and then persists for
   // the rest of the delegate's lifetime, unless preemptively or subsequently
@@ -290,6 +295,8 @@ class PersonalizationAppWallpaperProviderImpl
   SelectLocalImageCallback pending_select_local_image_callback_;
 
   SelectGooglePhotosPhotoCallback pending_select_google_photos_photo_callback_;
+
+  SelectGooglePhotosAlbumCallback pending_select_google_photos_album_callback_;
 
   UpdateDailyRefreshWallpaperCallback
       pending_update_daily_refresh_wallpaper_callback_;

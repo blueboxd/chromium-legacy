@@ -191,6 +191,15 @@ interface GpuChannel {
       int32 route_id,
       pending_associated_receiver<DCOMPTexture> receiver) => (bool success);
 
+  // This interface is used by MediaFoundationRendererClient to subscribe
+  // to overlay state information from the Viz layer (as provided by the
+  // DCOverlayProcessor). The MediaFoundationRendererClient uses the overlay
+  // state associated with a Video Frame texture (correlated via 'mailbox') as
+  // a heuristic to determine the best video presentation mode to use.
+  [Sync, EnableIf=is_win] RegisterOverlayStateObserver(
+    pending_remote<OverlayStateObserver> promotion_hint_observer,
+    gpu.mojom.Mailbox mailbox) => (bool success);
+
   // Instructs the command buffer to wait asynchronously until its State is
   // changed by the reader to have a current token value within the (inclusive)
   // range [start, end]. Once in range, the command buffer will reply and
@@ -228,15 +237,6 @@ interface GpuChannel {
   ReleaseSysmemBufferCollection(mojo_base.mojom.UnguessableToken id);
 };
 
-struct CreateImageParams {
-  int32 id;
-  gfx.mojom.GpuMemoryBufferHandle gpu_memory_buffer;
-  gfx.mojom.Size size;
-  gfx.mojom.BufferFormat format;
-  gfx.mojom.BufferPlane plane;
-  uint64 image_release_count;
-};
-
 // Interface used to issue commands to a specific CommandBuffer instance in the
 // GPU process.
 interface CommandBuffer {
@@ -256,17 +256,6 @@ interface CommandBuffer {
 
   // Requests retrieval of a GpuFenceHandle by ID.
   GetGpuFenceHandle(uint32 id) => (gfx.mojom.GpuFenceHandle? fence_handle);
-
-  // Creates an image from an existing gpu memory buffer. The id that can be
-  // used to identify the image from a command buffer.
-  //
-  // TODO(crbug.com/1216120): Remove this once CreateImageCHROMIUM is gone.
-  CreateImage(CreateImageParams params);
-
-  // Destroys a previously created image identified by `id`.
-  //
-  // TODO(crbug.com/1216120): Remove this once CreateImageCHROMIUM is gone.
-  DestroyImage(int32 id);
 
   // Asynchronously waits until the SyncToken is signaled, then sends a
   // corresponding SignalAck on the CommandBufferClient interface, using
@@ -398,6 +387,17 @@ interface DCOMPTextureClient {
 
   // Informs the client of a change in video composition parameter.
   OnOutputRectChange(gfx.mojom.Rect output_rect);
+};
+
+// Interface used by GPU to notify clients when the overlay promotion hint state
+// has changed.
+[EnableIf=is_win]
+interface OverlayStateObserver {
+  // Called when the texture associated with the specified mailbox has had a
+  // change in promotion state. If promoted is true then the texture is
+  // currently using a DC Layer Overlay. If promoted is false then the texture
+  // is not using a DC Layer Overlay.
+  OnStateChanged(bool promoted);
 };
 
 // DeferredRequests are batched locally by clients and sent to the service only

@@ -6,9 +6,14 @@
 #define COMPONENTS_SERVICES_APP_SERVICE_APP_SERVICE_MOJOM_IMPL_H_
 
 #include <map>
+#include <memory>
 
 #include "base/files/file_path.h"
-#include "components/services/app_service/public/cpp/preferred_apps.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
+#include "components/services/app_service/public/cpp/preferred_apps_impl.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -24,7 +29,7 @@ class PreferredAppsList;
 //
 // See components/services/app_service/README.md.
 class AppServiceMojomImpl : public apps::mojom::AppService,
-                            public PreferredApps::Host {
+                            public PreferredAppsImpl::Host {
  public:
   AppServiceMojomImpl(
       const base::FilePath& profile_dir,
@@ -128,21 +133,24 @@ class AppServiceMojomImpl : public apps::mojom::AppService,
   // PreferredApps::Host overrides.
   void InitializePreferredAppsForAllSubscribers() override;
 
-  void OnPreferredAppsChanged(
-      apps::mojom::PreferredAppChangesPtr changes) override;
+  void OnPreferredAppsChanged(PreferredAppChangesPtr changes) override;
 
   void OnPreferredAppSet(
       const std::string& app_id,
-      apps::mojom::IntentFilterPtr intent_filter,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
+      IntentFilterPtr intent_filter,
+      IntentPtr intent,
+      ReplacedAppPreferences replaced_app_preferences) override;
 
   void OnSupportedLinksPreferenceChanged(const std::string& app_id,
                                          bool open_in_app) override;
 
-  // Returns publisher for `app_type`, or nullptr if there is no publisher for
-  // `app_type`.
-  apps::mojom::Publisher* GetPublisher(apps::mojom::AppType app_type) override;
+  void OnSupportedLinksPreferenceChanged(AppType app_type,
+                                         const std::string& app_id,
+                                         bool open_in_app) override;
+
+  // Returns true if there is a publisher for `app_type`. Otherwise, returns
+  // false.
+  bool HasPublisher(AppType app_type) override;
 
   // Retern the preferred_apps_list_ for testing.
   PreferredAppsList& GetPreferredAppsListForTesting();
@@ -160,7 +168,7 @@ class AppServiceMojomImpl : public apps::mojom::AppService,
   // destroyed first, closing the connection to avoid dangling callbacks.
   mojo::ReceiverSet<apps::mojom::AppService> receivers_;
 
-  PreferredApps preferred_apps_;
+  std::unique_ptr<PreferredAppsImpl> preferred_apps_impl_;
 };
 
 }  // namespace apps

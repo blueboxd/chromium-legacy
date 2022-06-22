@@ -44,8 +44,10 @@ void SidePanelRegistry::ResetActiveEntry() {
 }
 
 void SidePanelRegistry::ClearCachedEntryViews() {
-  for (auto const& entry : entries_)
-    entry.get()->ClearCachedView();
+  for (auto const& entry : entries_) {
+    if (!active_entry_.has_value() || entry.get() != active_entry_.value())
+      entry.get()->ClearCachedView();
+  }
 }
 
 void SidePanelRegistry::AddObserver(SidePanelRegistryObserver* observer) {
@@ -56,28 +58,30 @@ void SidePanelRegistry::RemoveObserver(SidePanelRegistryObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SidePanelRegistry::Register(std::unique_ptr<SidePanelEntry> entry) {
+bool SidePanelRegistry::Register(std::unique_ptr<SidePanelEntry> entry) {
+  if (GetEntryForId(entry->id()))
+    return false;
   for (SidePanelRegistryObserver& observer : observers_)
     observer.OnEntryRegistered(entry.get());
   entry->AddObserver(this);
   entries_.push_back(std::move(entry));
+  return true;
 }
 
-void SidePanelRegistry::Deregister(SidePanelEntry::Id id) {
-  for (auto const& entry : entries_) {
-    if (entry.get()->id() == id) {
-      entry.get()->RemoveObserver(this);
-      if (active_entry_.has_value() &&
-          entry.get()->id() == active_entry_.value()->id()) {
-        active_entry_.reset();
-      }
-      for (SidePanelRegistryObserver& observer : observers_) {
-        observer.OnEntryWillDeregister(entry.get());
-      }
-      RemoveEntry(entry.get());
-      return;
-    }
+bool SidePanelRegistry::Deregister(SidePanelEntry::Id id) {
+  auto* entry = GetEntryForId(id);
+  if (!entry)
+    return false;
+
+  entry->RemoveObserver(this);
+  if (active_entry_.has_value() && entry->id() == active_entry_.value()->id()) {
+    active_entry_.reset();
   }
+  for (SidePanelRegistryObserver& observer : observers_) {
+    observer.OnEntryWillDeregister(entry);
+  }
+  RemoveEntry(entry);
+  return true;
 }
 
 void SidePanelRegistry::OnEntryShown(SidePanelEntry* entry) {

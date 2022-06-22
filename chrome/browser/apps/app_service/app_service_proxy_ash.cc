@@ -34,6 +34,9 @@
 #include "components/services/app_service/public/cpp/app_capability_access_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/features.h"
+#include "components/services/app_service/public/cpp/preferred_apps_impl.h"
+#include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -146,9 +149,16 @@ AppServiceProxyAsh::BrowserAppInstanceRegistry() {
 
 void AppServiceProxyAsh::RegisterCrosApiSubScriber(
     SubscriberCrosapi* subscriber) {
-  if (base::FeatureList::IsEnabled(AppServiceCrosApiOnAppsWithoutMojom)) {
+  if (base::FeatureList::IsEnabled(kAppServiceCrosApiOnAppsWithoutMojom)) {
     crosapi_subscriber_ = subscriber;
     crosapi_subscriber_->OnApps(app_registry_cache_.GetAllApps());
+  }
+
+  // Initialise the Preferred Apps in the `crosapi_subscriber_` on register.
+  if (preferred_apps_impl_ &&
+      preferred_apps_impl_->preferred_apps_list().IsInitialized()) {
+    crosapi_subscriber_->InitializePreferredApps(
+        preferred_apps_impl_->preferred_apps_list().GetValue());
   }
 }
 
@@ -361,6 +371,34 @@ void AppServiceProxyAsh::OnUninstallDialogClosed(
   auto it = uninstall_dialogs_.find(app_id);
   DCHECK(it != uninstall_dialogs_.end());
   uninstall_dialogs_.erase(it);
+}
+
+void AppServiceProxyAsh::InitializePreferredAppsForAllSubscribers() {
+  if (!base::FeatureList::IsEnabled(kAppServicePreferredAppsWithoutMojom)) {
+    return;
+  }
+
+  AppServiceProxyBase::InitializePreferredAppsForAllSubscribers();
+  if (crosapi_subscriber_ && preferred_apps_impl_) {
+    crosapi_subscriber_->InitializePreferredApps(
+        preferred_apps_impl_->preferred_apps_list().GetValue());
+  }
+}
+
+void AppServiceProxyAsh::OnPreferredAppsChanged(
+    PreferredAppChangesPtr changes) {
+  if (!base::FeatureList::IsEnabled(kAppServicePreferredAppsWithoutMojom)) {
+    return;
+  }
+
+  if (!crosapi_subscriber_) {
+    AppServiceProxyBase::OnPreferredAppsChanged(std::move(changes));
+    return;
+  }
+
+  DCHECK(changes);
+  AppServiceProxyBase::OnPreferredAppsChanged(changes->Clone());
+  crosapi_subscriber_->OnPreferredAppsChanged(std::move(changes));
 }
 
 bool AppServiceProxyAsh::MaybeShowLaunchPreventionDialog(

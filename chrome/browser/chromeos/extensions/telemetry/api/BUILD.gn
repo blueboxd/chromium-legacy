@@ -82,7 +82,6 @@ source_set("browser_tests") {
     "//chrome/common/chromeos/extensions",
     "//chrome/test:test_support",
     "//chromeos/dbus",
-    "//chromeos/dbus/cros_healthd",
     "//chromeos/dbus/debug_daemon",
     "//chromeos/services/cros_healthd/public/cpp",
     "//chromeos/services/cros_healthd/public/mojom",

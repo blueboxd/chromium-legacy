@@ -4,7 +4,6 @@
 
 #import "ios/web/public/test/fakes/fake_download_task.h"
 
-#import "base/strings/sys_string_conversions.h"
 #import "ios/web/public/download/download_task_observer.h"
 #import "net/url_request/url_fetcher_response_writer.h"
 
@@ -37,8 +36,7 @@ DownloadTask::State FakeDownloadTask::GetState() const {
   return state_;
 }
 
-void FakeDownloadTask::Start(const base::FilePath& path,
-                             Destination destination_hint) {
+void FakeDownloadTask::Start(const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   response_data_ = nil;
   response_path_ = path;
@@ -52,9 +50,10 @@ void FakeDownloadTask::Cancel() {
   OnDownloadUpdated();
 }
 
-NSData* FakeDownloadTask::GetResponseData() const {
+void FakeDownloadTask::GetResponseData(
+    ResponseDataReadCallback callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return response_data_;
+  std::move(callback).Run(response_data_);
 }
 
 const base::FilePath& FakeDownloadTask::GetResponsePath() const {
@@ -62,7 +61,7 @@ const base::FilePath& FakeDownloadTask::GetResponsePath() const {
   return response_path_;
 }
 
-NSString* FakeDownloadTask::GetIndentifier() const {
+NSString* FakeDownloadTask::GetIdentifier() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return identifier_;
 }
@@ -122,9 +121,9 @@ std::string FakeDownloadTask::GetMimeType() const {
   return mime_type_;
 }
 
-std::u16string FakeDownloadTask::GetSuggestedFilename() const {
+base::FilePath FakeDownloadTask::GenerateFileName() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return suggested_file_name_;
+  return generated_file_name_;
 }
 
 bool FakeDownloadTask::HasPerformedBackgroundDownload() const {
@@ -213,10 +212,10 @@ void FakeDownloadTask::SetMimeType(const std::string& mime_type) {
   OnDownloadUpdated();
 }
 
-void FakeDownloadTask::SetSuggestedFilename(
-    const std::u16string& suggested_file_name) {
+void FakeDownloadTask::SetGeneratedFileName(
+    const base::FilePath& generated_file_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  suggested_file_name_ = suggested_file_name;
+  generated_file_name_ = generated_file_name;
   OnDownloadUpdated();
 }
 

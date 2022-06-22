@@ -86,6 +86,14 @@ bool GetIsAvailableInArcBySource(
     // Accounts added from the browser should not be available in ARC.
     case AccountManagerFacade::AccountAdditionSource::kChromeProfileCreation:
     case AccountManagerFacade::AccountAdditionSource::kOgbAddAccount:
+    case AccountManagerFacade::AccountAdditionSource::
+        kAvatarBubbleTurnOnSyncAddAccount:
+    case AccountManagerFacade::AccountAdditionSource::
+        kChromeExtensionAddAccount:
+    case AccountManagerFacade::AccountAdditionSource::
+        kChromeSyncPromoAddAccount:
+    case AccountManagerFacade::AccountAdditionSource::
+        kChromeSettingsTurnOnSyncButton:
       return false;
     // These are reauthentication cases. ARC visibility shouldn't change for
     // reauthentication.
@@ -95,6 +103,9 @@ bool GetIsAvailableInArcBySource(
     case AccountManagerFacade::AccountAdditionSource::
         kAvatarBubbleReauthAccountButton:
     case AccountManagerFacade::AccountAdditionSource::kChromeExtensionReauth:
+    case AccountManagerFacade::AccountAdditionSource::kChromeSyncPromoReauth:
+    case AccountManagerFacade::AccountAdditionSource::
+        kChromeSettingsReauthAccountButton:
       NOTREACHED();
       return false;
     // Unused enums that cannot be deleted.

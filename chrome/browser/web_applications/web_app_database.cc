@@ -16,8 +16,10 @@
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -239,6 +241,43 @@ WebAppFileHandlerProto::LaunchType LaunchTypeToProto(
   }
 }
 
+WebAppManagement::Type ProtoToWebAppManagement(WebAppManagementProto type) {
+  switch (type) {
+    case web_app::WebAppManagementProto::WEBAPPMANAGEMENT_UNSPECIFIED:
+      NOTREACHED();
+      [[fallthrough]];
+    case web_app::WebAppManagementProto::SYSTEM:
+      return WebAppManagement::Type::kSystem;
+    case web_app::WebAppManagementProto::POLICY:
+      return WebAppManagement::Type::kPolicy;
+    case web_app::WebAppManagementProto::SUBAPP:
+      return WebAppManagement::Type::kSubApp;
+    case web_app::WebAppManagementProto::WEBAPPSTORE:
+      return WebAppManagement::Type::kWebAppStore;
+    case web_app::WebAppManagementProto::SYNC:
+      return WebAppManagement::Type::kSync;
+    case web_app::WebAppManagementProto::DEFAULT:
+      return WebAppManagement::Type::kDefault;
+  }
+}
+
+WebAppManagementProto WebAppManagementToProto(WebAppManagement::Type type) {
+  switch (type) {
+    case WebAppManagement::Type::kSystem:
+      return web_app::WebAppManagementProto::SYSTEM;
+    case WebAppManagement::Type::kPolicy:
+      return web_app::WebAppManagementProto::POLICY;
+    case WebAppManagement::Type::kSubApp:
+      return web_app::WebAppManagementProto::SUBAPP;
+    case WebAppManagement::Type::kWebAppStore:
+      return web_app::WebAppManagementProto::WEBAPPSTORE;
+    case WebAppManagement::Type::kSync:
+      return web_app::WebAppManagementProto::SYNC;
+    case WebAppManagement::Type::kDefault:
+      return web_app::WebAppManagementProto::DEFAULT;
+  }
+}
+
 }  // anonymous namespace
 
 WebAppDatabase::WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory,
@@ -314,7 +353,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_name(web_app.untranslated_name());
 
-  DCHECK(web_app.sources_.any());
+  DCHECK(web_app.sources_.any() || web_app.is_uninstalling());
   local_data->mutable_sources()->set_system(
       web_app.sources_[WebAppManagement::kSystem]);
   local_data->mutable_sources()->set_policy(
@@ -622,6 +661,26 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
+  if (!web_app.management_to_external_config_map().empty()) {
+    for (const auto& entry : web_app.management_to_external_config_map()) {
+      ManagementToExternalConfigInfo* management_config_proto =
+          local_data->add_management_to_external_config_info();
+      management_config_proto->set_management(
+          WebAppManagementToProto(entry.first));
+      management_config_proto->set_is_placeholder(entry.second.is_placeholder);
+      for (const auto& url : entry.second.install_urls) {
+        DCHECK(url.is_valid());
+        management_config_proto->add_install_urls(url.spec());
+      }
+    }
+  }
+
+  if (web_app.app_size_in_bytes().has_value())
+    local_data->set_app_size_in_bytes(web_app.app_size_in_bytes().value());
+
+  if (web_app.data_size_in_bytes().has_value())
+    local_data->set_data_size_in_bytes(web_app.data_size_in_bytes().value());
+
   return local_data;
 }
 
@@ -670,8 +729,9 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   if (local_data.sources().has_sub_app()) {
     sources[WebAppManagement::kSubApp] = local_data.sources().sub_app();
   }
-  if (!sources.any()) {
-    DLOG(ERROR) << "WebApp proto parse error: no any source in sources field";
+  if (!sources.any() && !local_data.is_uninstalling()) {
+    DLOG(ERROR) << "WebApp proto parse error: no any source in sources field, "
+                   "and is_uninstalling isn't true.";
     return nullptr;
   }
   web_app->sources_ = sources;
@@ -687,7 +747,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     return nullptr;
   }
   web_app->SetUserDisplayMode(
-      ToMojomDisplayMode(sync_data.user_display_mode()));
+      CreateUserDisplayModeFromWebAppSpecificsUserDisplayMode(
+          sync_data.user_display_mode()));
 
   // Ordinals used for chrome://apps page.
   syncer::StringOrdinal page_ordinal =
@@ -1166,6 +1227,37 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       policy.push_back(decl);
     }
     web_app->SetPermissionsPolicy(policy);
+  }
+
+  base::flat_map<WebAppManagement::Type, WebApp::ExternalManagementConfig>
+      management_to_external_config;
+  for (const auto& management_proto :
+       local_data.management_to_external_config_info()) {
+    WebApp::ExternalManagementConfig config;
+    base::flat_set<GURL> install_urls;
+    for (const auto& install_url_proto : management_proto.install_urls()) {
+      GURL install_url(install_url_proto);
+      if (install_url.is_empty() || !install_url.is_valid()) {
+        DLOG(ERROR) << "WebApp proto install_url parse error: "
+                    << install_url.possibly_invalid_spec();
+        return nullptr;
+      }
+      install_urls.emplace(install_url);
+    }
+    config.is_placeholder = management_proto.is_placeholder();
+    config.install_urls = install_urls;
+    management_to_external_config.insert_or_assign(
+        ProtoToWebAppManagement(management_proto.management()),
+        std::move(config));
+  }
+  web_app->SetWebAppManagementExternalConfigMap(management_to_external_config);
+
+  if (local_data.has_app_size_in_bytes()) {
+    web_app->SetAppSizeInBytes(local_data.app_size_in_bytes());
+  }
+
+  if (local_data.has_data_size_in_bytes()) {
+    web_app->SetDataSizeInBytes(local_data.data_size_in_bytes());
   }
 
   return web_app;

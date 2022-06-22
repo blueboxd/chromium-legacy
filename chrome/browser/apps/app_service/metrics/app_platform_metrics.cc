@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/app_constants/constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -73,6 +75,7 @@ std::set<apps::AppTypeName>& GetAppTypeNameSet() {
     app_type_name_map->insert(apps::AppTypeName::kStandaloneBrowserChromeApp);
     app_type_name_map->insert(apps::AppTypeName::kExtension);
     app_type_name_map->insert(apps::AppTypeName::kStandaloneBrowserExtension);
+    app_type_name_map->insert(apps::AppTypeName::kStandaloneBrowserWebApp);
   }
   return *app_type_name_map;
 }
@@ -113,15 +116,22 @@ apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
     case apps::AppType::kCrostini:
       return apps::AppTypeNameV2::kCrostini;
     case apps::AppType::kChromeApp:
-      return apps::IsBrowser(window) ? apps::AppTypeNameV2::kChromeAppTab
-                                     : apps::AppTypeNameV2::kChromeAppWindow;
+      return app_id == app_constants::kChromeAppId
+                 ? apps::AppTypeNameV2::kChromeBrowser
+             : apps::IsAshBrowserWindow(window)
+                 ? apps::AppTypeNameV2::kChromeAppTab
+                 : apps::AppTypeNameV2::kChromeAppWindow;
     case apps::AppType::kWeb: {
       apps::AppTypeName app_type_name =
           apps::GetAppTypeNameForWebAppWindow(profile, app_id, window);
       if (app_type_name == apps::AppTypeName::kChromeBrowser) {
         return apps::AppTypeNameV2::kWebTab;
+      } else if (app_type_name == apps::AppTypeName::kStandaloneBrowser) {
+        return apps::AppTypeNameV2::kStandaloneBrowserWebAppTab;
       } else if (app_type_name == apps::AppTypeName::kSystemWeb) {
         return apps::AppTypeNameV2::kSystemWeb;
+      } else if (web_app::IsWebAppsCrosapiEnabled()) {
+        return apps::AppTypeNameV2::kStandaloneBrowserWebAppWindow;
       } else {
         return apps::AppTypeNameV2::kWebWindow;
       }
@@ -139,7 +149,9 @@ apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
     case apps::AppType::kSystemWeb:
       return apps::AppTypeNameV2::kSystemWeb;
     case apps::AppType::kStandaloneBrowserChromeApp:
-      return apps::AppTypeNameV2::kStandaloneBrowserChromeApp;
+      return apps::IsLacrosBrowserWindow(profile, window)
+                 ? apps::AppTypeNameV2::kStandaloneBrowserChromeAppTab
+                 : apps::AppTypeNameV2::kStandaloneBrowserChromeAppWindow;
     case apps::AppType::kExtension:
       return apps::AppTypeNameV2::kExtension;
     case apps::AppType::kStandaloneBrowserExtension:
@@ -170,8 +182,12 @@ apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
           apps::GetAppTypeNameForWebApp(profile, app_id, container);
       if (app_type_name == apps::AppTypeName::kChromeBrowser) {
         return apps::AppTypeNameV2::kWebTab;
+      } else if (app_type_name == apps::AppTypeName::kStandaloneBrowser) {
+        return apps::AppTypeNameV2::kStandaloneBrowserWebAppTab;
       } else if (app_type_name == apps::AppTypeName::kSystemWeb) {
         return apps::AppTypeNameV2::kSystemWeb;
+      } else if (web_app::IsWebAppsCrosapiEnabled()) {
+        return apps::AppTypeNameV2::kStandaloneBrowserWebAppWindow;
       } else {
         return apps::AppTypeNameV2::kWebWindow;
       }
@@ -188,8 +204,14 @@ apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
       return apps::AppTypeNameV2::kBorealis;
     case apps::AppType::kSystemWeb:
       return apps::AppTypeNameV2::kSystemWeb;
-    case apps::AppType::kStandaloneBrowserChromeApp:
-      return apps::AppTypeNameV2::kStandaloneBrowserChromeApp;
+    case apps::AppType::kStandaloneBrowserChromeApp: {
+      apps::AppTypeName app_type_name =
+          apps::GetAppTypeNameForStandaloneBrowserChromeApp(profile, app_id,
+                                                            container);
+      return app_type_name == apps::AppTypeName::kStandaloneBrowser
+                 ? apps::AppTypeNameV2::kStandaloneBrowserChromeAppTab
+                 : apps::AppTypeNameV2::kStandaloneBrowserChromeAppWindow;
+    }
     case apps::AppType::kExtension:
       return apps::AppTypeNameV2::kExtension;
     case apps::AppType::kStandaloneBrowserExtension:
@@ -286,6 +308,14 @@ std::string GetAppTypeHistogramNameV2(apps::AppTypeNameV2 app_type_name) {
       return kExtensionHistogramName;
     case apps::AppTypeNameV2::kStandaloneBrowserExtension:
       return kStandaloneBrowserExtensionHistogramName;
+    case apps::AppTypeNameV2::kStandaloneBrowserChromeAppWindow:
+      return kStandaloneBrowserChromeAppWindowHistogramName;
+    case apps::AppTypeNameV2::kStandaloneBrowserChromeAppTab:
+      return kStandaloneBrowserChromeAppTabHistogramName;
+    case apps::AppTypeNameV2::kStandaloneBrowserWebAppWindow:
+      return kStandaloneBrowserWebAppWindowHistogramName;
+    case apps::AppTypeNameV2::kStandaloneBrowserWebAppTab:
+      return kStandaloneBrowserWebAppTabHistogramName;
   }
 }
 
@@ -393,7 +423,13 @@ ukm::SourceId AppPlatformMetrics::GetSourceId(Profile* profile,
     case AppType::kBuiltIn:
     case AppType::kChromeApp:
     case AppType::kExtension:
+    case AppType::kStandaloneBrowser:
       source_id = ukm::AppSourceUrlRecorder::GetSourceIdForChromeApp(app_id);
+      break;
+    case AppType::kStandaloneBrowserChromeApp:
+    case AppType::kStandaloneBrowserExtension:
+      source_id = ukm::AppSourceUrlRecorder::GetSourceIdForChromeApp(
+          GetStandaloneBrowserExtensionAppId(app_id));
       break;
     case AppType::kArc:
     case AppType::kWeb:
@@ -435,10 +471,7 @@ ukm::SourceId AppPlatformMetrics::GetSourceId(Profile* profile,
     case AppType::kUnknown:
     case AppType::kMacOs:
     case AppType::kPluginVm:
-    case AppType::kStandaloneBrowser:
-    case AppType::kStandaloneBrowserChromeApp:
     case AppType::kRemote:
-    case AppType::kStandaloneBrowserExtension:
       return ukm::kInvalidSourceId;
   }
   return source_id;
@@ -556,7 +589,7 @@ std::string AppPlatformMetrics::GetAppsUsageTimeHistogramNameForTest(
 
 std::string AppPlatformMetrics::GetAppsUsageTimeHistogramNameForTest(
     AppTypeNameV2 app_type_name) {
-  return kAppsUsageTimeHistogramPrefix +
+  return kAppsUsageTimeHistogramPrefixV2 +
          GetAppTypeHistogramNameV2(app_type_name);
 }
 
@@ -705,7 +738,8 @@ void AppPlatformMetrics::OnInstanceUpdate(const apps::InstanceUpdate& update) {
 
     // For the browser window, if a tab of the browser is activated, we don't
     // need to calculate the browser window running time.
-    if (app_id == app_constants::kChromeAppId &&
+    if ((app_id == app_constants::kChromeAppId ||
+         app_id == app_constants::kLacrosAppId) &&
         browser_to_tab_list_.HasActivatedTab(update.Window())) {
       SetWindowInActivated(app_id, update.InstanceId(), kInActivated);
       return;
@@ -718,15 +752,19 @@ void AppPlatformMetrics::OnInstanceUpdate(const apps::InstanceUpdate& update) {
       // not changed, but the parent browser window is changed. So remove the
       // tab window instance from previous browser window, and add it to the new
       // browser window.
+      auto* browser_window =
+          app_type_name == apps::AppTypeName::kStandaloneBrowser
+              ? update.Window()
+              : update.Window()->GetToplevelWindow();
       browser_to_tab_list_.RemoveActivatedTab(update.InstanceId());
-      browser_to_tab_list_.AddActivatedTab(update.Window()->GetToplevelWindow(),
-                                           update.InstanceId(), update.AppId());
+      browser_to_tab_list_.AddActivatedTab(browser_window, update.InstanceId(),
+                                           update.AppId());
       InstanceState state;
       base::UnguessableToken browser_id;
-      GetBrowserIdAndState(update, browser_id, state);
+      std::string browser_app_id;
+      GetBrowserInstanceInfo(browser_window, browser_id, browser_app_id, state);
       if (browser_id) {
-        SetWindowInActivated(app_constants::kChromeAppId, browser_id,
-                             kInActivated);
+        SetWindowInActivated(browser_app_id, browser_id, kInActivated);
       }
     }
 
@@ -756,20 +794,22 @@ void AppPlatformMetrics::OnInstanceRegistryWillBeDestroyed(
   apps::InstanceRegistry::Observer::Observe(nullptr);
 }
 
-void AppPlatformMetrics::GetBrowserIdAndState(
-    const InstanceUpdate& update,
+void AppPlatformMetrics::GetBrowserInstanceInfo(
+    const aura::Window* browser_window,
     base::UnguessableToken& browser_id,
+    std::string& browser_app_id,
     InstanceState& state) const {
-  auto* browser_window = update.Window()->GetToplevelWindow();
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
   DCHECK(proxy);
   browser_id = base::UnguessableToken();
+  browser_app_id = std::string();
   state = InstanceState::kUnknown;
   proxy->InstanceRegistry().ForInstancesWithWindow(
       browser_window, [&](const InstanceUpdate& browser_update) {
         if (browser_update.AppId() == app_constants::kChromeAppId ||
             browser_update.AppId() == app_constants::kLacrosAppId) {
           browser_id = browser_update.InstanceId();
+          browser_app_id = browser_update.AppId();
           state = browser_update.State();
         }
       });
@@ -796,14 +836,21 @@ void AppPlatformMetrics::UpdateBrowserWindowStatus(
   DCHECK(proxy);
   InstanceState state;
   base::UnguessableToken browser_id;
-  GetBrowserIdAndState(update, browser_id, state);
+  std::string browser_app_id;
+  GetBrowserInstanceInfo(browser_window, browser_id, browser_app_id, state);
   if (state & InstanceState::kActive) {
+    AppType app_type = AppType::kChromeApp;
+    AppTypeName app_type_name = AppTypeName::kChromeBrowser;
+    AppTypeNameV2 app_type_name_v2 = AppTypeNameV2::kChromeBrowser;
+    if (browser_app_id == app_constants::kLacrosAppId) {
+      app_type = AppType::kStandaloneBrowser;
+      app_type_name = AppTypeName::kStandaloneBrowser;
+      app_type_name_v2 = AppTypeNameV2::kStandaloneBrowser;
+    }
     // The browser window is activated, start calculating the browser window
     // running time.
-    // TODO(crbug.com/1251501): Handle lacros window.
-    SetWindowActivated(AppType::kChromeApp, AppTypeName::kChromeBrowser,
-                       AppTypeNameV2::kChromeBrowser,
-                       app_constants::kChromeAppId, browser_id);
+    SetWindowActivated(app_type, app_type_name, app_type_name_v2,
+                       browser_app_id, browser_id);
   }
 }
 

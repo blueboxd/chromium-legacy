@@ -94,6 +94,8 @@
 <translation id="1742316578210444689">希伯來文 (音譯)</translation>
 <translation id="1747761757048858544">荷蘭文 (荷蘭)</translation>
 <translation id="174937106936716857">檔案總數</translation>
+<translation id="1755345808328621801">這個檔案是專為使用 Windows 軟體的個人電腦所設計，與搭載 Chrome OS 的裝置不相容。請前往 Chrome 線上應用程式商店尋找適合的替代應用程式。</translation>
+<translation id="1757915090001272240">橫向拉丁文</translation>
 <translation id="1773212559869067373">本機已拒絕驗證憑證</translation>
 <translation id="1775381402323441512">影片資訊</translation>
 <translation id="180035236176489073">你必須連上網路才能存取這些檔案。</translation>
@@ -103,6 +105,7 @@
 <translation id="1813278315230285598">服務</translation>
 <translation id="1829129547161959350">企鵝</translation>
 <translation id="183183971458492120">正在載入資訊...</translation>
+<translation id="1832073788765803750">半形片假名</translation>
 <translation id="1834290891154666894">主體替代名稱比對項目無效</translation>
 <translation id="1838709767668011582">Google 網站</translation>
 <translation id="1844692022597038441">這個檔案無法離線瀏覽。</translation>
@@ -117,7 +120,6 @@
 <translation id="1936717151811561466">芬蘭文</translation>
 <translation id="1942765061641586207">影像解析度</translation>
 <translation id="1972984168337863910">展開檔案意見回饋面板</translation>
-<translation id="1984456723671657197">系統不支援這種檔案類型。<ph name="BEGIN_LINK_HELP" />進一步瞭解<ph name="END_LINK_HELP" />如何在 Chrome 作業系統中開啟檔案。</translation>
 <translation id="1995337122023280937">前往檔案位置</translation>
 <translation id="2001796770603320721">在雲端硬碟中管理</translation>
 <translation id="2009067268969781306">若將硬碟格式化，其中儲存的所有資料都將遭到刪除。這項操作無法復原。</translation>
@@ -199,8 +201,6 @@
 <translation id="2649120831653069427">彩虹魚</translation>
 <translation id="2663066752008346276">緬甸文搭配 Myansan 鍵盤</translation>
 <translation id="2664412712123763093">檔案位置</translation>
-<translation id="2672394958563893062">發生錯誤，按一下即可重新從頭播放。</translation>
-<translation id="2676946222714718093">目前播放裝置：</translation>
 <translation id="2718540689505416944">透過 Linux 安裝應用程式</translation>
 <translation id="2719020180254996569">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，詳細資料</translation>
 <translation id="2724954091494693138">土耳其文搭配 F 鍵盤</translation>
@@ -226,6 +226,7 @@
 <translation id="2943503720238418293">請縮短名稱</translation>
 <translation id="2949781154072577687">正在格式化 <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">水母</translation>
+<translation id="2977940621473452797">這個檔案是專為使用 Macintosh 軟體的電腦所設計，與搭載 Chrome OS 的裝置不相容。請前往 Chrome 線上應用程式商店尋找適合的替代應用程式。</translation>
 <translation id="2984337792991268709">今天<ph name="TODAY_DAYTIME" /></translation>
 <translation id="2994320653639462337">正在還原 <ph name="COUNT" /> 個項目...</translation>
 <translation id="2994669386200004489">無法備份 <ph name="FILE_NAME" /></translation>
@@ -341,7 +342,6 @@
 <translation id="3901991538546252627">正在連線至：<ph name="NAME" /></translation>
 <translation id="3906232975181435906">正在安裝行動裝置設定檔，第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3930521966936686665">播放裝置</translation>
 <translation id="3943857333388298514">貼上</translation>
 <translation id="3952872973865944257">泰盧固文 (拼音)</translation>
 <translation id="3958548648197196644">奇異果</translation>
@@ -413,7 +413,6 @@
 <translation id="4631887759990505102">演出者</translation>
 <translation id="4642769377300286600">正在安裝行動裝置設定檔，第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">捷克文搭配 Qwerty 鍵盤</translation>
-<translation id="4656293982926141856">這台電腦</translation>
 <translation id="4656777537938206294">將檔案設為可離線使用</translation>
 <translation id="4658782175094886150">雪中人</translation>
 <translation id="4669606053856530811">「<ph name="SOURCE_NAME" />」的成員將失去存取權，除非有人與他們共用這些項目。</translation>
@@ -423,13 +422,13 @@
 <translation id="4694604912444486114">猴子</translation>
 <translation id="469612310041132144">中文 (速成)</translation>
 <translation id="4697043402264950621">檔案清單已依<ph name="COLUMN_NAME" />遞增排序。</translation>
+<translation id="469897186246626197">這個檔案是專為使用 Windows 軟體的個人電腦所設計，與搭載 Chrome OS 的裝置不相容。<ph name="BEGIN_LINK_HELP" />進一步瞭解<ph name="END_LINK_HELP" />如何在 Chrome OS 中開啟檔案。</translation>
 <translation id="4706042980341760088">泰米爾文搭配打字機式鍵盤</translation>
 <translation id="4711094779914110278">土耳其文</translation>
 <translation id="4712283082407695269">正在開啟「<ph name="PATH" />」</translation>
 <translation id="4720185134442950733">行動數據網路</translation>
 <translation id="4724850507808590449">已備份 <ph name="FILE_COUNT" /> 張相片</translation>
 <translation id="4725511304875193254">柯基犬</translation>
-<translation id="4732760563705710320">很抱歉，你的投放裝置不支援這部影片。</translation>
 <translation id="4737050008115666127">降落跑道</translation>
 <translation id="4747271164117300400">馬其頓文</translation>
 <translation id="4759238208242260848">下載</translation>
@@ -520,6 +519,7 @@
 <translation id="5335458522276292100">正在將 <ph name="FILE_COUNT" />備份到 <ph name="BEGIN_LINK" />Google 雲端硬碟<ph name="END_LINK" /></translation>
 <translation id="535792325654997756">人與貓</translation>
 <translation id="5358764674931277">影格速率</translation>
+<translation id="5363339716524495120">輸入語言為中文</translation>
 <translation id="5368191757080475556">與 Linux 共用資料夾</translation>
 <translation id="5402367795255837559">點字</translation>
 <translation id="5411472733320185105">不要對以下主機和網域使用 Proxy 設定：</translation>
@@ -542,8 +542,10 @@
 <translation id="5534520101572674276">正在計算大小</translation>
 <translation id="554153475311314364">希臘文 (音譯)</translation>
 <translation id="5583640892426849032">Backspace</translation>
+<translation id="5583664733673201137">標點符號寬度為全形</translation>
 <translation id="5602622065581044566">保加利亞文搭配拼音鍵盤</translation>
 <translation id="5605830556594064952">Dvorak 美式配置</translation>
+<translation id="5618330573454123917">這個檔案是專為使用 Macintosh 軟體的電腦所設計，與搭載 Chrome OS 的裝置不相容。<ph name="BEGIN_LINK_HELP" />進一步瞭解<ph name="END_LINK_HELP" />如何在 Chrome OS 中開啟檔案。</translation>
 <translation id="5625294776298156701">泰米爾文搭配 Tamil99 鍵盤</translation>
 <translation id="5633226425545095130">這個項目移動至「<ph name="DESTINATION_NAME" />」共用資料夾後，就會與所有看得到該資料夾的使用者共用。</translation>
 <translation id="5649768706273821470">聆聽</translation>
@@ -619,7 +621,6 @@
 <translation id="6224253798271602650">將「<ph name="DRIVE_NAME" />」格式化</translation>
 <translation id="6227235786875481728">無法播放這個檔案。</translation>
 <translation id="6241349547798190358">荷蘭文 (比利時)</translation>
-<translation id="6248400709929739064">啟用字幕</translation>
 <translation id="6267547857941397424">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="PHONE_NAME" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，手機電量：<ph name="BATTERY_STATUS" />%，連線</translation>
 <translation id="6269630227984243955">馬來文</translation>
 <translation id="6287852322318138013">選取要用來開啟這個檔案的應用程式</translation>
@@ -637,7 +638,6 @@
 <translation id="637062427944097960">這個檔案已在其他電腦上開啟。前往 <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) 查看。</translation>
 <translation id="6394388407447716302">唯讀</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 個項目</translation>
-<translation id="6398765197997659313">退出全螢幕模式</translation>
 <translation id="642282551015776456">無法使用這個名稱做為檔案名稱或資料夾名稱</translation>
 <translation id="6423031066725912715">越南文搭配 TCVN 鍵盤</translation>
 <translation id="6485131920355264772">無法擷取空間資訊</translation>
@@ -673,7 +673,6 @@
 <translation id="6820687829547641339">Gzip 壓縮 tar 封存</translation>
 <translation id="6823166707458800069">所有儲存在這個資料夾的檔案都會自動在線上備份。</translation>
 <translation id="6825883775269213504">俄文</translation>
-<translation id="6827236167376090743">這部影片會持續播放到地老天荒。</translation>
 <translation id="6847101934483209767">已從所選範圍中移除「<ph name="ENTRY_NAME" />」。</translation>
 <translation id="6856459657722366306">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="NETWORK_PROVIDER_NAME" />，<ph name="CONNECTION_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，詳細資料</translation>
 <translation id="6861394552169064235">波斯文</translation>
@@ -702,7 +701,6 @@
 <translation id="6970230597523682626">保加利亞文</translation>
 <translation id="6973630695168034713">資料夾</translation>
 <translation id="6976795442547527108">獅子</translation>
-<translation id="6978611942794658017">這個檔案是專為使用 Windows 軟體的 PC 電腦所設計，與搭載 Chrome 作業系統的裝置不相容。請前往 Chrome 線上應用程式商店尋找適合的替代應用程式。</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6989942356279143254">瑞典文</translation>
 <translation id="6990081529015358884">沒有可用的空間</translation>
@@ -713,6 +711,7 @@
 <translation id="7037472120706603960">泰米爾文 (音譯)</translation>
 <translation id="7040138676081995583">選擇開啟工具...</translation>
 <translation id="7048024426273850086">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="PHONE_NAME" />，<ph name="PROVIDER_NAME" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，手機電量 <ph name="BATTERY_STATUS" />%，連線</translation>
+<translation id="7070804685954057874">直接輸入</translation>
 <translation id="7075931588889865715">泰文搭配 TIS 820-2531 鍵盤</translation>
 <translation id="708278670402572152">中斷連線即可啟用掃描功能</translation>
 <translation id="7086590977277044826">泰米爾文搭配 InScript 鍵盤</translation>
@@ -740,6 +739,7 @@
 <translation id="7309413087278791451">德文 (比利時)</translation>
 <translation id="7339898014177206373">開啟新視窗</translation>
 <translation id="7343393116438664539">越南文 (Telex)</translation>
+<translation id="7357762654218998920">系統不支援這種檔案類型。<ph name="BEGIN_LINK_HELP" />進一步瞭解<ph name="END_LINK_HELP" />如何在 Chrome OS 中開啟檔案。</translation>
 <translation id="7359359531237882347">正在複製 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
 <translation id="7375951387215729722">檔案清單已依<ph name="COLUMN_NAME" />遞減排序。</translation>
 <translation id="7402503521691663770">ChromeOS Flex 裝置</translation>
@@ -752,6 +752,7 @@
 <translation id="7489215562877293245">找到 <ph name="FILE_COUNT" />
     <ph name="LINE_BREAK1" />
     現在可以備份到 <ph name="BEGIN_LINK" />Google 雲端硬碟<ph name="END_LINK" />了</translation>
+<translation id="749452993132003881">平假名</translation>
 <translation id="7495372004724182530">馬拉雅拉姆文 (拼音)</translation>
 <translation id="7505167922889582512">顯示隱藏的檔案</translation>
 <translation id="7514365320538308">下載</translation>
@@ -811,8 +812,8 @@
 <translation id="7857117644404132472">新增例外狀況</translation>
 <translation id="7868774406711971383">波蘭文</translation>
 <translation id="7874321682039004450">菲律賓文</translation>
-<translation id="7881969471599061635">停用字幕</translation>
 <translation id="78946041517601018">共用的雲端硬碟</translation>
+<translation id="7903984238293908205">片假名</translation>
 <translation id="7908793776359722643">若將分割區格式化，其中儲存的所有資料都將遭到清除。這項操作無法復原。</translation>
 <translation id="7925247922861151263">AAA 檢查失敗</translation>
 <translation id="7925686952655276919">請勿使用行動數據進行同步處理</translation>
@@ -824,7 +825,6 @@
 <translation id="7972920761225148017">法文 (瑞士)</translation>
 <translation id="7973962044839454485">使用者名稱或密碼錯誤，導致 PPP 驗證失敗</translation>
 <translation id="7980421588063892270">英文 (美國) 搭配 Colemak 鍵盤</translation>
-<translation id="79907182588096956">這個檔案是專為使用 Windows 軟體的個人電腦所設計，與搭載 Chrome 作業系統的裝置不相容。<ph name="BEGIN_LINK_HELP" />進一步瞭解<ph name="END_LINK_HELP" />如何在 Chrome 作業系統中開啟檔案。</translation>
 <translation id="8000066093800657092">沒有網路</translation>
 <translation id="8008366997883261463">傑克羅素梗</translation>
 <translation id="8028993641010258682">大小</translation>
@@ -841,6 +841,7 @@
 <translation id="8128733386027980860">英文 (英國) 搭配 Dvorak 鍵盤</translation>
 <translation id="8137331602592933310">「<ph name="FILENAME" />」是他人與你共用的項目。你不是這個檔案的擁有者，無法刪除這個檔案。</translation>
 <translation id="813913629614996137">正在初始化...</translation>
+<translation id="8147028810663464959">字元寬度為全形</translation>
 <translation id="8151638057146502721">設定</translation>
 <translation id="8154842056504218462">已選取所有項目。</translation>
 <translation id="8157684860301034423">無法擷取應用程式資訊。</translation>
@@ -850,6 +851,7 @@
 <translation id="8208580316430297579">圖檔</translation>
 <translation id="8223479393428528563">如要儲存這些檔案以供離線使用，請重新上網，在檔案上按一下滑鼠右鍵，然後選取 [<ph name="OFFLINE_CHECKBOX_NAME" />] 選項。</translation>
 <translation id="8249296373107784235">取消</translation>
+<translation id="8250690786522693009">拉丁文</translation>
 <translation id="8250920743982581267">文件</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8261561378965667560">中文 (行列)</translation>
@@ -889,7 +891,6 @@
 <translation id="8492972329130824181">無法使用家用網路，你必須啟用行動數據漫遊服務才能連線。</translation>
 <translation id="8499098729323186194">正在擷取 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
 <translation id="8521441079177373948">英式配置</translation>
-<translation id="8525306231823319788">全螢幕</translation>
 <translation id="853494022971700746">法文 (法國)</translation>
 <translation id="8540608333167683902">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，詳細資料</translation>
 <translation id="8545476925160229291">英文 (美國)</translation>
@@ -935,7 +936,6 @@
 <translation id="8912078710089354287">搖尾巴的狗</translation>
 <translation id="8919081441417203123">丹麥文</translation>
 <translation id="8965697826696209160">空間不足。</translation>
-<translation id="8970501467542182729">這個檔案是專為使用 Macintosh 軟體的電腦所設計，與搭載 Chrome 作業系統的裝置不相容。<ph name="BEGIN_LINK_HELP" />進一步瞭解<ph name="END_LINK_HELP" />如何在 Chrome 作業系統中開啟檔案。</translation>
 <translation id="8997962250644902079">中文 (繁體拼音)</translation>
 <translation id="9003940392834790328">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，由系統管理員管理，詳細資料</translation>
 <translation id="9017798300203431059">俄文 (拼音)</translation>
@@ -954,7 +954,6 @@
 <translation id="9130775360844693113">「<ph name="DESTINATION_NAME" />」的成員將可存取這些項目。</translation>
 <translation id="9131598836763251128">選取一或多個檔案</translation>
 <translation id="9133055936679483811">壓縮失敗。<ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">這個檔案是專為使用 Macintosh 軟體的電腦所設計，與搭載 Chrome 作業系統的裝置不相容。請前往 Chrome 線上應用程式商店尋找適合的替代應用程式。</translation>
 <translation id="9144340019284012223">加泰隆尼亞文</translation>
 <translation id="914873105831852105">PIN 碼無效，你只剩 1 次重試機會。</translation>
 <translation id="9153934054460603056">儲存身分與密碼</translation>

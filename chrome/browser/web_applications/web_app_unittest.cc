@@ -172,10 +172,12 @@ TEST(WebAppTest, EmptyAppAsDebugValue) {
    "!name": "",
    "additional_search_terms": [  ],
    "app_service_icon_url": "chrome://app-icon/empty_app/32",
+   "app_size_in_bytes": "",
    "allowed_launch_protocols": [  ],
    "background_color": "none",
    "dark_mode_theme_color": "none",
    "dark_mode_background_color": "none",
+   "data_size_in_bytes": "",
    "capture_links": "kUndefined",
    "chromeos_data": null,
    "client_data": {
@@ -207,6 +209,7 @@ TEST(WebAppTest, EmptyAppAsDebugValue) {
    "last_launch_time": "1601-01-01 00:00:00.000 UTC",
    "launch_handler": null,
    "launch_query_params": null,
+   "management_type_to_external_configuration_map": {},
    "manifest_id": null,
    "manifest_update_time": "1601-01-01 00:00:00.000 UTC",
    "manifest_url": "",
@@ -244,11 +247,12 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   EXPECT_EQ(base::JSONReader::Read(R"JSON({
-  "!app_id": "eajjdjobhihlgobdfaehiiheinneagde",
+ "!app_id": "eajjdjobhihlgobdfaehiiheinneagde",
    "!name": "Name1234",
    "additional_search_terms": [ "Foo_1234_0" ],
    "allowed_launch_protocols": [  ],
    "app_service_icon_url": "chrome://app-icon/eajjdjobhihlgobdfaehiiheinneagde/32",
+   "app_size_in_bytes": "2093990537",
    "background_color": "rgba(77,188,194,0.9686274509803922)",
    "capture_links": "kNone",
    "chromeos_data": null,
@@ -256,7 +260,8 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
       "system_web_app_data": null
    },
    "dark_mode_background_color": "none",
-   "dark_mode_theme_color": "rgba(89,101,0,1)",
+   "dark_mode_theme_color": "none",
+   "data_size_in_bytes": "2659692452",
    "description": "Description1234",
    "disallowed_launch_protocols": [ "web+disallowed_1234_0", "web+disallowed_1234_1", "web+disallowed_1234_2", "web+disallowed_1234_3" ],
    "display_mode": "standalone",
@@ -386,8 +391,8 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
       "name": "2591174844 file"
    } ],
    "handle_links": "kAuto",
+   "install_source_for_metrics": 13,
    "install_time": "1970-01-10 21:57:36.131 UTC",
-   "install_source_for_metrics": 12,
    "is_from_sync_and_pending_installation": false,
    "is_generated_icon": true,
    "is_locally_installed": false,
@@ -397,6 +402,26 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
    "last_launch_time": "1970-01-04 17:38:34.900 UTC",
    "launch_handler": null,
    "launch_query_params": "986688382",
+   "management_type_to_external_configuration_map": {
+        "Default": {
+            "install_urls": [
+                "https://example.com/installer1_1234/"
+            ],
+            "is_placeholder": false
+        },
+        "SubApp": {
+            "install_urls": [
+                "https://example.com/installer1_1234/"
+            ],
+            "is_placeholder": false
+        },
+        "WebAppStore": {
+            "install_urls": [
+                "https://example.com/installer2_1234/"
+            ],
+            "is_placeholder": false
+        }
+    },
    "manifest_icons": [ {
       "purpose": "kAny",
       "square_size_px": 256,
@@ -535,7 +560,7 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
       "name": "shortcut35882900330",
       "url": "https://example.com/scope1234/shortcut35882900330"
    } ],
-   "sources": [ "WebAppStore", "Sync", "Default" ],
+   "sources": [ "SubApp", "WebAppStore", "Sync", "Default" ],
    "start_url": "https://example.com/scope1234/start1234",
    "sync_fallback_data": {
       "manifest_icons": [ {

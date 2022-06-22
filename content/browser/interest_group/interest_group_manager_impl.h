@@ -17,14 +17,19 @@
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/auction_process_manager.h"
+#include "content/browser/interest_group/interest_group_permissions_checker.h"
 #include "content/browser/interest_group/interest_group_update_manager.h"
 #include "content/browser/interest_group/storage_interest_group.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/interest_group_manager.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom-forward.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
+#include "third_party/blink/public/mojom/interest_group/ad_auction_service.mojom.h"
 #include "url/origin.h"
 
 namespace base {
@@ -71,6 +76,33 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       base::OnceCallback<void(std::vector<url::Origin>)> callback) override;
 
   /******** Proxy function calls to InterestGroupsStorage **********/
+
+  // Checks if `frame_origin` can join the specified InterestGroup, performing
+  // .well-known fetches if needed. If joining is allowed, then joins the
+  // interest group. `network_isolation_key` must be the NetworkIsolationKey
+  // associated with `url_loader_factory`. `url_loader_factory` is the factory
+  // for renderer frame where navigator.joinInterestGroup() was invoked, and
+  // will be used for the .well-known fetch if one is needed.
+  //
+  // See JoinInterestGroup() for more details on how the join operation is
+  // performed.
+  void CheckPermissionsAndJoinInterestGroup(
+      blink::InterestGroup group,
+      const GURL& joining_url,
+      const url::Origin& frame_origin,
+      const net::NetworkIsolationKey& network_isolation_key,
+      network::mojom::URLLoaderFactory& url_loader_factory,
+      blink::mojom::AdAuctionService::JoinInterestGroupCallback callback);
+
+  // Same as CheckPermissionsAndJoinInterestGroup(), except for a leave
+  // operation.
+  void CheckPermissionsAndLeaveInterestGroup(
+      const url::Origin& owner,
+      const std::string& name,
+      const url::Origin& frame_origin,
+      const net::NetworkIsolationKey& network_isolation_key,
+      network::mojom::URLLoaderFactory& url_loader_factory,
+      blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback);
 
   // Joins an interest group. If the interest group does not exist, a new one
   // is created based on the provided group information. If the interest group
@@ -127,6 +159,15 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // Get the last maintenance time from the underlying InterestGroupStorage.
   void GetLastMaintenanceTimeForTesting(
       base::RepeatingCallback<void(base::Time)> callback) const;
+  // Enqueues report requests. Using `client_security_state` when fetching
+  // report URLs from the network.
+  void EnqueueReports(
+      const std::vector<GURL>& report_urls,
+      const std::vector<GURL>& debug_win_report_urls,
+      const std::vector<GURL>& debug_loss_report_urls,
+      const url::Origin& frame_origin,
+      network::mojom::ClientSecurityStatePtr client_security_state,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   AuctionProcessManager& auction_process_manager() {
     return *auction_process_manager_;
@@ -148,10 +189,46 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
     auction_process_manager_ = std::move(auction_process_manager);
   }
 
+  // For testing *only*; changes the maximum number of report URLs that can be
+  // stored in `report_requests_` queue.
+  void set_max_report_queue_length_for_testing(int max_queue_length);
+
+  // For testing *only*; changes the time interval to wait before sending the
+  // next report after sending one.
+  void set_reporting_interval_for_testing(base::TimeDelta interval);
+
  private:
   // InterestGroupUpdateManager calls private members to write updates to the
   // database.
   friend class InterestGroupUpdateManager;
+
+  struct ReportRequest {
+    ReportRequest();
+    ~ReportRequest();
+
+    // Used to fetch the report URL.
+    std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+
+    // Used for Uma histograms.
+    std::string name;
+    int request_url_size_bytes;
+  };
+
+  // Callbacks for CheckPermissionsAndJoinInterestGroup() and
+  // CheckPermissionsAndLeaveInterestGroup(), respectively. Call
+  // JoinInterestGroup() and LeaveInterestGroup() if the results of the
+  // permissions check allows it.
+  void OnJoinInterestGroupPermissionsChecked(
+      blink::InterestGroup group,
+      const GURL& joining_url,
+      blink::mojom::AdAuctionService::JoinInterestGroupCallback callback,
+      bool can_join);
+  void OnLeaveInterestGroupPermissionsChecked(
+      const url::Origin& owner,
+      const std::string& name,
+      blink::mojom::AdAuctionService::LeaveInterestGroupCallback callback,
+      bool can_leave);
 
   // Like GetInterestGroupsForOwner(), but doesn't return any interest groups
   // that are currently rate-limited for updates. Additionally, this will update
@@ -188,6 +265,21 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       const std::string& owner_origin,
       const std::string& name);
 
+  // Enqueues each of `report_urls` to the `report_requests_` queue.
+  void HandleReports(
+      const std::vector<GURL>& report_urls,
+      const url::Origin& frame_origin,
+      network::mojom::ClientSecurityStatePtr client_security_state,
+      const std::string& name,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  // Dequeues and sends the first report request in `report_requests_` queue,
+  // if the queue is not empty.
+  void SendReports();
+  // Invoked when a report request completed.
+  void OnOneReportSent(
+      std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
+      scoped_refptr<net::HttpResponseHeaders> response_headers);
+
   // Owns and manages access to the InterestGroupStorage living on a different
   // thread.
   base::SequenceBound<InterestGroupStorage> impl_;
@@ -206,6 +298,32 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // Therefore, `update_manager_` *must* be declared after fields used by those
   // methods so that updates are cancelled before those fields are destroyed.
   InterestGroupUpdateManager update_manager_;
+
+  // Checks if a frame can join or leave an interest group. Global so that
+  // pending operations can continue after a page has been navigate away from.
+  InterestGroupPermissionsChecker permissions_checker_;
+
+  // The queue of report requests. Empty the queue if it's size is larger than
+  // `max_report_queue_length` at the time of adding new entries.
+  base::circular_deque<std::unique_ptr<ReportRequest>> report_requests_;
+
+  // Whether a task of SendReports() is being executed. Used to avoid invoking
+  // multiple SendReports() simultaneously.
+  bool send_reports_in_progress_ = false;
+
+  // The maximum number of report requests that can be stored in queue
+  // `report_requests_`.
+  //
+  // Should *only* be changed by tests.
+  int max_report_queue_length_;
+
+  // The time interval to wait before sending the next report request after
+  // sending one.
+  //
+  // Should *only* be changed by tests.
+  base::TimeDelta reporting_interval_;
+
+  base::WeakPtrFactory<InterestGroupManagerImpl> weak_factory_{this};
 };
 
 }  // namespace content

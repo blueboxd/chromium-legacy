@@ -20,10 +20,12 @@ void ConnectionFactory::ConnectToInputMethod(
     mojo::PendingAssociatedReceiver<mojom::InputMethod> pending_input_method,
     mojo::PendingAssociatedRemote<mojom::InputMethodHost>
         pending_input_method_host,
+    mojom::InputMethodSettingsPtr settings,
     ConnectToInputMethodCallback callback) {
-  rule_based_engine_ = AssociatedRuleBasedEngine::Create(
-      ime_spec, std::move(pending_input_method),
-      std::move(pending_input_method_host));
+  // `settings` is unused because Rule-Based IMEs do not have settings.
+  rule_based_engine_ =
+      RuleBasedEngine::Create(ime_spec, std::move(pending_input_method),
+                              std::move(pending_input_method_host));
   std::move(callback).Run(/*bound=*/true);
 }
 

@@ -128,7 +128,7 @@ class MockAutofillManagerInjector : public content::WebContentsObserver {
     ContentAutofillDriverFactory* driver_factory =
         ContentAutofillDriverFactory::FromWebContents(web_contents());
     return static_cast<T*>(
-        driver_factory->DriverForFrame(rfh)->browser_autofill_manager());
+        driver_factory->DriverForFrame(rfh)->autofill_manager());
   }
 
  protected:
@@ -146,15 +146,13 @@ class MockAutofillManagerInjector : public content::WebContentsObserver {
         ContentAutofillDriverFactory::FromWebContents(web_contents());
     AutofillClient* client = driver_factory->client();
     ContentAutofillDriver* driver = driver_factory->DriverForFrame(rfh);
-    std::unique_ptr<T> mock_autofill_manager =
-        std::make_unique<T>(driver, client, rfh);
-    driver->SetBrowserAutofillManager(std::move(mock_autofill_manager));
+    driver->set_autofill_manager(std::make_unique<T>(driver, client, rfh));
   }
 };
 
 class AutofillTest : public InProcessBrowserTest {
  protected:
-  AutofillTest() {}
+  AutofillTest() = default;
 
   void SetUpOnMainThread() override {
     // Don't want Keychain coming up on Mac.
@@ -171,10 +169,10 @@ class AutofillTest : public InProcessBrowserTest {
     // Make sure to close any showing popups prior to tearing down the UI.
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    BrowserAutofillManager* autofill_manager =
+    AutofillManager* autofill_manager =
         ContentAutofillDriverFactory::FromWebContents(web_contents)
             ->DriverForFrame(web_contents->GetMainFrame())
-            ->browser_autofill_manager();
+            ->autofill_manager();
     autofill_manager->client()->HideAutofillPopup(PopupHidingReason::kTabGone);
     test::ReenableSystemServices();
   }
@@ -794,11 +792,10 @@ class PrerenderAutofillTest : public InProcessBrowserTest {
     MockPrerenderBrowserAutofillManager(AutofillDriver* driver,
                                         AutofillClient* client,
                                         content::RenderFrameHost* rfh)
-        : BrowserAutofillManager(
-              driver,
-              client,
-              "en-US",
-              BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER) {
+        : BrowserAutofillManager(driver,
+                                 client,
+                                 "en-US",
+                                 EnableDownloadManager(false)) {
       // We need to set these expectations immediately to catch any premature
       // calls while prerendering.
       if (rfh->GetLifecycleState() ==
@@ -906,11 +903,10 @@ class FormSubmissionDetectionTest
     MockFormSubmissionAutofillManager(AutofillDriver* driver,
                                       AutofillClient* client,
                                       content::RenderFrameHost* rhf)
-        : BrowserAutofillManager(
-              driver,
-              client,
-              "en-US",
-              BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
+        : BrowserAutofillManager(driver,
+                                 client,
+                                 "en-US",
+                                 EnableDownloadManager(false)) {}
     MOCK_METHOD(void,
                 OnFormSubmittedImpl,
                 (const FormData&, bool, mojom::SubmissionSource),

@@ -2205,12 +2205,6 @@ public class WebContentsAccessibilityTreeTest {
 
     @Test
     @SmallTest
-    public void test_svgStyleElement() {
-        performHtmlTest("svg-style-element.html");
-    }
-
-    @Test
-    @SmallTest
     public void test_svgSymbolWithRole() {
         performHtmlTest("svg-symbol-with-role.html");
     }

@@ -82,18 +82,16 @@ OutputSurface::Type GetOutputSurfaceType(SkiaOutputSurfaceDependency* deps) {
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
     SkDeferredDisplayListRecorder* root_recorder)
-    : recorder_(root_recorder), render_pass_id_(0) {}
+    : recorder_(root_recorder) {}
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
     SkSurfaceCharacterization characterization)
-    : ScopedPaint(characterization, AggregatedRenderPassId(0), gpu::Mailbox()) {
-}
+    : ScopedPaint(characterization, gpu::Mailbox()) {}
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
     SkSurfaceCharacterization characterization,
-    AggregatedRenderPassId render_pass_id,
     gpu::Mailbox mailbox)
-    : render_pass_id_(render_pass_id), mailbox_(mailbox) {
+    : mailbox_(mailbox) {
   recorder_storage_.emplace(characterization);
   recorder_ = &recorder_storage_.value();
 }
@@ -290,21 +288,17 @@ void SkiaOutputSurfaceImpl::RecreateRootRecorder() {
   std::ignore = root_recorder_->getCanvas();
 }
 
-void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
-                                    float device_scale_factor,
-                                    const gfx::ColorSpace& color_space,
-                                    gfx::BufferFormat format,
-                                    bool use_stencil) {
+void SkiaOutputSurfaceImpl::Reshape(const ReshapeParams& params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!size.IsEmpty());
+  DCHECK(!params.size.IsEmpty());
 
   // SetDrawRectangle() will need to be called at the new size.
   has_set_draw_rectangle_for_frame_ = false;
 
   if (use_damage_area_from_skia_output_device_) {
-    damage_of_current_buffer_ = gfx::Rect(size);
+    damage_of_current_buffer_ = gfx::Rect(params.size);
   } else if (frame_buffer_damage_tracker_) {
-    frame_buffer_damage_tracker_->FrameBuffersChanged(size);
+    frame_buffer_damage_tracker_->FrameBuffersChanged(params.size);
   }
 
   if (is_using_raw_draw_ && is_raw_draw_using_msaa_) {
@@ -312,34 +306,34 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
       // On "low-end" devices use 4 samples per pixel to save memory.
       sample_count_ = 4;
     } else {
-      sample_count_ = device_scale_factor >= 2.0f ? 4 : 8;
+      sample_count_ = params.device_scale_factor >= 2.0f ? 4 : 8;
     }
   } else {
     sample_count_ = 1;
   }
 
-  const auto format_index = static_cast<int>(format);
+  const auto format_index = static_cast<int>(params.format);
   const auto& color_type = capabilities_.sk_color_types[format_index];
   DCHECK(color_type != kUnknown_SkColorType)
       << "SkColorType is invalid for buffer format_index: " << format_index;
 
-  auto sk_color_space = color_space.ToSkColorSpace();
+  auto sk_color_space = params.color_space.ToSkColorSpace();
   characterization_ = CreateSkSurfaceCharacterization(
-      size, color_type, /*mipmap=*/false, std::move(sk_color_space),
+      params.size, color_type, /*mipmap=*/false, std::move(sk_color_space),
       /*is_root_render_pass=*/true, /*is_overlay=*/false);
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto task =
-      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
-                     base::Unretained(impl_on_gpu_.get()), characterization_,
-                     color_space, device_scale_factor, GetDisplayTransform());
+  auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
+                             base::Unretained(impl_on_gpu_.get()),
+                             characterization_, params.color_space,
+                             params.device_scale_factor, GetDisplayTransform());
   EnqueueGpuTask(std::move(task), {}, /*make_current=*/true,
                  /*need_framebuffer=*/!dependency_->IsOffscreen());
   FlushGpuTasks(SyncMode::kNoWait);
 
-  size_ = size;
-  format_ = format;
+  size_ = params.size;
+  format_ = params.format;
   RecreateRootRecorder();
 }
 
@@ -604,6 +598,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     ResourceFormat format,
     bool mipmap,
     sk_sp<SkColorSpace> color_space,
+    bool is_overlay,
     const gpu::Mailbox& mailbox) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
@@ -611,78 +606,37 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
   DCHECK(resource_sync_tokens_.empty());
 
   SkColorType color_type =
-      ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
+      ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true, format);
   SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
       surface_size, color_type, mipmap, std::move(color_space),
-      /*is_root_render_pass=*/false, /*is_overlay=*/false);
+      /*is_root_render_pass=*/false, /*is_overlay=*/is_overlay);
   if (!characterization.isValid())
     return nullptr;
 
-  current_paint_.emplace(characterization, id, mailbox);
+  // We are going to overwrite the render pass when it is not for overlay, so we
+  // need to reset the image_context and a new promise image will be created
+  // when MakePromiseSkImageFromRenderPass() is called.
+  if (!is_overlay) {
+    auto it = render_pass_image_cache_.find(id);
+    if (it != render_pass_image_cache_.end()) {
+      it->second->clear_image();
+    }
+  }
+
+  current_paint_.emplace(characterization, mailbox);
   return current_paint_->recorder()->getCanvas();
 }
-
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
-SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPassOverlay(
-    const gfx::Size& size,
-    ResourceFormat format,
-    bool mipmap,
-    sk_sp<SkColorSpace> color_space) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
-  DCHECK(!current_paint_);
-  SkColorType color_type =
-      ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
-  SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
-      size, color_type, mipmap, std::move(color_space),
-      /*is_root_render_pass=*/false, /*is_overlay=*/true);
-  if (!characterization.isValid())
-    return nullptr;
-
-  current_paint_.emplace(characterization);
-  return current_paint_->recorder()->getCanvas();
-}
-
-sk_sp<SkDeferredDisplayList>
-SkiaOutputSurfaceImpl::EndPaintRenderPassOverlay() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(current_paint_);
-
-  auto ddl = current_paint_->recorder()->detach();
-  current_paint_.reset();
-  return ddl;
-}
-#endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
 
 void SkiaOutputSurfaceImpl::EndPaint(base::OnceClosure on_finished) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_paint_);
-  // If current_render_pass_id_ is not null, we are painting a render pass.
-  // Otherwise we are painting a frame.
-
-  bool painting_render_pass = !current_paint_->render_pass_id().is_null();
-
   auto ddl = current_paint_->recorder()->detach();
 
-  // impl_on_gpu_ is released on the GPU thread by a posted task from
-  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  if (painting_render_pass) {
-    auto it = render_pass_image_cache_.find(current_paint_->render_pass_id());
-    if (it != render_pass_image_cache_.end()) {
-      // We are going to overwrite the render pass, so we need reset the
-      // image_context, so a new promise image will be created when the
-      // MakePromiseSkImageFromRenderPass() is called.
-      it->second->clear_image();
-    }
-
-    auto task = base::BindOnce(
-        &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
-        base::Unretained(impl_on_gpu_.get()), current_paint_->mailbox(),
-        std::move(ddl), std::move(images_in_current_paint_),
-        resource_sync_tokens_, std::move(on_finished));
-    EnqueueGpuTask(std::move(task), std::move(resource_sync_tokens_),
-                   /*make_current=*/true, /*need_framebuffer=*/false);
-  } else {
+  // If the current paint mailbox is empty, we are painting a frame, otherwise
+  // we are painting a render pass. impl_on_gpu_ is released on the GPU thread
+  // by a posted task from SkiaOutputSurfaceImpl::dtor, so it is safe to use
+  // base::Unretained.
+  if (current_paint_->mailbox().IsZero()) {
     // Draw on the root render pass.
     current_buffer_modified_ = true;
     sk_sp<SkDeferredDisplayList> overdraw_ddl;
@@ -702,6 +656,14 @@ void SkiaOutputSurfaceImpl::EndPaint(base::OnceClosure on_finished) {
     EnqueueGpuTask(std::move(task), std::move(resource_sync_tokens_),
                    /*make_current=*/true, /*need_framebuffer=*/true);
     draw_rectangle_.reset();
+  } else {
+    auto task = base::BindOnce(
+        &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
+        base::Unretained(impl_on_gpu_.get()), current_paint_->mailbox(),
+        std::move(ddl), std::move(images_in_current_paint_),
+        resource_sync_tokens_, std::move(on_finished));
+    EnqueueGpuTask(std::move(task), std::move(resource_sync_tokens_),
+                   /*make_current=*/true, /*need_framebuffer=*/false);
   }
   images_in_current_paint_.clear();
   current_paint_.reset();
@@ -802,30 +764,12 @@ void SkiaOutputSurfaceImpl::CopyOutput(
 
 void SkiaOutputSurfaceImpl::ScheduleOverlays(
     OverlayList overlays,
-    std::vector<gpu::SyncToken> sync_tokens,
-    base::OnceClosure on_finished) {
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
-  // If there are render pass overlays, then a gl context is needed for drawing
-  // the overlay render passes to a backing for being scanned out.
-  bool make_current =
-      std::find_if(overlays.begin(), overlays.end(), [](const auto& overlay) {
-        return !!overlay.ddl;
-      }) != overlays.end();
-  // Append |resource_sync_tokens_| which are depended by drawing render passes
-  // to overlay backings.
-  std::move(resource_sync_tokens_.begin(), resource_sync_tokens_.end(),
-            std::back_inserter(sync_tokens));
-  resource_sync_tokens_.clear();
-#else
-  bool make_current = false;
-#endif
-  auto task = base::BindOnce(
-      &SkiaOutputSurfaceImplOnGpu::ScheduleOverlays,
-      base::Unretained(impl_on_gpu_.get()), std::move(overlays),
-      std::move(images_in_current_paint_), std::move(on_finished));
-  EnqueueGpuTask(std::move(task), std::move(sync_tokens), make_current,
-                 /*need_framebuffer=*/false);
-  images_in_current_paint_.clear();
+    std::vector<gpu::SyncToken> sync_tokens) {
+  auto task =
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::ScheduleOverlays,
+                     base::Unretained(impl_on_gpu_.get()), std::move(overlays));
+  EnqueueGpuTask(std::move(task), std::move(sync_tokens),
+                 /*make_current=*/false, /*need_framebuffer=*/false);
 }
 
 void SkiaOutputSurfaceImpl::SetFrameRate(float frame_rate) {

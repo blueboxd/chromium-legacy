@@ -229,7 +229,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler& input_handler,
   UpdateElasticOverscroll();
   compositor_event_queue_ = std::make_unique<CompositorThreadEventQueue>();
   scroll_predictor_ =
-      base::FeatureList::IsEnabled(blink::features::kResamplingScrollEvents)
+      (base::FeatureList::IsEnabled(blink::features::kResamplingScrollEvents) &&
+       client->AllowsScrollResampling())
           ? std::make_unique<ScrollPredictor>()
           : nullptr;
 
@@ -1662,6 +1663,11 @@ const cc::InputHandlerPointerResult InputHandlerProxy::HandlePointerUp(
     }
   }
   return pointer_result;
+}
+
+void InputHandlerProxy::SetDeferBeginMainFrame(
+    bool defer_begin_main_frame) const {
+  input_handler_->SetDeferBeginMainFrame(defer_begin_main_frame);
 }
 
 }  // namespace blink

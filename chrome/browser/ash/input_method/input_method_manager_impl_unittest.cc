@@ -734,7 +734,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutsThenLock) {
   scoped_refptr<InputMethodManager::State> saved_ime_state =
       manager_->GetActiveIMEState();
   manager_->SetState(saved_ime_state->Clone());
-  manager_->GetActiveIMEState()->EnableLockScreenLayouts();
+  manager_->GetActiveIMEState()->DisableNonLockScreenLayouts();
   EXPECT_EQ(2U, manager_->GetActiveIMEState()->GetNumEnabledInputMethods());
   EXPECT_EQ(us_dvorak_id,
             manager_->GetActiveIMEState()->GetCurrentInputMethod().id());
@@ -781,7 +781,7 @@ TEST_F(InputMethodManagerImplTest, SwitchInputMethodTest) {
   scoped_refptr<InputMethodManager::State> saved_ime_state =
       manager_->GetActiveIMEState();
   manager_->SetState(saved_ime_state->Clone());
-  manager_->GetActiveIMEState()->EnableLockScreenLayouts();
+  manager_->GetActiveIMEState()->DisableNonLockScreenLayouts();
   EXPECT_EQ(2U,
             manager_->GetActiveIMEState()
                 ->GetNumEnabledInputMethods());  // hardware layout + id1
@@ -1239,7 +1239,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   scoped_refptr<InputMethodManager::State> saved_ime_state =
       manager_->GetActiveIMEState();
   manager_->SetState(saved_ime_state->Clone());
-  manager_->GetActiveIMEState()->EnableLockScreenLayouts();
+  manager_->GetActiveIMEState()->DisableNonLockScreenLayouts();
   EXPECT_EQ(1U,
             manager_->GetActiveIMEState()
                 ->GetNumEnabledInputMethods());  // Qwerty. No Ext. IME
@@ -1438,8 +1438,9 @@ TEST_F(InputMethodManagerImplTest, AllowedInputMethodsValid) {
 
   // Only allow xkb:us::eng
   std::vector<std::string> allowed = {"xkb:us::eng"};
-  EXPECT_TRUE(
-      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
+  EXPECT_TRUE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  EXPECT_TRUE(manager_->GetActiveIMEState()->ReplaceEnabledInputMethods(
+      manager_->GetActiveIMEState()->GetAllowedInputMethodIds()));
   EXPECT_THAT(manager_->GetActiveIMEState()->GetEnabledInputMethodIds(),
               testing::ElementsAre(ImeIdFromEngineId("xkb:us::eng")));
   EXPECT_THAT(manager_->GetActiveIMEState()->GetCurrentInputMethod().id(),
@@ -1460,8 +1461,7 @@ TEST_F(InputMethodManagerImplTest, AllowedInputMethodsInvalid) {
 
   // Only allow xkb:us::eng
   std::vector<std::string> allowed = {"invalid_input_method"};
-  EXPECT_FALSE(
-      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
+  EXPECT_FALSE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
   EXPECT_THAT(manager_->GetActiveIMEState()->GetCurrentInputMethod().id(),
               original_input_method);
   EXPECT_THAT(manager_->GetActiveIMEState()->GetAllowedInputMethodIds(),
@@ -1483,8 +1483,9 @@ TEST_F(InputMethodManagerImplTest, AllowedInputMethodsValidAndInvalid) {
   // ignored.
   std::vector<std::string> allowed = {original_input_method_1,
                                       "invalid_input_method"};
-  EXPECT_TRUE(
-      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
+  EXPECT_TRUE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  EXPECT_TRUE(manager_->GetActiveIMEState()->ReplaceEnabledInputMethods(
+      manager_->GetActiveIMEState()->GetAllowedInputMethodIds()));
   EXPECT_THAT(manager_->GetActiveIMEState()->GetCurrentInputMethod().id(),
               original_input_method_1);
   EXPECT_THAT(manager_->GetActiveIMEState()->GetAllowedInputMethodIds(),
@@ -1502,8 +1503,9 @@ TEST_F(InputMethodManagerImplTest, AllowedInputMethodsAndExtensions) {
       ImeIdFromEngineId("xkb:fr::fra")));
 
   std::vector<std::string> allowed = {"xkb:us::eng", kNaclMozcJpId};
-  EXPECT_TRUE(
-      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
+  EXPECT_TRUE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  EXPECT_TRUE(manager_->GetActiveIMEState()->ReplaceEnabledInputMethods(
+      manager_->GetActiveIMEState()->GetAllowedInputMethodIds()));
 
   EXPECT_FALSE(manager_->GetActiveIMEState()->EnableInputMethod(
       ImeIdFromEngineId(kNaclMozcUsId)));
@@ -1515,8 +1517,9 @@ TEST_F(InputMethodManagerImplTest, AllowedInputMethodsAndExtensions) {
 TEST_F(InputMethodManagerImplTest, SetLoginDefaultWithAllowedInputMethods) {
   std::vector<std::string> allowed = {"xkb:us::eng", "xkb:de::ger",
                                       "xkb:fr::fra"};
-  EXPECT_TRUE(
-      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
+  EXPECT_TRUE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  EXPECT_TRUE(manager_->GetActiveIMEState()->ReplaceEnabledInputMethods(
+      manager_->GetActiveIMEState()->GetAllowedInputMethodIds()));
   manager_->GetActiveIMEState()->SetInputMethodLoginDefault();
   EXPECT_THAT(manager_->GetActiveIMEState()->GetEnabledInputMethodIds(),
               testing::ElementsAre(ImeIdFromEngineId("xkb:us::eng"),
@@ -1550,7 +1553,7 @@ TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
   scoped_refptr<InputMethodManager::State> saved_ime_state =
       manager_->GetActiveIMEState();
   manager_->SetState(saved_ime_state->Clone());
-  manager_->GetActiveIMEState()->EnableLockScreenLayouts();
+  manager_->GetActiveIMEState()->DisableNonLockScreenLayouts();
   EXPECT_EQ(2u, ime_controller.available_imes_.size());  // id1, hardware layout
   EXPECT_EQ(id1, ime_controller.current_ime_id_);
 

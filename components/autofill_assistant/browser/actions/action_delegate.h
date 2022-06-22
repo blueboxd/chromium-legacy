@@ -11,6 +11,8 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "components/autofill_assistant/browser/public/external_action_delegate.h"
+#include "components/autofill_assistant/browser/public/external_script_controller.h"
 #include "components/autofill_assistant/browser/tts_button_state.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
 
@@ -66,6 +68,7 @@ class ShowProgressBarProto_StepProgressBarConfiguration;
 class ProcessedActionStatusDetailsProto;
 class GetUserDataResponseProto;
 class ElementAreaProto;
+class ExternalActionProto;
 
 enum ConfigureBottomSheetProto_PeekMode : int;
 enum ConfigureUiStateProto_OverlayBehavior : int;
@@ -194,7 +197,7 @@ class ActionDelegate {
       bool browse_mode_invisible = false) = 0;
 
   // Have the UI leave the prompt state and go back to its previous state.
-  virtual void CleanUpAfterPrompt() = 0;
+  virtual void CleanUpAfterPrompt(bool consume_touchable_area = true) = 0;
 
   // Set the list of allowed domains to be used when we enter a browse state.
   // This list is used to determine whether a user initiated navigation to a
@@ -457,10 +460,26 @@ class ActionDelegate {
   // gets attached to the action's response if non empty.
   virtual ProcessedActionStatusDetailsProto& GetLogInfo() = 0;
 
+  // Sends a request to retrieve the required user data for this flow. Returns
+  // the result through the |callback|. Enters the |RUNNING| state while doing
+  // so.
   virtual void RequestUserData(
       const CollectUserDataOptions& options,
       base::OnceCallback<void(bool, const GetUserDataResponseProto&)>
           callback) = 0;
+
+  // Whether the current flow supports external actions.
+  virtual bool SupportsExternalActions() = 0;
+
+  // Executes the |external_action|.
+  virtual void RequestExternalAction(
+      const ExternalActionProto& external_action,
+      base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+          callback) = 0;
+
+  // Returns whether or not this instance of Autofill Assistant must use a
+  // backend endpoint to query data.
+  virtual bool MustUseBackendData() const = 0;
 
   virtual base::WeakPtr<ActionDelegate> GetWeakPtr() const = 0;
 

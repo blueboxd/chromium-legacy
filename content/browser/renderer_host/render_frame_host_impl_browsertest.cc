@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -49,6 +50,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_visibility_state.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -988,7 +990,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
 
   // Navigate main frame cross-site and wait for the beforeunload dialog to be
   // shown from one of the frames.
-  DOMMessageQueue msg_queue;
+  DOMMessageQueue msg_queue(web_contents());
   GURL cross_site_url(embedded_test_server()->GetURL("e.com", "/title1.html"));
   shell()->LoadURL(cross_site_url);
   dialog_manager()->Wait();
@@ -1026,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
 
   // Navigate and wait for the beforeunload dialog to be shown from one of the
   // frames.
-  DOMMessageQueue msg_queue;
+  DOMMessageQueue msg_queue(web_contents());
   GURL cross_site_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   shell()->LoadURL(cross_site_url);
   dialog_manager()->Wait();
@@ -1067,7 +1069,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   // Start a same-site renderer-initiated navigation.  The beforeunload dialog
   // from the b.com frame should be shown.  The other two a.com frames should
   // send pings from their beforeunload handlers.
-  DOMMessageQueue msg_queue;
+  DOMMessageQueue msg_queue(web_contents());
   GURL new_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   TestNavigationManager navigation_manager(web_contents(), new_url);
   // Use ExecuteScriptAsync because a ping may arrive before the script
@@ -1114,7 +1116,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   PrepContentsForBeforeUnloadTest(web_contents());
 
   // Start a renderer-initiated navigation in the middle frame.
-  DOMMessageQueue msg_queue;
+  DOMMessageQueue msg_queue(web_contents());
   GURL new_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   TestNavigationManager navigation_manager(web_contents(), new_url);
   // Use ExecuteScriptAsync because a ping may arrive before the script
@@ -1182,7 +1184,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   PrepContentsForBeforeUnloadTest(web_contents());
 
   // Navigate the main frame.
-  DOMMessageQueue msg_queue;
+  DOMMessageQueue msg_queue(web_contents());
   GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), new_url));
 
@@ -2821,21 +2823,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(0, process->get_media_stream_count_for_testing());
 }
 
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
-// ChromeOS and Linux failures are tracked in https://crbug.com/954217
-#define MAYBE_VisibilityScrolledOutOfView DISABLED_VisibilityScrolledOutOfView
-#else
-#define MAYBE_VisibilityScrolledOutOfView VisibilityScrolledOutOfView
-#endif
 // Test that a frame is visible/hidden depending on its WebContents visibility
 // state.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       MAYBE_VisibilityScrolledOutOfView) {
+                       DISABLED_VisibilityScrolledOutOfView) {
   GURL main_frame(embedded_test_server()->GetURL("/iframe_out_of_view.html"));
   GURL child_url(embedded_test_server()->GetURL("/hello.html"));
 
   // This will set up the page frame tree as A(A1()).
   ASSERT_TRUE(NavigateToURL(shell(), main_frame));
+  // TODO(crbug.com/954217): Re-enable this test
   FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
   FrameTreeNode* nested_iframe_node = root->child_at(0);
   EXPECT_TRUE(NavigateToURLFromRenderer(nested_iframe_node, child_url));
@@ -5362,7 +5359,7 @@ class RenderFrameHostImplBrowserTestWithRestrictedApis
     RenderFrameHostImplBrowserTest::SetUpCommandLine(command_line);
 
     mock_cert_verifier_.SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kRestrictedApiOrigins,
+    command_line->AppendSwitchASCII(switches::kIsolatedAppOrigins,
                                     std::string("https://") + kAppHost);
   }
 
@@ -6402,14 +6399,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeBrowserTest,
   WaitForLoadStop(web_contents());
 
   EXPECT_FALSE(main_rfh->anonymous());
-  EXPECT_EQ(false, EvalJs(main_rfh, "window.anonymous"));
+  EXPECT_EQ(false, EvalJs(main_rfh, "window.isAnonymouslyFramed"));
   EXPECT_FALSE(main_rfh->storage_key().nonce().has_value());
 
   EXPECT_EQ(1U, main_rfh->child_count());
   EXPECT_TRUE(main_rfh->child_at(0)->anonymous());
   EXPECT_FALSE(main_rfh->child_at(0)->current_frame_host()->anonymous());
   EXPECT_EQ(false, EvalJs(main_rfh->child_at(0)->current_frame_host(),
-                          "window.anonymous"));
+                          "window.isAnonymouslyFramed"));
   EXPECT_FALSE(main_rfh->child_at(0)
                    ->current_frame_host()
                    ->storage_key()
@@ -6514,7 +6511,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeNikBrowserTest,
     EXPECT_EQ(1U, main_rfh->child_count());
     RenderFrameHostImpl* iframe = main_rfh->child_at(0)->current_frame_host();
     EXPECT_EQ(anonymous, iframe->anonymous());
-    EXPECT_EQ(anonymous, EvalJs(iframe, "window.anonymous"));
+    EXPECT_EQ(anonymous, EvalJs(iframe, "window.isAnonymouslyFramed"));
 
     ResetNetworkState();
 
@@ -6716,7 +6713,7 @@ IN_PROC_BROWSER_TEST_F(
   PrepContentsForBeforeUnloadTest(web_contents());
 
   // Navigate the main frame.
-  DOMMessageQueue msg_queue;
+  DOMMessageQueue msg_queue(web_contents());
   GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), new_url));
 

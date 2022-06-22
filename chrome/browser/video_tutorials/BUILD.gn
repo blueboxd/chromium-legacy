@@ -110,7 +110,6 @@ if (is_android) {
     # These deps will be inherited by the resulting android_library target.
     deps = [
       ":java",
-      "//base:base_java",
       "//chrome/browser/profiles/android:java",
       "//components/embedder_support/android:content_view_java",
       "//components/image_fetcher:java",
@@ -133,6 +132,7 @@ if (is_android) {
     deps = [
       ":java",
       "//base:base_java",
+      "//build/android:build_java",
       "//components/image_fetcher:java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/gif_player:gif_player_java",

@@ -4,6 +4,7 @@
 
 #include "chromecast/cast_core/runtime/browser/cast_runtime_content_browser_client.h"
 
+#include "base/command_line.h"
 #include "base/ranges/algorithm.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/browser/service_manager_connection.h"
@@ -51,21 +52,6 @@ std::unique_ptr<CastService> CastRuntimeContentBrowserClient::CreateCastService(
       this);
   cast_runtime_service_ = cast_runtime_service.get();
   return cast_runtime_service;
-}
-
-void CastRuntimeContentBrowserClient::OverrideWebkitPrefs(
-    content::WebContents* web_contents,
-    blink::web_pref::WebPreferences* web_prefs) {
-  CastContentBrowserClient::OverrideWebkitPrefs(web_contents, web_prefs);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kAllowRunningInsecureContentInRuntime)) {
-    // This is needed to unblock MSPs that still use insecure content. For
-    // example, Amazon Prime uses HTTPS as app URL, but media stream is done
-    // via HTTP.
-    LOG(INFO) << "Insecure content is enabled";
-    web_prefs->allow_running_insecure_content = true;
-  }
 }
 
 std::unique_ptr<::media::CdmFactory>

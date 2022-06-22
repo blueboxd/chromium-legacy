@@ -687,6 +687,8 @@ ExtensionFunction::ResponseAction TerminalPrivateGetOSInfoFunction::Run() {
   info.SetBoolKey("tmux_integration",
                   base::FeatureList::IsEnabled(
                       chromeos::features::kTerminalTmuxIntegration));
+  info.SetBoolKey(
+      "ssh", base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH));
   return RespondNow(OneArgument(std::move(info)));
 }
 
@@ -704,6 +706,7 @@ ExtensionFunction::ResponseAction TerminalPrivateGetPrefsFunction::Run() {
       crostini::prefs::kCrostiniContainers,
       crostini::prefs::kCrostiniEnabled,
       crostini::prefs::kCrostiniTerminalSettings,
+      crostini::prefs::kTerminalSshAllowedByPolicy,
   }};
 
   for (const auto& path : params->paths) {

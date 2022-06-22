@@ -9,6 +9,9 @@
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
+#include "content/public/common/content_features.h"
+
+using features::kMacWebContentsOcclusion;
 
 namespace {
 
@@ -20,8 +23,6 @@ const base::mac::ScopedObjCClassSwizzler* GetWindowClassSwizzler() {
   return window_class_swizzler.get();
 }
 
-const base::Feature kMacWebContentsOcclusion{"MacWebContentsOcclusion",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<bool> kEnhancedWindowOcclusionDetection{
     &kMacWebContentsOcclusion, "EnhancedWindowOcclusionDetection", false};
 const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
@@ -38,9 +39,11 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
 }
 // Computes and returns the `window`'s visibility state, a hybrid of
 // macOS's and our manual occlusion calculation.
-- (remote_cocoa::mojom::Visibility)contentVisibilityStateForWindow:
-    (NSWindow*)window;
-- (void)updateWebContentsVisibilityInWindow:(NSWindow*)window;
+- (remote_cocoa::mojom::Visibility)
+    contentVisibilityStateForWindow:(NSWindow*)window
+                         windowList:(NSArray<NSWindow*>*)windowList;
+- (void)updateWebContentsVisibilityInWindow:(NSWindow*)window
+                                 windowList:(NSArray<NSWindow*>*)windowList;
 
 @end
 
@@ -61,6 +64,7 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
 - (instancetype)init {
   self = [super init];
 
+  DCHECK(base::FeatureList::IsEnabled(kMacWebContentsOcclusion));
   [self setUpNotifications];
 
   return self;
@@ -229,6 +233,11 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
              afterDelay:0];
 }
 
+- (NSArray<NSWindow*>*)windowsFromFrontToBack {
+  return
+      [[[[NSApplication sharedApplication] orderedWindows] copy] autorelease];
+}
+
 - (void)_notifyUpdateWebContentsVisibility {
   _willUpdateWebContentsVisibility = NO;
 
@@ -236,22 +245,18 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
 
   _updatingWebContentsVisibility = YES;
 
-  // Copy the list to avoid mutation exceptions (imagine the visibility
-  // update triggers a visibility watcher that brings a new window
-  // onscreen). Emperically, -orderedWindows returns a new list each time,
-  // so it's likely already a copy. The API, however, does not make any
-  // guarantees about what it returns, and methods like
-  // -[NSWindow childWindows] apparently return the actual internal array.
-  base::scoped_nsobject<NSArray<NSWindow*>> orderedWindows(
-      [[[NSApplication sharedApplication] orderedWindows] copy]);
-  for (NSWindow* window in orderedWindows.get()) {
-    [self updateWebContentsVisibilityInWindow:window];
+  NSArray<NSWindow*>* windowsFromFrontToBack = [self windowsFromFrontToBack];
+  for (NSWindow* window in windowsFromFrontToBack) {
+    [self updateWebContentsVisibilityInWindow:window
+                                   windowList:windowsFromFrontToBack];
   }
 
   _updatingWebContentsVisibility = NO;
 }
 
-- (void)updateWebContentsVisibilityInWindow:(NSWindow*)window {
+- (void)updateWebContentsVisibilityInWindow:(NSWindow*)window
+                                 windowList:
+                                     (nonnull NSArray<NSWindow*>*)windowList {
   // The fullscreen transition causes spurious occlusion notifications.
   // See https://crbug.com/1081229
   if (window == _windowReceivingFullscreenTransitionNotifications)
@@ -265,7 +270,7 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
   }
 
   remote_cocoa::mojom::Visibility windowVisibilityState =
-      [self contentVisibilityStateForWindow:window];
+      [self contentVisibilityStateForWindow:window windowList:windowList];
 
   for (WebContentsViewCocoa* webContentsViewCocoa in
            webContentsViewCocoaInWindow) {
@@ -277,8 +282,9 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
   }
 }
 
-- (remote_cocoa::mojom::Visibility)contentVisibilityStateForWindow:
-    (NSWindow*)window {
+- (remote_cocoa::mojom::Visibility)
+    contentVisibilityStateForWindow:(NSWindow*)window
+                         windowList:(nonnull NSArray<NSWindow*>*)windowList {
   if (_displaysAreAsleep) {
     return remote_cocoa::mojom::Visibility::kHidden;
   }
@@ -300,12 +306,8 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
 
   NSRect windowFrame = [window frame];
 
-  // See the note about avoiding mutation exceptions above.
-  base::scoped_nsobject<NSArray<NSWindow*>> windowsFromFrontToBack(
-      [[[NSApplication sharedApplication] orderedWindows] copy]);
-
   // Determine if there's a window occluding our window.
-  for (NSWindow* nextWindow in windowsFromFrontToBack.get()) {
+  for (NSWindow* nextWindow in windowList) {
     if (![nextWindow isVisible]) {
       continue;
     }
@@ -344,7 +346,8 @@ const base::FeatureParam<bool> kDisplaySleepAndAppHideDetection{
 - (void)updateWebContentsVisibility:
     (WebContentsViewCocoa*)webContentsViewCocoa {
   remote_cocoa::mojom::Visibility contentVisibilityState =
-      [self contentVisibilityStateForWindow:[webContentsViewCocoa window]];
+      [self contentVisibilityStateForWindow:[webContentsViewCocoa window]
+                                 windowList:[self windowsFromFrontToBack]];
 
   [webContentsViewCocoa updateWebContentsVisibility:contentVisibilityState];
 }

@@ -12,13 +12,12 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "components/optimization_guide/core/insertion_ordered_set.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
-#include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
-#include "components/prefs/pref_service.h"
 #include "components/variations/hashing.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
@@ -90,14 +89,9 @@ const base::Feature kOptimizationHintsFieldTrials{
 const base::Feature kRemoteOptimizationGuideFetching{
     "OptimizationHintsFetching", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent {
-  "OptimizationHintsFetchingAnonymousDataConsent",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else   // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // BUILDFLAG(IS_ANDROID)
-};
+const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
+    "OptimizationHintsFetchingAnonymousDataConsent",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables performance info in the context menu and fetching from a remote
 // Optimization Guide Service.
@@ -164,12 +158,19 @@ const base::Feature kBatchAnnotationsValidation{
     "BatchAnnotationsValidation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPreventLongRunningPredictionModels{
-    "PreventLongRunningPredictionModels", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PreventLongRunningPredictionModels", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature
     kOptimizationGuideUseContinueOnShutdownForPageContentAnnotations{
         "OptimizationGuideUseContinueOnShutdownForPageContentAnnotations",
         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kOverrideNumThreadsForModelExecution{
+    "OverrideNumThreadsForModelExecution", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOptGuideEnableXNNPACKDelegateWithTFLite{
+    "OptGuideEnableXNNPACKDelegateWithTFLite",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The default value here is a bit of a guess.
 // TODO(crbug/1163244): This should be tuned once metrics are available.
@@ -267,10 +268,8 @@ bool IsOptimizationHintsEnabled() {
   return base::FeatureList::IsEnabled(kOptimizationHints);
 }
 
-bool IsRemoteFetchingEnabled(PrefService* pref_service) {
-  return base::FeatureList::IsEnabled(kRemoteOptimizationGuideFetching) &&
-         pref_service->GetBoolean(
-             optimization_guide::prefs::kOptimizationGuideFetchingEnabled);
+bool IsRemoteFetchingEnabled() {
+  return base::FeatureList::IsEnabled(kRemoteOptimizationGuideFetching);
 }
 
 bool IsPushNotificationsEnabled() {
@@ -418,7 +417,7 @@ base::TimeDelta PredictionModelFetchRetryDelay() {
 
 base::TimeDelta PredictionModelFetchStartupDelay() {
   return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
-      kOptimizationTargetPrediction, "fetch_startup_delay_ms", 2000));
+      kOptimizationTargetPrediction, "fetch_startup_delay_ms", 10000));
 }
 
 base::TimeDelta PredictionModelFetchInterval() {
@@ -426,12 +425,20 @@ base::TimeDelta PredictionModelFetchInterval() {
       kOptimizationTargetPrediction, "fetch_interval_hours", 24));
 }
 
-absl::optional<base::TimeDelta> ModelExecutionTimeout() {
-  if (!base::FeatureList::IsEnabled(kPreventLongRunningPredictionModels)) {
-    return absl::nullopt;
-  }
+bool IsModelExecutionWatchdogEnabled() {
+  return base::FeatureList::IsEnabled(kPreventLongRunningPredictionModels);
+}
+
+base::TimeDelta ModelExecutionWatchdogDefaultTimeout() {
   return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
-      kPreventLongRunningPredictionModels, "model_execution_timeout_ms", 2000));
+      kPreventLongRunningPredictionModels, "model_execution_timeout_ms",
+#if defined(_DEBUG)
+      // Debug builds take a much longer time to run.
+      60 * 1000
+#else
+      2000
+#endif
+      ));
 }
 
 base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch() {
@@ -464,14 +471,10 @@ bool IsPageContentAnnotationEnabled() {
   return base::FeatureList::IsEnabled(kPageContentAnnotations);
 }
 
-uint64_t MaxSizeForPageContentTextDump() {
-  return static_cast<uint64_t>(base::GetFieldTrialParamByFeatureAsInt(
-      kPageContentAnnotations, "max_size_for_text_dump_in_bytes", 1024));
-}
-
-bool ShouldAnnotateTitleInsteadOfPageContent() {
+bool ShouldPersistSearchMetadataForNonGoogleSearches() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      kPageContentAnnotations, "annotate_title_instead_of_page_content", true);
+      kPageContentAnnotations,
+      "persist_search_metadata_for_non_google_searches", true);
 }
 
 bool ShouldWriteContentAnnotationsToHistoryService() {
@@ -588,6 +591,29 @@ size_t MaxVisitAnnotationCacheSize() {
   int batch_size = GetFieldTrialParamByFeatureAsInt(
       kPageContentAnnotations, "max_visit_annotation_cache_size", 50);
   return std::max(1, batch_size);
+}
+
+absl::optional<int> OverrideNumThreadsForOptTarget(
+    proto::OptimizationTarget opt_target) {
+  if (!base::FeatureList::IsEnabled(kOverrideNumThreadsForModelExecution)) {
+    return absl::nullopt;
+  }
+
+  // 0 is an invalid value to pass to TFLite, so make that nullopt. -1 is valid,
+  // but not anything less than that.
+  int num_threads = GetFieldTrialParamByFeatureAsInt(
+      kOverrideNumThreadsForModelExecution,
+      proto::OptimizationTarget_Name(opt_target), 0);
+  if (num_threads == 0 || num_threads < -1) {
+    return absl::nullopt;
+  }
+
+  // Cap to the number of CPUs on the device.
+  return std::min(num_threads, base::SysInfo::NumberOfProcessors());
+}
+
+bool TFLiteXNNPACKDelegateEnabled() {
+  return base::FeatureList::IsEnabled(kOptGuideEnableXNNPACKDelegateWithTFLite);
 }
 
 }  // namespace features

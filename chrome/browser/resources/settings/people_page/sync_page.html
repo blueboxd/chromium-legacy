@@ -60,7 +60,7 @@
       }
 
       cr-link-row {
-        padding-inline-end: 8px;
+        padding-inline-end: 0;
         padding-inline-start: 0;
       }
     </style>
@@ -93,8 +93,7 @@
     </template>
 </if>
 
-    <template is="dom-if" if="[[shouldShowExistingPassphraseBelowAccount_(
-        syncPrefs.passphraseRequired)]]"
+    <template is="dom-if" if="[[showExistingPassphraseBelowAccount_]]"
         on-dom-change="focusPassphraseInput_">
       <div id="existingPassphrase" class="list-frame">
         <div id="existingPassphraseTitle" class="list-item">
@@ -192,7 +191,7 @@
         page-visibility="[[pageVisibility]]" sync-status="[[syncStatus]]">
     </settings-personalization-options>
 
-<if expr="not chromeos_ash and not chromeos_lacros">
+<if expr="not chromeos_ash">
     <template is="dom-if" if="[[showSetupCancelDialog_]]" restamp>
       <cr-dialog id="setupCancelDialog" on-close="onSetupCancelDialogClose_"
           ignore-popstate>

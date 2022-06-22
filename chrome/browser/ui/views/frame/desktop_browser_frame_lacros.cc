@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_lacros.h"
 
-#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_linux.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_lacros.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
@@ -20,6 +20,10 @@ views::Widget::InitParams DesktopBrowserFrameLacros::GetWidgetParams() {
   views::Widget::InitParams params;
   params.native_widget = this;
   params.remove_standard_frame = true;
+
+  Browser* browser = browser_view()->browser();
+  params.restore_session_id = browser->session_id().id();
+  params.restore_window_id = browser->create_params().restore_id;
   return params;
 }
 

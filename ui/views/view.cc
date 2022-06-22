@@ -530,11 +530,11 @@ int View::GetBaseline() const {
   return -1;
 }
 
-void View::SetPreferredSize(const gfx::Size& size) {
-  if (preferred_size_ && *preferred_size_ == size)
+void View::SetPreferredSize(absl::optional<gfx::Size> size) {
+  if (preferred_size_ == size)
     return;
 
-  preferred_size_ = size;
+  preferred_size_ = std::move(size);
   PreferredSizeChanged();
 }
 
@@ -1214,6 +1214,8 @@ Background* View::GetBackground() const {
 void View::SetBorder(std::unique_ptr<Border> b) {
   const gfx::Rect old_contents_bounds = GetContentsBounds();
   border_ = std::move(b);
+  if (border_ && GetWidget())
+    border_->OnViewThemeChanged(this);
 
   // Conceptually, this should be PreferredSizeChanged(), but for some view
   // hierarchies that triggers synchronous add/remove operations that are unsafe

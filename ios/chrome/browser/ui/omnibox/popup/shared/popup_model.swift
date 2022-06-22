@@ -16,54 +16,15 @@ import UIKit
   }
 }
 
-/// An extension of `@Published` that only publishes a new value when there
-/// is an actual change.
-/// TODO(crbug.com/1315110): See if this should be moved to a shared location.
-@propertyWrapper class PublishedOnChange<Value: Equatable> {
-  @Published private var value: Value
-
-  public var projectedValue: Published<Value>.Publisher {
-    get {
-      return $value
-    }
-    set {
-      $value = newValue
-    }
-  }
-  var wrappedValue: Value {
-    get {
-      return value
-    }
-    set {
-      guard newValue != value else {
-        return
-      }
-      value = newValue
-    }
-  }
-  init(wrappedValue value: Value) {
-    self.value = value
-  }
-
-  public init(initialValue value: Value) {
-    self.value = value
-  }
-}
-
 @objcMembers public class PopupModel: NSObject, ObservableObject, AutocompleteResultConsumer {
   @Published var sections: [PopupMatchSection]
 
   @Published var highlightedMatchIndexPath: IndexPath?
 
+  /// Index of the preselected section when no row is highlighted.
+  var preselectedSectionIndex: Int
+
   weak var delegate: AutocompleteResultConsumerDelegate?
-
-  /// Holds how much leading space there is from the edge of the popup view to
-  /// where the omnibox starts.
-  @PublishedOnChange var omniboxLeadingSpace: CGFloat = 0
-
-  /// Holds how much trailing space there is from where the omnibox ends to
-  /// the edge of the popup view.
-  @PublishedOnChange var omniboxTrailingSpace: CGFloat = 0
 
   public init(
     matches: [[PopupMatch]], headers: [String], delegate: AutocompleteResultConsumerDelegate?
@@ -73,13 +34,17 @@ import UIKit
       PopupMatchSection(header: tuple.0, matches: tuple.1)
     }
     self.delegate = delegate
+    preselectedSectionIndex = 0
   }
 
   // MARK: AutocompleteResultConsumer
 
-  public func updateMatches(_ matchGroups: [AutocompleteSuggestionGroup], withAnimation: Bool) {
+  public func updateMatches(
+    _ matchGroups: [AutocompleteSuggestionGroup], preselectedMatchGroupIndex: NSInteger
+  ) {
     // Reset highlight state.
     self.highlightedMatchIndexPath = nil
+    self.preselectedSectionIndex = preselectedMatchGroupIndex
 
     self.sections = matchGroups.map { group in
       PopupMatchSection(
@@ -98,8 +63,22 @@ import UIKit
 
 extension PopupModel: OmniboxSuggestionCommands {
   public func highlightNextSuggestion() {
-    guard var indexPath = self.highlightedMatchIndexPath else {
-      // When nothing is highlighted, pressing Up Arrow doesn't do anything.
+    // Pressing Up Arrow when there are no suggestions does nothing.
+    if sections.isEmpty || sections.first!.matches.isEmpty {
+      return
+    }
+    var indexPath = IndexPath()
+    if self.highlightedMatchIndexPath != nil {
+      indexPath = self.highlightedMatchIndexPath!
+    } else if self.preselectedSectionIndex > 0 && self.preselectedSectionIndex - 1 < sections.count
+    {
+      /// When no row is highlighted, highlight the first row of the preselected section.
+      /// If there is a row above the preselected row, select this row.
+      indexPath = IndexPath(
+        row: sections[preselectedSectionIndex - 1].matches.count,
+        section: self.preselectedSectionIndex - 1)
+    } else {
+      /// If there are no rows above the preselected row, do nothing.
       return
     }
 
@@ -127,9 +106,15 @@ extension PopupModel: OmniboxSuggestionCommands {
   }
 
   public func highlightPreviousSuggestion() {
-    // Initialize the highlighted index path to section:0, row:-1, so that pressing down when nothing
-    // is highlighted highlights the first row (at index 0).
-    var indexPath = self.highlightedMatchIndexPath ?? IndexPath(row: -1, section: 0)
+    // Pressing Down Arrow when there are no suggestions does nothing.
+    if sections.isEmpty || sections.first!.matches.isEmpty {
+      return
+    }
+    assert(self.preselectedSectionIndex < sections.count)
+    /// Initialize the highlighted index path to (`preselectedSectionIndex`, -1)
+    /// so that pressing down when nothing is highlighted highlights the first row of the preselected section.
+    var indexPath =
+      self.highlightedMatchIndexPath ?? IndexPath(row: -1, section: self.preselectedSectionIndex)
 
     // If there's a row below in current section, move highlight there
     if indexPath.row < sections[indexPath.section].matches.count - 1 {

@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badge_delegate.h"
 #import "ios/chrome/browser/ui/badges/badge_overflow_menu_util.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/infobar_icon.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -25,8 +27,13 @@ namespace {
 // The identifier for the new popup menu action trigger.
 NSString* const kOverflowPopupMenuActionIdentifier =
     @"kOverflowPopupMenuActionIdentifier";
-// The size of the symbol image in the badge button.
-const CGFloat kSymbolImagePointSize = 18;
+
+// The size of the incognito symbol image.
+NSInteger kSymbolIncognitoPointSize = 28;
+
+// The size of the incognito full screen symbol image.
+NSInteger kSymbolIncognitoFullScreenPointSize = 14;
+
 }  // namespace
 
 @implementation BadgeButtonFactory
@@ -104,11 +111,14 @@ const CGFloat kSymbolImagePointSize = 18;
 }
 
 - (BadgeButton*)saveCardBadgeButton {
+  UIImage* image;
+  image = UseSymbols() ? DefaultSymbolWithPointSize(kCreditCardSymbol,
+                                                    kSymbolImagePointSize)
+                       : [UIImage imageNamed:@"infobar_save_card_icon"];
   BadgeButton* button =
       [self createButtonForType:kBadgeTypeSaveCard
-                          image:[[UIImage imageNamed:@"infobar_save_card_icon"]
-                                    imageWithRenderingMode:
-                                        UIImageRenderingModeAlwaysTemplate]];
+                          image:[image imageWithRenderingMode:
+                                           UIImageRenderingModeAlwaysTemplate]];
   [button addTarget:self.delegate
                 action:@selector(saveCardBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];
@@ -119,11 +129,14 @@ const CGFloat kSymbolImagePointSize = 18;
 }
 
 - (BadgeButton*)translateBadgeButton {
+  UIImage* image;
+  image = UseSymbols() ? CustomSymbolWithPointSize(kTranslateSymbol,
+                                                   kSymbolImagePointSize)
+                       : [UIImage imageNamed:@"infobar_translate_icon"];
   BadgeButton* button =
       [self createButtonForType:kBadgeTypeTranslate
-                          image:[[UIImage imageNamed:@"infobar_translate_icon"]
-                                    imageWithRenderingMode:
-                                        UIImageRenderingModeAlwaysTemplate]];
+                          image:[image imageWithRenderingMode:
+                                           UIImageRenderingModeAlwaysTemplate]];
   [button addTarget:self.delegate
                 action:@selector(translateBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];
@@ -134,13 +147,23 @@ const CGFloat kSymbolImagePointSize = 18;
 }
 
 - (BadgeButton*)incognitoBadgeButton {
-  BadgeButton* button =
-      [self createButtonForType:kBadgeTypeIncognito
-                          image:[[UIImage imageNamed:@"incognito_badge"]
-                                    imageWithRenderingMode:
-                                        UIImageRenderingModeAlwaysOriginal]];
-  button.fullScreenImage = [[UIImage imageNamed:@"incognito_small_badge"]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  BadgeButton* button;
+  if (UseSymbols()) {
+    UIImage* image = CustomSymbolTemplateWithPointSize(
+        kIncognitoCircleFillSymbol, kSymbolIncognitoPointSize);
+    button = [self createButtonForType:kBadgeTypeIncognito image:image];
+    button.fullScreenImage = CustomSymbolTemplateWithPointSize(
+        kIncognitoSymbol, kSymbolIncognitoFullScreenPointSize);
+  } else {
+    button =
+        [self createButtonForType:kBadgeTypeIncognito
+                            image:[[UIImage imageNamed:@"incognito_badge"]
+                                      imageWithRenderingMode:
+                                          UIImageRenderingModeAlwaysOriginal]];
+    button.fullScreenImage = [[UIImage imageNamed:@"incognito_small_badge"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  }
+
   button.tintColor = [UIColor colorNamed:kTextPrimaryColor];
   button.accessibilityTraits &= ~UIAccessibilityTraitButton;
   button.userInteractionEnabled = NO;
@@ -152,7 +175,8 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)overflowBadgeButton {
   UIImage* image = ShouldUseUIKitPopupMenu()
-                       ? [UIImage systemImageNamed:@"ellipsis.circle.fill"]
+                       ? DefaultSymbolWithPointSize(kEllipsisCircleFillSymbol,
+                                                    kSymbolImagePointSize)
                        : [UIImage imageNamed:@"wrench_badge"];
   BadgeButton* button =
       [self createButtonForType:kBadgeTypeOverflow
@@ -201,11 +225,15 @@ const CGFloat kSymbolImagePointSize = 18;
 }
 
 - (BadgeButton*)saveAddressProfileBadgeButton {
+  UIImage* image;
+  image = UseSymbols()
+              ? DefaultSymbolWithPointSize(kPinSymbol, kSymbolImagePointSize)
+              : [UIImage imageNamed:@"ic_place"];
+
   BadgeButton* button =
       [self createButtonForType:kBadgeTypeSaveAddressProfile
-                          image:[[UIImage imageNamed:@"ic_place"]
-                                    imageWithRenderingMode:
-                                        UIImageRenderingModeAlwaysTemplate]];
+                          image:[image imageWithRenderingMode:
+                                           UIImageRenderingModeAlwaysTemplate]];
   [button addTarget:self.delegate
                 action:@selector(saveAddressProfileBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];
@@ -231,12 +259,10 @@ const CGFloat kSymbolImagePointSize = 18;
 }
 
 - (BadgeButton*)permissionsCameraBadgeButton {
-  BadgeButton* button = [self
-      createButtonForType:kBadgeTypePermissionsCamera
-                    image:[[UIImage
-                              imageNamed:@"infobar_permissions_camera_fill"]
-                              imageWithRenderingMode:
-                                  UIImageRenderingModeAlwaysTemplate]];
+  BadgeButton* button =
+      [self createButtonForType:kBadgeTypePermissionsCamera
+                          image:CustomSymbolTemplateWithPointSize(
+                                    kCameraFillSymbol, kSymbolImagePointSize)];
   [button addTarget:self.delegate
                 action:@selector(permissionsBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];

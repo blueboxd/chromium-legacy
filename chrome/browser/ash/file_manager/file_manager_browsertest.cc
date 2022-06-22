@@ -433,21 +433,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("videoOpenDrive").MediaSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    OpenAudioFiles, /* open_audio_files.js */
+    OpenAudioMediaApp, /* open_audio_media_app.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("audioOpenCloseDownloads"),
-                      TestCase("audioOpenCloseDownloads").InGuestMode(),
-                      TestCase("audioOpenCloseDrive"),
-                      TestCase("audioOpenDownloads").InGuestMode(),
-                      TestCase("audioOpenDownloads"),
-                      TestCase("audioOpenDrive"),
-                      TestCase("audioAutoAdvanceDrive"),
-                      TestCase("audioRepeatAllModeMultipleFileDrive"),
-                      TestCase("audioNoRepeatModeSingleFileDrive"),
-                      TestCase("audioRepeatOneModeSingleFileDrive"),
-                      TestCase("audioRepeatAllModeSingleFileDrive"),
-                      TestCase("audioNoRepeatModeMultipleFileDrive"),
-                      TestCase("audioRepeatOneModeMultipleFileDrive")));
+    ::testing::Values(TestCase("audioOpenDownloads").MediaSwa().InGuestMode(),
+                      TestCase("audioOpenDownloads").MediaSwa(),
+                      TestCase("audioOpenDrive").MediaSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenImageMediaApp, /* open_image_media_app.js */
@@ -564,6 +554,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("keyboardOpenNewWindow").FilesSwa(),
         TestCase("keyboardOpenNewWindow").InGuestMode(),
         TestCase("keyboardOpenNewWindow").InGuestMode().FilesSwa(),
+        TestCase("noPointerActiveOnTouch"),
+        TestCase("noPointerActiveOnTouch").FilesSwa(),
+        TestCase("pointerActiveRemovedByTouch"),
+        TestCase("pointerActiveRemovedByTouch").FilesSwa(),
         TestCase("renameFileDownloads"),
         TestCase("renameFileDownloads").FilesSwa(),
         TestCase("renameFileDownloads").InGuestMode(),
@@ -830,8 +824,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewTabIndexText").FilesSwa(),
         TestCase("openQuickViewTabIndexHtml"),
         TestCase("openQuickViewTabIndexHtml").FilesSwa(),
-        TestCase("openQuickViewTabIndexAudio"),
-        TestCase("openQuickViewTabIndexAudio").FilesSwa(),
+        TestCase("openQuickViewTabIndexAudio").MediaSwa(),
+        TestCase("openQuickViewTabIndexAudio").MediaSwa().FilesSwa(),
         TestCase("openQuickViewTabIndexVideo").MediaSwa(),
         TestCase("openQuickViewTabIndexVideo").MediaSwa().FilesSwa(),
         TestCase("openQuickViewTabIndexDeleteDialog"),
@@ -1452,6 +1446,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("hideCurrentDirectoryByTogglingHiddenAndroidFolders"),
         TestCase("newFolderInDownloads"),
         TestCase("showSendFeedbackAction"),
+        TestCase("showSendFeedbackAction").FilesSwa(),
         TestCase("enableDisableStorageSettingsLink"),
         TestCase("showAvailableStorageMyFiles"),
         // Disabled until Drive quota can be properly displayed.
@@ -1666,27 +1661,24 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Search, /* search.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("searchDownloadsWithResults"),
-        TestCase("searchDownloadsWithResults").FilesSwa(),
-        TestCase("searchDownloadsWithNoResults"),
-        TestCase("searchDownloadsWithNoResults").FilesSwa(),
-        // TODO(https://crbug.com/1313907): These tests are flaky on ash-chrome
-        // w/ SwANGLE.
-        // TestCase("searchDownloadsClearSearchKeyDown"),
-        // TestCase("searchDownloadsClearSearchKeyDown").FilesSwa(),
-        TestCase("searchDownloadsClearSearch"),
-        TestCase("searchDownloadsClearSearch").FilesSwa(),
-        TestCase("searchHidingViaTab"),
-        TestCase("searchHidingViaTab").FilesSwa(),
-        TestCase("searchHidingTextEntryField"),
-        TestCase("searchHidingTextEntryField").FilesSwa(),
-        TestCase("searchButtonToggles"),
-        TestCase("searchButtonToggles").FilesSwa(),
-        TestCase("searchQueryLaunchParam")
-        // TODO(b/189173190): Enable
-        // TestCase("searchQueryLaunchParam").FilesSwa()
-        ));
+    ::testing::Values(TestCase("searchDownloadsWithResults"),
+                      TestCase("searchDownloadsWithResults").FilesSwa(),
+                      TestCase("searchDownloadsWithNoResults"),
+                      TestCase("searchDownloadsWithNoResults").FilesSwa(),
+                      TestCase("searchDownloadsClearSearchKeyDown"),
+                      TestCase("searchDownloadsClearSearchKeyDown").FilesSwa(),
+                      TestCase("searchDownloadsClearSearch"),
+                      TestCase("searchDownloadsClearSearch").FilesSwa(),
+                      TestCase("searchHidingViaTab"),
+                      TestCase("searchHidingViaTab").FilesSwa(),
+                      TestCase("searchHidingTextEntryField"),
+                      TestCase("searchHidingTextEntryField").FilesSwa(),
+                      TestCase("searchButtonToggles"),
+                      TestCase("searchButtonToggles").FilesSwa(),
+                      TestCase("searchQueryLaunchParam")
+                      // TODO(b/189173190): Enable
+                      // TestCase("searchQueryLaunchParam").FilesSwa()
+                      ));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metrics, /* metrics.js */

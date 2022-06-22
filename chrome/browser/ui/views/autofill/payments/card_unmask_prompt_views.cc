@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -53,7 +52,6 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
     CardUnmaskPromptController* controller,
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
   UpdateButtons();
 
   SetModalType(ui::MODAL_TYPE_CHILD);
@@ -389,15 +387,14 @@ void CardUnmaskPromptViews::InitIfNecessary() {
           .SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kCenter)
           .SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kCenter)
           .SetVisible(false)
+          .AddChildren(
+              views::Builder<views::Throbber>().CopyAddressTo(
+                  &progress_throbber_),
+              views::Builder<views::Label>()
+                  .CopyAddressTo(&overlay_label_)
+                  .SetText(l10n_util::GetStringUTF16(
+                      IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS)))
           .Build());
-
-  // TODO(crbug.com/1269126): Add view builder support to throbber and move
-  // adding children to construction of overlay above.
-  progress_throbber_ =
-      overlay_->AddChildView(std::make_unique<views::Throbber>());
-  overlay_label_ = overlay_->AddChildView(
-      std::make_unique<views::Label>(l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS)));
 }
 
 bool CardUnmaskPromptViews::ExpirationDateIsValid() const {

@@ -18,6 +18,7 @@
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "base/debug/crash_logging.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -242,6 +243,10 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
 
   // Begin executing the monitoring loop on the HangWatcher thread.
   void Start();
+
+  // Returns the value of the crash key with the time since last system power
+  // resume.
+  std::string GetTimeSinceLastSystemPowerResumeCrashKeyValue() const;
 
  private:
   // See comment of ::RegisterThread() for details.
@@ -486,8 +491,8 @@ class BASE_EXPORT HangWatchDeadline {
 
  private:
   using TimeTicksInternalRepresentation =
-      base::invoke_result<decltype(&TimeTicks::ToInternalValue),
-                          TimeTicks>::type;
+      std::invoke_result<decltype(&TimeTicks::ToInternalValue),
+                         TimeTicks>::type;
   static_assert(std::is_same<TimeTicksInternalRepresentation, int64_t>::value,
                 "Bit manipulations made by HangWatchDeadline need to be"
                 "adapted if internal representation of TimeTicks changes.");

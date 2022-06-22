@@ -47,10 +47,9 @@ class ForcedEnterpriseSigninInterceptionHandle
           bubble_parameters,
       base::OnceCallback<void(SigninInterceptionResult)> callback)
       : browser_(browser),
-        profile_creation_required_by_policy_(
-            bubble_parameters.interception_type ==
-            DiceWebSigninInterceptor::SigninInterceptionType::
-                kEnterpriseForced),
+        force_new_profile_(bubble_parameters.interception_type ==
+                           DiceWebSigninInterceptor::SigninInterceptionType::
+                               kEnterpriseForced),
         show_link_data_option_(bubble_parameters.show_link_data_option),
         callback_(std::move(callback)) {
     DCHECK(browser_);
@@ -70,8 +69,7 @@ class ForcedEnterpriseSigninInterceptionHandle
   void ShowEnterpriseProfileInterceptionDialog(const AccountInfo& account_info,
                                                SkColor profile_color) {
     browser_->signin_view_controller()->ShowModalEnterpriseConfirmationDialog(
-        account_info, profile_creation_required_by_policy_,
-        show_link_data_option_, profile_color,
+        account_info, force_new_profile_, show_link_data_option_, profile_color,
         base::BindOnce(&ForcedEnterpriseSigninInterceptionHandle::
                            OnEnterpriseInterceptionDialogClosed,
                        base::Unretained(this)));
@@ -83,7 +81,7 @@ class ForcedEnterpriseSigninInterceptionHandle
         std::move(callback_).Run(SigninInterceptionResult::kAccepted);
         break;
       case signin::SIGNIN_CHOICE_CONTINUE:
-        DCHECK(!profile_creation_required_by_policy_ || show_link_data_option_);
+        DCHECK(!force_new_profile_ || show_link_data_option_);
         std::move(callback_).Run(
             SigninInterceptionResult::kAcceptedWithExistingProfile);
         break;
@@ -98,7 +96,7 @@ class ForcedEnterpriseSigninInterceptionHandle
   }
 
   raw_ptr<Browser> browser_;
-  const bool profile_creation_required_by_policy_;
+  const bool force_new_profile_;
   const bool show_link_data_option_;
   base::OnceCallback<void(SigninInterceptionResult)> callback_;
 };

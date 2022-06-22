@@ -66,9 +66,11 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // Returns true if the navigation was upgraded to HTTPS but failed due to an
 // SSL or net error. This can happen when HTTPS-Only Mode feature automatically
 // upgrades a navigation to HTTPS.
-bool IsFailedHttpsUpgrade(NSError* error, web::NavigationContextImpl* context) {
+bool IsFailedHttpsUpgrade(NSError* error,
+                          web::NavigationContextImpl* context,
+                          NSError* cancellationError) {
   if (!context || !context->GetItem() ||
-      !context->GetItem()->IsUpgradedToHttps()) {
+      !context->GetItem()->IsUpgradedToHttps() || cancellationError) {
     return false;
   }
   int error_code = 0;
@@ -181,11 +183,8 @@ bool IsFailedHttpsUpgrade(NSError* error, web::NavigationContextImpl* context) {
           navigationItem];
       if (item) {
         item->SetUserAgentType(userAgentType);
-        if (base::FeatureList::IsEnabled(
-                web::features::kCreatePendingItemForPostFormSubmission)) {
-          if (web::wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
-            self.webStateImpl->SetUserAgent(userAgentType);
-          }
+        if (web::wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
+          self.webStateImpl->SetUserAgent(userAgentType);
         }
       }
     }
@@ -897,25 +896,10 @@ bool IsFailedHttpsUpgrade(NSError* error, web::NavigationContextImpl* context) {
       context->SetUrl(currentWKItemURL);
     }
 
-    NSError* error = context->GetError();
-    if (error) {
-      if (web::features::IsLoadSimulatedRequestAPIEnabled()) {
-        context->SetHasCommitted(true);
-        self.webStateImpl->OnNavigationFinished(context);
-
-        [self.delegate navigationHandler:self
-              didCompleteLoadWithSuccess:NO
-                              forContext:context];
-
-        NSString* failingURLString =
-            error.userInfo[NSURLErrorFailingURLStringErrorKey];
-        GURL failingURL(base::SysNSStringToUTF8(failingURLString));
-        self.webStateImpl->OnPageLoaded(failingURL, NO);
-      } else {
-        [self loadErrorPageForNavigationItem:item
-                           navigationContext:navigation
-                                     webView:webView];
-      }
+    if (context->GetError()) {
+      [self loadErrorPageForNavigationItem:item
+                         navigationContext:navigation
+                                   webView:webView];
     }
   }
 
@@ -1666,20 +1650,22 @@ bool IsFailedHttpsUpgrade(NSError* error, web::NavigationContextImpl* context) {
     return;
   }
 
+  NSError* contextError = web::NetErrorFromError(error);
+  if (policyDecisionCancellationError) {
+    contextError = base::ios::ErrorWithAppendedUnderlyingError(
+        contextError, policyDecisionCancellationError);
+  }
+
   web::NavigationContextImpl* navigationContext =
       [self.navigationStates contextForNavigation:navigation];
-  if (IsFailedHttpsUpgrade(error, navigationContext)) {
+  if (IsFailedHttpsUpgrade(error, navigationContext,
+                           policyDecisionCancellationError)) {
+    navigationContext->SetError(contextError);
     navigationContext->SetIsFailedHTTPSUpgrade();
     [self handleCancelledError:error
                  forNavigation:navigation
                provisionalLoad:provisionalLoad];
     return;
-  }
-
-  NSError* contextError = web::NetErrorFromError(error);
-  if (policyDecisionCancellationError) {
-    contextError = base::ios::ErrorWithAppendedUnderlyingError(
-        contextError, policyDecisionCancellationError);
   }
 
   navigationContext->SetError(contextError);
@@ -1759,106 +1745,18 @@ bool IsFailedHttpsUpgrade(NSError* error, web::NavigationContextImpl* context) {
     return;
   }
 
-  if (web::features::IsLoadSimulatedRequestAPIEnabled()) {
-    NSString* failingURLString =
-        contextError.userInfo[NSURLErrorFailingURLStringErrorKey];
-    GURL failingURL(base::SysNSStringToUTF8(failingURLString));
+  WKNavigation* errorNavigation =
+      [self displayErrorPageWithError:error
+                            inWebView:webView
+                    isProvisionalLoad:provisionalLoad];
 
-    net::SSLInfo info;
-    absl::optional<net::SSLInfo> SSLInfo = absl::nullopt;
-
-    if (web::IsWKWebViewSSLCertError(error)) {
-      web::GetSSLInfoFromWKWebViewSSLCertError(contextError, &info);
-      if (info.cert) {
-        // Retrieve verification results from _certVerificationErrors cache to
-        // avoid unnecessary recalculations. Verification results are cached for
-        // the leaf cert, because the cert chain in
-        // |didReceiveAuthenticationChallenge:| is the OS constructed chain,
-        // while |chain| is the chain from the server.
-        NSArray* chain =
-            contextError.userInfo[web::kNSErrorPeerCertificateChainKey];
-        NSURL* requestURL = contextError.userInfo[web::kNSErrorFailingURLKey];
-        NSString* host = requestURL.host;
-        scoped_refptr<net::X509Certificate> leafCert;
-        if (chain.count && host.length) {
-          // The complete cert chain may not be available, so the leaf cert is
-          // used as a key to retrieve _certVerificationErrors, as well as for
-          // storing the cert decision.
-          leafCert = web::CreateCertFromChain(@[ chain.firstObject ]);
-          if (leafCert) {
-            auto error = _certVerificationErrors->Get(
-                {leafCert, base::SysNSStringToUTF8(host)});
-            bool cacheHit = error != _certVerificationErrors->end();
-            if (cacheHit) {
-              info.is_fatal_cert_error = error->second.is_recoverable;
-              info.cert_status = error->second.status;
-            }
-            UMA_HISTOGRAM_BOOLEAN(
-                "WebController.CertVerificationErrorsCacheHit", cacheHit);
-          }
-        }
-        SSLInfo = absl::make_optional<net::SSLInfo>(info);
-      }
-    }
-
-    GURL itemURL = item->GetURL();
-    if (itemURL != failingURL)
-      item->SetVirtualURL(failingURL);
-
-    // Saves original context before, as the original context can be deleted
-    // before the callback is called.
-    __block std::unique_ptr<web::NavigationContextImpl> originalContext =
-        [self.navigationStates removeNavigation:navigation];
-
-    web::GetWebClient()->PrepareErrorPage(
-        self.webStateImpl, failingURL, contextError,
-        navigationContext->IsPost(),
-        self.webStateImpl->GetBrowserState()->IsOffTheRecord(), SSLInfo,
-        navigationContext->GetNavigationId(),
-        base::BindOnce(^(NSString* errorHTML) {
-          if (@available(iOS 15, *)) {
-            NSBundle* bundleForHTMLFile = [NSBundle bundleForClass:CRWWKNavigationHandler.class];
-            NSString* path = [bundleForHTMLFile pathForResource:@"error_page_reloaded"
-                                                            ofType:@"html"];
-            // Script which reloads the error page if the error page is being
-            // served from the browser cache.
-            NSString* reloadPageHTMLTemplate =
-                [NSString stringWithContentsOfFile:path
-                                          encoding:NSUTF8StringEncoding
-                                             error:nil];
-            NSURL* URL = [NSURL URLWithString:failingURLString];
-            NSURLRequest* URLRequest = [NSURLRequest requestWithURL:URL];
-            WKNavigation* errorNavigation = nil;
-
-            if (errorHTML) {
-              NSString* injectedHTML =
-                  [reloadPageHTMLTemplate stringByAppendingString:errorHTML];
-              errorNavigation = [webView loadSimulatedRequest:URLRequest
-                                           responseHTMLString:injectedHTML];
-            } else {
-              errorNavigation = [webView loadSimulatedRequest:URLRequest
-                                           responseHTMLString:@""];
-            }
-
-            originalContext->SetLoadingErrorPage(true);
-            [self.navigationStates setContext:std::move(originalContext)
-                                forNavigation:errorNavigation];
-          }
-        }));
-  } else {
-    WKNavigation* errorNavigation =
-        [self displayErrorPageWithError:error
-                              inWebView:webView
-                      isProvisionalLoad:provisionalLoad];
-
-    std::unique_ptr<web::NavigationContextImpl> originalContext =
-        [self.navigationStates removeNavigation:navigation];
-    originalContext->SetLoadingErrorPage(true);
-    [self.navigationStates setContext:std::move(originalContext)
-                        forNavigation:errorNavigation];
-    // Return as the context was moved.
-    return;
-  }
+  std::unique_ptr<web::NavigationContextImpl> originalContext =
+      [self.navigationStates removeNavigation:navigation];
+  originalContext->SetLoadingErrorPage(true);
+  [self.navigationStates setContext:std::move(originalContext)
+                      forNavigation:errorNavigation];
+  // Return as the context was moved.
+  return;
 }
 
 // Displays an error page with details from |error| in |webView|. The error page
@@ -1956,7 +1854,8 @@ bool IsFailedHttpsUpgrade(NSError* error, web::NavigationContextImpl* context) {
                forNavigation:(WKNavigation*)navigation
              provisionalLoad:(BOOL)provisionalLoad {
   if (!IsFailedHttpsUpgrade(
-          error, [self.navigationStates contextForNavigation:navigation]) &&
+          error, [self.navigationStates contextForNavigation:navigation],
+          self.pendingNavigationInfo.cancellationError) &&
       ![self shouldCancelLoadForCancelledError:error
                                provisionalLoad:provisionalLoad]) {
     return;

@@ -26,11 +26,13 @@
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_test_utils.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/supervised_user/supervised_user_metrics_service.h"
+#include "chrome/browser/supervised_user/supervised_user_metrics_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/system_clock/system_clock_client.h"
+#include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -182,6 +184,10 @@ void AppTimeControllerTest::SetUp() {
   SystemClockClient::InitializeFake();
   testing::Test::SetUp();
 
+  // Disable supervised user metrics reporting, otherwise the mock timer
+  // will never return.
+  SupervisedUserMetricsServiceFactory::GetForBrowserContext(&profile())
+      ->Shutdown();
   // The tests are going to start at local midnight on January 1.
   base::Time time;
   ASSERT_TRUE(base::Time::FromString(kStartTime, &time));

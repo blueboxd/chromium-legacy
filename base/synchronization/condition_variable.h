@@ -62,6 +62,7 @@
 #ifndef BASE_SYNCHRONIZATION_CONDITION_VARIABLE_H_
 #define BASE_SYNCHRONIZATION_CONDITION_VARIABLE_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 
@@ -70,7 +71,6 @@
 #endif
 
 #include "base/base_export.h"
-#include "base/check_op.h"
 #include "base/synchronization/lock.h"
 
 #if BUILDFLAG(IS_WIN)

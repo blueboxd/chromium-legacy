@@ -270,7 +270,7 @@ Try tapping the mic to ask me anything.
         Enterprise enrollment
       </message>
       <message name="IDS_ASH_SHELF_SIGNIN_BUTTON" desc="Text shown on sign in button on enrollment screen.">
-        Use as personal device
+        Use as a personal device
       </message>
       <message name="IDS_ASH_SHELF_OS_INSTALL_BUTTON" desc="Text shown on install ChromeOS Flex button on login screen.">
         Install ChromeOS Flex
@@ -370,6 +370,12 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_HELP_APP_WHATS_NEW_SUGGESTION_CHIP" desc="Text for the suggestion chip to view updated patch notes are available. [CHAR_LIMIT=24]">
         What's new with ChromeOS
+      </message>
+      <message name="IDS_HELP_APP_WHATS_NEW_CONTINUE_TASK_TITLE" desc="Title for a ChromeOS launcher continue section item that can be used to quickly access most recent ChromeOS release notes. Continue section contains set of UI elements that are suggestions for continuing recent user workflows. Release notes element is shown after ChromeOS device updates to a new version. Clicking the relese notes element will redirect user to an app that gives the user more information about the ChromeOS update [CHAR_LIMIT=20]">
+        ChromeOS update
+      </message>
+      <message name="IDS_HELP_APP_WHATS_NEW_CONTINUE_TASK_DETAILS" desc="Details label for a ChromeOS launcher continue section item that can be used to quickly access most recent ChromeOS release notes. Continue section contains set of UI elements that are suggestions for continuing recent user workflows. Release notes element is shown after ChromeOS device updates to a new version. Clicking the relese notes element will redirect user to an app that gives the user more information about the ChromeOS update [CHAR_LIMIT=22]">
+        See what's new
       </message>
       <message name="IDS_HELP_APP_DISCOVER_TAB_NOTIFICATION_TITLE" desc="Title for a notification that points to the Help app's Discover tab, which features a magazine to teach users how they can use their Chromebooks for creating movies and animations.">
         Create your own movie
@@ -2064,7 +2070,7 @@ Try tapping the mic to ask me anything.
       <message translateable="false" name="IDS_NETWORK_DIAGNOSTICS_MAC_ADDRESS_LABEL" desc="Label for Mac Address.">
         MAC
       </message>
-      <message translateable="false" name="IDS_DIAGNOSTICS_TEST_ON_COMPLETED_TEXT" desc="Message annouced in aria-live when all test routines finished.">
+      <message translateable="false" name="IDS_DIAGNOSTICS_TEST_ON_COMPLETED_TEXT" desc="Message announced in aria-live when all test routines finished.">
         Diagnostics completed
       </message>
 
@@ -2074,6 +2080,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PERSONALIZATION_APP_WALLPAPER_LABEL" desc="Label for wallpaper element in personalization hub">
         Wallpaper
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_DEFAULT_WALLPAPER" desc="Label for the device default wallpaper">
+        Default Wallpaper
       </message>
       <message name="IDS_PERSONALIZATION_APP_BACK_BUTTON" desc="Aria label for the back button to return to a prior page">
         Back to <ph name="PAGE_NAME">$1<ex>Wallpaper</ex></ph>
@@ -2086,6 +2095,12 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS" desc="Label for the Google Photos page in the wallpaper app.">
         Google Photos
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ERROR" desc="Message for the error shown when something goes wrong in the Google Photos page in the wallpaper app.">
+        Something went wrong.
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_RETRY" desc="Message for the retry button shown when something goes wrong in the Google Photos page in the wallpaper app.">
+        Retry
       </message>
       <message name="IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUMS_TAB" desc="Label for the Albums tab in the Google Photos page in the wallpaper app.">
         Albums
@@ -2321,6 +2336,131 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_HOME" desc="Aria label for the home page of the hub.">
         Home
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_TITLE" desc="Title for the keyboard backlight section of personalization hub.">
+        Keyboard backlight
+      </message>
+
+      <!-- Personalization App Search Results -->
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_TITLE" desc="Text for search result item which, when clicked, navigates the user to personalization app.">
+        Personalization
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_TITLE_ALT1" desc="Text for search result item which, when clicked, navigates the user to personalization app. Alternate phrase for: 'Personalization'">
+        Customization
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_TITLE_ALT2" desc="Text for search result item which, when clicked, navigates the user to personalization settings. Alternate phrase for: 'Personalization'">
+        Personal
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_DEVICE_ACCOUNT_IMAGE" desc="Text for search result item which, when clicked, navigates the user to the personalization app page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Sign-in image', 'Login image', 'Profile picture', 'Profile image'">
+        Change device account image
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT1" desc="Text for search result item which, when clicked, navigates the user to the personalization app page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Change device account image', 'Login image', 'Profile picture', 'Profile image'">
+        Sign-in image
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT2" desc="Text for search result item which, when clicked, navigates the user to the personalization app page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Change device account image', 'Sign-in image', 'Profile picture', 'Profile image'">
+        Login image
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT3" desc="Text for search result item which, when clicked, navigates the user to the personalization app page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Change device account image', 'Sign-in image', 'Login image', 'Profile image'">
+        Profile picture
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT4" desc="Text for search result item which, when clicked, navigates the user to the personalization app page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Change device account image', 'Sign-in image', 'Login image', 'Profile picture'">
+        Profile image
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_WALLPAPER" desc="Text for search result item which, when clicked, navigates the user to wallpaper settings. Alternate phrase for: 'Background', 'Desktop'">
+        Change wallpaper
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_WALLPAPER_ALT1" desc="Text for search result item which, when clicked, navigates the user to wallpaper settings. Alternate phrase for: 'Change wallpaper', 'Desktop'">
+        Background
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_WALLPAPER_ALT2" desc="Text for search result item which, when clicked, navigates the user to wallpaper settings. Alternate phrase for: 'Change wallpaper', 'Background'">
+        Desktop
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_AMBIENT_MODE" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, which allow the user to set backgrounds to be displayed when the device is idle.">
+        Screen saver
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_AMBIENT_MODE_TURN_OFF" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with a toggle to enable/disable the feature. Alternate phrase for: 'Disable ambient mode'">
+        Turn off screen saver
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_AMBIENT_MODE_TURN_OFF_ALT1" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with a toggle to enable/disable the feature. Alternate phrase for: 'Turn off Ambient mode'">
+        Disable screen saver
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_AMBIENT_MODE_CHOOSE_SOURCE" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with buttons to choose a source (e.g., photos from Google Photos or an art gallery).">
+        Choose screen saver background
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_AMBIENT_MODE_TURN_ON" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with a toggle to enable/disable the feature. Alternate phrase for: 'Enable Ambient mode'">
+        Turn on screen saver
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_AMBIENT_MODE_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with a toggle to enable/disable the feature. Alternate phrase for: 'Turn on Ambient mode'">
+        Enable screen saver
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_AMBIENT_MODE_GOOGLE_PHOTOS_ALBUM" desc="Text for search result item which, when clicked, navigates the user to ambient mode Google Photos album settings, which allow the user to set Google Photos albums to be displayed when the device is idle.">
+        Google Photos album
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_AMBIENT_MODE_ART_GALLERY_ALBUM" desc="Text for search result item which, when clicked, navigates the user to ambient mode Art gallery album settings, which allow the user to set Art gallery albums to be displayed when the device is idle.">
+        Art gallery album
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings. Alternate phrase for: 'Dark mode', 'Light mode', 'Light theme'">
+        Dark theme
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_ALT1" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings. Alternate phrase for: 'Dark theme', 'Light mode', 'Light theme'">
+        Dark mode
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_ALT2" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings. Alternate phrase for: 'Dark theme', 'Dark mode', 'Light mode'">
+        Light theme
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_ALT3" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings. Alternate phrase for: 'Dark theme', 'Dark mode', 'Light theme'">
+        Light mode
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_ON" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn on dark mode. Alternate phrase for: 'Enable dark theme', 'Turn dark mode on', 'Enable dark mode', 'Turn light theme off',  'Disable light theme'">
+        Turn dark theme on
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn on dark mode. Alternate phrase for: 'Turn dark theme on', 'Turn dark mode on', 'Enable dark mode', 'Turn light theme off',  'Disable light theme'">
+        Enable dark theme
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_ON_ALT2" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn on dark mode. Alternate phrase for: 'Turn dark theme on', 'Enable dark theme', 'Enable dark mode', 'Turn light theme off',  'Disable light theme'">
+        Turn dark mode on
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_ON_ALT3" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn on dark mode. Alternate phrase for: 'Turn dark theme on', 'Enable dark theme', 'Turn dark mode on', 'Turn light theme off',  'Disable light theme'">
+        Enable dark mode
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_ON_ALT4" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn on dark mode. Alternate phrase for: 'Turn dark theme on', 'Enable dark theme', 'Turn dark mode on', 'Enable dark mode',  'Disable light theme'">
+        Turn light theme off
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_ON_ALT5" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn on dark mode. Alternate phrase for: 'Turn dark theme on', 'Enable dark theme', 'Turn dark mode on', 'Enable dark mode', 'Turn light theme off'">
+        Disable light theme
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_OFF" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn off dark mode. Alternate phrase for: 'Disable dark theme', 'Turn dark mode off', 'Disable dark mode', 'Turn light theme on',  'Enable light theme'">
+        Turn dark theme off
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_OFF_ALT1" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn off dark mode. Alternate phrase for: 'Turn dark theme off', 'Turn dark mode off', 'Disable dark mode', 'Turn light theme on',  'Enable light theme'">
+        Disable dark theme
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_OFF_ALT2" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn off dark mode. Alternate phrase for: 'Turn dark theme off', 'Disable dark theme', 'Disable dark mode', 'Turn light theme on',  'Enable light theme'">
+        Turn dark mode off
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_OFF_ALT3" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn off dark mode. Alternate phrase for: 'Turn dark theme off', 'Disable dark theme', 'Turn dark mode off', 'Turn light theme on',  'Enable light theme'">
+        Disable dark mode
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_OFF_ALT4" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn off dark mode. Alternate phrase for: 'Turn dark theme off', 'Disable dark theme', 'Turn dark mode off', 'Disable dark mode',  'Enable light theme'">
+        Turn light theme on
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_TURN_OFF_ALT5" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a toggle to turn off dark mode. Alternate phrase for: 'Turn dark theme off', 'Disable dark theme', 'Turn dark mode off', 'Disable dark mode', 'Turn light theme on'">
+        Enable light theme
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_SCHEDULE" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a dropdown to select scheduling mode. Alternate phrase for: 'Dark mode schedule', 'Automatic dark mode', 'Automatic light mode', 'Automatic dark theme'">
+        Dark theme schedule
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_SCHEDULE_ALT1" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a dropdown to select scheduling mode. Alternate phrase for: 'Dark theme schedule','Automatic dark mode', 'Automatic light mode', 'Automatic dark theme'">
+        Dark mode schedule
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_SCHEDULE_ALT2" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a dropdown to select scheduling mode. Alternate phrase for: 'Dark theme schedule', 'Dark mode schedule', 'Automatic light mode', 'Automatic dark theme'">
+        Automatic dark mode
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_SCHEDULE_ALT3" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a dropdown to select scheduling mode. Alternate phrase for: 'Dark theme schedule', 'Dark mode schedule', 'Automatic dark mode', 'Automatic dark theme'">
+        Automatic light mode
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_DARK_MODE_SCHEDULE_ALT4" desc="Text for search result item which, when clicked, navigates the user to personalization app dark mode settings, with a dropdown to select scheduling mode. Alternate phrase for: 'Dark theme schedule', 'Dark mode schedule', 'Automatic dark mode', 'Automatic light mode'">
+        Automatic dark theme
       </message>
 
       <!-- Traffic Counters UI -->
@@ -2560,20 +2700,20 @@ Try tapping the mic to ask me anything.
         Retry
       </message>
       <!-- Landing page -->
-      <message name="IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE" translateable="false" desc="Title for the landing page at the start of RMA.">
+      <message name="IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE" desc="Title for the landing page at the start of RMA.">
         <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> repair
       </message>
-      <message name="IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING" translateable="false" desc="Warning that RMA is only for qualified technicians.">
-        This repair process is intended for a trained repair technicians. Start only after replacing the malfunctioning components.
+      <message name="IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING" desc="Warning that RMA is only for qualified technicians.">
+        This repair process is intended for a trained repair technician. Start only after replacing the malfunctioning components.
       </message>
-      <message name="IDS_SHIMLESS_RMA_VALIDATING_COMPONENTS" translateable="false" desc="Checking that device components are approved for this device.">
+      <message name="IDS_SHIMLESS_RMA_VALIDATING_COMPONENTS" desc="Checking that device components are approved for this device.">
         Validating components...
       </message>
-      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_SUCCESS" translateable="false" desc="Successfully checked that device components are approved for this device.">
+      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_SUCCESS" desc="Successfully checked that device components are approved for this device.">
         Components are installed correctly.
       </message>
-      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_FAIL" translateable="false" desc="Validation check found that device components are NOT approved for this device.">
-        <ph name="LINK_BEGIN">&lt;a id="unqualifiedComponentsLink"&gt;</ph>Unqualified components<ph name="LINK_END">&lt;/a&gt;</ph> found. To make sure all qualified components are identified, update your ChromeOS to the latest version.
+      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_FAIL" desc="Validation check found that device components are NOT approved for this device.">
+        <ph name="LINK_BEGIN">&lt;a id="unqualifiedComponentsLink"&gt;</ph>Unqualified components<ph name="LINK_END">&lt;/a&gt;</ph> detected. If you choose to confirm this has been installed, please do so now.
       </message>
       <message name="IDS_SHIMLESS_RMA_GET_STARTED_BUTTON_LABEL" desc="The label for the button to start the RMA process.">
         Get started
@@ -2601,10 +2741,13 @@ Try tapping the mic to ask me anything.
         Cancel
       </message>
       <!-- Select components page -->
-      <message name="IDS_SHIMLESS_RMA_SELECT_COMPONENTS_PAGE_TITLE" translateable="false" desc="The title for the select replaced components page.">
+      <message name="IDS_SHIMLESS_RMA_SELECT_COMPONENTS_PAGE_TITLE" desc="The title for the select replaced components page.">
         Select which components were replaced
       </message>
-      <message name="IDS_SHIMLESS_RMA_REWORK_FLOW_LINK" translateable="false" desc="The text with a link that will redirect the user to the reworking flow. The reworking flow is only used when the user wants to repurpose the mainboard for another device.">
+      <message name="IDS_SHIMLESS_RMA_UNDETECTED_COMPONENT_LABEL" desc="The text label shown as a tooltip for components which are not detected on the device.">
+        This component couldn't be detected.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_REWORK_FLOW_LINK" desc="The text with a link that will redirect the user to the reworking flow. The reworking flow is only used when the user wants to repurpose the mainboard for another device.">
         If you are reworking a mainboard to use in another device, go to the <ph name="LINK_BEGIN">&lt;a id="reworkFlowLink"&gt;</ph>rework flow<ph name="LINK_END">&lt;/a&gt;</ph>.
       </message>
       <!-- Choose destination page -->
@@ -2612,45 +2755,48 @@ Try tapping the mic to ask me anything.
         After repair, who will be using the device?
       </message>
       <message name="IDS_SHIMLESS_RMA_SAME_OWNER" desc="Text shown next to the return to original owner radio button.">
-        Device will go to the same owner
-      </message>
-      <message name="IDS_SHIMLESS_RMA_SAME_OWNER_DESCRIPTION" desc="Detailed description of when to choose return to same owner.">
-        Select this option if the ownership of the device isn't changing. For example, the device is being transferred to a different person within an organization.
+        Device will go to the same user
       </message>
       <message name="IDS_SHIMLESS_RMA_NEW_OWNER" desc="Text shown next to the return to a new owner radio button.">
-        Device will go to a different owner
+        Device will go to a different user or organization
       </message>
       <message name="IDS_SHIMLESS_RMA_NEW_OWNER_DESCRIPTION" desc="Detailed description of when to choose return to a new owner.">
-        Select this option if the device is being restocked or refurbished for distribution to a new customer.
+        This will reset the device to factory settings (Powerwash).
+      </message>
+      <message name="IDS_SHIMLESS_RMA_NOT_SURE_OWNER" desc="Text shown next to the radio button for when the technician is not sure whether the device goes to the same owner or a different owner.">
+        Not sure
       </message>
       <!-- Choose write protect disable method page -->
-      <message name="IDS_SHIMLESS_RMA_CHOOSE_WP_DISABLE_METHOD_PAGE_TITLE" translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
-        Select how you would like to disable write-protect
+      <message name="IDS_SHIMLESS_RMA_CHOOSE_WP_DISABLE_METHOD_PAGE_TITLE" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+        Select how you would like to turn off Write Protect
       </message>
-      <message name="IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_OPTION"  translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
-        Manually disable write-protect
+      <message name="IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_OPTION" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+        Manually turn off
       </message>
-      <message name="IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_DESCRIPTION" translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
-        Once you disable write-protect, you can immediately enable it again. You will see instructions for disabling write-protect on this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> on the next screen.
+      <message name="IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_DESCRIPTION" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+        You'll need to take apart the device
       </message>
-      <message name="IDS_SHIMLESS_RMA_RSU_WP_DISABLE_METHOD_OPTION"  translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+      <message name="IDS_SHIMLESS_RMA_RSU_WP_DISABLE_METHOD_OPTION" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
         Perform RMA Server Unlock (RSU)
       </message>
-      <message name="IDS_SHIMLESS_RMA_RSU_WP_DISABLE_METHOD_DESCRIPTION" translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
-        This requires an RSU-enabled Security Key, a QR code scanner, and a second device with internet connectivity.
+      <message name="IDS_SHIMLESS_RMA_RSU_WP_DISABLE_METHOD_DESCRIPTION" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+        You'll need an RSU-enabled security key, a QR code scanner, and a second device with an internet connection
       </message>
       <!-- Enter RSU code page -->
       <message name="IDS_SHIMLESS_RMA_RSU_CODE_PAGE_TITLE" desc="Title for the RSU challenge page.">
         Perform RMA Server Unlock
       </message>
-      <message name="IDS_SHIMLESS_RMA_RSU_CODE_INSTRUCTIONS" translateable="false" desc="Instructions for the RSU challenge page.">
-        Use the QR code or <ph name="LINK_BEGIN">&lt;a id="rsuCodeDialogLink"&gt;</ph>this link<ph name="LINK_END">&lt;/a&gt;</ph> to retrieve an 8 character unlock code to perform RMA Server Unlock
+      <message name="IDS_SHIMLESS_RMA_RSU_CODE_INSTRUCTIONS" desc="Instructions for the RSU challenge page.">
+        Use this QR code to get the 8 character unlock code. You can also manually type <ph name="LINK_BEGIN">&lt;a id="rsuCodeDialogLink"&gt;</ph>this URL<ph name="LINK_END">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_SHIMLESS_RMA_RSU_CODE_LABEL" desc="Label for the RSU code input box.">
-        Enter the 8-character unlock code
+        Enter the 8-characters
       </message>
-      <message name="IDS_SHIMLESS_RMA_RSU_CHALLENGE_DIALOG_TITLE" translateable="false" desc="Title for the dialog that shows the RSU challenge code link.">
-        Go to this link for your RSU unlock code
+      <message name="IDS_SHIMLESS_RMA_RSU_CODE_ERROR_LABEL" desc="Label shown for an incorrect RSU code.">
+        Incorrect code
+      </message>
+      <message name="IDS_SHIMLESS_RMA_RSU_CHALLENGE_DIALOG_TITLE" desc="Title for the dialog that shows the RSU challenge code link.">
+        Manually type this URL to get the RSU code
       </message>
       <message name="IDS_SHIMLESS_RMA_RSU_CHALLENGE_DIALOG_DONE_BUTTON" desc="Label for the button that closes the dialog.">
         Done
@@ -2669,33 +2815,30 @@ Try tapping the mic to ask me anything.
         Write protection disable complete, you must keep the device disassembled.
       </message>
       <!-- Check calibration page -->
-      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_PAGE_TITLE" translateable="false" desc="Title for the page shown when confirming components to calibrate after calibration fails.">
-        Some components have failed to calibrate
+      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_PAGE_TITLE" desc="Title for the page shown when confirming components to calibrate after calibration fails.">
+        Couldn't calibrate some components
       </message>
-      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_INSTRUCTIONS" translateable="false" desc="The text instructions shown when confirming components to calibrate after calibration fails.">
-        You may select certain or all components to try again, or move forward without calibration.
+      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_INSTRUCTIONS" desc="The text instructions shown when confirming components to calibrate after calibration fails.">
+        Select 1 or more components and try again, or skip calibration
       </message>
-      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_RETRY_BUTTON_LABEL" translateable="false" desc="The label for the button to retry calibrating.">
-        Retry calibration
-      </message>
-      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_DIALOG_TITLE" translateable="false" desc="The title for the dialog warning users they have components that failed calibration.">
+      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_DIALOG_TITLE" desc="The title for the dialog warning users they have components that failed calibration.">
         Proceed with failed calibrations?
       </message>
-      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_DIALOG_TEXT" translateable="false" desc="The text in the dialog warning users the consequences of proceeding with components that failed calibration.">
+      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_DIALOG_TEXT" desc="The text in the dialog warning users the consequences of proceeding with components that failed calibration.">
         Components may not work correctly unless calibrated
       </message>
-      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_SKIP_CALIBRATION_LABEL" translateable="false" desc="The label for the button letting the user skip component calibration.">
+      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_SKIP_CALIBRATION_LABEL" desc="The label for the button letting the user skip component calibration.">
         Skip calibration
       </message>
       <!-- Setup calibration page -->
-      <message name="IDS_SHIMLESS_RMA_SETUP_CALIBRATION_PAGE_TITLE" translateable="false" desc="Title for the page that displays specific instructions required for some calibration steps.">
-        Prepare to calibrate device components
+      <message name="IDS_SHIMLESS_RMA_SETUP_CALIBRATION_PAGE_TITLE" desc="Title for the page that displays specific instructions required for some calibration steps.">
+        Calibrate components
       </message>
-      <message name="IDS_SHIMLESS_RMA_BASE_CALIBRATION_INSTRUCTIONS" translateable="false" desc="Instructions for calibrating gyroscope and accelerometer located in the base of the device.">
-        Please place the device on a flat surface before proceeding.
+      <message name="IDS_SHIMLESS_RMA_BASE_CALIBRATION_INSTRUCTIONS" desc="Instructions for calibrating gyroscope and accelerometer located in the base of the device.">
+        Before proceeding, place your laptop on a flat surface
       </message>
-      <message name="IDS_SHIMLESS_RMA_LID_CALIBRATION_INSTRUCTIONS" translateable="false" desc="Instructions for calibrating gyroscope and accelerometer located in the lid of the device.">
-        Please place the lid of the device on a flat surface before proceeding.
+      <message name="IDS_SHIMLESS_RMA_LID_CALIBRATION_INSTRUCTIONS" desc="Instructions for calibrating gyroscope and accelerometer located in the lid of the device.">
+        Before proceeding, place your whole device (base and lid) on a flat surface.
       </message>
       <!-- Finalize device page -->
       <message name="IDS_SHIMLESS_RMA_FINALIZE_PAGE_TITLE" translateable="false" desc="Title for the page shown when finalizing the device. Finalizing is the process of confirming the device is ready to return to the owner.">
@@ -2781,89 +2924,78 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_BATTERY_SHUTOFF_TOOLTIP_TEXT" translateable="false" desc="Label for the battery shutoff tooltip.">
         Unplug power to perform battery cutoff
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_TITLE" translateable="false" desc="Title for the powerwash dialog displayed on repair complete page">
-        Powerwash required
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_CUTOFF_COUNTDOWN_DESCRIPTION" translateable="false" desc="Contents of the countdown dialog displayed on repair complete page when trying to cut off the battery">
+        Device is shutting down in 5 seconds...
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_SHUTDOWN_DESCRIPTION" translateable="false" desc="Contents of the powerwash dialog displayed on repair complete page when trying to shut down">
-        Device will be powerwashed before shutting down. Wait until it completes before closing the lid. This may take up to a minute.
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_SHUTDOWN_BUTTON" translateable="false" desc="Label for the button in the battery cutoff countdown dialog that shuts down the device and cuts off the battery immediately">
+        Shut down
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_REBOOT_DESCRIPTION" translateable="false" desc="Contents of the powerwash dialog displayed on repair complete page when trying to reboot">
-        Device will be powerwashed before rebooting to the login screen. Wait until it completes before closing the lid. This may take up to a minute.
+      <!-- Powerwash dialog -->
+      <message name="IDS_SHIMLESS_RMA_POWERWASH_DIALOG_TITLE" desc="Title for the powerwash dialog displayed on the repair complete page and on the restock page">
+        Powerwash (factory reset) required
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_BUTTON" translateable="false" desc="Label for the button that starts a powerwash">
+      <message name="IDS_SHIMLESS_RMA_POWERWASH_DIALOG_SHUTDOWN_DESCRIPTION" desc="Contents of the powerwash dialog displayed on repair complete page when trying to shut down and on the restock page">
+        Before shutting down, powerwash your device. If your device has a lid, wait until powerwash completes before closing the lid. Powerwash may take up to a minute to complete.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_POWERWASH_DIALOG_REBOOT_DESCRIPTION" desc="Contents of the powerwash dialog displayed on repair complete page when trying to reboot">
+        Before restarting, powerwash your device. If your device has a lid, wait until powerwash completes before closing the lid. Powerwash may take up to a minute to complete.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_POWERWASH_DIALOG_POWERWASH_BUTTON" desc="Label for the button that starts a powerwash">
         Powerwash
       </message>
       <!-- Run calibration page -->
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_PAGE_TITLE" translateable="false" desc="Title for the page shown when running component calibration steps.">
-        Calibrating device components
+      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_PAGE_TITLE" desc="Title for the page shown when running component calibration steps.">
+        Calibrating components...
       </message>
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE_TITLE" translateable="false" desc="Title for the page shown when component calibration steps are complete.">
+      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE_TITLE" desc="Title for the page shown when component calibration steps are complete.">
         Calibration complete
       </message>
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE" translateable="false" desc="Message to display when all component calibration steps are complete.">
-        Completed
-      </message>
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_STARTING" translateable="false" desc="Message to display when when waiting for calibration to start.">
-        Calibration starting...
-      </message>
-      <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATING_COMPONENT" translateable="false" desc="Status message for a single component while it's being calibrated.">
-        Calibrating <ph name="COMPONENT_NAME">$1<ex>Audio</ex></ph>...
-      </message>
       <!-- OS update page -->
-      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_PAGE_TITLE" translateable="false" desc="Title of ChromeOS update page.">
-        Make sure ChromeOS is up to date
+      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_PAGE_TITLE" desc="Title of ChromeOS update page.">
+        Make sure Chrome OS is up to date
       </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_UNQUALIFIED_COMPONENTS_TOP" translateable="false" desc="Description when components not qualified for ChromeOS are detected.">
-        <ph name="LINK_BEGIN">&lt;a id="unqualifiedComponentsLink"&gt;</ph>Unqualified components<ph name="LINK_END">&lt;/a&gt;</ph> found. To make sure all qualified componets are identified, update your ChromeOS to the latest version.
+      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_UNQUALIFIED_COMPONENTS_TOP" desc="Description when components not qualified for ChromeOS are detected.">
+        <ph name="LINK_BEGIN">&lt;a id="unqualifiedComponentsLink"&gt;</ph>Unqualified components<ph name="LINK_END">&lt;/a&gt;</ph> found. To make sure all qualified components are identified, update your Chrome OS to the latest version.
       </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_UNQUALIFIED_COMPONENTS_BOTTOM" translateable="false" desc="Description when components not qualified for ChromeOS are detected.">
+      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_UNQUALIFIED_COMPONENTS_BOTTOM" desc="Description when components not qualified for ChromeOS are detected.">
         If you still see the issue after the update, it's possible the component is newly qualified and hasn't made it to the database yet.
       </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_VERY_OUT_OF_DATE" translateable="false" desc="Description when the installed OS is too many versions behind the update.">
-        ChromeOS needs an additional update to get fully up to date
+      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_OUT_OF_DATE" desc="The instructions shown when there is a ChromeOS update available.">
+        Update to the latest version of Chrome OS for an optimized repair process
       </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_OUT_OF_DATE" translateable="false" desc="The instructions shown when there is a ChromeOS update available.">
-        Update to the latest version of ChromeOS for an optimized repair process
-      </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_NETWORK_UNAVAILABLE" translateable="false" desc="Notice that no network is available when attempting to update ChromeOS.">
-        To check if OS is up to date, connect to the internet in previous screen
-      </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_FAILED_TO_START" translateable="false" desc="Notice when the call to update ChromeOS fails unexpectedly.">
-        Failed to start ChromeOS update.
-      </message>
-      <message name="IDS_SHIMLESS_RMA_CURRENT_VERSION" translateable="false" desc="Label that shows the current installed version of ChromeOS.">
-        Current version <ph name="VERSION_NUMBER">$1<ex>90.0.1234.56</ex></ph>
-      </message>
-      <message name="IDS_SHIMLESS_RMA_CURRENT_VERSION_OUT_OF_DATE" translateable="false" desc="Label that shows the when the currently installed version of ChromeOS is out of date.">
+      <message name="IDS_SHIMLESS_RMA_CURRENT_VERSION_OUT_OF_DATE" desc="Label that shows the when the currently installed version of ChromeOS is out of date.">
         Current version <ph name="VERSION_NUMBER">$1<ex>90.0.1234.56</ex></ph> is out of date
       </message>
-      <message name="IDS_SHIMLESS_RMA_CURRENT_VERSION_UP_TO_DATE" translateable="false" desc="Label that shows the when the currently installed version of ChromeOS is up to date.">
-        Current version <ph name="VERSION_NUMBER">$1<ex>90.0.1234.56</ex></ph> is up to date
-      </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATE_VERSION_AND_RESTART" translateable="false" desc="Label for the button that updates the device to the latest version of ChromeOS then restarts the device.">
+      <message name="IDS_SHIMLESS_RMA_UPDATE_VERSION_AND_RESTART" desc="Label for the button that updates the device to the latest version of ChromeOS then restarts the device.">
         Update to <ph name="VERSION_NUMBER">$1</ph> &#38; restart
       </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATING_OS_VERSION" translateable="false" desc="The message shown while updating the device's OS version.">
+      <message name="IDS_SHIMLESS_RMA_UPDATING_OS_VERSION" desc="The message shown while updating the device's OS version.">
         Updating OS version
       </message>
       <!-- Manually disable wp page -->
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS" translateable="false" desc="The text instructions for how to manually disable write-protect on the device.">
-        Disable write-protect to continue to the next screen. Learn how to disable write-protect for this device by viewing the instructions at the device manufacturer's support page. Once you disable write-protect, you will need to leave it disabled until the repair process is finished. Please expect a reboot after disabling write protection.
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS" desc="The text instructions for how to manually disable write-protect on the device.">
+        Disable write-protect to continue to the next screen. Go to the device manufacturer's support page for instructions.
       </message>
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE" translateable="false" desc="The title for the page to manually disable write-protect on the device.">
-        Manually disable write-protect
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE" desc="The title for the page to manually disable write-protect on the device.">
+        Turn off Write Protect
+      </message>
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS_REBOOT" desc="The text instructions that inform the technician that the device will reboot.">
+        System will restart after verifying Write Protection status
+      </message>
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE_REBOOT" desc="The title for the page that informs the technician that the device will reboot.">
+        Preparing for restart...
       </message>
       <!-- Restock mainboard page -->
-      <message name="IDS_SHIMLESS_RMA_RESTOCK_PAGE_TITLE" translateable="false" desc="The title for the page notifying user device is in a good state for restocking the mainboard.">
-        [Shimless RMA]
+      <message name="IDS_SHIMLESS_RMA_RESTOCK_PAGE_TITLE" desc="The title for the page notifying user device is in a good state for restocking the mainboard.">
+        Continue repair?
       </message>
-      <message name="IDS_SHIMLESS_RMA_RESTOCK_INSTRUCTIONS" translateable="false" desc="Instructions for what to do in the restock state. As the device will return to this state when rebooted after restocking the user can shutdown or continue RMA">
-        Continue where you left off, or shut down to restock the board.
+      <message name="IDS_SHIMLESS_RMA_RESTOCK_INSTRUCTIONS" desc="Instructions for what to do in the restock state. As the device will return to this state when rebooted after restocking the user can shutdown or continue RMA">
+        You can continue with the full repair or powerwash (factory reset) the device to restock the mainboard.
       </message>
-      <message name="IDS_SHIMLESS_RMA_RESTOCK_SHUTDOWN_BUTTON" translateable="false" desc="Label for the button that triggers device shutdown on the restock page.">
-        Shutdown
+      <message name="IDS_SHIMLESS_RMA_RESTOCK_SHUTDOWN_BUTTON" desc="Label for the button that triggers device shutdown on the restock page.">
+        Powerwash &amp; Shut down
       </message>
-      <message name="IDS_SHIMLESS_RMA_RESTOCK_CONTINUE_BUTTON" translateable="false" desc="Label for the continue button on the restock page.">
+      <message name="IDS_SHIMLESS_RMA_RESTOCK_CONTINUE_BUTTON" desc="Label for the continue button on the restock page.">
         Continue
       </message>
       <!-- Manually enable wp page -->
@@ -2872,9 +3004,6 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_INSTRUCTIONS" translateable="false" desc="The text instructions to manually enable write-protect on the device.">
         Enable write-protect to continue to the next screen. Learn how to enable write-protect for this device by viewing the manufacturer's instructions.
-      </message>
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLED_WP_MESSAGE" translateable="false" desc="Message to inform user hardware write protection has been enabled and RMA is ready to continue.">
-        Hardware write protection enabled. Click 'Next' to continue.
       </message>
       <!-- Confirm device information page -->
       <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_TITLE" translateable="false" desc="The title for the page for confirming the device info.">
@@ -2970,35 +3099,31 @@ Try tapping the mic to ask me anything.
         need permission to update
       </message>
       <!-- Critical error page -->
-      <message name="IDS_SHIMLESS_RMA_CRITICAL_ERROR_TITLE" translateable="false" desc="The title for the critical error page. Critical errors cause the RMA process to attempt to exit to login or reboot the device at users discretion. It will try to cancel RMA, but if that fails the next boot may also trigger an RMA critical error.">
+      <message name="IDS_SHIMLESS_RMA_CRITICAL_ERROR_TITLE" desc="The title for the critical error page. Critical errors cause the RMA process to attempt to exit to login or reboot the device at users discretion. It will try to cancel RMA, but if that fails the next boot may also trigger an RMA critical error.">
         <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> repair error
       </message>
-      <message name="IDS_SHIMLESS_RMA_CRITICAL_ERROR_MESSAGE" translateable="false" desc="The message for the critical error when Shimless RMA app is launched when not in RMA. This should never happen.">
+      <message name="IDS_SHIMLESS_RMA_CRITICAL_ERROR_MESSAGE" desc="The message for the critical error when Shimless RMA app is launched when not in RMA. This should never happen.">
         We're running into errors. Try rebooting or recover the firmware using a USB thumbdrive.
       </message>
-      <message name="IDS_SHIMLESS_RMA_CRITICAL_EXIT_BUTTON" translateable="false" desc="Label for the exit button on the error page.">
-        Exit repair
+      <message name="IDS_SHIMLESS_RMA_CRITICAL_EXIT_BUTTON" desc="Label for the exit button on the error page.">
+        Exit <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> repair
       </message>
-      <message name="IDS_SHIMLESS_RMA_CRITICAL_REBOOT_BUTTON" translateable="false" desc="Label for the button that attempts to cancel RMA and reboot the device.">
-        Reboot
+      <message name="IDS_SHIMLESS_RMA_CRITICAL_REBOOT_BUTTON" desc="Label for the button that attempts to cancel RMA and reboot the device.">
+        Restart
       </message>
       <!-- Wipe device page -->
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_TITLE" translateable="false" desc="Title for the page where the user chooses whether to erase the data or keep/preserve the data on the device.">
-        Preserve Device Data
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_TITLE" desc="Title for the page where the user chooses whether to erase the data or keep/preserve the data on the device.">
+        Device is going to the same user. Erase user data?
       </message>
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION" translateable="false" desc="Label for the option to wipe/erase the data on the device.">
-        Wipe device
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION" desc="Label for the option to wipe/erase the data on the device.">
+        Erase all data
       </message>
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION_DESCRIPTION" translateable="false" desc="Description for the option to wipe/erase the data on the device.">
-        Remove the data
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION_DESCRIPTION" desc="Description for the option to wipe/erase the data on the device.">
+        This will reset the device to factory settings (Powerwash).
       </message>
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION" translateable="false" desc="Label for the option to preserve/save the data on the device.">
-        Don't wipe the device
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION" desc="Label for the option to preserve/save the data on the device.">
+        Keep user data
       </message>
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION_DESCRIPTION" translateable="false" desc="Description for the option to preserve/save the data on the device.">
-        Preserve the data
-      </message>
-
       <!-- Peripheral Firmware Update -->
       <message name="IDS_FIRMWARE_TITLE_TEXT" desc="The title of the Firmware update app.">
         Firmware updates for external devices
@@ -3143,6 +3268,27 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_REPORT_LABEL" desc="Description text of the report query button for the Quick Answers view.">
         Report this query
       </message>
+
+      <!-- Feedback Tool-->
+      <message name="IDS_FEEDBACK_TOOL_CONTINUE_BUTTON_LABEL" translateable="false" desc="Label of the continue button.">
+        Continue
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_DESCRIPTION_LABEL" translateable="false" desc="Label of the text box where users can describe a problem they are having">
+        Description
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_NO_MATCHED_RESULTS" translateable="false" desc="Label for help content when there are no matched results.">
+        No matched results, see popular help content
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_PAGE_TITLE" translateable="false" desc="Label showing the title of the feedback tool before a report has been sent">
+        Send feedback
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_POPULAR_HELP_CONTENT" translateable="false" desc="Label for help content when there is no query entered yet.">
+        Popular help content
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_SUGGESTED_HELP_CONTENT" translateable="false" desc="Label for help content when there are matched results.">
+        Suggested help content
+      </message>
+      <!-- End of Feedback Tool -->
     </messages>
   </release>
 </grit>

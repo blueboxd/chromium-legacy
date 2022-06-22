@@ -6,7 +6,7 @@
 #define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_FORWARD_OBSERVER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer_interface.h"
 
 namespace page_load_metrics {
 
@@ -15,13 +15,14 @@ namespace page_load_metrics {
 // PageLoadTracker.
 // Note: This class should override all virtual methods so to forward the
 // callback correctly.
-class PageLoadMetricsForwardObserver final : public PageLoadMetricsObserver {
+class PageLoadMetricsForwardObserver final
+    : public PageLoadMetricsObserverInterface {
  public:
   // Refers `parent_observer` as a weak pointer because it may be destructed
   // at anytime when it returns STOP_OBSERVING in the callbacks for the events
   // happening in the parent page.
   explicit PageLoadMetricsForwardObserver(
-      base::WeakPtr<PageLoadMetricsObserver> parent_observer);
+      base::WeakPtr<PageLoadMetricsObserverInterface> parent_observer);
 
   PageLoadMetricsForwardObserver(const PageLoadMetricsForwardObserver&) =
       delete;
@@ -31,7 +32,7 @@ class PageLoadMetricsForwardObserver final : public PageLoadMetricsObserver {
   ~PageLoadMetricsForwardObserver() override;
 
  private:
-  // PageLoadMetricsObserver implementation:
+  // PageLoadMetricsObserverInterface implementation:
   const char* GetObserverName() const override;
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
@@ -110,9 +111,9 @@ class PageLoadMetricsForwardObserver final : public PageLoadMetricsObserver {
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host) override;
-  void OnFrameIntersectionUpdate(
+  void OnMainFrameIntersectionRectChanged(
       content::RenderFrameHost* rfh,
-      const mojom::FrameIntersectionUpdate& intersection_update) override;
+      const gfx::Rect& main_frame_intersection_rect) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const mojom::PageLoadTiming& timing) override;
   void OnComplete(const mojom::PageLoadTiming& timing) override;
@@ -149,7 +150,7 @@ class PageLoadMetricsForwardObserver final : public PageLoadMetricsObserver {
       const std::vector<MemoryUpdate>& memory_updates) override;
 
   // Holds the forward target observer running in the parent PageLoadTracker.
-  base::WeakPtr<PageLoadMetricsObserver> parent_observer_;
+  base::WeakPtr<PageLoadMetricsObserverInterface> parent_observer_;
 };
 
 }  // namespace page_load_metrics

@@ -7,7 +7,7 @@
 #         linux ubuntu
 #         mac bigsur catalina lion highsierra mac-10.12 mojave monterey
 #             mountainlion sierra
-#         win win7 win8 win10 ]
+#         win win8 win10 ]
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
 #             android-pixel-6 android-shield-android-tv
@@ -162,9 +162,6 @@ crbug.com/1047573 [ mac nvidia ] Pixel_WebGLHighToLowPower [ Skip ]
 crbug.com/1048892 [ mac nvidia ] Pixel_OffscreenCanvasIBRCWebGLHighPerfMain [ Skip ]
 crbug.com/1048892 [ mac nvidia ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ Skip ]
 
-# DirectComposition tests are not expected to work properly on Windows 7.
-crbug.com/1086758 [ win7 ] Pixel_DirectComposition* [ Skip ]
-
 # Cannot use file in Chromium checkout for fake video capture device on Android,
 # ChromeOS, or Fuchsia.
 crbug.com/1129879 [ android ] Pixel_Video_Media_Stream_Incompatible_Stride [ Skip ]
@@ -177,7 +174,6 @@ crbug.com/976495 [ linux skia-renderer-disabled ] Pixel_WebGPU* [ Skip ]
 crbug.com/976497 [ android ] Pixel_WebGPU* [ Skip ]
 crbug.com/852089 [ chromeos ] Pixel_WebGPU* [ Skip ]
 crbug.com/852089 [ fuchsia ] Pixel_WebGPU* [ Skip ]
-crbug.com/852089 [ win7 ] Pixel_WebGPU* [ Skip ]
 
 # WebGPU's copyExternalImage is broken on mac10.12
 crbug.com/1311710 [ mac-10.12 ] Pixel_WebGPUCopyExternalImage* [ Failure ]
@@ -204,6 +200,8 @@ crbug.com/1213170 [ mac asan intel-0x3e9b ] Pixel_WebGPUCopyExternalImage* [ Ski
 crbug.com/1213170 [ mac asan intel-0xd26 ] Pixel_WebGPUCopyExternalImage* [ Skip ]
 crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUCopyExternalImage* [ Skip ]
 crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUWebGLTexImage2D [ Skip ]
+
+crbug.com/1203317 [ mac ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
 
 # WebGPU pixel tests fail on Linux+SkiaRenderer+Vulkan
 crbug.com/1213657 [ linux skia-renderer-vulkan ] Pixel_WebGPU* [ Skip ]
@@ -346,13 +344,13 @@ crbug.com/1213542 [ skia-renderer-gl mac amd-0x6821 passthrough ] Pixel_Video_Me
 
 # Flaky on Pixel 4 Android WebView
 crbug.com/1285084 [ android android-pixel-4 android-webview-instrumentation skia-renderer-gl ] Pixel_CSS3DBlueBox [ RetryOnFailure ]
-crbug.com/1273033 [ android android-pixel-4 android-webview-instrumentation skia-renderer-gl ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Failure ]
 
 # Flaky failures on Win10 AMD RX 5500 XT
 crbug.com/1288134 [ win10 amd-0x7340 skia-renderer-gl ] Pixel_DirectComposition_Video_VP9_YUY2 [ Failure ]
 crbug.com/1288134 [ win10 amd-0x7340 skia-renderer-gl ] Pixel_DirectComposition_Video_VP9_BGRA [ Failure ]
 
 # Pixel 4 Flaky Failures - Passthrough, WebView and Validating
+crbug.com/1273033 [ android android-pixel-4 ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Failure ]
 crbug.com/1273033 [ android android-pixel-4 ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
 
 # Pixel 6 failures.
@@ -377,6 +375,10 @@ crbug.com/1290953 [ android android-pixel-4 android-webview-instrumentation ] Pi
 
 # Flaky incorrect rendering on Windows Nvidia 1660
 crbug.com/1181126 [ win10 nvidia-0x2184 ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ RetryOnFailure ]
+
+# Green images produced on Mac FYI Release (Apple M1)
+crbug.com/1321305 [ mac release apple-apple-m1 ] Pixel_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1321305 [ mac release apple-apple-m1 ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

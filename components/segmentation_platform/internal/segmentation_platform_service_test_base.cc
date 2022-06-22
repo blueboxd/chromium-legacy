@@ -14,10 +14,18 @@
 #include "components/segmentation_platform/internal/segmentation_platform_service_impl.h"
 #include "components/segmentation_platform/internal/ukm_data_manager.h"
 #include "components/segmentation_platform/public/config.h"
+#include "components/segmentation_platform/public/field_trial_register.h"
 
 namespace segmentation_platform {
 
 namespace {
+
+class MockFieldTrialRegister : public FieldTrialRegister {
+ public:
+  MOCK_METHOD2(RegisterFieldTrial,
+               void(base::StringPiece trial_name,
+                    base::StringPiece group_name));
+};
 
 std::vector<std::unique_ptr<Config>> CreateTestConfigs() {
   std::vector<std::unique_ptr<Config>> configs;
@@ -102,12 +110,19 @@ void SegmentationPlatformServiceTestBase::InitPlatform(
       std::move(segment_storage_config_db), &test_clock_, ukm_data_manager,
       all_segment_ids, model_provider_factory.get());
 
+  auto params = std::make_unique<SegmentationPlatformServiceImpl::InitParams>();
+  params->storage_service = std::move(storage_service);
+  params->model_provider =
+      std::make_unique<TestModelProviderFactory>(&model_provider_data_);
+  params->profile_prefs = &pref_service_;
+  params->local_state = &pref_service_;
+  params->history_service = history_service;
+  params->task_runner = task_runner_;
+  params->clock = &test_clock_;
+  params->configs = std::move(configs);
+  params->field_trial_register = std::make_unique<MockFieldTrialRegister>();
   segmentation_platform_service_impl_ =
-      std::make_unique<SegmentationPlatformServiceImpl>(
-          std::move(storage_service),
-          std::make_unique<TestModelProviderFactory>(&model_provider_data_),
-          &pref_service_, history_service, task_runner_, &test_clock_,
-          std::move(configs));
+      std::make_unique<SegmentationPlatformServiceImpl>(std::move(params));
 }
 
 void SegmentationPlatformServiceTestBase::DestroyPlatform() {

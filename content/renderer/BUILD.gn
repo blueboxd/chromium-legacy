@@ -249,6 +249,8 @@ target(link_target_type, "renderer") {
     "//components/discardable_memory/client",
     "//components/metrics",
     "//components/metrics:single_sample_metrics",
+    "//components/services/screen_ai/buildflags",
+    "//components/services/screen_ai/public/mojom",
     "//components/url_formatter",
     "//components/variations:variations_mojom",
     "//components/variations/net",
@@ -263,7 +265,6 @@ target(link_target_type, "renderer") {
     "//content/public/child:child_sources",
     "//content/services/shared_storage_worklet",
     "//crypto",
-    "//crypto:platform",
     "//device/base/synchronization",
     "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/mojom",
@@ -534,6 +535,10 @@ target(link_target_type, "renderer") {
       "media/win/dcomp_texture_host.h",
       "media/win/dcomp_texture_wrapper_impl.cc",
       "media/win/dcomp_texture_wrapper_impl.h",
+      "media/win/overlay_state_observer_impl.cc",
+      "media/win/overlay_state_observer_impl.h",
+      "media/win/overlay_state_service_provider.cc",
+      "media/win/overlay_state_service_provider.h",
     ]
   }
 

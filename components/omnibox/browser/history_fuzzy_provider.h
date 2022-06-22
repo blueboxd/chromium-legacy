@@ -9,6 +9,12 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task/cancelable_task_tracker.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -97,12 +103,21 @@ struct ToleranceSchedule {
 // Nodes form a trie structure used to find potential input corrections.
 struct Node {
   Node();
+  Node(Node&& node);
+  Node& operator=(Node&&) = default;
   ~Node();
 
   // Walk the trie, injecting nodes as necessary to build the given `text`
   // starting at index `from`. The `from` parameter advances as an index into
   // `text` and ensures recursion is bounded.
   void Insert(const std::u16string& text, size_t from);
+
+  // Delete nodes as necessary to remove given `text` from the trie.
+  // Returns true if this node is left empty and may be deleted.
+  bool Delete(const std::u16string& text, size_t from);
+
+  // Delete all nodes to clear the trie.
+  void Clear();
 
   // Produce corrections necessary to get `text` back on trie. Each correction
   // will be of size bounded by `tolerance_schedule`, and none will have smaller
@@ -120,6 +135,10 @@ struct Node {
 
   // TODO(orinj): Remove this. It's a development-only debugging utility.
   void Log(std::u16string built) const;
+
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
 
   // This is used to distinguish terminal nodes in the trie (nonzero values).
   // TODO(orinj): Consider removing this if we only correct inputs and leave
@@ -154,12 +173,14 @@ struct Node {
 // but efficiency is a top concern so node size is minimized, just enough to
 // get inputs back on track, not to replicate the full completion and scoring
 // of other autocomplete providers.
-class HistoryFuzzyProvider : public HistoryProvider {
+class HistoryFuzzyProvider : public HistoryProvider,
+                             public history::HistoryServiceObserver {
  public:
   explicit HistoryFuzzyProvider(AutocompleteProviderClient* client);
   HistoryFuzzyProvider(const HistoryFuzzyProvider&) = delete;
   HistoryFuzzyProvider& operator=(const HistoryFuzzyProvider&) = delete;
 
+  // HistoryProvider:
   // AutocompleteProvider. `minimal_changes` is ignored since there is no async
   // completion performed.
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
@@ -177,6 +198,21 @@ class HistoryFuzzyProvider : public HistoryProvider {
   // Adds one match for the given corrected `text`.
   void AddMatchForText(std::u16string text);
 
+  // Main thread callback to receive trie of URLs loaded from database.
+  void OnUrlsLoaded(fuzzy::Node node);
+
+  // history::HistoryServiceObserver:
+  // Adds visited URL host to trie.
+  void OnURLVisited(history::HistoryService* history_service,
+                    ui::PageTransition transition,
+                    const history::URLRow& row,
+                    const history::RedirectList& redirects,
+                    base::Time visit_time) override;
+
+  // Removes deleted (or all) URLs from trie.
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionInfo& deletion_info) override;
+
   AutocompleteInput autocomplete_input_;
 
   // TODO(orinj): For now this is memory resident for proof of concept, but
@@ -188,6 +224,23 @@ class HistoryFuzzyProvider : public HistoryProvider {
   //  consider skipping them since fuzzy matching somewhat assumes human errors
   //  generated while typing, not copy/pasting, etc.
   fuzzy::Node root_;
+
+  // This provides a thread-safe way to check that loading has completed.
+  // Keeping the event may not be necessary since signal check is done from
+  // same main thread, but having it should provide some robustness in case
+  // we autocomplete from another thread or while db task is running.
+  base::WaitableEvent urls_loaded_event_;
+
+  // Task tracker for URL data loading.
+  base::CancelableTaskTracker task_tracker_;
+
+  // Tracks the observed history service, for cleanup.
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
+
+  // Weak pointer factory for callback binding safety.
+  base::WeakPtrFactory<HistoryFuzzyProvider> weak_ptr_factory_{this};
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_HISTORY_FUZZY_PROVIDER_H_

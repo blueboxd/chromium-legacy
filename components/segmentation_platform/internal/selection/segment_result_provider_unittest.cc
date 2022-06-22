@@ -11,9 +11,9 @@
 #include "components/segmentation_platform/internal/database/mock_signal_storage_config.h"
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
 #include "components/segmentation_platform/internal/execution/default_model_manager.h"
-#include "components/segmentation_platform/internal/execution/mock_feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
 #include "components/segmentation_platform/internal/execution/model_executor_impl.h"
+#include "components/segmentation_platform/internal/execution/processing/mock_feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/platform_options.h"
 #include "components/segmentation_platform/internal/scheduler/execution_service.h"
 #include "components/segmentation_platform/internal/signals/signal_handler.h"
@@ -74,7 +74,8 @@ class SegmentResultProviderTest : public testing::Test {
         std::vector<OptimizationTarget>({kTestSegment, kTestSegment2}));
     segment_database_ = std::make_unique<test::TestSegmentInfoDatabase>();
     execution_service_ = std::make_unique<ExecutionService>();
-    auto query_processor = std::make_unique<MockFeatureListQueryProcessor>();
+    auto query_processor =
+        std::make_unique<processing::MockFeatureListQueryProcessor>();
     mock_query_processor_ = query_processor.get();
     execution_service_->InitForTesting(
         std::move(query_processor),
@@ -150,7 +151,7 @@ class SegmentResultProviderTest : public testing::Test {
   TestModelProviderFactory::Data model_providers_;
   TestModelProviderFactory provider_factory_;
   MockSignalDatabase signal_database_;
-  MockFeatureListQueryProcessor* mock_query_processor_ = nullptr;
+  processing::MockFeatureListQueryProcessor* mock_query_processor_ = nullptr;
   SignalHandler signal_handler_;
   std::unique_ptr<DefaultModelManager> default_manager_;
   std::unique_ptr<ExecutionService> execution_service_;
@@ -169,7 +170,7 @@ TEST_F(SegmentResultProviderTest, GetScoreWithoutInfo) {
 TEST_F(SegmentResultProviderTest, GetScoreFromDbWithoutResult) {
   SetSegmentResult(kTestSegment, absl::nullopt);
 
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true));
   ExpectSegmentResultOnGet(
       kTestSegment, SegmentResultProvider::ResultState::kDatabaseScoreNotReady,
@@ -179,7 +180,7 @@ TEST_F(SegmentResultProviderTest, GetScoreFromDbWithoutResult) {
 TEST_F(SegmentResultProviderTest, GetScoreNotEnoughSignals) {
   SetSegmentResult(kTestSegment, absl::nullopt);
 
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(false));
   ExpectSegmentResultOnGet(
       kTestSegment, SegmentResultProvider::ResultState::kSignalsNotCollected,
@@ -190,7 +191,7 @@ TEST_F(SegmentResultProviderTest, GetScoreFromDb) {
   InitializeMetadata(kTestSegment);
   SetSegmentResult(kTestSegment, kModelScore);
 
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true));
   ExpectSegmentResultOnGet(
       kTestSegment, SegmentResultProvider::ResultState::kSuccessFromDatabase,
@@ -205,7 +206,7 @@ TEST_F(SegmentResultProviderTest, DefaultNeedsSignal) {
 
   // First call is to check opt guide model, and second is to check default
   // model signals.
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true))
       .WillOnce(Return(false));
   ExpectSegmentResultOnGet(
@@ -220,13 +221,14 @@ TEST_F(SegmentResultProviderTest, DefaultModelFailedExecution) {
   p.emplace(kTestSegment, std::make_unique<DefaultProvider>(kTestSegment));
   default_manager_->SetDefaultProvidersForTesting(std::move(p));
 
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true))
       .WillOnce(Return(true));
 
   // Set error while computing features.
-  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(/*error=*/true, std::vector<float>{{1, 2}}));
+  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(/*error=*/true, std::vector<float>{{1, 2}},
+                                   std::vector<float>()));
   ExpectSegmentResultOnGet(
       kTestSegment,
       SegmentResultProvider::ResultState::kDefaultModelExecutionFailed,
@@ -239,12 +241,12 @@ TEST_F(SegmentResultProviderTest, GetFromDefault) {
   p.emplace(kTestSegment, std::make_unique<DefaultProvider>(kTestSegment));
   default_manager_->SetDefaultProvidersForTesting(std::move(p));
 
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true))
       .WillOnce(Return(true));
-  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _))
-      .WillOnce(
-          RunOnceCallback<3>(/*error=*/false, std::vector<float>{{1, 2}}));
+  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(/*error=*/false, std::vector<float>{{1, 2}},
+                                   std::vector<float>()));
   ExpectSegmentResultOnGet(
       kTestSegment, SegmentResultProvider::ResultState::kDefaultModelScoreUsed,
       kDefaultRank);
@@ -263,20 +265,21 @@ TEST_F(SegmentResultProviderTest, MultipleRequests) {
 
   // For the first request, the database does not have valid result, and default
   // provider fails execution.
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true))
       .WillOnce(Return(true));
-  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _))
-      .WillOnce(
-          RunOnceCallback<3>(/*error=*/false, std::vector<float>{{1, 2}}));
+  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(/*error=*/false, std::vector<float>{{1, 2}},
+                                   std::vector<float>()));
   ExpectSegmentResultOnGet(
       kTestSegment, SegmentResultProvider::ResultState::kDefaultModelScoreUsed,
       kDefaultRank);
 
   // For the second request the database has valid result.
-  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
+  EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true));
-  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _, _))
+      .Times(0);
   ExpectSegmentResultOnGet(
       kTestSegment2, SegmentResultProvider::ResultState::kSuccessFromDatabase,
       kModelRank);

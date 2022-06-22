@@ -23,6 +23,8 @@ java_cpp_enum("java_enums_srcjar") {
 android_library("java") {
   deps = [
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/version_info/android:version_constants_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
@@ -62,7 +64,6 @@ java_library("junit") {
     ":anr_collector_java",
     ":anr_data_proto_java",
     ":java",
-    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//third_party/android_deps:robolectric_all_java",
@@ -102,7 +103,10 @@ generate_jni("java_handler_jni_headers") {
 }
 
 android_library("handler_java") {
-  deps = [ "//base:base_java" ]
+  deps = [
+    "//base:jni_java",
+    "//build/android:build_java",
+  ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   sources = _java_handler_jni_sources
 }

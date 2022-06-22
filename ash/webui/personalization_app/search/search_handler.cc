@@ -4,16 +4,57 @@
 
 #include "ash/webui/personalization_app/search/search_handler.h"
 
+#include <algorithm>
+#include <memory>
+#include <vector>
+
+#include "ash/constants/ash_features.h"
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
+#include "ash/webui/personalization_app/search/search.mojom-forward.h"
 #include "ash/webui/personalization_app/search/search.mojom.h"
+#include "ash/webui/personalization_app/search/search_concept.h"
+#include "ash/webui/personalization_app/search/search_tag_registry.h"
+#include "base/check.h"
+#include "base/notreached.h"
+#include "base/strings/string_number_conversions.h"
+#include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy.h"
+#include "chromeos/components/local_search_service/shared_structs.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 namespace personalization_app {
 
-SearchHandler::SearchHandler() = default;
+namespace {
+
+// Sorts search results descending.
+bool CompareSearchResults(const mojom::SearchResultPtr& a,
+                          const mojom::SearchResultPtr& b) {
+  return a->relevance_score > b->relevance_score;
+}
+
+}  // namespace
+
+SearchHandler::SearchHandler(
+    ::chromeos::local_search_service::LocalSearchServiceProxy&
+        local_search_service_proxy,
+    PrefService* pref_service)
+    : search_tag_registry_(
+          std::make_unique<SearchTagRegistry>(local_search_service_proxy,
+                                              pref_service)) {
+  DCHECK(ash::features::IsPersonalizationHubEnabled())
+      << "Personalization search requires personalization hub feature";
+  local_search_service_proxy.GetIndex(
+      local_search_service::IndexId::kPersonalization,
+      local_search_service::Backend::kLinearMap,
+      index_remote_.BindNewPipeAndPassReceiver());
+  DCHECK(index_remote_.is_bound());
+
+  search_tag_registry_observer_.Observe(search_tag_registry_.get());
+}
 
 SearchHandler::~SearchHandler() = default;
 
@@ -23,18 +64,77 @@ void SearchHandler::BindInterface(
 }
 
 void SearchHandler::Search(const std::u16string& query,
+                           uint32_t max_num_results,
                            SearchCallback callback) {
-  std::vector<::ash::personalization_app::mojom::SearchResultPtr> results;
+  // Request more than the maximum, then sort and take the top
+  // |max_num_results|. This helps the quality of search results.
+  uint32_t max_local_search_service_results = 5 * max_num_results;
+  index_remote_->Find(query, max_local_search_service_results,
+                      base::BindOnce(&SearchHandler::OnLocalSearchDone,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     std::move(callback), max_num_results));
+}
 
-  // TODO(b/225950660) add real search results.
-  std::u16string title = l10n_util::GetStringUTF16(
-      IDS_PERSONALIZATION_APP_PERSONALIZATION_HUB_TITLE);
-  if (query == title) {
-    results.push_back(::ash::personalization_app::mojom::SearchResult::New(
-        title, /*relative_url=*/std::string(), /*relevance_score=*/1.0));
+void SearchHandler::AddObserver(
+    mojo::PendingRemote<mojom::SearchResultsObserver> observer) {
+  observers_.Add(std::move(observer));
+}
+
+void SearchHandler::OnRegistryUpdated() {
+  for (auto& observer : observers_) {
+    observer->OnSearchResultsChanged();
+  }
+}
+
+void SearchHandler::OnLocalSearchDone(
+    SearchCallback callback,
+    uint32_t max_num_results,
+    ::chromeos::local_search_service::ResponseStatus response_status,
+    const absl::optional<std::vector<::chromeos::local_search_service::Result>>&
+        local_search_service_results) {
+  if (response_status !=
+      ::chromeos::local_search_service::ResponseStatus::kSuccess) {
+    LOG(ERROR) << "Cannot search; LocalSearchService returned "
+               << static_cast<int>(response_status)
+               << ". Returning empty results array.";
+    std::move(callback).Run({});
+    return;
+  }
+  DCHECK(local_search_service_results.has_value());
+
+  std::vector<mojom::SearchResultPtr> search_results;
+  for (const auto& local_result : local_search_service_results.value()) {
+    const auto* search_concept =
+        search_tag_registry_->GetSearchConceptById(local_result.id);
+
+    if (!search_concept) {
+      continue;
+    }
+
+    int matching_content_id;
+    if (!base::StringToInt(local_result.positions.front().content_id,
+                           &matching_content_id)) {
+      NOTREACHED() << "All content ids are expected to be a valid integer: "
+                   << local_result.positions.front().content_id;
+      continue;
+    }
+
+    search_results.push_back(mojom::SearchResult::New(
+        /*id=*/search_concept->id,
+        /*text=*/l10n_util::GetStringUTF16(matching_content_id),
+        /*relative_url=*/search_concept->relative_url,
+        /*relevance_score=*/local_result.score));
   }
 
-  std::move(callback).Run(std::move(results));
+  // Limit to top |max_num_results| results. Use partial_sort and then resize.
+  std::partial_sort(
+      search_results.begin(),
+      std::min(search_results.begin() + max_num_results, search_results.end()),
+      search_results.end(), CompareSearchResults);
+  search_results.resize(
+      std::min(static_cast<size_t>(max_num_results), search_results.size()));
+
+  std::move(callback).Run(std::move(search_results));
 }
 
 }  // namespace personalization_app

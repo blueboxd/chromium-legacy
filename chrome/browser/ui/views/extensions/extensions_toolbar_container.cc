@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_request_access_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_tabbed_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
@@ -42,6 +43,25 @@ using ::ui::mojom::DragOperation;
 base::OnceClosure& GetOnVisibleCallbackForTesting() {
   static base::NoDestructor<base::OnceClosure> callback;
   return *callback;
+}
+
+// TODO(crbug.com/1279986): Remove ExtensionMenuView once tabbed menu is rolled
+// out.
+bool IsExtensionsMenuShowing() {
+  return base::FeatureList::IsEnabled(features::kExtensionsMenuAccessControl)
+             ? ExtensionsTabbedMenuView::IsShowing()
+             : ExtensionsMenuView::IsShowing();
+}
+
+// Hides the currently-showing ExtensionsMenuView or ExtensionsTabbedMenuView,
+// if any exists.
+// TODO(crbug.com/1279986): Remove ExtensionMenuView once tabbed menu is rolled
+// out.
+void HideExtensionsMenu() {
+  if (base::FeatureList::IsEnabled(features::kExtensionsMenuAccessControl))
+    ExtensionsTabbedMenuView::Hide();
+  else
+    ExtensionsMenuView::Hide();
 }
 
 }  // namespace
@@ -89,7 +109,7 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
                         browser,
                         this,
                         ExtensionsToolbarButton::ButtonType::kSiteAccess),
-                    std::make_unique<ExtensionsRequestAccessButton>())
+                    std::make_unique<ExtensionsRequestAccessButton>(browser_))
               : nullptr),
       display_mode_(display_mode) {
   // The container shouldn't show unless / until we have extensions available.
@@ -307,7 +327,7 @@ void ExtensionsToolbarContainer::OnContextMenuShown(
     ToolbarActionViewController* extension) {
   // Only update the extension's toolbar visibility if the context menu is being
   // shown from an extension visible in the toolbar.
-  if (!ExtensionsMenuView::IsShowing()) {
+  if (!IsExtensionsMenuShowing()) {
 #if BUILDFLAG(IS_MAC)
     // TODO(crbug/1065584): Remove hiding active popup here once this bug is
     // fixed.
@@ -384,8 +404,8 @@ void ExtensionsToolbarContainer::HideActivePopup() {
 }
 
 bool ExtensionsToolbarContainer::CloseOverflowMenuIfOpen() {
-  if (ExtensionsMenuView::IsShowing()) {
-    ExtensionsMenuView::Hide();
+  if (IsExtensionsMenuShowing()) {
+    HideExtensionsMenu();
     return true;
   }
   return false;
@@ -859,11 +879,12 @@ void ExtensionsToolbarContainer::UpdateControlsVisibility() {
   // `SiteInteraction::kPending` includes extensions with activeTab, that can
   // request access to restricted or non-restricted sites. Need to update the
   // method to not take into account activeTab extensions.
-  int count_requesting_extensions = std::count_if(
-      actions_.begin(), actions_.end(), [web_contents](const auto& action) {
-        return action->IsRequestingSiteAccess(web_contents);
-      });
-  extensions_controls_->UpdateRequestAccessButton(count_requesting_extensions);
+  std::vector<ToolbarActionViewController*> extensions_requesting_access;
+  for (const auto& action : actions_) {
+    if (action->IsRequestingSiteAccess(web_contents))
+      extensions_requesting_access.push_back(action.get());
+  }
+  extensions_controls_->UpdateRequestAccessButton(extensions_requesting_access);
 }
 
 BEGIN_METADATA(ExtensionsToolbarContainer, ToolbarIconContainerView)

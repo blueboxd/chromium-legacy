@@ -22,6 +22,7 @@
 <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="1867772173333403444">4. Изберете Chromium</translation>
 <translation id="2006345422933397527">Chromium не може да провери дали има ажурирања. Проверете ја интернет-врската.</translation>
+<translation id="2052320862053429062">Chromium повремено ги споредува лозинките со списоци објавени онлајн. Кога го прави ова, вашите лозинки и кориснички имиња се шифрирани, па нив не може да ги прочита никој, вклучително и Google.</translation>
 <translation id="2054703085270098503">Останете безбедни со Chromium</translation>
 <translation id="2168108852149185974">Некои додатоци предизвикуваат пад на Chromium. Деинсталирајте:</translation>
 <translation id="2178608107313874732">Chromium не може да ја користи камерата сега</translation>
@@ -49,6 +50,7 @@
 <translation id="3805899903892079518">Chromium нема пристап до фотографиите или видеата. Овозможете пристап во Поставки на iOS &gt; Приватност &gt; Фотографии.</translation>
 <translation id="4043291146360695975">Лозинките се зачувани во „Управникот со лозинки“ само на уредов.</translation>
 <translation id="4099085513035183040">Не е поддржана на Chromium Beta</translation>
+<translation id="4432744876818348753">Најавете се за да извадите максимум од Chromium.</translation>
 <translation id="4555020257205549924">Кога е вклучена функцијава, Chromium ќе нуди да преведува страници што се напишани на други јазици користејќи го „Преведи на Google“. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">Сега може да го користите Chromium секогаш кога ќе допрете линкови во пораки, документи и други апликации.</translation>
 <translation id="4654936625574199632">За да се подобри апликацијата, Chromium испраќа податоци за користењето и падовите во Google. <ph name="BEGIN_LINK" />Управувајте<ph name="END_LINK" /></translation>

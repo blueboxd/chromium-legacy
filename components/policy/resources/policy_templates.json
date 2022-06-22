@@ -24991,7 +24991,13 @@
         'items': {
           'type': 'object',
           'properties': {
-            'service_provider': { 'type': 'string' },
+            'service_provider': {
+              'type': 'string',
+              'enum': [
+                'google',
+                'local_test'
+              ]
+            },
             'enable': {
               'type': 'array',
               'items': {
@@ -25047,7 +25053,7 @@
         },
       },
       'example_value': [{
-        'service_provider': 'Google',
+        'service_provider': 'google',
         'enable': [
           {
             'url_list': ['*'],
@@ -25125,7 +25131,13 @@
         'items': {
           'type': 'object',
           'properties': {
-            'service_provider': { 'type': 'string' },
+            'service_provider': {
+              'type': 'string',
+              'enum': [
+                'google',
+                'local_test'
+              ]
+            },
             'enable': {
               'type': 'array',
               'items': {
@@ -25181,7 +25193,7 @@
         },
       },
       'example_value': [{
-        'service_provider': 'Google',
+        'service_provider': 'google',
         'enable': [
           {
             'url_list': ['*'],
@@ -25259,7 +25271,13 @@
         'items': {
           'type': 'object',
           'properties': {
-            'service_provider': { 'type': 'string' },
+            'service_provider': {
+              'type': 'string',
+              'enum': [
+                'google',
+                'local_test'
+              ]
+            },
             'enable': {
               'type': 'array',
               'items': {
@@ -25314,7 +25332,7 @@
         },
       },
       'example_value': [{
-        'service_provider': 'Google',
+        'service_provider': 'google',
         'enable': [
           {
             'url_list': ['*'],
@@ -25389,7 +25407,13 @@
         'items': {
           'type': 'object',
           'properties': {
-            'service_provider': { 'type': 'string' },
+            'service_provider': {
+              'type': 'string',
+              'enum': [
+                'google',
+                'local_test'
+              ]
+            },
             'enable': {
               'type': 'array',
               'items': {
@@ -25444,7 +25468,7 @@
         },
       },
       'example_value': [{
-        'service_provider': 'Google',
+        'service_provider': 'google',
         'enable': [
           {
             'url_list': ['*.them.com', '*.others.com'],
@@ -25509,7 +25533,7 @@
         'items': {
           'type': 'object',
           'properties': {
-            'service_provider': { 'type': 'string' },
+            'service_provider': { 'type': 'string', 'enum': [ 'google' ] },
             'enabled_event_names': {
               'type': 'array',
               'items': { 'type': 'string' },
@@ -25531,7 +25555,7 @@
         },
       },
       'example_value': [{
-        'service_provider': 'Google',
+        'service_provider': 'google',
         'enabled_event_names': ['passwordChangedEvent', 'sensitiveDataEvent'],
         'enabled_opt_in_events': [
           { 'name': 'loginEvent', 'url_patterns': ['*'] },
@@ -26270,6 +26294,45 @@
       If this policy is set to False or not set, the form control elements will be enabled as they are launched in M81, M82, and M83.
 
       This policy will be removed after Chrome 84.'''
+    },
+    {
+      'name': 'EventPathEnabled',
+      'owners': ['xiaochengh@chromium.org', 'masonf@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'example_value': True,
+      'default': None,
+      'id': 990,
+      'supported_on': ['chrome.*:105-115', 'chrome_os:105-115', 'android:105-115', 'webview_android:105-115'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'caption': '''Re-enabled the Event.path API until M115.''',
+      'tags': [],
+      'items': [
+        {
+          'value': True,
+          'caption': 'Event.path API will be available.',
+        },
+        {
+          'value': False,
+          'caption': 'Event.path API will be unavailable.',
+        },
+        {
+          'value': None,
+          'caption': 'Event.path API will be in the default status: available before M109, and unavailable in M109 to 114.',
+        },
+      ],
+      'desc': ''' Starting in M109, the non-standard API Event.path will be removed to improve web compatibility. This policy re-enables the API until M115.
+
+      If this policy is set to enabled, the Event.path API will be available.
+
+      If this policy is set to disabled, the Event.path API will be unavailable.
+
+      If this policy is not set, the Event.path API will be in the default status: available before M109, and unavailable in M109 to 114.
+
+      This policy will be removed after Chrome 115.'''
     },
     {
       'name': 'ClickToCallEnabled',
@@ -28585,7 +28648,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         'items': {
           'type': 'object',
           'properties': {
-            'service_provider': { 'type': 'string' },
+            'service_provider': { 'type': 'string', 'enum': [ 'box' ] },
             'enterprise_id': { 'type': 'string' },
             'domain': { 'type': 'string' },
             'enable': {
@@ -28624,7 +28687,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
         },
       },
       'example_value': [{
-        'service_provider': 'Google',
+        'service_provider': 'box',
         'enterprise_id': '1234567890',
         'domain': 'example.com',
         'enable': [
@@ -30950,7 +31013,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
           'caption': 'Disable adaptive charging model on <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph>',
         },
       ],
-      'default': False,
+      'default': True,
       'example_value': False,
       'id': 971,
       'caption': '''Enable adaptive charging model to hold charging process to extend battery life''',
@@ -32218,6 +32281,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 989,
+  'highest_id_currently_used': 990,
   'highest_atomic_group_id_currently_used': 43
 }

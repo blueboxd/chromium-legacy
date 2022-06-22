@@ -681,8 +681,6 @@ def main():
       '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
       # Don't run Go bindings tests; PGO makes them confused.
       '-DLLVM_INCLUDE_GO_TESTS=OFF',
-      # TODO(crbug.com/1113475): Update binutils.
-      '-DENABLE_X86_RELAX_RELOCATIONS=NO',
       # See crbug.com/1126219: Use native symbolizer instead of DIA
       '-DLLVM_ENABLE_DIA_SDK=OFF',
       # The default value differs per platform, force it off everywhere.
@@ -722,15 +720,15 @@ def main():
       cc = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang')
       cxx = os.path.join(PINNED_CLANG_DIR, 'bin', 'clang++')
 
-    if sys.platform != 'darwin':
-      # The host clang has lld, but self-hosting with lld is still slightly
-      # broken on mac.
-      # TODO: check if this works now.
-      base_cmake_args.append('-DLLVM_ENABLE_LLD=ON')
-
     if sys.platform.startswith('linux'):
       MaybeDownloadHostGcc(args)
       base_cmake_args += [ '-DLLVM_STATIC_LINK_CXX_STDLIB=ON' ]
+
+  if sys.platform != 'darwin':
+    # The host clang has lld, but self-hosting with lld is still slightly
+    # broken on mac.
+    # TODO: check if this works now.
+    base_cmake_args.append('-DLLVM_ENABLE_LLD=ON')
 
   if sys.platform == 'darwin':
     # For libc++, we only want the headers.
@@ -1094,11 +1092,8 @@ def main():
         'COMPILER_RT_ENABLE_IOS=ON',
         'COMPILER_RT_ENABLE_WATCHOS=OFF',
         'COMPILER_RT_ENABLE_TVOS=OFF',
-        # armv7 is A5 and earlier, armv7s is A6+ (2012 and later, before 64-bit
-        # iPhones). armv7k is Apple Watch, which we don't need.
-        'DARWIN_ios_ARCHS=armv7;armv7s;arm64',
-        'DARWIN_iossim_ARCHS=i386;x86_64;arm64',
-        # We don't need 32-bit intel support for macOS, we only ship 64-bit.
+        'DARWIN_ios_ARCHS=arm64',
+        'DARWIN_iossim_ARCHS=arm64;x86_64',
         'DARWIN_osx_ARCHS=arm64;x86_64',
     ] + compiler_rt_cmake_flags(sanitizers=True, profile=True)
     # compiler-rt is built for all platforms/arches with a single
@@ -1223,10 +1218,6 @@ def main():
     RunCommand(['ninja', '-C', LLVM_BUILD_DIR, 'cr-check-all'], msvc_arch='x64')
 
   if not args.build_mac_arm and args.run_tests:
-    test_targets = [ 'check-all' ]
-    if sys.platform == 'darwin':
-      # TODO(thakis): Run check-all on Darwin too, https://crbug.com/959361
-      test_targets = [ 'check-llvm', 'check-clang', 'check-lld' ]
     env = None
     if sys.platform.startswith('linux'):
       env = os.environ.copy()
@@ -1234,7 +1225,7 @@ def main():
       # interception, so its tests can't pass.
       env['LIT_FILTER_OUT'] = ('^SanitizerCommon-(a|l|m|ub|t)san-x86_64-Linux' +
                                ' :: Linux/crypt_r.cpp$')
-    RunCommand(['ninja', '-C', LLVM_BUILD_DIR] + test_targets,
+    RunCommand(['ninja', '-C', LLVM_BUILD_DIR, 'check-all'],
                env=env,
                msvc_arch='x64')
 

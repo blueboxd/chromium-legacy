@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import static org.chromium.chrome.browser.ui.IncognitoRestoreAppLaunchDrawBlocker.IS_INCOGNITO_SELECTED;
+
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -233,8 +235,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private static final String HELP_URL_PREFIX = "https://support.google.com/chrome/";
 
     protected static final String WINDOW_INDEX = "window_index";
-
-    private static final String IS_INCOGNITO_SELECTED = "is_incognito_selected";
 
     private static final int INVALID_WINDOW_ID = TabWindowManager.INVALID_WINDOW_INDEX;
 
@@ -2179,8 +2179,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     public boolean handleBackPressed() {
         if (!mUIWithNativeInitialized) return false;
 
-        if (BackPressManager.isEnabled()) return false;
-
         // TODO(1091411): Find a better mechanism for back-press handling for features.
         if (mRootUiCoordinator.getBottomSheetController().handleBackPress()) {
             BackPressManager.record(BackPressHandler.Type.BOTTOM_SHEET);
@@ -2552,6 +2550,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (mTabSwitcherBackPressHandler != null) {
             mTabSwitcherBackPressHandler.destroy();
             mTabSwitcherBackPressHandler = null;
+        }
+        if (mMinimizeAppAndCloseTabBackPressHandler != null) {
+            mMinimizeAppAndCloseTabBackPressHandler.destroy();
+            mMinimizeAppAndCloseTabBackPressHandler = null;
         }
 
         if (mNotificationPermissionController != null) {

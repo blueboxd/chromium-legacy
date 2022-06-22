@@ -113,9 +113,11 @@ void PasswordImportConsumer::ConsumePassword(
 }  // namespace
 
 PasswordManagerPorter::PasswordManagerPorter(
+    Profile* profile,
     password_manager::SavedPasswordsPresenter* presenter,
     ProgressCallback on_export_progress_callback)
-    : presenter_(presenter),
+    : profile_(profile),
+      presenter_(presenter),
       on_export_progress_callback_(on_export_progress_callback) {}
 
 PasswordManagerPorter::~PasswordManagerPorter() = default;
@@ -126,11 +128,11 @@ bool PasswordManagerPorter::Export(content::WebContents* web_contents) {
     return false;
   }
 
-  // Set a new exporter for this request.
-  exporter_ = exporter_for_testing_
-                  ? std::move(exporter_for_testing_)
-                  : std::make_unique<password_manager::PasswordManagerExporter>(
-                        presenter_, on_export_progress_callback_);
+  if (!exporter_) {
+    // Set a new exporter for this request.
+    exporter_ = std::make_unique<password_manager::PasswordManagerExporter>(
+        presenter_, on_export_progress_callback_);
+  }
 
   // Start serialising while the user selects a file.
   exporter_->PreparePasswordsForExport();
@@ -153,20 +155,13 @@ PasswordManagerPorter::GetExportProgressStatus() {
 
 void PasswordManagerPorter::SetExporterForTesting(
     std::unique_ptr<password_manager::PasswordManagerExporter> exporter) {
-  exporter_for_testing_ = std::move(exporter);
+  exporter_ = std::move(exporter);
 }
 
 void PasswordManagerPorter::Import(content::WebContents* web_contents) {
   DCHECK(web_contents);
   PresentFileSelector(web_contents,
                       PasswordManagerPorter::Type::PASSWORD_IMPORT);
-}
-
-void PasswordManagerPorter::ImportPasswordsFromPathForTesting(
-    const base::FilePath& path,
-    Profile* profile) {
-  base::AutoReset<Profile*> reset(&profile_, profile);
-  ImportPasswordsFromPath(path);
 }
 
 void PasswordManagerPorter::PresentFileSelector(
@@ -180,7 +175,6 @@ void PasswordManagerPorter::PresentFileSelector(
     return;
 
   DCHECK(web_contents);
-  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
   // Get the default file extension for password files.
   ui::SelectFileDialog::FileTypeInfo file_type_info;

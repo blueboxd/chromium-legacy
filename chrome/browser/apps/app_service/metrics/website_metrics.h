@@ -13,6 +13,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "content/public/browser/page.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -37,7 +40,6 @@ class WebsiteMetrics : public BrowserListObserver,
 
   // BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserRemoved(Browser* browser) override;
 
   // TabStripModelObserver overrides:
   void OnTabStripModelChanged(
@@ -57,15 +59,35 @@ class WebsiteMetrics : public BrowserListObserver,
       history::HistoryService* history_service) override;
 
  private:
-  class ActiveTabWebContentsObserver;
+  // This class monitors the activated WebContent for the activated browser
+  // window and notifies a navigation to the WebsiteMetrics.
+  class ActiveTabWebContentsObserver : public content::WebContentsObserver {
+   public:
+    ActiveTabWebContentsObserver(content::WebContents* contents,
+                                 WebsiteMetrics* owner);
+
+    ActiveTabWebContentsObserver(const ActiveTabWebContentsObserver&) = delete;
+    ActiveTabWebContentsObserver& operator=(
+        const ActiveTabWebContentsObserver&) = delete;
+
+    ~ActiveTabWebContentsObserver() override = default;
+
+    // content::WebContentsObserver
+    void PrimaryPageChanged(content::Page& page) override;
+
+   private:
+    WebsiteMetrics* owner_;
+  };
 
   void OnTabStripModelChangeInsert(TabStripModel* tab_strip_model,
                                    const TabStripModelChange::Insert& insert,
                                    const TabStripSelectionChange& selection);
-  void OnTabStripModelChangeRemove(TabStripModel* tab_strip_model,
+  void OnTabStripModelChangeRemove(aura::Window* window,
+                                   TabStripModel* tab_strip_model,
                                    const TabStripModelChange::Remove& remove,
                                    const TabStripSelectionChange& selection);
-  void OnActiveTabChanged(content::WebContents* old_contents,
+  void OnActiveTabChanged(aura::Window* window,
+                          content::WebContents* old_contents,
                           content::WebContents* new_contents);
 
   // Called by |WebsiteMetrics::ActiveTabWebContentsObserver|.

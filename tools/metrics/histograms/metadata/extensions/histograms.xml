@@ -222,6 +222,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BackgroundHostCreatedForExtension"
+    enum="BackgroundHostCreatedForExtensionValues" expires_after="2022-10-30">
+  <owner>fdoray@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Recorded when a background host is created for an extension. The value
+    indicates for which extension the host was created.
+
+    The breakdown of extensions that make up the &quot;Other extension&quot;
+    bucket can be derived from the LoadCountsPerTopLevelDocument UKM event. To
+    compare UKM event counts with UMA sample counts, use this formula:
+
+    count of UKM events for a given extension * count of samples in the
+    &quot;Other extension&quot; bucket of this histogram / count of UKM events
+    for all extensions
+
+    Extensions bundled with Chrome have dedicated values in this histogram
+    because they are not synced and therefore not reported through UKM.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.BackgroundPageLoadTime2" units="ms"
     expires_after="2022-11-18">
   <owner>rdevlin.cronin@chromium.org</owner>
@@ -1482,7 +1503,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureReason3"
-    enum="ExtensionInstallationFailureReason" expires_after="2022-10-16">
+    enum="ExtensionInstallationFailureReason" expires_after="2022-12-18">
 <!-- Name completed by histogram_suffixes name="ExtensionSource" -->
 
   <owner>vkovalova@google.com</owner>
@@ -1589,7 +1610,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledLoadTime" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1625,7 +1646,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.ForceInstalledSessionsWithNonMisconfigurationFailureOccured"
-    enum="Boolean" expires_after="2022-10-16">
+    enum="Boolean" expires_after="2022-12-18">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1670,7 +1691,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTimedOutCount" units="units"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>vkovalova@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -2507,7 +2528,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.LoadType" enum="ExtensionType"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2752,7 +2773,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.NewTabPageOverrides" units="units"
-    expires_after="2022-09-11">
+    expires_after="2022-12-18">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
   <summary>

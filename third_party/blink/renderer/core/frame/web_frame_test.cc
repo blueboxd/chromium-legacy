@@ -996,69 +996,79 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
   ScriptExecutionCallbackHelper callback_helper(
       web_view_helper.LocalMainFrame()->MainWorldScriptContext());
 
-  String post_message_wo_request(
-      "window.frames[0].postMessage('0', {targetOrigin: '*'});");
-  String post_message_w_payment_request(
-      "window.frames[0].postMessage("
-      "'1', {targetOrigin: '*', delegate: 'payment'});");
-  String post_message_w_fullscreen_request(
-      "window.frames[0].postMessage("
-      "'1', {targetOrigin: '*', delegate: 'fullscreen'});");
-  String post_message_w_unknown_request(
-      "window.frames[0].postMessage("
-      "'1', {targetOrigin: '*', delegate: 'foo'});");
+  {
+    String post_message_wo_request(
+        "window.frames[0].postMessage('0', {targetOrigin: '/'});");
+    String post_message_w_payment_request(
+        "window.frames[0].postMessage("
+        "'1', {targetOrigin: '/', delegate: 'payment'});");
 
-  // The delegation info is not passed through a postMessage that is sent
-  // without either user activation or the delegation option.
-  ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           post_message_wo_request, &callback_helper);
-  RunPendingTasks();
-  EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_FALSE(message_event_listener->DelegateCapability());
+    // The delegation info is not passed through a postMessage that is sent
+    // without either user activation or the delegation option.
+    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                             post_message_wo_request, &callback_helper);
+    RunPendingTasks();
+    EXPECT_TRUE(callback_helper.DidComplete());
+    EXPECT_FALSE(message_event_listener->DelegateCapability());
 
-  // The delegation info is not passed through a postMessage that is sent
-  // without user activation but with the delegation option.
-  ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           post_message_w_payment_request, &callback_helper);
-  RunPendingTasks();
-  EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_FALSE(message_event_listener->DelegateCapability());
+    // The delegation info is not passed through a postMessage that is sent
+    // without user activation but with the delegation option.
+    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                             post_message_w_payment_request, &callback_helper);
+    RunPendingTasks();
+    EXPECT_TRUE(callback_helper.DidComplete());
+    EXPECT_FALSE(message_event_listener->DelegateCapability());
 
-  // The delegation info is not passed through a postMessage that is sent with
-  // user activation but without the delegation option.
-  ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           post_message_wo_request, &callback_helper,
-                           /*wait_for_promise=*/true, /*user_gesture=*/true);
-  RunPendingTasks();
-  EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_FALSE(message_event_listener->DelegateCapability());
+    // The delegation info is not passed through a postMessage that is sent with
+    // user activation but without the delegation option.
+    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                             post_message_wo_request, &callback_helper,
+                             /*wait_for_promise=*/true, /*user_gesture=*/true);
+    RunPendingTasks();
+    EXPECT_TRUE(callback_helper.DidComplete());
+    EXPECT_FALSE(message_event_listener->DelegateCapability());
 
-  // The delegation info is passed through a postMessage that is sent with both
-  // user activation and the delegation option.
-  ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           post_message_w_payment_request, &callback_helper,
-                           /*wait_for_promise=*/true, /*user_gesture=*/true);
-  RunPendingTasks();
-  EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_TRUE(message_event_listener->DelegateCapability());
+    // The delegation info is passed through a postMessage that is sent with
+    // both user activation and the delegation option.
+    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                             post_message_w_payment_request, &callback_helper,
+                             /*wait_for_promise=*/true, /*user_gesture=*/true);
+    RunPendingTasks();
+    EXPECT_TRUE(callback_helper.DidComplete());
+    EXPECT_TRUE(message_event_listener->DelegateCapability());
+  }
 
-  // The delegation info is passed through a postMessage that is sent with both
-  // user activation and the delegation option for another known capability.
-  ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           post_message_w_fullscreen_request, &callback_helper,
-                           /*wait_for_promise=*/true, /*user_gesture=*/true);
-  RunPendingTasks();
-  EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_TRUE(message_event_listener->DelegateCapability());
+  {
+    String post_message_w_fullscreen_request(
+        "window.frames[0].postMessage("
+        "'1', {targetOrigin: '/', delegate: 'fullscreen'});");
 
-  // The delegation info is not passed through a postMessage that is sent with
-  // user activation and the delegation option for an unknown capability.
-  ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           post_message_w_unknown_request, &callback_helper,
-                           /*wait_for_promise=*/true, /*user_gesture=*/true);
-  RunPendingTasks();
-  EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_FALSE(message_event_listener->DelegateCapability());
+    // The delegation info is passed through a postMessage that is sent with
+    // both user activation and the delegation option for another known
+    // capability.
+    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                             post_message_w_fullscreen_request,
+                             &callback_helper,
+                             /*wait_for_promise=*/true, /*user_gesture=*/true);
+    RunPendingTasks();
+    EXPECT_TRUE(callback_helper.DidComplete());
+    EXPECT_TRUE(message_event_listener->DelegateCapability());
+  }
+
+  {
+    String post_message_w_unknown_request(
+        "window.frames[0].postMessage("
+        "'1', {targetOrigin: '/', delegate: 'foo'});");
+
+    // The delegation info is not passed through a postMessage that is sent with
+    // user activation and the delegation option for an unknown capability.
+    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                             post_message_w_unknown_request, &callback_helper,
+                             /*wait_for_promise=*/true, /*user_gesture=*/true);
+    RunPendingTasks();
+    EXPECT_TRUE(callback_helper.DidComplete());
+    EXPECT_FALSE(message_event_listener->DelegateCapability());
+  }
 }
 
 TEST_F(WebFrameTest, FormWithNullFrame) {
@@ -6545,9 +6555,14 @@ class CompositedSelectionBoundsTest
     blink::Node* layer_owner_node_for_start = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(),
         expected_result.Get(context, 0).ToLocalChecked());
-    ASSERT_TRUE(layer_owner_node_for_start);
-    int start_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
-                                         layer_owner_node_for_start);
+    // Hidden selection does not always have a layer (might be hidden due to not
+    // having been painted.
+    ASSERT_TRUE(layer_owner_node_for_start || selection.start.hidden);
+    int start_layer_id = 0;
+    if (layer_owner_node_for_start) {
+      start_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
+                                       layer_owner_node_for_start);
+    }
     if (selection_is_caret) {
       // The selection data are recorded on the caret layer which is the next
       // layer for the current test cases.
@@ -6569,9 +6584,15 @@ class CompositedSelectionBoundsTest
     blink::Node* layer_owner_node_for_end = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(),
         expected_result.Get(context, 5).ToLocalChecked());
-    ASSERT_TRUE(layer_owner_node_for_end);
-    int end_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
-                                       layer_owner_node_for_end);
+    // Hidden selection does not always have a layer (might be hidden due to not
+    // having been painted.
+    ASSERT_TRUE(layer_owner_node_for_end || selection.end.hidden);
+    int end_layer_id = 0;
+    if (layer_owner_node_for_end) {
+      end_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
+                                     layer_owner_node_for_end);
+    }
+
     if (selection_is_caret) {
       // The selection data are recorded on the caret layer which is the next
       // layer for the current test cases.
@@ -6705,6 +6726,12 @@ TEST_F(CompositedSelectionBoundsTest, SVGBasic) {
 }
 TEST_F(CompositedSelectionBoundsTest, SVGTextWithFragments) {
   RunTest("composited_selection_bounds_svg_text_with_fragments.html");
+}
+TEST_F(CompositedSelectionBoundsTest, LargeSelectionScroll) {
+  RunTest("composited_selection_bounds_large_selection_scroll.html");
+}
+TEST_F(CompositedSelectionBoundsTest, LargeSelectionNoScroll) {
+  RunTest("composited_selection_bounds_large_selection_noscroll.html");
 }
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #if !BUILDFLAG(IS_ANDROID)
@@ -8695,7 +8722,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
 
   Element* overlay = document->getElementById("overlay");
   EXPECT_FALSE(Fullscreen::IsFullscreenElement(*overlay));
-  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
+  EXPECT_TRUE(layer_tree_host->background_color().isOpaque());
 
   // It's not legal to switch the fullscreen element while in immersive-ar mode,
   // so set the fullscreen element first before activating that. This requires
@@ -8719,8 +8746,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_TRUE(Fullscreen::IsFullscreenElement(*overlay));
-  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()),
-            SK_AlphaTRANSPARENT);
+  EXPECT_TRUE(!layer_tree_host->background_color().isOpaque());
 
   root_layer = layer_tree_host->root_layer();
   EXPECT_EQ(0u, CcLayersByName(root_layer, view_background_layer_name).size());
@@ -8731,7 +8757,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_FALSE(Fullscreen::IsFullscreenElement(*overlay));
-  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
+  EXPECT_TRUE(layer_tree_host->background_color().isOpaque());
   document->SetIsXrOverlay(false, overlay);
 
   root_layer = layer_tree_host->root_layer();

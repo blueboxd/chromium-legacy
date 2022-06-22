@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/download/public/common/quarantine_connection.h"
+#include "components/file_access/scoped_file_access.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -215,6 +216,7 @@ class MediaObserver;
 class NavigationHandle;
 class NavigationThrottle;
 class NavigationUIData;
+class PrefetchServiceDelegate;
 class QuotaPermissionContext;
 class ReceiverPresentationServiceDelegate;
 class RenderFrameHost;
@@ -747,6 +749,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void UpdateRendererPreferencesForWorker(
       BrowserContext* browser_context,
       blink::RendererPreferences* out_prefs);
+
+  // Requests access to |files| in order to be sent to |destination_url|.
+  // |continuation_callback| is called with a token that should be held until
+  // `open()` operation on the files is finished.
+  virtual void RequestFilesAccess(
+      const std::vector<base::FilePath>& files,
+      const GURL& destination_url,
+      base::OnceCallback<void(file_access::ScopedFileAccess)>
+          continuation_callback);
 
   // Allow the embedder to control if access to file system by a shared worker
   // is allowed.
@@ -2209,6 +2220,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // `render_frame_host`.
   virtual std::unique_ptr<SpeculationHostDelegate>
   CreateSpeculationHostDelegate(RenderFrameHost& render_frame_host);
+
+  // Allows the embedder to provide a PrefetchServiceDelegate that will be used
+  // to make prefetches.
+  virtual std::unique_ptr<PrefetchServiceDelegate>
+  CreatePrefetchServiceDelegate(BrowserContext* browser_context);
 
   // Allows the embedder to show a dialog that will be used to control whether a
   // connection through the Direct Sockets API is permitted. If the connection

@@ -5,40 +5,32 @@
 """Implements commands for serving a TUF repository."""
 
 import argparse
+import contextlib
 import json
 import logging
 import os
 import sys
 
-from common import REPO_ALIAS, run_ffx_command
+from common import REPO_ALIAS, register_device_args, run_ffx_command
+from ffx_integration import get_config
 
 # Contains information about the active ephemeral repository.
 _REPO_CONFIG_FILE = os.path.join('/', 'tmp', 'fuchsia-repo-config')
 
 
-def _configure_ffx_serving():
-    """Configure ffx to allow serving a ffx-managed repository.
+def _ensure_ffx_config(key: str, value: str) -> bool:
+    """Ensures ffx config for a given key is value. Returns True if the config
+    was changed, False otherwise."""
 
-        Returns:
-          True if configuration was updated, otherwise False.
-        """
-    config_updated = False
-    repo_cmd = run_ffx_command(['config', 'get', 'ffx_repository'],
-                               capture_output=True)
-    if 'true' not in repo_cmd.stdout:
-        run_ffx_command(['config', 'set', 'ffx_repository', 'true'])
-        config_updated = True
-
-    server_cmd = run_ffx_command(['config', 'get', 'repository.server.mode'],
-                                 capture_output=True)
-    if 'ffx' not in server_cmd.stdout:
-        run_ffx_command(['config', 'set', 'repository.server.mode', 'ffx'])
-        config_updated = True
-    return config_updated
+    if get_config(key) == value:
+        return False
+    run_ffx_command(['config', 'set', key, value])
+    return True
 
 
 def _stop_serving() -> None:
     """Stop serving a repository configured in _REPO_CONFIG_FILE."""
+
     if not os.path.exists(_REPO_CONFIG_FILE):
         logging.warning('Could not find repository configuration.')
         return
@@ -46,27 +38,33 @@ def _stop_serving() -> None:
     with open(_REPO_CONFIG_FILE, 'r') as file:
         data = json.load(file)
 
+    # Attempt to clean up.
     run_ffx_command(
         ['target', 'repository', 'deregister', '-r', data['repo_name']],
-        data['target'])
-    run_ffx_command(['repository', 'remove', data['repo_name']])
-    run_ffx_command(['repository', 'server', 'stop'])
+        data['target'],
+        check=False)
+    run_ffx_command(['repository', 'remove', data['repo_name']], check=False)
+    run_ffx_command(['repository', 'server', 'stop'], check=False)
     os.remove(_REPO_CONFIG_FILE)
 
 
 def _start_serving(repo_dir: str, repo_name: str, target: str) -> None:
     """Start serving a repository.
-        Args:
-          repo_dir: directory the repository is served from.
-          repo_name: repository name.
-          target: Fuchsia device the repository is served to.
-        """
+
+    Args:
+        repo_dir: directory the repository is served from.
+        repo_name: repository name.
+        target: Fuchsia device the repository is served to.
+    """
 
     if os.path.exists(_REPO_CONFIG_FILE):
         _stop_serving()
 
-    # Check ffx configs, restart daemon if necessary.
-    if _configure_ffx_serving():
+    # Check ffx configs, restart daemon if the configuration was updated.
+    config_updated = False
+    config_updated |= _ensure_ffx_config('ffx_repository', 'true')
+    config_updated |= _ensure_ffx_config('repository.server.mode', '\"ffx\"')
+    if config_updated:
         run_ffx_command(['doctor', '--restart-daemon'])
 
     data = {}
@@ -84,6 +82,7 @@ def _start_serving(repo_dir: str, repo_name: str, target: str) -> None:
 
 def register_serve_args(arg_parser: argparse.ArgumentParser) -> None:
     """Register common arguments for repository serving."""
+
     serve_args = arg_parser.add_argument_group('serve',
                                                'repo serving arguments')
     serve_args.add_argument('--serve-repo',
@@ -92,25 +91,35 @@ def register_serve_args(arg_parser: argparse.ArgumentParser) -> None:
     serve_args.add_argument('--repo-name',
                             default='test',
                             help='Name of the repository.')
-    serve_args.add_argument('--serve-target',
-                            dest='target',
-                            help='Target the repository registers with.')
 
 
 def run_serve_cmd(cmd: str, args: argparse.Namespace) -> None:
     """Helper for running serve commands."""
+
     if cmd == 'start':
-        _start_serving(args.repo, args.repo_name, args.target)
+        _start_serving(args.repo, args.repo_name, args.target_id)
     else:
+        _stop_serving()
+
+
+@contextlib.contextmanager
+def serve_repository(args: argparse.Namespace) -> None:
+    """Context manager for serving a repository."""
+    _start_serving(args.repo, args.repo_name, args.target_id)
+    try:
+        yield None
+    finally:
         _stop_serving()
 
 
 def main():
     """Stand-alone function for serving a repository."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument('cmd',
                         choices=['start', 'stop'],
                         help='Choose to start|stop repository serving.')
+    register_device_args(parser)
     register_serve_args(parser)
     args = parser.parse_args()
     run_serve_cmd(args.cmd, args)

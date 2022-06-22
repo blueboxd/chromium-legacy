@@ -325,7 +325,9 @@ int HttpCache::Transaction::Read(IOBuffer* buf,
 
   DCHECK_EQ(next_state_, STATE_NONE);
   DCHECK(buf);
-  DCHECK_GT(buf_len, 0);
+  // TODO(https://crbug.com/1335423): Change to DCHECK_GT() or remove after bug
+  // is fixed.
+  CHECK_GT(buf_len, 0);
   DCHECK(!callback.is_null());
 
   DCHECK(callback_.is_null());
@@ -3950,7 +3952,7 @@ void HttpCache::Transaction::ChecksumHeaders() {
       "cross-origin-embedder-policy",
       "cross-origin-opener-policy",
       "cross-origin-resource-policy",
-      "location"
+      "location",
       "sec-websocket-accept",
       "sec-websocket-extensions",
       "sec-websocket-key",

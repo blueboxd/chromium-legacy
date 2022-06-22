@@ -117,6 +117,8 @@ class SharedImageBackingOzone::SharedImageRepresentationOverlayOzone
           static_cast<SharedImageBackingOzone*>(backing())->GetNativePixmap();
       gl_image_ = base::MakeRefCounted<gl::GLImageNativePixmap>(
           pixmap->GetBufferSize(), buffer_format);
+      if (backing()->color_space().IsValid())
+        gl_image_->SetColorSpace(backing()->color_space());
       gl_image_->InitializeForOverlay(pixmap);
     }
 
@@ -178,8 +180,8 @@ SharedImageBackingOzone::ProduceDawn(SharedImageManager* manager,
 std::unique_ptr<SharedImageRepresentationGLTexture>
 SharedImageBackingOzone::ProduceGLTexture(SharedImageManager* manager,
                                           MemoryTypeTracker* tracker) {
-  return SharedImageRepresentationGLTextureOzone::Create(
-      manager, this, tracker, pixmap_, format(), plane_);
+  return SharedImageRepresentationGLTextureOzone::Create(manager, this, tracker,
+                                                         pixmap_, plane_);
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
@@ -187,7 +189,7 @@ SharedImageBackingOzone::ProduceGLTexturePassthrough(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
   return SharedImageRepresentationGLTexturePassthroughOzone::Create(
-      manager, this, tracker, pixmap_, format(), plane_);
+      manager, this, tracker, pixmap_, plane_);
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
@@ -446,8 +448,20 @@ bool SharedImageBackingOzone::BeginAccess(
         << "Unexpected write stream: " << static_cast<int>(access_stream)
         << ", " << static_cast<int>(last_write_stream_) << ", "
         << write_streams_count_;
-    // Always need end fence for writes.
-    need_end_fence = true;
+    // Always need end fence for multiple write streams. For single write stream
+    // need an end fence for all usages except for raster using delegated
+    // compositing. If the image will be used for delegated compositing, no need
+    // to put fences at this moment as there are many raster tasks in the CPU gl
+    // context that end up creating a big number of fences, which may have some
+    // performance overhead depending on the gpu. Instead, when these images
+    // will be scheduled as overlays, a single fence will be created.
+    // TODO(crbug.com/1254033): this block of code shall be removed after cc is
+    // able to set a single (duplicated) fence for bunch of tiles instead of
+    // having the SI framework creating fences for each single message when
+    // write access ends.
+    need_end_fence =
+        (write_streams_count_ > 1) ||
+        !(usage() & SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING);
   }
 
   return true;

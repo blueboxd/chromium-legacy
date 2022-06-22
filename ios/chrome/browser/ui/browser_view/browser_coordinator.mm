@@ -8,8 +8,11 @@
 
 #import "base/metrics/histogram_functions.h"
 #import "base/scoped_observation.h"
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/profile_metrics/browser_profile_type.h"
 #import "components/safe_browsing/core/common/features.h"
+#import "components/translate/core/browser/translate_manager.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
@@ -18,6 +21,8 @@
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/external_app_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
+#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/feature_engagement/tracker_util.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -31,6 +36,7 @@
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/sync/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
+#import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
@@ -93,7 +99,6 @@
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/password_protection_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/password_suggestion_coordinator.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_coordinator.h"
@@ -102,8 +107,10 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
 #import "ios/chrome/browser/ui/safe_browsing/safe_browsing_coordinator.h"
+#import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
+#import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/text_fragments/text_fragments_coordinator.h"
@@ -309,10 +316,6 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 
 // The coordinator used for the Text Fragments feature.
 @property(nonatomic, strong) TextFragmentsCoordinator* textFragmentsCoordinator;
-
-// The coordinator for the popup menu.
-@property(nonatomic, strong) PopupMenuCoordinator* popupMenuCoordinator;
-
 @end
 
 @implementation BrowserCoordinator {
@@ -327,6 +330,9 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   SecondaryToolbarCoordinator* _secondaryToolbarCoordinator;
   TabStripCoordinator* _tabStripCoordinator;
   TabStripLegacyCoordinator* _legacyTabStripCoordinator;
+  SideSwipeController* _sideSwipeController;
+  // The coordinator that shows the Send Tab To Self UI.
+  SendTabToSelfCoordinator* _sendTabToSelfCoordinator;
 }
 
 #pragma mark - ChromeCoordinator
@@ -363,6 +369,14 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
     [_toolbarCoordinatorAdaptor
         addToolbarCoordinator:_secondaryToolbarCoordinator];
 
+    _sideSwipeController =
+        [[SideSwipeController alloc] initWithBrowser:browser];
+    _sideSwipeController.toolbarInteractionHandler = _toolbarCoordinatorAdaptor;
+    _sideSwipeController.primaryToolbarSnapshotProvider =
+        _primaryToolbarCoordinator;
+    _sideSwipeController.secondaryToolbarSnapshotProvider =
+        _secondaryToolbarCoordinator;
+
     if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
       if (base::FeatureList::IsEnabled(kModernTabStrip)) {
         _tabStripCoordinator =
@@ -372,6 +386,8 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
             [[TabStripLegacyCoordinator alloc] initWithBrowser:browser];
         _legacyTabStripCoordinator.animationWaitDuration =
             kLegacyFullscreenControllerToolbarAnimationDuration.InSecondsF();
+
+        [_sideSwipeController setTabStripDelegate:_legacyTabStripCoordinator];
       }
     }
   }
@@ -599,16 +615,6 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   // coordinators.
   DCHECK(self.dispatcher);
 
-  self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  self.popupMenuCoordinator.bubblePresenter = _bubblePresenter;
-  self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
-  self.popupMenuCoordinator.popupMenuAppearanceDelegate = self.viewController;
-  [self.popupMenuCoordinator start];
-
-  _legacyTabStripCoordinator.longPressDelegate = self.popupMenuCoordinator;
-
   self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
@@ -822,9 +828,6 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 
   [self.netExportCoordinator stop];
   self.netExportCoordinator = nil;
-
-  [self.popupMenuCoordinator stop];
-  self.popupMenuCoordinator = nil;
 }
 
 // Starts mediators owned by this coordinator.
@@ -836,7 +839,7 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   TabLifecycleDependencies dependencies;
   dependencies.prerenderService =
       PrerenderServiceFactory::GetForBrowserState(browserState);
-  dependencies.sideSwipeController = browserViewController.sideSwipeController;
+  dependencies.sideSwipeController = _sideSwipeController;
   dependencies.downloadManagerCoordinator = self.downloadManagerCoordinator;
   dependencies.baseViewController = browserViewController;
   dependencies.commandDispatcher = self.browser->GetCommandDispatcher();
@@ -873,10 +876,12 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   dependencies.bubblePresenter = _bubblePresenter;
   dependencies.downloadManagerCoordinator = self.downloadManagerCoordinator;
   dependencies.toolbarInterface = _toolbarCoordinatorAdaptor;
+  dependencies.UIUpdater = _toolbarCoordinatorAdaptor;
   dependencies.primaryToolbarCoordinator = _primaryToolbarCoordinator;
   dependencies.secondaryToolbarCoordinator = _secondaryToolbarCoordinator;
   dependencies.tabStripCoordinator = _tabStripCoordinator;
   dependencies.legacyTabStripCoordinator = _legacyTabStripCoordinator;
+  dependencies.sideSwipeController = _sideSwipeController;
 
   return dependencies;
 }
@@ -999,8 +1004,48 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   [self.recentTabsCoordinator start];
 }
 
+- (void)showTranslate {
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+
+  feature_engagement::Tracker* engagement_tracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(browserState);
+  engagement_tracker->NotifyEvent(
+      feature_engagement::events::kTriggeredTranslateInfobar);
+
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+  DCHECK(currentWebState);
+
+  ChromeIOSTranslateClient* translateClient =
+      ChromeIOSTranslateClient::FromWebState(currentWebState);
+  if (translateClient) {
+    translate::TranslateManager* translateManager =
+        translateClient->GetTranslateManager();
+    DCHECK(translateManager);
+    translateManager->ShowTranslateUI(/*auto_translate=*/true);
+  }
+}
+
+- (void)showHelpPage {
+  GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
+  UrlLoadParams params = UrlLoadParams::InNewTab(helpUrl);
+  params.append_to = kCurrentTab;
+  params.user_initiated = NO;
+  params.in_incognito = self.browser->GetBrowserState()->IsOffTheRecord();
+  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
+}
+
 - (void)showAddCreditCard {
   [self.addCreditCardCoordinator start];
+}
+
+- (void)showSendTabToSelfUI:(const GURL&)url title:(NSString*)title {
+  _sendTabToSelfCoordinator = [[SendTabToSelfCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                             url:url
+                           title:title];
+  [_sendTabToSelfCoordinator start];
 }
 
 - (void)dismissBadgePopupMenu {

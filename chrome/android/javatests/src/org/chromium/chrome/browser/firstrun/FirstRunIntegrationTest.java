@@ -9,7 +9,6 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
-import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.when;
@@ -67,11 +66,12 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
+import org.chromium.chrome.browser.customtabs.CustomTabsIntentTestUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.chrome.browser.enterprise.util.FakeEnterpriseInfo;
 import org.chromium.chrome.browser.firstrun.FirstRunActivityTestObserver.ScopedObserverData;
+import org.chromium.chrome.browser.firstrun.ToSAndUMAFirstRunFragment.Observer;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManagerDelegate;
@@ -270,6 +270,15 @@ public class FirstRunIntegrationTest {
         EnterpriseInfo.setInstanceForTest(fakeEnterpriseInfo);
     }
 
+    private void setTosAccepted(boolean allowCrashUpload) {
+        FirstRunStatus.setSkipWelcomePage(true);
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        sharedPreferencesManager.writeBoolean(
+                ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
+        sharedPreferencesManager.writeBoolean(
+                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER, allowCrashUpload);
+    }
+
     private void enableCloudManagementViaPolicy() {
         setHasAppRestrictionForMock(true);
         Bundle restrictions = new Bundle();
@@ -278,7 +287,8 @@ public class FirstRunIntegrationTest {
     }
 
     private void launchCustomTabs(String url) {
-        mContext.startActivity(CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, url));
+        mContext.startActivity(
+                CustomTabsIntentTestUtils.createMinimalCustomTabIntent(mContext, url));
     }
 
     private void launchViewIntent(String url) {
@@ -572,6 +582,7 @@ public class FirstRunIntegrationTest {
 
     private void initializePreferences(FirstRunPagesTestCase testCase) throws Exception {
         if (testCase.cctTosDisabled()) skipTosDialogViaPolicy();
+        if (testCase.isTosAccepted()) setTosAccepted(testCase.isUmaUploadAccepted());
 
         mDelegate = new TestFirstRunFlowSequencerDelegate(testCase);
         FirstRunFlowSequencer.setDelegateForTesting(mDelegate);
@@ -651,7 +662,7 @@ public class FirstRunIntegrationTest {
     public void testExitFirstRunWithPolicy() throws Exception {
         initializePreferences(new FirstRunPagesTestCase().withCctTosDisabled());
 
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, TEST_URL);
+        Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(mContext, TEST_URL);
         mContext.startActivity(intent);
 
         FirstRunActivity freActivity = waitForActivity(FirstRunActivity.class);
@@ -676,7 +687,7 @@ public class FirstRunIntegrationTest {
         // policy set in this test case.
         FirstRunStatus.setFirstRunSkippedByPolicy(true);
 
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+        Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
                 mContext, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         mContext.startActivity(intent);
         CustomTabActivity activity = waitForActivity(CustomTabActivity.class);
@@ -718,7 +729,7 @@ public class FirstRunIntegrationTest {
         skipTosDialogViaPolicy();
         FirstRunStatus.setSkipWelcomePage(true);
 
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, TEST_URL);
+        Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(mContext, TEST_URL);
         mContext.startActivity(intent);
 
         FirstRunActivity freActivity = waitForActivity(FirstRunActivity.class);
@@ -739,20 +750,18 @@ public class FirstRunIntegrationTest {
     public void testFastDestroy() {
         // Inspired by crbug.com/1119548, where onDestroy() before triggerLayoutInflation() caused
         // a crash.
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, TEST_URL);
+        Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(mContext, TEST_URL);
         mContext.startActivity(intent);
     }
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1197556")
     public void testResetOnBackPress() throws Exception {
         testResetOnBackPressImpl(true);
     }
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1197556")
     public void testResetOnBackPress_NoUmaAccepted() throws Exception {
         testResetOnBackPressImpl(false);
     }
@@ -762,28 +771,36 @@ public class FirstRunIntegrationTest {
         // When the policy initialization is finishing after ToS accepted, the small loading circle
         // will be shown on the screen. If user decide to go back with backpress, the UI should be
         // reset with ToS UI visible.
-        FirstRunStatus.setSkipWelcomePage(true);
-        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
-        sharedPreferencesManager.writeBoolean(
-                ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
-        sharedPreferencesManager.writeBoolean(
-                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER,
-                allowedCrashUpLoad);
-        setHasAppRestrictionForMock(false);
+        FirstRunPagesTestCase testCase = new FirstRunPagesTestCase()
+                                                 .withSigninPromo()
+                                                 .withTosAlreadyAccepted()
+                                                 .setUmaUploadAccepted(allowedCrashUpLoad);
+        initializePreferences(testCase);
+
+        // In this specific setup the policy loading call will be notified before ToS fragment is
+        // finishing initialization, as FRE might attach to the PolicyLoaderListener first. To make
+        // sure no race condition happen, use TosAndUmaObserver to make sure the call is invoked.
+        CallbackHelper tosPagePolicyLoadingListener = new CallbackHelper();
+        ToSAndUMAFirstRunFragment.setObserverForTesting(new Observer() {
+            @Override
+            public void onNativeInitialized() {}
+
+            @Override
+            public void onPolicyServiceInitialized() {
+                tosPagePolicyLoadingListener.notifyCalled();
+            }
+
+            @Override
+            public void onHideLoadingUIComplete() {}
+        });
+
         FirstRunActivity freActivity = launchFirstRunActivity();
 
-        // ToS page should be skipped and jumped to the next page, since ToS is marked accepted in
-        // shared preference.
-        ScopedObserverData scopedObserverData = getObserverData(freActivity);
-        scopedObserverData.createPostNativeAndPoliciesPageSequenceCallback.waitForCallback(
-                "Failed to finalize the flow.", 0);
-        CriteriaHelper.pollUiThread(
-                () -> Criteria.checkThat(freActivity.isNativeSideIsInitializedForTest(), is(true)));
-        scopedObserverData.jumpToPageCallback.waitForCallback(
-                "ToS should be skipped after native initialized.", 0);
-
-        // Press back button.
-        TestThreadUtils.runOnUiThreadBlocking(() -> mLastActivity.onBackPressed());
+        FirstRunNavigationHelper navHelper = new FirstRunNavigationHelper(freActivity)
+                                                     .ensurePagesCreationSucceeded()
+                                                     .ensureSigninPromoIsCurrentPage();
+        tosPagePolicyLoadingListener.waitForFirst();
+        navHelper.goBackToPreviousPage().ensureTermsOfServiceIsCurrentPage();
 
         View tosAndPrivacy = mLastActivity.findViewById(R.id.tos_and_privacy);
         CheckBox umaCheckbox = mLastActivity.findViewById(R.id.send_report_checkbox);
@@ -1227,6 +1244,9 @@ public class FirstRunIntegrationTest {
         private @SearchEnginePromoType int mSearchPromoType = SearchEnginePromoType.DONT_SHOW;
         private boolean mShowSigninPromo;
 
+        private boolean mIsTosAccepted;
+        private boolean mIsUmaUploadAccepted;
+
         boolean cctTosDisabled() {
             return mCctTosDisabled;
         }
@@ -1245,6 +1265,14 @@ public class FirstRunIntegrationTest {
             return mShowSigninPromo;
         }
 
+        boolean isTosAccepted() {
+            return mIsTosAccepted;
+        }
+
+        boolean isUmaUploadAccepted() {
+            return mIsUmaUploadAccepted;
+        }
+
         FirstRunPagesTestCase setCctTosDisabled(boolean cctTosDisabled) {
             mCctTosDisabled = cctTosDisabled;
             return this;
@@ -1260,6 +1288,16 @@ public class FirstRunIntegrationTest {
             return this;
         }
 
+        FirstRunPagesTestCase setTosAccepted(boolean tosAccepted) {
+            mIsTosAccepted = tosAccepted;
+            return this;
+        }
+
+        FirstRunPagesTestCase setUmaUploadAccepted(boolean umaUploadAccepted) {
+            mIsUmaUploadAccepted = umaUploadAccepted;
+            return this;
+        }
+
         FirstRunPagesTestCase withCctTosDisabled() {
             return setCctTosDisabled(true);
         }
@@ -1270,6 +1308,15 @@ public class FirstRunIntegrationTest {
 
         FirstRunPagesTestCase withSigninPromo() {
             return setSigninPromo(true);
+        }
+
+        // Used assuming user has previously accepted ToS and move to the following pages.
+        FirstRunPagesTestCase withTosAlreadyAccepted() {
+            return setTosAccepted(true);
+        }
+
+        FirstRunPagesTestCase withUmaUploadAccepted() {
+            return setUmaUploadAccepted(true);
         }
 
         static FirstRunPagesTestCase createWithShowAllPromos() {

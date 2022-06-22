@@ -87,6 +87,7 @@
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_navigation_throttle.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
+#include "chrome/browser/prefetch/prefetch_proxy/chrome_prefetch_service_delegate.h"
 #include "chrome/browser/prefetch/prefetch_proxy/chrome_speculation_host_delegate.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_service.h"
@@ -426,6 +427,7 @@
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_scoped_file_access_delegate.h"
 #include "chrome/browser/chromeos/tablet_mode/chrome_content_browser_client_tablet_mode_part.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
@@ -1381,6 +1383,9 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
           embedder_support::ForceMajorVersionToMinorPosition::kDefault));
   registry->RegisterBooleanPref(
       policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed, true);
+
+  // TODO(crbug.com/1277431): Disable it by default in M109.
+  registry->RegisterBooleanPref(policy::policy_prefs::kEventPathEnabled, true);
 }
 
 // static
@@ -2404,6 +2409,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                 : blink::switches::
                       kUnthrottledNestedTimeoutPolicy_ForceDisable);
       }
+      // Override EventPath feature if its Enterprise Policy is specified.
+      if (prefs->HasPrefPath(policy::policy_prefs::kEventPathEnabled)) {
+        command_line->AppendSwitchASCII(
+            blink::switches::kEventPathPolicy,
+            prefs->GetBoolean(policy::policy_prefs::kEventPathEnabled)
+                ? blink::switches::kEventPathPolicy_ForceEnable
+                : blink::switches::kEventPathPolicy_ForceDisable);
+      }
 
       // The IntensiveWakeUpThrottling feature is typically managed via a
       // base::Feature, but it has a managed policy override. The override is
@@ -2709,6 +2722,27 @@ bool ChromeContentBrowserClient::AllowSignedExchange(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile->GetPrefs()->GetBoolean(prefs::kSignedHTTPExchangeEnabled);
+}
+
+void ChromeContentBrowserClient::RequestFilesAccess(
+    const std::vector<base::FilePath>& files,
+    const GURL& destination_url,
+    base::OnceCallback<void(file_access::ScopedFileAccess)>
+        continuation_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if BUILDFLAG(IS_CHROMEOS)
+  auto* delegate = policy::DlpScopedFileAccessDelegate::Get();
+  if (delegate) {
+    delegate->RequestFilesAccess(files, destination_url,
+                                 std::move(continuation_callback));
+  } else {
+    std::move(continuation_callback)
+        .Run(file_access::ScopedFileAccess::Allowed());
+  }
+#else
+  std::move(continuation_callback)
+      .Run(file_access::ScopedFileAccess::Allowed());
+#endif
 }
 
 void ChromeContentBrowserClient::AllowWorkerFileSystem(
@@ -4296,13 +4330,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #endif  // BUILDFLAG(DFMIFY_DEV_UI)
 
 #elif BUILDFLAG(ENABLE_EXTENSIONS)
-  if (handle->IsInMainFrame()) {
-    // Redirect some navigations to apps that have registered matching URL
-    // handlers ('url_handlers' in the manifest).
-    MaybeAddThrottle(
-        PlatformAppNavigationRedirector::MaybeCreateThrottleFor(handle),
-        &throttles);
-  }
+  // Redirect some navigations to apps that have registered matching URL
+  // handlers ('url_handlers' in the manifest).
+  MaybeAddThrottle(
+      PlatformAppNavigationRedirector::MaybeCreateThrottleFor(handle),
+      &throttles);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6463,6 +6495,12 @@ std::unique_ptr<content::SpeculationHostDelegate>
 ChromeContentBrowserClient::CreateSpeculationHostDelegate(
     content::RenderFrameHost& render_frame_host) {
   return std::make_unique<ChromeSpeculationHostDelegate>(render_frame_host);
+}
+
+std::unique_ptr<content::PrefetchServiceDelegate>
+ChromeContentBrowserClient::CreatePrefetchServiceDelegate(
+    content::BrowserContext* browser_context) {
+  return std::make_unique<ChromePrefetchServiceDelegate>(browser_context);
 }
 
 void ChromeContentBrowserClient::OnWebContentsCreated(

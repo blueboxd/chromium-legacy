@@ -99,6 +99,9 @@
         'test': 'chrome_public_test_apk',
       },
       'chrome_public_unit_test_apk': {
+        'swarming': {
+          'shards': 4,
+        },
         'mixins': [
           'skia_gold_test',
         ],
@@ -2746,6 +2749,7 @@
         'args': [
           '--extra-browser-args=--force_high_performance_gpu',
           '--retry-limit=3',
+          '--jobs=1',
         ],
         'linux_args': [
           '--extra-browser-args=--enable-features=Vulkan',
@@ -2764,6 +2768,7 @@
         'args': [
           '--extra-browser-args=--force_high_performance_gpu',
           '--retry-limit=3',
+          '--jobs=1',
         ],
         'linux_args': [
           '--extra-browser-args=--enable-features=Vulkan',
@@ -2783,6 +2788,7 @@
           '--extra-browser-args=--force_high_performance_gpu',
           '--enable-dawn-backend-validation',
           '--retry-limit=3',
+          '--jobs=1',
         ],
         'linux_args': [
           '--extra-browser-args=--enable-features=Vulkan',
@@ -3941,9 +3947,9 @@
     },
 
     'lacros_skylab_amd64_fyi': {
-      'lacros_all_tast_tests_informational': {
-        'tast_expr': '("group:mainline" && "dep:lacros" && informational)',
-        'timeout_sec': 25200,
+      'lacros_fyi_tast_tests': {
+        'tast_expr': '("group:mainline" && "dep:lacros" && !informational || "name:lacros.VariationSmoke")',
+        'timeout_sec': 10800,
       },
       'ozone_unittests': {
         'timeout_sec': 3600,
@@ -4430,7 +4436,6 @@
       # Run popular tests other than capture_unittests, crashpad_tests,
       # content_browsertests, and perfetto_unittests because they fail.
       'absl_hardening_tests': {},
-      'angle_end2end_tests': {},
       'angle_unittests': {
         'args': [
           'angle_unittests',
@@ -4499,7 +4504,11 @@
       'storage_unittests': {},
       'ui_base_unittests': {},
       'ui_touch_selection_unittests': {},
-      'unit_tests': {},
+      'unit_tests': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
       'url_unittests': {},
       'webkit_unit_tests': {
         'test': 'blink_unittests',
@@ -6073,7 +6082,6 @@
       'gpu_info_collection_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
@@ -6133,7 +6141,7 @@
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 
-    'gpu_common_linux_telemetry_tests': [
+    'gpu_common_linux_and_mac_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
@@ -6177,12 +6185,6 @@
       'gpu_common_gtests_passthrough',
     ],
 
-    'gpu_dawn_integration_gtests_validating': [
-      'gpu_dawn_gtests',
-      'gpu_dawn_gtests_with_validation',
-      'gpu_common_gtests_validating',
-    ],
-
     'gpu_dawn_isolated_scripts': [
       'gpu_dawn_perf_smoke_isolated_scripts',
       'gpu_webgpu_integration_isolated_scripts',
@@ -6207,7 +6209,6 @@
     'gpu_desktop_mac_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_passthrough',
-      'gpu_common_gtests_validating',
       'gpu_desktop_specific_gtests',
     ],
 
@@ -6314,57 +6315,18 @@
       'gpu_skia_renderer_vulkan_passthrough_telemetry_tests',
     ],
 
-    # The same as gpu_fyi_mac_debug_gtests but with validating tests removed
-    # due to capacity issues on AMD Macbooks.
-    'gpu_fyi_mac_amd_debug_gtests': [
-      'gpu_angle_unit_gtests',
-      'gpu_common_gtests_passthrough',
-      'gpu_fyi_and_optional_non_linux_gtests',
-      'gpu_fyi_mac_specific_gtests',
-      'gpu_gles2_conform_gtests',
-    ],
-
-    # The same as gpu_fyi_mac_release_gtests but with validating tests removed
-    # due to capacity issues on AMD Macbooks.
-    'gpu_fyi_mac_amd_release_gtests': [
-      'gpu_angle_unit_gtests',
-      'gpu_common_gtests_passthrough',
-      'gpu_desktop_specific_gtests',
-      'gpu_fyi_and_optional_non_linux_gtests',
-      'gpu_fyi_mac_specific_gtests',
-      'gpu_gles2_conform_gtests',
-    ],
-
-    # The same as gpu_fyi_mac_release_telemetry_tests but with validating
-    # tests removed due to capacity issues on AMD Macbooks.
-    'gpu_fyi_mac_amd_release_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_mediapipe_passthrough_telemetry_tests',
-      'gpu_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
-    ],
-
     'gpu_fyi_mac_debug_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_passthrough',
-      'gpu_common_gtests_validating',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
       'gpu_gles2_conform_gtests',
     ],
 
-    # Validating tests removed since this group is only used on AMD Macbooks and
-    # we don't want to run those tests there due to capacity issues.
     'gpu_fyi_mac_debug_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
-      # 'gpu_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      # 'gpu_webgl_conformance_validating_telemetry_tests',
     ],
 
     'gpu_fyi_mac_pro_release_telemetry_tests': [
@@ -6377,7 +6339,6 @@
     'gpu_fyi_mac_release_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_passthrough',
-      'gpu_common_gtests_validating',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
@@ -6387,16 +6348,12 @@
     'gpu_fyi_mac_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_mediapipe_passthrough_telemetry_tests',
-      'gpu_mediapipe_validating_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
-      'gpu_validating_telemetry_tests',
       'gpu_webcodecs_telemetry_test',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
@@ -6494,13 +6451,6 @@
     'gpu_v8_desktop_passthrough_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
-    ],
-
-    'gpu_v8_desktop_validating_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_validating_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
@@ -7505,12 +7455,6 @@
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
-      'gpu_mediapipe_validating_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
-        ],
-      },
       'gpu_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
@@ -7528,11 +7472,6 @@
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
-        ],
-      },
-      'gpu_webgl2_conformance_validating_telemetry_tests': {
-        'variants': [
-          'MAC_MINI_INTEL_GPU_STABLE',
         ],
       },
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {

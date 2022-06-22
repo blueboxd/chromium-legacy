@@ -314,7 +314,19 @@ std::ostream& operator<<(std::ostream& os, const FeatureTestParams& params) {
   return os;
 }
 
-constexpr FeatureTestParams kAllFeatureConfigs[] = {
+class HeapProfilerControllerFeatureTest
+    : public HeapProfilerControllerTest,
+      public ::testing::WithParamInterface<FeatureTestParams> {
+ public:
+  HeapProfilerControllerFeatureTest()
+      : HeapProfilerControllerTest(GetParam().feature_enabled,
+                                   GetParam().supported_processes,
+                                   GetParam().stable.probability,
+                                   GetParam().nonstable.probability) {}
+};
+
+// Test the feature on various channels.
+constexpr FeatureTestParams kChannelConfigs[] = {
     // Disabled.
     {
         .feature_enabled = false,
@@ -345,6 +357,60 @@ constexpr FeatureTestParams kAllFeatureConfigs[] = {
         .stable = {.probability = 0.0, .expect_browser_sample = false},
         .nonstable = {.probability = 1.0, .expect_browser_sample = true},
     },
+};
+
+using HeapProfilerControllerChannelTest = HeapProfilerControllerFeatureTest;
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HeapProfilerControllerChannelTest,
+                         ::testing::ValuesIn(kChannelConfigs));
+
+TEST_P(HeapProfilerControllerChannelTest, StableChannel) {
+  StartHeapProfiling(
+      version_info::Channel::STABLE, ProcessType::kBrowser,
+      base::BindRepeating(&HeapProfilerControllerTest::RecordSampleReceived,
+                          base::Unretained(this)));
+  EXPECT_EQ(HeapProfilerController::GetProfilingEnabled(),
+            GetParam().stable.expect_browser_sample
+                ? HeapProfilerController::ProfilingEnabled::kEnabled
+                : HeapProfilerController::ProfilingEnabled::kDisabled);
+  histogram_tester_.ExpectUniqueSample(
+      "HeapProfiling.InProcess.Enabled.Browser",
+      GetParam().stable.expect_browser_sample, 1);
+  histogram_tester_.ExpectUniqueSample("HeapProfiling.InProcess.Enabled",
+                                       GetParam().stable.expect_browser_sample,
+                                       1);
+  AddOneSampleAndWait();
+  EXPECT_EQ(sample_received_, GetParam().stable.expect_browser_sample);
+}
+
+// TODO(crbug.com/1302007): This test hangs on iPad device.
+#if BUILDFLAG(IS_IOS)
+#define MAYBE_CanaryChannel DISABLED_CanaryChannel
+#else
+#define MAYBE_CanaryChannel CanaryChannel
+#endif
+TEST_P(HeapProfilerControllerChannelTest, MAYBE_CanaryChannel) {
+  StartHeapProfiling(
+      version_info::Channel::CANARY, ProcessType::kBrowser,
+      base::BindRepeating(&HeapProfilerControllerTest::RecordSampleReceived,
+                          base::Unretained(this)));
+  EXPECT_EQ(HeapProfilerController::GetProfilingEnabled(),
+            GetParam().nonstable.expect_browser_sample
+                ? HeapProfilerController::ProfilingEnabled::kEnabled
+                : HeapProfilerController::ProfilingEnabled::kDisabled);
+  histogram_tester_.ExpectUniqueSample(
+      "HeapProfiling.InProcess.Enabled.Browser",
+      GetParam().nonstable.expect_browser_sample, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "HeapProfiling.InProcess.Enabled",
+      GetParam().nonstable.expect_browser_sample, 1);
+  AddOneSampleAndWait();
+  EXPECT_EQ(sample_received_, GetParam().nonstable.expect_browser_sample);
+}
+
+// Test the feature in various processes.
+constexpr FeatureTestParams kProcessConfigs[] = {
     // Enabled in parent process only.
     {
         .supported_processes = "browser",
@@ -366,32 +432,15 @@ constexpr FeatureTestParams kAllFeatureConfigs[] = {
         .nonstable = {.expect_browser_sample = true,
                       .expect_child_sample = true},
     },
-    // Setting an unsupported process type can never work.
-    {
-        .supported_processes = "unknown",
-        .stable = {.expect_browser_sample = false,
-                   .expect_child_sample = false},
-        .nonstable = {.expect_browser_sample = false,
-                      .expect_child_sample = false},
-    },
 };
 
-class HeapProfilerControllerFeatureTest
-    : public HeapProfilerControllerTest,
-      public ::testing::WithParamInterface<FeatureTestParams> {
- public:
-  HeapProfilerControllerFeatureTest()
-      : HeapProfilerControllerTest(GetParam().feature_enabled,
-                                   GetParam().supported_processes,
-                                   GetParam().stable.probability,
-                                   GetParam().nonstable.probability) {}
-};
+using HeapProfilerControllerProcessTest = HeapProfilerControllerFeatureTest;
 
 INSTANTIATE_TEST_SUITE_P(All,
-                         HeapProfilerControllerFeatureTest,
-                         ::testing::ValuesIn(kAllFeatureConfigs));
+                         HeapProfilerControllerProcessTest,
+                         ::testing::ValuesIn(kProcessConfigs));
 
-TEST_P(HeapProfilerControllerFeatureTest, StableChannel) {
+TEST_P(HeapProfilerControllerProcessTest, BrowserProcess) {
   StartHeapProfiling(
       version_info::Channel::STABLE, ProcessType::kBrowser,
       base::BindRepeating(&HeapProfilerControllerTest::RecordSampleReceived,
@@ -400,6 +449,9 @@ TEST_P(HeapProfilerControllerFeatureTest, StableChannel) {
             GetParam().stable.expect_browser_sample
                 ? HeapProfilerController::ProfilingEnabled::kEnabled
                 : HeapProfilerController::ProfilingEnabled::kDisabled);
+  histogram_tester_.ExpectUniqueSample(
+      "HeapProfiling.InProcess.Enabled.Browser",
+      GetParam().stable.expect_browser_sample, 1);
   histogram_tester_.ExpectUniqueSample("HeapProfiling.InProcess.Enabled",
                                        GetParam().stable.expect_browser_sample,
                                        1);
@@ -407,29 +459,7 @@ TEST_P(HeapProfilerControllerFeatureTest, StableChannel) {
   EXPECT_EQ(sample_received_, GetParam().stable.expect_browser_sample);
 }
 
-// TODO(crbug.com/1302007): This test hangs on iPad device.
-#if BUILDFLAG(IS_IOS)
-#define MAYBE_CanaryChannel DISABLED_CanaryChannel
-#else
-#define MAYBE_CanaryChannel CanaryChannel
-#endif
-TEST_P(HeapProfilerControllerFeatureTest, MAYBE_CanaryChannel) {
-  StartHeapProfiling(
-      version_info::Channel::CANARY, ProcessType::kBrowser,
-      base::BindRepeating(&HeapProfilerControllerTest::RecordSampleReceived,
-                          base::Unretained(this)));
-  EXPECT_EQ(HeapProfilerController::GetProfilingEnabled(),
-            GetParam().nonstable.expect_browser_sample
-                ? HeapProfilerController::ProfilingEnabled::kEnabled
-                : HeapProfilerController::ProfilingEnabled::kDisabled);
-  histogram_tester_.ExpectUniqueSample(
-      "HeapProfiling.InProcess.Enabled",
-      GetParam().nonstable.expect_browser_sample, 1);
-  AddOneSampleAndWait();
-  EXPECT_EQ(sample_received_, GetParam().nonstable.expect_browser_sample);
-}
-
-TEST_P(HeapProfilerControllerFeatureTest, ChildProcess) {
+TEST_P(HeapProfilerControllerProcessTest, ChildProcess) {
   StartHeapProfiling(
       version_info::Channel::STABLE, ProcessType::kUtility,
       base::BindRepeating(&HeapProfilerControllerTest::RecordSampleReceived,
@@ -438,6 +468,9 @@ TEST_P(HeapProfilerControllerFeatureTest, ChildProcess) {
             GetParam().stable.expect_child_sample
                 ? HeapProfilerController::ProfilingEnabled::kEnabled
                 : HeapProfilerController::ProfilingEnabled::kDisabled);
+  histogram_tester_.ExpectUniqueSample(
+      "HeapProfiling.InProcess.Enabled.Utility",
+      GetParam().stable.expect_child_sample, 1);
   histogram_tester_.ExpectUniqueSample("HeapProfiling.InProcess.Enabled",
                                        GetParam().stable.expect_child_sample,
                                        1);
@@ -445,19 +478,38 @@ TEST_P(HeapProfilerControllerFeatureTest, ChildProcess) {
   EXPECT_EQ(sample_received_, GetParam().stable.expect_child_sample);
 }
 
-TEST_P(HeapProfilerControllerFeatureTest, UnhandledProcess) {
+class HeapProfilerControllerUnknownProcessTest
+    : public HeapProfilerControllerTest {
+ protected:
+  HeapProfilerControllerUnknownProcessTest()
+      : HeapProfilerControllerTest(
+            /*feature_enabled=*/true,
+            /*supported_processes=*/"browser;unrecognized-process-string") {}
+};
+
+TEST_F(HeapProfilerControllerUnknownProcessTest, UnknownParamString) {
+  // Unrecognized string in `supported_processes` should safely be ignored.
+  StartHeapProfiling(version_info::Channel::STABLE, ProcessType::kBrowser,
+                     base::DoNothing());
+  EXPECT_EQ(HeapProfilerController::GetProfilingEnabled(),
+            HeapProfilerController::ProfilingEnabled::kEnabled);
+  histogram_tester_.ExpectUniqueSample(
+      "HeapProfiling.InProcess.Enabled.Browser", true, 1);
+  histogram_tester_.ExpectUniqueSample("HeapProfiling.InProcess.Enabled", true,
+                                       1);
+}
+
+TEST_F(HeapProfilerControllerUnknownProcessTest, UnhandledProcess) {
   // Starting the heap profiler in an unhandled process type should safely do
   // nothing.
-  StartHeapProfiling(
-      version_info::Channel::STABLE, ProcessType::kUnknown,
-      base::BindRepeating(&HeapProfilerControllerTest::RecordSampleReceived,
-                          base::Unretained(this)));
+  StartHeapProfiling(version_info::Channel::STABLE, ProcessType::kUnknown,
+                     base::DoNothing());
   EXPECT_EQ(HeapProfilerController::GetProfilingEnabled(),
             HeapProfilerController::ProfilingEnabled::kDisabled);
-  histogram_tester_.ExpectUniqueSample("HeapProfiling.InProcess.Enabled", false,
-                                       1);
-  AddOneSampleAndWait();
-  EXPECT_FALSE(sample_received_);
+  // The Enabled summary histogram should not be logged for unsupported
+  // processes, because they're not included in the per-process histograms that
+  // are aggregated into it.
+  histogram_tester_.ExpectTotalCount("HeapProfiling.InProcess.Enabled", 0);
 }
 
 }  // namespace

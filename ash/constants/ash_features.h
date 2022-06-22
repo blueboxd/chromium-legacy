@@ -333,6 +333,8 @@ extern const base::Feature kHelpAppSearchServiceIntegration;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kHibernate;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kHiddenNetworkMigration;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kHiddenNetworkWarning;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kHideArcMediaNotifications;
@@ -361,6 +363,7 @@ extern const base::Feature kImprovedDesksKeyboardShortcuts;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kImprovedLoginErrorHandling;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kInstantTethering;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kJelly;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosOnly;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosPrimary;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosSupport;
@@ -543,6 +546,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kShimlessRMAEnableStandalone;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShimlessRMAOsUpdate;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kShimlessRMADisableDarkMode;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kShowBluetoothDebugLogToggle;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kShowPlayInDemoMode;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -577,6 +582,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSystemProxyForSystemServices;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTabClusterUI;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTelemetryExtension;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kTerminalAlternativeRenderer;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTerminalDev;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kTerminalMultiProfile;
@@ -585,6 +592,7 @@ extern const base::Feature kTerminalTmuxIntegration;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kTrafficCountersEnabled;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTrilinearFiltering;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kUploadOfficeToCloud;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kUsbNotificationController;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -711,6 +719,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsInputInDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsInputNoiseCancellationUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsJellyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsKeyboardBacklightToggleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLanguagePacksEnabled();
@@ -810,6 +819,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSimLockPolicyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAStandaloneAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAOsUpdateEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMADarkModeDisabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSnoopingProtectionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsStartAssistantAudioDecoderOnDemandEnabled();

@@ -919,13 +919,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSuggestionsScrollingOnIPadName,
      flag_descriptions::kEnableSuggestionsScrollingOnIPadDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableSuggestionsScrollingOnIPad)},
-    {"enable-expkit-apple-calendar",
-     flag_descriptions::kEnableExpKitAppleCalendarName,
-     flag_descriptions::kEnableExpKitAppleCalendarDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableExpKitAppleCalendar)},
     {"experience-kit-calendar", flag_descriptions::kCalendarExperienceKitName,
      flag_descriptions::kCalendarExperienceKitDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCalendarExperienceKit)},
+    {"enable-expkit-calendar-text-classifier",
+     flag_descriptions::kEnableExpKitCalendarTextClassifierName,
+     flag_descriptions::kEnableExpKitCalendarTextClassifierDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableExpKitCalendarTextClassifier)},
     {"https-only-mode", flag_descriptions::kHttpsOnlyModeName,
      flag_descriptions::kHttpsOnlyModeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(security_interstitials::features::kHttpsOnlyMode)},
@@ -976,6 +976,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ios-password-ui-split", flag_descriptions::kIOSPasswordUISplitName,
      flag_descriptions::kIOSPasswordUISplitDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordUISplit)},
+    {"omnibox-adaptive-suggestions-count",
+     flag_descriptions::kAdaptiveSuggestionsCountName,
+     flag_descriptions::kAdaptiveSuggestionsCountDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kAdaptiveSuggestionsCount)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

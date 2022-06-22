@@ -15,6 +15,11 @@ const char kAddPasswordsInSettingsName[] = "Add passwords in settings";
 const char kAddPasswordsInSettingsDescription[] =
     "Enables manually creating password credentials from the settings";
 
+const char kAdaptiveSuggestionsCountName[] = "Omnibox adaptive suggestions";
+const char kAdaptiveSuggestionsCountDescription[] =
+    "Allows Omnibox to dynamically adjust number of offered suggestions to "
+    "fill in the space between Omnibox and the soft keyboard.";
+
 const char kAutofillCreditCardUploadName[] =
     "Offers uploading Autofilled credit cards";
 const char kAutofillCreditCardUploadDescription[] =
@@ -123,16 +128,16 @@ const char kBookmarkStringDescription[] =
     "This flag is used to change the string of the action allowing the user to "
     "bookmark a page from the overflow menu.";
 
-const char kEnableExpKitAppleCalendarName[] =
-    "Enable Add Apple Calendar Events from long pressing dates";
-const char kEnableExpKitAppleCalendarDescription[] =
-    "When enabled, Experience Kit Calendar suggest the use of the Apple "
-    "Calendar via the context menu";
-
 extern const char kCalendarExperienceKitName[] = "Experience Kit Calendar";
 extern const char kCalendarExperienceKitDescription[] =
     "When enabled, long pressing on dates will trigger Experience Kit Calendar "
     "event handling";
+
+extern const char kEnableExpKitCalendarTextClassifierName[] =
+    "Text Classifier in Experience Kit Calendar";
+extern const char kEnableExpKitCalendarTextClassifierDescription[] =
+    "When enabled, Experience Kit Calendar will use Text Classifier library in "
+    "entity detection where possible.";
 
 const char kContentSuggestionsHeaderMigrationName[] =
     "Content Suggestions header migration";

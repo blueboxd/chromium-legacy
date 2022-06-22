@@ -168,17 +168,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             'crbug.com/626703 [ Mac10.10 ] external/wpt/test/path.html [ Timeout ]\n'
         )
 
-    def test_cmd_arg_include_unexpected_pass_raieses_exception(self):
-        host = self.mock_host()
-        expectations_path = \
-            host.port_factory.get().path_to_generic_test_expectations_file()
-        host.filesystem.write_text_file(expectations_path,
-                                        WPTExpectationsUpdater.MARKER_COMMENT + '\n')
-        updater = WPTExpectationsUpdater(host, args=['--include-unexpected-pass'])
-        with self.assertRaises(AssertionError) as ctx:
-            updater.run()
-        self.assertIn('--include-unexpected-pass', str(ctx.exception))
-
     def test_get_failing_results_dict_only_passing_results(self):
         host = self.mock_host()
         result = """
@@ -451,10 +440,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 SimpleTestResult('PASS', 'MISSING MISSING', 'bug')), {'Skip'})
         self.assertEqual(
             updater.get_expectations(
-                SimpleTestResult('PASS', 'TIMEOUT', 'bug'),
-                test_name='foo/bar-manual.html'), {'Skip'})
-        self.assertEqual(
-            updater.get_expectations(
                 SimpleTestResult('PASS', 'FAIL', 'bug'),
                 test_name='external/wpt/webdriver/foo/a'), {'Failure'})
 
@@ -593,28 +578,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             configs_to_remove, {
                 'external/wpt/test/zzzz.html': set(['Mac10.10']),
                 'virtual/foo/external/wpt/test/zzzz.html': set(['Trusty', 'Mac10.11'])
-            })
-
-    def test_create_line_dict_with_manual_tests(self):
-        # In this example, there are two manual tests that should be skipped.
-        updater = WPTExpectationsUpdater(self.mock_host())
-        results = {
-            'virtual/foo/external/wpt/test/aa-manual.html': {
-                tuple([DesktopConfig(port_name='test-linux-trusty')]):
-                SimpleTestResult(
-                    expected='PASS', actual='TIMEOUT', bug='crbug.com/test'),
-                tuple([DesktopConfig(port_name='test-mac-mac10.11')]):
-                SimpleTestResult(
-                    expected='FAIL', actual='TIMEOUT', bug='crbug.com/test'),
-            },
-        }
-        line_dict, _ = updater.create_line_dict(results)
-        self.assertEqual(
-            line_dict, {
-                'virtual/foo/external/wpt/test/aa-manual.html': [
-                    '[ Trusty ] virtual/foo/external/wpt/test/aa-manual.html [ Skip ]',
-                    '[ Mac10.11 ] virtual/foo/external/wpt/test/aa-manual.html [ Skip ]',
-                ],
             })
 
     def test_create_line_dict_with_asterisks(self):
@@ -1137,61 +1100,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             'crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]\n')
         skip_value = host.filesystem.read_text_file(skip_path)
         self.assertMultiLineEqual(skip_value, skip_value_origin)
-
-    def test_write_to_test_expectations_with_manual_tests_and_newline(self):
-        host = self.mock_host()
-        expectations_path = \
-            host.port_factory.get().path_to_generic_test_expectations_file()
-        skip_path = host.port_factory.get().path_to_never_fix_tests_file()
-        raw_exps = '# tags: [ Trusty ]\n# results: [ Skip ]\n'
-        test_expectations = {'external/wpt/fake/file/path-manual.html': {
-            tuple([DesktopConfig(port_name='test-linux-trusty')]):
-            SimpleTestResult(actual='TIMEOUT', expected={}, bug='')}}
-        host.filesystem.write_text_file(expectations_path,
-                                        WPTExpectationsUpdater.MARKER_COMMENT + '\n')
-        host.filesystem.write_text_file(
-            skip_path,
-            raw_exps +
-            '\n[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n')
-        updater = WPTExpectationsUpdater(host)
-
-        updater.write_to_test_expectations(test_expectations)
-
-        expectations_value = host.filesystem.read_text_file(expectations_path)
-        skip_value = host.filesystem.read_text_file(skip_path)
-        self.assertMultiLineEqual(expectations_value, WPTExpectationsUpdater.MARKER_COMMENT + '\n')
-        self.assertMultiLineEqual(
-            skip_value,
-            raw_exps + '\n'
-            '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n'
-            '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n')
-
-    def test_write_to_test_expectations_without_newline(self):
-        host = self.mock_host()
-        expectations_path = \
-            host.port_factory.get().path_to_generic_test_expectations_file()
-        skip_path = host.port_factory.get().path_to_never_fix_tests_file()
-        test_expectations = {'external/wpt/fake/file/path-manual.html': {
-            tuple([DesktopConfig(port_name='test-linux-trusty')]):
-            SimpleTestResult(actual='TIMEOUT', expected={}, bug='')}}
-        raw_exps = '# tags: [ Trusty ]\n# results: [ Skip ]\n'
-        host.filesystem.write_text_file(
-            expectations_path,
-            WPTExpectationsUpdater.MARKER_COMMENT + '\n')
-        host.filesystem.write_text_file(
-            skip_path,
-            raw_exps + '\n[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]')
-        updater = WPTExpectationsUpdater(host)
-
-        updater.write_to_test_expectations(test_expectations)
-
-        expectations_value = host.filesystem.read_text_file(expectations_path)
-        skip_value = host.filesystem.read_text_file(skip_path)
-        self.assertMultiLineEqual(expectations_value, WPTExpectationsUpdater.MARKER_COMMENT + '\n')
-        self.assertMultiLineEqual(
-            skip_value,
-            raw_exps + '\n[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n'
-            '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n')
 
     def test_is_reference_test_given_testharness_test(self):
         updater = WPTExpectationsUpdater(self.mock_host())

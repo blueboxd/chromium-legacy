@@ -3683,6 +3683,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDeprecateAltBasedSixPackName,
      flag_descriptions::kDeprecateAltBasedSixPackDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kDeprecateAltBasedSixPack)},
+    {"hidden-network-migration", flag_descriptions::kHiddenNetworkMigrationName,
+     flag_descriptions::kHiddenNetworkMigrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kHiddenNetworkMigration)},
     {"shelf-hide-buttons-in-tablet",
      flag_descriptions::kHideShelfControlsInTabletModeName,
      flag_descriptions::kHideShelfControlsInTabletModeDescription, kOsCrOS,
@@ -4114,6 +4117,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-reset-lxd-db", flag_descriptions::kCrostiniResetLxdDbName,
      flag_descriptions::kCrostiniResetLxdDbDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniResetLxdDb)},
+    {"terminal-alternative-renderer",
+     flag_descriptions::kTerminalAlternativeRendererName,
+     flag_descriptions::kTerminalAlternativeRendererDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kTerminalAlternativeRenderer)},
     {"terminal-dev", flag_descriptions::kTerminalDevName,
      flag_descriptions::kTerminalDevDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kTerminalDev)},
@@ -4987,6 +4994,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"spectre-v2-mitigation", flag_descriptions::kSpectreVariant2MitigationName,
      flag_descriptions::kSpectreVariant2MitigationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(sandbox::policy::features::kSpectreVariant2Mitigation)},
+    {"upload-office-to-cloud", flag_descriptions::kUploadOfficeToCloudName,
+     flag_descriptions::kUploadOfficeToCloudName, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kUploadOfficeToCloud)},
     {"eap-gtc-wifi-authentication",
      flag_descriptions::kEapGtcWifiAuthenticationName,
      flag_descriptions::kEapGtcWifiAuthenticationDescription, kOsCrOS,
@@ -5165,6 +5175,16 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kBlurWithEscape)},
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN)
+    {"omnibox-on-device-head-suggestions",
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsWin,
+     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProviderNonIncognito)},
+    {"omnibox-on-device-head-suggestions-incognito",
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoName,
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoDescription,
+     kOsWin, FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProviderIncognito)},
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"scheduler-configuration", flag_descriptions::kSchedulerConfigurationName,
@@ -5285,6 +5305,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::internal::kOmniboxAction,
                                     kJourneysOmniboxActionVariations,
                                     "HistoryJourneysOmniboxAction")},
+
+    {"history-journeys-omnibox-history-cluster-provider",
+     flag_descriptions::kJourneysOmniboxHistoryClusterProviderName,
+     flag_descriptions::kJourneysOmniboxHistoryClusterProviderDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         history_clusters::internal::kOmniboxHistoryClusterProvider)},
 
     {"history-journeys-on-device-clustering",
      flag_descriptions::kJourneysOnDeviceClusteringBackendName,
@@ -5424,11 +5451,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kScrollableTabStrip,
                                     kTabScrollingVariations,
                                     "TabScrolling")},
-
-    {"scrollable-tabstrip-buttons",
-     flag_descriptions::kScrollableTabStripButtonsName,
-     flag_descriptions::kScrollableTabStripButtonsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kScrollableTabStripButtons)},
 
     {"side-panel-improved-clobbering",
      flag_descriptions::kSidePanelImprovedClobberingName,
@@ -6095,13 +6117,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableQuickAnswersV2TranslationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDisableQuickAnswersV2Translation)},
 
-    {"quick-answers-always-trigger-for-single-word",
-     flag_descriptions::kQuickAnswersAlwaysTriggerForSingleWordName,
-     flag_descriptions::kQuickAnswersAlwaysTriggerForSingleWordDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         chromeos::features::kQuickAnswersAlwaysTriggerForSingleWord)},
-
     {"quick-answers-for-more-locales",
      flag_descriptions::kQuickAnswersForMoreLocalesName,
      flag_descriptions::kQuickAnswersForMoreLocalesDescription, kOsCrOS,
@@ -6204,6 +6219,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeOSDirectVideoDecoderDescription,
      kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(media::kUseChromeOSDirectVideoDecoder)},
+
+    {"enable-vbr-encode-acceleration",
+     flag_descriptions::kChromeOSHWVBREncodingName,
+     flag_descriptions::kChromeOSHWVBREncodingDescription, kOsCrOS | kOsLacros,
+     FEATURE_VALUE_TYPE(media::kChromeOSHWVBREncoding)},
 #if defined(ARCH_CPU_ARM_FAMILY)
     {"prefer-libyuv-image-processor",
      flag_descriptions::kPreferLibYuvImageProcessorName,
@@ -7082,6 +7102,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"shimless-rma-os-update", flag_descriptions::kShimlessRMAOsUpdateName,
      flag_descriptions::kShimlessRMAOsUpdateDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShimlessRMAOsUpdate)},
+    {"shimless-rma-disable-dark-mode",
+     flag_descriptions::kShimlessRMADisableDarkModeName,
+     flag_descriptions::kShimlessRMADisableDarkModeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kShimlessRMADisableDarkMode)},
     {"nearby-sharing-arc", flag_descriptions::kNearbySharingArcName,
      flag_descriptions::kNearbySharingArcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShare)},
@@ -7263,6 +7287,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAddPasswordsInSettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(
          password_manager::features::kSupportForAddPasswordsInSettings)},
+
+    {"password-view-page-in-settings",
+     flag_descriptions::kPasswordViewPageInSettingsName,
+     flag_descriptions::kPasswordViewPageInSettingsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kPasswordViewPageInSettings)},
 
     {"password-notes", flag_descriptions::kPasswordNotesName,
      flag_descriptions::kPasswordNotesDescription, kOsDesktop,
@@ -7493,7 +7523,8 @@ const FeatureEntry kFeatureEntries[] = {
          switches::kEnableFeatures,
          "PrivacySandboxSettings3:"
          "disable-dialog-for-testing/true/show-sample-data/true,"
-         "EnableFetchingAccountCapabilities")},
+         "EnableFetchingAccountCapabilities,InterestGroupStorage,"
+         "AdInterestGroupAPI,Fledge,FencedFrames")},
 
     {"privacy-sandbox-ads-apis",
      flag_descriptions::kPrivacySandboxAdsAPIsOverrideName,
@@ -8755,6 +8786,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::
              kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponse)},
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+    {"enable-web-bluetooth-confirm-pairing-support",
+     flag_descriptions::kWebBluetoothConfirmPairingSupportName,
+     flag_descriptions::kWebBluetoothConfirmPairingSupportDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(device::features::kWebBluetoothConfirmPairingSupport)},
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

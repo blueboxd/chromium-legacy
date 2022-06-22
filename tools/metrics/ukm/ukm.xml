@@ -1612,6 +1612,20 @@ be describing additional metrics about the same event.
       filled if the credit card on file was complete.
     </summary>
   </metric>
+  <metric name="Fillable.AfterSecurity.Visible.Bitmask"
+      enum="AutofillCreditCardSeamlessnessBitmask">
+    <summary>
+      Logs the field types which Autofill would have filled into visible fields
+      if the credit card on file was complete.
+    </summary>
+  </metric>
+  <metric name="Fillable.AfterSecurity.Visible.Qualitative"
+      enum="CreditCardSeamlessFill">
+    <summary>
+      Logs a qualitative summary of the field types which Autofill would have
+      filled into visible fields if the credit card on file was complete.
+    </summary>
+  </metric>
   <metric name="Fillable.BeforeSecurity.Bitmask"
       enum="AutofillCreditCardSeamlessnessBitmask">
     <summary>
@@ -1627,6 +1641,21 @@ be describing additional metrics about the same event.
       policy.
     </summary>
   </metric>
+  <metric name="Fillable.BeforeSecurity.Visible.Bitmask"
+      enum="AutofillCreditCardSeamlessnessBitmask">
+    <summary>
+      Logs the field types which Autofill would have filled into visible fields
+      if the credit card on file was complete and there was no security policy.
+    </summary>
+  </metric>
+  <metric name="Fillable.BeforeSecurity.Visible.Qualitative"
+      enum="CreditCardSeamlessFill">
+    <summary>
+      Logs a qualitative summary of the field types which Autofill would have
+      filled into visible fields if the credit card on file was complete and
+      there was no security policy.
+    </summary>
+  </metric>
   <metric name="Filled.AfterSecurity.Bitmask"
       enum="AutofillCreditCardSeamlessnessBitmask">
     <summary>
@@ -1637,6 +1666,19 @@ be describing additional metrics about the same event.
     <summary>
       Logs a qualitative summary of the field types which Autofill actually
       filled.
+    </summary>
+  </metric>
+  <metric name="Filled.AfterSecurity.Visible.Bitmask"
+      enum="AutofillCreditCardSeamlessnessBitmask">
+    <summary>
+      Logs the field types which Autofill actually filled into visible fields.
+    </summary>
+  </metric>
+  <metric name="Filled.AfterSecurity.Visible.Qualitative"
+      enum="CreditCardSeamlessFill">
+    <summary>
+      Logs a qualitative summary of the field types which Autofill actually
+      filled into visible fields.
     </summary>
   </metric>
   <metric name="Filled.BeforeSecurity.Bitmask"
@@ -1651,6 +1693,20 @@ be describing additional metrics about the same event.
     <summary>
       Logs a qualitative summary of the field types which Autofill would have
       filled if there was no security policy.
+    </summary>
+  </metric>
+  <metric name="Filled.BeforeSecurity.Visible.Bitmask"
+      enum="AutofillCreditCardSeamlessnessBitmask">
+    <summary>
+      Logs the field types which Autofill would have filled into visible fields
+      if there was no security policy.
+    </summary>
+  </metric>
+  <metric name="Filled.BeforeSecurity.Visible.Qualitative"
+      enum="CreditCardSeamlessFill">
+    <summary>
+      Logs a qualitative summary of the field types which Autofill would have
+      filled into visible fields if there was no security policy.
     </summary>
   </metric>
   <metric name="FormSignature">
@@ -2002,6 +2058,66 @@ be describing additional metrics about the same event.
   <metric name="ServerRecordTypeCount">
     <summary>
       Number of masked and full server credit cards or server autofill profiles.
+    </summary>
+  </metric>
+</event>
+
+<event name="Autofill.KeyMetrics">
+  <owner>battre@chromium.org</owner>
+  <owner>kolos@chromium.org</owner>
+  <owner>nepper@chromium.org</owner>
+  <summary>
+    These metrics are a clone of Autofill's UMA key metrics to measure Autofill
+    quality. They are recorded on navigation if a form was submitted before.
+  </summary>
+  <metric name="AutofillAssistantIntent" enum="AutofillAssistantIntent">
+    <summary>
+      Describes the trigger source that invoked Autofill. Only recorded if
+      AutofillAssistantIntent was not undefined.
+    </summary>
+  </metric>
+  <metric name="FillingAcceptance">
+    <summary>
+      Has value 1 if user accepted the suggestion to fill values on a submitted
+      form, 0 otherwise. This is counted as 1 if the user accepted such a
+      suggestion at any time, regardless whether other suggestions were ignored
+      or whether the accepted suggestion was reverted afterwards. Only recorded
+      if suggestions were shown to the user.
+    </summary>
+  </metric>
+  <metric name="FillingAssistance">
+    <summary>
+      Has value 1 if the user filled any fields via Autofill on a submitted
+      form, 0 otherwise.
+
+      If the user reverts the filling, the form is still counted as filled.
+
+      This metric is different from FillingAcceptance in the sense that the
+      latter is only recorded if the user has actually seen a prompt to fill
+      data.
+    </summary>
+  </metric>
+  <metric name="FillingCorrectness">
+    <summary>
+      Has value 1 for submitted and autofilled forms if user edited at least one
+      filled value before submitting the form, 0 otherwise. Only recorded if any
+      suggestion was filled.
+    </summary>
+  </metric>
+  <metric name="FillingReadiness">
+    <summary>
+      Has value 1 for submitted forms when Chromium had any address or payments
+      data to fill, 0 otherwise.
+
+      It does not matter whether the user actually requested to fill the data.
+      It does not matter either whether the data available for filling
+      corresponded to the submitted data.
+    </summary>
+  </metric>
+  <metric name="FormTypes">
+    <summary>
+      Type of form. Stored as bitvector. A set ith bit implies enum FormType's
+      ith type was detected. Multiple types are possible.
     </summary>
   </metric>
 </event>
@@ -14686,6 +14802,16 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="SoftNavigationCount">
+    <summary>
+      Number of soft navigations detected by heuristics. See
+      https://bit.ly/soft-navigation
+
+      Soft navigations are JS-driven same-document navigations that are using
+      the history API or the new Navigation API, triggered by a user gesture and
+      meaningfully modify the DOM, replacing the previous content with new one.
+    </summary>
+  </metric>
   <metric name="ThirdPartyCookieBlockingEnabledForSite" enum="Boolean">
     <owner>dullweber@chromium.org</owner>
     <owner>huanzhong@chromium.org</owner>
@@ -16678,6 +16804,15 @@ be describing additional metrics about the same event.
       specific to the preloading type.
     </summary>
   </metric>
+  <metric name="HoldbackStatus">
+    <summary>
+      The outcome of the holdback check. This is not part of eligibility status
+      to make clarify that this check needs to happen after we are done
+      verifying the eligibility of a preloading attempt. In general, eligibility
+      checks can be reordered, but the holdback check always needs to come after
+      verifying that the preloading attempt was eligible.
+    </summary>
+  </metric>
   <metric name="PreloadingPredictor">
     <summary>
       The type of preloading predictor which made the prediction. Values are
@@ -16730,6 +16865,15 @@ be describing additional metrics about the same event.
   <metric name="FailureReason">
     <summary>
       Reason why the preloading operation failed.
+    </summary>
+  </metric>
+  <metric name="HoldbackStatus">
+    <summary>
+      The outcome of the holdback check. This is not part of eligibility status
+      to make clarify that this check needs to happen after we are done
+      verifying the eligibility of a preloading attempt. In general, eligibility
+      checks can be reordered, but the holdback check always needs to come after
+      verifying that the preloading attempt was eligible.
     </summary>
   </metric>
   <metric name="PreloadingPredictor">

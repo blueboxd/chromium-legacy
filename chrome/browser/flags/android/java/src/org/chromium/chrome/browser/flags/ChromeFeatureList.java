@@ -59,7 +59,7 @@ public abstract class ChromeFeatureList {
         return FeatureList.isInitialized();
     }
 
-    /*
+    /**
      * Returns whether the specified feature is enabled or not in native.
      *
      * @param featureName The name of the feature to query.
@@ -296,6 +296,8 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_DEBUG = "ContextualSearchDebug";
     public static final String CONTEXTUAL_SEARCH_DELAYED_INTELLIGENCE =
             "ContextualSearchDelayedIntelligence";
+    public static final String CONTEXTUAL_SEARCH_DISABLE_ONLINE_DETECTION =
+            "ContextualSearchDisableOnlineDetection";
     public static final String CONTEXTUAL_SEARCH_FORCE_CAPTION = "ContextualSearchForceCaption";
     public static final String CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION =
             "ContextualSearchMlTapSuppression";
@@ -430,6 +432,7 @@ public abstract class ChromeFeatureList {
             "OmniboxUpdatedConnectionSecurityIndicators";
     public static final String OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS =
             "OptimizationGuidePushNotifications";
+    public static final String OPTIMIZE_LAYOUTS_FOR_PULL_REFRESH = "OptimizeLayoutsForPullRefresh";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
     public static final String PAGE_ANNOTATIONS_SERVICE = "PageAnnotationsService";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_EN = "PageInfoAboutThisSiteEn";

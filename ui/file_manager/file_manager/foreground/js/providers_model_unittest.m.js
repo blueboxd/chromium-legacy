@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertEquals} from 'chrome://test/chai_assert.js';
+import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 
 import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
 import {VolumeInfoImpl} from '../../background/js/volume_info_impl.js';
@@ -139,7 +139,8 @@ function addProvidedVolume(volumeManager, providerId, volumeId) {
       VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
       {},                                          // iconSet
       '',                                          // driveLabel
-      '');                                         // remoteMountPath
+      '',                                          // remoteMountPath
+      undefined);                                  // vmType
 
   volumeManager.volumeInfoList.add(volumeInfo);
 }

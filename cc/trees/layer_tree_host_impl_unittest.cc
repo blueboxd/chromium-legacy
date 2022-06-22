@@ -4413,9 +4413,11 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SyncSubpixelScrollDelta) {
 
   // Verify this scroll delta is consistent with the snapped position of the
   // scroll layer.
-  draw_property_utils::ComputeTransforms(&scroll_layer->layer_tree_impl()
-                                              ->property_trees()
-                                              ->transform_tree_mutable());
+  draw_property_utils::ComputeTransforms(
+      &scroll_layer->layer_tree_impl()
+           ->property_trees()
+           ->transform_tree_mutable(),
+      scroll_layer->layer_tree_impl()->viewport_property_ids());
   EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(0, -19),
                       scroll_layer->ScreenSpaceTransform().To2dTranslation());
 }
@@ -6281,7 +6283,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   // The background is default to transparent. If the background is opaque, we
   // would fill the frame with background colour when no layers are contributing
   // quads. This means we would end up with 0 quad.
-  EXPECT_EQ(host_impl_->active_tree()->background_color(), SK_ColorTRANSPARENT);
+  EXPECT_EQ(host_impl_->active_tree()->background_color(),
+            SkColors::kTransparent);
 
   {
     TestFrameData frame;
@@ -10724,7 +10727,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   }
 
   void SetupActiveTreeLayers() {
-    host_impl_->active_tree()->set_background_color(SK_ColorGRAY);
+    host_impl_->active_tree()->set_background_color(SkColors::kGray);
     LayerImpl* root = SetupDefaultRootLayer(viewport_size_);
     child_ = AddLayer<BlendStateCheckLayer>(host_impl_->active_tree(),
                                             host_impl_->resource_provider());
@@ -11146,7 +11149,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, LayersFreeTextures) {
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, HasTransparentBackground) {
   SetupDefaultRootLayer(gfx::Size(10, 10));
-  host_impl_->active_tree()->set_background_color(SK_ColorWHITE);
+  host_impl_->active_tree()->set_background_color(SkColors::kWhite);
   UpdateDrawProperties(host_impl_->active_tree());
 
   // Verify one quad is drawn when transparent background set is not set.
@@ -11170,7 +11173,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, HasTransparentBackground) {
   host_impl_->SetFullViewportDamage();
 
   // Verify no quads are drawn when transparent background is set.
-  host_impl_->active_tree()->set_background_color(SK_ColorTRANSPARENT);
+  host_impl_->active_tree()->set_background_color(SkColors::kTransparent);
   host_impl_->SetFullViewportDamage();
   args = viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
@@ -11189,7 +11192,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, HasTransparentBackground) {
   host_impl_->SetFullViewportDamage();
 
   // Verify no quads are drawn when semi-transparent background is set.
-  host_impl_->active_tree()->set_background_color(SkColorSetARGB(5, 255, 0, 0));
+  host_impl_->active_tree()->set_background_color({1.0f, 0.0f, 0.0f, 0.1f});
   host_impl_->SetFullViewportDamage();
   host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
       BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,

@@ -29,6 +29,7 @@ enum class ParseStatusCode : StatusCodeType {
   kInvalidUri,
   kPlaylistMissingM3uTag,
   kMediaPlaylistMissingTargetDuration,
+  kTargetDurationExceedsMax,
   kMediaSegmentMissingInfTag,
   kMediaSegmentExceedsTargetDuration,
   kPlaylistHasDuplicateTags,
@@ -48,6 +49,11 @@ enum class ParseStatusCode : StatusCodeType {
   kByteRangeInvalid,
   kValueOverflowsTimeDelta,
   kPlaylistOverflowsTimeDelta,
+  kSkipBoundaryTooLow,
+  kHoldBackDistanceTooLow,
+  kPartTargetDurationExceedsTargetDuration,
+  kPartHoldBackDistanceTooLow,
+  kPartInfTagWithoutPartHoldBack,
 };
 
 struct ParseStatusTraits {

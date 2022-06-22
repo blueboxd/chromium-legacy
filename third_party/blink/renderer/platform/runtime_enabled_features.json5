@@ -595,12 +595,6 @@
       status: "test",
     },
     {
-      // @font-face descriptor size-adjust.
-      // https://drafts.csswg.org/css-fonts-5/#descdef-font-face-size-adjust
-      name: "CSSFontFaceSizeAdjust",
-      status: "stable",
-    },
-    {
       name: "CSSFontFamilyMath",
       status: "experimental",
       implied_by: ["MathMLCore"],
@@ -608,6 +602,11 @@
     {
       name: "CSSFontSizeAdjust",
       status: "test",
+    },
+    {
+      name: "CSSGridTemplatePropertyInterpolation",
+      depends_on: ["LayoutNGGridFragmentation"],
+      status: "experimental",
     },
     {
       // This needs to be kept as a runtime flag as long as we need to forcibly
@@ -712,12 +711,7 @@
     },
     {
       name: "CSSPseudoHas",
-      status: "experimental",
-    },
-    {
-      name: "CSSPseudoHasInSnapshotProfile",
-      status: "experimental",
-      implied_by: ["CSSPseudoHas"],
+      status: "stable",
     },
     {
       // When an audio, video, or similar resource is "playing"
@@ -764,6 +758,11 @@
       // https://drafts.csswg.org/css-text-decor-4/#valdef-text-decoration-line-grammar-error
       name: "CSSSpellingGrammarErrors",
       status: "test",
+    },
+    {
+      // https://drafts.csswg.org/css-contain-3/#style-container
+      name: "CSSStyleQueries",
+      status: "test"
     },
     // Make system color keywords compute to themselves.
     // https://github.com/w3c/csswg-drafts/issues/3847
@@ -968,11 +967,6 @@
       status: "stable",
     },
     {
-      // Making MouseEvent#layerX, layerY interoperable
-      name: "EventLayerInterop",
-      status: "stable"
-    },
-    {
       // Non-standard API Event.path. Should be replaced by Event.composedPath.
       // TODO(1277431): This flag should be eventually disabled.
       name: "EventPath",
@@ -1105,7 +1099,7 @@
     },
     {
       name: "FixedElementsDontOverscroll",
-      status: "test",
+      status: "stable",
     },
     {
       name: "Fledge",
@@ -1364,6 +1358,11 @@
     {
       name: "LayoutNGView",
       implied_by: ["LayoutNGPrinting"],
+    },
+    {
+      // crbug.com/1335309
+      name: "LayoutNGVTTCue",
+      depends_on: ["LayoutNG"],
     },
     {
       name: "LazyFrameLoading",

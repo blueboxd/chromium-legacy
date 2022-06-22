@@ -131,6 +131,9 @@ void PageLoadMetricsForwardObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const mojom::PageLoadTiming& timing) {}
 
+// Soft navigations only happen in outermost top-level documents.
+void PageLoadMetricsForwardObserver::OnSoftNavigationCountUpdated() {}
+
 void PageLoadMetricsForwardObserver::OnMobileFriendlinessUpdate(
     const blink::MobileFriendliness& mobile_friendliness) {
   if (!parent_observer_)
@@ -141,6 +144,9 @@ void PageLoadMetricsForwardObserver::OnMobileFriendlinessUpdate(
 void PageLoadMetricsForwardObserver::OnInputTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const mojom::InputTiming& input_timing_delta) {}
+
+void PageLoadMetricsForwardObserver::OnPageInputTimingUpdate(
+    uint64_t num_input_events) {}
 
 void PageLoadMetricsForwardObserver::OnSubFrameRenderDataUpdate(
     content::RenderFrameHost* subframe_rfh,

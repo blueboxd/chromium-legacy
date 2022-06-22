@@ -5,6 +5,7 @@
 #include "components/user_notes/storage/user_note_database.h"
 
 #include "base/files/file_util.h"
+#include "base/json/values_util.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -73,9 +74,51 @@ UserNoteMetadataSnapshot UserNoteDatabase::GetNoteMetadataForUrls(
     std::vector<GURL> urls) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(gayane): Implement.
+  if (!EnsureDBInit())
+    return UserNoteMetadataSnapshot();
 
-  return UserNoteMetadataSnapshot();
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return UserNoteMetadataSnapshot();
+
+  UserNoteMetadataSnapshot metadata_snapshot;
+  for (GURL url : urls) {
+    sql::Statement statement(
+        db_.GetCachedStatement(SQL_FROM_HERE,
+                               "SELECT id, creation_date, modification_date "
+                               "FROM notes WHERE url = ?"));
+
+    if (!statement.is_valid())
+      continue;
+
+    statement.BindString(0, url.spec());
+
+    while (statement.Step()) {
+      DCHECK_EQ(3, statement.ColumnCount());
+
+      std::string id = statement.ColumnString(0);
+      base::StringPiece string_piece(id);
+      uint64_t high = 0;
+      uint64_t low = 0;
+      if (!base::HexStringToUInt64(string_piece.substr(0, 16), &high) ||
+          !base::HexStringToUInt64(string_piece.substr(16, 16), &low)) {
+        continue;
+      }
+      base::UnguessableToken token =
+          base::UnguessableToken::Deserialize(high, low);
+
+      base::Time creation_date = statement.ColumnTime(1);
+      base::Time modification_date = statement.ColumnTime(2);
+
+      auto metadata = std::make_unique<UserNoteMetadata>(
+          creation_date, modification_date, /*min_note_version=*/1);
+      metadata_snapshot.AddEntry(url, token, std::move(metadata));
+    }
+  }
+
+  transaction.Commit();
+
+  return metadata_snapshot;
 }
 
 std::vector<std::unique_ptr<UserNote>> UserNoteDatabase::GetNotesById(
@@ -272,6 +315,38 @@ void UserNoteDatabase::UpdateNote(const UserNote* model,
   transaction.Commit();
 }
 
+void UserNoteDatabase::DeleteNoteWithStringId(std::string id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  sql::Statement delete_notes_body(db_.GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM notes_body WHERE note_id = ?"));
+
+  if (!delete_notes_body.is_valid())
+    return;
+
+  delete_notes_body.BindString(0, id);
+  if (!delete_notes_body.Run())
+    return;
+
+  sql::Statement delete_notes_text_target(db_.GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM notes_text_target WHERE note_id = ?"));
+  if (!delete_notes_text_target.is_valid())
+    return;
+
+  delete_notes_text_target.BindString(0, id);
+  if (!delete_notes_text_target.Run())
+    return;
+
+  sql::Statement delete_notes(
+      db_.GetCachedStatement(SQL_FROM_HERE, "DELETE FROM notes WHERE id = ?"));
+  if (!delete_notes.is_valid())
+    return;
+
+  delete_notes.BindString(0, id);
+  if (!delete_notes.Run())
+    return;
+}
+
 void UserNoteDatabase::DeleteNote(const base::UnguessableToken& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -282,33 +357,7 @@ void UserNoteDatabase::DeleteNote(const base::UnguessableToken& id) {
   if (!transaction.Begin())
     return;
 
-  sql::Statement delete_notes_body(db_.GetCachedStatement(
-      SQL_FROM_HERE, "DELETE FROM notes_body WHERE note_id = ?"));
-
-  if (!delete_notes_body.is_valid())
-    return;
-
-  delete_notes_body.BindString(0, id.ToString());
-  if (!delete_notes_body.Run())
-    return;
-
-  sql::Statement delete_notes_text_target(db_.GetCachedStatement(
-      SQL_FROM_HERE, "DELETE FROM notes_text_target WHERE note_id = ?"));
-  if (!delete_notes_text_target.is_valid())
-    return;
-
-  delete_notes_text_target.BindString(0, id.ToString());
-  if (!delete_notes_text_target.Run())
-    return;
-
-  sql::Statement delete_notes(
-      db_.GetCachedStatement(SQL_FROM_HERE, "DELETE FROM notes WHERE id = ?"));
-  if (!delete_notes.is_valid())
-    return;
-
-  delete_notes.BindString(0, id.ToString());
-  if (!delete_notes.Run())
-    return;
+  DeleteNoteWithStringId(id.ToString());
 
   transaction.Commit();
 }
@@ -316,19 +365,104 @@ void UserNoteDatabase::DeleteNote(const base::UnguessableToken& id) {
 void UserNoteDatabase::DeleteAllForUrl(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(gayane): Implement.
+  if (!EnsureDBInit())
+    return;
+
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  sql::Statement statement(db_.GetCachedStatement(
+      SQL_FROM_HERE, "SELECT id FROM notes WHERE url = ?"));
+
+  if (!statement.is_valid())
+    return;
+
+  statement.BindString(0, url.spec());
+
+  std::vector<std::string> ids;
+  while (statement.Step())
+    ids.emplace_back(statement.ColumnString(0));
+
+  if (!statement.Succeeded())
+    return;
+
+  for (const std::string& id : ids) {
+    DeleteNoteWithStringId(id);
+  }
+
+  transaction.Commit();
 }
 
 void UserNoteDatabase::DeleteAllForOrigin(const url::Origin& page) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(gayane): Implement.
+  if (!EnsureDBInit())
+    return;
+
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  sql::Statement statement(db_.GetCachedStatement(
+      SQL_FROM_HERE, "SELECT id FROM notes WHERE origin = ?"));
+
+  if (!statement.is_valid())
+    return;
+
+  statement.BindString(0, page.Serialize());
+
+  std::vector<std::string> ids;
+  while (statement.Step()) {
+    ids.emplace_back(statement.ColumnString(0));
+  }
+
+  if (!statement.Succeeded())
+    return;
+
+  for (const std::string& id : ids) {
+    DeleteNoteWithStringId(id);
+  }
+
+  transaction.Commit();
 }
 
 void UserNoteDatabase::DeleteAllNotes() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(gayane): Implement.
+  if (!EnsureDBInit())
+    return;
+
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  sql::Statement delete_notes_body(
+      db_.GetCachedStatement(SQL_FROM_HERE, "DELETE FROM notes_body"));
+
+  if (!delete_notes_body.is_valid())
+    return;
+
+  if (!delete_notes_body.Run())
+    return;
+
+  sql::Statement delete_notes_text_target(
+      db_.GetCachedStatement(SQL_FROM_HERE, "DELETE FROM notes_text_target"));
+  if (!delete_notes_text_target.is_valid())
+    return;
+
+  if (!delete_notes_text_target.Run())
+    return;
+
+  sql::Statement delete_notes(
+      db_.GetCachedStatement(SQL_FROM_HERE, "DELETE FROM notes"));
+  if (!delete_notes.is_valid())
+    return;
+
+  if (!delete_notes.Run())
+    return;
+
+  transaction.Commit();
 }
 
 bool UserNoteDatabase::EnsureDBInit() {

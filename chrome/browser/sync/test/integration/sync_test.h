@@ -19,10 +19,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/configuration_refresher.h"
 #include "chrome/browser/sync/test/integration/fake_server_invalidation_sender.h"
-#include "chrome/browser/sync/test/integration/fake_server_sync_invalidation_sender.h"
+#include "chrome/browser/sync/test/integration/invalidations/fake_server_sync_invalidation_sender.h"
 #include "chrome/common/buildflags.h"
-#include "components/gcm_driver/instance_id/instance_id.h"
-#include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -77,6 +75,10 @@ namespace syncer {
 class SyncServiceImpl;
 }  // namespace syncer
 
+namespace instance_id {
+class InstanceIDDriver;
+}  // namespace instance_id
+
 namespace switches {
 
 inline constexpr char kPasswordFileForTest[] = "password-file-for-test";
@@ -127,65 +129,6 @@ class SyncTest : public PlatformBrowserTest {
                              // in-process (bypassing HTTP calls).
   };
 
-  class FakeInstanceID : public instance_id::InstanceID {
-   public:
-    explicit FakeInstanceID(const std::string& app_id,
-                            gcm::GCMDriver* gcm_driver);
-
-    FakeInstanceID(const FakeInstanceID&) = delete;
-    FakeInstanceID& operator=(const FakeInstanceID&) = delete;
-
-    ~FakeInstanceID() override = default;
-
-    void GetID(GetIDCallback callback) override {}
-
-    void GetCreationTime(GetCreationTimeCallback callback) override {}
-
-    void GetToken(const std::string& authorized_entity,
-                  const std::string& scope,
-                  base::TimeDelta time_to_live,
-                  std::set<Flags> flags,
-                  GetTokenCallback callback) override;
-
-    void ValidateToken(const std::string& authorized_entity,
-                       const std::string& scope,
-                       const std::string& token,
-                       ValidateTokenCallback callback) override {}
-
-    void DeleteToken(const std::string& authorized_entity,
-                     const std::string& scope,
-                     DeleteTokenCallback callback) override {}
-
-   protected:
-    void DeleteTokenImpl(const std::string& authorized_entity,
-                         const std::string& scope,
-                         DeleteTokenCallback callback) override {}
-
-    void DeleteIDImpl(DeleteIDCallback callback) override;
-
-   private:
-    static std::string GenerateNextToken();
-
-    std::string token_;
-  };
-
-  class FakeInstanceIDDriver : public instance_id::InstanceIDDriver {
-   public:
-    explicit FakeInstanceIDDriver(gcm::GCMDriver* gcm_driver);
-
-    FakeInstanceIDDriver(const FakeInstanceIDDriver&) = delete;
-    FakeInstanceIDDriver& operator=(const FakeInstanceIDDriver&) = delete;
-
-    ~FakeInstanceIDDriver() override;
-    instance_id::InstanceID* GetInstanceID(const std::string& app_id) override;
-    void RemoveInstanceID(const std::string& app_id) override {}
-    bool ExistsInstanceID(const std::string& app_id) const override;
-
-   private:
-    raw_ptr<gcm::GCMDriver> gcm_driver_;
-    std::map<std::string, std::unique_ptr<FakeInstanceID>> fake_instance_ids_;
-  };
-
   // A SyncTest must be associated with a particular test type.
   explicit SyncTest(TestType test_type);
 
@@ -208,7 +151,7 @@ class SyncTest : public PlatformBrowserTest {
 
   // Returns a pointer to a particular sync profile. Callee owns the object
   // and manages its lifetime.
-  Profile* GetProfile(int index);
+  Profile* GetProfile(int index) const;
 
   // Returns a list of all profiles including the verifier if available. Callee
   // owns the objects and manages its lifetime.
@@ -261,6 +204,8 @@ class SyncTest : public PlatformBrowserTest {
   [[nodiscard]] virtual bool SetupClients();
 
   // Initializes sync clients and profiles if required and syncs each of them.
+  // Makes it sure that all the local changes are committed and waits for
+  // populating all fields in DeviceInfo.
   [[nodiscard]] virtual bool SetupSync();
 
   // This is similar to click the reset button on chrome.google.com/sync.
@@ -318,6 +263,8 @@ class SyncTest : public PlatformBrowserTest {
   void StopConfigurationRefresher();
 
   arc::SyncArcPackageHelper* sync_arc_helper();
+
+  std::string GetCacheGuid(size_t profile_index) const;
 
  protected:
   // Add custom switches needed for running the test.

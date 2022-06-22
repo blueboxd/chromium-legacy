@@ -56,11 +56,11 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/components/sensors/buildflags.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/core_scheduling.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/version_info/version_info.h"
@@ -494,11 +494,6 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     balloon_policy->set_moderate_target_cache(moderate_kib * 1024);
     balloon_policy->set_critical_target_cache(critical_kib * 1024);
     balloon_policy->set_reclaim_target_cache(reclaim_kib * 1024);
-    balloon_policy->set_responsive(kVmBalloonPolicyResponsive.Get());
-    balloon_policy->set_responsive_timeout_ms(
-        kVmBalloonPolicyResponsiveTimeoutMs.Get());
-    balloon_policy->set_responsive_max_deflate_bytes(
-        kVmBalloonPolicyResponsiveMaxDeflateBytes.Get());
     VLOG(1) << "Use LimitCacheBalloonPolicy. ModerateKiB=" << moderate_kib
             << ", CriticalKiB=" << critical_kib
             << ", ReclaimKiB=" << reclaim_kib;

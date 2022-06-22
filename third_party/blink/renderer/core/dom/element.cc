@@ -2630,9 +2630,14 @@ void Element::hidePopupInternal(HidePopupFocusBehavior focus_behavior,
       animations.insert(animation);
     }
     animations.RemoveAll(previous_animations);
-    GetPopupData()->setAnimationFinishedListener(
-        MakeGarbageCollected<PopupAnimationFinishedEventListener>(
-            this, std::move(animations)));
+    if (animations.IsEmpty()) {
+      // All animations were pre-existing. Just finish now.
+      FinishPopupHideIfNeeded(forcing_level);
+    } else {
+      GetPopupData()->setAnimationFinishedListener(
+          MakeGarbageCollected<PopupAnimationFinishedEventListener>(
+              this, std::move(animations)));
+    }
   }
 }
 
@@ -3386,6 +3391,11 @@ void Element::AttachLayoutTree(AttachContext& context) {
                               ? LegacyLayout::kForce
                               : LegacyLayout::kAuto;
 
+    if (legacy == LegacyLayout::kForce &&
+        style->IsContainerForSizeContainerQueries()) {
+      style_engine.ReportUseOfLegacyLayoutWithContainerQueries();
+    }
+
     LayoutTreeBuilderForElement builder(*this, context, style, legacy);
     builder.CreateLayoutObject();
 
@@ -3904,6 +3914,13 @@ static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
     const ComputedStyle& new_style) {
   if (!new_style.IsContainerForSizeContainerQueries())
     return nullptr;
+  if (LayoutObject* layout_object = element.GetLayoutObject()) {
+    if (layout_object->ForceLegacyLayout()) {
+      element.GetDocument()
+          .GetStyleEngine()
+          .ReportUseOfLegacyLayoutWithContainerQueries();
+    }
+  }
   if (!RuntimeEnabledFeatures::LayoutNGPrintingEnabled() &&
       element.GetDocument().Printing()) {
     return nullptr;
@@ -5797,6 +5814,9 @@ bool Element::ForceLegacyLayoutInFormattingContext(
     if (container_recalc_root == ancestor) {
       DCHECK(found_fc)
           << "A size query container is always a formatting context";
+      GetDocument()
+          .GetStyleEngine()
+          .ReportUseOfLegacyLayoutWithContainerQueries();
       break;
     }
   }
@@ -5858,6 +5878,12 @@ bool Element::ForceLegacyLayoutInFragmentationContext(
   if (legacy_root->ForceLegacyLayoutInFormattingContext(
           *legacy_root->GetComputedStyle()))
     needs_reattach = true;
+
+  if (legacy_root == container_recalc_root) {
+    GetDocument()
+        .GetStyleEngine()
+        .ReportUseOfLegacyLayoutWithContainerQueries();
+  }
 
   return needs_reattach;
 }

@@ -8,7 +8,7 @@
 # We keep it until internal assistant codes are changed to use the new path
 # src/chromeos/ash/services/assistant.
 
-component("cpp") {
+source_set("cpp") {
   visibility = [ "//chromeos/assistant/internal/*" ]
   sources = [
     "assistant_browser_delegate.h",

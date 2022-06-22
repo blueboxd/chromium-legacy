@@ -52,8 +52,10 @@ namespace errors {
 
 extern const char kConsentRequired[];
 extern const char kUnaffiliatedUser[];
+extern const char kInvalidUser[];
 extern const char kUnsupported[];
 extern const char kMissingSystemService[];
+extern const char kMissingBundle[];
 
 }  // namespace errors
 

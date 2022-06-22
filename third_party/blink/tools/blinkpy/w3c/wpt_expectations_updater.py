@@ -96,11 +96,6 @@ class WPTExpectationsUpdater(object):
         log_level = logging.DEBUG if self.options.verbose else logging.INFO
         configure_logging(logging_level=log_level, include_time=True)
 
-        if not (self.options.android_product
-                or self.options.update_android_expectations_only):
-            assert not self.options.include_unexpected_pass, (
-                'Command line argument --include-unexpected-pass is not '
-                'supported in desktop mode.')
         self.patchset = self.options.patchset
 
         if (self.options.clean_up_test_expectations or
@@ -139,17 +134,6 @@ class WPTExpectationsUpdater(object):
             help='Only cleanup expectations deleted or renamed in current CL. '
                  'If flag is not used then a full cleanup of deleted or '
                  'renamed tests will be done in expectations.')
-        # TODO(rmhasan): Move below arguments to the
-        # AndroidWPTExpectationsUpdater add_arguments implementation.
-        # Also look into using sub parsers to separate android and
-        # desktop specific arguments.
-        parser.add_argument(
-            '--update-android-expectations-only', action='store_true',
-            help='Update and clean up only Android test expectations.')
-        parser.add_argument(
-            '--android-product', action='append', default=[],
-            help='Android products whose baselines will be updated.',
-            choices=PRODUCTS)
         parser.add_argument(
             '--include-unexpected-pass',
             action='store_true',
@@ -657,11 +641,7 @@ class WPTExpectationsUpdater(object):
         # rebaselined and has an actual result but no baseline. We can't
         # add a Missing expectation (this is not allowed), but no other
         # expectation is correct.
-        # We also want to skip any new manual tests that are not automated;
-        # see crbug.com/708241 for context.
         if 'MISSING' in actual_results:
-            return {'Skip'}
-        if '-manual.' in test_name and 'TIMEOUT' in actual_results:
             return {'Skip'}
         expectations = set()
         failure_types = {'TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO', 'FAIL'}
@@ -966,9 +946,7 @@ class WPTExpectationsUpdater(object):
         webdriver_list = []
         for lines in line_dict.values():
             for line in lines:
-                if 'Skip' in line and '-manual.' in line:
-                    wont_fix_list.append(line)
-                elif self.finder.webdriver_prefix() in line:
+                if self.finder.webdriver_prefix() in line:
                     webdriver_list.append(line)
                 else:
                     line_list.append(line)

@@ -1575,6 +1575,9 @@ const RunListCase kBasicsRunListCases[] = {
     {"multiline_newline1", u"\n\n", "[0][1]", true},
     {"multiline_newline2", u"\r\n\r\n", "[0->1][2->3]", true},
     {"multiline_newline3", u"\r\r\n", "[0][1->2]", true},
+    {"multiline_newline4", u"x\r\r", "[0][1][2]", true},
+    {"multiline_newline5", u"x\n\r\r", "[0][1][2][3]", true},
+    {"multiline_newline6", u"x\ny\rz\r\n", "[0][1][2][3][4][5->6]", true},
 };
 
 INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsBasics,
@@ -8576,8 +8579,7 @@ TEST_F(RenderTextTest, Clusterfuzz_Issue_1298286) {
   gfx::FontList font_list;
   gfx::Rect field(2119635455, font_list.GetHeight());
 
-  std::unique_ptr<gfx::RenderText> render_text =
-      gfx::RenderText::CreateRenderText();
+  RenderText* render_text = GetRenderText();
   render_text->SetFontList(font_list);
   render_text->SetHorizontalAlignment(ALIGN_RIGHT);
   render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_UI);
@@ -8585,7 +8587,7 @@ TEST_F(RenderTextTest, Clusterfuzz_Issue_1298286) {
   render_text->SetDisplayRect(field);
   render_text->SetCursorEnabled(true);
 
-  gfx::test::RenderTextTestApi render_text_test_api(render_text.get());
+  gfx::test::RenderTextTestApi render_text_test_api(render_text);
   render_text_test_api.SetGlyphWidth(2016371456);
 
   EXPECT_FALSE(render_text->multiline());
@@ -8606,8 +8608,7 @@ TEST_F(RenderTextTest, Clusterfuzz_Issue_1299054) {
   gfx::FontList font_list;
   gfx::Rect field(-1334808765, font_list.GetHeight());
 
-  std::unique_ptr<gfx::RenderText> render_text =
-      gfx::RenderText::CreateRenderText();
+  RenderText* render_text = GetRenderText();
   render_text->SetFontList(font_list);
   render_text->SetHorizontalAlignment(ALIGN_CENTER);
   render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_TEXT);
@@ -8615,12 +8616,22 @@ TEST_F(RenderTextTest, Clusterfuzz_Issue_1299054) {
   render_text->SetDisplayRect(field);
   render_text->SetCursorEnabled(false);
 
-  gfx::test::RenderTextTestApi render_text_test_api(render_text.get());
+  gfx::test::RenderTextTestApi render_text_test_api(render_text);
   render_text_test_api.SetGlyphWidth(1778384896);
 
   const Vector2d& offset = render_text->GetUpdatedDisplayOffset();
   EXPECT_EQ(0, offset.x());
   EXPECT_EQ(0, offset.y());
+}
+
+TEST_F(RenderTextTest, Clusterfuzz_Issue_1287804) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetMaxLines(1);
+  render_text->SetText(u">\r\r");
+  render_text->SetMultiline(true);
+  render_text->SetDisplayRect(Rect(0, 0, 100, 24));
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  EXPECT_EQ(RangeF(0, 0), render_text->GetCursorSpan(Range(0, 0)));
 }
 
 }  // namespace gfx

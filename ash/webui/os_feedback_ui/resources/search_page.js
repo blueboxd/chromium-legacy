@@ -85,6 +85,9 @@ export class SearchPageElement extends SearchPageElementBase {
       this.resolveIframeLoaded_ = resolve;
     });
 
+    // Set focus on the input field after iframe is loaded.
+    this.iframeLoaded_.then(() => this.focusInputElement());
+
     /** @private {?HTMLIFrameElement} */
     this.iframe_ = null;
 
@@ -186,9 +189,8 @@ export class SearchPageElement extends SearchPageElementBase {
 
   /**
    * Focus on the textarea element.
-   * @private
    */
-  focusInputElement_() {
+  focusInputElement() {
     this.getInputElement_().focus();
   }
 
@@ -197,7 +199,7 @@ export class SearchPageElement extends SearchPageElementBase {
    */
   onInputInvalid_() {
     this.showError_();
-    this.focusInputElement_();
+    this.focusInputElement();
   }
 
   /**

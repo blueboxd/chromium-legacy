@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/color/color_id.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -38,9 +39,6 @@ constexpr SkColor kEditModeBgColor = SK_ColorWHITE;
 constexpr SkColor kEditedUnboundBgColor = gfx::kGoogleRed300;
 constexpr SkColor kViewTextColor = SK_ColorWHITE;
 constexpr SkColor kEditTextColor = gfx::kGoogleGrey900;
-constexpr SkColor kFocusRingGreyColor = SkColorSetA(gfx::kGoogleGrey200, 0x60);
-constexpr SkColor kFocusRingBlueColor = gfx::kGoogleBlue300;
-constexpr SkColor kFocusRingRedColor = gfx::kGoogleRed300;
 
 // About focus ring.
 // Gap between focus ring outer edge to label.
@@ -311,6 +309,8 @@ void ActionLabel::SetToEditMode() {
     SetVisible(true);
 
   SetInstallFocusRingOnFocus(true);
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                kCornerRadiusView);
   auto* focus_ring = views::FocusRing::Get(this);
   focus_ring->SetHaloInset(kHaloInset);
   focus_ring->SetHaloThickness(kHaloThickness);
@@ -337,7 +337,7 @@ void ActionLabel::SetToEditMode() {
 void ActionLabel::SetToEditDefault() {
   label()->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::NORMAL, kFontSize,
                                      gfx::Font::Weight::BOLD));
-  views::FocusRing::Get(this)->SetColor(absl::nullopt);
+  views::FocusRing::Get(this)->SetColorId(absl::nullopt);
   if (IsUnbound()) {
     SetBackground(views::CreateRoundedRectBackground(kEditedUnboundBgColor,
                                                      kCornerRadiusView));
@@ -348,7 +348,8 @@ void ActionLabel::SetToEditDefault() {
 }
 
 void ActionLabel::SetToEditHover() {
-  views::FocusRing::Get(this)->SetColor(kFocusRingGreyColor);
+  views::FocusRing::Get(this)->SetColorId(
+      ui::kColorAshActionLabelFocusRingHover);
 }
 
 void ActionLabel::SetToEditFocus() {
@@ -356,18 +357,21 @@ void ActionLabel::SetToEditFocus() {
                                      gfx::Font::Weight::BOLD));
   SetPreferredSize(CalculatePreferredSize());
   if (IsUnbound()) {
-    views::FocusRing::Get(this)->SetColor(kFocusRingRedColor);
+    views::FocusRing::Get(this)->SetColorId(
+        ui::kColorAshActionLabelFocusRingError);
     SetBackground(views::CreateRoundedRectBackground(kEditedUnboundBgColor,
                                                      kCornerRadiusView));
   } else {
-    views::FocusRing::Get(this)->SetColor(kFocusRingBlueColor);
+    views::FocusRing::Get(this)->SetColorId(
+        ui::kColorAshActionLabelFocusRingEdit);
     SetBackground(views::CreateRoundedRectBackground(kEditModeBgColor,
                                                      kCornerRadiusView));
   }
 }
 
 void ActionLabel::SetToEditError() {
-  views::FocusRing::Get(this)->SetColor(kFocusRingRedColor);
+  views::FocusRing::Get(this)->SetColorId(
+      ui::kColorAshActionLabelFocusRingError);
 }
 
 void ActionLabel::SetToEditUnBind() {

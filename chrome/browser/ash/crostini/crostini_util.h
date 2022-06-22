@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_simple_types.h"
 #include "chrome/browser/ash/guest_os/guest_id.h"
+#include "chrome/browser/ash/guest_os/public/types.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -33,7 +34,6 @@ namespace views {
 class Widget;
 }  // namespace views
 
-class PrefService;
 class Profile;
 
 namespace crostini {
@@ -42,6 +42,7 @@ extern const char kCrostiniImageAliasPattern[];
 extern const char kCrostiniContainerDefaultVersion[];
 extern const char kCrostiniContainerFlag[];
 
+extern const guest_os::VmType kCrostiniDefaultVmType;
 extern const char kCrostiniDefaultVmName[];
 extern const char kCrostiniDefaultContainerName[];
 extern const char kCrostiniDefaultUsername[];
@@ -162,12 +163,6 @@ void ShowCrostiniRecoveryView(Profile* profile,
                               const std::vector<LaunchArg>& args,
                               CrostiniSuccessCallback callback);
 
-// Remove duplicate containers in the existing kCrostiniContainers pref.
-void RemoveDuplicateContainerEntries(PrefService* prefs);
-
-// Returns a list of all containers in prefs.
-std::vector<guest_os::GuestId> GetContainers(Profile* profile);
-
 // Add a newly created LXD container to the kCrostiniContainers pref
 void AddNewLxdContainerToPrefs(Profile* profile,
                                const guest_os::GuestId& container_id);
@@ -181,17 +176,6 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
 // left for an operation to run which started and time |start| and is current
 // at |percent| way through.
 std::u16string GetTimeRemainingMessage(base::TimeTicks start, int percent);
-
-// Returns a pref value stored for a specific container.
-const base::Value* GetContainerPrefValue(Profile* profile,
-                                         const guest_os::GuestId& container_id,
-                                         const std::string& key);
-
-// Sets a pref value for a specific container.
-void UpdateContainerPref(Profile* profile,
-                         const guest_os::GuestId& container_id,
-                         const std::string& key,
-                         base::Value value);
 
 SkColor GetContainerBadgeColor(Profile* profile,
                                const guest_os::GuestId& container_id);

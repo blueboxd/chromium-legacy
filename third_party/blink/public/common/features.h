@@ -667,11 +667,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 // Gates the non-standard API Event.path to help its deprecation and removal.
 BLINK_COMMON_EXPORT extern const base::Feature kEventPath;
 
-// Removes a paint invalidation of viewport constrained objects (sticky or
-// fixed) after scrolling.
-BLINK_COMMON_EXPORT extern const base::Feature
-    kOptimizeViewportConstrainedPaintInvalidation;
-
 // If enabled, the minor version of the User-Agent string will be reduced.
 BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentMinorVersion;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
@@ -782,11 +777,18 @@ BLINK_COMMON_EXPORT extern const base::Feature
 // See https://crbug.com/1330675.
 BLINK_COMMON_EXPORT extern const base::Feature kLocalFrameRootPrePostFCPMetrics;
 
+// Stylus handwriting recognition to text input feature.
+BLINK_COMMON_EXPORT extern const base::Feature kStylusWritingToInput;
+
 // TODO(https://crbug.com/1201109): temporary flag to disable new ArrayBuffer
 // size limits, so that tests can be written against code receiving these
 // buffers. Remove when the bindings code instituting these limits is removed.
 BLINK_COMMON_EXPORT extern const base::Feature
     kDisableArrayBufferSizeLimitsForTesting;
+
+// If enabled, the HTMLDocumentParser will use a budget based on elapsed time
+// rather than token count.
+BLINK_COMMON_EXPORT extern const base::Feature kTimedHTMLParserBudget;
 
 }  // namespace features
 }  // namespace blink

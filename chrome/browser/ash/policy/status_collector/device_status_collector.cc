@@ -69,7 +69,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
@@ -529,8 +528,7 @@ void AddCrostiniAppListForProfile(Profile* const profile,
   const std::map<std::string, guest_os::GuestOsRegistryService::Registration>&
       registered_apps =
           guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile)
-              ->GetRegisteredApps(guest_os::GuestOsRegistryService::VmType::
-                                      ApplicationList_VmType_TERMINA);
+              ->GetRegisteredApps(guest_os::VmType::TERMINA);
   for (const auto& pair : registered_apps) {
     const std::string& registered_app_id = pair.first;
     const guest_os::GuestOsRegistryService::Registration& registration =
@@ -2514,9 +2512,7 @@ bool DeviceStatusCollector::GetOsUpdateStatus(
   em::OsUpdateStatus* os_update_status = status->mutable_os_update_status();
 
   const update_engine::StatusResult update_engine_status =
-      chromeos::DBusThreadManager::Get()
-          ->GetUpdateEngineClient()
-          ->GetLastStatus();
+      chromeos::UpdateEngineClient::Get()->GetLastStatus();
 
   absl::optional<base::Version> required_platform_version;
 

@@ -48,6 +48,11 @@ def GetTargetType():
   return DeviceTarget
 
 
+class ProvisionDeviceException(Exception):
+  def __init__(self, message: str):
+    super(ProvisionDeviceException, self).__init__(message)
+
+
 class DeviceTarget(target.Target):
   """Prepares a device to be used as a deployment target. Depending on the
   command line parameters, it automatically handling a number of preparatory
@@ -203,8 +208,9 @@ class DeviceTarget(target.Target):
       target = targets[0]
 
     # Get the ssh address of the target.
-    if address := target.get_ssh_address():
-      self._host, self._port = address
+    ssh_address = target.get_ssh_address()
+    if ssh_address:
+      self._host, self._port = ssh_address
     else:
       return False
 
@@ -401,7 +407,7 @@ class DeviceTarget(target.Target):
     return_code, stdout, stderr = SubprocessCallWithTimeout(pave_command,
                                                             timeout_secs=300)
     if return_code != 0:
-      raise Exception('Could not pave device.')
+      raise ProvisionDeviceException('Could not pave device.')
     self._ParseNodename(stderr)
 
   def Restart(self):

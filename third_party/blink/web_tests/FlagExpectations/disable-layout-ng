@@ -437,6 +437,20 @@ crbug.com/1045599 external/wpt/css/css-grid/alignment/replaced-alignment-with-as
 crbug.com/1045599 external/wpt/css/css-grid/alignment/replaced-alignment-with-aspect-ratio-007.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/replaced-alignment-with-aspect-ratio-008.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/replaced-alignment-with-aspect-ratio-009.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-columns-composition.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-columns-interpolation.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-columns-neutral-keyframe-001.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-columns-neutral-keyframe-002.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-columns-neutral-keyframe-003.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-columns-neutral-keyframe-004.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-rows-composition.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-rows-interpolation.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-rows-neutral-keyframe-001.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-rows-neutral-keyframe-002.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-rows-neutral-keyframe-003.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/animation/grid-template-rows-neutral-keyframe-004.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-auto-fill-columns-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-auto-fill-rows-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-auto-fit-columns-001.html [ Failure ]
@@ -1771,6 +1785,9 @@ crbug.com/1283025 external/wpt/css/css-tables/fractional-percent-width.html [ Fa
 
 # https://chromium-review.googlesource.com/c/chromium/src/+/3422590
 crbug.com/591099 fast/forms/text/input-appearance-scroll-size-mocked.html [ Failure ]
+
+# https://chromium-review.googlesource.com/c/chromium/src/+/3697708
+crbug.com/1337210 external/wpt/paint-timing/fcp-only/fcp-text-input.html [ Failure ]
 
 # HighlightOverlayPainting is only implemented in ng
 crbug.com/1147859 virtual/css-highlight-overlay-painting/* [ Skip ]

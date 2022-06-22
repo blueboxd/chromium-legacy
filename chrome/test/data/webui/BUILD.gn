@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromebox_for_meetings/buildflags.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
-import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//components/signin/features.gni")
 import("//crypto/features.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -417,6 +417,7 @@ generate_grd("build_grd") {
     ":build_ts",
     ":build_web_ui_test_mojo_grdp",
     "bookmarks:build_grdp",
+    "commander:build_grdp",
     "cr_components:build_grdp",
     "cr_elements:build_grdp",
     "downloads:build_grdp",
@@ -433,6 +434,7 @@ generate_grd("build_grd") {
   grdp_files = [
     "$target_gen_dir/bookmarks/resources.grdp",
     "$target_gen_dir/chai_resources.grdp",
+    "$target_gen_dir/commander/resources.grdp",
     "$target_gen_dir/cr_components/resources.grdp",
     "$target_gen_dir/cr_elements/resources.grdp",
     "$target_gen_dir/downloads/resources.grdp",
@@ -472,11 +474,13 @@ generate_grd("build_grd") {
   if (!is_android) {
     deps += [
       "access_code_cast:build_grdp",
+      "discards:build_grdp",
       "support_tool:build_grdp",
       "whats_new:build_grdp",
     ]
     grdp_files += [
       "$target_gen_dir/access_code_cast/resources.grdp",
+      "$target_gen_dir/discards/resources.grdp",
       "$target_gen_dir/whats_new/resources.grdp",
       "$target_gen_dir/support_tool/resources.grdp",
     ]
@@ -562,7 +566,10 @@ ts_library("build_ts") {
   in_files = [
     "chrome_timeticks_test.ts",
     "color_provider_css_colors_test.ts",
+    "resources/list_property_update_mixin_tests.ts",
+    "text_defaults_test.ts",
   ]
+  deps = [ "//ui/webui/resources:library" ]
   extra_deps = [ ":generate_definitions" ]
   definitions = [
     "//tools/typescript/definitions/chrome_send.d.ts",

@@ -159,6 +159,7 @@
 <translation id="2377319039870049694">切換至清單檢視</translation>
 <translation id="2377590462528165447">已與 Linux 共用 <ph name="NUMBER_OF_ITEMS" /> 個資料夾</translation>
 <translation id="2378075407703503998">已選取 <ph name="SELCTED_FILE_COUNT" /> 個檔案</translation>
+<translation id="2387120140441437063">無法開啟已移至垃圾桶的檔案。請先還原檔案，然後才開啟。</translation>
 <translation id="2387458720915042159">Proxy 連接類型</translation>
 <translation id="2389832672041313158">緬甸文</translation>
 <translation id="2392369802118427583">啟用</translation>
@@ -618,6 +619,7 @@
 <translation id="6296410173147755564">PUK 無效</translation>
 <translation id="6312403991423642364">不明的網絡錯誤</translation>
 <translation id="6317608858038767920">自訂網域名稱伺服器 <ph name="INPUT_INDEX" /></translation>
+<translation id="6320212353742551423"><ph name="ARCHIVE_TYPE" /> 封存檔案</translation>
 <translation id="6321303798550928047">揮手</translation>
 <translation id="6327785803543103246">Web Proxy Autodiscovery</translation>
 <translation id="6339145975392024142">美式國際鍵盤 (PC)</translation>

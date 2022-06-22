@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/files/file_error_or.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/trash_common_util.h"
@@ -51,6 +52,44 @@ class RestoreIOTask : public IOTask {
   //   - The file resides in the info directory
   //   - Has an identical item in the files directory with no .trashinfo suffix
   void ValidateTrashInfo(size_t idx);
+
+  // Make sure the enclosing folder where the trashed file to be restored to
+  // actually exists. In the event the file path has been removed, recreate it.
+  void EnsureParentRestorePathExists(
+      size_t idx,
+      const base::FilePath& trashed_file_location,
+      const base::FilePath& absolute_restore_path);
+
+  void OnParentRestorePathExists(size_t idx,
+                                 const base::FilePath& trashed_file_location,
+                                 const base::FilePath& absolute_restore_path,
+                                 base::File::Error status);
+
+  // Make sure the destination file name is unique before moving, creates unique
+  // file names by appending (N) to the end of a file name.
+  void GenerateDestinationURL(size_t idx,
+                              const base::FilePath& trashed_file_location,
+                              const base::FilePath& absolute_restore_path);
+
+  // Move the item from `trashed_file_location` to `destination_result`.
+  void RestoreItem(
+      size_t idx,
+      base::FilePath trashed_file_location,
+      base::FileErrorOr<storage::FileSystemURL> destination_result);
+
+  void OnRestoreItem(size_t idx, base::File::Error error);
+
+  // Once a restore has completed, kick off the next restore `idx` or finish.
+  void RestoreComplete(size_t idx, base::File::Error error);
+
+  void SetCurrentOperationID(
+      storage::FileSystemOperationRunner::OperationID id);
+
+  base::FilePath MakeRelativeFromBasePath(const base::FilePath& absolute_path);
+
+  const storage::FileSystemURL CreateFileSystemURL(
+      const storage::FileSystemURL& original_url,
+      const base::FilePath& path);
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   raw_ptr<Profile> profile_;

@@ -28,7 +28,6 @@
 #include "chromeos/dbus/runtime_probe/runtime_probe_client.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/smbprovider/smb_provider_client.h"
-#include "chromeos/dbus/update_engine/update_engine_client.h"
 
 namespace chromeos {
 
@@ -114,10 +113,6 @@ RuntimeProbeClient* DBusThreadManager::GetRuntimeProbeClient() {
 
 SmbProviderClient* DBusThreadManager::GetSmbProviderClient() {
   RETURN_DBUS_CLIENT(smb_provider_client_);
-}
-
-UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
-  RETURN_DBUS_CLIENT(update_engine_client_);
 }
 
 VirtualFileProviderClient* DBusThreadManager::GetVirtualFileProviderClient() {
@@ -221,11 +216,6 @@ void DBusThreadManagerSetter::SetImageLoaderClient(
 void DBusThreadManagerSetter::SetSmbProviderClient(
     std::unique_ptr<SmbProviderClient> client) {
   smb_provider_client_ = std::move(client);
-}
-
-void DBusThreadManagerSetter::SetUpdateEngineClient(
-    std::unique_ptr<UpdateEngineClient> client) {
-  update_engine_client_ = std::move(client);
 }
 
 }  // namespace chromeos

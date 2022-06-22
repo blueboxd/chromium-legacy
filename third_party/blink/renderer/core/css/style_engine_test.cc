@@ -5080,8 +5080,6 @@ TEST_F(StyleEngineTest, UserAndAuthorScrollTimelineOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineSimTest, UserFontFaceOverrideWithCascadeLayers) {
-  ScopedCSSFontFaceSizeAdjustForTest size_adjust_enabled_scope(true);
-
   SimRequest main_resource("https://example.com", "text/html");
   SimSubresourceRequest ahem_resource("https://example.com/ahem.woff2",
                                       "font/woff2");
@@ -5136,8 +5134,6 @@ TEST_F(StyleEngineSimTest, UserFontFaceOverrideWithCascadeLayers) {
 }
 
 TEST_F(StyleEngineSimTest, UserAndAuthorFontFaceOverrideWithCascadeLayers) {
-  ScopedCSSFontFaceSizeAdjustForTest size_adjust_enabled_scope(true);
-
   SimRequest main_resource("https://example.com", "text/html");
   SimSubresourceRequest ahem_resource("https://example.com/ahem.woff2",
                                       "font/woff2");
@@ -5844,6 +5840,139 @@ TEST_F(StyleEngineSimTest, ResizeWithBlockingSheetTransition) {
   EXPECT_EQ(
       trans->ComputedStyleRef().VisitedDependentColor(GetCSSPropertyColor()),
       MakeRGB(0, 128, 0));
+}
+
+namespace {
+
+const String CQLegacyWarningText() {
+  return String(
+      "Using container queries or units with printing, or in combination with "
+      "tables inside multicol will not work correctly.");
+}
+
+}  // namespace
+
+TEST_F(StyleEngineSimTest, ContainerQueryLegacyNoWarning) {
+  ScopedLayoutNGTableFragmentationForTest disabled_scope(false);
+
+  SimRequest main_resource("https://example.com/", "text/html");
+
+  LoadURL("https://example.com/");
+
+  main_resource.Complete(R"HTML(
+    <div style="container-type:size">
+      <div style="columns:1">
+        <table></table>
+      </div>
+    </div>
+    <div style="columns:1">
+      <table></table>
+    </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(ConsoleMessages().Contains(CQLegacyWarningText()));
+}
+
+TEST_F(StyleEngineSimTest, ContainerQueryLegacyConsoleWarning_AddContainer) {
+  // For the ng-disabled bots:
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  ScopedLayoutNGTableFragmentationForTest disabled_scope(false);
+
+  SimRequest main_resource("https://example.com/", "text/html");
+
+  LoadURL("https://example.com/");
+
+  main_resource.Complete(R"HTML(
+    <div style="columns:1">
+      <table>
+        <div id="container"></div>
+      </table>
+    </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(ConsoleMessages().Contains(CQLegacyWarningText()));
+
+  Element* container = GetDocument().getElementById("container");
+  container->SetInlineStyleProperty(CSSPropertyID::kContainerType, "size");
+
+  test::RunPendingTasks();
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(ConsoleMessages().Contains(CQLegacyWarningText()));
+}
+
+TEST_F(StyleEngineSimTest, ContainerQueryLegacyConsoleWarning_AddTable) {
+  // For the ng-disabled bots:
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  ScopedLayoutNGTableFragmentationForTest disabled_scope(false);
+
+  SimRequest main_resource("https://example.com/", "text/html");
+
+  LoadURL("https://example.com/");
+
+  main_resource.Complete(R"HTML(
+    <div style="columns:1">
+      <div style="container-type:size">
+        <div id="table"></div>
+      </div>
+    </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(ConsoleMessages().Contains(CQLegacyWarningText()));
+
+  Element* table = GetDocument().getElementById("table");
+  table->SetInlineStyleProperty(CSSPropertyID::kDisplay, "table");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains(CQLegacyWarningText()));
+}
+
+TEST_F(StyleEngineSimTest, ContainerQueryLegacyConsoleWarning_AddColumns) {
+  // For the ng-disabled bots:
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  ScopedLayoutNGTableFragmentationForTest disabled_scope(false);
+
+  SimRequest main_resource("https://example.com/", "text/html");
+
+  LoadURL("https://example.com/");
+
+  main_resource.Complete(R"HTML(
+    <div id="columns">
+      <div style="container-type:size">
+        <table></table>
+      </div>
+    </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(ConsoleMessages().Contains(CQLegacyWarningText()));
+
+  Element* columns = GetDocument().getElementById("columns");
+  columns->SetInlineStyleProperty(CSSPropertyID::kColumns, "1");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains(CQLegacyWarningText()));
 }
 
 }  // namespace blink

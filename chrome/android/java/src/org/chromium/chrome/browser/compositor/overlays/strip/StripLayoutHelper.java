@@ -135,6 +135,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private StripLayoutTab[] mStripTabs = new StripLayoutTab[0];
     private StripLayoutTab[] mStripTabsVisuallyOrdered = new StripLayoutTab[0];
     private StripLayoutTab[] mStripTabsToRender = new StripLayoutTab[0];
+    private StripLayoutTab mTabAtPositionForTesting;
     private final StripTabEventHandler mStripTabEventHandler = new StripTabEventHandler();
     private final TabLoadTrackerCallback mTabLoadTrackerHost = new TabLoadTrackerCallbackImpl();
     private Animator mRunningAnimator;
@@ -1617,7 +1618,16 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         return 0.f;
     }
 
+    @VisibleForTesting
+    void setTabAtPositionForTesting(StripLayoutTab tab) {
+        mTabAtPositionForTesting = tab;
+    }
+
     private StripLayoutTab getTabAtPosition(float x) {
+        if (mTabAtPositionForTesting != null) {
+            return mTabAtPositionForTesting;
+        }
+
         for (int i = mStripTabsVisuallyOrdered.length - 1; i >= 0; i--) {
             final StripLayoutTab tab = mStripTabsVisuallyOrdered[i];
             if (tab.isVisible() && tab.getDrawX() <= x && x <= (tab.getDrawX() + tab.getWidth())) {
@@ -1649,6 +1659,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     @VisibleForTesting
     public boolean isForegroundTab(StripLayoutTab tab) {
         return tab == mStripTabsVisuallyOrdered[mStripTabsVisuallyOrdered.length - 1];
+    }
+
+    @VisibleForTesting
+    public boolean getInReorderModeForTesting() {
+        return mInReorderMode;
     }
 
     @VisibleForTesting
@@ -2233,6 +2248,14 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     }
 
     /**
+     * @return The currently interacting tab.
+     */
+    @VisibleForTesting
+    StripLayoutTab getInteractingTab() {
+        return mInteractingTab;
+    }
+
+    /**
      * Disables animations for testing purposes.
      */
     @VisibleForTesting
@@ -2248,6 +2271,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     @VisibleForTesting
     protected boolean isMultiStepCloseAnimationsRunning() {
         return mMultiStepTabCloseAnimRunning;
+    }
+
+    @VisibleForTesting
+    protected boolean isInReorderModeForTesting() {
+        return mInReorderMode;
     }
 
     private void setAccessibilityDescription(StripLayoutTab stripTab, Tab tab) {

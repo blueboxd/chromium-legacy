@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_consumer.h"
 #import "ios/chrome/browser/ui/ntp/logo_animation_controller.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
@@ -35,9 +34,11 @@ class Browser;
 @class DownloadManagerCoordinator;
 @class KeyCommandsProvider;
 // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
+@protocol PopupMenuUIUpdating;
 class PrerenderService;
 @class PrimaryToolbarCoordinator;
 @class SecondaryToolbarCoordinator;
+@class SideSwipeController;
 @class TabStripCoordinator;
 @class TabStripLegacyCoordinator;
 @class ToolbarAccessoryPresenter;
@@ -52,10 +53,12 @@ typedef struct {
   BubblePresenter* bubblePresenter;
   DownloadManagerCoordinator* downloadManagerCoordinator;
   id<ToolbarCoordinating> toolbarInterface;
+  id<PopupMenuUIUpdating> UIUpdater;
   PrimaryToolbarCoordinator* primaryToolbarCoordinator;
   SecondaryToolbarCoordinator* secondaryToolbarCoordinator;
   TabStripCoordinator* tabStripCoordinator;
   TabStripLegacyCoordinator* legacyTabStripCoordinator;
+  SideSwipeController* sideSwipeController;
 } BrowserViewControllerDependencies;
 
 // The top-level view controller for the browser UI. Manages other controllers
@@ -66,7 +69,6 @@ typedef struct {
                         LogoAnimationControllerOwnerOwner,
                         PageInfoPresentation,
                         PrintControllerDelegate,
-                        PopupMenuAppearanceDelegate,
                         SigninPresenter,
                         SyncPresenter,
                         ThumbStripSupporting,

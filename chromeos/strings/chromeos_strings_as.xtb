@@ -64,7 +64,9 @@
 <translation id="1459784442280469416">ইউএছবিত ছেভ কৰক</translation>
 <translation id="1468664791493211953">অ'ফাৰসমূহ</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" />এ এই ডিভাইচটো পৰিচালনা কৰে তথা আপোনাৰ কাৰ্যকলাপো নিৰীক্ষণ কৰিব পাৰে।</translation>
+<translation id="147809995039451286">আপডে’টটো ডাউনল’ড কৰিব পৰা নগ’ল।</translation>
 <translation id="1478594628797167447">স্কেনাৰ</translation>
+<translation id="1483493594462132177">পঠিয়াওক</translation>
 <translation id="1491076385728777984"><ph name="DEVICE_NAME" />ত ফাৰ্মৱেৰ আপডে’ট কৰি থকা হৈছে</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" />এ এই ব্যৱহাৰকাৰীগৰাকীক পৰিচালনা কৰে আৰু হয়তো দূৰৰ পৰা ছেটিং পৰিচালনা কৰে আৰু ব্যৱহাৰকাৰীৰ কাৰ্যকলাপ নিৰীক্ষণ কৰে।</translation>
 <translation id="150962533380566081">অমান্য PUK।</translation>
@@ -101,6 +103,7 @@
 <translation id="1745577949879301685">প্ৰতিচ্ছবি ল’ড কৰিব পৰা নগ’ল। আপোনাৰ নেটৱৰ্ক সংযোগ পৰীক্ষা কৰক অথবা প্ৰতিচ্ছবিসমূহ পুনৰ ল’ড কৰিবলৈ চেষ্টা কৰক।</translation>
 <translation id="1751249301761991853">ব্যক্তিগত</translation>
 <translation id="1753496554272155572">ৱালপেপাৰৰ পূৰ্বদৰ্শনৰ পৰা বাহিৰ হওক</translation>
+<translation id="1755556344721611131">ডায়েগন’ষ্টিক্স এপ্</translation>
 <translation id="175763766237925754">ভাল (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -182,6 +185,7 @@
 <translation id="2418150275289244458">ছেটিঙত খোলক</translation>
 <translation id="2421798028054665193"><ph name="TOTAL_PAGES" />ৰ <ph name="CURRENT_PAGE" /> খন প্ৰতিচ্ছবি</translation>
 <translation id="2446553403094072641">ওপঙি থকা বিন্দুৰ সঠিকতা</translation>
+<translation id="2447969267935997922">ইনষ্টল কৰাটো সম্পূৰ্ণ হ’ল। আপুনি এতিয়া আপোনাৰ ইউএছবি ড্ৰাইভ অথবা এছডি কাৰ্ড আঁতৰাব পাৰে।</translation>
 <translation id="2448312741937722512">প্রকাৰ</translation>
 <translation id="2461822463642141190">বৰ্তমান</translation>
 <translation id="2480034874476596812">মেনুৱেলী অফ কৰক</translation>
@@ -652,6 +656,7 @@
 <translation id="6659594942844771486">ব্ৰাউজাৰ টেব</translation>
 <translation id="6692996468359469499">আপুনি বাছনি সম্পর্কীয় তথ্য পাওক</translation>
 <translation id="6704062477274546131">DNS ৰিজ’লিউশ্বন</translation>
+<translation id="6721744718589119342">অধিক তথ্য আৰু আপডে’টৰ বাবে আমি আপোনালৈ ইমেইল পঠিয়াব পাৰোঁ</translation>
 <translation id="6723839937902243910">পাৱাৰ</translation>
 <translation id="6723847290197874913">কীব’ৰ্ডৰ বেকলাইট</translation>
 <translation id="672609503628871915">নতুন কি আছে চাওক</translation>
@@ -716,6 +721,7 @@
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Searchত ফলাফল চাবলৈ ছাৰ্চ আৰু স্পেচ টিপক।</translation>
 <translation id="7343649194310845056">নেটৱৰ্ক ডিভাইচ</translation>
 <translation id="7359657277149375382">ফাইলৰ প্রকাৰ</translation>
+<translation id="73631062356239394">ডায়েগন’ষ্টিক্সৰ ডেটা শ্বেয়াৰ কৰক</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
 <translation id="7397270852490618635">পাতল ৰঙৰ থীম অফ কৰক</translation>
@@ -921,6 +927,7 @@
 <translation id="9149391708638971077">মেম’ৰি পৰীক্ষা চলাওক</translation>
 <translation id="9173638680043580060">এক মিনিটতকৈ কম সময় বাকী আছে</translation>
 <translation id="917720651393141712">পৰীক্ষা কৰক</translation>
+<translation id="9188992814426075118">আপোনাৰ কীব’ৰ্ডে স্বয়ংক্ৰিয়ভাৱে আপোনাৰ ৱালপেপাৰ মিলাব পাৰে</translation>
 <translation id="9204237731135241582">Android এপৰ পৰা গে’টৱে’ সংযোগ কৰিব নোৱাৰি</translation>
 <translation id="9211490828691860325">আটাইবোৰ ডেস্ক</translation>
 <translation id="922179502584117429">বৰ্তমানৰ সংস্কৰণ <ph name="VERSION_NUMBER" /> পুৰণি হৈছে</translation>

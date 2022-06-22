@@ -11,6 +11,7 @@
 #include "base/check.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -60,7 +61,7 @@ struct WaylandEventSource::TouchPoint {
   TouchPoint(gfx::PointF location, WaylandWindow* current_window);
   ~TouchPoint() = default;
 
-  WaylandWindow* window;
+  raw_ptr<WaylandWindow> window;
   gfx::PointF last_known_location;
 };
 
@@ -457,7 +458,7 @@ void WaylandEventSource::OnTouchCancelEvent() {
 
 void WaylandEventSource::OnTouchFrame() {
   while (!touch_frames_.empty()) {
-    // It is OK/safe to pop the first queued event for processing.
+    // It is safe to pop the first queued event for processing.
     auto touch_frame = std::move(touch_frames_.front());
     touch_frames_.pop_front();
 
@@ -482,11 +483,30 @@ void WaylandEventSource::OnTouchStylusToolChanged(
     PointerId pointer_id,
     EventPointerType pointer_type) {
   last_touch_stylus_tool_[pointer_id] = pointer_type;
+
+  // Update in-transit touch frames.
+  for (auto& touch_frame : touch_frames_) {
+    const auto& old_pointer_details = touch_frame->event.pointer_details();
+    if (old_pointer_details.id != pointer_id)
+      continue;
+
+    if (old_pointer_details.pointer_type == pointer_type)
+      break;
+
+    // Override the previous 'event' instance, given that PointerDetails
+    // is 'const'.
+    auto old_event = touch_frame->event;
+    touch_frame->event =
+        TouchEvent(old_event.type(), old_event.location_f(),
+                   old_event.root_location_f(), old_event.time_stamp(),
+                   PointerDetailsForDispatching(pointer_id), old_event.flags());
+    break;
+  }
 }
 
 const WaylandWindow* WaylandEventSource::GetTouchTarget(PointerId id) const {
   const auto it = touch_points_.find(id);
-  return it == touch_points_.end() ? nullptr : it->second->window;
+  return it == touch_points_.end() ? nullptr : it->second->window.get();
 }
 
 void WaylandEventSource::OnPinchEvent(EventType event_type,

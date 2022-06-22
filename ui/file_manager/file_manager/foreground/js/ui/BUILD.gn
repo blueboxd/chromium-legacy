@@ -53,6 +53,7 @@ group("js_modules") {
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
+    ":splitter",
     ":tree",
   ]
 }
@@ -65,10 +66,12 @@ html_to_js("web_components") {
 js_type_check("closure_compile_jsmodules") {
   is_polymer3 = true
   closure_flags = default_closure_args + [
+                    "js_module_root=gen/ui/file_manager/tsc/",
                     "js_module_root=../../ui/file_manager/",
                     "js_module_root=gen/ui/file_manager/",
                     "browser_resolver_prefix_replacements=\"chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/=./file_manager/\"",
                     "browser_resolver_prefix_replacements=\"chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/=./image_loader/\"",
+                    "hide_warnings_for=gen/ui/file_manager/tsc/",
                   ]
 
   deps = [
@@ -105,6 +108,7 @@ js_type_check("closure_compile_jsmodules") {
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
+    ":splitter",
     ":tree",
     "table:table",
     "table:table_column",
@@ -112,6 +116,7 @@ js_type_check("closure_compile_jsmodules") {
     "table:table_header",
     "table:table_list",
     "table:table_splitter",
+    "//ui/file_manager:js_from_ts",
   ]
 }
 
@@ -210,6 +215,8 @@ js_library("directory_tree") {
   deps = [
     ":tree",
     "//ui/file_manager/file_manager/common/js:file_type",
+    "//ui/file_manager/file_manager/common/js:files_app_entry_types",
+    "//ui/file_manager/file_manager/common/js:icon_util",
     "//ui/file_manager/file_manager/common/js:metrics",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
@@ -341,6 +348,7 @@ js_library("file_manager_ui") {
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
+    ":splitter",
     "//ui/file_manager/file_manager/common/js:dialog_type",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
@@ -357,7 +365,6 @@ js_library("file_manager_ui") {
     "//ui/webui/resources/js/cr/ui:context_menu_handler.m",
     "//ui/webui/resources/js/cr/ui:menu.m",
     "//ui/webui/resources/js/cr/ui:menu_item.m",
-    "//ui/webui/resources/js/cr/ui:splitter",
   ]
   visibility +=
       [ "//ui/file_manager/file_manager/externs:command_handler_deps" ]
@@ -622,12 +629,24 @@ js_library("search_box") {
   externs_list = [ "//ui/file_manager/file_manager/externs/search_item.js" ]
 }
 
-js_library("tree") {
+js_library("splitter") {
   deps = [
-    "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr:ui.m",
   ]
+}
+
+js_unittest("splitter_unittest") {
+  deps = [
+    ":splitter",
+    "//chrome/test/data/webui:chai_assert",
+    "//ui/webui/resources/js:util.m",
+    "//ui/webui/resources/js/cr:ui.m",
+  ]
+}
+
+js_library("tree") {
+  deps = [ "//ui/webui/resources/js:assert.m" ]
 }
 
 js_library("autocomplete_list") {
@@ -653,6 +672,7 @@ js_test_gen_html("js_test_gen_html_modules") {
     ":file_tap_handler_unittest.m",
     ":install_linux_package_dialog_unittest.m",
     ":multi_menu_unittest.m",
+    ":splitter_unittest",
   ]
   is_polymer3 = true
 
@@ -662,7 +682,7 @@ js_test_gen_html("js_test_gen_html_modules") {
                     "js_module_root=../../ui/file_manager/",
                     "js_module_root=./gen/ui/file_manager/",
                     "jscomp_off=duplicate",
-                    "browser_resolver_prefix_replacements=\"chrome://test/=./\"",
+                    "browser_resolver_prefix_replacements=\"chrome://webui-test/=./\"",
                     "browser_resolver_prefix_replacements=\"chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/=./file_manager/\"",
                     "browser_resolver_prefix_replacements=\"chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/=./image_loader/\"",
                     "hide_warnings_for=third_party/",

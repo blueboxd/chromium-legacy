@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/check_op.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/queue.h"
@@ -46,6 +47,8 @@
 #include "pdf/buildflags.h"
 #include "pdf/content_restriction.h"
 #include "pdf/document_layout.h"
+#include "pdf/loader/result_codes.h"
+#include "pdf/loader/url_loader.h"
 #include "pdf/metrics_handler.h"
 #include "pdf/mojom/pdf.mojom.h"
 #include "pdf/paint_ready_rect.h"
@@ -55,8 +58,6 @@
 #include "pdf/pdf_init.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/post_message_receiver.h"
-#include "pdf/ppapi_migration/result_codes.h"
-#include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/ui/document_properties.h"
 #include "pdf/ui/file_name.h"
 #include "printing/metafile_skia.h"
@@ -336,8 +337,8 @@ bool PdfViewWebPlugin::InitializeCommon() {
     return true;
 
   set_last_progress_sent(0);
-  LoadUrl(params->src_url,
-          base::BindOnce(&PdfViewWebPlugin::DidOpen, GetWeakPtr()));
+  LoadUrl(params->src_url, base::BindOnce(&PdfViewWebPlugin::DidOpen,
+                                          weak_factory_.GetWeakPtr()));
   url_ = params->original_url;
 
   // Not all edits go through the PDF plugin's form filler. The plugin instance
@@ -358,6 +359,18 @@ void PdfViewWebPlugin::SendSetSmoothScrolling() {
   message.Set("smoothScrolling",
               blink::Platform::Current()->IsScrollAnimatorEnabled());
   SendMessage(std::move(message));
+}
+
+void PdfViewWebPlugin::DidOpen(std::unique_ptr<UrlLoader> loader,
+                               int32_t result) {
+  if (result == kSuccess) {
+    if (!engine_->HandleDocumentLoad(std::move(loader), url_)) {
+      set_document_load_state(DocumentLoadState::kLoading);
+      DocumentLoadFailed();
+    }
+  } else if (result != kErrorAborted) {
+    DocumentLoadFailed();
+  }
 }
 
 void PdfViewWebPlugin::Destroy() {
@@ -824,7 +837,7 @@ void PdfViewWebPlugin::LoadUrl(base::StringPiece url,
   request.method = "GET";
   request.ignore_redirects = true;
 
-  std::unique_ptr<UrlLoader> loader = CreateUrlLoaderInternal();
+  auto loader = std::make_unique<UrlLoader>(weak_factory_.GetWeakPtr());
   UrlLoader* raw_loader = loader.get();
   raw_loader->Open(request,
                    base::BindOnce(std::move(callback), std::move(loader)));
@@ -844,7 +857,7 @@ void PdfViewWebPlugin::SubmitForm(const std::string& url,
   request.method = "POST";
   request.body.assign(static_cast<const char*>(data), length);
 
-  form_loader_ = CreateUrlLoaderInternal();
+  form_loader_ = std::make_unique<UrlLoader>(weak_factory_.GetWeakPtr());
   form_loader_->Open(request, base::BindOnce(&PdfViewWebPlugin::DidFormOpen,
                                              weak_factory_.GetWeakPtr()));
 }
@@ -865,13 +878,7 @@ std::unique_ptr<UrlLoader> PdfViewWebPlugin::CreateUrlLoader() {
     SetContentRestrictions(kContentRestrictionSave | kContentRestrictionPrint);
   }
 
-  return CreateUrlLoaderInternal();
-}
-
-std::unique_ptr<UrlLoader> PdfViewWebPlugin::CreateUrlLoaderInternal() {
-  auto loader = std::make_unique<BlinkUrlLoader>(weak_factory_.GetWeakPtr());
-  loader->GrantUniversalAccess();
-  return loader;
+  return std::make_unique<UrlLoader>(weak_factory_.GetWeakPtr());
 }
 
 std::vector<PDFEngine::Client::SearchStringResult>
@@ -971,7 +978,13 @@ PdfViewWebPlugin::CreateAssociatedURLLoader(
 
 void PdfViewWebPlugin::OnMessage(const base::Value::Dict& message) {
   using MessageHandler = void (PdfViewWebPlugin::*)(const base::Value::Dict&);
-  static constexpr auto kMessageHandlers =
+
+  // Settings this as const instead of constexpr to workaround a bug
+  // in GCC, that will try to reinterpret_cast the method pointers.
+  // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105996
+  // TODO(crbug.com/1302059): make it constexpr again when we get rid
+  // of PdfViewPluginBase
+  static const auto kMessageHandlers =
       base::MakeFixedFlatMap<base::StringPiece, MessageHandler>({
           {"displayAnnotations",
            &PdfViewWebPlugin::HandleDisplayAnnotationsMessage},
@@ -1632,7 +1645,8 @@ void PdfViewWebPlugin::HandleResetPrintPreviewModeMessage(
   preview_document_load_state_ = DocumentLoadState::kComplete;
   set_document_load_state(DocumentLoadState::kLoading);
   set_last_progress_sent(0);
-  LoadUrl(url_, base::BindOnce(&PdfViewWebPlugin::DidOpen, GetWeakPtr()));
+  LoadUrl(url_, base::BindOnce(&PdfViewWebPlugin::DidOpen,
+                               weak_factory_.GetWeakPtr()));
   preview_engine_.reset();
 
   // TODO(crbug.com/1237952): Figure out a more consistent way to preserve

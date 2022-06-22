@@ -313,6 +313,10 @@ class PageLoadMetricsObserverInterface {
   virtual void OnTimingUpdate(content::RenderFrameHost* subframe_rfh,
                               const mojom::PageLoadTiming& timing) = 0;
 
+  // The callback is invoked when a soft navigation is detected.
+  // See https://bit.ly/soft-navigation for more details.
+  virtual void OnSoftNavigationCountUpdated() = 0;
+
   virtual void OnMobileFriendlinessUpdate(
       const blink::MobileFriendliness& mobile_friendliness) = 0;
 
@@ -322,6 +326,10 @@ class PageLoadMetricsObserverInterface {
   virtual void OnInputTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const mojom::InputTiming& input_timing_delta) = 0;
+
+  // OnPageInputTimingUpdate is triggered when an updated InputTiming is
+  // available at the page level.
+  virtual void OnPageInputTimingUpdate(uint64_t num_input_events) = 0;
 
   // OnRenderDataUpdate is triggered when an updated PageRenderData is available
   // at the subframe level. This method may be called multiple times over the
@@ -486,6 +494,21 @@ class PageLoadMetricsObserverInterface {
   virtual void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                                 const gfx::Size& frame_size) = 0;
 
+  // OnRenderFrameDeleted is called when RenderFrameHost for a frame is deleted.
+  // OnSubFrameDeleted is called when FrameTreeNode for a subframe is deleted.
+  // The differences are:
+  //
+  // - OnRenderFrameDeleted is called for all frames. OnSubFrameDeleted is not
+  //   called for main frames. This is because PageLoadTracker is bound with
+  //   RenderFrameHost of the main frame and destruction of PageLoadTracker is
+  //   earlier than one of FrameTreeNode.
+  // - OnRenderFrameDeleted can be called in navigation commit to discard the
+  //   previous RenderFrameHost. At that timing, there are two RenderFrameHost
+  //   that have the same RenderFrameHost::GetFrameNodeId.
+  //
+  // Note that navigation may not trigger deletion of RenderFrameHost, e.g. in
+  // the case of the page entered to Back/Forward cache. If observer only wants
+  // to observe deletion of node, OnSubFrameDeleted is more relevant.
   virtual void OnRenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) = 0;
   virtual void OnSubFrameDeleted(int frame_tree_node_id) = 0;

@@ -28,6 +28,9 @@ accessibility/slot-poison.html [ Failure ]
 
 # Temporarily disabled for DevTools.
 crbug.com/1304217 http/tests/devtools/text-source-map.js [ Skip ]
+crbug.com/1304217 http/tests/devtools/runtime/runtime-getProperties.js [ Skip ] # Bug 1325812
+crbug.com/1304217 http/tests/devtools/runtime/runtime-localStorage-getProperties.js [ Skip ] # Bug 1325812
+crbug.com/1334930 http/tests/devtools/sources/debugger/debugger-disable-enable.js [ Skip ]
 
 # Expected to time out.
 external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
@@ -411,8 +414,6 @@ crbug.com/962417 external/wpt/css/mediaqueries/mq-negative-range-001.html [ Fail
 crbug.com/1007134 external/wpt/intersection-observer/v2/delay-test.html [ Failure Pass ]
 crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.html [ Failure Pass ]
 crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-iframe.sub.html [ Failure Pass ]
-
-crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
 # These fail when device_scale_factor is changed, but only for anti-aliasing:
 crbug.com/968791 [ Mac ] virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Failure Pass ]
@@ -1623,6 +1624,7 @@ virtual/layout_ng_table_frag/external/wpt/css/css-break/table/table-collapsed-bo
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/table-row-paint-vlr-rtl.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/table-row-paint-vrl-rtl.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/table-section-paint-vrl-rtl.html [ Pass ]
+virtual/layout_ng_table_frag/fragmentation/repeating-thead-under-repeating-thead.html [ Pass ]
 virtual/layout_ng_table_frag/fragmentation/single-line-cells-repeating-thead-cell-straddles-page-unsplittable-div.html [ Pass ]
 
 ### Tests failing with LayoutNGTableFragmentation enabled:
@@ -1667,7 +1669,6 @@ crbug.com/1078927 virtual/layout_ng_table_frag/fragmentation/table-overlapping-r
 crbug.com/1078927 virtual/layout_ng_table_frag/fragmentation/table-row-dimensions-break-freely.html [ Failure ]
 crbug.com/1078927 virtual/layout_ng_table_frag/fragmentation/table-row-dimensions-with-thead.html [ Failure ]
 crbug.com/1078927 virtual/layout_ng_table_frag/fragmentation/table-row-page-break-collapsed-border.html [ Crash Failure ]
-crbug.com/1078927 virtual/layout_ng_table_frag/fragmentation/thead-under-repeating-thead.html [ Failure ]
 
 ### With LayoutNGPrinting enabled:
 
@@ -1810,7 +1811,6 @@ crbug.com/753671 [ Mac12 ] external/wpt/css/css-content/quotes-020.html [ Failur
 crbug.com/753671 [ Mac12-arm64 ] external/wpt/css/css-content/quotes-020.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-021.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-022.html [ Failure ]
-crbug.com/753671 external/wpt/css/css-content/quotes-030.html [ Failure ]
 crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
 
 crbug.com/1335893 external/wpt/css/css-content/content-none-root-columns.html [ Failure ]
@@ -1897,6 +1897,8 @@ crbug.com/1068610 external/wpt/css/css-color/a98rgb-003.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/a98rgb-004.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/lab-008.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/lch-008.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-009.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-010.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-001.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-002.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-003.html [ Failure ]
@@ -1914,7 +1916,6 @@ crbug.com/1068610 external/wpt/css/css-color/xyz-004.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/xyz-005.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/color-mix-basic-001.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/color-mix-non-srgb-001.html [ Failure ]
-crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/color-mix-basic-001.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/tagged-images-003.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/tagged-images-004.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/color-mix-percents-01.html [ Failure ]
@@ -1941,6 +1942,8 @@ crbug.com/1068610 external/wpt/css/css-color/oklch-005.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/oklch-006.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/oklch-007.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/oklch-008.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/oklch-009.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/oklch-010.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/srgb-linear-001.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/srgb-linear-002.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/srgb-linear-003.html [ Failure ]
@@ -1964,7 +1967,12 @@ crbug.com/1068610 [ Linux ] external/wpt/css/css-color/t425-hsla-onscreen-multip
 crbug.com/1068610 [ Linux ] external/wpt/css/css-color/t425-hsla-onscreen-b.xht [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/at-color-profile-001.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/color-mix-currentcolor-001.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/color-mix-basic-001.html [ Failure ]
 crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/color-mix-currentcolor-001.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/lch-009.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/lch-010.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/oklch-009.html [ Failure ]
+crbug.com/1068610 virtual/system-color-compute/external/wpt/css/css-color/oklch-010.html [ Failure ]
 
 crbug.com/1299585 [ Mac11 ] external/wpt/css/css-color-adjust/inheritance.html [ Failure ]
 crbug.com/1299585 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-opaque-cross-origin.sub.html [ Failure Pass ]
@@ -3355,62 +3363,6 @@ crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protoc
 crbug.com/626703 [ Mac11 ] virtual/conversions-debug-mode/wpt_internal/attribution-reporting/simple-event-level-report-test.sub.https.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/conversions-debug-mode/wpt_internal/attribution-reporting/simple-aggregatable-report-test.sub.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/WebCryptoAPI/derive_bits_keys/cfrg_curves_bits.https.any.worker.html [ Crash Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac11 ] external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac12 ] external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac12-arm64 ] external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac11 ] external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac12 ] external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac12-arm64 ] external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac11 ] external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac12 ] external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac12-arm64 ] external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac11 ] external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac12 ] external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac12-arm64 ] external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Linux ] virtual/system-color-compute/external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] virtual/system-color-compute/external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac11 ] virtual/system-color-compute/external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/system-color-compute/external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac12 ] virtual/system-color-compute/external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Mac12-arm64 ] virtual/system-color-compute/external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/system-color-compute/external/wpt/css/css-color/lch-009.html [ Failure ]
-crbug.com/626703 [ Linux ] virtual/system-color-compute/external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] virtual/system-color-compute/external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac11 ] virtual/system-color-compute/external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/system-color-compute/external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac12 ] virtual/system-color-compute/external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Mac12-arm64 ] virtual/system-color-compute/external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/system-color-compute/external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/626703 [ Linux ] virtual/system-color-compute/external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac11 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac12 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Mac12-arm64 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/system-color-compute/external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/626703 [ Linux ] virtual/system-color-compute/external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac10.15 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac11 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac12 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Mac12-arm64 ] virtual/system-color-compute/external/wpt/css/css-color/oklch-010.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/system-color-compute/external/wpt/css/css-color/oklch-010.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/service-workers/cache-storage/crashtests/cache-response-clone.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/service-workers/cache-storage/crashtests/cache-response-clone.https.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/service-workers/cache-storage/crashtests/cache-response-clone.https.html [ Timeout ]
@@ -4027,6 +3979,7 @@ crbug.com/964183 external/wpt/css/css-multicol/multicol-width-005.html [ Failure
 crbug.com/481431 external/wpt/css/css-multicol/multicol-zero-height-003.html [ Failure ]
 crbug.com/1191124 external/wpt/css/css-multicol/spanner-fragmentation-012.html [ Failure ]
 crbug.com/1224888 external/wpt/css/css-multicol/spanner-in-opacity.html [ Failure ]
+crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-cell-straddles-page-unsplittable-div.html [ Failure ]
 
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-007.tentative.html [ Failure ]
@@ -4095,12 +4048,6 @@ crbug.com/1160916 external/wpt/css/css-backgrounds/border-top-right-radius-010.x
 crbug.com/1045599 external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-safe-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-row-axis-self-baseline-synthesized-004.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-self-baseline-not-applied-if-sizing-cyclic-dependency-003.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-composition.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-interpolation.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-composition.html [ Failure ]
-crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-interpolation.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/grid-definition/grid-repeat-max-width-001.html [ Failure ]
 crbug.com/1335889 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-009.html [ Failure ]
 
@@ -4671,7 +4618,8 @@ crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Fai
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Failure Pass Timeout ]
 
 # User Activation
-crbug.com/1066190 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
+crbug.com/736415 crbug.com/1066190 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
+crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
 
 # S13N Sheriff 2018-7-11
 crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ Failure Pass ]
@@ -4806,7 +4754,6 @@ crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remo
 
 # Paint Timing failures
 crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-gradient.html [ Failure ]
-crbug.com/1062984 external/wpt/paint-timing/fcp-only/fcp-text-input.html [ Failure ]
 
 # Contentful First Paint failures
 crbug.com/1322629 external/wpt/paint-timing/fcp-only/fcp-invisible-3d-rotate.html [ Failure ]
@@ -6586,7 +6533,6 @@ crbug.com/1276201 [ Mac ] external/wpt/html/browsers/the-window-object/open-clos
 crbug.com/1276201 [ Mac11-arm64 ] external/wpt/html/browsers/the-window-object/open-close/open-features-tokenization-width-height.html [ Skip ]
 crbug.com/1275967 [ Linux ] external/wpt/permissions-policy/permissions-policy-frame-policy-timing.https.sub.html [ Failure Pass ]
 crbug.com/1275944 [ Mac ] http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
-crbug.com/1276206 http/tests/inspector-protocol/network/blocked-cookie-same-party.js [ Failure Pass Timeout ]
 crbug.com/1276207 virtual/gpu-rasterization/images/color-profile-image-object-fit.html [ Failure Pass ]
 crbug.com/1276208 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-fillPath-alpha-shadow.html [ Pass Timeout ]
 crbug.com/1276290 [ Mac ] wpt_internal/mediastream/mediastreamtrackprocessor-transfer-to-worker.html [ Skip ]
@@ -6640,8 +6586,12 @@ crbug.com/1283295 [ Mac ] fast/text-autosizing/hackernews-comments.html [ Failur
 # Sheriff 2021-12-30
 crbug.com/1229096 [ Win ] fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure Pass ]
 crbug.com/1279758 [ Win10.20h2 ] virtual/threaded-prefer-compositing/fast/scrolling/scroll-animation-on-by-default.html [ Failure Pass ]
-crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict.js [ Pass Timeout ]
-crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax.js [ Pass Timeout ]
+crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict-browser-navigate.js [ Pass Timeout ]
+crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict-js-navigate.js [ Pass Timeout ]
+crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict-js-subresource.js [ Pass Timeout ]
+crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-browser-navigate.js [ Pass Timeout ]
+crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-navigate.js [ Pass Timeout ]
+crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-subresource.js [ Pass Timeout ]
 
 # Sheriff 2022-01-04
 crbug.com/1283865 external/wpt/webmessaging/without-ports/020.html [ Failure Pass ]
@@ -6656,7 +6606,9 @@ crbug.com/1285411 external/wpt/css/css-scroll-snap/input/mouse-wheel.html [ Time
 crbug.com/1285438 fast/layers/clip-rects-transformed.html [ Failure Pass ]
 crbug.com/1285431 [ Mac ] virtual/backface-visibility-interop/compositing/overflow/transform-should-update-absolute-clip-rects.html [ Crash Failure Pass ]
 crbug.com/1285437 virtual/scroll-unification-prefer_compositing_to_lcd_text/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Timeout ]
-crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax.js [ Crash Failure Pass Timeout ]
+crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-browser-navigate.js [ Crash Failure Pass Timeout ]
+crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-navigate.js [ Crash Failure Pass Timeout ]
+crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-subresource.js [ Crash Failure Pass Timeout ]
 
 # Sheriff 2022-01-12
 crbug.com/1286619 [ Mac ] external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Failure Pass ]
@@ -6812,8 +6764,6 @@ crbug.com/1302571 virtual/threaded/http/tests/devtools/isolated-code-cache/cross
 # Sheriff 2022-03-04
 crbug.com/1302856 [ Mac11-arm64 ] virtual/exotic-color-space/images/rgb-png-with-cmyk-color-profile.html [ Failure Pass ]
 
-crbug.com/1300352 http/tests/inspector-protocol/network/blocked-cookie-not-on-path.js [ Pass Timeout ]
-
 crbug.com/1298836 external/wpt/fetch/api/basic/response-null-body.any.* [ Failure Pass ]
 crbug.com/1298836 virtual/plz-dedicated-worker/external/wpt/fetch/api/basic/response-null-body.any.* [ Failure Pass ]
 
@@ -6827,6 +6777,11 @@ crbug.com/1285275 external/wpt/html/anonymous-iframe/cache-storage.tentative.htt
 crbug.com/1285275 virtual/fenced-frame-mparch/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Pass Timeout ]
 crbug.com/1285275 virtual/fenced-frame-shadow-dom/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Pass Timeout ]
 crbug.com/1285275 virtual/partitioned-cookies/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Pass Timeout ]
+#
+# The PolicyContainer's anonymous bit is unintendedly inherited toward the
+# fenced frame with the MPArch implementation. It causes:
+# Check failed: parent_ || !IsAnonymous().
+crbug.com/1287458 virtual/fenced-frame-mparch/external/wpt/html/anonymous-iframe/fenced-frame.tentative.https.window.html [ Crash ]
 
 # Sheriff 2022-03-10
 crbug.com/1304956 storage/indexeddb/dont-wedge.html [ Failure Pass ]
@@ -6836,7 +6791,6 @@ crbug.com/626703 external/wpt/scroll-to-text-fragment/force-load-at-top.html [ P
 crbug.com/1269534 fast/spatial-navigation/snav-zero-margin-content.html [ Failure Pass ]
 crbug.com/1295980 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/user-activation.https.html [ Failure Pass Timeout ]
 crbug.com/1295980 virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/user-activation.https.html [ Failure Pass Timeout ]
-crbug.com/1280537 virtual/first-party-sets/http/tests/inspector-protocol/network/blocked-cookie-same-site-lax.js [ Failure Pass Timeout ]
 crbug.com/1298633 http/tests/inspector-protocol/network/cross-origin-isolation/coep-load-error-reporting-worker.js [ Pass Timeout ]
 
 # Sheriff 2022-03-16
@@ -7079,3 +7033,12 @@ crbug.com/1277696 fast/loader/reload-zero-byte-plugin.html [ Failure Pass ]
 
 # Flaky on Windows
 crbug.com/1316343 [ Win ] external/wpt/web-bundle/subresource-loading/script-reuse-web-bundle-resource.https.tentative.html [ Failure ]
+
+# Manual test fails when run under automation due to lack of pop-up blocking. https://github.com/web-platform-tests/wpt/issues/3867
+crbug.com/1337125 external/wpt/window-placement/fullscreen-companion-window-manual.tentative.https.html [ Failure ]
+
+# Temporarily disable test to merge DevTools top layer support
+crbug.com/1313690 http/tests/devtools/elements/iframe-load-event.js [ Skip ]
+
+# Temporarily disable to land DOMStorage changes
+crbug.com/1337796 http/tests/devtools/debugger/stop-on-debugger-from-detached-iframe.js [ Skip ]

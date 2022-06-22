@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {VolumeInfo} from '../../externs/volume_info.js';
 
@@ -367,7 +367,8 @@ export function testVolumeEntry() {
       fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS, fakeRootEntry);
 
   assertEquals(fakeRootEntry, volumeEntry.getNativeEntry());
-  assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS, volumeEntry.iconName);
+  // Downloads volume is displayed with MyFiles icon.
+  assertEquals(VolumeManagerCommon.VolumeType.MY_FILES, volumeEntry.iconName);
   assertEquals('filesystem:fake-fs/', volumeEntry.filesystem.rootURL);
   assertEquals('/', volumeEntry.fullPath);
   assertEquals('filesystem:fake-fs/', volumeEntry.toURL());

@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Korisnik</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Prozor ažuriranja firmvera za vanjski uređaj je otvoren. Dostupan je sljedeći broj ažuriranja: <ph name="NUM_UPDATES" /></translation>
+<translation id="1145516343487477149">Pronađite članke za pomoć i odgovore na uobičajena pitanja o Chromebooku</translation>
 <translation id="1165039591588034296">Greška</translation>
 <translation id="1175697296044146566">Ovim uređajem <ph name="DEVICE_TYPE" /> upravlja <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Prosječno (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -66,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> upravlja ovim uređajem i moguće je da može pratiti vaše aktivnosti.</translation>
 <translation id="147809995039451286">Preuzimanje ažuriranja nije uspjelo</translation>
 <translation id="1478594628797167447">Skener</translation>
+<translation id="1483493594462132177">Pošalji</translation>
 <translation id="1491076385728777984">Ažuriranje firmvera na uređaju <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> upravlja ovim korisnikom i može udaljeno upravljati postavkama i pratiti aktivnost korisnika.</translation>
 <translation id="150962533380566081">Nevažeći PUK.</translation>
@@ -102,7 +104,7 @@
 <translation id="1745577949879301685">Slike se nisu mogle učitati. Provjerite mrežnu vezu ili ponovo pokušajte učitati slike.</translation>
 <translation id="1751249301761991853">Lično</translation>
 <translation id="1753496554272155572">Izlaz iz pregleda pozadinske slike</translation>
-<translation id="1755556344721611131">Aplikacija Dijagnostika</translation>
+<translation id="1755556344721611131">Aplikacija Diagnostics</translation>
 <translation id="175763766237925754">Dobro (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -119,6 +121,7 @@
 <translation id="1871569928317311284">Isključi tamnu temu</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Isključi tamni način rada</translation>
+<translation id="1881188606372070653">Idite na <ph name="BEGIN_LINK1" />stranicu Pravna pomoć<ph name="END_LINK1" /> da zatražite izmjenu sadržaja zbog zakona. Možda će se neke informacije o računu i sistemu poslati Googleu. Informacije koje navedete će nam pomoći da riješimo tehničke probleme i poboljšamo usluge, u skladu s našim <ph name="BEGIN_LINK2" />Pravilima privatnosti<ph name="END_LINK2" /> i <ph name="BEGIN_LINK3" />Uslovima korištenja usluge<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Revizija hardvera</translation>
 <translation id="1905710495812624430">Prekoračen je maksimalan broj dozvoljenih pokušaja.</translation>
 <translation id="1908234395526491708">Greške UDP zahtjeva</translation>
@@ -622,6 +625,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="6379086450106841622">Ekran na dodir</translation>
 <translation id="6381741036071372448">Testirajte tastaturu</translation>
 <translation id="6388847657025262518">Ulagač za dokumente skenera se zaglavio. Provjerite ulagač i pokušajte ponovo.</translation>
+<translation id="6394634179843537518">Dodajte fajl</translation>
 <translation id="6410257289063177456">Fajlovi slike</translation>
 <translation id="641081527798843608">Podudaranje predmeta</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -655,6 +659,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="6692996468359469499">Primajte informacije u vezi s vašim odabirom</translation>
 <translation id="6704062477274546131">Razrješavanje DNS-a</translation>
+<translation id="6721744718589119342">Možda ćemo vam poslati e-poruku za više informacija ili novosti</translation>
 <translation id="6723839937902243910">Napajanje</translation>
 <translation id="6723847290197874913">Pozadinsko svjetlo tastature</translation>
 <translation id="672609503628871915">Pogledajte što je novo</translation>
@@ -719,6 +724,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; pritisnite tipku za pretraživanje i tipku za razmak da vidite rezultat u Google Pretraživanju.</translation>
 <translation id="7343649194310845056">Mrežni uređaji</translation>
 <translation id="7359657277149375382">Vrsta datoteke</translation>
+<translation id="73631062356239394">Dijeljenje dijagnostičkih podataka</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
 <translation id="7397270852490618635">Isključi svijetlu temu</translation>
@@ -924,6 +930,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="9149391708638971077">Pokreni test memorije</translation>
 <translation id="9173638680043580060">Preostalo je manje od minute</translation>
 <translation id="917720651393141712">Test</translation>
+<translation id="9188992814426075118">Tastatura može automatski prilagoditi pozadinsku sliku</translation>
 <translation id="9204237731135241582">Nije moguće kontaktirati pristupnika iz Android aplikacija</translation>
 <translation id="9211490828691860325">Sve radne površine</translation>
 <translation id="922179502584117429">Trenutna verzija <ph name="VERSION_NUMBER" /> je zastarjela</translation>

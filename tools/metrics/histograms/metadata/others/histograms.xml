@@ -2160,7 +2160,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ChildProcess.Launched.UtilityProcessHash"
-    enum="UtilityProcessNameHash" expires_after="2022-10-16">
+    enum="UtilityProcessNameHash" expires_after="2022-12-18">
   <owner>wfh@chromium.org</owner>
   <summary>
     Count of child utility process launches, bucketed by the hash of their
@@ -2204,6 +2204,16 @@ chromium-metrics-reviews@google.com.
     An extended Windows error code returned from GetLastError when failing to
     launch a utility process. Recorded when a Utility process fails to launch on
     Windows.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.ProcessLifetime.Utility" units="ms"
+    expires_after="2023-06-16">
+  <owner>olivierli@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    The time elapsed between the creation and destruction of a utility process.
+    Recorded when the process is recorded as destroyed in PerformanceManager.
   </summary>
 </histogram>
 
@@ -2748,7 +2758,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ClientHints.FetchLatency" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>miketaylr@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
   <summary>
@@ -2774,7 +2784,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ClientHints.StoreLatency" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>miketaylr@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
   <summary>
@@ -3176,7 +3186,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.TimeToSelectShare" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -3199,7 +3209,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.TimeToTakeAction.SelectedItem" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -5829,7 +5839,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.NtpBackgroundInteraction"
-    enum="NuxNtpBackgroundInteractions" expires_after="2022-10-16">
+    enum="NuxNtpBackgroundInteractions" expires_after="2022-12-18">
   <owner>johntlee@chromium.org</owner>
   <owner>dpapad@chromium.org</owner>
   <summary>
@@ -5880,7 +5890,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.Sentinel.Created" enum="FirstRunSentinelResult"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>Result of sentinel file has been written.</summary>
@@ -5905,7 +5915,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.Stage" enum="FirstRunStageResult"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>tinazwang@chromium.org</owner>
   <owner>bling-get-started@google.com</owner>
   <summary>
@@ -6356,7 +6366,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Hardware.Display.Count.OnChange" units="units"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>sashamcintosh@chromium.org</owner>
   <owner>chromeos-gfx@chromium.org</owner>
   <summary>
@@ -6366,7 +6376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Hardware.Display.Count.OnStartup" units="units"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>sashamcintosh@chromium.org</owner>
   <owner>chromeos-gfx@chromium.org</owner>
   <summary>
@@ -6376,7 +6386,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Hardware.Display.SupportsHDR" enum="BooleanSupported"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>cassew@google.com</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -6458,7 +6468,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Hwsec.Attestation.PrepareDuration" units="ms"
-    expires_after="2022-10-18">
+    expires_after="2022-12-18">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>The duration of preparation for enrollment in attestation.</summary>
@@ -8782,6 +8792,50 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="OSCrypt.Win.Decrypt.Result" enum="BooleanSuccess"
+    expires_after="M106">
+  <owner>wfh@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Whether or not the DPAPI Decrypt call to decrypt the OSCrypt key succeeeded.
+    This is logged once during browser startup on Windows.
+  </summary>
+</histogram>
+
+<histogram name="OSCrypt.Win.Decrypt.Time" units="ms" expires_after="M106">
+  <owner>wfh@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The amount of time, in ms, that it takes to perform a DPAPI Decrypt call.
+    This is logged once during browser startup on Windows.
+  </summary>
+</histogram>
+
+<histogram name="OSCrypt.Win.Encrypt.Result" enum="BooleanSuccess"
+    expires_after="M106">
+  <owner>wfh@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Whether or not the DPAPI Encrypt call to encrypt the OSCrypt key succeeeded.
+    This is logged once during browser startup on Windows, if there is no stored
+    key and a new one has to be generated. This data will therefore be biased
+    towards newer clients. See OSCrypt.Win.Decrypt.Result which contains
+    unbiased data.
+  </summary>
+</histogram>
+
+<histogram name="OSCrypt.Win.Encrypt.Time" units="ms" expires_after="M106">
+  <owner>wfh@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The amount of time, in ms, that it takes to perform a DPAPI Encrypt call.
+    This is logged once during browser startup on Windows, if there is no stored
+    key and a new one has to be generated. This data will therefore be biased
+    towards newer clients. See OSCrypt.Win.Decrypt.Time which contains unbiased
+    data.
+  </summary>
+</histogram>
+
 <histogram name="OSCrypt.Win.KeyDecryptionError" enum="WinGetLastError"
     expires_after="2021-08-01">
   <owner>wfh@chromium.org</owner>
@@ -10051,7 +10105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PushMessaging.DeliveryStatus" enum="PushEventStatus"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -10362,7 +10416,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Read.AgeOnFirstRead" units="hours"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@google.com</owner>
   <summary>
@@ -11922,7 +11976,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Shutdown.ShutdownType" enum="ShutdownType"
-    expires_after="M107">
+    expires_after="2022-12-18">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>The type of the last shutdown.</summary>
@@ -11934,7 +11988,8 @@ should be kept until we remove incident reporting. -->
   <summary>Time for shutdown for a silent exit.</summary>
 </histogram>
 
-<histogram name="Shutdown.WindowClose.Time" units="ms" expires_after="M107">
+<histogram name="Shutdown.WindowClose.Time" units="ms"
+    expires_after="2022-12-18">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -12632,7 +12687,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SubresourceWebBundles.BundleFetchErrorCode"
-    enum="NetErrorCodes" expires_after="2022-10-16">
+    enum="NetErrorCodes" expires_after="2022-12-18">
   <owner>ksakamoto@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -14712,7 +14767,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebUITabStrip.OpenAction" enum="WebUITabStripOpenActions"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>collinbaker@chromium.org</owner>
   <owner>tluk@chromium.org</owner>
   <summary>
@@ -14734,7 +14789,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebUITabStrip.TabActivation" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>robliao@chromium.org</owner>
   <owner>johntlee@chromium.org</owner>
   <summary>
@@ -14980,7 +15035,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WrenchMenu.MenuAction" enum="WrenchMenuAction"
-    expires_after="2022-10-16">
+    expires_after="2022-12-18">
   <owner>ainslie@chromium.org</owner>
   <owner>edwardjung@chromium.org</owner>
   <summary>Number of times that each menu item is clicked.</summary>

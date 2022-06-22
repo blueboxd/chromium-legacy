@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @protocol BadgeItem;
+class GURL;
 
 // Protocol for commands that will be handled by the BrowserCoordinator.
 // TODO(crbug.com/906662) : Rename this protocol to one that is more descriptive
@@ -45,8 +46,18 @@
 // Shows recent tabs.
 - (void)showRecentTabs;
 
+// Shows the translate infobar.
+- (void)showTranslate;
+
 // Shows the AddCreditCard UI.
 - (void)showAddCreditCard;
+
+// Shows the dialog for sending the page with |url| and |title| between a user's
+// devices.
+- (void)showSendTabToSelfUI:(const GURL&)url title:(NSString*)title;
+
+// Shows the online help page in a tab.
+- (void)showHelpPage;
 
 // Displays the Badge popup menu showing |badgeItems|.
 - (void)displayPopupMenuWithBadgeItems:(NSArray<id<BadgeItem>>*)badgeItems;

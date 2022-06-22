@@ -331,6 +331,10 @@
         'goma': 'gpu_tests_release_bot_minimal_symbols',
         'reclient': 'gpu_tests_release_bot_minimal_symbols_reclient',
       },
+      'Comparison ios (reclient)': {
+        'goma': 'ios_simulator_code_coverage_partial_instrumentation_xctest',
+        'reclient': 'ios_simulator_code_coverage_partial_instrumentation_xctest_reclient',
+      },
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot',
       'Libfuzzer Upload Linux ASan (reclient)': 'libfuzzer_asan_release_bot_reclient',
@@ -518,6 +522,7 @@
       'GPU Linux Builder (dbg)': 'gpu_tests_debug_bot_reclient',
       'GPU Mac Builder': 'gpu_tests_release_trybot_minimal_symbols',
       'GPU Mac Builder (dbg)': 'gpu_tests_debug_bot',
+      'GPU Mac Builder (reclient shadow)': 'gpu_tests_release_trybot_minimal_symbols_reclient',
       'GPU Win x64 Builder': 'gpu_tests_release_bot_dcheck_always_on_resource_allowlisting_reclient',
       'GPU Win x64 Builder (dbg)': 'gpu_tests_debug_bot_reclient',
       'GPU Win x64 Builder Code Coverage': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
@@ -543,8 +548,6 @@
       'GPU FYI Win x64 DX12 Vulkan Builder (dbg)': 'gpu_fyi_tests_dx12vk_debug_trybot_reclient',
       'GPU FYI XR Win x64 Builder': 'gpu_fyi_tests_release_trybot_reclient',
       'Linux FYI GPU TSAN Release': 'gpu_fyi_tests_release_trybot_tsan_reclient',
-      'Optional Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
-      'Optional Android Release (Pixel 4)': 'gpu_tests_android_release_trybot',
       'gpu-fyi-chromeos-jacuzzi-exp': 'gpu_tests_chromeos_jacuzzi_release_trybot',
       'gpu-fyi-chromeos-octopus-exp': 'gpu_tests_chromeos_octopus_release_trybot',
       'gpu-fyi-chromeos-zork-exp': 'gpu_tests_chromeos_zork_release_trybot',
@@ -586,6 +589,7 @@
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
       'ios-catalyst': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_asan_no_dsyms_no_remoting',
       'ios-device': 'ios_device_release_compile_only',
+      'ios-device (reclient shadow)': 'ios_device_release_compile_only_reclient',
       'ios-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-noncq': 'ios_simulator_debug_static_bot_xctest',
@@ -652,8 +656,8 @@
       'Simple Chrome Builder reclient test': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
       'Win x64 Builder reclient staging': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'Win x64 Builder reclient test': 'gpu_tests_release_bot_minimal_symbols_reclient',
-      'ios-simulator reclient staging': 'ios_simulator_code_coverage_partial_instrumentation_xctest',
-      'ios-simulator reclient test': 'ios_simulator_code_coverage_partial_instrumentation_xctest',
+      'ios-simulator reclient staging': 'ios_simulator_code_coverage_partial_instrumentation_xctest_reclient',
+      'ios-simulator reclient test': 'ios_simulator_code_coverage_partial_instrumentation_xctest_reclient',
     },
 
     'chromium.rust': {
@@ -2770,15 +2774,19 @@
     ],
 
     'ios_cronet_xctest': [
-      'cronet_ios', 'debug_static_bot', 'ios_deployment_target_10_0', 'ios', 'ios_simulator', 'ios_cpu_x64_x86', 'xctest', 'ios_disable_xcode_project_generation',
+      'cronet_ios', 'debug_static_bot', 'ios_deployment_target_11_0', 'ios', 'ios_simulator', 'ios_cpu_x64', 'xctest', 'ios_disable_xcode_project_generation',
     ],
 
     'ios_cronet_xctest_arm64': [
-      'cronet_ios', 'debug_static_bot', 'ios_deployment_target_10_0', 'ios', 'ios_simulator', 'ios_cpu_arm64', 'xctest', 'ios_disable_xcode_project_generation',
+      'cronet_ios', 'debug_static_bot', 'ios_deployment_target_11_0', 'ios', 'ios_simulator', 'ios_cpu_arm64', 'xctest', 'ios_disable_xcode_project_generation',
     ],
 
     'ios_device_release_compile_only': [
         'compile_only', 'ios', 'ios_device', 'ios_cpu_arm64', 'ios_google_cert', 'ios_disable_code_signing', 'release_bot', 'ios_disable_xcode_project_generation',
+    ],
+
+    'ios_device_release_compile_only_reclient': [
+        'compile_only', 'ios', 'ios_device', 'ios_cpu_arm64', 'ios_google_cert', 'ios_disable_code_signing', 'release_bot_reclient', 'ios_disable_xcode_project_generation',
     ],
 
     # doesn't have symbol_level=0
@@ -2788,6 +2796,10 @@
 
     'ios_simulator_code_coverage_partial_instrumentation_xctest': [
       'use_clang_coverage', 'debug_static_bot', 'x64', 'ios', 'ios_simulator', 'partial_code_coverage_instrumentation', 'xctest', 'ios_disable_xcode_project_generation',
+    ],
+
+    'ios_simulator_code_coverage_partial_instrumentation_xctest_reclient': [
+      'use_clang_coverage', 'x64', 'ios', 'ios_simulator', 'xctest', 'ios_disable_xcode_project_generation', 'release_bot_reclient',
     ],
 
     'ios_simulator_debug_static_bot_invert_fieldtrials_xctest': [
@@ -3441,7 +3453,7 @@
     ],
 
     'updater_debug_bot_x86_reclient': [
-      'updater_on_win_mac', 'debug_static_bot_reclient', 'x86',
+      'updater_on_win_mac', 'debug_static_bot_reclient', 'x86', 'no_symbols',
     ],
 
     'updater_release_bot': [
@@ -3989,12 +4001,8 @@
       'gn_args': 'target_cpu="x64"',
     },
 
-    'ios_cpu_x64_x86': {
-      'gn_args': 'target_cpu="x64" additional_target_cpus=["x86"]',
-    },
-
-    'ios_deployment_target_10_0': {
-      'gn_args': 'ios_deployment_target=\"10.0\"',
+    'ios_deployment_target_11_0': {
+      'gn_args': 'ios_deployment_target=\"11.0\"',
     },
 
     'ios_device': {

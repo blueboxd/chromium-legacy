@@ -38,8 +38,6 @@ preprocess_if_expr("preprocess_src") {
   in_files = [
     "drag_wrapper.js",
     "focus_grid.js",
-    "focus_outline_manager.js",
-    "splitter.js",
     "store.js",
   ]
 
@@ -49,6 +47,7 @@ preprocess_if_expr("preprocess_src") {
       "command.js",
       "context_menu_handler.js",
       "focus_manager.js",
+      "focus_outline_manager.js",
       "focus_row.js",
       "focus_row_behavior.js",
       "focus_without_ink.js",
@@ -326,7 +325,6 @@ js_type_check("ui_resources_modules") {
     ":menu_button.m",
     ":menu_item.m",
     ":position_util.m",
-    ":splitter",
     ":store",
     ":store_client",
   ]
@@ -529,13 +527,6 @@ js_library("menu_item.m") {
 js_library("position_util.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/position_util.m.js" ]
   extra_deps = [ ":modulize" ]
-}
-
-js_library("splitter") {
-  deps = [
-    "..:ui.m",
-    "../..:cr.m",
-  ]
 }
 
 js_library("store") {

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
+#include "build/config/chromebox_for_meetings/buildflags.h"  // PLATFORM_CFM
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_client.h"
 #include "chrome/common/chrome_paths.h"
@@ -31,13 +32,13 @@
 #include "chromeos/ash/components/dbus/rgbkbd/rgbkbd_client.h"
 #include "chromeos/ash/components/dbus/rmad/rmad_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/ash/components/dbus/system_proxy/system_proxy_client.h"
 #include "chromeos/ash/components/dbus/typecd/typecd_client.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/ash/components/hibernate/buildflags.h"  // ENABLE_HIBERNATE
-#include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"  // PLATFORM_CFM
 #include "chromeos/dbus/anomaly_detector/anomaly_detector_client.h"
 #include "chromeos/dbus/arc/arc_appfuse_provider_client.h"
 #include "chromeos/dbus/arc/arc_camera_client.h"
@@ -59,9 +60,9 @@
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/resourced/resourced_client.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/u2f/u2f_client.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "chromeos/dbus/userdataauth/arc_quota_client.h"
 #include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
 #include "chromeos/dbus/userdataauth/cryptohome_pkcs11_client.h"
@@ -73,8 +74,8 @@
 #include "device/bluetooth/floss/floss_features.h"
 
 #if BUILDFLAG(PLATFORM_CFM)
+#include "chromeos/ash/components/chromebox_for_meetings/features.h"
 #include "chromeos/ash/components/dbus/chromebox_for_meetings/cfm_hotline_client.h"
-#include "chromeos/components/chromebox_for_meetings/features/features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_HIBERNATE)
@@ -159,6 +160,7 @@ void InitializeDBus() {
   InitializeDBusClient<chromeos::TpmManagerClient>(bus);
   InitializeDBusClient<TypecdClient>(bus);
   InitializeDBusClient<chromeos::U2FClient>(bus);
+  InitializeDBusClient<chromeos::UpdateEngineClient>(bus);
   InitializeDBusClient<chromeos::UserDataAuthClient>(bus);
   InitializeDBusClient<UpstartClient>(bus);
   InitializeDBusClient<chromeos::VmPluginDispatcherClient>(bus);
@@ -180,7 +182,7 @@ void InitializeFeatureListDependentDBus() {
     InitializeDBusClient<bluez::BluezDBusManager>(bus);
   }
 #if BUILDFLAG(PLATFORM_CFM)
-  if (base::FeatureList::IsEnabled(chromeos::cfm::features::kMojoServices)) {
+  if (base::FeatureList::IsEnabled(cfm::features::kMojoServices)) {
     InitializeDBusClient<CfmHotlineClient>(bus);
   }
 #endif
@@ -207,7 +209,7 @@ void ShutdownDBus() {
   }
   chromeos::WilcoDtcSupportdClient::Shutdown();
 #if BUILDFLAG(PLATFORM_CFM)
-  if (base::FeatureList::IsEnabled(chromeos::cfm::features::kMojoServices)) {
+  if (base::FeatureList::IsEnabled(cfm::features::kMojoServices)) {
     CfmHotlineClient::Shutdown();
   }
 #endif
@@ -220,6 +222,7 @@ void ShutdownDBus() {
   chromeos::VmPluginDispatcherClient::Shutdown();
   UpstartClient::Shutdown();
   chromeos::UserDataAuthClient::Shutdown();
+  chromeos::UpdateEngineClient::Shutdown();
   chromeos::U2FClient::Shutdown();
   TypecdClient::Shutdown();
   chromeos::TpmManagerClient::Shutdown();

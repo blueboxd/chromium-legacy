@@ -4,7 +4,11 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_module_container.h"
 
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,7 +23,7 @@ const float kContentHorizontalInset = 16.0f;
 const float kContentTitleVerticalSpacing = 10.0f;
 
 // The top inset of the title label to this container.
-const float kTitleTopInset = -11.0f;
+const float kTitleTopInset = 11.0f;
 
 // The minimum width of the title label.
 const float kTitleMinimumWidth = 99.0f;
@@ -86,7 +90,7 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
             constraintEqualToAnchor:self.leadingAnchor
                            constant:kContentHorizontalInset],
         [self.topAnchor constraintEqualToAnchor:self.title.topAnchor
-                                       constant:kTitleTopInset],
+                                       constant:-kTitleTopInset],
         // Ensures placeholder for title is visible.
         [self.title.widthAnchor
             constraintGreaterThanOrEqualToConstant:kTitleMinimumWidth],
@@ -122,9 +126,11 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
 - (NSString*)titleString {
   switch (self.type) {
     case ContentSuggestionsModuleTypeShortcuts:
-      return @"Shortcuts";
+      return l10n_util::GetNSString(
+          IDS_IOS_CONTENT_SUGGESTIONS_SHORTCUTS_MODULE_TITLE);
     case ContentSuggestionsModuleTypeMostVisited:
-      return @"Frequently Visited";
+      return l10n_util::GetNSString(
+          IDS_IOS_CONTENT_SUGGESTIONS_MOST_VISITED_MODULE_TITLE);
     case ContentSuggestionsModuleTypeReturnToRecentTab:
       return @"";
   }
@@ -145,6 +151,31 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
     self.title.text = [self titleString];
   }
   _isPlaceholder = isPlaceholder;
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    self.title.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  }
+}
+
+- (CGFloat)calculateIntrinsicHeight {
+  CGFloat contentHeight = 0;
+  switch (self.type) {
+    case ContentSuggestionsModuleTypeShortcuts:
+    case ContentSuggestionsModuleTypeMostVisited:
+      contentHeight +=
+          MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory)
+              .height;
+      break;
+    case ContentSuggestionsModuleTypeReturnToRecentTab:
+      return kReturnToRecentTabSize.height;
+  }
+  return kContentTitleVerticalSpacing + self.title.font.lineHeight +
+         kTitleTopInset + contentHeight;
 }
 
 @end

@@ -44,7 +44,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
@@ -66,6 +65,7 @@ import java.util.List;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 @Batch(Batch.UNIT_TESTS)
+@DisabledTest(message = "https://crbug.com/1330627")
 public class TileGroupUnitTest {
     private static final int MAX_TILES_TO_FETCH = 4;
     private static final int TILE_TITLE_LINES = 1;
@@ -116,7 +116,7 @@ public class TileGroupUnitTest {
     @Test
     @UiThreadTest
     @SmallTest
-    @FlakyTest(message = "https://crbug.com/1292469")
+    @DisabledTest(message = "https://crbug.com/1292469")
     public void testInitialiseWithTileList() {
         mMostVisitedSites.setTileSuggestions(URLS);
 
@@ -155,6 +155,7 @@ public class TileGroupUnitTest {
     @Test
     @UiThreadTest
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1336867")
     public void testReceiveNewTilesWithoutChanges() {
         TileGroup tileGroup = initialiseTileGroup(URLS);
 
@@ -169,6 +170,7 @@ public class TileGroupUnitTest {
     @Test
     @UiThreadTest
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1336867")
     public void testReceiveNewTilesWithoutChanges_TrackLoad() {
         TileGroup tileGroup = initialiseTileGroup(/* deferLoad: */ true, URLS);
 
@@ -184,11 +186,7 @@ public class TileGroupUnitTest {
     @Test
     @UiThreadTest
     @SmallTest
-    @DisabledTest(
-            message =
-                    "https://crbug.com/1330627, https://crbug.com/1293208, https://crbug.com/1336742")
-    public void
-    testReceiveNewTilesWithDataChanges() {
+    public void testReceiveNewTilesWithDataChanges() {
         TileGroup tileGroup = initialiseTileGroup(URLS);
 
         // Notify the about different URLs, but the same number. #onTileCountChanged() should not be
@@ -342,7 +340,7 @@ public class TileGroupUnitTest {
     @Test
     @UiThreadTest
     @SmallTest
-    @FlakyTest(message = "Test is flaky, see crbug.com/1286755")
+    @DisabledTest(message = "Test is flaky, see crbug.com/1286755")
     public void testRenderTileViewReplacing() {
         SuggestionsUiDelegate uiDelegate = mSuggestionsUiDelegate;
         when(uiDelegate.getImageFetcher()).thenReturn(mMockImageFetcher);
@@ -416,7 +414,7 @@ public class TileGroupUnitTest {
     @Test
     @UiThreadTest
     @SmallTest
-    @FlakyTest(message = "Test is flaky, see crbug.com/1288425")
+    @DisabledTest(message = "Test is flaky, see crbug.com/1288425")
     public void testIconLoadingWhenTileNotRegistered() {
         TileGroup tileGroup = initialiseTileGroup();
         Tile tile = new Tile(createSiteSuggestion("title", URLS[0]), 0);

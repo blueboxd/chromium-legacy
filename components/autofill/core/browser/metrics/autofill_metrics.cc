@@ -2537,13 +2537,16 @@ uint8_t AutofillMetrics::CreditCardSeamlessness::BitmaskMetric() const {
 void AutofillMetrics::LogCreditCardSeamlessnessAtFillTime(
     const LogCreditCardSeamlessnessParam& p) {
   auto GetSeamlessness = [&p](bool only_newly_filled_fields,
-                              bool only_after_security_policy) {
+                              bool only_after_security_policy,
+                              bool only_visible_fields) {
     ServerFieldTypeSet autofilled_types;
     for (const auto& field : p.form) {
       FieldGlobalId id = field->global_id();
       if (only_newly_filled_fields && !p.newly_filled_fields.contains(id))
         continue;
       if (only_after_security_policy && !p.safe_fields.contains(id))
+        continue;
+      if (only_visible_fields && !field->is_visible)
         continue;
       autofilled_types.insert(field->Type().GetStorableType());
     }
@@ -2557,28 +2560,52 @@ void AutofillMetrics::LogCreditCardSeamlessnessAtFillTime(
                                   s.BitmaskExclusiveMax());
   };
 
-  if (auto s = GetSeamlessness(false, false)) {
+  if (auto s = GetSeamlessness(false, false, false)) {
     RecordUma("Fillable.AtFillTimeBeforeSecurityPolicy", s);
     p.builder.SetFillable_BeforeSecurity_Bitmask(s.BitmaskMetric());
     p.builder.SetFillable_BeforeSecurity_Qualitative(
         s.QualitativeMetricAsInt());
     p.event_logger.Log(s.QualitativeFillableFormEvent(), p.form);
   }
-  if (auto s = GetSeamlessness(false, true)) {
+  if (auto s = GetSeamlessness(false, true, false)) {
     RecordUma("Fillable.AtFillTimeAfterSecurityPolicy", s);
     p.builder.SetFillable_AfterSecurity_Bitmask(s.BitmaskMetric());
     p.builder.SetFillable_AfterSecurity_Qualitative(s.QualitativeMetricAsInt());
   }
-  if (auto s = GetSeamlessness(true, false)) {
+  if (auto s = GetSeamlessness(true, false, false)) {
     RecordUma("Fills.AtFillTimeBeforeSecurityPolicy", s);
     p.builder.SetFilled_BeforeSecurity_Bitmask(s.BitmaskMetric());
     p.builder.SetFilled_BeforeSecurity_Qualitative(s.QualitativeMetricAsInt());
   }
-  if (auto s = GetSeamlessness(true, true)) {
+  if (auto s = GetSeamlessness(true, true, false)) {
     RecordUma("Fills.AtFillTimeAfterSecurityPolicy", s);
     p.builder.SetFilled_AfterSecurity_Bitmask(s.BitmaskMetric());
     p.builder.SetFilled_AfterSecurity_Qualitative(s.QualitativeMetricAsInt());
     p.event_logger.Log(s.QualitativeFillFormEvent(), p.form);
+  }
+  if (auto s = GetSeamlessness(false, false, true)) {
+    RecordUma("Fillable.AtFillTimeBeforeSecurityPolicy.Visible", s);
+    p.builder.SetFillable_BeforeSecurity_Visible_Bitmask(s.BitmaskMetric());
+    p.builder.SetFillable_BeforeSecurity_Visible_Qualitative(
+        s.QualitativeMetricAsInt());
+  }
+  if (auto s = GetSeamlessness(false, true, true)) {
+    RecordUma("Fillable.AtFillTimeAfterSecurityPolicy.Visible", s);
+    p.builder.SetFillable_AfterSecurity_Visible_Bitmask(s.BitmaskMetric());
+    p.builder.SetFillable_AfterSecurity_Visible_Qualitative(
+        s.QualitativeMetricAsInt());
+  }
+  if (auto s = GetSeamlessness(true, false, true)) {
+    RecordUma("Fills.AtFillTimeBeforeSecurityPolicy.Visible", s);
+    p.builder.SetFilled_BeforeSecurity_Visible_Bitmask(s.BitmaskMetric());
+    p.builder.SetFilled_BeforeSecurity_Visible_Qualitative(
+        s.QualitativeMetricAsInt());
+  }
+  if (auto s = GetSeamlessness(true, true, true)) {
+    RecordUma("Fills.AtFillTimeAfterSecurityPolicy.Visible", s);
+    p.builder.SetFilled_AfterSecurity_Visible_Bitmask(s.BitmaskMetric());
+    p.builder.SetFilled_AfterSecurity_Visible_Qualitative(
+        s.QualitativeMetricAsInt());
   }
 
   // In a multi-frame form, a cross-origin field is filled only if
@@ -3086,6 +3113,33 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
   else
     builder.SetMillisecondsSinceFormParsed(
         MillisecondsSinceFormParsed(form_parsed_timestamp));
+
+  builder.Record(ukm_recorder_);
+}
+
+void AutofillMetrics::FormInteractionsUkmLogger::LogKeyMetrics(
+    const DenseSet<FormType>& form_types,
+    bool data_to_fill_available,
+    bool suggestions_shown,
+    bool edited_autofilled_field,
+    bool suggestion_filled,
+    autofill_assistant::AutofillAssistantIntent intent) {
+  if (!CanLog())
+    return;
+
+  ukm::builders::Autofill_KeyMetrics builder(source_id_);
+  builder.SetFillingReadiness(data_to_fill_available)
+      .SetFillingAssistance(suggestion_filled)
+      .SetFormTypes(FormTypesToBitVector(form_types));
+
+  if (intent != autofill_assistant::AutofillAssistantIntent::UNDEFINED_INTENT)
+    builder.SetAutofillAssistantIntent(static_cast<int64_t>(intent));
+
+  if (suggestions_shown)
+    builder.SetFillingAcceptance(suggestion_filled);
+
+  if (suggestion_filled)
+    builder.SetFillingCorrectness(!edited_autofilled_field);
 
   builder.Record(ukm_recorder_);
 }

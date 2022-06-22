@@ -21,7 +21,6 @@
 #import "components/sessions/core/tab_restore_service_helper.h"
 #import "components/signin/ios/browser/active_state_manager.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/translate/core/browser/translate_manager.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/application_context.h"
@@ -29,7 +28,6 @@
 #import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
-#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/feature_engagement/tracker_util.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -53,7 +51,6 @@
 #import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_tab_helper_delegate.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
-#import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
@@ -95,7 +92,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
-#import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_coordinator.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
@@ -337,6 +334,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // The updater that adjusts the toolbar's layout for fullscreen events.
   std::unique_ptr<FullscreenUIUpdater> _fullscreenUIUpdater;
 
+  // Popup Menu UI Updater.
+  id<PopupMenuUIUpdating> _UIUpdater;
+
   // TODO(crbug.com/1331229): Remove all use of the download manager coordinator
   // from BVC Coordinator for the Download Manager UI.
   DownloadManagerCoordinator* _downloadManagerCoordinator;
@@ -366,8 +366,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // one single drag gesture.  When NO, full screen disabler is reset when
   // the thumb strip animation ends.
   BOOL _deferEndFullscreenDisabler;
-
-  BOOL _isShowingPopupMenu;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -428,6 +426,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // ones that cannot be scrolled off screen by full screen.
 @property(nonatomic, strong, readonly) NSArray<HeaderDefinition*>* headerViews;
 
+// Coordinator for the popup menus.
+@property(nonatomic, strong) PopupMenuCoordinator* popupMenuCoordinator;
+
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
 
 // Command handler for text zoom commands
@@ -478,9 +479,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // The webState of the active tab.
 @property(nonatomic, readonly) web::WebState* currentWebState;
 
-// The coordinator that shows the Send Tab To Self UI.
-@property(nonatomic, strong) SendTabToSelfCoordinator* sendTabToSelfCoordinator;
-
 // Whether the view has been translated for thumb strip usage when smooth
 // scrolling has been enabled. This allows the correct setup to be done when
 // displaying a new web state.
@@ -529,6 +527,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // TODO(crbug.com/1331229): Remove all use of the download manager
     // coordinator from BVC
     _downloadManagerCoordinator = dependencies.downloadManagerCoordinator;
+    _UIUpdater = dependencies.UIUpdater;
+    _sideSwipeController = dependencies.sideSwipeController;
+    [_sideSwipeController setSnapshotDelegate:self];
+    [_sideSwipeController setSwipeDelegate:self];
     self.toolbarInterface = dependencies.toolbarInterface;
     self.primaryToolbarCoordinator = dependencies.primaryToolbarCoordinator;
     self.secondaryToolbarCoordinator = dependencies.secondaryToolbarCoordinator;
@@ -634,27 +636,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK_EQ(_infobarModalOverlayContainerViewController.view.superview,
             self.view);
   [self updateOverlayContainerOrder];
-}
-
-#pragma mark - Delegates Category Properties
-
-// Lazily creates the SideSwipeController on first access.
-- (SideSwipeController*)sideSwipeController {
-  if (!_sideSwipeController) {
-    _sideSwipeController =
-        [[SideSwipeController alloc] initWithBrowser:self.browser];
-    [_sideSwipeController setSnapshotDelegate:self];
-    _sideSwipeController.toolbarInteractionHandler = self.toolbarInterface;
-    _sideSwipeController.primaryToolbarSnapshotProvider =
-        self.primaryToolbarCoordinator;
-    _sideSwipeController.secondaryToolbarSnapshotProvider =
-        self.secondaryToolbarCoordinator;
-    [_sideSwipeController setSwipeDelegate:self];
-    if (!base::FeatureList::IsEnabled(kModernTabStrip)) {
-      [_sideSwipeController setTabStripDelegate:self.legacyTabStripCoordinator];
-    }
-  }
-  return _sideSwipeController;
 }
 
 #pragma mark - Private Properties
@@ -1106,6 +1087,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   for (int index = 0; index < webStateList->count(); ++index)
     [self uninstallDelegatesForWebState:webStateList->GetWebStateAt(index)];
 
+  // Disconnect child coordinators.
+  [self.popupMenuCoordinator stop];
   if (base::FeatureList::IsEnabled(kModernTabStrip)) {
     [self.tabStripCoordinator stop];
     self.tabStripCoordinator = nil;
@@ -1597,8 +1580,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
   }
 
-  if ([self.sideSwipeController inSwipe]) {
-    [self.sideSwipeController resetContentView];
+  if ([_sideSwipeController inSwipe]) {
+    [_sideSwipeController resetContentView];
   }
 
   void (^superCall)() = ^{
@@ -1625,8 +1608,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       self.presentedViewController.beingDismissed) {
     // Don't rotate while a presentation or dismissal animation is occurring.
     return NO;
-  } else if (_sideSwipeController &&
-             ![self.sideSwipeController shouldAutorotate]) {
+  } else if (_sideSwipeController && ![_sideSwipeController shouldAutorotate]) {
     // Don't auto rotate if side swipe controller view says not to.
     return NO;
   } else {
@@ -1755,9 +1737,21 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _locationBarModel = std::make_unique<LocationBarModelImpl>(
       _locationBarModelDelegate.get(), kMaxURLDisplayChars);
 
+  // TODO(crbug.com/1329094): Move this coordinator to BrowserCoordinator
+  self.popupMenuCoordinator =
+      [[PopupMenuCoordinator alloc] initWithBaseViewController:self
+                                                       browser:self.browser];
+  self.popupMenuCoordinator.bubblePresenter = _bubblePresenter;
+  self.popupMenuCoordinator.UIUpdater = _UIUpdater;
+  [self.popupMenuCoordinator start];
+
   self.primaryToolbarCoordinator.delegate = self;
   self.primaryToolbarCoordinator.popupPresenterDelegate = self;
+  self.primaryToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
   [self.primaryToolbarCoordinator start];
+
+  self.secondaryToolbarCoordinator.longPressDelegate =
+      self.popupMenuCoordinator;
 
   // TODO(crbug.com/880672): Finish ToolbarContainer work.
   if (base::FeatureList::IsEnabled(
@@ -1772,12 +1766,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else {
     [self.secondaryToolbarCoordinator start];
   }
-
-  self.sideSwipeController.toolbarInteractionHandler = self.toolbarInterface;
-  self.sideSwipeController.primaryToolbarSnapshotProvider =
-      self.primaryToolbarCoordinator;
-  self.sideSwipeController.secondaryToolbarSnapshotProvider =
-      self.secondaryToolbarCoordinator;
 
   [self updateBroadcastState];
   if (_voiceSearchController) {
@@ -1794,6 +1782,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [self.tabStripCoordinator start];
     } else {
       self.legacyTabStripCoordinator.presentationProvider = self;
+      self.legacyTabStripCoordinator.longPressDelegate =
+          self.popupMenuCoordinator;
 
       [self.legacyTabStripCoordinator start];
     }
@@ -1971,7 +1961,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(self.browser);
   DCHECK([self isViewLoaded]);
 
-  [self.sideSwipeController addHorizontalGesturesToView:self.view];
+  [_sideSwipeController addHorizontalGesturesToView:self.view];
 
   // TODO(crbug.com/1331229): Remove all use of the download manager coordinator
   // from BVC
@@ -1984,6 +1974,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/1329089): Inject this handler.
   self.helpHandler =
       HandlerForProtocol(self.browser->GetCommandDispatcher(), HelpCommands);
+
+  // TODO(crbug.com/1329098): Assuming all of the coordinators are in
+  // BrowserCoordinator, move this setup there as well.
+  if (!base::FeatureList::IsEnabled(kModernTabStrip)) {
+    self.legacyTabStripCoordinator.longPressDelegate =
+        self.popupMenuCoordinator;
+  }
 
   // TODO(crbug.com/1329089): Inject this handler.
   self.omniboxHandler =
@@ -3658,7 +3655,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (self.isNTPActiveForCurrentWebState) {
     [_ntpCoordinator locationBarDidBecomeFirstResponder];
   }
-  [self.sideSwipeController setEnabled:NO];
+  [_sideSwipeController setEnabled:NO];
 
   if (!IsVisibleURLNewTabPage(self.currentWebState)) {
     // Tapping on web content area should dismiss the keyboard. Tapping on NTP
@@ -3679,11 +3676,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)locationBarDidResignFirstResponder {
   _keyCommandsProvider.canDismissModals = NO;
-  [self.sideSwipeController setEnabled:YES];
+  [_sideSwipeController setEnabled:YES];
 
-  if (self.isNTPActiveForCurrentWebState) {
-    [_ntpCoordinator locationBarDidResignFirstResponder];
-  }
+  [_ntpCoordinator locationBarDidResignFirstResponder];
+
   [UIView animateWithDuration:0.3
       animations:^{
         [self.typingShield setAlpha:0.0];
@@ -3760,47 +3756,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [_voiceSearchController prepareToAppear];
 }
 
-// TODO(crbug.com/1272511): Move `showTranslate` out of the BVC.
-- (void)showTranslate {
-  feature_engagement::Tracker* engagement_tracker =
-      feature_engagement::TrackerFactory::GetForBrowserState(self.browserState);
-  engagement_tracker->NotifyEvent(
-      feature_engagement::events::kTriggeredTranslateInfobar);
-
-  DCHECK(self.currentWebState);
-  ChromeIOSTranslateClient* translateClient =
-      ChromeIOSTranslateClient::FromWebState(self.currentWebState);
-  if (translateClient) {
-    translate::TranslateManager* translateManager =
-        translateClient->GetTranslateManager();
-    DCHECK(translateManager);
-    translateManager->ShowTranslateUI(/*auto_translate=*/true);
-  }
-}
-
-// TODO(crbug.com/1329106): Move `showHelpPage` out of the BVC.
-- (void)showHelpPage {
-  GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
-  UrlLoadParams params = UrlLoadParams::InNewTab(helpUrl);
-  params.append_to = kCurrentTab;
-  params.user_initiated = NO;
-  params.in_incognito = self.isOffTheRecord;
-  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
-}
-
 // TODO(crbug.com/1329107): Move `showBookmarksManager` out of the BVC.
 - (void)showBookmarksManager {
   [self initializeBookmarkInteractionController];
   [_bookmarkInteractionController presentBookmarks];
-}
-
-// TODO(crbug.com/972114) Move showSendTabToSelfUI or reroute to
-// browserCoordinator.
-- (void)showSendTabToSelfUI {
-  self.sendTabToSelfCoordinator = [[SendTabToSelfCoordinator alloc]
-      initWithBaseViewController:self
-                         browser:self.browser];
-  [self.sendTabToSelfCoordinator start];
 }
 
 // TODO(crbug.com/1272498): Refactor this command away, and add a mediator to
@@ -4231,7 +4190,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Reset horizontal stack view.
   [sideSwipeView removeFromSuperview];
-  [self.sideSwipeController setInSwipe:NO];
+  [_sideSwipeController setInSwipe:NO];
 }
 
 - (UIView*)sideSwipeContentView {
@@ -4244,7 +4203,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // TODO(crbug.com/1329105): Federate side swipe logic.
 - (BOOL)preventSideSwipe {
-  if (_isShowingPopupMenu)
+  if ([self.popupMenuCoordinator isShowingPopupMenu])
     return YES;
 
   if (_voiceSearchController.visible)
@@ -4465,16 +4424,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return self.presentedViewController;
   }
   return self;
-}
-
-#pragma mark - PopupMenuAppearanceDelegate
-
-- (void)popupMenuDidAppear {
-  _isShowingPopupMenu = YES;
-}
-
-- (void)popupMenuDidDisappear {
-  _isShowingPopupMenu = NO;
 }
 
 #pragma mark - Getters

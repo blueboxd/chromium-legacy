@@ -178,10 +178,16 @@ void MetricsWebContentsObserver::RenderViewHostChanged(
 void MetricsWebContentsObserver::FrameDeleted(int frame_tree_node_id) {
   content::RenderFrameHost* rfh =
       web_contents()->UnsafeFindFrameByFrameTreeNodeId(frame_tree_node_id);
-  if (!rfh || !rfh->GetParent())
+  if (!rfh)
     return;
-  if (PageLoadTracker* tracker = GetPageLoadTracker(rfh))
-    tracker->SubFrameDeleted(frame_tree_node_id);
+
+  // Deletion of FrameTreeNode follows deletion of RenderFrameHost. If the node
+  // is root of the page, corresponding PageLoadTracker has gone at this timing.
+  // So, PageLoadTracker cannot forward a deletion event of FrameTreeNode for
+  // itself and MetrcisWebContents does this role.
+  if (PageLoadTracker* tracker = GetAncestralAlivePageLoadTracker(rfh)) {
+    tracker->FrameTreeNodeDeleted(frame_tree_node_id);
+  }
 }
 
 void MetricsWebContentsObserver::RenderFrameDeleted(
@@ -1018,8 +1024,16 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
     mojom::InputTimingPtr input_timing_delta,
-    const absl::optional<blink::MobileFriendliness>& mobile_friendliness) {
-  PageLoadTracker* tracker = GetPageLoadTracker(render_frame_host);
+    const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
+    uint32_t soft_navigation_count) {
+  // Replacing this call by GetPageLoadTracker breaks some tests.
+  //
+  // Note that if a PLMO only observes events at outermost page, misusing
+  // primary page's PageLoadTracker for OnTimingUpdated is safe because
+  // PageLoadTracker::UpdateMetrics forwards events unconditionally and
+  // unmodified, and outermost page's MetricsUpdateDispatcher manages all
+  // subframe's timing update.
+  PageLoadTracker* tracker = GetPageLoadTrackerLegacy(render_frame_host);
   // We may receive notifications from frames that have been navigated away
   // from. In that case the PageLoadTracker is already destroyed in
   // DidFinishNavigation (unless it's stored in bfcache). We simply ignore them.
@@ -1037,11 +1051,11 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   }
 
   if (tracker) {
-    tracker->UpdateMetrics(render_frame_host, std::move(timing),
-                           std::move(metadata), std::move(new_features),
-                           resources, std::move(render_data),
-                           std::move(cpu_timing), std::move(input_timing_delta),
-                           std::move(mobile_friendliness));
+    tracker->UpdateMetrics(
+        render_frame_host, std::move(timing), std::move(metadata),
+        std::move(new_features), resources, std::move(render_data),
+        std::move(cpu_timing), std::move(input_timing_delta),
+        std::move(mobile_friendliness), soft_navigation_count);
   }
 }
 
@@ -1070,13 +1084,14 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
     mojom::InputTimingPtr input_timing_delta,
-    const absl::optional<blink::MobileFriendliness>& mobile_friendliness) {
+    const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
+    uint32_t soft_navigation_count) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_receivers_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),
                   new_features, resources, std::move(render_data),
                   std::move(cpu_timing), std::move(input_timing_delta),
-                  std::move(mobile_friendliness));
+                  std::move(mobile_friendliness), soft_navigation_count);
 }
 
 void MetricsWebContentsObserver::SetUpSharedMemoryForSmoothness(
@@ -1191,7 +1206,24 @@ void MetricsWebContentsObserver::OnV8MemoryChanged(
     map_pair.first->OnV8MemoryChanged(map_pair.second);
 }
 
-PageLoadTracker* MetricsWebContentsObserver::GetPageLoadTracker(
+// This contains some bugs. RenderFrameHost::IsActive is not relevant to
+// determine what members we have to search.
+//
+// There are some known wrong cases:
+//
+// 1. rfh->GetLifecycleState() == kReadyToBeDeleted && rfh is in active_pages_.
+//    In this case, this method returns null. This case can occur, e.g.
+//    navigation on a FF root node.
+// 2. rfh->GetLifecycleState() == kActive && rfh is already deleted via
+//    RenderFrameDeleted.
+//    In this case, this method returns primary_page's PageLeadTracker. This
+//    case can occur if the caller is FrameDeleted and, e.g. deletion of a FF
+//    root node.
+//
+// This is mitigated by using GetPageLoadTracker.
+//
+// TODO(https://crbug.com/1301880): Use GetPageLoadTracker always.
+PageLoadTracker* MetricsWebContentsObserver::GetPageLoadTrackerLegacy(
     content::RenderFrameHost* rfh) {
   if (!rfh)
     return nullptr;
@@ -1206,6 +1238,45 @@ PageLoadTracker* MetricsWebContentsObserver::GetPageLoadTracker(
   auto it = inactive_pages_.find(rfh->GetMainFrame());
   if (it != inactive_pages_.end())
     return it->second.get();
+
+  return nullptr;
+}
+
+PageLoadTracker* MetricsWebContentsObserver::GetPageLoadTracker(
+    content::RenderFrameHost* rfh) {
+  if (!rfh)
+    return nullptr;
+
+  if (rfh->GetPage().IsPrimary())
+    return primary_page_.get();
+
+  {
+    auto it = active_pages_.find(rfh->GetMainFrame());
+    if (it != active_pages_.end())
+      return it->second.get();
+  }
+
+  {
+    auto it = inactive_pages_.find(rfh->GetMainFrame());
+    if (it != inactive_pages_.end())
+      return it->second.get();
+  }
+
+  return nullptr;
+}
+
+PageLoadTracker* MetricsWebContentsObserver::GetAncestralAlivePageLoadTracker(
+    content::RenderFrameHost* rfh) {
+  content::RenderFrameHost* ancestor = rfh;
+  while (ancestor) {
+    ancestor = ancestor->GetMainFrame();
+
+    if (PageLoadTracker* tracker = GetPageLoadTracker(rfh)) {
+      return tracker;
+    }
+
+    ancestor = ancestor->GetParentOrOuterDocument();
+  }
 
   return nullptr;
 }

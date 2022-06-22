@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/buildflags_paint_preview.gni")
+import("//build/config/chromebox_for_meetings/buildflags.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
@@ -12,7 +13,6 @@ import("//build/config/ui.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/ash/components/assistant/assistant.gni")
-import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//chromeos/dbus/config/use_real_dbus_clients.gni")
 import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
@@ -394,6 +394,7 @@ static_library("ui") {
     "//base/allocator:buildflags",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//build/config/chromebox_for_meetings:buildflags",
     "//cc/paint",
     "//chrome:extra_resources",
     "//chrome:resources",
@@ -435,9 +436,6 @@ static_library("ui") {
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/realbox:mojo_bindings",
     "//chrome/browser/ui/webui/segmentation_internals:mojo_bindings",
-    "//chrome/browser/ui/webui/side_panel/bookmarks:mojo_bindings",
-    "//chrome/browser/ui/webui/side_panel/read_anything:mojo_bindings",
-    "//chrome/browser/ui/webui/side_panel/reading_list:mojo_bindings",
     "//chrome/browser/ui/webui/tab_search:mojo_bindings",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings",
     "//chrome/browser/video_tutorials",
@@ -776,6 +774,8 @@ static_library("ui") {
       "android/device_dialog/usb_chooser_dialog_android.cc",
       "android/device_dialog/usb_chooser_dialog_android.h",
       "android/external_protocol_dialog_android.cc",
+      "android/fast_checkout/fast_checkout_view_impl.cc",
+      "android/fast_checkout/fast_checkout_view_impl.h",
       "android/infobars/autofill_credit_card_filling_infobar.cc",
       "android/infobars/autofill_credit_card_filling_infobar.h",
       "android/infobars/autofill_offer_notification_infobar.cc",
@@ -871,6 +871,10 @@ static_library("ui") {
       "autofill/payments/virtual_card_enroll_bubble_controller_impl.cc",
       "autofill/payments/virtual_card_enroll_bubble_controller_impl.h",
       "browser_otr_state_android.cc",
+      "fast_checkout/fast_checkout_controller.h",
+      "fast_checkout/fast_checkout_controller_impl.cc",
+      "fast_checkout/fast_checkout_controller_impl.h",
+      "fast_checkout/fast_checkout_view.h",
       "javascript_dialogs/javascript_tab_modal_dialog_manager_delegate_android.cc",
       "javascript_dialogs/javascript_tab_modal_dialog_manager_delegate_android.h",
       "page_info/about_this_site_message_delegate_android.cc",
@@ -1776,6 +1780,9 @@ static_library("ui") {
       "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
       "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
       "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
+      "//chrome/browser/ui/webui/side_panel/bookmarks:mojo_bindings",
+      "//chrome/browser/ui/webui/side_panel/read_anything:mojo_bindings",
+      "//chrome/browser/ui/webui/side_panel/reading_list:mojo_bindings",
       "//chrome/browser/ui/webui/tab_strip:mojo_bindings",
       "//chrome/browser/web_applications",
       "//chrome/common:buildflags",
@@ -2776,6 +2783,8 @@ static_library("ui") {
       "webui/chromeos/network_logs_message_handler.h",
       "webui/chromeos/network_ui.cc",
       "webui/chromeos/network_ui.h",
+      "webui/chromeos/notification_tester/notification_tester_handler.cc",
+      "webui/chromeos/notification_tester/notification_tester_handler.h",
       "webui/chromeos/notification_tester/notification_tester_ui.cc",
       "webui/chromeos/notification_tester/notification_tester_ui.h",
       "webui/chromeos/onc_import_message_handler.cc",
@@ -3129,6 +3138,7 @@ static_library("ui") {
       "//chromeos/ash/components/dbus/kerberos:kerberos_proto",
       "//chromeos/ash/components/dbus/os_install",
       "//chromeos/ash/components/dbus/pciguard:pciguard",
+      "//chromeos/ash/components/dbus/session_manager",
       "//chromeos/ash/components/dbus/spaced",
       "//chromeos/ash/components/dbus/system_clock",
       "//chromeos/ash/components/dbus/upstart",
@@ -3156,7 +3166,6 @@ static_library("ui") {
       "//chromeos/dbus/hermes",
       "//chromeos/dbus/human_presence",
       "//chromeos/dbus/power",
-      "//chromeos/dbus/session_manager",
       "//chromeos/dbus/tpm_manager",
       "//chromeos/dbus/tpm_manager:tpm_manager_proto",
       "//chromeos/dbus/update_engine",
@@ -4181,6 +4190,8 @@ static_library("ui") {
       "views/autofill_assistant/password_change/assistant_side_panel_coordinator_impl.cc",
       "views/autofill_assistant/password_change/assistant_side_panel_coordinator_impl.h",
       "views/autofill_assistant/password_change/password_change_run_display.cc",
+      "views/autofill_assistant/password_change/password_change_run_progress.cc",
+      "views/autofill_assistant/password_change/password_change_run_progress.h",
       "views/autofill_assistant/password_change/password_change_run_view.cc",
       "views/autofill_assistant/password_change/password_change_run_view.h",
       "views/bookmarks/bookmark_bar_view.cc",
@@ -4297,8 +4308,6 @@ static_library("ui") {
       "views/exclusive_access_bubble_views.cc",
       "views/exclusive_access_bubble_views.h",
       "views/exclusive_access_bubble_views_context.h",
-      "views/extensions/blocked_action_dialog_view.cc",
-      "views/extensions/blocked_action_dialog_view.h",
       "views/extensions/chooser_dialog_view.cc",
       "views/extensions/chooser_dialog_view.h",
       "views/extensions/expandable_container_view.cc",
@@ -4339,6 +4348,8 @@ static_library("ui") {
       "views/extensions/extensions_toolbar_container.h",
       "views/extensions/extensions_toolbar_controls.cc",
       "views/extensions/extensions_toolbar_controls.h",
+      "views/extensions/reload_page_dialog_view.cc",
+      "views/extensions/reload_page_dialog_view.h",
       "views/extensions/site_settings_expand_button.cc",
       "views/extensions/site_settings_expand_button.h",
       "views/file_system_access/file_system_access_icon_view.cc",

@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/document_fenced_frames.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
@@ -487,6 +488,26 @@ void WebFrameWidgetImpl::DragSourceEndedAt(const gfx::PointF& point_in_viewport,
 
 void WebFrameWidgetImpl::DragSourceSystemDragEnded() {
   CancelDrag();
+}
+
+void WebFrameWidgetImpl::OnStartStylusWriting() {
+  // Focus the stylus writable element for current touch sequence as we have
+  // detected writing has started.
+  LocalFrame* frame = GetPage()->GetFocusController().FocusedFrame();
+  if (!frame)
+    return;
+  Element* stylus_writable_element =
+      frame->GetEventHandler().CurrentTouchDownElement();
+  if (!stylus_writable_element)
+    return;
+  if (auto* text_control = EnclosingTextControl(stylus_writable_element)) {
+    text_control->Focus();
+  } else if (auto* html_element =
+                 DynamicTo<HTMLElement>(stylus_writable_element)) {
+    html_element->Focus();
+  }
+  // TODO(rbug.com/1330821): If we are unable to focus writable element for any
+  // reason, notify browser about the same.
 }
 
 void WebFrameWidgetImpl::SetBackgroundOpaque(bool opaque) {
@@ -1219,7 +1240,9 @@ void WebFrameWidgetImpl::SetNeedsRecalculateRasterScales() {
 void WebFrameWidgetImpl::SetBackgroundColor(SkColor color) {
   if (!View()->does_composite())
     return;
-  widget_base_->LayerTreeHost()->set_background_color(color);
+  // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
+  widget_base_->LayerTreeHost()->set_background_color(
+      SkColor4f::FromColor(color));
 }
 
 void WebFrameWidgetImpl::SetOverscrollBehavior(
@@ -2808,7 +2831,7 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   // Set up some initial state before we are setting the layer.
   if (ForSubframe() && layer) {
     // Child local roots will always have a transparent background color.
-    widget_base_->LayerTreeHost()->set_background_color(SK_ColorTRANSPARENT);
+    widget_base_->LayerTreeHost()->set_background_color(SkColors::kTransparent);
     // Pass the limits even though this is for subframes, as the limits will
     // be needed in setting the raster scale.
     SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,

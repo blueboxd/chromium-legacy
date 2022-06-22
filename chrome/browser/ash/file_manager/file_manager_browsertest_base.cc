@@ -834,6 +834,7 @@ std::ostream& operator<<(std::ostream& out,
   PRINT_IF_NOT_DEFAULT(browser)
   PRINT_IF_NOT_DEFAULT(drive_dss_pin)
   PRINT_IF_NOT_DEFAULT(files_swa)
+  PRINT_IF_NOT_DEFAULT(files_experimental)
   PRINT_IF_NOT_DEFAULT(generic_documents_provider)
   PRINT_IF_NOT_DEFAULT(media_swa)
   PRINT_IF_NOT_DEFAULT(mount_volumes)
@@ -1696,8 +1697,23 @@ class SmbfsTestVolume : public LocalTestVolume {
 
 class MockGuestOsMountProvider : public guest_os::GuestOsMountProvider {
  public:
-  MockGuestOsMountProvider(Profile* profile, std::string name)
-      : profile_(profile), name_(name) {}
+  MockGuestOsMountProvider(Profile* profile,
+                           std::string name,
+                           std::string vm_type)
+      : profile_(profile), name_(name) {
+    if (vm_type == "bruschetta") {
+      vm_type_ = guest_os::VmType::BRUSCHETTA;
+    } else if (vm_type == "termina") {
+      vm_type_ = guest_os::VmType::TERMINA;
+    } else if (vm_type == "arcvm") {
+      vm_type_ = guest_os::VmType::ARCVM;
+    } else if (vm_type == "unknown") {
+      vm_type_ = guest_os::VmType::UNKNOWN;
+    } else {
+      NOTREACHED();
+      vm_type_ = guest_os::VmType::UNKNOWN;
+    }
+  }
 
   MockGuestOsMountProvider(const MockGuestOsMountProvider&) = delete;
   MockGuestOsMountProvider& operator=(const MockGuestOsMountProvider&) = delete;
@@ -1708,16 +1724,20 @@ class MockGuestOsMountProvider : public guest_os::GuestOsMountProvider {
     return crostini::DefaultContainerId();
   }
 
-  guest_os::VmType vm_type() override {
-    return guest_os::VmType::ApplicationList_VmType_TERMINA;
+  void Prepare(base::OnceCallback<
+               void(bool success, int cid, int port, base::FilePath homedir)>
+                   callback) override {
+    std::move(callback).Run(true, cid_, 1234, base::FilePath());
   }
 
+  guest_os::VmType vm_type() override { return vm_type_; }
+
   int cid_;
-  int cid() override { return cid_; }
 
  private:
   Profile* profile_;
   std::string name_;
+  guest_os::VmType vm_type_;
 };
 
 // GuestOsTestVolume: local test volume for the "Guest OS" directories.
@@ -1861,6 +1881,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.push_back(chromeos::features::kFilesSWA);
   } else {
     disabled_features.push_back(chromeos::features::kFilesSWA);
+  }
+
+  if (options.files_experimental) {
+    enabled_features.push_back(chromeos::features::kFilesAppExperimental);
+  } else {
+    disabled_features.push_back(chromeos::features::kFilesAppExperimental);
   }
 
   if (options.arc) {
@@ -2220,6 +2246,15 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "isFilesAppSwa") {
     // Return whether or not the test is run in Files SWA mode.
     *output = options.files_swa ? "true" : "false";
+    return;
+  }
+
+  if (name == "isFilesAppExperimental") {
+    // Return whether the flag Files Experimental is enabled.
+    *output =
+        base::FeatureList::IsEnabled(chromeos::features::kFilesAppExperimental)
+            ? "true"
+            : "false";
     return;
   }
 
@@ -3153,11 +3188,12 @@ bool FileManagerBrowserTestBase::HandleGuestOsCommands(
   if (name == "registerMountableGuest") {
     auto* displayName = value.GetDict().FindString("displayName");
     auto* canMount = value.GetDict().Find("canMount");
+    auto* vmType = value.GetDict().FindString("vmType");
     CHECK(displayName != nullptr);
     auto* registry = guest_os::GuestOsService::GetForProfile(profile())
                          ->MountProviderRegistry();
-    auto id = registry->Register(
-        std::make_unique<MockGuestOsMountProvider>(profile(), *displayName));
+    auto id = registry->Register(std::make_unique<MockGuestOsMountProvider>(
+        profile(), *displayName, vmType ? *vmType : "bruschetta"));
     MockGuestOsMountProvider* ptr =
         reinterpret_cast<MockGuestOsMountProvider*>(registry->Get(id));
     ptr->cid_ = id;
@@ -3165,7 +3201,7 @@ bool FileManagerBrowserTestBase::HandleGuestOsCommands(
       // If we ask for the volume to be mountable we add it to the map, and it's
       // mountable. If not then it's an unknown volume and the mount request
       // fails.
-      guest_os_volumes_[base::StringPrintf("sftp://%d:0", id)] =
+      guest_os_volumes_[base::StringPrintf("sftp://%d:1234", id)] =
           std::make_unique<GuestOsTestVolume>(profile(), ptr);
     }
 

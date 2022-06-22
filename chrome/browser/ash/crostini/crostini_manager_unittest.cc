@@ -22,6 +22,7 @@
 #include "chrome/browser/ash/crostini/crostini_types.mojom-shared.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
+#include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_wayland_server.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
@@ -42,11 +43,11 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/anomaly_detector/anomaly_detector_client.h"
 #include "chromeos/dbus/anomaly_detector/fake_anomaly_detector_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -297,7 +298,7 @@ class CrostiniManagerTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   CrostiniManager* crostini_manager_;
   const guest_os::GuestId container_id_ =
-      guest_os::GuestId(kVmName, kContainerName);
+      guest_os::GuestId(kCrostiniDefaultVmType, kVmName, kContainerName);
   device::FakeUsbDeviceManager fake_usb_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
@@ -711,20 +712,20 @@ TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalOperationBlocked) {
 
 TEST_F(CrostiniManagerTest, RegisterContainerPrefWhenContainerCreated) {
   const base::Value* pref =
-      profile_->GetPrefs()->GetList(crostini::prefs::kCrostiniContainers);
+      profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
   EXPECT_EQ(pref->GetList().size(), 0);
   crostini_manager()->CreateLxdContainer(
       container_id(), absl::nullopt, absl::nullopt,
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
   run_loop()->Run();
-  pref = profile_->GetPrefs()->GetList(crostini::prefs::kCrostiniContainers);
+  pref = profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
   EXPECT_EQ(pref->GetList().size(), 1);
 }
 
 TEST_F(CrostiniManagerTest, RegisterContainerPrefWhenContainerExists) {
   const base::Value* pref =
-      profile_->GetPrefs()->GetList(crostini::prefs::kCrostiniContainers);
+      profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
   EXPECT_EQ(pref->GetList().size(), 0);
   vm_tools::cicerone::CreateLxdContainerResponse response;
   response.set_status(vm_tools::cicerone::CreateLxdContainerResponse::EXISTS);
@@ -734,7 +735,7 @@ TEST_F(CrostiniManagerTest, RegisterContainerPrefWhenContainerExists) {
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
   run_loop()->Run();
-  pref = profile_->GetPrefs()->GetList(crostini::prefs::kCrostiniContainers);
+  pref = profile_->GetPrefs()->GetList(guest_os::prefs::kGuestOsContainers);
   EXPECT_EQ(pref->GetList().size(), 1);
 }
 
@@ -1561,7 +1562,7 @@ TEST_F(CrostiniManagerRestartTest, OsReleaseSetCorrectly) {
 
   // The data for this container should also be stored in prefs.
   const base::Value* os_release_pref_value = GetContainerPrefValue(
-      profile(), container_id(), prefs::kContainerOsVersionKey);
+      profile(), container_id(), guest_os::prefs::kContainerOsVersionKey);
   EXPECT_NE(os_release_pref_value, nullptr);
   EXPECT_EQ(os_release_pref_value->GetInt(),
             static_cast<int>(ContainerOsVersion::kDebianBuster));
@@ -2538,7 +2539,8 @@ class CrostiniManagerUpgradeContainerTest
     }
   }
 
-  guest_os::GuestId container_id_ = guest_os::GuestId(kVmName, kContainerName);
+  guest_os::GuestId container_id_ =
+      guest_os::GuestId(kCrostiniDefaultVmType, kVmName, kContainerName);
 
   UpgradeContainerProgressStatus final_status_ =
       UpgradeContainerProgressStatus::FAILED;

@@ -27,6 +27,7 @@
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
@@ -607,6 +608,89 @@ TEST_F(IntentUtilsTest, CreateChromeAppIntentFilters_FileHandlers) {
   EXPECT_EQ(file_cond2.condition_values[1]->value, "txt");
 }
 
+TEST_F(IntentUtilsTest, CreateIntentFiltersForChromeApp_NoteTaking) {
+  const std::string note_action_handler =
+      extensions::api::app_runtime::ToString(
+          extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE);
+  // Foo app has a note-taking action handler.
+  extensions::ExtensionBuilder foo_app;
+  foo_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Foo")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app", extensions::DictionaryBuilder()
+                          .Set("background",
+                               extensions::DictionaryBuilder()
+                                   .Set("scripts", extensions::ListBuilder()
+                                                       .Append("background.js")
+                                                       .Build())
+                                   .Build())
+                          .Build())
+          .Set("action_handlers",
+               extensions::ListBuilder().Append(note_action_handler).Build())
+          .Build());
+  foo_app.SetID("abcdefghzxcv");
+  scoped_refptr<const extensions::Extension> foo = foo_app.Build();
+
+  IntentFilters filters = apps_util::CreateIntentFiltersForChromeApp(foo.get());
+
+  ASSERT_EQ(filters.size(), 1u);
+  const IntentFilterPtr& filter = filters[0];
+  ASSERT_EQ(filter->conditions.size(), 1u);
+  const Condition& condition = *filter->conditions[0];
+  EXPECT_EQ(condition.condition_type, ConditionType::kAction);
+  ASSERT_EQ(condition.condition_values.size(), 1u);
+  EXPECT_EQ(condition.condition_values[0]->value,
+            apps_util::kIntentActionCreateNote);
+
+  apps::IntentPtr intent =
+      apps::ConvertMojomIntentToIntent(apps_util::CreateCreateNoteIntent());
+  EXPECT_TRUE(intent->MatchFilter(filter));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilsTest, CreateChromeAppIntentFilters_NoteTaking) {
+  const std::string note_action_handler =
+      extensions::api::app_runtime::ToString(
+          extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE);
+  // Foo app has a note-taking action handler.
+  extensions::ExtensionBuilder foo_app;
+  foo_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Foo")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app", extensions::DictionaryBuilder()
+                          .Set("background",
+                               extensions::DictionaryBuilder()
+                                   .Set("scripts", extensions::ListBuilder()
+                                                       .Append("background.js")
+                                                       .Build())
+                                   .Build())
+                          .Build())
+          .Set("action_handlers",
+               extensions::ListBuilder().Append(note_action_handler).Build())
+          .Build());
+  foo_app.SetID("abcdefghzxcv");
+  scoped_refptr<const extensions::Extension> foo = foo_app.Build();
+
+  std::vector<apps::mojom::IntentFilterPtr> filters =
+      apps_util::CreateChromeAppIntentFilters(foo.get());
+
+  ASSERT_EQ(filters.size(), 1u);
+  const apps::mojom::IntentFilterPtr& filter = filters[0];
+  ASSERT_EQ(filter->conditions.size(), 1u);
+  const apps::mojom::Condition& condition = *filter->conditions[0];
+  EXPECT_EQ(condition.condition_type, apps::mojom::ConditionType::kAction);
+  ASSERT_EQ(condition.condition_values.size(), 1u);
+  EXPECT_EQ(condition.condition_values[0]->value,
+            apps_util::kIntentActionCreateNote);
+
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(
+      apps_util::CreateCreateNoteIntent(), filter));
+}
+
 TEST_F(IntentUtilsTest, CreateIntentFiltersForExtension_FileHandlers) {
   // Foo extension provides file_browser_handlers for html and anything.
   extensions::ExtensionBuilder foo_ext;
@@ -1094,12 +1178,23 @@ TEST_F(IntentUtilsTest, CrosapiIntentConversion) {
             converted_intent->share_text.value());
   EXPECT_EQ(original_intent->share_title.value(),
             converted_intent->share_title.value());
+
+  original_intent =
+      std::make_unique<apps::Intent>(apps_util::kIntentActionView);
+  original_intent->data = "geo:0,0?q=1600%20amphitheatre%20parkway";
+  crosapi_intent =
+      apps_util::ConvertAppServiceToCrosapiIntent(original_intent, nullptr);
+  converted_intent =
+      apps_util::CreateAppServiceIntentFromCrosapi(crosapi_intent, nullptr);
+  ASSERT_TRUE(converted_intent->data.has_value());
+  EXPECT_EQ(original_intent->data.value(), converted_intent->data.value());
 }
 
 // TODO(crbug.com/1253250): Will be removed soon.
 TEST_F(IntentUtilsTest, CrosapiIntentConversionMojom) {
   apps::mojom::IntentPtr original_intent =
       apps_util::CreateIntentFromUrl(GURL("www.google.com"));
+  original_intent->data = "geo:0,0?q=1600%20amphitheatre%20parkway";
   auto crosapi_intent =
       apps_util::ConvertAppServiceToCrosapiIntent(original_intent, nullptr);
   auto converted_intent =

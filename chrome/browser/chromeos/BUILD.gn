@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromebox_for_meetings/buildflags.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chromeos/ash/components/hibernate/buildflags.gni")
-import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//chromeos/components/sensors/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
@@ -195,6 +195,7 @@ source_set("chromeos") {
     "//base",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//build/config/chromebox_for_meetings:buildflags",
     "//chrome/app:command_ids",
     "//chrome/app/vector_icons",
     "//chrome/browser:browser_process",
@@ -265,6 +266,8 @@ source_set("chromeos") {
     "//chromeos/ash/components/dbus/rmad",
     "//chromeos/ash/components/dbus/seneschal",
     "//chromeos/ash/components/dbus/services",
+    "//chromeos/ash/components/dbus/session_manager",
+    "//chromeos/ash/components/dbus/session_manager:login_manager_proto",
     "//chromeos/ash/components/dbus/spaced",
     "//chromeos/ash/components/dbus/system_clock",
     "//chromeos/ash/components/dbus/system_proxy",
@@ -279,7 +282,6 @@ source_set("chromeos") {
     "//chromeos/ash/services/assistant:lib",
     "//chromeos/ash/services/assistant/public/cpp",
     "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
-    "//chromeos/components/chromebox_for_meetings/buildflags",
     "//chromeos/components/disks:prefs",
     "//chromeos/components/feature_usage",
     "//chromeos/components/local_search_service/public/cpp:cpp",
@@ -331,8 +333,6 @@ source_set("chromeos") {
     "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/power",
     "//chromeos/dbus/resourced",
-    "//chromeos/dbus/session_manager",
-    "//chromeos/dbus/session_manager:login_manager_proto",
     "//chromeos/dbus/smbprovider",
     "//chromeos/dbus/tpm_manager",
     "//chromeos/dbus/tpm_manager:tpm_manager_proto",
@@ -1231,6 +1231,8 @@ source_set("chromeos") {
     "../ash/process_snapshot_server.h",
     "../ash/profiles/profile_helper.cc",
     "../ash/profiles/profile_helper.h",
+    "../ash/profiles/profile_helper_delegate_impl.cc",
+    "../ash/profiles/profile_helper_delegate_impl.h",
     "../ash/profiles/signin_profile_handler.cc",
     "../ash/profiles/signin_profile_handler.h",
     "../ash/psi_memory_metrics.cc",
@@ -1604,6 +1606,8 @@ source_set("chromeos") {
     "../ash/window_throttle_observer_base.h",
     "app_mode/app_session.cc",
     "app_mode/app_session.h",
+    "app_mode/app_session_browser_window_handler.cc",
+    "app_mode/app_session_browser_window_handler.h",
     "app_mode/chrome_kiosk_app_installer.cc",
     "app_mode/chrome_kiosk_app_installer.h",
     "app_mode/chrome_kiosk_app_launcher.cc",
@@ -1733,6 +1737,8 @@ source_set("chromeos") {
     "policy/dlp/dlp_rules_manager_factory.h",
     "policy/dlp/dlp_rules_manager_impl.cc",
     "policy/dlp/dlp_rules_manager_impl.h",
+    "policy/dlp/dlp_scoped_file_access_delegate.cc",
+    "policy/dlp/dlp_scoped_file_access_delegate.h",
     "policy/dlp/dlp_warn_dialog.cc",
     "policy/dlp/dlp_warn_dialog.h",
     "policy/dlp/dlp_warn_notifier.cc",
@@ -1933,8 +1939,8 @@ source_set("chromeos") {
     deps += [
       "//ash/services/chromebox_for_meetings/public/cpp",
       "//ash/services/chromebox_for_meetings/public/mojom",
+      "//chromeos/ash/components/chromebox_for_meetings",
       "//chromeos/ash/components/dbus/chromebox_for_meetings",
-      "//chromeos/components/chromebox_for_meetings/features",
       "//components/reporting/client:report_queue",
       "//components/reporting/client:report_queue_configuration",
       "//components/reporting/client:report_queue_provider",
@@ -2182,13 +2188,13 @@ static_library("test_support") {
     "//chromeos/ash/components/dbus/cicerone",
     "//chromeos/ash/components/dbus/concierge",
     "//chromeos/ash/components/dbus/seneschal",
+    "//chromeos/ash/components/dbus/session_manager",
     "//chromeos/dbus:test_support",
     "//chromeos/dbus/chunneld",
     "//chromeos/dbus/cros_disks",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:cryptohome_proto",
     "//chromeos/dbus/dlcservice",
-    "//chromeos/dbus/session_manager",
     "//chromeos/dbus/userdataauth:userdataauth",
     "//chromeos/dbus/userdataauth:userdataauth_proto",
     "//chromeos/printing",
@@ -2381,6 +2387,7 @@ source_set("unit_tests") {
     "../ash/bruschetta/bruschetta_launcher_unittest.cc",
     "../ash/bruschetta/bruschetta_service_unittest.cc",
     "../ash/camera_mic/vm_camera_mic_manager_unittest.cc",
+    "../ash/camera_presence_notifier_unittest.cc",
     "../ash/cert_provisioning/cert_provisioning_invalidator_unittest.cc",
     "../ash/cert_provisioning/cert_provisioning_platform_keys_helpers_unittest.cc",
     "../ash/cert_provisioning/cert_provisioning_scheduler_unittest.cc",
@@ -3038,6 +3045,7 @@ source_set("unit_tests") {
     "policy/dlp/dlp_rules_manager_impl_unittest.cc",
     "policy/dlp/dlp_rules_manager_test_utils.cc",
     "policy/dlp/dlp_rules_manager_test_utils.h",
+    "policy/dlp/dlp_scoped_file_access_delegate_unittest.cc",
     "policy/dlp/mock_dlp_content_observer.cc",
     "policy/dlp/mock_dlp_content_observer.h",
     "policy/dlp/mock_dlp_rules_manager.cc",
@@ -3146,6 +3154,7 @@ source_set("unit_tests") {
     "//chrome/test:test_support_unit",
     "//chromeos/ash/components/dbus/authpolicy",
     "//chromeos/ash/components/dbus/services:test_support",
+    "//chromeos/ash/components/dbus/session_manager",
     "//chromeos/ash/components/dbus/system_clock",
     "//chromeos/ash/components/dbus/upstart",
     "//chromeos/ash/components/network/portal_detector:test_support",
@@ -3159,12 +3168,12 @@ source_set("unit_tests") {
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
     "//chromeos/dbus/dlcservice",
+    "//chromeos/dbus/dlp",
     "//chromeos/dbus/gnubby",
     "//chromeos/dbus/lorgnette_manager:lorgnette_proto",
     "//chromeos/dbus/missive",
     "//chromeos/dbus/oobe_config",
     "//chromeos/dbus/power",
-    "//chromeos/dbus/session_manager",
     "//chromeos/dbus/smbprovider",
     "//chromeos/dbus/smbprovider:proto",
     "//chromeos/dbus/update_engine",

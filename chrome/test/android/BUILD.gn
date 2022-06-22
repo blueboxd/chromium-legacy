@@ -257,7 +257,11 @@ java_group("chrome_java_unit_test_support") {
 
 android_library("chrome_java_integration_only_test_support") {
   testonly = true
-  visibility = [ ":*" ]
+  visibility = [
+    ":*",
+    "//chrome/android/features/tab_ui:test_support_javalib",
+    "//chrome/android/features/tab_ui:unit_device_javatests",
+  ]
   sources = [
     "javatests/src/org/chromium/chrome/browser/history/HistoryTestUtils.java",
     "javatests/src/org/chromium/chrome/browser/history/StubbedHistoryProvider.java",
@@ -274,8 +278,6 @@ android_library("chrome_java_integration_only_test_support") {
     "javatests/src/org/chromium/chrome/test/batch/BlankCTATabInitialStateRule.java",
     "javatests/src/org/chromium/chrome/test/gcore/MockChromeGoogleApiClient.java",
     "javatests/src/org/chromium/chrome/test/invalidation/IntentSavingContext.java",
-    "javatests/src/org/chromium/chrome/test/omaha/AttributeFinder.java",
-    "javatests/src/org/chromium/chrome/test/omaha/MockRequestGenerator.java",
     "javatests/src/org/chromium/chrome/test/util/BookmarkTestRule.java",
     "javatests/src/org/chromium/chrome/test/util/BookmarkTestUtil.java",
     "javatests/src/org/chromium/chrome/test/util/ChromeApplicationTestUtils.java",
@@ -403,6 +405,8 @@ android_library("chrome_java_test_support_common") {
   visibility = [
     ":*",
     "//chrome/android/features/tab_ui:unit_device_javatests",
+    "//chrome/browser/ui/android/night_mode:unit_device_javatests",
+    "//chrome/browser/ui/android/omnibox:unit_device_javatests",
   ]
   sources = [
     "javatests/src/org/chromium/chrome/browser/tab/MockTab.java",
@@ -411,6 +415,7 @@ android_library("chrome_java_test_support_common") {
     "javatests/src/org/chromium/chrome/test/partnercustomizations/TestPartnerBrowserCustomizationsDelayedProvider.java",
     "javatests/src/org/chromium/chrome/test/partnercustomizations/TestPartnerBrowserCustomizationsProvider.java",
     "javatests/src/org/chromium/chrome/test/util/ActivityTestUtils.java",
+    "javatests/src/org/chromium/chrome/test/util/ByteBufferTestUtils.java",
     "javatests/src/org/chromium/chrome/test/util/ChromeRestriction.java",
     "javatests/src/org/chromium/chrome/test/util/ToolbarUnitTestUtils.java",
     "javatests/src/org/chromium/chrome/test/util/browser/Features.java",

@@ -38,6 +38,7 @@
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/embedder_support/switches.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/metrics/unsent_log_store_metrics.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
@@ -183,6 +184,13 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kInProcessGPU);
   }
 
+  // Disable origin trial features on Webview unless the flag was
+  // explicitly provided via command-line.
+  if (!cl->HasSwitch(embedder_support::kOriginTrialDisabledFeatures)) {
+    cl->AppendSwitchASCII(embedder_support::kOriginTrialDisabledFeatures,
+                          "DocumentTransitionV2");
+  }
+
   {
     base::ScopedAddFeatureFlags features(cl);
 
@@ -273,6 +281,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // TODO(crbug.com/921655): Add support for User Agent Client hints on
     // WebView.
     features.DisableIfNotSet(blink::features::kUserAgentClientHint);
+
+    // Disable Reducing User Agent minor version on WebView.
+    features.DisableIfNotSet(blink::features::kReduceUserAgentMinorVersion);
 
     // Disabled until viz scheduling can be improved.
     features.DisableIfNotSet(::features::kUseSurfaceLayerForVideoDefault);

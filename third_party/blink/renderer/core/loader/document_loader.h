@@ -41,6 +41,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
@@ -528,6 +529,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // conversion.
   std::unique_ptr<PolicyContainer> policy_container_;
 
+  // The permissions policy to be applied to the window at initialization time.
+  const absl::optional<ParsedPermissionsPolicy> initial_permissions_policy_;
+
   // These fields are copied from WebNavigationParams, see there for definition.
   KURL url_;
   AtomicString http_method_;
@@ -696,9 +700,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // reporting url. `nullptr` otherwise.
   // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
   mojom::blink::FencedFrameReportingPtr fenced_frame_reporting_;
-
-  // Whether the document should be anonymous or not.
-  const bool anonymous_ = false;
 
   // Both of these bits must be true to commit preloaded data to the parser when
   // features::kEarlyBodyLoad is enabled.

@@ -10,6 +10,7 @@
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_ui_model.h"
+#include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -20,6 +21,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/compositor/layer.h"
@@ -66,6 +68,33 @@ constexpr gfx::Insets kDownloadBubbleRowInsets(8);
 // span. The 6 columns are Download Icon, Padding, Status text, Padding,
 // Main Button, Subpage Icon.
 constexpr int kNumColumns = 6;
+
+// A stub subclass of HoverButton that has no visuals.
+class TransparentButton : public HoverButton {
+ public:
+  METADATA_HEADER(TransparentButton);
+
+  explicit TransparentButton(PressedCallback callback,
+                             const std::u16string& text)
+      : HoverButton(callback, text) {}
+  ~TransparentButton() override = default;
+
+  // Forward dragging and capture loss events, since this class doesn't have
+  // enough context to handle them. Let the `DownloadBubbleRowView` manage
+  // visual transitions.
+  bool OnMouseDragged(const ui::MouseEvent& event) override {
+    HoverButton::OnMouseDragged(event);
+    return parent()->OnMouseDragged(event);
+  }
+
+  void OnMouseCaptureLost() override {
+    parent()->OnMouseCaptureLost();
+    HoverButton::OnMouseCaptureLost();
+  }
+};
+
+BEGIN_METADATA(TransparentButton, HoverButton)
+END_METADATA
 }  // namespace
 
 void DownloadBubbleRowView::UpdateBubbleUIInfo() {
@@ -83,17 +112,6 @@ void DownloadBubbleRowView::UpdateBubbleUIInfo() {
 
   // If either of mode or state changes, we might need to change UI.
   ui_info_ = model_->GetBubbleUIInfo();
-
-  // This should only be logged once per download, so only for change in modes
-  // to warning.
-  if (!mode_unchanged && is_download_warning(mode)) {
-    const auto danger_type = model_->GetDangerType();
-    const auto file_path = model_->GetTargetFilePath();
-    bool is_https = model_->GetURL().SchemeIs(url::kHttpsScheme);
-    bool has_user_gesture = model_->HasUserGesture();
-    RecordDangerousDownloadWarningShown(danger_type, file_path, is_https,
-                                        has_user_gesture);
-  }
 }
 
 void DownloadBubbleRowView::AddedToWidget() {
@@ -228,7 +246,7 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   // Two rows, one for download, one for the progress bar.
   layout->AddRows(2, 1.0f);
 
-  hover_button_ = AddChildView(std::make_unique<HoverButton>(
+  hover_button_ = AddChildView(std::make_unique<TransparentButton>(
       base::BindRepeating(&DownloadBubbleRowView::OnMainButtonPressed,
                           base::Unretained(this)),
       std::u16string()));
@@ -341,6 +359,40 @@ views::View::Views DownloadBubbleRowView::GetChildrenInZOrder() {
   return children;
 }
 
+bool DownloadBubbleRowView::OnMouseDragged(const ui::MouseEvent& event) {
+  // Handle drag (file copy) operations.
+  // Drag and drop should only be activated in normal mode.
+  if (mode_ != download::DownloadItemMode::kNormal)
+    return true;
+
+  if (!drag_start_point_)
+    drag_start_point_ = event.location();
+  if (!dragging_) {
+    dragging_ = ExceededDragThreshold(event.location() - *drag_start_point_);
+  } else if ((model_->GetState() == download::DownloadItem::COMPLETE) &&
+             model_->download()) {
+    const gfx::Image* const file_icon =
+        g_browser_process->icon_manager()->LookupIconFromFilepath(
+            model_->GetTargetFilePath(), IconLoader::SMALL, current_scale_);
+    const views::Widget* const widget = GetWidget();
+    DragDownloadItem(model_->download(), file_icon,
+                     widget ? widget->GetNativeView() : nullptr);
+  }
+  return true;
+}
+
+void DownloadBubbleRowView::OnMouseCaptureLost() {
+  // Drag and drop should only be activated in normal mode.
+  if (mode_ != download::DownloadItemMode::kNormal)
+    return;
+
+  if (dragging_) {
+    // Starting a drag results in a MouseCaptureLost.
+    dragging_ = false;
+    drag_start_point_.reset();
+  }
+}
+
 void DownloadBubbleRowView::Layout() {
   views::View::Layout();
   hover_button_->SetBoundsRect(GetLocalBounds());
@@ -413,6 +465,14 @@ void DownloadBubbleRowView::UpdateLabels() {
 }
 
 void DownloadBubbleRowView::OnDownloadUpdated() {
+  // This should only be logged once per download.
+  if (is_download_warning(download::GetDesiredDownloadItemMode(model_.get())) &&
+      !model_->WasUIWarningShown()) {
+    model_->SetWasUIWarningShown(true);
+    RecordDangerousDownloadWarningShown(
+        model_->GetDangerType(), model_->GetTargetFilePath(),
+        model_->GetURL().SchemeIs(url::kHttpsScheme), model_->HasUserGesture());
+  }
   UpdateBubbleUIInfo();
   UpdateLabels();
   LoadIcon();

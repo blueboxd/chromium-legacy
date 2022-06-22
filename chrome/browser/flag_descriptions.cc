@@ -159,6 +159,11 @@ const char kPasswordNotesName[] = "Password notes in settings";
 const char kPasswordNotesDescription[] =
     "Enables a note section for each password in the settings page.";
 
+const char kPasswordViewPageInSettingsName[] = "Password view page in settings";
+const char kPasswordViewPageInSettingsDescription[] =
+    "Enables a new password details subpage in the settings password "
+    "management UI.";
+
 const char kEnableBluetoothSerialPortProfileInSerialApiName[] =
     "Enable Bluetooth Serial Port Profile in Serial API";
 const char kEnableBluetoothSerialPortProfileInSerialApiDescription[] =
@@ -1498,6 +1503,12 @@ const char kHeavyAdInterventionName[] = "Heavy Ad Intervention";
 const char kHeavyAdInterventionDescription[] =
     "Unloads ads that use too many device resources.";
 
+const char kHiddenNetworkMigrationName[] = "Hidden Network Migration";
+
+const char kHiddenNetworkMigrationDescription[] =
+    "Enables a privacy improvement that removes wrongly configured hidden"
+    "networks and mitigates the creation of these networks.";
+
 const char kHideShelfControlsInTabletModeName[] =
     "Hide shelf control buttons in tablet mode.";
 
@@ -1629,6 +1640,12 @@ const char kJourneysLabelsDescription[] =
 const char kJourneysOmniboxActionName[] = "History Journeys Omnibox Action";
 const char kJourneysOmniboxActionDescription[] =
     "Enables the History Journeys Omnibox Action.";
+
+const char kJourneysOmniboxHistoryClusterProviderName[] =
+    "History Journeys Omnibox History Cluster Provider";
+const char kJourneysOmniboxHistoryClusterProviderDescription[] =
+    "Enables the History Journeys Omnibox History Cluster Provider to surface "
+    "Journeys as a suggestion row instead of an action chip.";
 
 const char kJourneysOnDeviceClusteringBackendName[] =
     "History Journeys On-Device Clustering Backend";
@@ -1837,6 +1854,21 @@ const char kOmniboxZeroSuggestPrefetchingDescription[] =
     "The options indicate the duration for which the response will be stored "
     "in the HTTP cache. If no or zero duration is provided, the existing "
     "in-memory cache will used instead of HTTP cache.";
+
+const char kOmniboxOnDeviceHeadSuggestionsName[] =
+    "Omnibox on device head suggestions (non-incognito only)";
+const char kOmniboxOnDeviceHeadSuggestionsDescription[] =
+    "Google head non personalized search suggestions provided by a compact on "
+    "device model for non-incognito. Turn off this feature if you have other "
+    "apps running which affects local file access (e.g. anti-virus software) "
+    "and are experiencing searchbox typing lags.";
+const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[] =
+    "Omnibox on device head suggestions (incognito only)";
+const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[] =
+    "Google head non personalized search suggestions provided by a compact on "
+    "device model for incognito. Turn off this feature if you have other "
+    "apps running which affects local file access (e.g. anti-virus software) "
+    "and are experiencing searchbox typing lags.";
 
 const char kOmniboxRichAutocompletionName[] = "Omnibox Rich Autocompletion";
 const char kOmniboxRichAutocompletionDescription[] =
@@ -2305,11 +2337,6 @@ const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Tab Scrolling";
 const char kScrollableTabStripDescription[] =
     "Enables tab strip to scroll left and right when full.";
-
-const char kScrollableTabStripButtonsName[] = "Tab Scrolling Buttons";
-const char kScrollableTabStripButtonsDescription[] =
-    "When the scrollable-tabstrip flag is enabled, this enables buttons to "
-    "permanently appear on the tabstrip.";
 
 const char kScrollUnificationName[] = "Scroll Unification";
 const char kScrollUnificationDescription[] =
@@ -4839,11 +4866,6 @@ const char kDisableQuickAnswersV2TranslationName[] =
 const char kDisableQuickAnswersV2TranslationDescription[] =
     "Disable translation services of the Quick Answers.";
 
-const char kQuickAnswersAlwaysTriggerForSingleWordName[] =
-    "Enable Quick Answers always trigger for single word";
-const char kQuickAnswersAlwaysTriggerForSingleWordDescription[] =
-    "Enable Quick Answers always trigger for single word selection.";
-
 const char kQuickAnswersForMoreLocalesName[] =
     "Enable Quick Answers for more locales";
 const char kQuickAnswersForMoreLocalesDescription[] =
@@ -5400,6 +5422,11 @@ const char kShimlessRMAOsUpdateName[] = "Enable OS updates in shimless RMA";
 const char kShimlessRMAOsUpdateDescription[] =
     "Turns on OS updating in Shimless RMA";
 
+const char kShimlessRMADisableDarkModeName[] =
+    "Disable dark mode in Shimless RMA";
+const char kShimlessRMADisableDarkModeDescription[] =
+    "Disable dark mode and only allow light mode in Shimless RMA";
+
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =
     "Instructs the OS to use a specific scheduler configuration setting.";
@@ -5483,6 +5510,11 @@ const char kQuickSettingsNetworkRevampDescription[] =
     "Enables the Quick Settings Network revamp, which updates Network Quick "
     "Settings UI and related infrastructure. See https://crbug.com/1169479.";
 
+const char kTerminalAlternativeRendererName[] = "Terminal alternative renderer";
+const char kTerminalAlternativeRendererDescription[] =
+    "Enable the alternative renderer for the Terminal app. You will also get "
+    "an option in Terminal settings to change the default renderer.";
+
 const char kTerminalDevName[] = "Terminal dev";
 const char kTerminalDevDescription[] =
     "Enables Terminal System App to load from Downloads for developer testing. "
@@ -5513,6 +5545,11 @@ const char kTrafficCountersEnabledName[] = "Traffic counters enabled";
 const char kTrafficCountersEnabledDescription[] =
     "If enabled, data usage will be visible in the Cellular Settings UI and "
     "traffic counters will be automatically reset if that setting is enabled.";
+
+const char kUploadOfficeToCloudName[] = "Enable Office files upload workflow.";
+const char kUploadOfficeToCloudDescription[] =
+    "Some file handlers for Microsoft Office files are only available on the "
+    "the cloud. Enables the cloud upload workflow for Office file handling.";
 
 const char kUseFakeDeviceForMediaStreamName[] = "Use fake video capture device";
 const char kUseFakeDeviceForMediaStreamDescription[] =
@@ -5803,6 +5840,13 @@ const char kChromeOSDirectVideoDecoderDescription[] =
     "which is added for platforms where said direct VideoDecoder does not work "
     "or is not well tested (see the disable_cros_video_decoder USE flag in "
     "ChromeOS)";
+const char kChromeOSHWVBREncodingName[] =
+    "ChromeOS Hardware Variable Bitrate Encoding";
+const char kChromeOSHWVBREncodingDescription[] =
+    "Enables the hardware-accelerated variable bitrate (VBR) encoding on "
+    "ChromeOS. If the hardware encoder supports VBR for a specified codec, a "
+    "video is recorded in VBR encoding in MediaRecoder API automatically and "
+    "WebCodecs API if configured so.";
 #if defined(ARCH_CPU_ARM_FAMILY)
 const char kPreferLibYuvImageProcessorName[] = "Prefer libYUV image processor";
 const char kPreferLibYuvImageProcessorDescription[] =
@@ -5872,6 +5916,14 @@ const char kOzonePlatformHintDescription[] =
     "Selects the preferred platform backend used on Linux. The default one is "
     "\"X11\". \"Auto\" selects Wayland if possible, X11 otherwise. ";
 #endif  // BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+const char kWebBluetoothConfirmPairingSupportName[] =
+    "Web Bluetooth confirm pairing support";
+const char kWebBluetoothConfirmPairingSupportDescription[] =
+    "Enable confirm-only and confirm-pin pairing mode support for Web "
+    "Bluetooth";
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_LINUX)
 const char kCleanUndecryptablePasswordsLinuxName[] =

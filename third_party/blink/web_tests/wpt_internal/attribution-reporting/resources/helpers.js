@@ -2,6 +2,13 @@
  * Helper functions for attribution reporting API tests.
  */
 
+attribution_reporting_promise_test = f => promise_test(async t => {
+  t.add_cleanup(() => internals.resetAttributionReporting());
+  t.add_cleanup(() => resetEventLevelReports());
+  t.add_cleanup(() => resetAggregatableReports());
+  return f(t);
+});
+
 const eventLevelReportsUrl =
     '/.well-known/attribution-reporting/report-event-attribution';
 const aggregatableReportsUrl =
@@ -26,16 +33,21 @@ const resetAggregatableReports = () =>
 
 const pipeHeaderPattern = /[,)]/g;
 
+const encodeForPipe =
+    urlString => {
+      return urlString.replace(pipeHeaderPattern, '\\$&');
+    }
+
 /**
  * Registers either a source or trigger.
  */
-const registerAttributionSrc = (header, body) => {
+const registerAttributionSrc = (header, body, cookie = '') => {
   const url = new URL('/resources/blank.html', window.location);
   // , and ) in header values must be escaped with \
-  url.searchParams.set(
-      'pipe',
-      `header(${header},${
-          JSON.stringify(body).replace(pipeHeaderPattern, '\\$&')})`);
+  const attributionHeader =
+      `header(${header},${encodeForPipe(JSON.stringify(body))})`;
+  const cookieHeader = `header(Set-Cookie,${encodeForPipe(cookie)})`;
+  url.searchParams.set('pipe', `${attributionHeader}|${cookieHeader}`);
   const image = document.createElement('img');
   image.setAttribute('attributionsrc', url);
 };
@@ -49,7 +61,7 @@ const delay = ms => new Promise(resolve => step_timeout(resolve, ms));
  * Method that polls a particular URL every interval for reports. Once reports
  * are received, returns the payload as promise.
  */
-const pollAttributionReports = async (url, interval) => {
+const pollAttributionReports = async (url, interval = 100) => {
   const resp = await fetch(url);
   const payload = await resp.json();
   if (payload.reports.length === 0) {

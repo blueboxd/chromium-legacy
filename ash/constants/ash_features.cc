@@ -342,7 +342,7 @@ const base::Feature kCrosLanguageSettingsUpdateJapanese{
 
 // Enables or disables Crosh System Web App. When enabled, crosh (ChromeOS
 // Shell) will run as a tabbed System Web App rather than a normal browser tab.
-const base::Feature kCroshSWA{"CroshSWA", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kCroshSWA{"CroshSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables upgrading the crostini container to debian bullseye.
 const base::Feature kCrostiniBullseyeUpgrade{"CrostiniBullseyeUpgrade",
@@ -817,6 +817,11 @@ const base::Feature kLauncherItemColorSync{"LauncherItemColorSync",
 const base::Feature kHelpAppSearchServiceIntegration{
     "HelpAppSearchServiceIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables a privacy improvement that removes wrongly configured hidden
+// networks and mitigates the creation of these networks. crbug/1327803.
+const base::Feature kHiddenNetworkMigration{"HiddenNetworkMigration",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a warning about connecting to hidden WiFi networks.
 // https://crbug.com/903908
 const base::Feature kHiddenNetworkWarning{"HiddenNetworkWarning",
@@ -891,6 +896,9 @@ const base::Feature kImprovedLoginErrorHandling{
 // Enables or disables Instant Tethering on ChromeOS.
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables Jelly features.
+const base::Feature kJelly{"kJelly", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables to use lacros-chrome as the only web browser on ChromeOS.
 // This works only when both LacrosSupport and LacrosPrimary below are enabled.
@@ -1194,7 +1202,7 @@ const base::Feature kMoreVideoCaptureBuffers{"MoreVideoCaptureBuffers",
 // from the apps grid. This feature was previously named "AppListBubble".
 // https://crbug.com/1204551
 const base::Feature kProductivityLauncher{"ProductivityLauncher",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable Projector.
 const base::Feature kProjector{"Projector", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1369,6 +1377,10 @@ const base::Feature kShimlessRMAEnableStandalone{
 const base::Feature kShimlessRMAOsUpdate{"ShimlessRMAOsUpdate",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the dark mode in the shimless RMA flow.
+const base::Feature kShimlessRMADisableDarkMode{
+    "ShimlessRMADisableDarkMode", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables or disables a toggle to enable Bluetooth debug logs.
 const base::Feature kShowBluetoothDebugLogToggle{
     "ShowBluetoothDebugLogToggle", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1456,6 +1468,10 @@ const base::Feature kTabClusterUI{"TabClusterUI",
 const base::Feature kTelemetryExtension{"TelemetryExtension",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the alternative renderer for the Terminal app.
+const base::Feature kTerminalAlternativeRenderer{
+    "TerminalAlternativeRenderer", base::FEATURE_DISABLED_BY_DEFAULT};
+//
 // Enables Terminal System App to load from Downloads for developer testing.
 // Only works in dev and canary channels.
 const base::Feature kTerminalDev{"TerminalDev",
@@ -1477,6 +1493,10 @@ const base::Feature kTrafficCountersEnabled{"TrafficCountersEnabled",
 // Enables trilinear filtering.
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the Office files upload workflow to improve Office files support.
+const base::Feature kUploadOfficeToCloud("UploadOfficeToCloud",
+                                         base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Unblock the UsbPeripheralNotificationController class in ash to display
 // USB related notifications from the type-c daemon in ChromeOS.
@@ -1597,7 +1617,7 @@ const base::Feature kDeviceActiveClientDailyCheckMembership{
 // Enables or disables PSM CheckIn for the monthly device active pings
 // on ChromeOS.
 const base::Feature kDeviceActiveClientMonthlyCheckIn{
-    "DeviceActiveClientMonthlyCheckIn", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DeviceActiveClientMonthlyCheckIn", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables PSM CheckMembership for monthly device active pings
 // on ChromeOS.
@@ -1688,6 +1708,10 @@ bool IsAssistantNativeIconsEnabled() {
 
 bool IsAssistiveMultiWordEnabled() {
   return base::FeatureList::IsEnabled(kAssistMultiWord);
+}
+
+bool IsAudioSettingsPageEnabled() {
+  return base::FeatureList::IsEnabled(kAudioSettingsPage);
 }
 
 bool IsAutoNightLightEnabled() {
@@ -1930,6 +1954,10 @@ bool IsInputInDiagnosticsAppEnabled() {
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
+}
+
+bool IsJellyEnabled() {
+  return base::FeatureList::IsEnabled(kJelly);
 }
 
 bool IsKeyboardBacklightToggleEnabled() {
@@ -2278,6 +2306,10 @@ bool IsShimlessRMAStandaloneAppEnabled() {
 
 bool IsShimlessRMAOsUpdateEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAOsUpdate);
+}
+
+bool IsShimlessRMADarkModeDisabled() {
+  return base::FeatureList::IsEnabled(kShimlessRMADisableDarkMode);
 }
 
 bool IsSimLockPolicyEnabled() {

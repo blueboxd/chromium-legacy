@@ -2006,9 +2006,10 @@ void StoragePartitionImpl::OnFileUploadRequested(
     int32_t process_id,
     bool async,
     const std::vector<base::FilePath>& file_paths,
+    const GURL& destination_url,
     OnFileUploadRequestedCallback callback) {
   NetworkContextOnFileUploadRequested(process_id, async, file_paths,
-                                      std::move(callback));
+                                      destination_url, std::move(callback));
 }
 
 void StoragePartitionImpl::OnCanSendReportingReports(
@@ -2631,6 +2632,20 @@ void StoragePartitionImpl::ResetURLLoaderFactories() {
 void StoragePartitionImpl::ClearBluetoothAllowedDevicesMapForTesting() {
   DCHECK(initialized_);
   bluetooth_allowed_devices_map_->Clear();
+}
+
+void StoragePartitionImpl::ResetAttributionManagerForTesting(
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK(initialized_);
+
+  // Reset the existing manager first to ensure that the underlying DB is only
+  // accessed by one instance at a time.
+  attribution_manager_.reset();
+
+  attribution_manager_ = AttributionManagerImpl::CreateWithNewDbForTesting(
+      this, partition_path_, special_storage_policy_);
+
+  std::move(callback).Run(/*success=*/!!attribution_manager_);
 }
 
 void StoragePartitionImpl::AddObserver(DataRemovalObserver* observer) {

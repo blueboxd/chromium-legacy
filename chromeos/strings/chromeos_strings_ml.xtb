@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">ഉപയോക്താവ്</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">'ബാഹ്യ ഉപകരണങ്ങൾക്കുള്ള ഫേംവെയർ അപ്‌ഡേറ്റ് ചെയ്യുക' വിൻഡോ തുറന്നിരിക്കുന്നു. <ph name="NUM_UPDATES" /> അപ്ഡേറ്റുകൾ ലഭ്യമാണ്.</translation>
+<translation id="1145516343487477149">Chromebook-മായി ബന്ധപ്പെട്ട പൊതുവായ ചോദ്യങ്ങൾക്കുള്ള സഹായ ലേഖനങ്ങളും ഉത്തരങ്ങളും കണ്ടെത്തുക</translation>
 <translation id="1165039591588034296">പിശക്</translation>
 <translation id="1175697296044146566">ഈ <ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER" /> ആണ്.</translation>
 <translation id="1175951029573070619">ശരാശരി (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -66,6 +67,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> ഈ ഉപകരണം മാനേജ് ചെയ്യുന്നു, ഒപ്പം നിങ്ങളുടെ ആക്‌റ്റിവിറ്റികൾ നിരീക്ഷിക്കാനുമായേക്കും.</translation>
 <translation id="147809995039451286">അപ്‌ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="1478594628797167447">സ്‌കാനർ</translation>
+<translation id="1483493594462132177">അയയ്‌ക്കുക</translation>
 <translation id="1491076385728777984"><ph name="DEVICE_NAME" /> ഉപകരണത്തിലെ ഫേംവെയർ അപ്ഡേറ്റ് ചെയ്യുന്നു</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> ആണ് ഈ ഉപയോക്താവിനെ മാനേജ് ചെയ്യുന്നത്, ഒപ്പം വിദൂരമായി ക്രമീകരണം മാനേജ് ചെയ്യുകയും ഉപയോക്തൃ ആക്‌റ്റിവിറ്റി നിരീക്ഷിക്കുകയും ചെയ്തേക്കാം.</translation>
 <translation id="150962533380566081">അസാധുവായ PUK.</translation>
@@ -102,6 +104,7 @@
 <translation id="1745577949879301685">ചിത്രങ്ങൾ ലോഡ് ചെയ്യാനാകുന്നില്ല. നിങ്ങളുടെ നെറ്റ്‌വർക്ക് കണക്ഷൻ പരിശോധിക്കുകയോ ചിത്രങ്ങൾ വീണ്ടും ലോഡ് ചെയ്യാൻ ശ്രമിക്കുകയോ ചെയ്യുക.</translation>
 <translation id="1751249301761991853">വ്യക്തിപരമാക്കൽ</translation>
 <translation id="1753496554272155572">വാൾപേപ്പർ പ്രിവ്യൂവിൽ നിന്ന് പുറത്ത് കടക്കുക</translation>
+<translation id="1755556344721611131">Diagnostics ആപ്പ്</translation>
 <translation id="175763766237925754">നല്ലത് (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -118,6 +121,7 @@
 <translation id="1871569928317311284">ഡാർക്ക് തീം ഓഫാക്കുക</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">ഡാർക്ക് മോഡ് ഓഫാക്കുക</translation>
+<translation id="1881188606372070653">നിയമപരമായ കാരണങ്ങളാലുള്ള ഉള്ളടക്ക മാറ്റങ്ങൾ അഭ്യർത്ഥിക്കാൻ <ph name="BEGIN_LINK1" />നിയമ സഹായ പേജിലേക്ക്<ph name="END_LINK1" /> പോകുക. അക്കൗണ്ടും സിസ്‌റ്റവുമായി ബന്ധപ്പെട്ട ചില വിവരങ്ങൾ Google-ന് അയച്ചേക്കാം. ഞങ്ങളുടെ <ph name="BEGIN_LINK2" />സ്വകാര്യതാ നയത്തിനും<ph name="END_LINK2" /> <ph name="BEGIN_LINK3" />സേവന നിബന്ധനകൾക്കും<ph name="END_LINK3" /> വിധേയമായി, സാങ്കേതിക പ്രശ്‌നങ്ങൾ പരിഹരിക്കാനും സേവനങ്ങൾ മെച്ചപ്പെടുത്താനും നിങ്ങൾ നൽകുന്ന വിവരങ്ങൾ ഞങ്ങൾ ഉപയോഗിക്കും.</translation>
 <translation id="1887850431809612466">ഹാർഡ്‌വെയർ അവലോകനം</translation>
 <translation id="1905710495812624430">അനുവദനീയമായ പരമാവധി ശ്രമങ്ങൾ നടത്തിക്കഴിഞ്ഞു.</translation>
 <translation id="1908234395526491708">പരാജയപ്പെട്ട UDP അഭ്യർത്ഥനകൾ</translation>
@@ -620,6 +624,7 @@
 <translation id="6379086450106841622">ടച്ച്സ്ക്രീൻ</translation>
 <translation id="6381741036071372448">നിങ്ങളുടെ കീബോർഡ് പരീക്ഷിക്കുക</translation>
 <translation id="6388847657025262518">ഈ സ്‌കാനറിന്റെ ഡോക്യുമെന്റ് ഫീഡർ ജാമായി. ഫീഡർ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
+<translation id="6394634179843537518">ഫയൽ ചേർക്കുക</translation>
 <translation id="6410257289063177456">ചിത്ര ഫയലുകള്‍</translation>
 <translation id="641081527798843608">പൊരുത്തപ്പെടുന്ന വിഷയം</translation>
 <translation id="6423239382391657905">VPNതുറക്കുക</translation>
@@ -653,6 +658,7 @@
 <translation id="6659594942844771486">ബ്രൗസർ ടാബ്</translation>
 <translation id="6692996468359469499">നിങ്ങളുടെ തിരഞ്ഞെടുക്കലുമായി ബന്ധപ്പെട്ട വിവരങ്ങൾ നേടുക</translation>
 <translation id="6704062477274546131">DNS റെസല്യൂഷൻ</translation>
+<translation id="6721744718589119342">കൂടുതൽ വിവരങ്ങൾക്കും അപ്ഡേറ്റുകൾക്കുമായി ഞങ്ങൾക്ക് നിങ്ങളെ ഇമെയിലിൽ ബന്ധപ്പെടാം</translation>
 <translation id="6723839937902243910">പവർ</translation>
 <translation id="6723847290197874913">കീബോർഡ് ബാക്ക്‌ലൈറ്റ്</translation>
 <translation id="672609503628871915">പുതിയതെന്താണെന്ന് കാണുക</translation>
@@ -717,6 +723,7 @@
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Search-ൽ ഫലം കാണാൻ Search+space അമർത്തുക.</translation>
 <translation id="7343649194310845056">നെറ്റ്‌വർക്ക് ഉപകരണങ്ങൾ</translation>
 <translation id="7359657277149375382">ഫയല്‍ തരം</translation>
+<translation id="73631062356239394">പ്രശ്നനിർണ്ണയ ഡാറ്റ പങ്കിടുക</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7378553660733179982">SKU</translation>
 <translation id="7397270852490618635">ലൈറ്റ് തീം ഓഫാക്കുക</translation>
@@ -922,6 +929,7 @@
 <translation id="9149391708638971077">മെമ്മറി ടെസ്റ്റ് റണ്‍ ചെയ്യുക</translation>
 <translation id="9173638680043580060">ഒരു മിനിറ്റിലും താഴെ ശേഷിക്കുന്നു</translation>
 <translation id="917720651393141712">ടെസ്‌റ്റ്</translation>
+<translation id="9188992814426075118">നിങ്ങളുടെ കീബോർഡിന് വാൾപേപ്പറുമായി സ്വയമേവ പൊരുത്തപ്പെടാനാകും</translation>
 <translation id="9204237731135241582">Android ആപ്പുകളിൽ നിന്ന് ഗേറ്റ്‌വേയുമായി ബന്ധപ്പെടാനാകുന്നില്ല</translation>
 <translation id="9211490828691860325">എല്ലാ ഡെസ്കുകളും</translation>
 <translation id="922179502584117429">നിലവിലെ പതിപ്പ് <ph name="VERSION_NUMBER" /> കാലഹരണപ്പെട്ടതാണ്</translation>

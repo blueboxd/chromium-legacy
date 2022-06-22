@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/commands/whats_new_commands.h"
 
-class GURL;
 @class ReadingListAddCommand;
 
 // Protocol for commands that will generally be handled by the "current tab",
@@ -56,17 +55,8 @@ class GURL;
 // Closes all tabs.
 - (void)closeAllTabs;
 
-// Shows the translate infobar.
-- (void)showTranslate;
-
-// Shows the online help page in a tab.
-- (void)showHelpPage;
-
 // Shows the bookmarks manager.
 - (void)showBookmarksManager;
-
-// Shows the dialog for sending the current tab between a user's devices.
-- (void)showSendTabToSelfUI;
 
 // Prepares the browser to display a popup menu.
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type;

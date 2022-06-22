@@ -225,8 +225,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   std::unique_ptr<HTMLPreloadScanner> insertion_preload_scanner_;
   WTF::SequenceBound<BackgroundHTMLScanner> background_script_scanner_;
   WTF::SequenceBound<HTMLPreloadScanner> background_scanner_;
-  const bool background_scanning_enabled_ =
-      base::FeatureList::IsEnabled(features::kThreadedPreloadScanner);
 
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
 

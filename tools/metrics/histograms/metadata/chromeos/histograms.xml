@@ -436,7 +436,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.Camera.Jpeg.Resolution" units="pixels"
-    expires_after="2022-10-01">
+    expires_after="2022-12-18">
 <!-- Name completed by histogram_suffixes
      name="ChromeOS.Camera.JpegProcessMethod" and
      name="ChromeOS.Camera.JpegProcessType" -->
@@ -956,7 +956,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerAction"
-    enum="IntentPickerDialogAction" expires_after="2022-12-11">
+    enum="IntentPickerDialogAction" expires_after="2022-12-18">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1109,6 +1109,17 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     Time to start the lacros binary, specifically the time between when the
     process is launched and the mojo connection is established between ash and
     lacros. Recorded by ash each time the lacros binary is started.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.LanguagePacks.GetPackState.LanguageCode"
+    enum="LanguagePackLanguageCodes" expires_after="2023-01-01">
+  <owner>claudiomagni@chromium.org</owner>
+  <owner>mlcui@google.com</owner>
+  <owner>dvallet@chromium.org</owner>
+  <summary>
+    Records which language was requested from Language Packs Manager;
+    specifically an entry is recorded each time GetPackState is called.
   </summary>
 </histogram>
 

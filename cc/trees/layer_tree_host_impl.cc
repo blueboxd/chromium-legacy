@@ -1442,7 +1442,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
             active_tree_->GetDeviceViewport().origin());
 #endif
   bool has_transparent_background =
-      SkColorGetA(active_tree_->background_color()) != SK_AlphaOPAQUE;
+      !active_tree_->background_color().isOpaque();
   auto* root_render_surface = active_tree_->RootRenderSurface();
   if (root_render_surface && !has_transparent_background) {
     frame->render_passes.back()->has_transparent_background = false;
@@ -1454,9 +1454,10 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     if (num_missing_tiles > 0)
       fill_region = root_render_surface->content_rect();
 
-    AppendQuadsToFillScreen(frame->render_passes.back().get(),
-                            root_render_surface,
-                            active_tree_->background_color(), fill_region);
+    // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+    AppendQuadsToFillScreen(
+        frame->render_passes.back().get(), root_render_surface,
+        active_tree_->background_color().toSkColor(), fill_region);
   }
 
   RemoveRenderPasses(frame);
@@ -2258,7 +2259,9 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   metadata.page_scale_factor = active_tree_->current_page_scale_factor();
   metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
-  metadata.root_background_color = active_tree_->background_color();
+
+  // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+  metadata.root_background_color = active_tree_->background_color().toSkColor();
   metadata.may_throttle_if_undrawn_frames = may_throttle_if_undrawn_frames_;
 
   if (active_tree_->has_presentation_callbacks()) {
@@ -2936,11 +2939,16 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   // it will push the updated viz::LocalSurfaceId. Begin Impl Frame production
   // if it has already become activated, or is on the |pending_tree| to be
   // activated during this frame's production.
-  const viz::LocalSurfaceId& upcoming_lsid =
-      pending_tree() ? pending_tree()->local_surface_id_from_parent()
-                     : active_tree()->local_surface_id_from_parent();
-  if (target_local_surface_id_.IsNewerThan(upcoming_lsid)) {
-    return false;
+  //
+  // However when using a synchronous compositor we skip this throttling
+  // completely.
+  if (!settings_.using_synchronous_renderer_compositor) {
+    const viz::LocalSurfaceId& upcoming_lsid =
+        pending_tree() ? pending_tree()->local_surface_id_from_parent()
+                       : active_tree()->local_surface_id_from_parent();
+    if (target_local_surface_id_.IsNewerThan(upcoming_lsid)) {
+      return false;
+    }
   }
 
   if (is_likely_to_require_a_draw_) {

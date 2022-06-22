@@ -26,7 +26,7 @@ class PasswordUndoHelper;
 // passwords and register themselves as observers for changes. In contrast to
 // simply registering oneself as an observer of a password store directly, this
 // class possibly responds to changes in multiple password stores, such as the
-// local and account store used for passwords for butter.
+// local and account store used for passwords for account store users.
 // Furthermore, this class exposes a direct mean to edit a password, and
 // notifies its observers about this event. An example use case for this is the
 // bulk check settings page, where an edit operation in that page should result
@@ -126,14 +126,6 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   std::vector<PasswordForm> GetUniquePasswordForms() const;
   std::vector<CredentialUIEntry> GetSavedCredentials() const;
 
-  // Returns all the usernames for credentials saved for `signon_realm`. If
-  // `is_using_account_store` is true, this method will only consider
-  // credentials saved in the account store. Otherwiser it will only consider
-  // credentials saved in the profile store.
-  std::vector<std::u16string> GetUsernamesForRealm(
-      const std::string& signon_realm,
-      bool is_using_account_store);
-
   // Allows clients and register and de-register themselves.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -169,8 +161,7 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
 
   std::unique_ptr<PasswordUndoHelper> undo_helper_;
 
-  // Cache of the most recently obtained saved passwords. Profile store
-  // passwords are always stored first, and then account store passwords if any.
+  // Cache of the most recently obtained saved passwords.
   std::vector<PasswordForm> passwords_;
 
   // Structure used to deduplicate list of passwords.

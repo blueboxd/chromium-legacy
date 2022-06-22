@@ -1175,6 +1175,14 @@ config("compiler_cpu_abi") {
         cflags += [ "-m64" ]
         ldflags += [ "-m64" ]
       }
+    } else if (current_cpu == "riscv64") {
+      cflags += [
+        "-mabi=lp64d",
+        "--target=riscv64-linux-gnu",
+      ]
+      ldflags += [
+        "--target=riscv64-linux-gnu",
+      ]
     } else if (current_cpu == "s390x") {
       cflags += [ "-m64" ]
       ldflags += [ "-m64" ]
@@ -1545,15 +1553,6 @@ config("default_warnings") {
         cflags += [ "-Wno-unqualified-std-cast-call" ]
       }
 
-      if (!is_nacl && !(is_chromeos ||
-                        default_toolchain == "//build/toolchain/cros:target")) {
-        # TODO(https://crbug.com/1322823): Remove flags once potential miscompile is investigated.
-        cflags += [
-          "-Xclang",
-          "-no-opaque-pointers",
-        ]
-      }
-
       if (is_fuchsia) {
         # TODO(https://bugs.chromium.org/p/fuchsia/issues/detail?id=77383)
         cflags += [ "-Wno-deprecated-copy" ]
@@ -1644,7 +1643,8 @@ config("chromium_code") {
 
     if (!is_debug && !using_sanitizer && current_cpu != "s390x" &&
         current_cpu != "s390" && current_cpu != "ppc64" &&
-        current_cpu != "mips" && current_cpu != "mips64") {
+        current_cpu != "mips" && current_cpu != "mips64" &&
+        current_cpu != "riscv64") {
       # Non-chromium code is not guaranteed to compile cleanly with
       # _FORTIFY_SOURCE. Also, fortified build may fail when optimizations are
       # disabled, so only do that for Release build.

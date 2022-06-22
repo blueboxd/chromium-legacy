@@ -10,6 +10,14 @@
     display: flex;
     flex-direction: column;
   }
+
+  #message {
+    color: var(--cros-text-color-secondary);
+    font-family: 'Roboto';
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+  }
 </style>
 <!--TODO(xiangdongkong): use localized strings -->
 <div id="container">
@@ -22,7 +30,7 @@
       <p id="helpResourcesLabel">Here are some other helpful resources:</p>
       <cr-link-row id="explore" start-icon="help-resources:explore"
           label="Explore app" external
-          sub-label="Find help articles and answers to common Chromebook questions"
+          sub-label="[[i18n('exploreAppDescription')]]"
           on-click="handleLinkClicked_">
       </cr-link-row>
       <cr-link-row id="diagnostics" start-icon="help-resources:diagnostics"

@@ -159,6 +159,7 @@
 <translation id="2377319039870049694">Comută la afișarea listă</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> dosare cu acces permis pentru Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fișiere selectate</translation>
+<translation id="2387120140441437063">Nu se pot deschide fișierele din coșul de gunoi. Restabilește fișierele înainte de a le deschide.</translation>
 <translation id="2387458720915042159">Tip de conexiune prin proxy</translation>
 <translation id="2389832672041313158">Birmană/Myanmar</translation>
 <translation id="2392369802118427583">Activează</translation>
@@ -618,6 +619,7 @@
 <translation id="6296410173147755564">PUK nevalid</translation>
 <translation id="6312403991423642364">Eroare de rețea necunoscută</translation>
 <translation id="6317608858038767920">Server de nume personalizat <ph name="INPUT_INDEX" /></translation>
+<translation id="6320212353742551423">Arhivă <ph name="ARCHIVE_TYPE" /></translation>
 <translation id="6321303798550928047">Semn cu mâna</translation>
 <translation id="6327785803543103246">Web Proxy Auto-Discovery</translation>
 <translation id="6339145975392024142">S.U.A. internațională (PC)</translation>

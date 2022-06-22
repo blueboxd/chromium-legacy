@@ -102,6 +102,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />. Druk op Enter om de Agenda-weergave te openen.</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> is verwisseld met <ph name="SECOND_ITEM_TITLE" /></translation>
+<translation id="1500926532737552529">Alle suggesties tonen</translation>
 <translation id="1503394326855300303">Dit eigenaarsaccount is het eerste account waarop moet worden ingelogd wanneer meerdere inlogsessies worden uitgevoerd.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1516740043221086139">Niet storen staat aan.</translation>
@@ -1368,7 +1369,7 @@ Nieuwe installatie</translation>
 <translation id="9085962983642906571">Je batterij wordt op 80% gehouden terwijl deze is aangesloten om de batterijduur te verlengen.</translation>
 <translation id="9089416786594320554">Invoermethoden</translation>
 <translation id="9091626656156419976">Scherm <ph name="DISPLAY_NAME" /> is verwijderd</translation>
-<translation id="9098969848082897657">Geluid van telefoon uitzetten</translation>
+<translation id="9098969848082897657">Telefoon dempen</translation>
 <translation id="9099154003160514616">Lacros-update beschikbaar</translation>
 <translation id="9100887602489003640">Profiel toevoegen. Wacht een paar minuten.</translation>
 <translation id="9105450214093926548">Een tweede gebruiker inloggen wordt niet ondersteund als de Lacros-browser actief is. Gebruik in plaats daarvan een tweede browserprofiel in Lacros of sluit Lacros en probeer het opnieuw.</translation>

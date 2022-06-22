@@ -220,8 +220,7 @@ bool SharedImageBackingFactoryOzone::IsSupported(
       !CanImportGpuMemoryBufferToVulkan(gmb_type)) {
     return false;
   }
-#elif BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
-    !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_CHROMECAST)
+#elif BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
   bool used_by_skia = (usage & SHARED_IMAGE_USAGE_RASTER) ||
                       (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool used_by_vulkan =
@@ -235,8 +234,10 @@ bool SharedImageBackingFactoryOzone::IsSupported(
   if (used_by_webgpu && !CanImportNativePixmapToWebGPU()) {
     return false;
   }
-  if (used_by_gl &&
-      !gl::GLSurfaceEGL::GetGLDisplayEGL()->ext->b_EGL_KHR_image) {
+  if (used_by_gl && !ui::OzonePlatform::GetInstance()
+                         ->GetSurfaceFactoryOzone()
+                         ->GetCurrentGLOzone()
+                         ->CanImportNativePixmap()) {
     return false;
   }
 #endif

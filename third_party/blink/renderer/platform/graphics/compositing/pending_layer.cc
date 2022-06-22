@@ -165,6 +165,10 @@ std::unique_ptr<JSONObject> PendingLayer::ToJSON() const {
   return result;
 }
 
+std::ostream& operator<<(std::ostream& os, const PendingLayer& layer) {
+  return os << layer.ToJSON()->ToPrettyJSONString().Utf8();
+}
+
 gfx::RectF PendingLayer::VisualRectForOverlapTesting(
     const PropertyTreeState& ancestor_state) const {
   FloatClipRect visual_rect(bounds_);
@@ -650,8 +654,22 @@ void PendingLayer::UpdateLayerSelection(cc::LayerSelection& layer_selection) {
   // Foreign layers cannot contain selection.
   if (compositing_type_ == PendingLayer::kForeignLayer)
     return;
-  PaintChunksToCcLayer::UpdateLayerSelection(CcLayer(), GetPropertyTreeState(),
-                                             Chunks(), layer_selection);
+  bool any_selection_was_painted = PaintChunksToCcLayer::UpdateLayerSelection(
+      CcLayer(), GetPropertyTreeState(), Chunks(), layer_selection);
+  if (any_selection_was_painted) {
+    // If any selection was painted, but we didn't see the start or end bound
+    // recorded, it could have been outside of the painting cull rect thus
+    // invisible. Mark the bound as such if this is the case.
+    if (layer_selection.start.type == gfx::SelectionBound::EMPTY) {
+      layer_selection.start.type = gfx::SelectionBound::LEFT;
+      layer_selection.start.hidden = true;
+    }
+
+    if (layer_selection.end.type == gfx::SelectionBound::EMPTY) {
+      layer_selection.end.type = gfx::SelectionBound::RIGHT;
+      layer_selection.end.hidden = true;
+    }
+  }
 }
 
 bool PendingLayer::IsSolidColor() const {

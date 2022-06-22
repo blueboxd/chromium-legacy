@@ -22,9 +22,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/cellular_metrics_logger.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
-#include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
@@ -174,14 +174,16 @@ void NetworkDeviceHandlerImpl::RequirePin(
     return;
   }
 
+  const CellularMetricsLogger::SimPinOperation pin_operation =
+      require_pin ? CellularMetricsLogger::SimPinOperation::kRequireLock
+                  : CellularMetricsLogger::SimPinOperation::kRemoveLock;
+
   NET_LOG(USER) << "Device.RequirePin: " << device_path << ": " << require_pin;
   ShillDeviceClient::Get()->RequirePin(
       dbus::ObjectPath(device_path), pin, require_pin,
-      base::BindOnce(&HandleSimPinOperationSuccess,
-                     CellularMetricsLogger::SimPinOperation::kLock,
+      base::BindOnce(&HandleSimPinOperationSuccess, pin_operation,
                      std::move(callback)),
-      base::BindOnce(&HandleSimPinOperationFailure,
-                     CellularMetricsLogger::SimPinOperation::kLock, device_path,
+      base::BindOnce(&HandleSimPinOperationFailure, pin_operation, device_path,
                      std::move(error_callback)));
 }
 
@@ -190,6 +192,13 @@ void NetworkDeviceHandlerImpl::EnterPin(
     const std::string& pin,
     base::OnceClosure callback,
     network_handler::ErrorCallback error_callback) {
+  if (!allow_cellular_sim_lock_) {
+    // Remove the PIN lock requirement.
+    RequirePin(device_path, /*require_pin=*/false, pin, std::move(callback),
+               std::move(error_callback));
+    return;
+  }
+
   NET_LOG(USER) << "Device.EnterPin: " << device_path;
   ShillDeviceClient::Get()->EnterPin(
       dbus::ObjectPath(device_path), pin,

@@ -65,7 +65,7 @@ const base::FeatureParam<double> kMinimumEntropyForLCP{
 // Used as a binding for controlling the runtime enabled blink feature
 // "FixedElementsDontOverscroll". This is needed for experimentation.
 const base::Feature kFixedElementsDontOverscroll{
-    "FixedElementsDontOverscroll", base::FEATURE_DISABLED_BY_DEFAULT};
+    "FixedElementsDontOverscroll", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1418,12 +1418,6 @@ const base::Feature kWindowPlacementFullscreenOnScreensChange{
 // TODO(crbug.com/1277431): This flag should be eventually disabled.
 const base::Feature kEventPath{"EventPath", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Removes a paint invalidation of viewport constrained objects (sticky or
-// fixed) after scrolling.
-const base::Feature kOptimizeViewportConstrainedPaintInvalidation{
-    "OptimizeViewportConstrainedPaintInvalidation",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kReduceUserAgentMinorVersion{
     "ReduceUserAgentMinorVersion", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::FeatureParam<std::string> kUserAgentFrozenBuildVersion{
@@ -1535,9 +1529,16 @@ const base::Feature kEarlyExitOnNoopClassOrStyleChange{
 const base::Feature kLocalFrameRootPrePostFCPMetrics{
     "LocalFrameRootPrePostFCPMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(mahesh.ma): Enable for supported Android versions once feature is ready.
+const base::Feature kStylusWritingToInput{"StylusWritingToInput",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDisableArrayBufferSizeLimitsForTesting{
     "DisableArrayBufferSizeLimitsForTesting",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTimedHTMLParserBudget{"TimedHTMLParserBudget",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

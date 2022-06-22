@@ -2019,12 +2019,17 @@ const CSSValue* ContainerType::CSSValueFromComputedStyleInternal(
             kContainerTypeBlockSize);
   if (style.ContainerType() == kContainerTypeNone)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  if (style.ContainerType() == kContainerTypeSize)
-    return CSSIdentifierValue::Create(CSSValueID::kSize);
-  if (style.ContainerType() == kContainerTypeInlineSize)
-    return CSSIdentifierValue::Create(CSSValueID::kInlineSize);
-  NOTREACHED();
-  return nullptr;
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (style.ContainerType() & kContainerTypeStyle)
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kStyle));
+  if ((style.ContainerType() & kContainerTypeSize) == kContainerTypeSize) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kSize));
+  } else if ((style.ContainerType() & kContainerTypeSize) ==
+             kContainerTypeInlineSize) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kInlineSize));
+  }
+  return list;
 }
 
 namespace {
@@ -5604,10 +5609,6 @@ const CSSValue* PageTransitionTag::ParseSingleValue(
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueID::kNone)
     return css_parsing_utils::ConsumeIdent(range);
-  if (DocumentTransitionStyleTracker::IsReservedTransitionTag(
-          range.Peek().Value())) {
-    return nullptr;
-  }
   return css_parsing_utils::ConsumeCustomIdent(range, context);
 }
 

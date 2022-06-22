@@ -210,6 +210,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextMenuPopupStyle,
     &kContextualSearchDebug,
     &kContextualSearchDelayedIntelligence,
+    &kContextualSearchDisableOnlineDetection,
     &kContextualSearchForceCaption,
     &kContextualSearchMlTapSuppression,
     &kContextualSearchTapDisableOverride,
@@ -250,6 +251,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
     &kBackGestureRefactorAndroid,
+    &kOptimizeLayoutsForPullRefresh,
     &kPostTaskFocusTab,
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
@@ -587,6 +589,10 @@ const base::Feature kContextualSearchDebug{"ContextualSearchDebug",
 const base::Feature kContextualSearchDelayedIntelligence{
     "ContextualSearchDelayedIntelligence", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kContextualSearchDisableOnlineDetection{
+    "ContextualSearchDisableOnlineDetection",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kContextualSearchForceCaption{
     "ContextualSearchForceCaption", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -691,7 +697,7 @@ const base::Feature kMostRecentTabOnBackgroundCloseTab{
     "MostRecentTabOnBackgroundCloseTab", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNewInstanceFromDraggedLink{
-    "NewInstanceFromDraggedLink", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NewInstanceFromDraggedLink", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNewWindowAppMenu{"NewWindowAppMenu",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -713,6 +719,9 @@ const base::Feature kBookmarksRefresh{"BookmarksRefresh",
 
 const base::Feature kBackGestureRefactorAndroid{
     "BackGestureRefactorAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOptimizeLayoutsForPullRefresh{
+    "OptimizeLayoutsForPullRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPostTaskFocusTab{"PostTaskFocusTab",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

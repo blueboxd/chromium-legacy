@@ -118,6 +118,9 @@ extern const char kEditPasswordsInSettingsDescription[];
 extern const char kPasswordNotesName[];
 extern const char kPasswordNotesDescription[];
 
+extern const char kPasswordViewPageInSettingsName[];
+extern const char kPasswordViewPageInSettingsDescription[];
+
 extern const char kEnableBluetoothSerialPortProfileInSerialApiName[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
 
@@ -848,6 +851,9 @@ extern const char kTabSearchMediaTabsDescription[];
 extern const char kTabSwitcherOnReturnName[];
 extern const char kTabSwitcherOnReturnDescription[];
 
+extern const char kHiddenNetworkMigrationName[];
+extern const char kHiddenNetworkMigrationDescription[];
+
 extern const char kHideShelfControlsInTabletModeName[];
 extern const char kHideShelfControlsInTabletModeDescription[];
 
@@ -919,6 +925,9 @@ extern const char kJourneysLabelsDescription[];
 
 extern const char kJourneysOmniboxActionName[];
 extern const char kJourneysOmniboxActionDescription[];
+
+extern const char kJourneysOmniboxHistoryClusterProviderName[];
+extern const char kJourneysOmniboxHistoryClusterProviderDescription[];
 
 extern const char kJourneysOnDeviceClusteringBackendName[];
 extern const char kJourneysOnDeviceClusteringBackendDescription[];
@@ -1034,6 +1043,12 @@ extern const char kOmniboxFuzzyUrlSuggestionsDescription[];
 
 extern const char kOmniboxMostVisitedTilesName[];
 extern const char kOmniboxMostVisitedTilesDescription[];
+
+extern const char kOmniboxOnDeviceHeadSuggestionsName[];
+extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
+
+extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
+extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
 
 extern const char kOmniboxRichAutocompletionName[];
 extern const char kOmniboxRichAutocompletionDescription[];
@@ -1298,9 +1313,6 @@ extern const char kNoncedPartitionedCookiesDescription[];
 extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
-
-extern const char kScrollableTabStripButtonsName[];
-extern const char kScrollableTabStripButtonsDescription[];
 
 extern const char kScrollUnificationName[];
 extern const char kScrollUnificationDescription[];
@@ -2761,9 +2773,6 @@ extern const char kDeprecateAssistantStylusFeaturesDescription[];
 extern const char kDisableQuickAnswersV2TranslationName[];
 extern const char kDisableQuickAnswersV2TranslationDescription[];
 
-extern const char kQuickAnswersAlwaysTriggerForSingleWordName[];
-extern const char kQuickAnswersAlwaysTriggerForSingleWordDescription[];
-
 extern const char kQuickAnswersForMoreLocalesName[];
 extern const char kQuickAnswersForMoreLocalesDescription[];
 
@@ -3094,6 +3103,9 @@ extern const char kShimlessRMAEnableStandaloneDescription[];
 extern const char kShimlessRMAOsUpdateName[];
 extern const char kShimlessRMAOsUpdateDescription[];
 
+extern const char kShimlessRMADisableDarkModeName[];
+extern const char kShimlessRMADisableDarkModeDescription[];
+
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
@@ -3141,6 +3153,9 @@ extern const char kSystemTransliterationPhysicalTypingDescription[];
 extern const char kQuickSettingsNetworkRevampName[];
 extern const char kQuickSettingsNetworkRevampDescription[];
 
+extern const char kTerminalAlternativeRendererName[];
+extern const char kTerminalAlternativeRendererDescription[];
+
 extern const char kTerminalDevName[];
 extern const char kTerminalDevDescription[];
 
@@ -3164,6 +3179,9 @@ extern const char kUiDevToolsDescription[];
 
 extern const char kUiSlowAnimationsName[];
 extern const char kUiSlowAnimationsDescription[];
+
+extern const char kUploadOfficeToCloudName[];
+extern const char kUploadOfficeToCloudDescription[];
 
 extern const char kUsbNotificationControllerName[];
 extern const char kUsbNotificationControllerDescription[];
@@ -3329,6 +3347,8 @@ extern const char kVaapiVP9kSVCEncoderDescription[];
 #if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 extern const char kChromeOSDirectVideoDecoderName[];
 extern const char kChromeOSDirectVideoDecoderDescription[];
+extern const char kChromeOSHWVBREncodingName[];
+extern const char kChromeOSHWVBREncodingDescription[];
 #if defined(ARCH_CPU_ARM_FAMILY)
 extern const char kPreferLibYuvImageProcessorName[];
 extern const char kPreferLibYuvImageProcessorDescription[];
@@ -3371,6 +3391,11 @@ extern const char kQuickCommandsDescription[];
 extern const char kWebShareName[];
 extern const char kWebShareDescription[];
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+extern const char kWebBluetoothConfirmPairingSupportName[];
+extern const char kWebBluetoothConfirmPairingSupportDescription[];
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_LINUX)
 extern const char kOzonePlatformHintChoiceDefault[];

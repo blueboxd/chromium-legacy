@@ -151,6 +151,7 @@
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
@@ -1008,7 +1009,6 @@ void FillMiscNavigationParams(
   navigation_params->origin_agent_cluster_left_as_default =
       commit_params.origin_agent_cluster_left_as_default;
 
-  navigation_params->anonymous = commit_params.anonymous;
   navigation_params->enabled_client_hints.reserve(
       commit_params.enabled_client_hints.size());
   for (auto enabled_hint : commit_params.enabled_client_hints)
@@ -1104,6 +1104,7 @@ std::unique_ptr<blink::WebPolicyContainer> ToWebPolicyContainer(
           in->policies->referrer_policy,
           ToWebContentSecurityPolicies(
               std::move(in->policies->content_security_policies)),
+          in->policies->is_anonymous,
       },
       std::move(in->remote));
 }
@@ -2636,6 +2637,7 @@ void RenderFrameImpl::CommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
+    const blink::ParsedPermissionsPolicy& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
     mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
     mojom::CookieManagerInfoPtr cookie_manager_info,
@@ -2677,6 +2679,12 @@ void RenderFrameImpl::CommitNavigation(
                            navigation_params.get());
   navigation_params->policy_container =
       ToWebPolicyContainer(std::move(policy_container));
+  // TODO(b/235479329): Rename IsDirectSocketEnabled().
+  // IsDirectSocketEnabled() implies this renderer is for an isolated
+  // application.
+  if (blink::IsDirectSocketEnabled() && frame_->IsOutermostMainFrame()) {
+    navigation_params->permissions_policy_override = permissions_policy;
+  }
 
   auto commit_with_params = base::BindOnce(
       &RenderFrameImpl::CommitNavigationWithParams, weak_factory_.GetWeakPtr(),
@@ -4263,11 +4271,9 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request,
   // a navigation concept. We pass ui::PAGE_TRANSITION_LINK as default one.
   WillSendRequestInternal(request, /*for_outermost_main_frame=*/false,
                           ui::PAGE_TRANSITION_LINK, for_redirect);
-#if !BUILDFLAG(IS_ANDROID)
   for (auto& observer : observers_) {
     observer.WillSendRequest(request);
   }
-#endif
 }
 
 void RenderFrameImpl::WillSendRequestInternal(
@@ -4424,6 +4430,12 @@ void RenderFrameImpl::DidObserveNewFeatureUsage(
     const blink::UseCounterFeature& feature) {
   for (auto& observer : observers_)
     observer.DidObserveNewFeatureUsage(feature);
+}
+
+void RenderFrameImpl::DidObserveSoftNavigation(uint32_t count) {
+  for (auto& observer : observers_) {
+    observer.DidObserveSoftNavigation(count);
+  }
 }
 
 void RenderFrameImpl::DidObserveLayoutShift(double score,

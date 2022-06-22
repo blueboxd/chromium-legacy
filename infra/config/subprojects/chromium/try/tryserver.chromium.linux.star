@@ -225,6 +225,7 @@ try_.orchestrator_builder(
     name = "linux-rel",
     compilator = "linux-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = False,
     mirrors = [
         "ci/Linux Builder",
         "ci/Linux Tests",
@@ -249,6 +250,7 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "linux-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
 )
 
@@ -376,6 +378,7 @@ try_.builder(
     # TODO(crbug/1144484): Remove this timeout once we figure out the
     # regression in compiler or toolchain.
     execution_timeout = 7 * time.hour,
+    ssd = True,
 )
 
 try_.builder(
@@ -395,6 +398,8 @@ try_.builder(
         "ci/Linux ChromiumOS MSan Tests",
     ],
     goma_jobs = goma.jobs.J150,
+    ssd = True,
+    cores = 16,
 )
 
 try_.builder(

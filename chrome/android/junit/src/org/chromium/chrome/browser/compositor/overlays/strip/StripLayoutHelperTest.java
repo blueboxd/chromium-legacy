@@ -7,11 +7,16 @@ package org.chromium.chrome.browser.compositor.overlays.strip;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
@@ -20,6 +25,8 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.view.View;
+import android.view.ViewGroup.MarginLayoutParams;
 
 import org.junit.After;
 import org.junit.Before;
@@ -41,6 +48,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab.StripLayoutTabDelegate;
 import org.chromium.chrome.browser.compositor.overlays.strip.TabLoadTracker.TabLoadTrackerCallback;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimator;
@@ -93,6 +101,9 @@ public class StripLayoutHelperTest {
     private static final float TAB_MARGIN_WIDTH = 76.f;
     private static final long TIMESTAMP = 5000;
     private static final float NEW_TAB_BTN_X = 700.f;
+    private static final float NEW_TAB_BTN_Y = 1400.f;
+    private static final float NEW_TAB_BTN_WIDTH = 100.f;
+    private static final float NEW_TAB_BTN_HEIGHT = 100.f;
 
     private static final float CLOSE_BTN_VISIBILITY_THRESHOLD_END = 72;
     private static final float CLOSE_BTN_VISIBILITY_THRESHOLD_END_MODEL_SELECTOR = 120;
@@ -112,7 +123,10 @@ public class StripLayoutHelperTest {
 
     @After
     public void tearDown() {
-        if (mStripLayoutHelper != null) mStripLayoutHelper.stopReorderModeForTesting();
+        if (mStripLayoutHelper != null) {
+            mStripLayoutHelper.stopReorderModeForTesting();
+            mStripLayoutHelper.setTabAtPositionForTesting(null);
+        }
     }
 
     /**
@@ -679,6 +693,205 @@ public class StripLayoutHelperTest {
     }
 
     @Test
+    public void testOnDown_OnNewTabButton() {
+        // Initialize.
+        initializeTest(false, false, 0);
+
+        // Set new tab button location and dimensions.
+        mStripLayoutHelper.getNewTabButton().setX(NEW_TAB_BTN_X);
+        mStripLayoutHelper.getNewTabButton().setY(NEW_TAB_BTN_Y);
+        mStripLayoutHelper.getNewTabButton().setWidth(NEW_TAB_BTN_WIDTH);
+        mStripLayoutHelper.getNewTabButton().setHeight(NEW_TAB_BTN_HEIGHT);
+
+        // Press down on new tab button.
+        // CenterX = getX() + (getWidth() / 2) = 700 + (100 / 2) = 750
+        // CenterY = getY() + (getHeight() / 2) = 1400 + (100 / 2) = 1450
+        mStripLayoutHelper.onDown(TIMESTAMP, 750f, 1450f, false, 0);
+
+        // Verify.
+        assertTrue("New tab button should be pressed.",
+                mStripLayoutHelper.getNewTabButton().isPressed());
+        assertNull("Should not set an interacting tab when pressing down on new tab button.",
+                mStripLayoutHelper.getInteractingTab());
+        assertFalse("Should not start reorder mode when pressing down on new tab button.",
+                mStripLayoutHelper.getInReorderModeForTesting());
+    }
+
+    @Test
+    public void testOnDown_OnTab() {
+        // Initialize.
+        initializeTest(false, false, 0);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(150f);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Press down on second tab.
+        when(tabs[1].checkCloseHitTest(anyFloat(), anyFloat())).thenReturn(false);
+        mStripLayoutHelper.setTabAtPositionForTesting(tabs[1]);
+        mStripLayoutHelper.onDown(TIMESTAMP, 150f, 0f, false, 0);
+
+        // Verify.
+        assertFalse("New tab button should not be pressed.",
+                mStripLayoutHelper.getNewTabButton().isPressed());
+        assertEquals("Second tab should be interacting tab.", tabs[1],
+                mStripLayoutHelper.getInteractingTab());
+        assertFalse("Should not start reorder mode when pressing down on tab without mouse.",
+                mStripLayoutHelper.getInReorderModeForTesting());
+        verify(tabs[1], never()).setClosePressed(anyBoolean());
+    }
+
+    @Test
+    public void testOnDown_OnTab_WithMouse() {
+        // Initialize.
+        initializeTest(false, false, 0);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(150f);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Press down on second tab with mouse.
+        when(tabs[1].checkCloseHitTest(anyFloat(), anyFloat())).thenReturn(false);
+        mStripLayoutHelper.setTabAtPositionForTesting(tabs[1]);
+        mStripLayoutHelper.onDown(TIMESTAMP, 150f, 0f, true, 0);
+
+        // Verify.
+        assertFalse("New tab button should not be pressed.",
+                mStripLayoutHelper.getNewTabButton().isPressed());
+        assertEquals("Second tab should be interacting tab.", tabs[1],
+                mStripLayoutHelper.getInteractingTab());
+        assertTrue("Should start reorder mode when pressing down on tab with mouse.",
+                mStripLayoutHelper.getInReorderModeForTesting());
+        verify(tabs[1], never()).setClosePressed(anyBoolean());
+    }
+
+    @Test
+    public void testOnDown_OnTabCloseButton() {
+        // Initialize.
+        initializeTest(false, false, 0);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(150f);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Press down on second tab's close button.
+        when(tabs[1].checkCloseHitTest(anyFloat(), anyFloat())).thenReturn(true);
+        mStripLayoutHelper.setTabAtPositionForTesting(tabs[1]);
+        mStripLayoutHelper.onDown(TIMESTAMP, 150f, 0f, false, 0);
+
+        // Verify.
+        assertFalse("New tab button should not be pressed.",
+                mStripLayoutHelper.getNewTabButton().isPressed());
+        assertEquals("Second tab should be interacting tab.", tabs[1],
+                mStripLayoutHelper.getInteractingTab());
+        assertFalse("Should not start reorder mode from close button.",
+                mStripLayoutHelper.getInReorderModeForTesting());
+        verify(tabs[1]).setClosePressed(eq(true));
+    }
+
+    @Test
+    public void testOnDown_OnTabCloseButton_WithMouse() {
+        // Initialize.
+        initializeTest(false, false, 0);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(150f);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Press down on second tab's close button with mouse.
+        when(tabs[1].checkCloseHitTest(anyFloat(), anyFloat())).thenReturn(true);
+        mStripLayoutHelper.setTabAtPositionForTesting(tabs[1]);
+        mStripLayoutHelper.onDown(TIMESTAMP, 150f, 0f, true, 0);
+
+        // Verify.
+        assertFalse("New tab button should not be pressed.",
+                mStripLayoutHelper.getNewTabButton().isPressed());
+        assertEquals("Second tab should be interacting tab.", tabs[1],
+                mStripLayoutHelper.getInteractingTab());
+        assertFalse("Should not start reorder mode from close button.",
+                mStripLayoutHelper.getInReorderModeForTesting());
+        verify(tabs[1]).setClosePressed(eq(true));
+    }
+
+    @Test
+    public void testOnDown_WhileScrolling() {
+        // Initialize and assert scroller is finished.
+        initializeTest(false, false, 0);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(150f);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+        assertTrue("Scroller should be finished right after initializing.",
+                mStripLayoutHelper.getScroller().isFinished());
+
+        // Start scroll and assert scroller is not finished.
+        mStripLayoutHelper.getScroller().startScroll(0, 0, 0, 0, TIMESTAMP, 1000);
+        assertFalse("Scroller should not be finished after starting scroll.",
+                mStripLayoutHelper.getScroller().isFinished());
+
+        // Press down on second tab and assert scroller is finished.
+        mStripLayoutHelper.setTabAtPositionForTesting(tabs[1]);
+        mStripLayoutHelper.onDown(TIMESTAMP, 150f, 0f, false, 0);
+        assertFalse("New tab button should not be pressed.",
+                mStripLayoutHelper.getNewTabButton().isPressed());
+        assertNull("Should not set an interacting tab when pressing down to stop scrolling.",
+                mStripLayoutHelper.getInteractingTab());
+        assertTrue("Scroller should be force finished after pressing down on strip.",
+                mStripLayoutHelper.getScroller().isFinished());
+    }
+
+    @Test
+    public void testOnLongPress_OnTab() {
+        // Initialize.
+        initializeTest(false, false, 0);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(150f);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Long press on second tab.
+        when(tabs[1].checkCloseHitTest(anyFloat(), anyFloat())).thenReturn(false);
+        mStripLayoutHelper.setTabAtPositionForTesting(tabs[1]);
+        mStripLayoutHelper.onLongPress(TIMESTAMP, 150f, 0f);
+
+        // Verify that we enter reorder mode.
+        assertTrue("Should be in reorder mode after long press on tab.",
+                mStripLayoutHelper.getInReorderModeForTesting());
+        assertFalse("Should not show tab menu after long press on tab.",
+                mStripLayoutHelper.isTabMenuShowing());
+    }
+
+    @Test
+    public void testOnLongPress_OnCloseButton() {
+        // Initialize.
+        initializeTest(false, false, 0);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(150f);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Mock tab's view.
+        View tabView = new View(mActivity);
+        tabView.setLayoutParams(new MarginLayoutParams(150, 50));
+        when(mModel.getTabAt(1).getView()).thenReturn(tabView);
+
+        // Long press on second tab's close button.
+        when(tabs[1].checkCloseHitTest(anyFloat(), anyFloat())).thenReturn(true);
+        mStripLayoutHelper.setTabAtPositionForTesting(tabs[1]);
+        mStripLayoutHelper.onLongPress(TIMESTAMP, 150f, 0f);
+
+        // Verify that we show the "Close all tabs" popup menu.
+        assertFalse("Should not be in reorder mode after long press on tab close button.",
+                mStripLayoutHelper.getInReorderModeForTesting());
+        assertTrue("Should show tab menu after long press on tab close button.",
+                mStripLayoutHelper.isTabMenuShowing());
+    }
+
+    @Test
+    public void testOnLongPress_OffTab() {
+        // Initialize.
+        initializeTest(false, false, 0);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(150f);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Long press past the last tab.
+        mStripLayoutHelper.setTabAtPositionForTesting(null);
+        mStripLayoutHelper.onLongPress(TIMESTAMP, 150f, 0f);
+
+        // Verify that we show the "Close all tabs" popup menu.
+        assertFalse("Should not be in reorder mode after long press on empty space on tab strip.",
+                mStripLayoutHelper.getInReorderModeForTesting());
+        assertFalse("Should not show after long press on empty space on tab strip.",
+                mStripLayoutHelper.isTabMenuShowing());
+    }
+
+    @Test
     @Feature("Tab Groups on Tab Strip")
     public void testTabGroupMargins_BetweenTabs() {
         // Initialize with 3 tabs.
@@ -951,6 +1164,138 @@ public class StripLayoutHelperTest {
                 mStripLayoutHelper.isMultiStepCloseAnimationsRunning());
     }
 
+    @Test
+    public void testFlingLeft() {
+        // Arrange
+        initializeTest(false, false, 9, 10);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+        mStripLayoutHelper.updateLayout(TIMESTAMP);
+        mStripLayoutHelper.setScrollOffsetForTesting(-150);
+
+        // Act: Perform a fling and update layout.
+        float velocityX = -7000f;
+        // The velocityX value is used to calculate the scroller.finalX value.
+        mStripLayoutHelper.fling(TIMESTAMP, 0, 0, velocityX, 0);
+        // This will use the scroller.finalX value to update the scrollOffset. The timestamp
+        // value here will determine the fling duration and affects the final offset value.
+        mStripLayoutHelper.updateLayout(TIMESTAMP + 10);
+
+        // Assert: Final scrollOffset.
+        // The calculation of this value is done using the velocity. The velocity along a friction
+        // constant is used to calculate deceleration and distance. That together with the animation
+        // duration determines the final scroll offset position.
+        float expectedOffset = -220.f;
+        assertEquals("Unexpected scroll offset.", expectedOffset,
+                mStripLayoutHelper.getScrollOffset(), 0.0);
+    }
+
+    @Test
+    public void testFlingRight() {
+        // Arrange
+        initializeTest(false, false, 9, 10);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+        // When updateLayout is called for the first time, bringSelectedTabToVisibleArea() method is
+        // invoked. That also affects the scrollOffset value. So we call updateLayout before
+        // performing a fling so that bringSelectedTabToVisible area isn't called after the fling.
+        mStripLayoutHelper.updateLayout(TIMESTAMP);
+        mStripLayoutHelper.setScrollOffsetForTesting(-150);
+
+        // Act: Perform a fling and update layout.
+        float velocity = 5000f;
+        // The velocityX value is used to calculate the scroller.finalX value.
+        mStripLayoutHelper.fling(TIMESTAMP, 0, 0, velocity, 0);
+        // This will use the scroller.finalX value to update the scrollOffset. The timestamp
+        // value here will determine the fling duration and affects the final offset value.
+        mStripLayoutHelper.updateLayout(TIMESTAMP + 20);
+
+        // Assert: Final scrollOffset.
+        // The calculation of this value is done using the velocity. The velocity along a friction
+        // constant is used to calculate deceleration and distance. That together with the animation
+        // duration determines the final scroll offset position.
+        float expectedOffset = -50.f;
+        assertEquals("Unexpected scroll offset.", expectedOffset,
+                mStripLayoutHelper.getScrollOffset(), 0.0);
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testDrag_UpdatesScrollOffset_ScrollingStrip() {
+        // Arrange
+        initializeTest(false, false, 9, 10);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+        // When updateLayout is called for the first time, bringSelectedTabToVisibleArea() method is
+        // invoked. That also affects the scrollOffset value. So we call updateLayout before
+        // performing a fling so that bringSelectedTabToVisible area isn't called after the fling.
+        mStripLayoutHelper.updateLayout(TIMESTAMP);
+        mStripLayoutHelper.setScrollOffsetForTesting(-150);
+
+        // Act: Drag and update layout.
+        float dragDeltaX = -200.f;
+        float totalY = 85.f; // totalY > 50.f to cross reorder threshold.
+        mStripLayoutHelper.drag(TIMESTAMP, 374.74f, 24.276f, dragDeltaX, -0.304f, -16.078f, totalY);
+
+        float expectedOffset = -350; // mScrollOffset + dragDeltaX = -200 - 150 = -350
+        // Assert scroll offset position.
+        assertEquals("Unexpected scroll offset.", expectedOffset,
+                mStripLayoutHelper.getScrollOffset(), 0.0);
+        // Reorder mode is disabled for scrolling strip.
+        assertFalse(mStripLayoutHelper.isInReorderModeForTesting());
+    }
+
+    @Test
+    public void testDrag_UpdatesScrollOffset_CascadingStrip() {
+        // Arrange
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS, false);
+        initializeTest(false, false, 0, 10);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+        // When updateLayout is called for the first time, bringSelectedTabToVisibleArea() method is
+        // invoked. That also affects the scrollOffset value. So we call updateLayout before
+        // performing a fling so that bringSelectedTabToVisible area isn't called after the fling.
+        mStripLayoutHelper.updateLayout(TIMESTAMP);
+        mStripLayoutHelper.setScrollOffsetForTesting(-250);
+
+        // Act: Drag and update layout.
+        float dragDeltaX = -200.f;
+        mStripLayoutHelper.drag(
+                TIMESTAMP, 374.74f, 24.276f, dragDeltaX, -0.304f, -16.078f, -4.476f);
+
+        // Assert
+        float expectedOffset = -450; // mScrollOffset + dragDeltaX = -200 - 250 = -450
+        assertEquals("Unexpected scroll offset.", expectedOffset,
+                mStripLayoutHelper.getScrollOffset(), 0.0);
+        assertFalse("Reorder mode should not enabled when totalY <= 50.",
+                mStripLayoutHelper.isInReorderModeForTesting());
+    }
+
+    @Test
+    public void testDrag_ReorderMode_CascadingStrip() {
+        // Arrange
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS, false);
+        initializeTest(false, false, 5, 10);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+        // When updateLayout is called for the first time, bringSelectedTabToVisibleArea() method is
+        // invoked. That also affects the scrollOffset value. So we call updateLayout before
+        // performing a fling so that bringSelectedTabToVisible area isn't called after the fling.
+        mStripLayoutHelper.updateLayout(TIMESTAMP);
+        mStripLayoutHelper.setScrollOffsetForTesting(-250);
+
+        // Assert: Ensure reorder mode is disabled when starting drag.
+        assertFalse("Reorder mode should be disabled before drag.",
+                mStripLayoutHelper.isInReorderModeForTesting());
+
+        // Act
+        float dragDeltaX = -200.f;
+        float totalY = 75.f; // Drag with totalY > 50.f to cross reorder mode threshold.
+        mStripLayoutHelper.drag(TIMESTAMP, 374.74f, 24.276f, dragDeltaX, -0.304f, -16.078f, totalY);
+
+        // Assert: Reorder mode is enabled.
+        assertTrue("Reorder mode was not enabled after drag.",
+                mStripLayoutHelper.isInReorderModeForTesting());
+        float expectedOffset = -450; // mScrollOffset + dragDeltaX = -200 - 250 = -450
+        assertEquals("Unexpected scroll offset.", expectedOffset,
+                mStripLayoutHelper.getScrollOffset(), 0.0);
+    }
+
     private void setupForAnimations() {
         CompositorAnimationHandler mHandler = new CompositorAnimationHandler(() -> {});
         // CompositorAnimationHandler.setTestingMode(true);
@@ -1069,6 +1414,7 @@ public class StripLayoutHelperTest {
         when(tab.getWidth()).thenReturn(tabWidth);
         when(tab.getId()).thenReturn(id);
         when(tab.getDrawX()).thenReturn(mDrawX);
+        when(tab.getVisiblePercentage()).thenReturn(1f);
         return tab;
     }
 

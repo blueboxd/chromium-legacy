@@ -22,13 +22,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/cellular_utils.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/cellular_utils.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/fake_stub_cellular_networks_provider.h"
 #include "chromeos/network/network_state.h"
@@ -98,12 +98,12 @@ bool NetworkListContainsPath(const NetworkStateHandler::NetworkStateList& list,
 // Creates a list of cellular SIM slots with a single primary slot whose eid is
 // |eid|.
 base::Value GenerateSimSlotInfosWithEid(const std::string& eid) {
-  base::Value::ListStorage sim_slot_infos;
-  base::Value slot_info_item(base::Value::Type::DICTIONARY);
-  slot_info_item.SetStringKey(shill::kSIMSlotInfoEID, eid);
-  slot_info_item.SetBoolKey(shill::kSIMSlotInfoPrimary, true);
-  sim_slot_infos.push_back(std::move(slot_info_item));
-  return base::Value(sim_slot_infos);
+  base::Value::List sim_slot_infos;
+  base::Value::Dict slot_info_item;
+  slot_info_item.Set(shill::kSIMSlotInfoEID, eid);
+  slot_info_item.Set(shill::kSIMSlotInfoPrimary, true);
+  sim_slot_infos.Append(std::move(slot_info_item));
+  return base::Value(std::move(sim_slot_infos));
 }
 
 class TestObserver final : public chromeos::NetworkStateHandlerObserver {

@@ -16,6 +16,11 @@ namespace flag_descriptions {
 extern const char kAddPasswordsInSettingsName[];
 extern const char kAddPasswordsInSettingsDescription[];
 
+// Title and description for the flag to enable kAdaptiveSuggestionsCount flag
+// on iOS.
+extern const char kAdaptiveSuggestionsCountName[];
+extern const char kAdaptiveSuggestionsCountDescription[];
+
 // Title and description for the flag to control upstreaming credit cards.
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
@@ -104,14 +109,14 @@ extern const char kBubbleRichIPHDescription[];
 extern const char kBookmarkStringName[];
 extern const char kBookmarkStringDescription[];
 
-// Title and description for the flag to enable the use of apple calendar in
-// experience kit calendar.
-extern const char kEnableExpKitAppleCalendarName[];
-extern const char kEnableExpKitAppleCalendarDescription[];
-
 // Title and description for the flag to enable experience kit calendar events.
 extern const char kCalendarExperienceKitName[];
 extern const char kCalendarExperienceKitDescription[];
+
+// Title and description for the flag to enable text classifier entity detection
+// in experience kit calendar.
+extern const char kEnableExpKitCalendarTextClassifierName[];
+extern const char kEnableExpKitCalendarTextClassifierDescription[];
 
 // Title and description for the flag that moves the Content Suggestions header
 // to the Discover feed ScrollView.

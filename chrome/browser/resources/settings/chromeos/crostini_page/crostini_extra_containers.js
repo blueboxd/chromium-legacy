@@ -21,8 +21,7 @@ import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from '//resources/js/web_ui_listener_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-
-import {ContainerId, ContainerInfo, CrostiniBrowserProxy, CrostiniBrowserProxyImpl, DEFAULT_CROSTINI_CONTAINER, DEFAULT_CROSTINI_VM} from './crostini_browser_proxy.js';
+import {ContainerInfo, CrostiniBrowserProxy, CrostiniBrowserProxyImpl, DEFAULT_CROSTINI_CONTAINER, DEFAULT_CROSTINI_VM, GuestId} from './crostini_browser_proxy.js';
 
 /**
  * @constructor
@@ -52,7 +51,10 @@ class ExtraContainersElement extends ExtraContainersElementBase {
 
       allContainers_: {
         type: Array,
-        value: [],
+        notify: true,
+        value() {
+          return [];
+        },
       },
 
       lastMenuContainerInfo_: {
@@ -124,7 +126,7 @@ class ExtraContainersElement extends ExtraContainersElementBase {
    * @param {!Array<!ContainerInfo>} containerInfos
    */
   onContainerInfo_(containerInfos) {
-    this.allContainers_ = containerInfos;
+    this.set('allContainers_', containerInfos);
   }
 
   /**
@@ -149,7 +151,7 @@ class ExtraContainersElement extends ExtraContainersElementBase {
    */
   onContainerMenuClick_(event) {
     const id =
-        /** @type {ContainerId} */ (event.currentTarget['dataContainerId']);
+        /** @type {GuestId} */ (event.currentTarget['dataContainerId']);
     this.lastMenuContainerInfo_ = this.allContainers_.find(
         e => e.id.vm_name === id.vm_name &&
             e.id.container_name === id.container_name);
@@ -210,7 +212,7 @@ class ExtraContainersElement extends ExtraContainersElementBase {
    */
   onContainerColorChange_(event) {
     const containerId =
-        /** @type {ContainerId} */ (event.currentTarget['dataContainerId']);
+        /** @type {GuestId} */ (event.currentTarget['dataContainerId']);
 
     CrostiniBrowserProxyImpl.getInstance().setContainerBadgeColor(
         containerId, hexColorToSkColor(event.target.value));

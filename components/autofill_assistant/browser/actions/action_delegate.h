@@ -11,11 +11,13 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "components/autofill_assistant/browser/js_flow_devtools_wrapper.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
-#include "components/autofill_assistant/browser/public/external_script_controller.h"
+#include "components/autofill_assistant/browser/public/headless_script_controller.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/tts_button_state.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -317,12 +319,9 @@ class ActionDelegate {
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() const = 0;
 
-  // Get dummy web contents that can be used for JS execution. The web contents
-  // is created on the first call.
-  virtual content::WebContents* GetWebContentsForJsExecution() = 0;
-
-  // Get the library to be executed before every JS flow action.
-  virtual const std::string* GetJsFlowLibrary() const = 0;
+  // Get the wrapper that owns the web contents and devtools client for js
+  // flows.
+  virtual JsFlowDevtoolsWrapper* GetJsFlowDevtoolsWrapper() const = 0;
 
   // Get the ElementStore.
   virtual ElementStore* GetElementStore() const = 0;
@@ -497,6 +496,9 @@ class ActionDelegate {
   // because they act as a script executor.
   virtual void MaybeSetPreviousAction(
       const ProcessedActionProto& processed_action) = 0;
+
+  // Returns the Autofill Assistant intent for the current flow.
+  virtual absl::optional<std::string> GetIntent() const = 0;
 
   virtual base::WeakPtr<ActionDelegate> GetWeakPtr() const = 0;
 

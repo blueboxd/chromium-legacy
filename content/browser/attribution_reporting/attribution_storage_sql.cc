@@ -368,6 +368,10 @@ absl::optional<StoredSourceData> ReadSourceToAttribute(
   return ReadSourceFromStatement(statement);
 }
 
+base::FilePath DatabasePath(const base::FilePath& user_data_directory) {
+  return user_data_directory.Append(kDatabasePath);
+}
+
 }  // namespace
 
 // static
@@ -378,12 +382,17 @@ void AttributionStorageSql::RunInMemoryForTesting() {
 // static
 bool AttributionStorageSql::g_run_in_memory_ = false;
 
+// static
+bool AttributionStorageSql::DeleteStorageForTesting(
+    const base::FilePath& user_data_directory) {
+  return sql::Database::Delete(DatabasePath(user_data_directory));
+}
+
 AttributionStorageSql::AttributionStorageSql(
     const base::FilePath& path_to_database,
     std::unique_ptr<AttributionStorageDelegate> delegate)
-    : path_to_database_(g_run_in_memory_
-                            ? base::FilePath(kInMemoryPath)
-                            : path_to_database.Append(kDatabasePath)),
+    : path_to_database_(g_run_in_memory_ ? base::FilePath(kInMemoryPath)
+                                         : DatabasePath(path_to_database)),
       rate_limit_table_(delegate.get()),
       delegate_(std::move(delegate)) {
   DCHECK(delegate_);
@@ -1930,14 +1939,13 @@ bool AttributionStorageSql::LazyInit(DbCreationPolicy creation_policy) {
     }
   } else {
     const base::FilePath& dir = path_to_database_.DirName();
-    const bool dir_exists_or_was_created =
-        base::DirectoryExists(dir) || base::CreateDirectory(dir);
-    if (dir_exists_or_was_created == false) {
+    const bool dir_exists_or_was_created = base::CreateDirectory(dir);
+    if (!dir_exists_or_was_created) {
       DLOG(ERROR) << "Failed to create directory for Conversion database";
       HandleInitializationFailure(InitStatus::kFailedToCreateDir);
       return false;
     }
-    if (db_->Open(path_to_database_) == false) {
+    if (!db_->Open(path_to_database_)) {
       HandleInitializationFailure(InitStatus::kFailedToOpenDbFile);
       return false;
     }

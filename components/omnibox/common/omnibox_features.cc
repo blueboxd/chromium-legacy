@@ -221,6 +221,13 @@ const base::Feature kShortcutExpanding{"OmniboxShortcutExpanding",
 const base::Feature kBookmarkPaths{"OmniboxBookmarkPaths",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the relevant AutocompleteProviders will store "title" data in
+// AutocompleteMatch::contents and "URL" data in AutocompleteMatch::description
+// for URL-based omnibox suggestions (see crbug.com/1202964 for more details).
+const base::Feature kStoreTitleInContentsAndUrlInDescription{
+    "OmniboxStoreTitleInContentsAndUrlInDescription",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to fetch document suggestions.
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
                                       enabled_by_default_desktop_only};
@@ -236,7 +243,7 @@ const base::Feature kDocumentProviderAso{"OmniboxDocumentProviderAso",
 // the space between Omnibox and the soft keyboard. The number of suggestions
 // shown will be no less than minimum for the platform (eg. 5 for Android).
 const base::Feature kAdaptiveSuggestionsCount{"OmniboxAdaptiveSuggestionsCount",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
+                                              enabled_by_default_android_only};
 
 // If enabled, clipboard suggestion will not show the clipboard content until
 // the user clicks the reveal button.

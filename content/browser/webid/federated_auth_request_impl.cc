@@ -49,7 +49,10 @@ static constexpr base::TimeDelta kDefaultIdTokenRequestDelay = base::Seconds(3);
 // TODO(yigu): We need to make sure the delay is greater than the time required
 // for a successful flow based on `Blink.FedCm.Timing.TurnaroundTime`.
 // https://crbug.com/1298316.
-static constexpr base::TimeDelta kRequestRejectionDelay = base::Seconds(60);
+// TODO(crbug.com/1329633): We temporarily use 120s to make the UI more accessible.
+// We should try not to dismiss it automatically if a user is interacting with it
+// using keyboard or accessibility tools.
+static constexpr base::TimeDelta kRequestRejectionDelay = base::Seconds(120);
 
 // Maximum number of provider URLs in the manifest list.
 // TODO(cbiesinger): Determine what the right number is.
@@ -1381,6 +1384,18 @@ void FederatedAuthRequestImpl::OnRejectRequest() {
   if (auth_request_callback_) {
     DCHECK(!revoke_callback_);
     DCHECK(!logout_callback_);
+    // If we have completed the request, e.g. when the token is returned or the
+    // API is aborted, `auth_request_callback_` would be null so we won't double
+    // count. If the request was failed but we have not yet rejected the
+    // promise, e.g. when the user has declined the permission or the API is
+    // disabled etc., we have already report the errors to console. i.e.
+    // `errors_logged_to_console_` would be true so we won't double count
+    // either. We record `kUserInterfaceTimedOut` only when the UI is displayed
+    // and then time out without user interaction.
+    if (!errors_logged_to_console_) {
+      RecordRequestIdTokenStatus(IdTokenStatus::kUserInterfaceTimedOut,
+                                 render_frame_host_->GetPageUkmSourceId());
+    }
     CompleteRequest(FederatedAuthRequestResult::kError, "",
                     /*should_call_callback=*/true);
   }

@@ -16,6 +16,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/platform_locale_settings.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
+#include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "skia/ext/image_operations.h"
@@ -24,11 +26,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -60,6 +66,12 @@ constexpr int kLeftRightPadding = 12;
 constexpr int kVerticalSpacing = 8;
 // The height of the progress bar shown when showing "Verifying...".
 constexpr int kProgressBarHeight = 2;
+// The size of the space between the right boundary of the WebContents and the
+// right boundary of the bubble.
+constexpr int kRightMargin = 40;
+// The size of the space between the top boundary of the WebContents and the top
+// boundary of the bubble.
+constexpr int kTopMargin = 16;
 
 constexpr char kImageFetcherUmaClient[] = "FedCMAccountChooser";
 
@@ -170,6 +182,60 @@ class CircleCroppedImageSkiaSource : public gfx::CanvasImageSource {
   gfx::ImageSkia avatar_;
 };
 
+// views::MdTextButton which:
+// - Uses the passed-in `brand_background_color` based on whether the button
+//   background contrasts sufficiently with dialog background.
+// - If `brand_text_color` is not provided, computes the text color such that it
+//   contrasts sufficiently with `brand_background_color`.
+class ContinueButton : public views::MdTextButton {
+ public:
+  ContinueButton(views::MdTextButton::PressedCallback callback,
+                 const std::u16string& text,
+                 AccountSelectionBubbleView* bubble_view,
+                 absl::optional<SkColor> brand_background_color,
+                 absl::optional<SkColor> brand_text_color)
+      : views::MdTextButton(callback, text),
+        bubble_view_(bubble_view),
+        brand_background_color_(brand_background_color),
+        brand_text_color_(brand_text_color) {}
+
+  ContinueButton(const ContinueButton&) = delete;
+  ContinueButton& operator=(const ContinueButton&) = delete;
+  ~ContinueButton() override = default;
+
+  void OnThemeChanged() override {
+    views::MdTextButton::OnThemeChanged();
+    if (!brand_background_color_)
+      return;
+
+    SkColor dialog_background_color = bubble_view_->GetBackgroundColor();
+    if (color_utils::GetContrastRatio(dialog_background_color,
+                                      *brand_background_color_) <
+        color_utils::kMinimumReadableContrastRatio) {
+      SetBgColorOverride(absl::nullopt);
+      SetEnabledTextColors(absl::nullopt);
+      return;
+    }
+    SetBgColorOverride(*brand_background_color_);
+    SkColor text_color;
+    if (brand_text_color_) {
+      // IdpNetworkRequestManager ensures that `brand_text_color_` is only set
+      // if it sufficiently contrasts with `brand_background_color_`.
+      text_color = *brand_text_color_;
+    } else {
+      text_color = color_utils::BlendForMinContrast(GetCurrentTextColor(),
+                                                    *brand_background_color_)
+                       .color;
+    }
+    SetEnabledTextColors(text_color);
+  }
+
+ private:
+  base::raw_ptr<AccountSelectionBubbleView> bubble_view_;
+  absl::optional<SkColor> brand_background_color_;
+  absl::optional<SkColor> brand_text_color_;
+};
+
 void SendAccessibilityEvent(views::Widget* widget,
                             std::u16string announcement) {
   if (!widget)
@@ -199,14 +265,19 @@ AccountSelectionBubbleView::AccountSelectionBubbleView(
     TabStripModel* tab_strip_model,
     base::OnceCallback<void(const content::IdentityRequestAccount&)>
         on_account_selected_callback)
-    : views::BubbleDialogDelegateView(anchor_view,
-                                      views::BubbleBorder::Arrow::TOP_RIGHT),
+    : views::BubbleDialogDelegateView(
+          anchor_view,
+          // Note that BOTTOM_RIGHT means the bubble's bottom and right are
+          // anchored to the `anchor_view`, which effectively means the bubble
+          // will be on top of the `anchor_view`, aligned on its right side.
+          views::BubbleBorder::Arrow::BOTTOM_RIGHT),
       idp_for_display_(base::UTF8ToUTF16(idp_for_display)),
       brand_text_color_(idp_metadata.brand_text_color),
       brand_background_color_(idp_metadata.brand_background_color),
+      client_data_(client_data),
+      account_list_(accounts.begin(), accounts.end()),
       tab_strip_model_(tab_strip_model),
-      on_account_selected_callback_(std::move(on_account_selected_callback)),
-      client_data_(client_data) {
+      on_account_selected_callback_(std::move(on_account_selected_callback)) {
   image_fetcher_ = std::make_unique<image_fetcher::ImageFetcherImpl>(
       std::make_unique<ImageDecoderImpl>(), url_loader_factory);
   SetButtons(ui::DIALOG_BUTTON_NONE);
@@ -244,6 +315,35 @@ AccountSelectionBubbleView::AccountSelectionBubbleView(
 
 AccountSelectionBubbleView::~AccountSelectionBubbleView() = default;
 
+gfx::Rect AccountSelectionBubbleView::GetBubbleBounds() {
+  // The bubble initially looks like this relative to the contents_web_view:
+  //                        |--------|
+  //                        |        |
+  //                        | bubble |
+  //                        |        |
+  //       |-------------------------|
+  //       |                         |
+  //       | contents_web_view       |
+  //       |          ...            |
+  //       |-------------------------|
+  // Thus, we need to move the bubble to the left by kRightMargin and down by
+  // the size of the bubble plus kTopMargin in order to achieve what we want:
+  //       |-------------------------|
+  //       |               kTopMargin|
+  //       |         |--------|      |
+  //       |         |        |kRight|
+  //       |         | bubble |Margin|
+  //       |         |--------|      |
+  //       |                         |
+  //       | contents_web_view       |
+  //       |          ...            |
+  //       |-------------------------|
+  return views::BubbleDialogDelegateView::GetBubbleBounds() +
+         gfx::Vector2d(-kRightMargin,
+                       GetWidget()->client_view()->GetPreferredSize().height() +
+                           kTopMargin);
+}
+
 std::unique_ptr<views::View> AccountSelectionBubbleView::CreateHeaderView(
     const std::u16string& title,
     bool has_icon) {
@@ -262,8 +362,20 @@ std::unique_ptr<views::View> AccountSelectionBubbleView::CreateHeaderView(
         gfx::Size(kDesiredIdpIconSize, kDesiredIdpIconSize));
     image_view->SetProperty(views::kMarginsKey,
                             gfx::Insets().set_right(kLeftRightPadding));
-    bubble_icon_view_ = header->AddChildView(image_view.release());
+    header_icon_view_ = header->AddChildView(image_view.release());
   }
+
+  back_button_ =
+      header->AddChildView(views::CreateVectorImageButtonWithNativeTheme(
+          base::BindRepeating(&AccountSelectionBubbleView::HandleBackPressed,
+                              base::Unretained(this)),
+          vector_icons::kArrowBackIcon));
+  views::InstallCircleHighlightPathGenerator(back_button_.get());
+  back_button_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
+  back_button_->SetProperty(views::kMarginsKey,
+                            gfx::Insets().set_right(kLeftRightPadding));
+
+  back_button_->SetVisible(false);
 
   // Add the title.
   title_label_ = header->AddChildView(std::make_unique<views::Label>(
@@ -318,17 +430,14 @@ AccountSelectionBubbleView::CreateSingleAccountChooser(
   // Prefer using the given name if it is provided, otherwise fallback to name.
   std::string display_name =
       account.given_name.empty() ? account.name : account.given_name;
-  auto button = std::make_unique<views::MdTextButton>(
-      base::BindRepeating(&AccountSelectionBubbleView::OnAccountSelected,
+  auto button = std::make_unique<ContinueButton>(
+      base::BindRepeating(&AccountSelectionBubbleView::OnClickedContinue,
                           weak_ptr_factory_.GetWeakPtr(), account),
       l10n_util::GetStringFUTF16(IDS_ACCOUNT_SELECTION_CONTINUE,
-                                 base::UTF8ToUTF16(display_name)));
+                                 base::UTF8ToUTF16(display_name)),
+      this, brand_background_color_, brand_text_color_);
   button->SetCornerRadius(kButtonRadius);
   button->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
-  if (brand_background_color_)
-    button->SetBgColorOverride(*brand_background_color_);
-  if (brand_text_color_)
-    button->SetEnabledTextColors(brand_text_color_);
   button->SetProminent(true);
   continue_button_ = row->AddChildView(std::move(button));
 
@@ -513,7 +622,7 @@ void AccountSelectionBubbleView::OnAccountImageFetched(
 void AccountSelectionBubbleView::OnBrandImageFetched(
     const gfx::Image& image,
     const image_fetcher::RequestMetadata& metadata) {
-  if (bubble_icon_view_ != nullptr && image.Width() == image.Height() &&
+  if (header_icon_view_ != nullptr && image.Width() == image.Height() &&
       image.Width() >= AccountSelectionView::GetBrandIconMinimumSize()) {
     gfx::ImageSkia resized_image =
         gfx::CanvasImageSource::MakeImageSkia<CircleCroppedImageSkiaSource>(
@@ -521,7 +630,7 @@ void AccountSelectionBubbleView::OnBrandImageFetched(
             image.Width() *
                 FedCmAccountSelectionView::kMaskableWebIconSafeZoneRatio,
             kDesiredIdpIconSize);
-    bubble_icon_view_->SetImage(resized_image);
+    header_icon_view_->SetImage(resized_image);
   }
 }
 
@@ -534,10 +643,11 @@ void AccountSelectionBubbleView::OnLinkClicked(const GURL& gurl) {
 void AccountSelectionBubbleView::OnSingleAccountPicked(
     const content::IdentityRequestAccount& account) {
   if (account.login_state == Account::LoginState::kSignIn) {
-    OnAccountSelected(account);
+    OnClickedContinue(account);
     return;
   }
   RemoveNonHeaderChildViews();
+  SetBackButtonVisible(true);
   AddChildView(std::make_unique<views::Separator>());
   std::vector<content::IdentityRequestAccount> accounts = {account};
   AddChildView(CreateAccountChooser(accounts));
@@ -551,7 +661,16 @@ void AccountSelectionBubbleView::OnSingleAccountPicked(
   SendAccessibilityEvent(GetWidget(), std::u16string());
 }
 
-void AccountSelectionBubbleView::OnAccountSelected(
+void AccountSelectionBubbleView::HandleBackPressed() {
+  RemoveNonHeaderChildViews();
+  SetBackButtonVisible(false);
+  AddChildView(std::make_unique<views::Separator>());
+  AddChildView(CreateAccountChooser(account_list_));
+  SizeToContents();
+  PreferredSizeChanged();
+}
+
+void AccountSelectionBubbleView::OnClickedContinue(
     const content::IdentityRequestAccount& account) {
   ShowVerifySheet(account);
   std::move(on_account_selected_callback_).Run(account);
@@ -561,6 +680,7 @@ void AccountSelectionBubbleView::ShowVerifySheet(
     const content::IdentityRequestAccount& account) {
   verify_sheet_shown_ = true;
   RemoveNonHeaderChildViews();
+  SetBackButtonVisible(false);
   std::u16string title = l10n_util::GetStringUTF16(IDS_VERIFY_SHEET_TITLE);
   title_label_->SetText(title);
   views::ProgressBar* progress_bar =
@@ -578,6 +698,12 @@ void AccountSelectionBubbleView::ShowVerifySheet(
   PreferredSizeChanged();
 
   SendAccessibilityEvent(GetWidget(), title);
+}
+
+void AccountSelectionBubbleView::SetBackButtonVisible(bool is_visible) {
+  back_button_->SetVisible(is_visible);
+  if (header_icon_view_)
+    header_icon_view_->SetVisible(!is_visible);
 }
 
 void AccountSelectionBubbleView::RemoveNonHeaderChildViews() {

@@ -48,6 +48,7 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"descriptionRequired", IDS_FEEDBACK_TOOL_DESCRIPTION_REQUIRED},
       {"feedbackHelpLinkLabel", IDS_FEEDBACK_TOOL_FEEDBACK_HELP_LINK_LABEL},
       {"pageTitle", IDS_FEEDBACK_TOOL_PAGE_TITLE},
+      {"privacyNote", IDS_FEEDBACK_TOOL_PRIVACY_NOTE},
       {"sendButtonLabel", IDS_FEEDBACK_TOOL_SEND_BUTTON_LABEL},
       // The help content strings are needed for browser tests.
       {"suggestedHelpContent", IDS_FEEDBACK_TOOL_SUGGESTED_HELP_CONTENT},
@@ -55,14 +56,19 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"noMatchedResults", IDS_FEEDBACK_TOOL_NO_MATCHED_RESULTS},
       {"attachFilesLabel", IDS_FEEDBACK_TOOL_ATTACH_FILES_LABEL},
       {"attachScreenshotLabel", IDS_FEEDBACK_TOOL_SCREENSHOT_LABEL},
+      {"addFileLabel", IDS_FEEDBACK_TOOL_ADD_FILE_LABEL},
       {"replaceFileLabel", IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL},
       {"userEmailLabel", IDS_FEEDBACK_TOOL_USER_EMAIL_LABEL},
       {"shareDiagnosticDataLabel",
        IDS_FEEDBACK_TOOL_SHARE_DIAGNOSTIC_DATA_LABEL},
       {"confirmationTitleOnline", IDS_FEEDBACK_TOOL_PAGE_TITLE_AFTER_SENT},
+      {"exploreAppDescription",
+       IDS_FEEDBACK_TOOL_RESOURCES_EXPLORE_APP_DESCRIPTION},
       {"diagnosticsAppLabel",
        IDS_FEEDBACK_TOOL_RESOURCES_DIAGNOSTICS_APP_LABEL},
       {"userConsentLabel", IDS_FEEDBACK_TOOL_USER_CONSENT_LABEL},
+      {"includeSystemInfoAndMetricsCheckboxLabel",
+       IDS_FEEDBACK_TOOL_INCLUDE_SYSTEM_INFO_AND_METRICS_CHECKBOX_LABEL},
   };
 
   source->AddLocalizedStrings(kLocalizedStrings);

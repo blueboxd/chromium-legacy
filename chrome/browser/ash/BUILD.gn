@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromebox_for_meetings/buildflags.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/ozone.gni")
 import("//chromeos/ash/components/hibernate/buildflags.gni")
-import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 assert(enable_extensions, "Ash Chrome has to be built with extensions")
@@ -953,6 +953,8 @@ source_set("ash") {
     "file_manager/delete_io_task.h",
     "file_manager/documents_provider_root_manager.cc",
     "file_manager/documents_provider_root_manager.h",
+    "file_manager/empty_trash_io_task.cc",
+    "file_manager/empty_trash_io_task.h",
     "file_manager/extract_io_task.cc",
     "file_manager/extract_io_task.h",
     "file_manager/file_browser_handlers.cc",
@@ -1300,8 +1302,8 @@ source_set("ash") {
     "lock_screen_apps/first_app_run_toast_manager.cc",
     "lock_screen_apps/first_app_run_toast_manager.h",
     "lock_screen_apps/focus_cycler_delegate.h",
-    "lock_screen_apps/lock_screen_helper.cc",
-    "lock_screen_apps/lock_screen_helper.h",
+    "lock_screen_apps/lock_screen_apps.cc",
+    "lock_screen_apps/lock_screen_apps.h",
     "lock_screen_apps/lock_screen_profile_creator.cc",
     "lock_screen_apps/lock_screen_profile_creator.h",
     "lock_screen_apps/lock_screen_profile_creator_impl.cc",
@@ -2003,6 +2005,7 @@ source_set("ash") {
     "//chromeos/ash/components/dbus/seneschal",
     "//chromeos/ash/components/dbus/seneschal:seneschal_proto",
     "//chromeos/ash/components/dbus/services",
+    "//chromeos/ash/components/dbus/session_manager",
     "//chromeos/ash/components/dbus/system_clock",
     "//chromeos/ash/components/dbus/system_proxy:system_proxy_proto",
     "//chromeos/ash/components/memory",
@@ -2030,7 +2033,6 @@ source_set("ash") {
     "//chromeos/dbus/power",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/dbus/resourced",
-    "//chromeos/dbus/session_manager",
     "//chromeos/dbus/tpm_manager",
     "//chromeos/dbus/tpm_manager:tpm_manager_proto",
     "//chromeos/dbus/update_engine",
@@ -2203,6 +2205,7 @@ source_set("ash") {
     "//ash/webui/shimless_rma",
     "//base:i18n",
     "//build:branding_buildflags",
+    "//build/config/chromebox_for_meetings:buildflags",
     "//cc/base",
     "//chrome/app:chromium_strings",
     "//chrome/app:command_ids",
@@ -2258,7 +2261,6 @@ source_set("ash") {
     "//chromeos/ash/components/oobe_quick_start",
     "//chromeos/ash/services/assistant/public/cpp",
     "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
-    "//chromeos/components/chromebox_for_meetings/buildflags",
     "//chromeos/components/disks:prefs",
     "//chromeos/components/local_search_service/public/cpp",
     "//chromeos/components/mojo_bootstrap",
@@ -2440,8 +2442,8 @@ source_set("ash") {
 
   if (is_cfm) {
     deps += [
+      "//chromeos/ash/components/chromebox_for_meetings",
       "//chromeos/ash/components/dbus/chromebox_for_meetings",
-      "//chromeos/components/chromebox_for_meetings/features",
     ]
   }
 

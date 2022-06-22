@@ -5,13 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_EXTENSIONS_CHROMEOS_SYSTEM_EXTENSIONS_WINDOW_MANAGEMENT_CROS_WINDOW_H_
 #define THIRD_PARTY_BLINK_RENDERER_EXTENSIONS_CHROMEOS_SYSTEM_EXTENSIONS_WINDOW_MANAGEMENT_CROS_WINDOW_H_
 
+#include <cstdint>
 #include "third_party/blink/public/mojom/chromeos/system_extensions/window_management/cros_window_management.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
-class DOMPoint;
-class DOMRect;
 class CrosWindowManagement;
 class ScriptPromise;
 
@@ -31,15 +30,17 @@ class CrosWindow : public ScriptWrappable {
   String windowState();
   bool isFocused();
   String visibilityState();
-  DOMPoint* origin();
-  DOMRect* bounds();
+  int32_t screenLeft();
+  int32_t screenTop();
+  int32_t width();
+  int32_t height();
 
-  ScriptPromise setOrigin(ScriptState* script_state, double x, double y);
+  ScriptPromise setOrigin(ScriptState* script_state, int32_t x, int32_t y);
   ScriptPromise setBounds(ScriptState* script_state,
-                          double x,
-                          double y,
-                          double width,
-                          double height);
+                          int32_t x,
+                          int32_t y,
+                          int32_t width,
+                          int32_t height);
   ScriptPromise setFullscreen(ScriptState* script_state, bool fullscreen);
   ScriptPromise maximize(ScriptState* script_state);
   ScriptPromise minimize(ScriptState* script_state);

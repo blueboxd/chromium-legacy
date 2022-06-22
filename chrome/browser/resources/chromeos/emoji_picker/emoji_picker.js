@@ -162,7 +162,9 @@ export class EmojiPicker extends PolymerElement {
       /** @private {boolean} */
       v2Enabled: {type: Boolean, value: false, reflectToAttribute: true},
       /** @private {boolean} */
-      searchExtensionEnabled: {type: Boolean, value: false}
+      searchExtensionEnabled: {type: Boolean, value: false},
+      /** @private {boolean} */
+      emojiGroupsFullyLoaded: {type: Boolean, value: false},
     };
   }
 
@@ -212,7 +214,7 @@ export class EmojiPicker extends PolymerElement {
     this.addEventListener(
         EMOJI_BUTTON_CLICK, (ev) => this.onEmojiButtonClick(ev));
     this.addEventListener(
-        EMOJI_CLEAR_RECENTS_CLICK, ev => this.clearRecentEmoji());
+        EMOJI_CLEAR_RECENTS_CLICK, ev => this.clearRecentEmoji(ev));
     // variant popup related handlers
     this.addEventListener(
         EMOJI_VARIANTS_SHOWN,
@@ -247,9 +249,7 @@ export class EmojiPicker extends PolymerElement {
       this.set(
           ['preferenceMapping'], this.recentEmojiStore.getPreferenceMapping());
     }
-    this.set(
-        ['emojiGroupTabs', 0, 'disabled'],
-        this.emojiHistory.emoji.length === 0);
+    this.updateHistoryTabDisabledProperty();
     // Make highlight bar visible (now we know where it should be) and
     // add smooth sliding.
     this.updateActiveGroup(/*updateTabsScroll=*/ true);
@@ -377,7 +377,7 @@ export class EmojiPicker extends PolymerElement {
           break;
 
         default:
-          throw new Error('Unknown category');
+          throw new Error(`Unknown category "${category}."`);
       }
     }
     const searchLength =
@@ -391,12 +391,29 @@ export class EmojiPicker extends PolymerElement {
     this.apiProxy_.insertEmoji(text, isVariant, searchLength);
   }
 
-  clearRecentEmoji() {
-    this.set(['emojiHistory', 'emoji'], makeRecentlyUsed([]));
-    this.set(['emojiGroupTabs', 0, 'disabled'], true);
-    this.recentEmojiStore.clearRecents();
+  clearRecentEmoji(event) {
+    switch (event.detail.category) {
+      case CategoryEnum.EMOJI:
+        this.set(['emojiHistory', 'emoji'], makeRecentlyUsed([]));
+        this.recentEmojiStore.clearRecents();
+        break;
+
+      case CategoryEnum.EMOTICON:
+        this.set(['emoticonHistory', 'emoji'], makeRecentlyUsed([]));
+        this.recentEmoticonStore.clearRecents();
+        break;
+
+      default:
+        throw new Error(
+          'Clear history logic is not implemented ' +
+          `for category "${this.category}."`);
+    }
+
     afterNextRender(
-        this, () => this.updateActiveGroup(/*updateTabsScroll=*/ true));
+        this, () => {
+          this.updateActiveGroup(/*updateTabsScroll=*/ true);
+          this.updateHistoryTabDisabledProperty();
+        });
   }
 
   /**
@@ -673,12 +690,77 @@ export class EmojiPicker extends PolymerElement {
           .querySelector('emoji-group')
           .showClearRecents = false;
     }
+
+    if (this.emoticonHistory.emoji.length > 0) {
+      const emoticonHistoryElement = this.shadowRoot.querySelector(
+        `div[data-group="emoticon-history"]`).querySelector('emoticon-group');
+      if (emoticonHistoryElement != null) {
+        emoticonHistoryElement.showClearRecents = false;
+      }
+
+    }
   }
 
   hideEmojiVariants() {
     if (this.activeVariant) {
       this.activeVariant.variantsVisible = false;
       this.activeVariant = null;
+    }
+  }
+
+  /**
+   * Returns true when there are history items ("Recently Used") and
+   * the previous groups (e.g. emoji) are already shown. This function
+   * is a helper to implement the logic in the UI components.
+   *
+   * @param {boolean} previousGroupShown A boolean denoting
+   *  whether the previous group is show.
+   * @param {number} historyLength Lengths of the history items.
+   * @returns {boolean}
+   */
+   _isHistoryReadyToPresent(previousGroupShown, historyLength) {
+    return previousGroupShown && historyLength > 0;
+  }
+
+  /**
+   * Disables the history tab when there is no usage history for the
+   * selected category and enables it otherwise.
+   */
+  updateHistoryTabDisabledProperty() {
+    this.set(
+      ['emojiGroupTabs', 0, 'disabled'],
+      this.isCategoryUsageHistoryEmpty(this.category)
+      );
+  }
+
+  /**
+   * Returns whether the usage history of a give category is empty or not.
+   * @param {string} category Input category.
+   * @returns {boolean}
+   */
+  isCategoryUsageHistoryEmpty(category) {
+    return this.getCategoryUsageHistory(this.category).emoji.length === 0;
+  }
+
+  /**
+   * Returns the usage history instance for a given category.
+   * @param {string} category Input category.
+   * @returns {EmojiGroup} The history instance for the given category.
+   */
+  getCategoryUsageHistory(category) {
+    // TODO(b/231500029): Simplify the logic after unifying `history` structs.
+    // Histories for different categories (e.g. emoticon and emoji) can be
+    // maintained as a dictionary of Object<CategoryEnum,EmojiGroup> to allow
+    // generalization to more categories without much code duplication. In that
+    // case, the following logic can be  simplified as a dictionary lookup.
+
+    switch (category) {
+      case CategoryEnum.EMOJI:
+        return this.emojiHistory;
+      case CategoryEnum.EMOTICON:
+        return this.emoticonHistory;
+      default:
+        throw new Error(`Unknown category "${category}."`);
     }
   }
 
@@ -750,6 +832,9 @@ export class EmojiPicker extends PolymerElement {
   onEmojiDataLoadedRemaining(data) {
     this.push('emojiData', ...data);
     this.dispatchEvent(createCustomEvent(EMOJI_REMAINING_DATA_LOADED));
+    afterNextRender(this, () => {
+      this.emojiGroupsFullyLoaded = true;
+    });
   }
 
   /**
@@ -780,6 +865,7 @@ export class EmojiPicker extends PolymerElement {
     this.set('emojiGroupTabs', categoryTabs);
     afterNextRender(this, () => {
       this.updateActiveGroup(true);
+      this.updateHistoryTabDisabledProperty();
       this.$.tabs.scrollLeft =
           this.calculateTabScrollLeftPosition(this.pagination);
     });

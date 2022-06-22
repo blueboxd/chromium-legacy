@@ -2340,6 +2340,36 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_TITLE" desc="Title for the keyboard backlight section of personalization hub.">
         Keyboard backlight
       </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_WALLPAPER_COLOR_LABEL" desc="Label for the wallpaper extracted color in the keyboard backlight section of personalization hub.">
+        Wallpaper color
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_WHITE_COLOR_LABEL" desc="Label for the white color in the keyboard backlight section of personalization hub.">
+        White
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_RED_COLOR_LABEL" desc="Label for the red color in the keyboard backlight section of personalization hub.">
+        Red
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_YELLOW_COLOR_LABEL" desc="Label for the yellow color in the keyboard backlight section of personalization hub.">
+        Yellow
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_GREEN_COLOR_LABEL" desc="Label for the green color in the keyboard backlight section of personalization hub.">
+        Green
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_BLUE_COLOR_LABEL" desc="Label for the blue color in the keyboard backlight section of personalization hub.">
+        Blue
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_INDIGO_COLOR_LABEL" desc="Label for the indigo color in the keyboard backlight section of personalization hub.">
+        Indigo
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_PURPLE_COLOR_LABEL" desc="Label for the purple color in the keyboard backlight section of personalization hub.">
+        Purple
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_RAINBOW_COLOR_LABEL" desc="Label for the rainbow color in the keyboard backlight section of personalization hub.">
+        Rainbow
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_CURRENT_AVATAR" desc="Aria label for the currently set avatar image.">
+        Current Avatar
+      </message>
 
       <!-- Personalization App Search Results -->
       <message name="IDS_PERSONALIZATION_APP_SEARCH_RESULT_TITLE" desc="Text for search result item which, when clicked, navigates the user to personalization app.">
@@ -2860,74 +2890,68 @@ Try tapping the mic to ask me anything.
         Retry finalization
       </message>
       <!-- Device provisioning page -->
-      <message name="IDS_SHIMLESS_RMA_PROVISIONING_TITLE" translateable="false" desc="Title for the device provisioning page. Provisioning is when component specific data is set e.g. erasing fingerprint data from the thumb reader or regenerating the device stable secret before returning the device to a new owner.">
+      <message name="IDS_SHIMLESS_RMA_PROVISIONING_TITLE" desc="Title for the device provisioning page. Provisioning is when component specific data is set e.g. erasing fingerprint data from the thumb reader or regenerating the device stable secret before returning the device to a new owner.">
         Provisioning the device...
-      </message>
-      <message name="IDS_SHIMLESS_RMA_PROVISIONING_IN_PROGRESS" translateable="false" desc="Message to display while the device is provisioning.">
-        Provisioning the device. Do not turn off the power.
-      </message>
-      <message name="IDS_SHIMLESS_RMA_PROVISIONING_COMPLETE" translateable="false" desc="Message to display when provisioning is complete.">
-        Complete.
-      </message>
-      <message name="IDS_SHIMLESS_RMA_PROVISIONING_FAILED_BLOCKING" translateable="false" desc="Message to display when provisioning failed and RMA cannot complete.">
-        Failed, blocking.
-      </message>
-      <message name="IDS_SHIMLESS_RMA_PROVISIONING_FAILED_NON_BLOCKING" translateable="false" desc="Message to display when provisioning failed, but RMA can continue.">
-        Failed, non blocking.
-      </message>
-      <message name="IDS_SHIMLESS_RMA_PROVISIONING_FAILED_RETRY_BUTTON_LABEL" translateable="false" desc="The label for the button to retry provisioning.">
-        Retry provisioning
       </message>
       <!-- Repair complete page -->
       <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED" desc="Title for the page shown when the RMA process repair process is completed.">
-        Repair completed
+        Repair is complete
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_DESCRIPTION" translateable="false" desc="Notice for the user that repair is complete and they can shutdown when ready or run diagnostics/view logs.">
-        Your repair was successful. You can exit or take some additional actions.
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_DESCRIPTION" desc="Notice for the user that repair is complete and they can shutdown when ready or run diagnostics/view logs.">
+        Your repair was successful. You can shut down the device or take some additional actions.
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_DIAGNOSTICS_BUTTON" translateable="false" desc="Label of the button that launches the post-boot diagnostics SWA.">
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_DIAGNOSTICS_BUTTON" desc="Label of the button that launches the post-boot diagnostics SWA.">
         Run Diagnostics
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_DIAGNOSTICS_DESCRIPTION" translateable="false" desc="Description of what the diagnostics SWA is for">
-        Confirm everything's in the right place and make a diagnostic report.
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_DIAGNOSTICS_DESCRIPTION" desc="Description of what the diagnostics SWA is for">
+        Confirm everything's in the right place and view the diagnostic report
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_LOGS_BUTTON" translateable="false" desc="Label for the button that opens the view/save logs dialog">
-        See RMA Logs
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_LOGS_BUTTON" desc="Label for the button that opens the view/save logs dialog">
+        See RMA logs
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_LOGS_DESCRIPTION" translateable="false" desc="Description of what the logs dialog is used for.">
-        Review what's been fixed and results of diagnostic tests, and save the logs to a USB storage device.
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_LOGS_DESCRIPTION" desc="Description of what the logs dialog is used for.">
+        See what's been fixed
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_BUTTON" translateable="false" desc="Label of the button that triggers a shutdown with battery cutoff.">
-        Battery Cutoff
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_BUTTON" desc="Label of the button that triggers a shutdown with battery cutoff.">
+        Battery cutoff
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_DESCRIPTION" translateable="false" desc="Explanation of why user would choose battery cutoff.">
-        Perform battery cutoff for devices being shipped or stored.
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_DESCRIPTION" desc="Explanation of why user would choose battery cutoff.">
+        Perform battery cutoff for devices being shipped or stored
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_INSTRUCTIONS" translateable="false" desc="Instructions for battery cutoff. These instructions will display when a power cable is attached and the button is disabled.">
-        Remove power cable to enable this option.
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_INSTRUCTIONS" desc="Instructions for battery cutoff. These instructions will display when a power cable is attached and the button is disabled.">
+        Unplug the device to perform battery cutoff
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_SHUT_DOWN_BUTTON_LABEL" translateable="false" desc="Label for the shutdown button.">
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_SHUT_DOWN_BUTTON_LABEL" desc="Label for the shutdown button.">
         Shut down
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_REBOOT_BUTTON_LABEL" translateable="false" desc="Label for the reboot button.">
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_REBOOT_BUTTON_LABEL" desc="Label for the reboot button.">
         Reboot
       </message>
-      <message name="IDS_SHIMLESS_RMA_LOGS_TITLE" translateable="false" desc="Title for the logs dialog displayed on repair complete page">
+      <message name="IDS_SHIMLESS_RMA_LOGS_TITLE" desc="Title for the logs dialog displayed on repair complete page">
         RMA Logs
       </message>
-      <message name="IDS_SHIMLESS_RMA_LOGS_CANCEL_BUTTON" translateable="false" desc="Label for the logs dialog cancel button">
+      <message name="IDS_SHIMLESS_RMA_LOGS_CANCEL_BUTTON" desc="Label for the logs dialog cancel button">
         Cancel
       </message>
-      <message name="IDS_SHIMLESS_RMA_LOGS_SAVE_BUTTON" translateable="false" desc="Label for the logs dialog save to USB button. This triggers saving to the root of a USB drive with no option to select location or title of the logs. It is automatic as the file browser is not available to the shimless RMA app.">
+      <message name="IDS_SHIMLESS_RMA_LOGS_SAVE_BUTTON" desc="Label for the logs dialog save to USB button. This triggers saving to the root of a USB drive with no option to select location or title of the logs. It is automatic as the file browser is not available to the shimless RMA app.">
         Save to USB
       </message>
-      <message name="IDS_SHIMLESS_BATTERY_SHUTOFF_TOOLTIP_TEXT" translateable="false" desc="Label for the battery shutoff tooltip.">
-        Unplug power to perform battery cutoff
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_TITLE" desc="Title for the powerwash dialog displayed on repair complete page">
+        Powerwash (factory reset) required
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_CUTOFF_COUNTDOWN_DESCRIPTION" translateable="false" desc="Contents of the countdown dialog displayed on repair complete page when trying to cut off the battery">
-        Device is shutting down in 5 seconds...
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_SHUTDOWN_DESCRIPTION" desc="Contents of the powerwash dialog displayed on repair complete page when trying to shut down">
+        Before shutting down, powerwash your device. If your device has a lid, wait until powerwash completes before closing the lid. Powerwash may take up to a minute to complete.
       </message>
-      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_SHUTDOWN_BUTTON" translateable="false" desc="Label for the button in the battery cutoff countdown dialog that shuts down the device and cuts off the battery immediately">
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_REBOOT_DESCRIPTION" desc="Contents of the powerwash dialog displayed on repair complete page when trying to reboot">
+        Before restarting, powerwash your device. If your device has a lid, wait until powerwash completes before closing the lid. Powerwash may take up to a minute to complete.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_POWERWASH_BUTTON" desc="Label for the button that starts a powerwash">
+        Powerwash
+      </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_CUTOFF_COUNTDOWN_DESCRIPTION" desc="Contents of the countdown dialog displayed on repair complete page when trying to cut off the battery">
+        Device will shut down in 5 seconds
+      </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_SHUTDOWN_BUTTON" desc="Label for the button in the battery cutoff countdown dialog that shuts down the device and cuts off the battery immediately">
         Shut down
       </message>
       <!-- Powerwash dialog -->
@@ -2999,64 +3023,61 @@ Try tapping the mic to ask me anything.
         Continue
       </message>
       <!-- Manually enable wp page -->
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_TITLE" translateable="false" desc="The title for the page to manually enable write-protect on the device, afer device provisioning completes.">
-        Manually enable write-protect
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_TITLE" desc="The title for the page to manually enable write-protect on the device, afer device provisioning completes.">
+        Turn on Write Protect
       </message>
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_INSTRUCTIONS" translateable="false" desc="The text instructions to manually enable write-protect on the device.">
-        Enable write-protect to continue to the next screen. Learn how to enable write-protect for this device by viewing the manufacturer's instructions.
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_INSTRUCTIONS" desc="The text instructions to manually enable write-protect on the device.">
+        Enable write-protect to continue to the next screen. Go to the device manufacturer's support page for instructions. 
       </message>
       <!-- Confirm device information page -->
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_TITLE" translateable="false" desc="The title for the page for confirming the device info.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_TITLE" desc="The title for the page for confirming the device info.">
         Please confirm device information
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_INSTRUCTIONS" translateable="false" desc="The instructions for the page for confirming the device info.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_INSTRUCTIONS" desc="The instructions for the page for confirming the device info.">
         Change device information as needed.
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SERIAL_NUMBER_LABEL" translateable="false" desc="The label for the text input showing the device's serial number.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SERIAL_NUMBER_LABEL" desc="The label for the text input showing the device's serial number.">
         Serial number
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_REGION_LABEL" translateable="false" desc="The label for the text input showing the device's current region.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_REGION_LABEL" desc="The label for the text input showing the device's current region.">
         Region
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_WHITE_LABEL_LABEL" translateable="false" desc="The label for the text input showing the device's white-label.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_WHITE_LABEL_LABEL" desc="The label for the text input showing the device's white-label.">
         White-label
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_EMPTY_WHITE_LABEL_LABEL" translateable="false" desc="The label for the selection option that clears the device's white-label.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_EMPTY_WHITE_LABEL_LABEL" desc="The label for the selection option that clears the device's white-label.">
         --no white-label--
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SKU_LABEL" translateable="false" desc="The label for the text input showing the device's SKU.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SKU_LABEL" desc="The label for the text input showing the device's SKU.">
         SKU
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_RESET_BUTTON_LABEL" translateable="false" desc="The label for the button that resets the text input.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_RESET_BUTTON_LABEL" desc="The label for the button that resets the text input.">
         Reset
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SKU_WARNING" translateable="false" desc="The text warning explaining when the device's SKU should be changed.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SKU_WARNING" desc="The text warning explaining when the device's SKU should be changed.">
         The SKU should only be changed if the new component(s) are different from the ones they replaced. For example, a touchscreen replacing a non-touchscreen, or memory being upgraded from 8GB to 16GB.
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DRAM_PART_NUMBER_LABEL" translateable="false" desc="The label for the text input showing the device's dram part number.">
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DRAM_PART_NUMBER_LABEL" desc="The label for the text input showing the device's dram part number.">
         DRAM part number
       </message>
-      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DRAM_PART_NUMBER_PLACEHOLDER_LABEL" translateable="false" desc="The placeholder label for the text input box for the device's dram part number.">
-        Enter DRAM part number
-      </message>
       <!-- RO firmware reimaging page -->
-      <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_TITLE" translateable="false" desc="The title for the page when reimaging is in progress.">
-      Install firmware image
+      <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_TITLE" desc="The title for the page when reimaging is in progress.">
+        Install firmware image
       </message>
-      <message name="IDS_SHIMLESS_RMA_FIRMWARE_WAIT_FOR_USB" translateable="false" desc="The prompt to insert a thumb drive with the recovery image for this device.">
-        Insert your thumb drive with the downloaded recovery image.
+      <message name="IDS_SHIMLESS_RMA_FIRMWARE_WAIT_FOR_USB" desc="The prompt to insert a thumb drive with the recovery image for this device.">
+        Insert external storage, such as a USB drive or an SD card, with the downloaded Chromebook Recovery Utility image
       </message>
-      <message name="IDS_SHIMLESS_RMA_FIRMWARE_FILE_NOT_FOUND" translateable="false" desc="The message when a thumb drive is detected but it does not conatin a valid recovery image for this device.">
-        No image found. Insert a valid USB thumb drive
+      <message name="IDS_SHIMLESS_RMA_FIRMWARE_FILE_NOT_FOUND" desc="The message when a thumb drive is detected but it does not conatin a valid recovery image for this device.">
+        Couldn’t find firmware image. Insert external storage, such as a USB drive or an SD card, with the downloaded Chromebook Recovery Utility image.
       </message>
-      <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATING" translateable="false" desc="The message when the firmware is being installed.">
-      Installing firmware...
+      <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATING" desc="The message when the firmware is being installed.">
+        Installing firmware...
       </message>
-      <message name="IDS_SHIMLESS_RMA_FIRMWARE_REBOOT" translateable="false" desc="The message when firmware is installed and the required reboot is about to take place.">
-      About to reboot...
+      <message name="IDS_SHIMLESS_RMA_FIRMWARE_REBOOT" desc="The message when firmware is installed and the required reboot is about to take place.">
+        Install is complete. Preparing to restart...
       </message>
-      <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_COMPLETE" translateable="false" desc="The message when firmware installation is complete and the device has rebooted.">
-      Installation complete.
+      <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_COMPLETE" desc="The message when firmware installation is complete and the device has rebooted.">
+        Installation complete.
       </message>
       <!-- Onboarding update page -->
       <message name="IDS_SHIMLESS_RMA_ONBOARDING_UPDATE_CONNECT" translateable="false" desc="The message that you can connect to the internet on the prevous page.">

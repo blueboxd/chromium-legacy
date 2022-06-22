@@ -32,6 +32,7 @@
 <translation id="2134029355740465625">ვიდეოს პარამეტრები</translation>
 <translation id="2144806332417375165">მორგებული ვიდეოპარამეტრები</translation>
 <translation id="2175927920773552910">QR კოდი</translation>
+<translation id="2244252133441425811">ვიდეოს კ/წმ ამომრჩევის ჩართვა</translation>
 <translation id="2271433936731426666">სრულზომიანი ვიდეოსნეპშოტის გადაღების დაშვება</translation>
 <translation id="229579744168541441">დისკზე ექსპორტირება</translation>
 <translation id="2320741269052147773">მარცხნივ პანირება</translation>
@@ -81,6 +82,7 @@
 <translation id="4445542136948522167">ფოტოს გადაღების შეწყვეტა</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> მეგაპიქსელი</translation>
 <translation id="4570032796877367747">წინა კამერა</translation>
+<translation id="4620818268515773682">მიკროფონის დადუმების გადართვა. დადუმების რეჟიმი გამორთულია</translation>
 <translation id="4628948037717959914">ფოტო</translation>
 <translation id="4649291346448517080">ფაილის შენახვა ვერ მოხერხდა</translation>
 <translation id="4695379108709712600">გადატანა ხდება ზედა მიმართულებით</translation>
@@ -118,6 +120,7 @@
 თუ თქვენი გამოხმაურება გამოსახულების ან ვიდეოს ხარისხს ეხება, მაგალითის სახით დაურთეთ ფოტო ან ვიდეო და აღწერეთ პრობლემა (მაგალითად, ფოტო ზედმეტად მუქია ან ობიექტი არ არის მოქცეული ფოკუსში).</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> — <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> მეგაპიქსელი</translation>
 <translation id="6527303717912515753">გაზიარება</translation>
+<translation id="6617916774429601017">ყველა გარჩევადობის ჩვენება</translation>
 <translation id="6631515515009660915">არეკვლის გამორთვა</translation>
 <translation id="6652737148136672975">გადაიტანეთ კუთხის პოზიცია ისრებიანი კლავიშების მეშვეობით</translation>
 <translation id="667999046851023355">დოკუმენტი</translation>
@@ -156,6 +159,7 @@
 <translation id="8425673304802773841">ქვემოთკენ დახრა</translation>
 <translation id="8428213095426709021">პარამეტრები</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8711011893539266636">მიკროფონის დადუმების გადართვა. დადუმების რეჟიმი ჩართულია</translation>
 <translation id="8712637175834984815">კარგი</translation>
 <translation id="8730621377337864115">მზადაა</translation>
 <translation id="8732462232047530626">მეტამონაცემების გადახედვა</translation>

@@ -480,22 +480,21 @@ void WebGPUImplementation::FlushCommands() {
 #endif
 }
 
-void WebGPUImplementation::EnsureAwaitingFlush(bool* needs_flush) {
+bool WebGPUImplementation::EnsureAwaitingFlush() {
 #if BUILDFLAG(USE_DAWN)
   // If there is already a flush waiting, we don't need to flush.
   // We only want to set |needs_flush| on state transition from
   // false -> true.
   if (dawn_wire_->serializer()->AwaitingFlush()) {
-    *needs_flush = false;
-    return;
+    return false;
   }
 
   // Set the state to waiting for flush, and then write |needs_flush|.
   // Could still be false if there's no data to flush.
   dawn_wire_->serializer()->SetAwaitingFlush(true);
-  *needs_flush = dawn_wire_->serializer()->AwaitingFlush();
+  return dawn_wire_->serializer()->AwaitingFlush();
 #else
-  *needs_flush = false;
+  return false;
 #endif
 }
 
@@ -640,38 +639,8 @@ void WebGPUImplementation::RequestDeviceAsync(
 }
 
 WGPUDevice WebGPUImplementation::DeprecatedEnsureDefaultDeviceSync() {
-  if (deprecated_default_device_ != nullptr) {
-    return deprecated_default_device_;
-  }
-
-  DLOG(WARNING) << "Using deprecated WebGPU device initialization";
-
-  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  RequestAdapterAsync(
-      PowerPreference::kDefault, /* force_fallback_adapter */ false,
-      base::BindOnce(
-          [](WebGPUImplementation* self, WGPUDevice* result,
-             base::OnceCallback<void()> done, int32_t adapter_id,
-             const WGPUDeviceProperties& properties, const char* name) {
-            if (adapter_id < 0) {
-              std::move(done).Run();
-              return;
-            }
-            self->RequestDeviceAsync(
-                static_cast<uint32_t>(adapter_id), properties,
-                base::BindOnce(
-                    [](WGPUDevice* result, base::OnceCallback<void()> done,
-                       WGPUDevice device, const WGPUSupportedLimits*,
-                       const char*) {
-                      *result = device;
-                      std::move(done).Run();
-                    },
-                    result, std::move(done)));
-          },
-          this, &deprecated_default_device_, run_loop.QuitClosure()));
-  run_loop.Run();
-
-  return deprecated_default_device_;
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 void WebGPUImplementation::AssociateMailbox(GLuint device_id,

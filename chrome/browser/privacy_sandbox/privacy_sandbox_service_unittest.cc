@@ -43,6 +43,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/hats/mock_trust_safety_sentiment_service.h"
+#endif
+
 namespace {
 using browsing_topics::Topic;
 using privacy_sandbox::CanonicalTopic;
@@ -89,7 +93,7 @@ struct DialogTestState {
 
 struct ExpectedDialogOutput {
   bool dcheck_failure;
-  PrivacySandboxService::DialogType dialog_type;
+  PrivacySandboxService::PromptType prompt_type;
   bool new_api_pref;
 };
 
@@ -104,7 +108,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -112,7 +116,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -120,7 +124,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNotice,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNotice,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -128,7 +132,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kConsent,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kConsent,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -136,7 +140,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -144,7 +148,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -152,7 +156,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNotice,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNotice,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -160,7 +164,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kConsent,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kConsent,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -168,7 +172,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -176,7 +180,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -184,7 +188,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -192,7 +196,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -200,7 +204,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -208,7 +212,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kConsent,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kConsent,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -216,7 +220,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -224,7 +228,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kConsent,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kConsent,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -232,7 +236,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -240,7 +244,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -248,7 +252,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -256,7 +260,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -264,7 +268,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -272,7 +276,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -280,7 +284,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -288,7 +292,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -296,7 +300,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -304,7 +308,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -312,7 +316,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -320,7 +324,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -328,7 +332,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -336,7 +340,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -344,7 +348,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -352,7 +356,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/false},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -360,7 +364,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -368,7 +372,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -376,7 +380,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -384,7 +388,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -392,7 +396,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -400,7 +404,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -408,7 +412,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -416,7 +420,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -424,7 +428,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -432,7 +436,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -440,7 +444,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -448,7 +452,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -456,7 +460,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -464,7 +468,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -472,7 +476,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -480,7 +484,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/false,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -488,7 +492,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -496,7 +500,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -504,7 +508,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -512,7 +516,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -520,7 +524,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -528,7 +532,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -536,7 +540,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -544,7 +548,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/false, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -552,7 +556,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -560,7 +564,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -568,7 +572,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -576,7 +580,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/false}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/false,
@@ -584,7 +588,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/false,
@@ -592,7 +596,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/false, /*old_api_pref=*/true,
@@ -600,7 +604,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 
     {{/*consent_required=*/true, /*old_api_pref=*/true,
@@ -608,7 +612,7 @@ std::vector<DialogTestCase> kDialogTestCases = {
       /*notice_displayed=*/true, /*consent_decision_made=*/true,
       /*confirmation_not_shown=*/true},
      {/*dcheck_failure=*/false,
-      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*prompt_type=*/PrivacySandboxService::PromptType::kNone,
       /*new_api_pref=*/true}},
 };
 
@@ -662,12 +666,19 @@ class PrivacySandboxServiceTest : public testing::Test {
         std::make_unique<privacy_sandbox::PrivacySandboxSettings>(
             std::move(mock_delegate), host_content_settings_map(),
             cookie_settings(), prefs(), /*incognito_profile=*/false);
-
+#if !BUILDFLAG(IS_ANDROID)
+    mock_sentiment_service_ =
+        std::make_unique<::testing::NiceMock<MockTrustSafetySentimentService>>(
+            profile());
+#endif
     privacy_sandbox_service_ = std::make_unique<PrivacySandboxService>(
         privacy_sandbox_settings(), cookie_settings(), profile()->GetPrefs(),
         policy_service(), sync_service(),
         identity_test_env()->identity_manager(), test_interest_group_manager(),
         GetProfileType(), browsing_data_remover(),
+#if !BUILDFLAG(IS_ANDROID)
+        mock_sentiment_service(),
+#endif
         mock_browsing_topics_service());
   }
 
@@ -680,11 +691,11 @@ class PrivacySandboxServiceTest : public testing::Test {
     return profile_metrics::BrowserProfileType::kRegular;
   }
 
-  void ConfirmRequiredDialogType(
-      PrivacySandboxService::DialogType dialog_type) {
+  void ConfirmRequiredPromptType(
+      PrivacySandboxService::PromptType prompt_type) {
     // The required dialog type should never change between successive calls to
-    // GetRequiredDialogType.
-    EXPECT_EQ(dialog_type, privacy_sandbox_service()->GetRequiredDialogType());
+    // GetRequiredPromptType.
+    EXPECT_EQ(prompt_type, privacy_sandbox_service()->GetRequiredPromptType());
   }
 
   TestingProfile* profile() { return &profile_; }
@@ -722,6 +733,11 @@ class PrivacySandboxServiceTest : public testing::Test {
   browsing_topics::MockBrowsingTopicsService* mock_browsing_topics_service() {
     return &mock_browsing_topics_service_;
   }
+#if !BUILDFLAG(IS_ANDROID)
+  MockTrustSafetySentimentService* mock_sentiment_service() {
+    return mock_sentiment_service_.get();
+  }
+#endif
 
  private:
   content::BrowserTaskEnvironment browser_task_environment_;
@@ -734,6 +750,9 @@ class PrivacySandboxServiceTest : public testing::Test {
   TestInterestGroupManager test_interest_group_manager_;
   privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate* mock_delegate_;
   browsing_topics::MockBrowsingTopicsService mock_browsing_topics_service_;
+#if !BUILDFLAG(IS_ANDROID)
+  std::unique_ptr<MockTrustSafetySentimentService> mock_sentiment_service_;
+#endif
   std::unique_ptr<privacy_sandbox::PrivacySandboxSettings>
       privacy_sandbox_settings_;
 
@@ -855,7 +874,7 @@ TEST_F(PrivacySandboxServiceTest, GetFledgeBlockedEtldPlusOne) {
 
 TEST_F(PrivacySandboxServiceTest, DialogActionUpdatesRequiredDialog) {
   // Confirm that when the service is informed a dialog action occurred, it
-  // correctly adjusts the required dialog type and Privacy Sandbox pref.
+  // correctly adjusts the required prompt type and Privacy Sandbox pref.
 
   // Consent accepted:
   SetupDialogTestState(feature_list(), prefs(),
@@ -865,15 +884,15 @@ TEST_F(PrivacySandboxServiceTest, DialogActionUpdatesRequiredDialog) {
                         /*notice_displayed=*/false,
                         /*consent_decision_made=*/false,
                         /*confirmation_not_shown=*/false});
-  EXPECT_EQ(PrivacySandboxService::DialogType::kConsent,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kConsent,
+            privacy_sandbox_service()->GetRequiredPromptType());
   EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
 
   privacy_sandbox_service()->DialogActionOccurred(
       PrivacySandboxService::DialogAction::kConsentAccepted);
 
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
+            privacy_sandbox_service()->GetRequiredPromptType());
   EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
 
   // Consent declined:
@@ -884,15 +903,15 @@ TEST_F(PrivacySandboxServiceTest, DialogActionUpdatesRequiredDialog) {
                         /*notice_displayed=*/false,
                         /*consent_decision_made=*/false,
                         /*confirmation_not_shown=*/false});
-  EXPECT_EQ(PrivacySandboxService::DialogType::kConsent,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kConsent,
+            privacy_sandbox_service()->GetRequiredPromptType());
   EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
 
   privacy_sandbox_service()->DialogActionOccurred(
       PrivacySandboxService::DialogAction::kConsentDeclined);
 
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
+            privacy_sandbox_service()->GetRequiredPromptType());
   EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
 
   // Notice shown:
@@ -903,15 +922,15 @@ TEST_F(PrivacySandboxServiceTest, DialogActionUpdatesRequiredDialog) {
                         /*notice_displayed=*/false,
                         /*consent_decision_made=*/false,
                         /*confirmation_not_shown=*/false});
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNotice,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNotice,
+            privacy_sandbox_service()->GetRequiredPromptType());
   EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
 
   privacy_sandbox_service()->DialogActionOccurred(
       PrivacySandboxService::DialogAction::kNoticeShown);
 
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
+            privacy_sandbox_service()->GetRequiredPromptType());
   EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
 }
 
@@ -1378,6 +1397,18 @@ TEST_F(PrivacySandboxServiceTest, DialogActionsUMAActions) {
                    "Settings.PrivacySandbox.Notice.ClosedNoInteraction"));
 
   SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/false,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kNoticeLearnMore);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Notice.LearnMore"));
+
+  SetupDialogTestState(feature_list(), prefs(),
                        {/*consent_required=*/true,
                         /*old_api_pref=*/true,
                         /*new_api_pref=*/false,
@@ -1438,33 +1469,204 @@ TEST_F(PrivacySandboxServiceTest, DialogActionsUMAActions) {
                    "Settings.PrivacySandbox.Consent.ClosedNoInteraction"));
 }
 
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(PrivacySandboxServiceTest, DialogActionsSentimentService) {
+  {
+    EXPECT_CALL(*mock_sentiment_service(),
+                InteractedWithPrivacySandbox3(testing::_))
+        .Times(0);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/false,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kNoticeShown);
+  }
+  {
+    EXPECT_CALL(
+        *mock_sentiment_service(),
+        InteractedWithPrivacySandbox3(TrustSafetySentimentService::FeatureArea::
+                                          kPrivacySandbox3NoticeSettings))
+        .Times(1);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/false,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kNoticeOpenSettings);
+  }
+  {
+    EXPECT_CALL(
+        *mock_sentiment_service(),
+        InteractedWithPrivacySandbox3(
+            TrustSafetySentimentService::FeatureArea::kPrivacySandbox3NoticeOk))
+        .Times(1);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/false,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kNoticeAcknowledge);
+  }
+  {
+    EXPECT_CALL(
+        *mock_sentiment_service(),
+        InteractedWithPrivacySandbox3(TrustSafetySentimentService::FeatureArea::
+                                          kPrivacySandbox3NoticeDismiss))
+        .Times(1);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/false,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kNoticeDismiss);
+  }
+  {
+    EXPECT_CALL(*mock_sentiment_service(),
+                InteractedWithPrivacySandbox3(testing::_))
+        .Times(0);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/false,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kNoticeClosedNoInteraction);
+  }
+  {
+    EXPECT_CALL(
+        *mock_sentiment_service(),
+        InteractedWithPrivacySandbox3(TrustSafetySentimentService::FeatureArea::
+                                          kPrivacySandbox3NoticeLearnMore))
+        .Times(1);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/false,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kNoticeLearnMore);
+  }
+  {
+    EXPECT_CALL(*mock_sentiment_service(),
+                InteractedWithPrivacySandbox3(testing::_))
+        .Times(0);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/true,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kConsentShown);
+  }
+  {
+    EXPECT_CALL(
+        *mock_sentiment_service(),
+        InteractedWithPrivacySandbox3(TrustSafetySentimentService::FeatureArea::
+                                          kPrivacySandbox3ConsentAccept))
+        .Times(1);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/true,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kConsentAccepted);
+  }
+  {
+    EXPECT_CALL(
+        *mock_sentiment_service(),
+        InteractedWithPrivacySandbox3(TrustSafetySentimentService::FeatureArea::
+                                          kPrivacySandbox3ConsentDecline))
+        .Times(1);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/true,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kConsentDeclined);
+  }
+  {
+    EXPECT_CALL(*mock_sentiment_service(),
+                InteractedWithPrivacySandbox3(testing::_))
+        .Times(0);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/true,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kConsentMoreInfoOpened);
+  }
+  {
+    EXPECT_CALL(*mock_sentiment_service(),
+                InteractedWithPrivacySandbox3(testing::_))
+        .Times(0);
+    SetupDialogTestState(feature_list(), prefs(),
+                         {/*consent_required=*/true,
+                          /*old_api_pref=*/true,
+                          /*new_api_pref=*/false,
+                          /*notice_displayed=*/false,
+                          /*consent_decision_made=*/false,
+                          /*confirmation_not_shown=*/false});
+    privacy_sandbox_service()->DialogActionOccurred(
+        PrivacySandboxService::DialogAction::kConsentClosedNoDecision);
+  }
+}
+#endif
+
 TEST_F(PrivacySandboxServiceTest, Block3PCookieNoDialog) {
-  // Confirm that when 3P cookies are blocked, that no dialog is shown.
+  // Confirm that when 3P cookies are blocked, that no prompt is shown.
   prefs()->SetUserPref(
       prefs::kCookieControlsMode,
       std::make_unique<base::Value>(static_cast<int>(
           content_settings::CookieControlsMode::kBlockThirdParty)));
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
+            privacy_sandbox_service()->GetRequiredPromptType());
 
   // This should persist even if 3P cookies become allowed.
   prefs()->SetUserPref(prefs::kCookieControlsMode,
                        std::make_unique<base::Value>(static_cast<int>(
                            content_settings::CookieControlsMode::kOff)));
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
+            privacy_sandbox_service()->GetRequiredPromptType());
 }
 
 TEST_F(PrivacySandboxServiceTest, BlockAllCookiesNoDialog) {
-  // Confirm that when all cookies are blocked, that no dialog is shown.
+  // Confirm that when all cookies are blocked, that no prompt is shown.
   cookie_settings()->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
+            privacy_sandbox_service()->GetRequiredPromptType());
 
   // This should persist even if cookies become allowed.
   cookie_settings()->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
+            privacy_sandbox_service()->GetRequiredPromptType());
 }
 
 TEST_F(PrivacySandboxServiceTest, FledgeBlockDeletesData) {
@@ -2403,7 +2605,7 @@ TEST_F(PrivacySandboxServiceTestNonRegularProfile, NoMetricsRecorded) {
 }
 
 TEST_F(PrivacySandboxServiceTestNonRegularProfile, NoDialogRequired) {
-  // Non-regular profiles should never have a dialog shown.
+  // Non-regular profiles should never have a prompt shown.
   SetupDialogTestState(feature_list(), prefs(),
                        {/*consent_required=*/true,
                         /*old_api_pref=*/true,
@@ -2411,8 +2613,8 @@ TEST_F(PrivacySandboxServiceTestNonRegularProfile, NoDialogRequired) {
                         /*notice_displayed=*/false,
                         /*consent_decision_made=*/false,
                         /*confirmation_not_shown=*/false});
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
+            privacy_sandbox_service()->GetRequiredPromptType());
 
   SetupDialogTestState(feature_list(), prefs(),
                        {/*consent_required=*/false,
@@ -2421,8 +2623,8 @@ TEST_F(PrivacySandboxServiceTestNonRegularProfile, NoDialogRequired) {
                         /*notice_displayed=*/false,
                         /*consent_decision_made=*/false,
                         /*confirmation_not_shown=*/false});
-  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
-            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
+            privacy_sandbox_service()->GetRequiredPromptType());
 }
 
 class PrivacySandboxServiceDialogTestBase {
@@ -2465,25 +2667,25 @@ TEST_F(PrivacySandboxServiceDialogTest, RestrictedDialog) {
       .Times(1)
       .WillOnce(testing::Return(true));
   EXPECT_EQ(
-      PrivacySandboxService::DialogType::kNone,
-      PrivacySandboxService::GetRequiredDialogTypeInternal(
+      PrivacySandboxService::PromptType::kNone,
+      PrivacySandboxService::GetRequiredPromptTypeInternal(
           prefs(), profile_metrics::BrowserProfileType::kRegular,
           privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
 
-  // After being restricted, even if the restriction is removed, no dialog
+  // After being restricted, even if the restriction is removed, no prompt
   // should be shown. No call should even need to be made to see if the
   // sandbox is still restricted.
   EXPECT_CALL(*privacy_sandbox_settings(), IsPrivacySandboxRestricted())
       .Times(0);
   EXPECT_EQ(
-      PrivacySandboxService::DialogType::kNone,
-      PrivacySandboxService::GetRequiredDialogTypeInternal(
+      PrivacySandboxService::PromptType::kNone,
+      PrivacySandboxService::GetRequiredPromptTypeInternal(
           prefs(), profile_metrics::BrowserProfileType::kRegular,
           privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
 }
 
 TEST_F(PrivacySandboxServiceDialogTest, ManagedNoDialog) {
-  // Confirm that when the Privacy Sandbox is managed, that no dialog is
+  // Confirm that when the Privacy Sandbox is managed, that no prompt is
   // shown.
   SetupDialogTestState(feature_list(), prefs(),
                        {/*consent_required=*/true,
@@ -2496,23 +2698,23 @@ TEST_F(PrivacySandboxServiceDialogTest, ManagedNoDialog) {
   prefs()->SetManagedPref(prefs::kPrivacySandboxApisEnabledV2,
                           base::Value(true));
   EXPECT_EQ(
-      PrivacySandboxService::DialogType::kNone,
-      PrivacySandboxService::GetRequiredDialogTypeInternal(
+      PrivacySandboxService::PromptType::kNone,
+      PrivacySandboxService::GetRequiredPromptTypeInternal(
           prefs(), profile_metrics::BrowserProfileType::kRegular,
           privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
 
   // This should persist even if the preference becomes unmanaged.
   prefs()->RemoveManagedPref(prefs::kPrivacySandboxApisEnabledV2);
   EXPECT_EQ(
-      PrivacySandboxService::DialogType::kNone,
-      PrivacySandboxService::GetRequiredDialogTypeInternal(
+      PrivacySandboxService::PromptType::kNone,
+      PrivacySandboxService::GetRequiredPromptTypeInternal(
           prefs(), profile_metrics::BrowserProfileType::kRegular,
           privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
 }
 
 TEST_F(PrivacySandboxServiceDialogTest, ManuallyControlledNoDialog) {
   // Confirm that if the Privacy Sandbox V2 is manually controlled by the user,
-  // that no dialog is shown.
+  // that no prompt is shown.
   SetupDialogTestState(feature_list(), prefs(),
                        {/*consent_required=*/true,
                         /*old_api_pref=*/true,
@@ -2523,20 +2725,20 @@ TEST_F(PrivacySandboxServiceDialogTest, ManuallyControlledNoDialog) {
   prefs()->SetUserPref(prefs::kPrivacySandboxManuallyControlledV2,
                        base::Value(true));
   EXPECT_EQ(
-      PrivacySandboxService::DialogType::kNone,
-      PrivacySandboxService::GetRequiredDialogTypeInternal(
+      PrivacySandboxService::PromptType::kNone,
+      PrivacySandboxService::GetRequiredPromptTypeInternal(
           prefs(), profile_metrics::BrowserProfileType::kRegular,
           privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
 }
 
 TEST_F(PrivacySandboxServiceDialogTest, NoParamNoDialog) {
-  // Confirm that if neither the consent or notice parameter is set, no dialog
+  // Confirm that if neither the consent or notice parameter is set, no prompt
   // is required.
   feature_list()->InitAndEnableFeature(
       privacy_sandbox::kPrivacySandboxSettings3);
   EXPECT_EQ(
-      PrivacySandboxService::DialogType::kNone,
-      PrivacySandboxService::GetRequiredDialogTypeInternal(
+      PrivacySandboxService::PromptType::kNone,
+      PrivacySandboxService::GetRequiredPromptTypeInternal(
           prefs(), profile_metrics::BrowserProfileType::kRegular,
           privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
 }
@@ -2545,7 +2747,7 @@ class PrivacySandboxServiceDeathTest
     : public PrivacySandboxServiceDialogTestBase,
       public testing::TestWithParam<int> {};
 
-TEST_P(PrivacySandboxServiceDeathTest, GetRequiredDialogType) {
+TEST_P(PrivacySandboxServiceDeathTest, GetRequiredPromptType) {
   const auto& test_case = kDialogTestCases[GetParam()];
   privacy_sandbox_settings()->SetupDefaultResponse();
 
@@ -2563,7 +2765,7 @@ TEST_P(PrivacySandboxServiceDeathTest, GetRequiredDialogType) {
   SetupDialogTestState(feature_list(), prefs(), test_case.test_setup);
   if (test_case.expected_output.dcheck_failure) {
     EXPECT_DCHECK_DEATH(
-        PrivacySandboxService::GetRequiredDialogTypeInternal(
+        PrivacySandboxService::GetRequiredPromptTypeInternal(
             prefs(), profile_metrics::BrowserProfileType::kRegular,
             privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false);
 
@@ -2571,15 +2773,15 @@ TEST_P(PrivacySandboxServiceDeathTest, GetRequiredDialogType) {
     return;
   }
 
-  // Returned dialog type should never change between successive calls.
+  // Returned prompt type should never change between successive calls.
   EXPECT_EQ(
-      test_case.expected_output.dialog_type,
-      PrivacySandboxService::GetRequiredDialogTypeInternal(
+      test_case.expected_output.prompt_type,
+      PrivacySandboxService::GetRequiredPromptTypeInternal(
           prefs(), profile_metrics::BrowserProfileType::kRegular,
           privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
   EXPECT_EQ(
-      test_case.expected_output.dialog_type,
-      PrivacySandboxService::GetRequiredDialogTypeInternal(
+      test_case.expected_output.prompt_type,
+      PrivacySandboxService::GetRequiredPromptTypeInternal(
           prefs(), profile_metrics::BrowserProfileType::kRegular,
           privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
 
@@ -2599,7 +2801,7 @@ INSTANTIATE_TEST_SUITE_P(PrivacySandboxServiceDeathTestInstance,
 using PrivacySandboxServiceTestCoverageTest = testing::Test;
 
 TEST_F(PrivacySandboxServiceTestCoverageTest, DialogTestCoverage) {
-  // Confirm that the set of dialog test cases exhaustively covers all possible
+  // Confirm that the set of prompt test cases exhaustively covers all possible
   // combinations of input.
   std::set<int> test_case_properties;
   for (const auto& test_case : kDialogTestCases) {

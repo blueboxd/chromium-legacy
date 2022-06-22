@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/webapps/browser/android/webapps_icon_utils.h"
 #include "components/webapps/browser/android/webapps_utils.h"
+#include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -117,10 +118,10 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
   params.valid_manifest = true;
   params.prefer_maskable_icon =
       webapps::WebappsIconUtils::DoesAndroidSupportMaskableIcons();
-  params.has_worker = true;
+  params.has_worker = !webapps::features::SkipInstallServiceWorkerCheck();
+  params.wait_for_worker = !webapps::features::SkipInstallServiceWorkerCheck();
   params.valid_primary_icon = true;
   params.valid_splash_icon = true;
-  params.wait_for_worker = true;
   webapps::InstallableManager* installable_manager =
       webapps::InstallableManager::FromWebContents(web_contents());
   installable_manager->GetData(

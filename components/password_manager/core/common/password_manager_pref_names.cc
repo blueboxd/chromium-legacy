@@ -16,6 +16,7 @@ const char kCredentialsEnableService[] = "credentials_enable_service";
 const char kAutoSignInEnabledGMS[] = "profile.auto_sign_in_enabled_gms";
 const char kOfferToSavePasswordsEnabledGMS[] =
     "profile.save_passwords_enabed_gms";
+const char kSettingsMigratedToUPM[] = "profile.settings_migrated_to_upm";
 
 const char kCurrentMigrationVersionToGoogleMobileServices[] =
     "current_migration_version_to_google_mobile_services";
@@ -27,6 +28,9 @@ const char kRequiresMigrationAfterSyncStatusChange[] =
 
 const char kPasswordsPrefWithNewLabelUsed[] =
     "passwords_pref_with_new_label_used";
+
+const char kUnenrolledFromGoogleMobileServicesDueToErrors[] =
+    "unenrolled_from_google_mobile_services_due_to_errors";
 #endif
 
 #if BUILDFLAG(IS_WIN)

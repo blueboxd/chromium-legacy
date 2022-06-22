@@ -35,6 +35,7 @@ struct ChannelConfig {
     CODEC_H264,
     CODEC_OPUS,
     CODEC_SPEEX,
+    CODEC_AV1,
   };
 
   // Creates a config with transport field set to TRANSPORT_NONE which indicates
@@ -190,9 +191,6 @@ class CandidateSessionConfig {
   std::list<ChannelConfig> event_configs_;
   std::list<ChannelConfig> video_configs_;
   std::list<ChannelConfig> audio_configs_;
-
-  bool vp9_experiment_enabled_ = false;
-  bool h264_experiment_enabled_ = false;
 };
 
 }  // namespace protocol

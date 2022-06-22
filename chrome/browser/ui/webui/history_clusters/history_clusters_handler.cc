@@ -21,7 +21,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/webui/history_clusters/history_clusters.mojom.h"
+#include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
@@ -34,13 +34,12 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/webui/resources/cr_components/history_clusters/history_clusters.mojom.h"
 #include "url/gurl.h"
 
 namespace history_clusters {
 
 namespace {
-
-constexpr size_t kMaxRelatedSearches = 5;
 
 // Creates a `mojom::VisitPtr` from a `history_clusters::Visit`.
 mojom::URLVisitPtr VisitToMojom(Profile* profile,
@@ -104,6 +103,8 @@ mojom::URLVisitPtr VisitToMojom(Profile* profile,
     visit_mojom->annotations.push_back(mojom::Annotation::kSearchResultsPage);
   }
 
+  visit_mojom->hidden = visit.hidden;
+
   if (GetConfig().user_visible_debug) {
     visit_mojom->debug_info["visit_id"] =
         base::NumberToString(annotated_visit.visit_row.visit_id);
@@ -166,47 +167,14 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
     }
 
     for (const auto& visit : cluster.visits) {
-      mojom::URLVisitPtr visit_mojom = VisitToMojom(profile, visit);
+      cluster_mojom->visits.push_back(VisitToMojom(profile, visit));
+    }
 
-      // Even a 0.0 visit shouldn't be hidden if this is the first visit we
-      // encounter. The assumption is that the visits are always ranked by score
-      // in a descending order.
-      // TODO(crbug.com/1313631): Simplify this after removing "Show More" UI.
-      if ((visit.score == 0.0 && !cluster_mojom->visits.empty()) ||
-          (visit.score < GetConfig().min_score_to_always_show_above_the_fold &&
-           cluster_mojom->visits.size() >=
-               GetConfig().num_visits_to_always_show_above_the_fold)) {
-        // If the visit is dropped entirely, also skip coalescing its related
-        // searches by continuing the loop.
-        if (GetConfig().drop_hidden_visits) {
-          continue;
-        }
-
-        visit_mojom->hidden = true;
-      }
-
-      cluster_mojom->visits.push_back(std::move(visit_mojom));
-
-      // Coalesce the unique related searches of this visit into the cluster
-      // until the cap is reached.
-      for (const auto& search_query :
-           visit.annotated_visit.content_annotations.related_searches) {
-        if (cluster_mojom->related_searches.size() >= kMaxRelatedSearches) {
-          break;
-        }
-
-        if (base::Contains(cluster_mojom->related_searches, search_query,
-                           [](const mojom::SearchQueryPtr& search_query_mojom) {
-                             return search_query_mojom->query;
-                           })) {
-          continue;
-        }
-
-        auto search_query_mojom = SearchQueryToMojom(profile, search_query);
-        if (search_query_mojom) {
-          cluster_mojom->related_searches.emplace_back(
-              std::move(*search_query_mojom));
-        }
+    for (const auto& related_search : cluster.related_searches) {
+      auto search_query_mojom = SearchQueryToMojom(profile, related_search);
+      if (search_query_mojom) {
+        cluster_mojom->related_searches.emplace_back(
+            std::move(*search_query_mojom));
       }
     }
 
@@ -282,6 +250,16 @@ void HistoryClustersHandler::LoadMoreClusters(const std::string& query) {
 void HistoryClustersHandler::RemoveVisits(
     std::vector<mojom::URLVisitPtr> visits,
     RemoveVisitsCallback callback) {
+  // TODO(crbug.com/1327743): Enforced here because enforcing at the UI level is
+  // too complicated to merge. We can consider removing this clause or turning
+  // it to a DCHECK after we enforce it at the UI level, but it's essentially
+  // harmless to keep it here too.
+  if (!profile_->GetPrefs()->GetBoolean(
+          ::prefs::kAllowDeletingBrowserHistory)) {
+    std::move(callback).Run(false);
+    return;
+  }
+
   // Reject the request if a pending task exists or the set of visits is empty.
   if (remove_task_tracker_.HasTrackedTasks() || visits.empty()) {
     std::move(callback).Run(false);

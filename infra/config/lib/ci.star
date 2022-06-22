@@ -15,6 +15,7 @@ to set the default value. Can also be accessed through `ci.defaults`.
 
 load("./args.star", "args")
 load("./branches.star", "branches")
+load("./builder_config.star", "builder_config")
 load("./builders.star", "builders", "os", "os_category")
 load("//project.star", "settings")
 
@@ -210,7 +211,7 @@ def _gpu_linux_builder(*, name, **kwargs):
     groups.
     """
     kwargs.setdefault("cores", 8)
-    kwargs.setdefault("os", os.LINUX_BIONIC_SWITCH_TO_DEFAULT)
+    kwargs.setdefault("os", os.LINUX_DEFAULT)
     return ci.builder(name = name, **kwargs)
 
 def _gpu_mac_builder(*, name, **kwargs):
@@ -261,10 +262,13 @@ def thin_tester(
     Returns:
       The `luci.builder` keyset.
     """
+    builder_spec = kwargs.get("builder_spec")
+    if builder_spec and builder_spec.execution_mode != builder_config.execution_mode.TEST:
+        fail("thin testers with builder specs must have TEST execution mode")
     cores = defaults.get_value("thin_tester_cores", cores)
     kwargs.setdefault("goma_backend", None)
     kwargs.setdefault("reclient_instance", None)
-    kwargs.setdefault("os", builders.os.LINUX_BIONIC_SWITCH_TO_DEFAULT)
+    kwargs.setdefault("os", builders.os.LINUX_DEFAULT)
     return ci.builder(
         name = name,
         triggered_by = triggered_by,

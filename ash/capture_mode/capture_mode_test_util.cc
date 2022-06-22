@@ -157,6 +157,12 @@ CaptureModeToggleButton* GetRegionToggleButton() {
   return GetCaptureModeBarView()->capture_source_view()->region_toggle_button();
 }
 
+UserNudgeController* GetUserNudgeController() {
+  auto* session = CaptureModeController::Get()->capture_mode_session();
+  DCHECK(session);
+  return CaptureModeSessionTestApi(session).GetUserNudgeController();
+}
+
 // -----------------------------------------------------------------------------
 // ProjectorCaptureModeIntegrationHelper:
 
@@ -190,6 +196,14 @@ void ProjectorCaptureModeIntegrationHelper::StartProjectorModeSession() {
   EXPECT_TRUE(projector_session->is_active());
   auto* controller = CaptureModeController::Get();
   EXPECT_EQ(controller->source(), CaptureModeSource::kFullscreen);
+}
+
+bool IsLayerStackedRightBelow(ui::Layer* layer, ui::Layer* sibling) {
+  DCHECK_EQ(layer->parent(), sibling->parent());
+  const auto& children = layer->parent()->children();
+  const int sibling_index =
+      std::find(children.begin(), children.end(), sibling) - children.begin();
+  return sibling_index > 0 && children[sibling_index - 1] == layer;
 }
 
 }  // namespace ash

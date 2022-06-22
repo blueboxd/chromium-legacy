@@ -6250,6 +6250,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContentSuggestions.Feed.Selected">
+  <owner>adamta@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>The user has selected the Discover feed in the NTP.</description>
+</action>
+
+<action name="ContentSuggestions.Feed.WebFeed.Selected">
+  <owner>adamta@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user has selected the Following feed in the NTP.
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.WillRefresh">
   <owner>adamta@google.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -6257,6 +6273,42 @@ should be able to be added at any place in this file.
   <description>
     The feed will trigger a refresh, either manually by the user or because of
     the cache expiring.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Follow.SnackbarGoToFeedButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped GO TO FEED button on the follow succeed snackbar.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Follow.SnackbarRetryFollowButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped RETRY button on the follow failed snackbar.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Follow.SnackbarRetryUnfollowButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped RETRY button on the unfollow failed snackbar.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Follow.SnackbarUndoButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped UNDO button on the unfollow succeed snackbar.
   </description>
 </action>
 
@@ -17556,6 +17608,11 @@ should be able to be added at any place in this file.
   <description>User pressed the back icon in the app menu.</description>
 </action>
 
+<action name="MobileMenuClearBrowsingData">
+  <owner>rkgibson@google.com</owner>
+  <description>User pressed 'Clear Browsing Data' in the app menu.</description>
+</action>
+
 <action name="MobileMenuCloseAllIncognitoTabs">
   <owner>gambard@chromium.org</owner>
   <description>
@@ -17628,6 +17685,13 @@ should be able to be added at any place in this file.
 <action name="MobileMenuFindInPage">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Find in page' in the app menu.</description>
+</action>
+
+<action name="MobileMenuFollow">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>User pressed the follow option in the app menu.</description>
 </action>
 
 <action name="MobileMenuForward">
@@ -17797,6 +17861,13 @@ should be able to be added at any place in this file.
   <description>User pressed 'Settings' in the app menu.</description>
 </action>
 
+<action name="MobileMenuSettingsAction">
+  <owner>rkgibson@chromium.org</owner>
+  <description>
+    User pressed the 'Settings' action in the app menu (iOS).
+  </description>
+</action>
+
 <action name="MobileMenuShare">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Share' in the app menu.</description>
@@ -17833,6 +17904,13 @@ should be able to be added at any place in this file.
 <action name="MobileMenuTranslate">
   <owner>frechette@chromium.org</owner>
   <description>User pressed the 'Translate' in the app menu.</description>
+</action>
+
+<action name="MobileMenuUnfollow">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>User pressed the unfollow option in the app menu.</description>
 </action>
 
 <action name="MobileMenuVoiceSearch">
@@ -19459,7 +19537,10 @@ should be able to be added at any place in this file.
 
 <action name="MobileTabSwitched" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <description>
+    User actively switched to a different tab. This does not include tab refocus
+    caused by cancelling a tab closure.
+  </description>
 </action>
 
 <action name="MobileTabSwitched.TabletTabStrip" not_user_triggered="true">
@@ -26376,6 +26457,17 @@ should be able to be added at any place in this file.
   <description>User dismissed the Privacy Sandbox notice.</description>
 </action>
 
+<action name="Settings.PrivacySandbox.Notice.LearnMore">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicked on the link &quot;estimates your interests&quot; from the
+    Privacy Sandbox notice. It opens Privacy Sandbox settings page with
+    &quot;About Browser-based ad personalization&quot; dialog.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.Notice.OpenedSettings">
   <owner>harrisonsean@chromium.org</owner>
   <owner>sauski@google.com</owner>
@@ -26790,6 +26882,14 @@ should be able to be added at any place in this file.
   <owner>src/chrome/browser/share/OWNERS</owner>
   <description>
     One of the third-party targets was selected in the share submenu.
+  </description>
+</action>
+
+<action name="SharingDesktopScreenshot.ScreenshotEdited">
+  <owner>skare@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    User chose to edit a screenshot in the capture bubble.
   </description>
 </action>
 
@@ -27765,6 +27865,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromSendTabToSelfPromo">
+  <owner>victorvianna@google.com</owner>
+  <owner>harrisonsean@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the send tab to self promo.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromSettings" not_user_triggered="true">
   <owner>bzanotti@chromium.org</owner>
   <owner>gogerald@chromium.org</owner>
@@ -28325,6 +28433,15 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromSendTabToSelfPromo">
+  <owner>victorvianna@google.com</owner>
+  <owner>harrisonsean@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO.
   </description>
 </action>
 
@@ -29625,6 +29742,15 @@ should be able to be added at any place in this file.
 <action name="StartSurface.Shown">
   <owner>gogerald@chromium.org</owner>
   <description>The start surface overview is shown.</description>
+</action>
+
+<action name="StartSurface.ShownFromBackNavigation">
+  <owner>hanxi@chromium.org</owner>
+  <owner>spdonghao@chromium.org</owner>
+  <owner>andrewheard@chromium.org</owner>
+  <description>
+    The Start surface is showing due to the user taps the back button.
+  </description>
 </action>
 
 <action name="StartSurface.SinglePane">
@@ -33361,6 +33487,13 @@ should be able to be added at any place in this file.
   <suffix name="Search" label="User started searching from the top menu."/>
   <suffix name="Settings" label="User entered settings from the top menu."/>
   <affected-action name="Android.DownloadManager.Menu.Action"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="FromTab" label="The back navigation is initiated from a Tab."/>
+  <suffix name="FromTabSwitcher"
+      label="The back navigation is initiated from the Tab switcher."/>
+  <affected-action name="StartSurface.ShownFromBackNavigation"/>
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">

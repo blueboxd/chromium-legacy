@@ -11,17 +11,6 @@
       "use_remoteexec": true
     }
   },
-  "linux-swangle-tot-angle-x64": {
-    "gn_args": {
-      "build_angle_deqp_tests": true,
-      "dcheck_always_on": true,
-      "is_component_build": true,
-      "is_debug": false,
-      "symbol_level": 1,
-      "use_rbe": true,
-      "use_remoteexec": true
-    }
-  },
   "linux-swangle-tot-swiftshader-x64": {
     "gn_args": {
       "build_angle_deqp_tests": true,
@@ -69,28 +58,6 @@
       "use_remoteexec": true
     }
   },
-  "win-swangle-tot-angle-x64": {
-    "gn_args": {
-      "build_angle_deqp_tests": true,
-      "dcheck_always_on": true,
-      "is_component_build": true,
-      "is_debug": false,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "win-swangle-tot-angle-x86": {
-    "gn_args": {
-      "build_angle_deqp_tests": true,
-      "dcheck_always_on": true,
-      "is_component_build": true,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "x86",
-      "use_rbe": true,
-      "use_remoteexec": true
-    }
-  },
   "win-swangle-tot-swiftshader-x64": {
     "gn_args": {
       "build_angle_deqp_tests": true,
@@ -110,7 +77,8 @@
       "is_debug": false,
       "symbol_level": 1,
       "target_cpu": "x86",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "win-swangle-x64": {

@@ -18,6 +18,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_data_retriever.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -193,6 +195,8 @@ class WebAppInstallManagerTest
                                     &controller().os_integration_manager(),
                                     install_finalizer_.get());
 
+    command_manager_ = std::make_unique<WebAppCommandManager>(profile());
+
     auto test_url_loader = std::make_unique<TestWebAppUrlLoader>();
 
     test_url_loader_ = test_url_loader.get();
@@ -216,6 +220,7 @@ class WebAppInstallManagerTest
   }
 
   WebAppRegistrar& registrar() { return controller().registrar(); }
+  WebAppCommandManager& command_manager() { return *command_manager_; }
   WebAppInstallManager& install_manager() { return *install_manager_; }
   WebAppInstallFinalizer& finalizer() { return *install_finalizer_; }
   WebAppIconManager& icon_manager() { return *icon_manager_; }
@@ -291,23 +296,6 @@ class WebAppInstallManagerTest
     webapps::InstallResultCode code;
   };
 
-  InstallResult InstallWebAppFromManifestWithFallback() {
-    InstallResult result;
-    base::RunLoop run_loop;
-    install_manager().InstallWebAppFromManifestWithFallback(
-        web_contents(), WebAppInstallFlow::kInstallSite,
-        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-        base::BindOnce(test::TestAcceptDialogCallback),
-        base::BindLambdaForTesting([&](const AppId& installed_app_id,
-                                       webapps::InstallResultCode code) {
-          result.app_id = installed_app_id;
-          result.code = code;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return result;
-  }
-
   InstallResult InstallSubApp(const AppId& parent_app_id,
                               const GURL& install_url) {
     UseDefaultDataRetriever(install_url);
@@ -350,15 +338,17 @@ class WebAppInstallManagerTest
       webapps::WebappInstallSource install_source) {
     InstallResult result;
     base::RunLoop run_loop;
-    install_manager().InstallWebAppFromInfo(
-        std::move(install_info), overwrite_existing_manifest_fields,
-        ForInstallableSite::kYes, install_source,
-        base::BindLambdaForTesting([&](const AppId& installed_app_id,
-                                       webapps::InstallResultCode code) {
-          result.app_id = installed_app_id;
-          result.code = code;
-          run_loop.Quit();
-        }));
+    command_manager().ScheduleCommand(
+        std::make_unique<web_app::InstallFromInfoCommand>(
+            std::move(install_info), &finalizer(),
+            overwrite_existing_manifest_fields, install_source,
+            base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                           webapps::InstallResultCode code) {
+              result.app_id = installed_app_id;
+              result.code = code;
+              run_loop.Quit();
+            })));
+
     run_loop.Run();
     return result;
   }
@@ -429,6 +419,9 @@ class WebAppInstallManagerTest
 
   void DestroyManagers() {
     // The reverse order of creation:
+    if (command_manager_)
+      command_manager_->Shutdown();
+    command_manager_.reset();
     ui_manager_.reset();
     policy_manager_.reset();
     icon_manager_.reset();
@@ -462,6 +455,7 @@ class WebAppInstallManagerTest
   std::unique_ptr<FakeWebAppUiManager> ui_manager_;
   std::unique_ptr<ExternallyInstalledWebAppPrefs>
       externally_installed_app_prefs_;
+  std::unique_ptr<WebAppCommandManager> command_manager_;
 
   // A weak ptr. The original is owned by install_manager_.
   raw_ptr<TestWebAppUrlLoader> test_url_loader_ = nullptr;
@@ -1044,6 +1038,8 @@ TEST_P(WebAppInstallManagerTest_SyncOnly, DefaultAndUser_UninstallWebApp) {
       GURL("https://example.com/path"), WebAppManagement::kSync);
   default_and_user_app->AddSource(WebAppManagement::kDefault);
   default_and_user_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
+  default_and_user_app->AddInstallURLToManagementExternalConfigMap(
+      WebAppManagement::kDefault, GURL("https://example.com/path"));
 
   const AppId app_id = default_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/default");
@@ -1083,6 +1079,8 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
       GURL("https://example.com/path"), WebAppManagement::kSync);
   default_and_user_app->AddSource(WebAppManagement::kDefault);
   default_and_user_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
+  default_and_user_app->AddInstallURLToManagementExternalConfigMap(
+      WebAppManagement::kDefault, GURL("https://example.com/path"));
 
   const AppId app_id = default_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/default");
@@ -1114,45 +1112,6 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   EXPECT_FALSE(finalizer().CanUserUninstallWebApp(app_id));
   EXPECT_TRUE(finalizer().WasPreinstalledWebAppUninstalled(app_id));
   EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));
-}
-
-TEST_P(WebAppInstallManagerTest, InstallWebAppFromInfo) {
-  InitEmptyRegistrar();
-
-  const GURL url("https://example.com/path");
-  const AppId expected_app_id =
-      GenerateAppId(/*manifest_id=*/absl::nullopt, url);
-
-  auto server_web_app_info = std::make_unique<WebAppInstallInfo>();
-  server_web_app_info->start_url = url;
-  server_web_app_info->scope = url;
-  server_web_app_info->title = u"Test web app";
-  server_web_app_info->install_url = url;
-
-  const webapps::WebappInstallSource install_source =
-      AreSystemWebAppsSupported()
-          ? webapps::WebappInstallSource::SYSTEM_DEFAULT
-          : webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON;
-
-  EXPECT_FALSE(registrar().IsActivelyInstalled(expected_app_id));
-
-  InstallResult result = InstallWebAppFromInfo(
-      std::move(server_web_app_info),
-      /*overwrite_existing_manifest_fields=*/false, install_source);
-  EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, result.code);
-  EXPECT_EQ(expected_app_id, result.app_id);
-
-  EXPECT_TRUE(registrar().IsActivelyInstalled(expected_app_id));
-
-  const WebApp* web_app = registrar().GetAppById(expected_app_id);
-  ASSERT_TRUE(web_app);
-
-  std::map<SquareSizePx, SkBitmap> icon_bitmaps =
-      ReadIcons(expected_app_id, IconPurpose::ANY,
-                web_app->downloaded_icon_sizes(IconPurpose::ANY));
-
-  // Make sure that icons have been generated for all sub sizes.
-  EXPECT_TRUE(ContainsOneIconOfEachSize(icon_bitmaps));
 }
 
 TEST_P(WebAppInstallManagerTest, TaskQueueWebContentsReadyRace) {
@@ -1211,43 +1170,6 @@ TEST_P(WebAppInstallManagerTest, DefaultNotActivelyInstalled) {
   InitRegistrarWithApp(std::move(default_app));
 
   EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));
-}
-
-TEST_P(WebAppInstallManagerTest_SyncOnly,
-       InstallWebAppFromManifestWithFallback_OverwriteIsLocallyInstalled) {
-  const GURL start_url{"https://example.com/path"};
-  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
-
-  {
-    std::unique_ptr<WebApp> app_in_sync_install =
-        CreateWebAppFromSyncAndPendingInstallation(
-            start_url, "Name from sync",
-            /*user_display_mode=*/UserDisplayMode::kStandalone, SK_ColorRED,
-            /*is_locally_installed=*/false, /*scope=*/GURL(),
-            /*icon_infos=*/{});
-
-    InitRegistrarWithApp(std::move(app_in_sync_install));
-  }
-
-  EXPECT_FALSE(registrar().IsLocallyInstalled(app_id));
-  EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));
-  EXPECT_EQ(DisplayMode::kBrowser,
-            registrar().GetAppEffectiveDisplayMode(app_id));
-
-  // DefaultDataRetriever returns DisplayMode::kStandalone app's display mode.
-  UseDefaultDataRetriever(start_url);
-
-  InstallResult result = InstallWebAppFromManifestWithFallback();
-  EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, result.code);
-  EXPECT_EQ(app_id, result.app_id);
-
-  EXPECT_TRUE(registrar().IsInstalled(app_id));
-  EXPECT_TRUE(registrar().IsLocallyInstalled(app_id));
-  EXPECT_TRUE(registrar().IsActivelyInstalled(app_id));
-  // InstallWebAppFromManifestWithFallback sets user_display_mode to kBrowser
-  // because TestAcceptDialogCallback doesn't set open_as_window to true.
-  EXPECT_EQ(DisplayMode::kBrowser,
-            registrar().GetAppEffectiveDisplayMode(app_id));
 }
 
 TEST_P(WebAppInstallManagerTest_SyncOnly,

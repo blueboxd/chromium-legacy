@@ -9,13 +9,13 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../print_preview_utils.js';
-import './destination_dialog_css.js';
+import './destination_dialog_style.css.js';
 import './destination_list.js';
 import './print_preview_search_box.js';
-import './print_preview_shared_css.js';
-import './print_preview_vars_css.js';
+import './print_preview_shared.css.js';
+import './print_preview_vars.css.js';
 import '../strings.m.js';
-import './throbber_css.js';
+import './throbber.css.js';
 import './destination_list_item.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
@@ -174,8 +174,13 @@ export class PrintPreviewDestinationDialogElement extends
       this.metrics_ = MetricsContext.destinationSearch();
     }
     this.$.dialog.showModal();
-    this.loadingDestinations_ = this.destinationStore === undefined ||
+    const loading = this.destinationStore === undefined ||
         this.destinationStore.isPrintDestinationSearchInProgress;
+    if (!loading) {
+      // All destinations have already loaded.
+      this.updateDestinations_();
+    }
+    this.loadingDestinations_ = loading;
     this.metrics_.record(DestinationSearchBucket.DESTINATION_SHOWN);
   }
 

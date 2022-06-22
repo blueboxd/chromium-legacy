@@ -8,6 +8,8 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/android/media_codec_util.h"
@@ -73,8 +75,11 @@ MediaFormatPtr CreateVideoFormat(const std::string& mime,
   AMediaFormat_setInt32(result.get(), AMEDIAFORMAT_KEY_I_FRAME_INTERVAL,
                         iframe_interval);
   AMediaFormat_setInt32(result.get(), AMEDIAFORMAT_KEY_COLOR_FORMAT, format);
-  if (config.require_low_delay)
+  if (config.require_low_delay) {
     AMediaFormat_setInt32(result.get(), AMEDIAFORMAT_KEY_LATENCY, 1);
+    // MediaCodec supports two priorities: 0 - realtime, 1 - best effort
+    AMediaFormat_setInt32(result.get(), AMEDIAFORMAT_KEY_PRIORITY, 0);
+  }
 
   constexpr int32_t BITRATE_MODE_VBR = 1;
   constexpr int32_t BITRATE_MODE_CBR = 2;
@@ -132,7 +137,7 @@ static bool InitMediaCodec() {
 bool IsThereGoodMediaCodecFor(VideoCodec codec) {
   switch (codec) {
     case VideoCodec::kH264:
-      if (!MediaCodecUtil::IsH264EncoderAvailable(true))
+      if (!MediaCodecUtil::IsH264EncoderAvailable())
         return false;
       break;
     case VideoCodec::kVP8:
@@ -673,14 +678,15 @@ void NdkVideoEncodeAccelerator::DrainOutput() {
     return;
   }
 
-  UnalignedSharedMemory shm(bitstream_buffer.TakeRegion(),
-                            bitstream_buffer.size(), false);
-  if (!shm.MapAt(bitstream_buffer.offset(), bitstream_buffer.size())) {
+  base::UnsafeSharedMemoryRegion region = bitstream_buffer.TakeRegion();
+  auto mapping =
+      region.MapAt(bitstream_buffer.offset(), bitstream_buffer.size());
+  if (!mapping.IsValid()) {
     NotifyError("Failed to map SHM", kPlatformFailureError);
     return;
   }
 
-  uint8_t* output_dst = static_cast<uint8_t*>(shm.memory());
+  uint8_t* output_dst = mapping.GetMemoryAs<uint8_t>();
   if (config_size > 0) {
     memcpy(output_dst, config_data_.data(), config_size);
     output_dst += config_size;

@@ -32,6 +32,7 @@
 <translation id="2134029355740465625">Video-instellings</translation>
 <translation id="2144806332417375165">Gepasmaakte videoparameters</translation>
 <translation id="2175927920773552910">QR-kode</translation>
+<translation id="2244252133441425811">Aktiveer video-FPS-kieser</translation>
 <translation id="2271433936731426666">Aktiveer video-oorsig in volle grootte</translation>
 <translation id="229579744168541441">Voer uit na skyf</translation>
 <translation id="2320741269052147773">Swenk links</translation>
@@ -81,6 +82,7 @@
 <translation id="4445542136948522167">Hou op om foto te neem</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> megapieksel</translation>
 <translation id="4570032796877367747">Voorste kamera</translation>
+<translation id="4620818268515773682">Wissel mikrofoondempknoppie. Demp is af</translation>
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">Kan nie die lêer stoor nie</translation>
 <translation id="4695379108709712600">Beweeg tans na bo</translation>
@@ -118,6 +120,7 @@
 As jou terugvoer oor prent- of videogehalte gaan, moet jy asseblief 'n voorbeeldfoto of -video aanheg en beskryf wat fout is. (Byvoorbeeld, foto is te donker of onderwerp is nie in fokus nie.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> – <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapieksel</translation>
 <translation id="6527303717912515753">Deel</translation>
+<translation id="6617916774429601017">Wys alle resolusies</translation>
 <translation id="6631515515009660915">Spieël af</translation>
 <translation id="6652737148136672975">Beweeg hoekposisie met pylsleutels</translation>
 <translation id="667999046851023355">Dokument</translation>
@@ -156,6 +159,7 @@ As jou terugvoer oor prent- of videogehalte gaan, moet jy asseblief 'n voorbeeld
 <translation id="8425673304802773841">Kantel af</translation>
 <translation id="8428213095426709021">Instellings</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" /> p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8711011893539266636">Wissel mikrofoondempknoppie. Demp is aan</translation>
 <translation id="8712637175834984815">Het dit</translation>
 <translation id="8730621377337864115">Gedoen</translation>
 <translation id="8732462232047530626">Voorbeskou metadata</translation>

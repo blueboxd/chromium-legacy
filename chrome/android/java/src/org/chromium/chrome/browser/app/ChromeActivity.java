@@ -43,7 +43,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.MathUtils;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
@@ -115,6 +114,7 @@ import org.chromium.chrome.browser.flags.ChromeSessionState;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManagerSupplier;
+import org.chromium.chrome.browser.fullscreen.FullscreenBackPressHandler;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
@@ -148,6 +148,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadingListUtils;
+import org.chromium.chrome.browser.selection.SelectionPopupBackPressHandler;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegateImpl;
@@ -203,6 +204,7 @@ import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.browser_ui.widget.InsetObserverViewSupplier;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
+import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler.Type;
 import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener.SwipeHandler;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
@@ -394,10 +396,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     // {@link onPictureInPictureModeChanged} from the platform.  This might disagree with the value
     // returned by {@link isInPictureInPictureMode}.
     private boolean mLastPictureInPictureModeForTesting;
-    private SubscriptionsManager mSubscriptionsManager;
 
     protected BackPressManager mBackPressManager = new BackPressManager();
     private TextBubbleBackPressHandler mTextBubbleBackPressHandler;
+    private SelectionPopupBackPressHandler mSelectionPopupBackPressHandler;
+    private Callback<TabModelSelector> mSelectionPopupBackPressInitCallback;
 
     protected ChromeActivity() {
         mIntentHandler = new IntentHandler(this, createIntentHandlerDelegate());
@@ -1592,6 +1595,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mTextBubbleBackPressHandler = null;
         }
 
+        if (mSelectionPopupBackPressHandler != null) {
+            mSelectionPopupBackPressHandler.destroy();
+            mSelectionPopupBackPressHandler = null;
+        }
+
         mActivityTabProvider.destroy();
         ChromeActivitySessionTracker.getInstance().unregisterTabModelSelectorSupplier(this);
 
@@ -1631,7 +1639,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     protected Drawable getBackgroundDrawable() {
-        return new ColorDrawable(getColor(R.color.light_background_color));
+        return new ColorDrawable(getColor(R.color.window_background_color));
     }
 
     /**
@@ -1642,7 +1650,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     protected void changeBackgroundColorForResizing() {
         getWindow().setBackgroundDrawable(
-                new ColorDrawable(getColor(R.color.resizing_background_color)));
+                new ColorDrawable(getColor(R.color.window_background_color)));
     }
 
     private void maybeRemoveWindowBackground() {
@@ -1725,12 +1733,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
         };
         display.addObserver(mDisplayAndroidObserver);
-
-        CommerceSubscriptionsServiceFactory factory = new CommerceSubscriptionsServiceFactory();
-
-        if (ShoppingFeatures.isShoppingListEnabled()) {
-            mSubscriptionsManager = factory.getForLastUsedProfile().getSubscriptionsManager();
-        }
 
         // Make sure the user is reporting into one of the feed spinner groups, so that we can
         // analyze daily power impact for a typical Chrome user. The flag only has an effect if the
@@ -2311,11 +2313,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (!BackPressManager.isEnabled()) {
             // TODO(crbug.com/1279941): should this stop propagating the event?
             TextBubble.dismissBubbles();
-        }
 
-        if (VrModuleProvider.getDelegate().onBackPressed()) return;
+            if (VrModuleProvider.getDelegate().onBackPressed()) return;
 
-        if (!BackPressManager.isEnabled()) {
             ArDelegate arDelegate = ArDelegateProvider.getDelegate();
             if (arDelegate != null && arDelegate.onBackPressed()) return;
 
@@ -2324,16 +2324,18 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         mCompositorViewHolderSupplier.get().getLayoutManager();
                 if (layoutManager != null && layoutManager.onBackPressed()) return;
             }
+
+            SelectionPopupController controller = getSelectionPopupController();
+            if (controller != null && controller.isSelectActionBarShowing()) {
+                controller.clearSelection();
+                return;
+            }
         }
 
-        SelectionPopupController controller = getSelectionPopupController();
-        if (controller != null && controller.isSelectActionBarShowing()) {
-            controller.clearSelection();
-            return;
-        }
+        if (!BackPressManager.isEnabled()) {
+            if (getManualFillingComponent().onBackPressed()) return;
 
-        if (!BackPressManager.isEnabled() && getManualFillingComponent().onBackPressed()) {
-            return;
+            if (exitFullscreenIfShowing()) return;
         }
 
         handleBackPressed();
@@ -2355,6 +2357,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // TODO(crbug.com/1279941): consider move to RootUiCoordinator.
             mTextBubbleBackPressHandler = new TextBubbleBackPressHandler();
             mBackPressManager.addHandler(mTextBubbleBackPressHandler, Type.TEXT_BUBBLE);
+            mBackPressManager.addHandler(VrModuleProvider.getDelegate(), Type.VR_DELEGATE);
+
+            if (ArDelegateProvider.getDelegate() != null) {
+                mBackPressManager.addHandler(ArDelegateProvider.getDelegate(), Type.AR_DELEGATE);
+            }
 
             mLayoutManagerSupplier.addObserver((layoutManager) -> {
                 assert !mBackPressManager.has(Type.LAYOUT_MANAGER)
@@ -2362,9 +2369,23 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 mBackPressManager.addHandler(layoutManager, Type.LAYOUT_MANAGER);
             });
 
-            if (ArDelegateProvider.getDelegate() != null) {
-                mBackPressManager.addHandler(ArDelegateProvider.getDelegate(), Type.AR_DELEGATE);
-            }
+            mSelectionPopupBackPressInitCallback = (tabModelSelector) -> {
+                assert !mBackPressManager.has(Type.SELECTION_POPUP)
+                    : "Tab Model Selector should be set at most once";
+                mSelectionPopupBackPressHandler =
+                        new SelectionPopupBackPressHandler(tabModelSelector);
+                mBackPressManager.addHandler(mSelectionPopupBackPressHandler, Type.SELECTION_POPUP);
+                getTabModelSelectorSupplier().removeObserver(mSelectionPopupBackPressInitCallback);
+            };
+            getTabModelSelectorSupplier().addObserver(mSelectionPopupBackPressInitCallback);
+
+            mBrowserControlsManagerSupplier.addObserver((controlManager) -> {
+                assert !mBackPressManager.has(Type.FULLSCREEN)
+                    : "BrowserControlManager should be set at most once";
+                mBackPressManager.addHandler(
+                        new FullscreenBackPressHandler(controlManager.getFullscreenManager()),
+                        BackPressHandler.Type.FULLSCREEN);
+            });
         }
     }
 
@@ -2541,7 +2562,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             List<BookmarkId> bookmarkIds =
                     PowerBookmarkUtils.getBookmarkIdsWithSharedClusterIdForTab(
                             currentTab, mBookmarkBridgeSupplier.get());
-            PowerBookmarkUtils.setPriceTrackingEnabledWithSnackbars(mSubscriptionsManager,
+            SubscriptionsManager subscriptionsManager = null;
+            if (ShoppingFeatures.isShoppingListEnabled()) {
+                subscriptionsManager = new CommerceSubscriptionsServiceFactory()
+                                               .getForLastUsedProfile()
+                                               .getSubscriptionsManager();
+            }
+            PowerBookmarkUtils.setPriceTrackingEnabledWithSnackbars(subscriptionsManager,
                     mBookmarkBridgeSupplier.get(), bookmarkIds,
                     /*enabled=*/false, mSnackbarManager, getResources());
             RecordUserAction.record("MobileMenuDisablePriceTracking");
@@ -2774,13 +2801,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(this);
         int displayWidth = DisplayUtil.pxToDp(display, display.getDisplayWidth());
         int displayHeight = DisplayUtil.pxToDp(display, display.getDisplayHeight());
-        int largestDisplaySize = displayWidth > displayHeight ? displayWidth : displayHeight;
-        int smallestDisplaySize = displayWidth < displayHeight ? displayWidth : displayHeight;
+        int smallestDisplaySize = Math.min(displayWidth, displayHeight);
+        int largestDisplaySize = Math.max(displayWidth, displayHeight);
 
-        RecordHistogram.recordSparseHistogram("Android.DeviceSize.SmallestDisplaySize",
-                MathUtils.clamp(smallestDisplaySize, 0, 1000));
-        RecordHistogram.recordSparseHistogram("Android.DeviceSize.LargestDisplaySize",
-                MathUtils.clamp(largestDisplaySize, 200, 1200));
+        // 10dp granularity.
+        RecordHistogram.recordLinearCountHistogram(
+                "Android.DeviceSize.SmallestDisplaySize2", smallestDisplaySize, 100, 1000, 92);
+        // 20dp granularity.
+        RecordHistogram.recordLinearCountHistogram(
+                "Android.DeviceSize.LargestDisplaySize2", largestDisplaySize, 200, 2000, 92);
     }
 
     @Override

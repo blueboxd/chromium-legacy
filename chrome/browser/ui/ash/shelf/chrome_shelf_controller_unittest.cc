@@ -426,7 +426,7 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest {
     command_line->AppendSwitch(switches::kDisableDefaultApps);
 
     chromeos::DBusThreadManager::Initialize();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 
     app_list::AppListSyncableServiceFactory::SetUseInTesting(true);
 
@@ -606,7 +606,7 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest {
     shelf_controller_ = nullptr;
     shelf_item_factory_.reset();
     BrowserWithTestWindowTest::TearDown();
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     app_list::AppListSyncableServiceFactory::SetUseInTesting(false);
   }
@@ -5105,8 +5105,7 @@ TEST_P(ChromeShelfControllerTest, UnpinnableComponentApps) {
   InitShelfController();
 
   const char* kPinnableApp = file_manager::kFileManagerAppId;
-  const char* kNoPinApps[] = {extension_misc::kFeedbackExtensionId,
-                              ash::eche_app::kEcheAppId};
+  const char* kNoPinApps[] = {ash::eche_app::kEcheAppId};
 
   EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
             GetPinnableForAppID(kPinnableApp, profile()));

@@ -6,6 +6,7 @@
 
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/projector/projector_metadata_controller.h"
 #include "ash/projector/projector_metrics.h"
 #include "ash/projector/projector_ui_controller.h"
@@ -24,6 +25,8 @@
 #include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "ui/gfx/image/image.h"
 
@@ -33,7 +36,7 @@ namespace {
 
 // String format of the screencast name.
 constexpr char kScreencastPathFmtStr[] =
-    "Recording %d-%02d-%02d %02d.%02d.%02d";
+    "Screencast %d-%02d-%02d %02d.%02d.%02d";
 
 constexpr char kScreencastDefaultThumbnailFileName[] = "thumbnail.png";
 
@@ -112,6 +115,14 @@ ProjectorControllerImpl::~ProjectorControllerImpl() {
 // static
 ProjectorControllerImpl* ProjectorControllerImpl::Get() {
   return static_cast<ProjectorControllerImpl*>(ProjectorController::Get());
+}
+
+// static
+void ProjectorControllerImpl::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterUint64Pref(
+      prefs::kProjectorAnnotatorLastUsedMarkerColor, 0u,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
 void ProjectorControllerImpl::StartProjectorSession(
@@ -287,13 +298,14 @@ void ProjectorControllerImpl::OnCanvasInitialized(bool success) {
   ui_controller_->OnCanvasInitialized(success);
 }
 
-void ProjectorControllerImpl::OnRecordingStarted(bool is_in_projector_mode) {
+void ProjectorControllerImpl::OnRecordingStarted(aura::Window* current_root,
+                                                 bool is_in_projector_mode) {
   if (!is_in_projector_mode) {
     OnNewScreencastPreconditionChanged();
     return;
   }
   if (ui_controller_)
-    ui_controller_->ShowToolbar();
+    ui_controller_->ShowToolbar(current_root);
 
   StartSpeechRecognition();
   metadata_controller_->OnRecordingStarted();
@@ -314,6 +326,13 @@ void ProjectorControllerImpl::OnRecordingEnded(bool is_in_projector_mode) {
   MaybeStopSpeechRecognition();
 
   RecordCreationFlowMetrics(ProjectorCreationFlow::kRecordingEnded);
+}
+
+void ProjectorControllerImpl::OnRecordedWindowChangingRoot(
+    aura::Window* new_root) {
+  DCHECK(projector_session_->is_active());
+
+  ui_controller_->OnRecordedWindowChangingRoot(new_root);
 }
 
 void ProjectorControllerImpl::OnDlpRestrictionCheckedAtVideoEnd(
@@ -359,9 +378,9 @@ void ProjectorControllerImpl::OnRecordingStartAborted() {
   RecordCreationFlowMetrics(ProjectorCreationFlow::kRecordingAborted);
 }
 
-void ProjectorControllerImpl::OnMarkerPressed() {
+void ProjectorControllerImpl::EnableAnnotatorTool() {
   DCHECK(ui_controller_);
-  ui_controller_->OnMarkerPressed();
+  ui_controller_->EnableAnnotatorTool();
 }
 
 void ProjectorControllerImpl::SetAnnotatorTool(const AnnotatorTool& tool) {

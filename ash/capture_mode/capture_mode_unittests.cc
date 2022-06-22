@@ -164,14 +164,6 @@ void SetUpFileDeletionVerifier(base::RunLoop* loop) {
           }));
 }
 
-bool IsLayerStackedRightBelow(ui::Layer* layer, ui::Layer* sibling) {
-  DCHECK_EQ(layer->parent(), sibling->parent());
-  const auto& children = layer->parent()->children();
-  const int sibling_index =
-      std::find(children.begin(), children.end(), sibling) - children.begin();
-  return sibling_index > 0 && children[sibling_index - 1] == layer;
-}
-
 std::unique_ptr<aura::Window> CreateTransientModalChildWindow(
     aura::Window* transient_parent,
     const gfx::Rect& bounds) {
@@ -1062,6 +1054,31 @@ TEST_F(CaptureModeTest, CaptureRegionCaptureButtonDoesNotIntersectCaptureBar) {
   event_generator->ClickLeftButton();
   SelectRegion(gfx::Rect(20, 800));
   EXPECT_GT(GetCaptureModeLabelWidget()->GetWindowBoundsInScreen().x(), 20);
+}
+
+// Tests that pressing on the capture bar and releasing the press outside of the
+// capture bar, the capture region could still be draggable and set. Regression
+// test for https://crbug.com/1325028.
+TEST_F(CaptureModeTest, SetCaptureRegionAfterPressOnCaptureBar) {
+  UpdateDisplay("800x600");
+
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kRegion, CaptureModeType::kVideo);
+  auto* settings_button = GetSettingsButton();
+
+  // Press on the settings button without release.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(
+      settings_button->GetBoundsInScreen().CenterPoint());
+  event_generator->PressLeftButton();
+  // Move mouse to the outside of the capture bar and then release the press.
+  event_generator->MoveMouseTo({300, 300});
+  event_generator->ReleaseLeftButton();
+
+  // Set the capture region, and verify it's set successfully.
+  const gfx::Rect region_bounds(100, 100, 200, 200);
+  SelectRegion(region_bounds);
+  EXPECT_EQ(controller->user_capture_region(), region_bounds);
 }
 
 TEST_F(CaptureModeTest, WindowCapture) {
@@ -3136,7 +3153,32 @@ TEST_F(CaptureModeTest, CancelCaptureDuringCountDown) {
   auto* event_generator = GetEventGenerator();
   SendKey(ui::VKEY_RETURN, event_generator);
   WaitForSeconds(1);
+  CaptureModeTestApi test_api;
+  EXPECT_TRUE(test_api.IsInCountDownAnimation());
   SendKey(ui::VKEY_ESCAPE, event_generator);
+  EXPECT_FALSE(test_api.IsInCountDownAnimation());
+  EXPECT_FALSE(test_api.IsSessionActive());
+  EXPECT_FALSE(test_api.IsVideoRecordingInProgress());
+}
+
+TEST_F(CaptureModeTest, EscDuringCountDownWhileSettingsOpen) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+
+  // Hitting Esc while the settings menu is open and the count down is in
+  // progress should end the session directly.
+  auto* event_generator = GetEventGenerator();
+  ClickOnView(GetSettingsButton(), event_generator);
+  EXPECT_TRUE(GetCaptureModeSettingsWidget());
+  SendKey(ui::VKEY_RETURN, event_generator);
+  WaitForSeconds(1);
+  CaptureModeTestApi test_api;
+  EXPECT_TRUE(test_api.IsInCountDownAnimation());
+  SendKey(ui::VKEY_ESCAPE, event_generator);
+  EXPECT_FALSE(test_api.IsInCountDownAnimation());
+  EXPECT_FALSE(test_api.IsSessionActive());
+  EXPECT_FALSE(test_api.IsVideoRecordingInProgress());
 }
 
 // Tests that metrics are recorded properly for capture region adjustments.
@@ -4084,6 +4126,7 @@ TEST_F(CaptureModeTest, CaptureBarAndSettingsMenuVisibilityDrawingRegion) {
   auto* capture_bar_widget = GetCaptureModeBarWidget();
   ui::Layer* capture_bar_layer = capture_bar_widget->GetLayer();
   EXPECT_TRUE(controller->IsActive());
+  auto* session = CaptureModeController::Get()->capture_mode_session();
 
   // Test the settings menu and capture bar are hidden when the user clicks to
   // start selecting a region.
@@ -4093,22 +4136,45 @@ TEST_F(CaptureModeTest, CaptureBarAndSettingsMenuVisibilityDrawingRegion) {
       gfx::Point(0, 0),
       capture_bar_widget->GetWindowBoundsInScreen().top_right() +
           gfx::Vector2d(0, -50)));
+  // Moving the cursor outside the bounds of the settings menu should update the
+  // cursor to `kPointer`, since the only possible operation here when clicking
+  // is to dismiss the settings menu rather than take a screenshot or update the
+  // region.
   event_generator->MoveMouseTo(target_region.origin());
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  using ui::mojom::CursorType;
+  EXPECT_EQ(CursorType::kPointer, cursor_manager->GetCursor().type());
+
+  // Pressing outside the bounds of the settings should dismiss it immediately,
+  // update the cursor to `kCell` (to signal that it's now possible to select a
+  // region), but region selection doesn't start until the next click event.
   event_generator->PressLeftButton();
   EXPECT_FALSE(GetCaptureModeSettingsWidget());
+  EXPECT_EQ(CursorType::kCell, cursor_manager->GetCursor().type());
+  EXPECT_FALSE(session->is_selecting_region());
+  event_generator->ReleaseLeftButton();
+  EXPECT_FALSE(session->is_selecting_region());
+
+  event_generator->PressLeftButton();
+  EXPECT_TRUE(session->is_selecting_region());
   event_generator->MoveMouseTo(target_region.bottom_right());
   EXPECT_EQ(0.f, capture_bar_layer->GetTargetOpacity());
   event_generator->ReleaseLeftButton();
   EXPECT_FALSE(GetCaptureModeSettingsWidget());
 
-  // Test that the settings menu is hidden when we drag a region. This drags a
-  // region that overlaps the capture bar for later steps of testing. Also tests
-  // that capture bar is invisible while region is being dragged even it
-  // overlaps with capture bar.
+  // Test that the settings menu will dismiss immediately when clicking
+  // somewhere in the middle of the capture region.
   ClickOnView(GetSettingsButton(), event_generator);
   event_generator->MoveMouseTo(target_region.origin() + gfx::Vector2d(50, 50));
   event_generator->PressLeftButton();
   EXPECT_FALSE(GetCaptureModeSettingsWidget());
+  event_generator->ReleaseLeftButton();
+  event_generator->PressLeftButton();
+  EXPECT_EQ(CursorType::kMove, cursor_manager->GetCursor().type());
+  EXPECT_FALSE(session->is_selecting_region());
+  EXPECT_TRUE(session->is_drag_in_progress());
+  // This creates a region that overlaps with the capture bar. The capture bar
+  // should be fully transparent while dragging the region is in progress.
   event_generator->MoveMouseTo(target_region.bottom_center());
   EXPECT_EQ(0.f, capture_bar_layer->GetTargetOpacity());
   event_generator->ReleaseLeftButton();
@@ -4125,6 +4191,7 @@ TEST_F(CaptureModeTest, CaptureBarAndSettingsMenuVisibilityDrawingRegion) {
       capture_bar_widget->GetWindowBoundsInScreen().CenterPoint());
   EXPECT_EQ(1.f, capture_bar_layer->GetTargetOpacity());
   ClickOnView(GetSettingsButton(), event_generator);
+  EXPECT_TRUE(GetCaptureModeSettingsWidget());
   EXPECT_EQ(1.f, capture_bar_layer->GetTargetOpacity());
 
   // Move mouse onto the settings menu, confirm the capture bar is still
@@ -5038,11 +5105,11 @@ TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidget) {
   VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/false);
 
   auto* projector_controller = ProjectorControllerImpl::Get();
-  projector_controller->OnMarkerPressed();
+  projector_controller->EnableAnnotatorTool();
   EXPECT_TRUE(overlay_controller->is_enabled());
   VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
 
-  projector_controller->OnMarkerPressed();
+  projector_controller->ResetTools();
   EXPECT_FALSE(overlay_controller->is_enabled());
   VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/false);
 }
@@ -5060,7 +5127,7 @@ TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayDockedMagnifier) {
       test_api.GetRecordingOverlayController();
 
   auto* projector_controller = ProjectorControllerImpl::Get();
-  projector_controller->OnMarkerPressed();
+  projector_controller->EnableAnnotatorTool();
   EXPECT_TRUE(overlay_controller->is_enabled());
   auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
 
@@ -5162,7 +5229,7 @@ TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidgetTargeting) {
       test_api.GetRecordingOverlayController();
 
   auto* projector_controller = ProjectorControllerImpl::Get();
-  projector_controller->OnMarkerPressed();
+  projector_controller->EnableAnnotatorTool();
   EXPECT_TRUE(overlay_controller->is_enabled());
   auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
   VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
@@ -5245,7 +5312,7 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.scope_trace);
     // Enable annotation.
-    projector_controller->OnMarkerPressed();
+    projector_controller->EnableAnnotatorTool();
 
     // Verify shelf is invisible right now.
     EXPECT_FALSE(shelf->IsVisible());
@@ -5269,7 +5336,7 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
     EXPECT_TRUE(shelf->IsVisible());
 
     // Disable annotation.
-    projector_controller->OnMarkerPressed();
+    projector_controller->ResetTools();
     // Move mouse to the outside of the shelf activation area, and wait for the
     // animation to hide shelf to finish.
     event_generator->MoveMouseTo(display_center);
@@ -5462,12 +5529,6 @@ class CaptureModeSettingsTest : public CaptureModeTest {
     return CaptureModeSessionTestApi(session).GetCaptureModeSettingsView();
   }
 
-  UserNudgeController* GetUserNudgeController() const {
-    auto* session = CaptureModeController::Get()->capture_mode_session();
-    DCHECK(session);
-    return CaptureModeSessionTestApi(session).GetUserNudgeController();
-  }
-
   void WaitForSettingsMenuToBeRefreshed() {
     base::RunLoop run_loop;
     CaptureModeSettingsTestApi().SetOnSettingsMenuRefreshedCallback(
@@ -5535,10 +5596,15 @@ class CaptureModeNudgeDismissalTest
 
 TEST_P(CaptureModeNudgeDismissalTest, NudgeDismissedForever) {
   auto* controller = StartSession();
+  auto* capture_session = controller->capture_mode_session();
+  auto* capture_toast_controller = capture_session->capture_toast_controller();
   auto* nudge_controller = GetUserNudgeController();
   ASSERT_TRUE(nudge_controller);
   EXPECT_TRUE(nudge_controller->is_visible());
-  EXPECT_TRUE(nudge_controller->toast_widget());
+  EXPECT_TRUE(capture_toast_controller->capture_toast_widget());
+  ASSERT_TRUE(capture_toast_controller->current_toast_type());
+  EXPECT_EQ(*(capture_toast_controller->current_toast_type()),
+            CaptureToastType::kUserNudge);
 
   // Trigger the action that dismisses the nudge forever, it should be removed
   // in this session (if the action doesn't stop the session) and any future
@@ -5572,17 +5638,20 @@ TEST_F(CaptureModeSettingsTest, NudgeChangesRootWithBar) {
   auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
                                          CaptureModeType::kImage);
   auto* session = controller->capture_mode_session();
+  auto* capture_toast_controller = session->capture_toast_controller();
+
   EXPECT_EQ(Shell::GetAllRootWindows()[0], session->current_root());
-  auto* nudge_controller = GetUserNudgeController();
-  EXPECT_EQ(
-      nudge_controller->toast_widget()->GetNativeWindow()->GetRootWindow(),
-      session->current_root());
+  EXPECT_EQ(capture_toast_controller->capture_toast_widget()
+                ->GetNativeWindow()
+                ->GetRootWindow(),
+            session->current_root());
 
   MoveMouseToAndUpdateCursorDisplay(gfx::Point(1000, 500), event_generator);
   EXPECT_EQ(Shell::GetAllRootWindows()[1], session->current_root());
-  EXPECT_EQ(
-      nudge_controller->toast_widget()->GetNativeWindow()->GetRootWindow(),
-      session->current_root());
+  EXPECT_EQ(capture_toast_controller->capture_toast_widget()
+                ->GetNativeWindow()
+                ->GetRootWindow(),
+            session->current_root());
 }
 
 TEST_F(CaptureModeSettingsTest, NudgeBehaviorWhenSelectingRegion) {
@@ -5607,9 +5676,11 @@ TEST_F(CaptureModeSettingsTest, NudgeBehaviorWhenSelectingRegion) {
 
   // The nudge shows again, and is on the second display.
   EXPECT_TRUE(nudge_controller->is_visible());
-  EXPECT_EQ(
-      nudge_controller->toast_widget()->GetNativeWindow()->GetRootWindow(),
-      session->current_root());
+  EXPECT_EQ(session->capture_toast_controller()
+                ->capture_toast_widget()
+                ->GetNativeWindow()
+                ->GetRootWindow(),
+            session->current_root());
 }
 
 TEST_F(CaptureModeSettingsTest, NudgeDoesNotShowForAllUserTypes) {

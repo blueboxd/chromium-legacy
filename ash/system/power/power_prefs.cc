@@ -11,7 +11,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/system/power/lock_on_leave_controller.h"
+#include "ash/system/human_presence/lock_on_leave_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
@@ -153,9 +153,9 @@ PowerPrefs::PowerPrefs(chromeos::PowerPolicyController* power_policy_controller,
   DCHECK(power_policy_controller_);
   DCHECK(tick_clock_);
 
-  // Only construct hps_sense_controller_ if quick dim is enabled.
+  // Only construct lock_on_leave_controller_ if quick dim is enabled.
   if (features::IsQuickDimEnabled())
-    hps_sense_controller_ = std::make_unique<HpsSenseController>();
+    lock_on_leave_controller_ = std::make_unique<LockOnLeaveController>();
 
   power_manager_client_observation_.Observe(power_manager_client);
   Shell::Get()->session_controller()->AddObserver(this);
@@ -335,8 +335,8 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
         prefs->GetDouble(prefs::kPowerUserActivityScreenDimDelayFactor);
   }
 
-  // Only set power_manager and hps if quick dim is enabled.
-  if (hps_sense_controller_) {
+  // Only set power_manager and lock-on-leave if quick dim is enabled.
+  if (lock_on_leave_controller_) {
     if (prefs->GetBoolean(prefs::kPowerQuickDimEnabled)) {
       values.battery_quick_dim_delay_ms =
           hps::GetQuickDimDelay().InMilliseconds();
@@ -348,9 +348,9 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
 
       values.send_feedback_if_undimmed = hps::GetQuickDimFeedbackEnabled();
 
-      hps_sense_controller_->EnableHpsSense();
+      lock_on_leave_controller_->EnableLockOnLeave();
     } else {
-      hps_sense_controller_->DisableHpsSense();
+      lock_on_leave_controller_->DisableLockOnLeave();
     }
   }
 

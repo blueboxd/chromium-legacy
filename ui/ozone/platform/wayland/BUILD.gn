@@ -14,6 +14,15 @@ import("//ui/ozone/platform/wayland/wayland.gni")
 
 assert(is_linux || is_chromeos_lacros)
 
+source_set("common") {
+  sources = [
+    "common/wayland_overlay_config.cc",
+    "common/wayland_overlay_config.h",
+  ]
+
+  deps = [ "//ui/gfx" ]
+}
+
 source_set("wayland") {
   sources = [
     "client_native_pixmap_factory_wayland.cc",
@@ -207,6 +216,7 @@ source_set("wayland") {
   defines = [ "OZONE_IMPLEMENTATION" ]
 
   deps = [
+    ":common",
     "//base",
     "//build:chromeos_buildflags",
     "//build/config/linux/libdrm",
@@ -218,6 +228,7 @@ source_set("wayland") {
     "//mojo/public/cpp/system",
     "//skia",
     "//third_party/libsync",
+    "//third_party/re2",
     "//third_party/wayland:wayland_util",
     "//third_party/wayland-protocols:alpha_compositing_protocol",
     "//third_party/wayland-protocols:cursor_shapes_protocol",
@@ -226,6 +237,7 @@ source_set("wayland") {
     "//third_party/wayland-protocols:gtk_shell_protocol",
     "//third_party/wayland-protocols:idle_inhibit_protocol",
     "//third_party/wayland-protocols:keyboard_extension_protocol",
+    "//third_party/wayland-protocols:keyboard_shortcuts_inhibit_protocol",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
     "//third_party/wayland-protocols:linux_explicit_synchronization_protocol",
     "//third_party/wayland-protocols:org_kde_kwin_idle",
@@ -523,6 +535,7 @@ source_set("wayland_unittests") {
   ]
 
   deps = [
+    ":common",
     ":test_support",
     ":wayland",
     "//build:chromeos_buildflags",

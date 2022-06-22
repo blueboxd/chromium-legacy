@@ -520,7 +520,9 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
                                   value:nsValue
                           userInitiated:userInitiated];
     }
-  } else if (params.type == "input") {
+  } else if (params.type == "input" || params.type == "keyup") {
+    // Some fields only emit 'keyup' events and not 'input' events, which would
+    // result in the delegate not being notified when the field is updated.
     if ([_delegate respondsToSelector:@selector
                    (autofillController:
                        didInputInFieldWithIdentifier:fieldType:formName:frameID

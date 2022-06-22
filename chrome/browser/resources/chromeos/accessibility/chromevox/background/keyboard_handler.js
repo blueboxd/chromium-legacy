@@ -6,7 +6,6 @@
  * @fileoverview ChromeVox keyboard handler.
  */
 import {MathHandler} from '/chromevox/background/math_handler.js';
-import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
 import {ChromeVoxKbHandler} from '/chromevox/common/keyboard_handler.js';
 
 /**
@@ -28,6 +27,7 @@ const KeyboardPassThroughState_ = {
 };
 
 export class BackgroundKeyboardHandler {
+  /** @private */
   constructor() {
     /** @private {!KeyboardPassThroughState_} */
     this.passThroughState_ = KeyboardPassThroughState_.NO_PASS_THROUGH;
@@ -43,6 +43,13 @@ export class BackgroundKeyboardHandler {
 
     chrome.accessibilityPrivate.setKeyboardListener(
         true, ChromeVox.isStickyPrefOn);
+  }
+
+  static init() {
+    if (BackgroundKeyboardHandler.instance) {
+      throw 'Error: trying to create two instances of singleton BackgroundKeyboardHandler.';
+    }
+    BackgroundKeyboardHandler.instance = new BackgroundKeyboardHandler();
   }
 
   /**
@@ -130,3 +137,6 @@ export class BackgroundKeyboardHandler {
     return false;
   }
 }
+
+/** @type {BackgroundKeyboardHandler} */
+BackgroundKeyboardHandler.instance;

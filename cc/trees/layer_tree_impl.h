@@ -438,7 +438,7 @@ class CC_EXPORT LayerTreeImpl {
   float page_scale_factor_for_scroll() const {
     DCHECK(external_page_scale_factor_ == 1.f ||
            current_page_scale_factor() == 1.f ||
-           !settings().is_layer_tree_for_subframe);
+           settings().is_for_scalable_page);
     return external_page_scale_factor_ * current_page_scale_factor();
   }
   const gfx::DisplayColorSpaces& display_color_spaces() const {
@@ -784,6 +784,17 @@ class CC_EXPORT LayerTreeImpl {
 
   bool HasDocumentTransitionRequests() const;
 
+  void ClearVisualUpdateDurations();
+  void SetVisualUpdateDurations(
+      base::TimeDelta previous_surfaces_visual_update_duration,
+      base::TimeDelta visual_update_duration);
+  base::TimeDelta previous_surfaces_visual_update_duration() const {
+    return previous_surfaces_visual_update_duration_;
+  }
+  base::TimeDelta visual_update_duration() const {
+    return visual_update_duration_;
+  }
+
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -941,6 +952,13 @@ class CC_EXPORT LayerTreeImpl {
   // Document transition requests to be transferred to Viz.
   std::vector<std::unique_ptr<DocumentTransitionRequest>>
       document_transition_requests_;
+
+  // The cumulative time spent performing visual updates for all Surfaces before
+  // this one.
+  base::TimeDelta previous_surfaces_visual_update_duration_;
+  // The cumulative time spent performing visual updates for the current
+  // Surface.
+  base::TimeDelta visual_update_duration_;
 };
 
 }  // namespace cc

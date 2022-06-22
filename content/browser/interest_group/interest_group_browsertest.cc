@@ -896,6 +896,26 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
     return GURL(result.ExtractString());
   }
 
+  bool ReplaceInURNInJS(
+      const GURL& urn_url,
+      const base::flat_map<std::string, std::string> replacements,
+      const absl::optional<ToRenderFrameHost> execution_target =
+          absl::nullopt) {
+    base::Value::Dict replacement_value;
+    for (const auto& replacement : replacements)
+      replacement_value.Set(replacement.first, replacement.second);
+    EvalJsResult result =
+        EvalJs(execution_target ? *execution_target : shell(),
+               JsReplace(R"(
+    (async function() {
+      await navigator.deprecatedReplaceInURN($1, $2);
+      return 'done';
+    })())",
+                         urn_url, base::Value(std::move(replacement_value))));
+    EXPECT_EQ("", result.error);
+    return "done" == result;
+  }
+
   void AttachInterestGroupObserver() {
     manager_->AddInterestGroupObserver(observer_.get());
   }
@@ -1641,6 +1661,456 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, CrossOriginLeaveNoCors) {
   // Leaving the group should fail.
   EXPECT_EQ("NotAllowedError: Permission to leave interest group denied.",
             LeaveInterestGroupAndVerify(no_cors_origin, kGroup));
+}
+
+// Test the renderer restricting the number of active cross-origin joins per
+// frame. One page tries to join kMaxActiveCrossSiteJoins+1 cross-origin
+// interest groups from 3 different origins, the last two requests are to two
+// distinct origins. All but the last are sent to the browser process. The
+// results in two .well-known permissions requests. While those two requests are
+// pending, the last request is held back in the renderer.
+//
+// Then the site joins and leaves a same-origin interest group, which should
+// bypass the queue. Then one of the hung .well-known requests completes, which
+// should allow the final cross-origin join to send out its .well-known request.
+//
+// Then a cross-origin leave request is issued for the group just joined, which
+// should not wait before issuing a .well-known request, since leaves and joins
+// are throttled separately. The .well-known request for that then succeeds.
+//
+// The remaining two .well-known requests for the joins are then completed,
+// which should result in all pending joins completing successfully.
+//
+// The title of the page is updated when each promise completes successfully, to
+// allow waiting on promises that were created earlier in the test run.
+//
+// Only 3 cross-site origins are used to limit the test to 3 simultaneous
+// .well-known requests. Using too many would run into the network stack's
+// request throttling code.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, CrossOriginJoinQueue) {
+  // This matches the value in navigator_auction.cc in blink/.
+  const int kMaxActiveCrossSiteJoins = 20;
+
+  // Since this is using another port from `cross_origin_server` below, the
+  // hostname doesn't matter, but use a different one, just in case.
+  GURL main_url = https_server_->GetURL("a.test", "/echo");
+  url::Origin main_origin = url::Origin::Create(main_url);
+
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      permissions_responses;
+  net::EmbeddedTestServer cross_origin_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+  cross_origin_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  // There should be 4 .well-known requests. The first 3 for cross-origin joins,
+  // the last for a cross-origin leave.
+  for (int i = 0; i < 4; ++i) {
+    permissions_responses.emplace_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &cross_origin_server,
+            "/.well-known/interest-group/permissions/?origin=" +
+                base::EscapeQueryParamValue(main_origin.Serialize(),
+                                            /*use_plus=*/false)));
+  }
+  ASSERT_TRUE(cross_origin_server.Start());
+
+  // Navigate to a cross-origin URL.
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  for (int i = 0; i < kMaxActiveCrossSiteJoins + 1; ++i) {
+    const char* other_origin_host = "0.b.test";
+    if (i == kMaxActiveCrossSiteJoins - 1) {
+      other_origin_host = "1.b.test";
+    } else if (i == kMaxActiveCrossSiteJoins) {
+      other_origin_host = "2.b.test";
+    }
+    url::Origin other_origin = cross_origin_server.GetOrigin(other_origin_host);
+    content_browser_client_.AddToAllowList({other_origin});
+
+    ExecuteScriptAsync(shell(),
+                       JsReplace(R"(
+navigator.joinAdInterestGroup(
+    {name: $1, owner: $2}, /*joinDurationSec=*/ 300)
+    .then(() => {
+      // Append the first character of the owner's host to the title.
+      document.title += (new URL($2)).host[0];
+    });)",
+                                 base::NumberToString(i), other_origin));
+
+    // Wait for .well-known requests to be made for "0.b.test" and "1.b.test".
+    // Need to wait for them immediately after the Javascript calls that should
+    // trigger the requests to prevent their order from being racily reversed at
+    // the network layer.
+    if (i == 0) {
+      permissions_responses[0]->WaitForRequest();
+      EXPECT_TRUE(base::StartsWith(
+          permissions_responses[0]->http_request()->headers.at("Host"),
+          "0.b.test"));
+    } else if (i == kMaxActiveCrossSiteJoins - 1) {
+      permissions_responses[1]->WaitForRequest();
+      EXPECT_TRUE(base::StartsWith(
+          permissions_responses[1]->http_request()->headers.at("Host"),
+          "1.b.test"));
+    }
+  }
+
+  // Clear title, as each successful join modifies the title, so need a basic
+  // title to start with. Can't set an empty title, so use "_" instead.
+  ExecuteScriptAsync(shell(), "document.title='_'");
+
+  // Joining and leaving a same-origin interest group should not be throttled.
+  EXPECT_EQ(kSuccess,
+            JoinInterestGroupAndVerify(main_origin, "helmets for unicorns"));
+  EXPECT_EQ(kSuccess,
+            LeaveInterestGroupAndVerify(main_origin, "helmets for unicorns"));
+
+  // The "2.b.test" cross-origin join should still be waiting for one of the
+  // other cross-site joins to complete.
+  EXPECT_FALSE(permissions_responses[2]->has_received_request());
+
+  // Complete the "1.b.test" .well-known request, which should cause the
+  // "2.b.test" join request to be sent to the browser, which should issue
+  // another .well-known request.
+  TitleWatcher title_watcher1(web_contents(), u"_1");
+  permissions_responses[1]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"joinAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[1]->Done();
+  EXPECT_EQ(u"_1", title_watcher1.WaitAndGetTitle());
+
+  // The "2.b.test" cross-origin join should advance out of the queue and send a
+  // .well-known request.
+  permissions_responses[2]->WaitForRequest();
+  EXPECT_TRUE(base::StartsWith(
+      permissions_responses[2]->http_request()->headers.at("Host"),
+      "2.b.test"));
+
+  // A new cross-origin leave should bypass the join queue, and start
+  // immediately.
+  //
+  // TODO(mmenke): Once there's an LRU cache, switch this to
+  // JoinInterestGroupAndVerify().
+  ExecuteScriptAsync(shell(),
+                     JsReplace(R"(
+navigator.leaveAdInterestGroup({name: $1, owner: $2})
+    .then(() => {
+      // Append '-' and the first character of the owner's host to the title.
+      document.title += '-' + (new URL($2)).host[0];
+    });)",
+                               base::NumberToString(kMaxActiveCrossSiteJoins),
+                               cross_origin_server.GetOrigin("1.b.test")));
+  // Respond to the leave's .well-known request.
+  TitleWatcher title_watcher2(web_contents(), u"_1-1");
+  permissions_responses[3]->WaitForRequest();
+  EXPECT_TRUE(base::StartsWith(
+      permissions_responses[3]->http_request()->headers.at("Host"),
+      "1.b.test"));
+  permissions_responses[3]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"leaveAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[3]->Done();
+  EXPECT_EQ(u"_1-1", title_watcher2.WaitAndGetTitle());
+
+  // Complete the "2.b.test" join's .well-known request.
+  TitleWatcher title_watcher3(web_contents(), u"_1-12");
+  permissions_responses[2]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"joinAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[2]->Done();
+  EXPECT_EQ(u"_1-12", title_watcher3.WaitAndGetTitle());
+
+  // Complete the "0.b.test" joins' .well-known request.
+  std::u16string final_title =
+      u"_1-12" + std::u16string(kMaxActiveCrossSiteJoins - 1, u'0');
+  TitleWatcher title_watcher4(web_contents(), final_title);
+  permissions_responses[0]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"joinAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[0]->Done();
+  EXPECT_EQ(final_title, title_watcher4.WaitAndGetTitle());
+}
+
+// The inverse of CrossOriginJoinQueue. Unlike most leave tests, leaves interest
+// groups the user isn't actually in.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, CrossOriginLeaveQueue) {
+  // This matches the value in navigator_auction.cc in blink/.
+  const int kMaxActiveCrossSiteLeaves = 20;
+
+  // Since this is using another port from `cross_origin_server` below, the
+  // hostname doesn't matter, but use a different one, just in case.
+  GURL main_url = https_server_->GetURL("a.test", "/echo");
+  url::Origin main_origin = url::Origin::Create(main_url);
+
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      permissions_responses;
+  net::EmbeddedTestServer cross_origin_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+  cross_origin_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  // There should be 4 .well-known requests. The first 3 for cross-origin
+  // leaves, the last for a cross-origin join.
+  for (int i = 0; i < 4; ++i) {
+    permissions_responses.emplace_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &cross_origin_server,
+            "/.well-known/interest-group/permissions/?origin=" +
+                base::EscapeQueryParamValue(main_origin.Serialize(),
+                                            /*use_plus=*/false)));
+  }
+  ASSERT_TRUE(cross_origin_server.Start());
+
+  // Navigate to a cross-origin URL.
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  for (int i = 0; i < kMaxActiveCrossSiteLeaves + 1; ++i) {
+    const char* other_origin_host = "0.b.test";
+    if (i == kMaxActiveCrossSiteLeaves - 1) {
+      other_origin_host = "1.b.test";
+    } else if (i == kMaxActiveCrossSiteLeaves) {
+      other_origin_host = "2.b.test";
+    }
+    url::Origin other_origin = cross_origin_server.GetOrigin(other_origin_host);
+    content_browser_client_.AddToAllowList({other_origin});
+
+    ExecuteScriptAsync(shell(),
+                       JsReplace(R"(
+navigator.leaveAdInterestGroup({name: $1, owner: $2})
+    .then(() => {
+      // Append the first character of the owner's host to the title.
+      document.title += (new URL($2)).host[0];
+    });)",
+                                 base::NumberToString(i), other_origin));
+
+    // Wait for .well-known requests to be made for "0.b.test" and "1.b.test".
+    // Need to wait for them immediately after the Javascript calls that should
+    // trigger the requests to prevent their order from being racily reversed at
+    // the network layer.
+    if (i == 0) {
+      permissions_responses[0]->WaitForRequest();
+      EXPECT_TRUE(base::StartsWith(
+          permissions_responses[0]->http_request()->headers.at("Host"),
+          "0.b.test"));
+    } else if (i == kMaxActiveCrossSiteLeaves - 1) {
+      permissions_responses[1]->WaitForRequest();
+      EXPECT_TRUE(base::StartsWith(
+          permissions_responses[1]->http_request()->headers.at("Host"),
+          "1.b.test"));
+    }
+  }
+
+  // Clear title, as each successful leave modifies the title, so need a basic
+  // title to start with. Can't set an empty title, so use "_" instead.
+  ExecuteScriptAsync(shell(), "document.title='_'");
+
+  // Joining and leaving a same-origin interest group should not be throttled.
+  EXPECT_EQ(kSuccess,
+            JoinInterestGroupAndVerify(main_origin, "helmets for unicorns"));
+  EXPECT_EQ(kSuccess,
+            LeaveInterestGroupAndVerify(main_origin, "helmets for unicorns"));
+
+  // The "2.b.test" cross-origin leave should still be waiting for one of the
+  // other cross-site leaves to complete.
+  EXPECT_FALSE(permissions_responses[2]->has_received_request());
+
+  // Complete the "1.b.test" .well-known request, which should cause the
+  // "2.b.test" leave request to be sent to the browser, which should issue
+  // another .well-known request.
+  TitleWatcher title_watcher1(web_contents(), u"_1");
+  permissions_responses[1]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"leaveAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[1]->Done();
+  EXPECT_EQ(u"_1", title_watcher1.WaitAndGetTitle());
+
+  // The "2.b.test" cross-origin leave should advance out of the queue and send
+  // a .well-known request.
+  permissions_responses[2]->WaitForRequest();
+  EXPECT_TRUE(base::StartsWith(
+      permissions_responses[2]->http_request()->headers.at("Host"),
+      "2.b.test"));
+
+  // A new cross-origin join should bypass the leave queue, and start
+  // immediately.
+  //
+  // TODO(mmenke): Once there's an LRU cache, switch this to
+  // LeaveInterestGroupAndVerify().
+  ExecuteScriptAsync(shell(),
+                     JsReplace(R"(
+navigator.joinAdInterestGroup(
+    {name: $1, owner: $2}, /*joinDurationSec=*/ 300)
+    .then(() => {
+      // Append '+' and the first character of the owner's host to the title.
+      document.title += '+' + (new URL($2)).host[0];
+    });)",
+                               base::NumberToString(kMaxActiveCrossSiteLeaves),
+                               cross_origin_server.GetOrigin("1.b.test")));
+  // Respond to the join's .well-known request.
+  TitleWatcher title_watcher2(web_contents(), u"_1+1");
+  permissions_responses[3]->WaitForRequest();
+  EXPECT_TRUE(base::StartsWith(
+      permissions_responses[1]->http_request()->headers.at("Host"),
+      "1.b.test"));
+  permissions_responses[3]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"joinAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[3]->Done();
+  EXPECT_EQ(u"_1+1", title_watcher2.WaitAndGetTitle());
+
+  // Complete the "2.b.test" leave's .well-known request.
+  TitleWatcher title_watcher3(web_contents(), u"_1+12");
+  permissions_responses[2]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"leaveAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[2]->Done();
+  EXPECT_EQ(u"_1+12", title_watcher3.WaitAndGetTitle());
+
+  // Complete the "0.b.test" leaves' .well-known request.
+  std::u16string final_title =
+      u"_1+12" + std::u16string(kMaxActiveCrossSiteLeaves - 1, u'0');
+  TitleWatcher title_watcher4(web_contents(), final_title);
+  permissions_responses[0]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"leaveAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[0]->Done();
+  EXPECT_EQ(final_title, title_watcher4.WaitAndGetTitle());
+}
+
+// Much like CrossOriginJoinQueue, but navigates the page when the queue is
+// full. Makes sure started joins complete successfully, and a join that was
+// still queued when the frame was navigated away is dropped.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       CrossOriginJoinAndNavigateAway) {
+  // This matches the value in navigator_auction.cc in blink/.
+  const int kMaxActiveCrossSiteJoins = 20;
+
+  // Since this is using another port from `cross_origin_server` below, the
+  // hostname doesn't matter, but use a different one, just in case.
+  GURL main_url = https_server_->GetURL("a.test", "/echo");
+  url::Origin main_origin = url::Origin::Create(main_url);
+
+  // URL with same origin as `main_url` to navigate to afterwards. Same origin
+  // so that the renderer process will be shared.
+  GURL same_origin_url = https_server_->GetURL("a.test", "/echo?2");
+
+  net::EmbeddedTestServer cross_origin_server(
+      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+  cross_origin_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      permissions_responses;
+  // While there should only be 2 .well-known requests in this test, create an
+  // extra ControllableHttpResponse so can make sure it never sees a request.
+  for (int i = 0; i < 3; ++i) {
+    permissions_responses.emplace_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &cross_origin_server,
+            "/.well-known/interest-group/permissions/?origin=" +
+                base::EscapeQueryParamValue(main_origin.Serialize(),
+                                            /*use_plus=*/false)));
+  }
+  ASSERT_TRUE(cross_origin_server.Start());
+
+  // Navigate to a cross-origin URL.
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  for (int i = 0; i < kMaxActiveCrossSiteJoins + 1; ++i) {
+    const char* other_origin_host = "0.b.test";
+    if (i == kMaxActiveCrossSiteJoins - 1) {
+      other_origin_host = "1.b.test";
+    } else if (i == kMaxActiveCrossSiteJoins) {
+      other_origin_host = "2.b.test";
+    }
+    url::Origin other_origin = cross_origin_server.GetOrigin(other_origin_host);
+    content_browser_client_.AddToAllowList({other_origin});
+
+    ExecuteScriptAsync(shell(),
+                       JsReplace(R"(
+navigator.joinAdInterestGroup(
+    {name: $1, owner: $2}, /*joinDurationSec=*/ 300);)",
+                                 base::NumberToString(i), other_origin));
+
+    // Wait for .well-known requests to be made for "0.b.test" and "1.b.test".
+    // Need to wait for them immediately after the Javascript calls that should
+    // trigger the requests to prevent their order from being racily reversed at
+    // the network layer.
+    //
+    // Also need to wait for them to make sure the requests reach the browser
+    // process before the frame is navigated.
+    if (i == 0) {
+      permissions_responses[0]->WaitForRequest();
+      EXPECT_TRUE(base::StartsWith(
+          permissions_responses[0]->http_request()->headers.at("Host"),
+          "0.b.test"));
+    } else if (i == kMaxActiveCrossSiteJoins - 1) {
+      permissions_responses[1]->WaitForRequest();
+      EXPECT_TRUE(base::StartsWith(
+          permissions_responses[1]->http_request()->headers.at("Host"),
+          "1.b.test"));
+    }
+  }
+
+  // Navigate the frame.
+  ASSERT_TRUE(NavigateToURL(shell(), same_origin_url));
+
+  // Complete the "1.b.test" .well-known request.
+  permissions_responses[1]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"joinAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[1]->Done();
+
+  // Wait for the "1.b.test" group to be joined successfully.
+  while (GetJoinCount(cross_origin_server.GetOrigin("1.b.test"),
+                      base::NumberToString(kMaxActiveCrossSiteJoins - 1)) !=
+         1) {
+    continue;
+  }
+
+  // Complete the "0.b.test" .well-known request.
+  permissions_responses[0]->Send(
+      net::HttpStatusCode::HTTP_OK,
+      /*content_type=*/"application/json",
+      /*content=*/R"({"joinAdInterestGroup" : true})",
+      /*cookies=*/{},
+      /*extra_headers=*/{"Access-Control-Allow-Origin: *"});
+  permissions_responses[0]->Done();
+  // Wait for two of the "0.b.test" groups to be joined successfully.
+  while (GetJoinCount(cross_origin_server.GetOrigin("0.b.test"),
+                      base::NumberToString(0)) != 1) {
+    continue;
+  }
+  while (GetJoinCount(cross_origin_server.GetOrigin("0.b.test"),
+                      base::NumberToString(kMaxActiveCrossSiteJoins - 2)) !=
+         1) {
+    continue;
+  }
+
+  // The "2.b.test" cross-origin join should never have made it to the browser
+  // process, let alone to the test server.
+  EXPECT_FALSE(permissions_responses[2]->has_received_request());
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -2545,6 +3015,58 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithWinner) {
                 ->trusted_params->isolation_info.network_isolation_key());
 }
 
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionWithWinnerReplacedURN) {
+  GURL test_url = https_server_->GetURL("a.test", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+  GURL ad_url =
+      GURL(https_server_->GetURL("c.test", "/%%echo%%?${INTEREST_GROUP_NAME}")
+               .spec());
+  GURL expected_ad_url = https_server_->GetURL("c.test", "/echo?render_cars");
+
+  EXPECT_EQ(kSuccess, JoinInterestGroupAndVerify(
+                          /*owner=*/test_origin,
+                          /*name=*/"cars",
+                          /*priority=*/0.0,
+                          /*bidding_url=*/
+                          https_server_->GetURL(
+                              "a.test", "/interest_group/bidding_logic.js"),
+                          /*ads=*/{{{ad_url, "{ad:'metadata', here:[1,2]}"}}}));
+
+  std::string auction_config = JsReplace(
+      R"({
+    seller: $1,
+    decisionLogicUrl: $2,
+    interestGroupBuyers: [$1],
+      })",
+      test_origin,
+      https_server_->GetURL("a.test", "/interest_group/decision_logic.js"));
+  auto result = RunAuctionAndWait(auction_config,
+                                  /*execution_target=*/absl::nullopt);
+  GURL urn_url = GURL(result.ExtractString());
+  EXPECT_TRUE(urn_url.is_valid());
+  EXPECT_EQ(url::kUrnScheme, urn_url.scheme_piece());
+
+  {
+    TestFencedFrameURLMappingResultObserver observer;
+    ConvertFencedFrameURNToURL(urn_url, &observer);
+    EXPECT_TRUE(observer.mapped_url()) << urn_url;
+    EXPECT_EQ(ad_url, observer.mapped_url());
+  }
+
+  EXPECT_TRUE(ReplaceInURNInJS(
+      urn_url,
+      {{"${INTEREST_GROUP_NAME}", "render_cars"}, {"%%echo%%", "echo"}}));
+
+  {
+    TestFencedFrameURLMappingResultObserver observer;
+    ConvertFencedFrameURNToURL(urn_url, &observer);
+    EXPECT_EQ(expected_ad_url, observer.mapped_url());
+  }
+  NavigateIframeAndCheckURL(web_contents(), urn_url, expected_ad_url);
+}
+
 IN_PROC_BROWSER_TEST_F(
     InterestGroupBrowserTest,
     RunAdAuctionPerBuyerSignalsAndPerBuyerTimeoutsOriginNotInBuyers) {
@@ -2987,6 +3509,64 @@ perBuyerSignals: {$1: {even: 'more', x: 4.5}}
                 ->trusted_params->isolation_info.network_isolation_key(),
             url_loader_monitor.GetRequestInfo(kExpectedReportUrls[1])
                 ->trusted_params->isolation_info.network_isolation_key());
+}
+
+IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
+                       RunAdAuctionWithWinnerReplacedURN) {
+  URLLoaderMonitor url_loader_monitor;
+
+  GURL test_url =
+      https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+
+  GURL ad_url = https_server_->GetURL(
+      "c.test", "/set-header?Supports-Loading-Mode: %%LOADING_MODE%%");
+  GURL expected_ad_url = https_server_->GetURL(
+      "c.test", "/set-header?Supports-Loading-Mode: fenced-frame");
+  EXPECT_EQ(
+      kSuccess,
+      JoinInterestGroupAndVerify(blink::InterestGroup(
+          /*expiry=*/base::Time(),
+          /*owner=*/test_origin,
+          /*name=*/"cars",
+          /*priority=*/0.0,
+          /*bidding_url=*/
+          https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
+          /*bidding_wasm_helper_url=*/absl::nullopt,
+          /*daily_update_url=*/absl::nullopt,
+          /*trusted_bidding_signals_url=*/
+          https_server_->GetURL("a.test",
+                                "/interest_group/trusted_bidding_signals.json"),
+          /*trusted_bidding_signals_keys=*/{{"key1"}},
+          /*user_bidding_signals=*/"{some: 'json', data: {here: [1, 2]}}",
+          {{{ad_url, "{ad:'metadata', here:[1,2]}"}}},
+          /*ad_components=*/absl::nullopt)));
+
+  content::EvalJsResult urn_url_string = RunAuctionAndWait(
+      JsReplace(
+          R"({
+seller: $1,
+decisionLogicUrl: $2,
+interestGroupBuyers: [$1],
+auctionSignals: {x: 1},
+sellerSignals: {yet: 'more', info: 1},
+perBuyerSignals: {$1: {even: 'more', x: 4.5}}
+                  })",
+          test_origin,
+          https_server_->GetURL("a.test", "/interest_group/decision_logic.js")),
+      shell());
+  ASSERT_TRUE(urn_url_string.value.is_string())
+      << "Expected string, but got " << urn_url_string.value;
+
+  GURL urn_url(urn_url_string.ExtractString());
+  ASSERT_TRUE(urn_url.is_valid())
+      << "URL is not valid: " << urn_url_string.ExtractString();
+  EXPECT_EQ(url::kUrnScheme, urn_url.scheme_piece());
+
+  ReplaceInURNInJS(urn_url, {{"%%LOADING_MODE%%", "fenced-frame"}});
+
+  NavigateFencedFrameAndWait(urn_url, expected_ad_url, shell());
 }
 
 // Runs two ad auctions with fenced frames enabled. Both auctions should

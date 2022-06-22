@@ -463,7 +463,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(38 == GetNumModelTypes(),
+  static_assert(39 == GetNumModelTypes(),
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -938,6 +938,7 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::SyncInvalidationsPayload& proto) {
   VISIT_REP(data_type_invalidations);
   VISIT_BYTES(hint);
+  VISIT(version);
 }
 
 VISIT_PROTO_FIELDS(

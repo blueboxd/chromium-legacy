@@ -13,6 +13,10 @@ namespace history_clusters {
 
 // The default configuration. Always use |GetConfig()| to get the current
 // configuration.
+//
+// Config has the same thread-safety as base::FeatureList. The first call to
+// GetConfig() (which performs initialization) must be done single threaded on
+// the main thread. After that, Config can be read from any thread.
 struct Config {
   // True if journeys feature is enabled as per field trial check. Does not
   // check for any user-specific conditions (such as locales).
@@ -60,7 +64,7 @@ struct Config {
 
   // If enabled, hidden visits are dropped entirely, instead of being gated
   // behind a "Show More" UI control.
-  bool drop_hidden_visits = false;
+  bool drop_hidden_visits = true;
 
   // If enabled, when there is a Journeys search query, the backend re-scores
   // visits within a cluster to account for whether or not that visit matches.
@@ -82,6 +86,22 @@ struct Config {
   // If enabled, allows the Omnibox Action chip to appear on URLs from noisy
   // visits. This does nothing if `omnibox_action_on_urls` is false.
   bool omnibox_action_on_noisy_urls = true;
+
+  // If enabled, adds the keywords of aliases for detected entity names to a
+  // cluster.
+  bool keyword_filter_on_entity_aliases = false;
+
+  // If greater than 0, the max number of aliases to include in keywords. If <=
+  // 0, all aliases will be included.
+  size_t max_entity_aliases_in_keywords = 0;
+
+  // If enabled, adds the keywords of categories for detected entities to a
+  // cluster.
+  bool keyword_filter_on_categories = true;
+
+  // If enabled, adds the keywords of detected entities from noisy visits to a
+  // cluster.
+  bool keyword_filter_on_noisy_visits = true;
 
   // Enables debug info in non-user-visible surfaces, like Chrome Inspector.
   // Does nothing if `kJourneys` is disabled.
@@ -187,13 +207,6 @@ struct Config {
   // use when clustering based on intersection score.
   int cluster_interaction_threshold = 2;
 
-  // Whether to include category names in the keywords for a cluster.
-  bool should_include_categories_in_keywords = true;
-
-  // Whether to exclude keywords from visits that may be considered "noisy" to
-  // the user (i.e. highly engaged, non-SRP).
-  bool should_exclude_keywords_from_noisy_visits = false;
-
   // Returns the default batch size for annotating visits when clustering.
   size_t clustering_tasks_batch_size = 250;
 
@@ -202,7 +215,9 @@ struct Config {
 
   // Whether to assign labels to clusters. If the label exists, it will be shown
   // in the UI. If the label doesn't exist, the UI will emphasize the top visit.
-  bool should_label_clusters = false;
+  // Note: The default value here is meaningless, because the actual default
+  // value is derived from the base::Feature.
+  bool should_label_clusters = true;
 
   // Whether to assign labels to clusters from the hostnames of the cluster.
   // Does nothing if `should_label_clusters` is false. Note that since every

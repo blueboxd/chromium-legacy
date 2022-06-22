@@ -19,7 +19,7 @@ try_.defaults.set(
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     compilator_goma_jobs = goma.jobs.J150,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
@@ -39,6 +39,9 @@ try_.builder(
 try_.builder(
     name = "cast_shell_linux",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Cast Linux",
+    ],
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -47,6 +50,9 @@ try_.builder(
 try_.builder(
     name = "cast_shell_linux_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Cast Linux Debug",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -75,7 +81,7 @@ try_.builder(
     properties = {
         "$build/binary_size": {
             "analyze_targets": [
-                "//fuchsia/release:fuchsia_sizes",
+                "//tools/fuchsia/size_tests:fuchsia_sizes",
             ],
             "compile_targets": [
                 "fuchsia_sizes",
@@ -210,6 +216,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-bfcache-rel",
+    mirrors = [
+        "ci/linux-bfcache-rel",
+    ],
 )
 
 try_.builder(
@@ -264,6 +273,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-extended-tracing-rel",
+    mirrors = [
+        "ci/linux-extended-tracing-rel",
+    ],
 )
 
 try_.builder(
@@ -392,6 +404,15 @@ try_.compilator_builder(
 try_.builder(
     name = "linux-wayland-rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Linux Builder (Wayland)",
+        "ci/Linux Tests (Wayland)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -434,6 +455,18 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
+    mirrors = [
+        "ci/Linux ASan LSan Builder",
+        "ci/Linux ASan LSan Tests (1)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -559,10 +592,22 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "linux_chromium_tsan_rel_ng",
+    mirrors = [
+        "ci/Linux TSan Builder",
+        "ci/Linux TSan Tests",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
     compilator = "linux_chromium_tsan_rel_ng-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -573,6 +618,9 @@ try_.compilator_builder(
 
 try_.builder(
     name = "linux_chromium_ubsan_rel_ng",
+    mirrors = [
+        "ci/linux-ubsan-vptr",
+    ],
 )
 
 try_.builder(
@@ -624,6 +672,9 @@ try_.builder(
 try_.builder(
     name = "linux_vr",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/VR Linux",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [

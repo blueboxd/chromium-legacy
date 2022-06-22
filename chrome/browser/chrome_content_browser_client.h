@@ -201,6 +201,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                       const GURL& site_url) override;
   bool MayReuseHost(content::RenderProcessHost* process_host) override;
   size_t GetProcessCountToIgnoreForLimit() override;
+  blink::ParsedPermissionsPolicy GetPermissionsPolicyForIsolatedApp(
+      content::BrowserContext* browser_context,
+      const url::Origin& app_origin) override;
   bool ShouldTryToUseExistingProcessHost(
       content::BrowserContext* browser_context,
       const GURL& url) override;
@@ -298,6 +301,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin* impression_origin,
       const url::Origin* conversion_origin,
       const url::Origin* reporting_origin) override;
+  bool IsSharedStorageAllowed(content::BrowserContext* browser_context,
+                              const url::Origin& top_frame_origin,
+                              const url::Origin& accessing_origin) override;
 #if BUILDFLAG(IS_CHROMEOS)
   void OnTrustAnchorUsed(content::BrowserContext* browser_context) override;
 #endif
@@ -778,12 +784,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldPreconnectNavigation(
       content::BrowserContext* browser_context) override;
 
-  enum UserAgentReductionEnterprisePolicyState {
-    kDefault = 0,
-    kForceDisabled = 1,
-    kForceEnabled = 2,
-  };
-
   bool ShouldDisableOriginAgentClusterDefault(
       content::BrowserContext* browser_context) override;
 
@@ -882,12 +882,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void OnKeepaliveTimerFired(
       std::unique_ptr<ScopedKeepAlive> keep_alive_handle);
 #endif
-
-  UserAgentReductionEnterprisePolicyState
-  GetUserAgentReductionEnterprisePolicyState(content::BrowserContext* context);
-
-  embedder_support::ForceMajorVersionToMinorPosition
-  GetForceMajorVersionToMinorPosition(content::BrowserContext* context);
 
   // Vector of additional ChromeContentBrowserClientParts.
   // Parts are deleted in the reverse order they are added.

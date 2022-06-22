@@ -152,11 +152,17 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     bool disable_local_echo,
     const blink::AudioProcessingProperties& audio_processing_properties,
     int num_requested_channels,
-    ConstraintsOnceCallback started_callback,
+    ConstraintsRepeatingCallback started_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : blink::MediaStreamAudioSource(std::move(task_runner),
                                     true /* is_local_source */,
                                     disable_local_echo),
+      // Remote APM is only enabled for mic input, other input sources have
+      // conflicting requirements on echo cancellation:
+      // https://crbug.com/1328012
+      use_remote_apm_(media::IsChromeWideEchoCancellationEnabled() &&
+                      device.type ==
+                          mojom::blink::MediaStreamType::DEVICE_AUDIO_CAPTURE),
       consumer_frame_(&frame),
       dependency_factory_(
           PeerConnectionDependencyFactory::From(*frame.DomWindow())),
@@ -167,8 +173,9 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
   DCHECK(frame.DomWindow());
   SetDevice(device);
   SendLogMessage(
-      base::StringPrintf("ProcessedLocalAudioSource({session_id=%s})",
-                         device.session_id().ToString().c_str()));
+      base::StringPrintf("ProcessedLocalAudioSource({session_id=%s}, {APM:%s})",
+                         device.session_id().ToString().c_str(),
+                         use_remote_apm_ ? "remote" : "local"));
 }
 
 ProcessedLocalAudioSource::~ProcessedLocalAudioSource() {
@@ -367,7 +374,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
 
   media::AudioSourceParameters source_config(device().session_id());
 
-  if (media::IsChromeWideEchoCancellationEnabled()) {
+  if (use_remote_apm_) {
     if (OutputAudioAtProcessingSampleRate()) {
       // Since audio processing will be applied in the audio service, we request
       // audio here in the audio processing output format to avoid forced
@@ -486,8 +493,7 @@ void ProcessedLocalAudioSource::SetVolume(double volume) {
 
 void ProcessedLocalAudioSource::OnCaptureStarted() {
   SendLogMessageWithSessionId(base::StringPrintf("OnCaptureStarted()"));
-  std::move(started_callback_)
-      .Run(this, blink::mojom::MediaStreamRequestResult::OK, "");
+  started_callback_.Run(this, mojom::blink::MediaStreamRequestResult::OK, "");
 }
 
 void ProcessedLocalAudioSource::Capture(const media::AudioBus* audio_bus,
@@ -546,6 +552,16 @@ void ProcessedLocalAudioSource::OnCaptureProcessorCreated(
   DCHECK_NE(!!media_stream_audio_processor_, !!audio_processor_proxy_);
   if (audio_processor_proxy_)
     audio_processor_proxy_->SetControls(controls);
+}
+
+void ProcessedLocalAudioSource::ChangeSourceImpl(
+    const MediaStreamDevice& new_device) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  WebRtcLogMessage("ProcessedLocalAudioSource::ChangeSourceImpl(new_device = " +
+                   new_device.id + ")");
+  EnsureSourceIsStopped();
+  SetDevice(new_device);
+  EnsureSourceIsStarted();
 }
 
 void ProcessedLocalAudioSource::SetOutputDeviceForAec(

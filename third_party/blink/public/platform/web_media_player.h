@@ -134,15 +134,6 @@ class WebMediaPlayer {
     base::TimeDelta average_frame_duration;
   };
 
-  // Describes when we use SurfaceLayer for video instead of VideoLayer.
-  enum class SurfaceLayerMode {
-    // Always use VideoLayer
-    kNever,
-
-    // Always use SurfaceLayer for video.
-    kAlways,
-  };
-
   virtual ~WebMediaPlayer() = default;
 
   virtual LoadTiming Load(LoadType,
@@ -220,8 +211,6 @@ class WebMediaPlayer {
   // Internal states of loading and network.
   virtual NetworkState GetNetworkState() const = 0;
   virtual ReadyState GetReadyState() const = 0;
-
-  virtual SurfaceLayerMode GetVideoSurfaceLayerMode() const = 0;
 
   // Returns an implementation-specific human readable error message, or an
   // empty string if no message is available. The message should begin with a

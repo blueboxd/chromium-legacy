@@ -18,7 +18,6 @@ class DownloadManager;
 
 class Profile;
 class DownloadBubbleUIController;
-using DownloadUIModelPtr = ::OfflineItemModel::DownloadUIModelPtr;
 
 namespace base {
 class TimeDelta;
@@ -79,7 +78,7 @@ class DownloadDisplayController
   // |show_details_if_done| as argument if the partial view should be shown.
   virtual void OnUpdatedItem(bool is_done, bool show_details_if_done);
   // Called from bubble controller when an item is deleted.
-  virtual void OnRemovedItem();
+  virtual void OnRemovedItem(const ContentId& id);
 
   download::AllDownloadItemNotifier& get_download_notifier_for_testing() {
     return download_notifier_;

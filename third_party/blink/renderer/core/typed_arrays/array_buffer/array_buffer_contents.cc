@@ -149,7 +149,9 @@ void* ArrayBufferContents::AllocateMemoryWithFlags(size_t size,
   // Technically speaking, 16-byte aligned size doesn't mean 16-byte aligned
   // address, but this heuristics works with the current implementation of
   // PartitionAlloc (and PartitionAlloc doesn't support a better way for now).
-  if (base::kAlignment < 16) {  // base::kAlignment is a compile-time constant.
+  //
+  // `partition_alloc::internal::kAlignment` is a compile-time constant.
+  if (partition_alloc::internal::kAlignment < 16) {
     size_t aligned_size = base::bits::AlignUp(size, 16);
     if (size == 0) {
       aligned_size = 16;
@@ -159,12 +161,19 @@ void* ArrayBufferContents::AllocateMemoryWithFlags(size_t size,
     }
   }
 
+  // The V8 sandbox requires all ArrayBuffer backing stores to be allocated
+  // inside the sandbox address space. This isn't guaranteed if allocation
+  // override hooks (which are e.g. used by GWP-ASan) are enabled for those
+  // allocations. However, allocation observer hooks (which are e.g. used by
+  // the heap profiler) should still be invoked. Using the kNoOverrideHooks
+  // flag with AllocWithFlags accomplishes this.
+  flags |= partition_alloc::AllocFlags::kNoOverrideHooks;
   if (policy == kZeroInitialize) {
     flags |= partition_alloc::AllocFlags::kZeroFill;
   }
   void* data = WTF::Partitions::ArrayBufferPartition()->AllocWithFlags(
       flags, size, WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
-  if (base::kAlignment < 16) {
+  if (partition_alloc::internal::kAlignment < 16) {
     char* ptr = reinterpret_cast<char*>(data);
     DCHECK_EQ(base::bits::AlignUp(ptr, 16), ptr)
         << "Pointer " << ptr << " not 16B aligned for size " << size;

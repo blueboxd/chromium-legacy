@@ -17,18 +17,26 @@ struct PopupMatchRowView: View {
   enum Dimensions {
     static let actionButtonOffset = CGSize(width: -5, height: 0)
     static let actionButtonOuterPadding = EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0)
-    static let leadingSpacing: CGFloat = 60
     static let minHeight: CGFloat = 58
-    static let padding = EdgeInsets(top: 9, leading: 0, bottom: 9, trailing: 16)
+
+    enum VariationOne {
+      static let padding = EdgeInsets(top: 9, leading: 0, bottom: 9, trailing: 0)
+    }
+
+    enum VariationTwo {
+      static let padding = EdgeInsets(top: 9, leading: 0, bottom: 9, trailing: 10)
+    }
   }
 
   @Environment(\.popupUIVariation) var uiVariation: PopupUIVariation
+  @Environment(\.horizontalSizeClass) var sizeClass
 
   let match: PopupMatch
   let isHighlighted: Bool
   let toolbarConfiguration: ToolbarConfiguration
   let selectionHandler: () -> Void
   let trailingButtonHandler: () -> Void
+  let uiConfiguration: PopupUIConfiguration
 
   @State var isPressed = false
   @State var childView = CGSize.zero
@@ -71,8 +79,56 @@ struct PopupMatchRowView: View {
   @ViewBuilder
   var customSeparator: some View {
     HStack(spacing: 0) {
-      Spacer().frame(width: Dimensions.leadingSpacing)
+      Spacer().frame(
+        width: leadingMarginForRowContent + spaceBetweenRowContentLeadingEdgeAndSuggestionText)
       customSeparatorColor.frame(height: 0.5)
+    }
+  }
+
+  @Environment(\.layoutDirection) var layoutDirection: LayoutDirection
+
+  var leadingMarginForRowContent: CGFloat {
+    switch uiVariation {
+    case .one:
+      return uiConfiguration.omniboxLeadingSpace + 7
+    case .two:
+      return 8
+    }
+  }
+
+  var trailingMarginForRowContent: CGFloat {
+    switch uiVariation {
+    case .one:
+      return uiConfiguration.safeAreaTrailingSpace + kExpandedLocationBarLeadingMarginRefreshedPopup
+    case .two:
+      return 0
+    }
+  }
+
+  var spaceBetweenRowContentLeadingEdgeAndCenterOfSuggestionImage: CGFloat {
+    switch uiVariation {
+    case .one:
+      return uiConfiguration.omniboxLeadingImageLeadingSpace
+    case .two:
+      return 30
+    }
+  }
+
+  var spaceBetweenTextAndImage: CGFloat {
+    switch uiVariation {
+    case .one:
+      return 14
+    case .two:
+      return 15
+    }
+  }
+
+  var spaceBetweenRowContentLeadingEdgeAndSuggestionText: CGFloat {
+    switch uiVariation {
+    case .one:
+      return uiConfiguration.omniboxTextFieldLeadingSpace
+    case .two:
+      return 59
     }
   }
 
@@ -91,27 +147,28 @@ struct PopupMatchRowView: View {
       if isHighlighted {
         LinearGradient(gradient: Colors.highlightingGradient, startPoint: .top, endPoint: .bottom)
       } else if self.isPressed {
-        Color.tableRowViewHighlight
+        Color.updatedTertiaryBackground
       }
 
       button
 
-      let highlightColor = isHighlighted ? foregroundColorPrimary : nil
+      let highlightColor = isHighlighted ? Color.white : nil
 
       // The content is in front of the button, for proper hit testing.
       HStack(alignment: .center, spacing: 0) {
-        HStack(alignment: .center, spacing: 0) {
-          Spacer()
-          match.image
-            .map { image in
-              PopupMatchImageView(
-                image: image, highlightColor: highlightColor
-              )
-              .accessibilityHidden(true)
-              .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-            }
-          Spacer()
-        }.frame(width: Dimensions.leadingSpacing)
+        Color.clear.frame(width: leadingMarginForRowContent)
+
+        match.image
+          .map { image in
+            PopupMatchImageView(
+              image: image, highlightColor: highlightColor
+            )
+            .accessibilityHidden(true)
+            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+          }
+
+        Color.clear.frame(width: spaceBetweenTextAndImage)
+
         VStack(alignment: .leading, spacing: 0) {
           VStack(alignment: .leading, spacing: 0) {
             GradientTextView(match.text, highlightColor: highlightColor)
@@ -122,7 +179,6 @@ struct PopupMatchRowView: View {
               if match.hasAnswer {
                 OmniboxText(subtitle, highlightColor: highlightColor)
                   .font(.footnote)
-                  .foregroundColor(foregroundColorSecondary)
                   .lineLimit(match.numberOfLines)
                   .accessibilityHidden(true)
               } else {
@@ -130,7 +186,6 @@ struct PopupMatchRowView: View {
                   subtitle, highlightColor: highlightColor
                 )
                 .font(.footnote)
-                .foregroundColor(foregroundColorSecondary)
                 .lineLimit(1)
                 .accessibilityHidden(true)
               }
@@ -138,13 +193,17 @@ struct PopupMatchRowView: View {
           }
           .allowsHitTesting(false)
         }
-        Spacer()
+        Spacer(minLength: 0)
         if match.isAppendable || match.isTabMatch {
           PopupMatchTrailingButton(match: match, action: trailingButtonHandler)
-            .foregroundColor(isHighlighted ? foregroundColorPrimary : .chromeBlue)
+            .foregroundColor(isHighlighted ? highlightColor : .chromeBlue)
         }
+        Color.clear.frame(width: trailingMarginForRowContent)
       }
-      .padding(Dimensions.padding)
+      .padding(
+        uiVariation == .one ? Dimensions.VariationOne.padding : Dimensions.VariationTwo.padding
+      )
+      .environment(\.layoutDirection, layoutDirection)
     }
     .frame(maxWidth: .infinity, minHeight: Dimensions.minHeight)
   }
@@ -155,22 +214,6 @@ struct PopupMatchRowView: View {
       return Color(toolbarConfiguration.backgroundColor)
     case .two:
       return .groupedSecondaryBackground
-    }
-  }
-
-  var foregroundColorPrimary: Color {
-    if isHighlighted {
-      return .white
-    } else {
-      return .black
-    }
-  }
-
-  var foregroundColorSecondary: Color {
-    if isHighlighted {
-      return .white
-    } else {
-      return .gray
     }
   }
 }

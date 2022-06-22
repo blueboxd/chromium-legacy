@@ -14,6 +14,12 @@
 #include "ash/public/cpp/projector/projector_controller.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+class PrefRegistrySimple;
+
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace base {
 class FilePath;
 }  // namespace base
@@ -57,6 +63,7 @@ class ASH_EXPORT ProjectorControllerImpl
   ~ProjectorControllerImpl() override;
 
   static ProjectorControllerImpl* Get();
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // ProjectorController:
   void StartProjectorSession(const std::string& storage_dir) override;
@@ -83,13 +90,16 @@ class ASH_EXPORT ProjectorControllerImpl
       CreateScreencastContainerFolderCallback callback);
 
   // Called by Capture Mode to notify with the state of a video recording.
-  // `is_in_projector_mode` indicates whether it's a projector-initiated video
-  // recording. `user_deleted_video_file` will be true, if the user deletes the
-  // file from a DLP warning dialog that can be shown after recording ends.
-  // `thumbnail` contains an image representation of the video, which can be
-  // empty if there were errors during recording.
-  void OnRecordingStarted(bool is_in_projector_mode);
+  // `current_root` is the window being recorded. `is_in_projector_mode`
+  // indicates whether it's a projector-initiated video recording.
+  void OnRecordingStarted(aura::Window* current_root,
+                          bool is_in_projector_mode);
   void OnRecordingEnded(bool is_in_projector_mode);
+
+  // Called only when recording is in projector mode. When the window being
+  // recorded is moved from one display to another, we need to move the
+  // projector annotation tray to follow it.
+  void OnRecordedWindowChangingRoot(aura::Window* new_root);
 
   // Called when the status of the video is confirmed. DLP can potentially show
   // users a dialog to warn them about restricted contents in the video, and
@@ -107,8 +117,8 @@ class ASH_EXPORT ProjectorControllerImpl
   // cancellation, an error, or a DLP/HDCP restriction.
   void OnRecordingStartAborted();
 
-  // Invoked when marker button is pressed.
-  void OnMarkerPressed();
+  // Enables the annotator tool.
+  void EnableAnnotatorTool();
   // Sets the annotator tool.
   void SetAnnotatorTool(const AnnotatorTool& tool);
   // Reset and disable the the annotator tools.

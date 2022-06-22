@@ -18,6 +18,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//ui/base/ui_features.gni")
+import("//ui/qt/qt.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -56,6 +57,12 @@ component("ui_data_pack") {
 
   defines = [ "UI_DATA_PACK_IMPLEMENTATION" ]
 
+  if (is_chromeos) {
+    sources += [
+      "resource/temporary_shared_resource_path_chromeos.cc",
+      "resource/temporary_shared_resource_path_chromeos.h",
+    ]
+  }
   if (is_chromeos_lacros) {
     sources += [
       "resource/data_pack_with_resource_sharing_lacros.cc",
@@ -77,6 +84,7 @@ buildflag_header("buildflags") {
     "HAS_NATIVE_ACCESSIBILITY=$has_native_accessibility",
     "HAS_PLATFORM_ACCESSIBILITY_SUPPORT=$has_platform_accessibility_support",
     "USE_GTK=$use_gtk",
+    "USE_QT=$use_qt",
   ]
 }
 
@@ -132,6 +140,8 @@ component("base") {
     "models/dialog_model_field.cc",
     "models/dialog_model_field.h",
     "models/dialog_model_host.h",
+    "models/dialog_model_menu_model_adapter.cc",
+    "models/dialog_model_menu_model_adapter.h",
     "models/image_model.cc",
     "models/image_model.h",
     "models/list_model.h",
@@ -705,6 +715,8 @@ static_library("test_support") {
     "interaction/interaction_test_util.h",
     "resource/mock_resource_bundle_delegate.cc",
     "resource/mock_resource_bundle_delegate.h",
+    "test/idle_test_utils.cc",
+    "test/idle_test_utils.h",
   ]
 
   if (is_mac) {
@@ -768,7 +780,10 @@ static_library("test_support") {
     ]
   }
 
-  public_deps = [ ":base" ]
+  public_deps = [
+    ":base",
+    "//ui/base/idle",
+  ]
   deps = [
     "//base",
     "//base/test:test_config",

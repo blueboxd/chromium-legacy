@@ -43,9 +43,6 @@ public class ContextualSearchFieldTrial {
     static final String CONTEXTUAL_SEARCH_PROMO_CARD_MAX_SHOWN_PARAM_NAME = "promo_card_max_shown";
     private static final int PROMO_DEFAULT_LIMIT = 3;
 
-    // Deprecated.
-    private static final int MANDATORY_PROMO_DEFAULT_LIMIT = 10;
-
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean[] sSwitches = new Boolean[ContextualSearchSwitch.NUM_ENTRIES];
@@ -96,6 +93,7 @@ public class ContextualSearchFieldTrial {
         int IS_ONLINE_DETECTION_DISABLED = 1;
 
         int IS_SEARCH_TERM_RESOLUTION_DISABLED = 2;
+        /** @deprecated */
         int IS_MANDATORY_PROMO_ENABLED = 3;
 
         /**
@@ -114,19 +112,37 @@ public class ContextualSearchFieldTrial {
          * Bar peeking location.
          */
         int IS_BAR_OVERLAP_SUPPRESSION_ENABLED = 6;
-        /** Whether triggering is suppressed by a tap that's near the edge of a word. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed by a tap that's near the edge of a word.
+         */
         int IS_WORD_EDGE_SUPPRESSION_ENABLED = 7;
-        /** Whether triggering is suppressed by a tap that's in a short word. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed by a tap that's in a short word.
+         * */
         int IS_SHORT_WORD_SUPPRESSION_ENABLED = 8;
-        /** Whether triggering is suppressed by a tap that's not in a long word. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed by a tap that's not in a long word.
+         */
         int IS_NOT_LONG_WORD_SUPPRESSION_ENABLED = 9;
-        /** Whether triggering is suppressed for a tap that's not on an entity. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed for a tap that's not on an entity.
+         */
         int IS_NOT_AN_ENTITY_SUPPRESSION_ENABLED = 10;
         /** Whether triggering is suppressed due to lack of engagement with the feature. */
         int IS_ENGAGEMENT_SUPPRESSION_ENABLED = 11;
-        /** Whether triggering is suppressed for a tap that has a short element run-length. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed for a tap that has a short element run-length.
+         */
         int IS_SHORT_TEXT_RUN_SUPPRESSION_ENABLED = 12;
-        /** Whether triggering is suppressed for a tap on small-looking text. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed for a tap on small-looking text.
+         */
         int IS_SMALL_TEXT_SUPPRESSION_ENABLED = 13;
         /**
          * Whether to disable auto-promotion of clicks in the AMP carousel into a
@@ -198,9 +214,13 @@ public class ContextualSearchFieldTrial {
      * have gaps.
      */
     @interface ContextualSearchSetting {
-        /** The number of times the Promo should be seen before it becomes mandatory. */
+        /**
+         * @deprecated
+         * The number of times the Promo should be seen before it becomes mandatory.
+         */
         int MANDATORY_PROMO_LIMIT = 0;
         /**
+         * @deprecated
          * A Y value limit that will suppress a Tap near the top of the screen.
          * (any Y value less than the limit will suppress the Tap trigger).
          */
@@ -215,6 +235,7 @@ public class ContextualSearchFieldTrial {
          */
         int WAIT_AFTER_TAP_DELAY_MS = 3;
         /**
+         * @deprecated
          * A threshold for the duration of a tap gesture for categorization as brief or
          * lengthy (the maximum amount of time in milliseconds for a tap gesture that's still
          * considered a very brief duration tap).
@@ -273,10 +294,7 @@ public class ContextualSearchFieldTrial {
 
     static int getValue(@ContextualSearchSetting int value) {
         if (sSettings[value] == null) {
-            sSettings[value] = getIntParamValueOrDefault(ContextualSearchSettingNames[value],
-                    value == ContextualSearchSetting.MANDATORY_PROMO_LIMIT
-                            ? MANDATORY_PROMO_DEFAULT_LIMIT
-                            : 0);
+            sSettings[value] = getIntParamValueOrDefault(ContextualSearchSettingNames[value], 0);
         }
         return sSettings[value].intValue();
     }

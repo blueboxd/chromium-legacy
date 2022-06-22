@@ -89,6 +89,16 @@ DialogModelTextfield* DialogModelField::AsTextfield(
   return AsTextfield();
 }
 
+const DialogModelMenuItem* DialogModelField::AsMenuItem(
+    base::PassKey<DialogModelHost>) const {
+  return AsMenuItem();
+}
+
+DialogModelMenuItem* DialogModelField::AsMenuItem(
+    base::PassKey<DialogModelHost>) {
+  return const_cast<DialogModelMenuItem*>(AsMenuItem());
+}
+
 DialogModelCustomField* DialogModelField::AsCustomField(
     base::PassKey<DialogModelHost>) {
   return AsCustomField();
@@ -112,6 +122,11 @@ DialogModelCheckbox* DialogModelField::AsCheckbox() {
 DialogModelCombobox* DialogModelField::AsCombobox() {
   DCHECK_EQ(type_, kCombobox);
   return static_cast<DialogModelCombobox*>(this);
+}
+
+const DialogModelMenuItem* DialogModelField::AsMenuItem() const {
+  DCHECK_EQ(type_, kMenuItem);
+  return static_cast<const DialogModelMenuItem*>(this);
 }
 
 DialogModelTextfield* DialogModelField::AsTextfield() {
@@ -166,12 +181,7 @@ void DialogModelButton::OnPressed(base::PassKey<DialogModelHost>,
 DialogModelBodyText::DialogModelBodyText(base::PassKey<DialogModel> pass_key,
                                          DialogModel* model,
                                          const DialogModelLabel& label)
-    : DialogModelField(pass_key,
-                       model,
-                       kBodyText,
-                       -1,
-                       base::flat_set<Accelerator>()),
-      label_(label) {}
+    : DialogModelField(pass_key, model, kBodyText, -1, {}), label_(label) {}
 
 DialogModelBodyText::~DialogModelBodyText() = default;
 
@@ -181,11 +191,7 @@ DialogModelCheckbox::DialogModelCheckbox(
     int unique_id,
     const DialogModelLabel& label,
     const DialogModelCheckbox::Params& params)
-    : DialogModelField(pass_key,
-                       model,
-                       kCheckbox,
-                       unique_id,
-                       base::flat_set<Accelerator>()),
+    : DialogModelField(pass_key, model, kCheckbox, unique_id, {}),
       label_(label),
       is_checked_(params.is_checked_) {}
 
@@ -247,6 +253,31 @@ void DialogModelCombobox::OnPerformAction(base::PassKey<DialogModelHost>) {
     callback_.Run();
 }
 
+DialogModelMenuItem::DialogModelMenuItem(
+    base::PassKey<DialogModel> pass_key,
+    DialogModel* model,
+    ImageModel icon,
+    std::u16string label,
+    base::RepeatingCallback<void(int)> callback)
+    : DialogModelField(pass_key, model, kMenuItem, -1, {}),
+      icon_(std::move(icon)),
+      label_(std::move(label)),
+      callback_(std::move(callback)) {}
+
+DialogModelMenuItem::~DialogModelMenuItem() = default;
+
+void DialogModelMenuItem::OnActivated(base::PassKey<DialogModelHost> pass_key,
+                                      int event_flags) {
+  DCHECK(callback_);
+  callback_.Run(event_flags);
+}
+
+DialogModelSeparator::DialogModelSeparator(base::PassKey<DialogModel> pass_key,
+                                           DialogModel* model)
+    : DialogModelField(pass_key, model, kSeparator, -1, {}) {}
+
+DialogModelSeparator::~DialogModelSeparator() = default;
+
 DialogModelTextfield::Params::Params() = default;
 DialogModelTextfield::Params::~Params() = default;
 
@@ -292,11 +323,7 @@ DialogModelCustomField::DialogModelCustomField(
     DialogModel* model,
     int unique_id,
     std::unique_ptr<DialogModelCustomField::Factory> factory)
-    : DialogModelField(pass_key,
-                       model,
-                       kCustom,
-                       unique_id,
-                       base::flat_set<Accelerator>()),
+    : DialogModelField(pass_key, model, kCustom, unique_id, {}),
       factory_(std::move(factory)) {}
 
 DialogModelCustomField::~DialogModelCustomField() = default;

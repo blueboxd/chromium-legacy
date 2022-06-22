@@ -72,6 +72,17 @@ class PlaybackCommandDispatcher
   void ProcessRemotingRpcMessageFromRemote(
       std::unique_ptr<openscreen::cast::RpcMessage> message);
 
+  // Acquires a new handle from |messenger_|.
+  openscreen::cast::RpcMessenger::Handle AcquireHandle();
+
+  // Registers a |handle| with |messenger_| to receive callbacks to
+  // ProcessRemotingRpcMessageFromRemote().
+  void RegisterHandleForCallbacks(
+      openscreen::cast::RpcMessenger::Handle handle);
+
+  // Starts streaming if each expected audio or video config has been received.
+  void MaybeStartStreamingSession();
+
   // Callback for mojom::RendererController::SetPlaybackController() call.
   void OnSetPlaybackControllerDone();
 
@@ -90,14 +101,14 @@ class PlaybackCommandDispatcher
   base::OnceCallback<void()> acquire_renderer_cb_;
 
   openscreen::cast::RpcMessenger* messenger_;
-  openscreen::cast::RpcMessenger::Handle handle_;
 
   // Multiplexes Renderer commands from a number of senders.
   std::unique_ptr<RendererControlMultiplexer> muxer_;
 
   // Handles translating between Remoting commands (in proto form) and mojo
   // commands.
-  std::unique_ptr<remoting::RendererRpcCallTranslator> call_translator_;
+  std::unique_ptr<remoting::RendererRpcCallTranslator>
+      renderer_call_translator_;
 
   // Handles DemuxerStream interactions.
   std::unique_ptr<remoting::RpcDemuxerStreamHandler> demuxer_stream_handler_;
@@ -107,6 +118,12 @@ class PlaybackCommandDispatcher
   absl::optional<StreamingInitializationInfo> streaming_init_info_;
   Dispatcher* streaming_dispatcher_ = nullptr;
   const openscreen::cast::ReceiverSession* receiver_session_ = nullptr;
+
+  // The mojo API used to configure the renderer controls in the renderer
+  // process. Although this instance is only needed once, it is stored as an
+  // instance variable so that the destruction of this instance is visible to
+  // the Renderer process via the mojo disconnection handler.
+  mojo::AssociatedRemote<mojom::RendererController> control_configuration_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<PlaybackCommandDispatcher> weak_factory_{this};

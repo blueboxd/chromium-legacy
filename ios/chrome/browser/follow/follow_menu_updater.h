@@ -5,13 +5,18 @@
 #ifndef IOS_CHROME_BROWSER_FOLLOW_FOLLOW_MENU_UPDATER_H_
 #define IOS_CHROME_BROWSER_FOLLOW_FOLLOW_MENU_UPDATER_H_
 
+@class FollowWebPageURLs;
+
 // Protocol defining a updater for follow menu item.
 @protocol FollowMenuUpdater
 
-// Updates the follow menu item with follow |status|, |title| and |enabled|.
-- (void)updateFollowMenuItemWithFollowStatus:(BOOL)status
-                                       title:(NSString*)title
-                                     enabled:(BOOL)enable;
+// Updates the follow menu item with follow |webPageURLs|, |status|,
+// |domainName| and |enabled|.
+- (void)updateFollowMenuItemWithFollowWebPageURLs:
+            (FollowWebPageURLs*)webPageURLs
+                                           status:(BOOL)status
+                                       domainName:(NSString*)domainName
+                                          enabled:(BOOL)enabled;
 
 @end
 

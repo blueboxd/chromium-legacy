@@ -8,12 +8,15 @@ import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.lifetime.Destroyable;
 import org.chromium.components.autofill_assistant.AssistantBrowserControlsFactory;
 import org.chromium.components.autofill_assistant.AssistantDependencies;
 import org.chromium.components.autofill_assistant.AssistantSnackbarFactory;
 import org.chromium.components.autofill_assistant.AssistantTabChangeObserver;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
@@ -24,51 +27,61 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class WebLayerAssistantDependencies
         extends WebLayerAssistantStaticDependencies implements AssistantDependencies {
-    public WebLayerAssistantDependencies(Activity activity, WebContents webContents) {
-        super(webContents);
-        maybeUpdateDependencies(activity);
+    public WebLayerAssistantDependencies(WebContents webContents,
+            WebLayerAssistantTabChangeObserver webLayerAssistantTabChangeObserver) {
+        super(webContents, webLayerAssistantTabChangeObserver);
+        maybeUpdateDependencies(webContents);
     }
 
-    @Override
-    public boolean maybeUpdateDependencies(Activity activity) {
-        // TODO(b/222671580): Implement
-        return true;
-    }
-
+    /**
+     * Returns true if all dependencies are available.
+     */
     @Override
     public boolean maybeUpdateDependencies(WebContents webContents) {
-        // TODO(b/222671580): Implement
-        return true;
+        assert webContents == mWebContents;
+        return getWindowAndroid() != null && getActivity() != null;
     }
 
     @Override
-    public Activity getActivity() {
-        // TODO(b/222671580): Implement
-        return null;
-    }
-
-    @Override
+    @Nullable
     public WindowAndroid getWindowAndroid() {
-        // TODO(b/222671580): Implement
-        return null;
+        return mWebContents.getTopLevelNativeWindow();
     }
 
     @Override
+    @Nullable
+    public Activity getActivity() {
+        WindowAndroid windowAndroid = getWindowAndroid();
+        if (windowAndroid == null) return null;
+
+        return windowAndroid.getActivity().get();
+    }
+
+    @Override
+    @Nullable
     public BottomSheetController getBottomSheetController() {
-        // TODO(b/222671580): Implement
-        return null;
+        WindowAndroid windowAndroid = getWindowAndroid();
+        if (windowAndroid == null) return null;
+
+        return BottomSheetControllerProvider.from(windowAndroid);
     }
 
     @Override
+    @Nullable
     public KeyboardVisibilityDelegate getKeyboardVisibilityDelegate() {
-        // TODO(b/222671580): Implement
-        return null;
+        WindowAndroid windowAndroid = getWindowAndroid();
+        if (windowAndroid == null) return null;
+
+        return windowAndroid.getKeyboardDelegate();
     }
 
     @Override
+    @Nullable
     public ApplicationViewportInsetSupplier getBottomInsetProvider() {
-        // TODO(b/222671580): Implement
-        return null;
+        WindowAndroid windowAndroid = getWindowAndroid();
+        if (windowAndroid == null) return null;
+
+        return windowAndroid.getApplicationBottomInsetProvider();
     }
 
     @Override
@@ -91,13 +104,12 @@ public class WebLayerAssistantDependencies
 
     @Override
     public AssistantBrowserControlsFactory createBrowserControlsFactory() {
-        // TODO(b/222671580): Implement
-        return null;
+        return () -> new WebLayerAssistantBrowserControls();
     }
 
     @Override
     public Destroyable observeTabChanges(AssistantTabChangeObserver tabChangeObserver) {
-        // TODO(b/222671580): Implement
-        return null;
+        mWebLayerAssistantTabChangeObserver.addObserver(tabChangeObserver);
+        return () -> mWebLayerAssistantTabChangeObserver.removeObserver(tabChangeObserver);
     }
 }

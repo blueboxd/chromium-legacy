@@ -15,31 +15,6 @@
 
 namespace segmentation_platform::stats {
 namespace {
-// Should map to SegmentationModel variant in
-// //tools/metrics/histograms/metadata/segmentation_platform/histograms.xml.
-std::string OptimizationTargetToHistogramVariant(
-    OptimizationTarget segment_id) {
-  switch (segment_id) {
-    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB:
-      return "NewTab";
-    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_SHARE:
-      return "Share";
-    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_VOICE:
-      return "Voice";
-    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_DUMMY:
-      return "Dummy";
-    case OptimizationTarget::
-        OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID:
-      return "ChromeStartAndroid";
-    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_QUERY_TILES:
-      return "QueryTiles";
-    case OptimizationTarget::
-        OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT:
-      return "ChromeLowUserEngagement";
-    default:
-      return "Other";
-  }
-}
 
 // Keep in sync with AdaptiveToolbarButtonVariant in enums.xml.
 enum class AdaptiveToolbarButtonVariant {
@@ -66,7 +41,8 @@ enum class SegmentationModel {
   kChromeStartAndroid = 11,
   kQueryTiles = 12,
   kChromeLowUserEngagement = 16,
-  kMaxValue = kChromeLowUserEngagement,
+  kFeedUserSegment = 17,
+  kMaxValue = kFeedUserSegment,
 };
 
 AdaptiveToolbarButtonVariant OptimizationTargetToAdaptiveToolbarButtonVariant(
@@ -90,7 +66,8 @@ bool IsBooleanSegment(const std::string& segmentation_key) {
   // //tools/metrics/histograms/metadata/segmentation_platform/histograms.xml.
   return segmentation_key == kChromeStartAndroidSegmentationKey ||
          segmentation_key == kQueryTilesSegmentationKey ||
-         segmentation_key == kChromeLowUserEngagementSegmentationKey;
+         segmentation_key == kChromeLowUserEngagementSegmentationKey ||
+         segmentation_key == kFeedUserSegmentationKey;
 }
 
 BooleanSegmentSwitch GetBooleanSegmentSwitch(
@@ -188,6 +165,8 @@ SegmentationModel OptimizationTargetToSegmentationModel(
     case OptimizationTarget::
         OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT:
       return SegmentationModel::kChromeLowUserEngagement;
+    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER:
+      return SegmentationModel::kFeedUserSegment;
     default:
       return SegmentationModel::kUnknown;
   }
@@ -243,6 +222,36 @@ float ZeroValueFraction(const std::vector<float>& tensor) {
   return static_cast<float>(zero_values) / static_cast<float>(tensor.size());
 }
 
+}  // namespace
+
+// Should map to SegmentationModel variant in
+// //tools/metrics/histograms/metadata/segmentation_platform/histograms.xml.
+std::string OptimizationTargetToHistogramVariant(
+    OptimizationTarget segment_id) {
+  switch (segment_id) {
+    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB:
+      return "NewTab";
+    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_SHARE:
+      return "Share";
+    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_VOICE:
+      return "Voice";
+    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_DUMMY:
+      return "Dummy";
+    case OptimizationTarget::
+        OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID:
+      return "ChromeStartAndroid";
+    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_QUERY_TILES:
+      return "QueryTiles";
+    case OptimizationTarget::
+        OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT:
+      return "ChromeLowUserEngagement";
+    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER:
+      return "FeedUserSegment";
+    default:
+      return "Other";
+  }
+}
+
 const char* SegmentationKeyToUmaName(const std::string& segmentation_key) {
   // Please keep in sync with SegmentationKey variant in
   // //tools/metrics/histograms/metadata/segmentation_platform/histograms.xml.
@@ -256,23 +265,13 @@ const char* SegmentationKeyToUmaName(const std::string& segmentation_key) {
     return "QueryTiles";
   } else if (segmentation_key == kChromeLowUserEngagementSegmentationKey) {
     return "ChromeLowUserEngagement";
+  } else if (segmentation_key == kFeedUserSegmentationKey) {
+    return "FeedUserSegment";
   } else if (base::StartsWith(segmentation_key, "test_key")) {
     return "TestKey";
   }
   NOTREACHED();
   return "Unknown";
-}
-
-}  // namespace
-
-std::string OptimizationTargetToSegmentGroupName(
-    OptimizationTarget segment_id) {
-  return OptimizationTargetToHistogramVariant(segment_id);
-}
-
-std::string SegmentationKeyToTrialName(const std::string& segmentation_key) {
-  return base::StrCat(
-      {"Segmentation_", SegmentationKeyToUmaName(segmentation_key)});
 }
 
 void RecordModelScore(OptimizationTarget segment_id, float score) {
@@ -301,6 +300,7 @@ void RecordModelScore(OptimizationTarget segment_id, float score) {
     case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_QUERY_TILES:
     case OptimizationTarget::
         OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT:
+    case OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER:
       // Assumes all models return score between 0 and 1. This is true for all
       // the models we have currently.
       base::UmaHistogramPercentage(

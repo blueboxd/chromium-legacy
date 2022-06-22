@@ -200,8 +200,6 @@ base::LazyInstance<ChromeContentGpuClient>::DestructorAtExit
     g_chrome_content_gpu_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ChromeContentRendererClient>::DestructorAtExit
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<ChromeContentUtilityClient>::DestructorAtExit
-    g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 
 extern int NaClMain(content::MainFunctionParams);
 
@@ -1044,8 +1042,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
     InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Initialize BrowserInitParams only for browser process and zygote process.
-  if (process_type.empty() || process_type == switches::kZygoteProcess) {
+  if (process_type.empty() || process_type == switches::kZygoteProcess ||
+      process_type == switches::kUtilityProcess) {
     // TODO(elkurin): Add comments here when resource loading using ash
     // resources is implemented.
     const crosapi::mojom::BrowserInitParams* init_params =
@@ -1325,7 +1323,9 @@ ChromeMainDelegate::CreateContentRendererClient() {
 
 content::ContentUtilityClient*
 ChromeMainDelegate::CreateContentUtilityClient() {
-  return g_chrome_content_utility_client.Pointer();
+  chrome_content_utility_client_ =
+      std::make_unique<ChromeContentUtilityClient>();
+  return chrome_content_utility_client_.get();
 }
 
 void ChromeMainDelegate::PreBrowserMain() {

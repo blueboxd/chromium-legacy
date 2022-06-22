@@ -1311,6 +1311,9 @@ TEST_F(AppListControllerImplAppListBubbleTest,
 }
 
 TEST_F(AppListControllerImplAppListBubbleTest, HideContinueSectionUpdatesPref) {
+  base::test::ScopedFeatureList feature_list(
+      features::kLauncherHideContinueSection);
+
   auto* controller = Shell::Get()->app_list_controller();
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
@@ -1460,8 +1463,7 @@ class AppListControllerWithAssistantTest
 
  protected:
   void ToggleAssistantUiWithAccelerator() {
-    PressAndReleaseKey(ui::KeyboardCode::VKEY_A,
-                       ui::EventFlags::EF_COMMAND_DOWN);
+    PressAndReleaseKey(ui::KeyboardCode::VKEY_A, ui::EF_COMMAND_DOWN);
     EXPECT_TRUE(assistant_test_api_->IsVisible());
   }
 

@@ -72,6 +72,16 @@ extern const base::Feature kSideSearchFeedback;
 extern const base::Feature kSideSearchDSESupport;
 extern const base::Feature kClobberAllSideSearchSidePanels;
 
+extern const base::Feature kSideSearchPageActionLabelAnimation;
+
+enum class kSideSearchLabelAnimationFrequencyOption {
+  kOncePerProfile,
+  kOncePerWindow,
+  kOncePerTab,
+};
+extern const base::FeatureParam<kSideSearchLabelAnimationFrequencyOption>
+    kSideSearchPageActionLabelAnimationFrequency;
+
 extern const base::Feature kTabGroupsNewBadgePromo;
 
 extern const base::Feature kTabGroupsSave;
@@ -164,6 +174,8 @@ extern const base::FeatureParam<int>
 // closed item data to the profile data payload should the minimum display
 // count have been met.
 extern const base::FeatureParam<int> kTabSearchRecentlyClosedTabCountThreshold;
+
+extern const base::Feature kTabSearchUseMetricsReporter;
 
 // Determines how screenshots of the toolbar uses Software or Hardware drawing.
 // Works on Android 10+.

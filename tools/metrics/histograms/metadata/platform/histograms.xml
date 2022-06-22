@@ -155,68 +155,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Cr50.BoardIdFlags" enum="Cr50BoardIdFlags"
-    expires_after="2022-09-25">
-  <owner>apronin@chromium.org</owner>
-  <owner>vbendeb@chromium.org</owner>
-  <summary>
-    A sparse histogram of values of Board ID flags programmed in H1 devices in
-    the field. Board ID flags is a 32 bit field, and while there only are a few
-    expected values, conceivably any bit combination could be encountered.
-  </summary>
-</histogram>
-
-<histogram name="Platform.Cr50.BoardIdOfRlzMismatch" enum="Cr50CrosRlzCodes"
-    expires_after="2022-09-30">
-  <owner>vbendeb@chromium.org</owner>
-  <owner>apronin@chromium.org</owner>
-  <owner>cros-hwsec+uma@chromium.org</owner>
-  <summary>
-    A sparse histogram of values indexed by 4 byte Board ID code programmed in
-    H1 reported by devices where there is a mismatch between the RLZ code and
-    the Board ID value programmed in the H1.
-  </summary>
-</histogram>
-
-<histogram name="Platform.Cr50.FlashLog" enum="Cr50FlashLogs"
-    expires_after="2022-09-25">
-  <owner>apronin@chromium.org</owner>
-  <owner>vbendeb@chromium.org</owner>
-  <owner>cros-hwsec+uma@chromium.org</owner>
-  <summary>
-    A histogram of flash log event types collected from the H1 device. Log event
-    type is an 8 bit value. This histogram does not allow to drill into
-    particular log entries' contents, but allows to collect a general statistics
-    of events. A script running on the Chrome OS device polls the H1 for new
-    flash log events after every start up.
-  </summary>
-</histogram>
-
-<histogram name="Platform.Cr50.MatchingBoardId" enum="Cr50CrosRlzCodes"
-    expires_after="M85">
-  <owner>vbendeb@chromium.org</owner>
-  <summary>
-    A sparse histogram of values indexed by 4 byte Board ID code programmed in
-    H1, reported by devices where there is no mismatch between the RLZ code and
-    the Board ID value.
-  </summary>
-</histogram>
-
-<histogram name="Platform.Cr50.RlzOfBoardIdMismatch" enum="Cr50CrosRlzCodes"
-    expires_after="2022-10-09">
-  <owner>vbendeb@chromium.org</owner>
-  <owner>apronin@chromium.org</owner>
-  <owner>cros-hwsec+uma@chromium.org</owner>
-  <summary>
-    A sparse histogram of values indexed by 4 byte RLZ code reported by devices
-    where there is a mismatch between the RLZ code and the Board ID value
-    programmed in the H1. Since RLZ code could be misprogrammed, a sparse
-    histogram is used to allow keeping track of outliers.
-  </summary>
-</histogram>
-
 <histogram name="Platform.CrOS.CrashSenderRemoveReason"
-    enum="CrosCrashSenderRemoveReason" expires_after="2022-09-01">
+    enum="CrosCrashSenderRemoveReason" expires_after="2022-11-06">
   <owner>iby@chromium.org</owner>
   <owner>mutexlox@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
@@ -463,6 +403,36 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Platform.Fwupd.ActivateStatus" enum="FwupdReturnValue"
+    expires_after="2023-05-01">
+  <owner>campello@google.com</owner>
+  <owner>chromeos-fwupd@google.com</owner>
+  <summary>
+    Indicates the return value of a firmware activation operation via fwupd.
+    Reported once per activation operation.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Fwupd.UpdateDuration" units="seconds"
+    expires_after="2023-05-01">
+  <owner>campello@google.com</owner>
+  <owner>chromeos-fwupd@google.com</owner>
+  <summary>
+    Time elapsed during the firmware update operation. Sent after every
+    sucessful update firmware operation via fwupd.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Fwupd.UpdateStatus" enum="FwupdReturnValue"
+    expires_after="2023-05-01">
+  <owner>campello@google.com</owner>
+  <owner>chromeos-fwupd@google.com</owner>
+  <summary>
+    Indicates the return value of a firmware update operation via fwupd.
+    Reported once per update operation.
+  </summary>
+</histogram>
+
 <histogram name="Platform.IntelMaxMicroArchitecture"
     enum="IntelMaxMicroArchitecture" expires_after="2022-10-09">
   <owner>fbarchard@chromium.org</owner>
@@ -602,7 +572,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Meminfo" units="KB" expires_after="2022-10-30">
+<histogram name="Platform.Meminfo" units="KB" expires_after="2022-11-06">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
@@ -612,10 +582,11 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2022-04-03">
+<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2022-11-10">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
-  <owner>sonnyrao@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>yusukes@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
     Memory usage of all ARC and ARCVM processes in Chrome OS, reported every 10
@@ -624,10 +595,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Memory.Browser" units="MiB"
-    expires_after="2022-04-10">
+    expires_after="2022-11-10">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
-  <owner>sonnyrao@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
     Memory usage of browser and helper processes (excluding GPU process and
@@ -636,20 +607,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Memory.Daemons" units="MiB"
-    expires_after="2022-04-24">
+    expires_after="2022-11-10">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
-  <owner>sonnyrao@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
     Memory usage of user-level daemons in Chrome OS, reported every 10 minutes.
   </summary>
 </histogram>
 
-<histogram name="Platform.Memory.Gpu" units="MiB" expires_after="2021-10-10">
+<histogram name="Platform.Memory.Gpu" units="MiB" expires_after="2022-11-10">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
-  <owner>sonnyrao@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
     Memory usage of the GPU process in Chrome OS, reported every 10 minutes.
@@ -657,20 +628,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Memory.Renderers" units="MiB"
-    expires_after="2022-04-17">
+    expires_after="2022-11-10">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
-  <owner>sonnyrao@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
     Memory usage of renderer processes in Chrome OS, reported every 10 minutes.
   </summary>
 </histogram>
 
-<histogram name="Platform.Memory.VMs" units="MiB" expires_after="2022-04-04">
+<histogram name="Platform.Memory.VMs" units="MiB" expires_after="2022-11-10">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
-  <owner>sonnyrao@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
     Memory usage of VMs (crostini and others, except for ARCVM) in Chrome OS,
@@ -732,6 +703,29 @@ chromium-metrics-reviews@google.com.
     the last upload. This metrics is recorded right after booting into ChromeOS.
     This metrics leverages a coreboot command, elogtool, to retrieve the event
     log and count launch events.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Missive.CpuUsage" units="%"
+    expires_after="2023-05-03">
+  <owner>xuhong@chromium.org</owner>
+  <owner>lbaraz@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    The percentage of CPU time that the Missive daemon has been using. The CPU
+    usage is not expected to be high and any usage beyond 100% is considered to
+    be in the overflow bucket. This is reported once every 10 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Missive.StorageUsage" units="MiB"
+    expires_after="2023-05-03">
+  <owner>xuhong@chromium.org</owner>
+  <owner>lbaraz@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    The amount of disk storage that the Missive daemon has been using for
+    storing encrypted records. This is reported once every 10 minutes.
   </summary>
 </histogram>
 
@@ -1357,8 +1351,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.ZramCompressedSize" units="MB"
-    expires_after="2021-11-07">
-  <owner>sonnyrao@chromium.org</owner>
+    expires_after="2022-11-10">
+  <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
     Compressed swap size in megabytes. This is the actual amount of RAM used by
@@ -1367,8 +1361,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.ZramCompressionRatioPercent" units="%"
-    expires_after="2022-04-17">
-  <owner>sonnyrao@chromium.org</owner>
+    expires_after="2022-11-10">
+  <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
     The ratio of compressed memory (zram) before and after compression when the
@@ -1442,6 +1436,88 @@ chromium-metrics-reviews@google.com.
     The fraction of compressed memory that consists of zero-filled pages.
     Snapshot every 30s.
   </summary>
+</histogram>
+
+<histogram name="Platform.{GSC}.BoardIdFlags" enum="Cr50BoardIdFlags"
+    expires_after="2022-09-25">
+  <owner>apronin@chromium.org</owner>
+  <owner>vbendeb@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    A sparse histogram of values of Board ID flags programmed in GSC devices in
+    the field. Board ID flags is a 32 bit field, and while there only are a few
+    expected values, conceivably any bit combination could be encountered.
+  </summary>
+  <token key="GSC">
+    <variant name="Cr50"/>
+    <variant name="Ti50"/>
+  </token>
+</histogram>
+
+<histogram name="Platform.{GSC}.BoardIdOfRlzMismatch" enum="Cr50CrosRlzCodes"
+    expires_after="2022-09-30">
+  <owner>vbendeb@chromium.org</owner>
+  <owner>apronin@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    A sparse histogram of values indexed by 4 byte Board ID code programmed in
+    GSC reported by devices where there is a mismatch between the RLZ code and
+    the Board ID value programmed in the GSC.
+  </summary>
+  <token key="GSC">
+    <variant name="Cr50"/>
+    <variant name="Ti50"/>
+  </token>
+</histogram>
+
+<histogram name="Platform.{GSC}.FlashLog" enum="Cr50FlashLogs"
+    expires_after="2022-09-25">
+  <owner>apronin@chromium.org</owner>
+  <owner>vbendeb@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    A histogram of flash log event types collected from the GSC device. Log
+    event type is an 8 bit value. This histogram does not allow to drill into
+    particular log entries' contents, but allows to collect a general statistics
+    of events. A script running on the Chrome OS device polls the GSC for new
+    flash log events after every start up.
+  </summary>
+  <token key="GSC">
+    <variant name="Cr50"/>
+    <variant name="Ti50"/>
+  </token>
+</histogram>
+
+<histogram name="Platform.{GSC}.MatchingBoardId" enum="Cr50CrosRlzCodes"
+    expires_after="2022-10-26">
+  <owner>vbendeb@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    A sparse histogram of values indexed by 4 byte Board ID code programmed in
+    GSC, reported by devices where there is no mismatch between the RLZ code and
+    the Board ID value.
+  </summary>
+  <token key="GSC">
+    <variant name="Cr50"/>
+    <variant name="Ti50"/>
+  </token>
+</histogram>
+
+<histogram name="Platform.{GSC}.RlzOfBoardIdMismatch" enum="Cr50CrosRlzCodes"
+    expires_after="2022-10-09">
+  <owner>vbendeb@chromium.org</owner>
+  <owner>apronin@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    A sparse histogram of values indexed by 4 byte RLZ code reported by devices
+    where there is a mismatch between the RLZ code and the Board ID value
+    programmed in the GSC. Since RLZ code could be misprogrammed, a sparse
+    histogram is used to allow keeping track of outliers.
+  </summary>
+  <token key="GSC">
+    <variant name="Cr50"/>
+    <variant name="Ti50"/>
+  </token>
 </histogram>
 
 <histogram name="PlatformFile.UnknownErrors.Posix" enum="PopularOSErrno"

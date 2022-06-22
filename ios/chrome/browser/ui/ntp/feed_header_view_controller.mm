@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
@@ -22,6 +23,7 @@
 #endif
 
 namespace {
+
 // Leading margin for title label. Its used to align with the Card leading
 // margin.
 const CGFloat kTitleHorizontalMargin = 19;
@@ -62,12 +64,17 @@ const CGFloat kFollowingSegmentDotMargin = 8;
 // Duration of the fade animation for elements that toggle when switching feeds.
 const CGFloat kSegmentAnimationDuration = 0.3;
 
-// Image names for feed header icons.
-NSString* kMenuIcon = @"ellipsis";
-NSString* kSortIcon = @"arrow.up.arrow.down";
 // TODO(crbug.com/1277974): Remove this when Web Channels is launched.
 NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
-}
+
+// Specific symbols used in the feed header.
+NSString* kSortArrowFeedSymbol = @"arrow.up.arrow.down";
+NSString* kEllipsisFeedSymbol = @"ellipsis";
+
+// The size of feed symbol images.
+NSInteger kFeedSymbolPointSize = 17;
+
+}  // namespace
 
 @interface FeedHeaderViewController ()
 
@@ -141,21 +148,7 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
   self.container.translatesAutoresizingMaskIntoConstraints = NO;
 
   [self configureMenuButton:self.menuButton];
-
-  if (IsWebChannelsEnabled()) {
-    if ([self.feedControlDelegate shouldFeedBeVisible]) {
-      [self addViewsForVisibleFeed];
-    } else {
-      [self addViewsForHiddenFeed];
-    }
-
-    if (![self.ntpDelegate isGoogleDefaultSearchEngine]) {
-      [self addCustomSearchEngineView];
-    }
-  } else {
-    self.titleLabel = [self createTitleLabel];
-    [self.container addSubview:self.titleLabel];
-  }
+  [self configureHeaderViews];
 
   [self.container addSubview:self.menuButton];
   [self.view addSubview:self.container];
@@ -165,7 +158,8 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
 #pragma mark - Public
 
 - (void)toggleBackgroundBlur:(BOOL)blurred animated:(BOOL)animated {
-  if (UIAccessibilityIsReduceTransparencyEnabled() || !IsWebChannelsEnabled() ||
+  if (UIAccessibilityIsReduceTransparencyEnabled() ||
+      ![self.feedControlDelegate isFollowingFeedAvailable] ||
       !self.blurBackgroundView) {
     return;
   }
@@ -193,19 +187,20 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
 }
 
 - (CGFloat)feedHeaderHeight {
-  return IsWebChannelsEnabled() ? kWebChannelsHeaderHeight
-                                : kDiscoverFeedHeaderHeight;
+  return [self.feedControlDelegate isFollowingFeedAvailable]
+             ? kWebChannelsHeaderHeight
+             : kDiscoverFeedHeaderHeight;
 }
 
 - (CGFloat)customSearchEngineViewHeight {
-  return
-      [self.ntpDelegate isGoogleDefaultSearchEngine] || !IsWebChannelsEnabled()
-          ? 0
-          : kCustomSearchEngineLabelHeight;
+  return [self.ntpDelegate isGoogleDefaultSearchEngine] ||
+                 ![self.feedControlDelegate isFollowingFeedAvailable]
+             ? 0
+             : kCustomSearchEngineLabelHeight;
 }
 
 - (void)updateFollowingSegmentDotForUnseenContent:(BOOL)hasUnseenContent {
-  DCHECK(IsWebChannelsEnabled());
+  DCHECK([self.feedControlDelegate isFollowingFeedAvailable]);
 
   // Don't show the dot if the user is already on the Following feed.
   if ([self.feedControlDelegate selectedFeed] == FeedTypeFollowing) {
@@ -222,7 +217,7 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
 }
 
 - (void)updateForDefaultSearchEngineChanged {
-  if (!IsWebChannelsEnabled()) {
+  if (![self.feedControlDelegate isFollowingFeedAvailable]) {
     [self.titleLabel setText:[self feedHeaderTitleText]];
     [self.titleLabel setNeedsDisplay];
     return;
@@ -237,7 +232,7 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
 }
 
 - (void)updateForFeedVisibilityChanged {
-  if (!IsWebChannelsEnabled()) {
+  if (![self.feedControlDelegate isFollowingFeedAvailable]) {
     [self.titleLabel setText:[self feedHeaderTitleText]];
     [self.titleLabel setNeedsDisplay];
     return;
@@ -254,6 +249,14 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
   [self applyHeaderConstraints];
 }
 
+- (void)updateForFollowingFeedVisibilityChanged {
+  [self removeViewsForHiddenFeed];
+  [self removeViewsForVisibleFeed];
+  [self.titleLabel removeFromSuperview];
+  [self configureHeaderViews];
+  [self applyHeaderConstraints];
+}
+
 #pragma mark - Setters
 
 // Sets |followingFeedSortType| and recreates the sort menu to assign the active
@@ -266,6 +269,23 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
 }
 
 #pragma mark - Private
+
+- (void)configureHeaderViews {
+  if ([self.feedControlDelegate isFollowingFeedAvailable]) {
+    if ([self.feedControlDelegate shouldFeedBeVisible]) {
+      [self addViewsForVisibleFeed];
+    } else {
+      [self addViewsForHiddenFeed];
+    }
+
+    if (![self.ntpDelegate isGoogleDefaultSearchEngine]) {
+      [self addCustomSearchEngineView];
+    }
+  } else {
+    self.titleLabel = [self createTitleLabel];
+    [self.container addSubview:self.titleLabel];
+  }
+}
 
 // Creates sort menu with its content and active sort type.
 - (UIMenu*)createSortMenu {
@@ -310,17 +330,21 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
   menuButton.accessibilityIdentifier = kNTPFeedHeaderMenuButtonIdentifier;
   menuButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_MENU_ACCESSIBILITY_LABEL);
-  if (IsWebChannelsEnabled()) {
-    [menuButton setImage:[UIImage systemImageNamed:kMenuIcon]
+  if ([self.feedControlDelegate isFollowingFeedAvailable]) {
+    [menuButton setImage:DefaultSymbolTemplateWithPointSize(
+                             kEllipsisFeedSymbol, kFeedSymbolPointSize)
                 forState:UIControlStateNormal];
     menuButton.backgroundColor = [UIColor colorNamed:kGrey100Color];
-    menuButton.clipsToBounds = YES;
     menuButton.layer.cornerRadius = kButtonSize / 2;
+    menuButton.clipsToBounds = YES;
   } else {
-    [menuButton
-        setImage:[[UIImage imageNamed:kDiscoverMenuIcon]
-                     imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
-        forState:UIControlStateNormal];
+    UIImage* menuIcon =
+        UseSymbols()
+            ? DefaultSymbolTemplateWithPointSize(kGearShapeSymbol,
+                                                 kFeedSymbolPointSize)
+            : [[UIImage imageNamed:kDiscoverMenuIcon]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [menuButton setImage:menuIcon forState:UIControlStateNormal];
     menuButton.tintColor = [UIColor colorNamed:kGrey600Color];
     menuButton.imageEdgeInsets = UIEdgeInsetsMake(
         kHeaderMenuButtonInsetTopAndBottom, kHeaderMenuButtonInsetSides,
@@ -330,7 +354,7 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
 
 // Configures and returns the feed header's sorting button.
 - (UIButton*)createSortButton {
-  DCHECK(IsWebChannelsEnabled());
+  DCHECK([self.feedControlDelegate isFollowingFeedAvailable]);
 
   UIButton* sortButton = [[UIButton alloc] init];
 
@@ -338,7 +362,8 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
   sortButton.accessibilityIdentifier = kNTPFeedHeaderSortButtonIdentifier;
   sortButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_FEED_SORT_ACCESSIBILITY_LABEL);
-  [sortButton setImage:[UIImage systemImageNamed:kSortIcon]
+  [sortButton setImage:DefaultSymbolTemplateWithPointSize(kSortArrowFeedSymbol,
+                                                          kFeedSymbolPointSize)
               forState:UIControlStateNormal];
   sortButton.showsMenuAsPrimaryAction = YES;
 
@@ -484,7 +509,7 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
         constraintEqualToAnchor:self.container.centerYAnchor],
   ]];
 
-  if (IsWebChannelsEnabled()) {
+  if ([self.feedControlDelegate isFollowingFeedAvailable]) {
     [self.feedHeaderConstraints addObjectsFromArray:@[
       // Set menu button size.
       [self.menuButton.heightAnchor constraintEqualToConstant:kButtonSize],
@@ -589,14 +614,20 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
   ]];
 
   // Find the "Following" label within the segmented control, since it is not
-  // exposed by UISegmentedControl.
+  // exposed by UISegmentedControl. First loop iterates through UISegments, and
+  // next loop iterates to find their nested UISegmentLabels.
   UILabel* followingLabel;
   for (UIView* view in self.segmentedControl.subviews) {
-    if ([view isKindOfClass:[UILabel class]]) {
-      UILabel* currentLabel = static_cast<UILabel*>(view);
-      if (currentLabel.text ==
-          l10n_util::GetNSString(IDS_IOS_FOLLOWING_FEED_TITLE)) {
-        followingLabel = currentLabel;
+    for (UIView* subview in view.subviews) {
+      if ([NSStringFromClass([subview class])
+              isEqualToString:@"UISegmentLabel"]) {
+        UILabel* currentLabel = static_cast<UILabel*>(subview);
+        if ([currentLabel.text
+                isEqualToString:l10n_util::GetNSString(
+                                    IDS_IOS_FOLLOWING_FEED_TITLE)]) {
+          followingLabel = currentLabel;
+          break;
+        }
       }
     }
   }
@@ -716,7 +747,7 @@ NSString* kDiscoverMenuIcon = @"infobar_settings_icon";
 
 // The title text for the Discover feed header based on user prefs.
 - (NSString*)feedHeaderTitleText {
-  DCHECK(!IsWebChannelsEnabled());
+  DCHECK(![self.feedControlDelegate isFollowingFeedAvailable]);
 
   // Set the title based on the default search engine.
   NSString* feedHeaderTitleText =

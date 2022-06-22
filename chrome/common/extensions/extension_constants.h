@@ -170,6 +170,8 @@ extern const char kGnubbyV3ExtensionId[];
 extern const char kGCSEExtensionId[];
 // The extension id of the Contact Center Insights chrome component extension.
 extern const char kContactCenterInsightsExtensionId[];
+// The extension id of the Bruschetta Security Key Forwarder extension.
+extern const char kBruSecurityKeyForwarderExtensionId[];
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // The extension id of the Accessibility Common extension.
@@ -232,10 +234,6 @@ extern const char kEspeakSpeechSynthesisExtensionId[];
 extern const char kWallpaperManagerId[];
 // The extension id of official HelpApp extension.
 extern const char kHelpAppExtensionId[];
-#endif
-#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
-// The extension id of the Hangout Service extnsion.
-extern const char kHangoutServiceExtensionId[];
 #endif
 
 // What causes an extension to be installed? Used in histograms, so don't

@@ -11,12 +11,14 @@ import static org.chromium.chrome.browser.download.interstitial.DownloadIntersti
 import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.SECONDARY_BUTTON_CALLBACK;
 import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.SECONDARY_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.SECONDARY_BUTTON_TEXT;
+import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.SHOULD_REMOVE_PENDING_MESSAGE;
 import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.STATE;
 import static org.chromium.chrome.browser.download.interstitial.DownloadInterstitialProperties.TITLE_TEXT;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 
 import androidx.core.util.Pair;
 
@@ -62,6 +64,7 @@ class DownloadInterstitialMediator {
     private final SnackbarManager mSnackbarManager;
     private final OfflineContentProvider.Observer mObserver;
     private final SharedPreferencesManager mSharedPrefs;
+    private final Runnable mCloseRunnable;
     private boolean mDownloadIsComplete;
     private boolean mPendingDeletion;
 
@@ -77,13 +80,14 @@ class DownloadInterstitialMediator {
      */
     DownloadInterstitialMediator(Supplier<Context> contextSupplier, PropertyModel model,
             String downloadUrl, OfflineContentProvider provider, SnackbarManager snackbarManager,
-            SharedPreferencesManager sharedPrefs) {
+            SharedPreferencesManager sharedPrefs, Runnable closeRunnable) {
         mContextSupplier = contextSupplier;
         mModel = model;
         mDownloadUrl = downloadUrl;
         mProvider = provider;
         mSnackbarManager = snackbarManager;
         mSharedPrefs = sharedPrefs;
+        mCloseRunnable = closeRunnable;
 
         mModel.set(ListProperties.ENABLE_ITEM_ANIMATIONS, true);
         mModel.set(ListProperties.CALLBACK_OPEN, this::onOpenItem);
@@ -105,7 +109,7 @@ class DownloadInterstitialMediator {
      */
     void destroy() {
         mProvider.removeObserver(mObserver);
-        if (mPendingDeletion || mModel.get(STATE) == State.CANCELLED) {
+        if (mPendingDeletion || mModel.get(STATE) == State.PENDING_REMOVAL) {
             mProvider.removeItem(mModel.get(DOWNLOAD_ITEM).id);
         }
         clearDownloadPendingRemoval();
@@ -137,7 +141,7 @@ class DownloadInterstitialMediator {
                 mModel.set(SECONDARY_BUTTON_IS_VISIBLE, true);
                 mDownloadIsComplete = true;
                 break;
-            case State.CANCELLED:
+            case State.PENDING_REMOVAL:
                 mModel.set(TITLE_TEXT, mContextSupplier.get().getString(R.string.menu_download));
                 mModel.set(PRIMARY_BUTTON_TEXT,
                         mContextSupplier.get().getString(R.string.menu_download));
@@ -174,16 +178,16 @@ class DownloadInterstitialMediator {
     }
 
     private void onCancelItem(OfflineItem item) {
-        setState(State.CANCELLED);
         storeDownloadPendingRemoval(item.id);
         mProvider.pauseDownload(item.id);
+        setState(State.PENDING_REMOVAL);
     }
 
     private void onDeleteItem(OfflineItem item) {
         mPendingDeletion = true;
         storeDownloadPendingRemoval(item.id);
         showDeletedSnackbar();
-        setState(State.CANCELLED);
+        setState(State.PENDING_REMOVAL);
     }
 
     private void onShareItem(OfflineItem item) {
@@ -249,9 +253,10 @@ class DownloadInterstitialMediator {
             @Override
             public void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
                 if (mModel.get(DOWNLOAD_ITEM) == null) {
-                    if (!mDownloadUrl.equals(item.originalUrl)) {
-                        return;
-                    }
+                    if (!TextUtils.equals(mDownloadUrl, item.originalUrl)) return;
+                    // Run before download is first attached.
+                    mModel.set(SHOULD_REMOVE_PENDING_MESSAGE, true);
+
                 } else if (!item.id.equals(mModel.get(DOWNLOAD_ITEM).id)) {
                     return;
                 }
@@ -265,8 +270,11 @@ class DownloadInterstitialMediator {
                     setState(State.SUCCESSFUL);
                 } else if (item.state == OfflineItemState.PAUSED
                         && mModel.get(STATE) != State.PAUSED
-                        && mModel.get(STATE) != State.CANCELLED) {
+                        && mModel.get(STATE) != State.PENDING_REMOVAL) {
                     setState(State.PAUSED);
+                } else if (item.state == OfflineItemState.CANCELLED
+                        && mModel.get(STATE) != State.PENDING_REMOVAL) {
+                    mCloseRunnable.run();
                 }
             }
         };

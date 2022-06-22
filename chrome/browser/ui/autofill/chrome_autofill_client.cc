@@ -23,6 +23,7 @@
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -61,6 +62,8 @@
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_setting.h"
+#include "components/password_manager/core/browser/password_manager_settings_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -539,7 +542,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
   if (messages::IsSaveCardMessagesUiEnabled()) {
     save_card_message_controller_android_.Show(
         web_contents(), options, card, /*legal_message_lines=*/{},
-        GetAccountHolderName(),
+        GetAccountHolderName(), GetAccountHolderEmail(),
         /*upload_save_card_callback=*/{},
         /*local_save_card_callback=*/std::move(callback));
     return;
@@ -568,12 +571,12 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(options.show_prompt);
   if (messages::IsSaveCardMessagesUiEnabled()) {
-    save_card_message_controller_android_.Show(web_contents(), options, card,
-                                               legal_message_lines,
-                                               GetAccountHolderName(),
-                                               /*upload_save_card_callback=*/
-                                               std::move(callback),
-                                               /*local_save_card_callback=*/{});
+    save_card_message_controller_android_.Show(
+        web_contents(), options, card, legal_message_lines,
+        GetAccountHolderName(), GetAccountHolderEmail(),
+        /*upload_save_card_callback=*/
+        std::move(callback),
+        /*local_save_card_callback=*/{});
     return;
   }
 
@@ -867,8 +870,10 @@ bool ChromeAutofillClient::IsAutocompleteEnabled() {
 }
 
 bool ChromeAutofillClient::IsPasswordManagerEnabled() {
-  return password_manager_util::IsSavingPasswordsEnabled(GetPrefs(),
-                                                         GetSyncService());
+  PasswordManagerSettingsService* settings_service =
+      PasswordManagerSettingsServiceFactory::GetForProfile(GetProfile());
+  return settings_service->IsSettingEnabled(
+      password_manager::PasswordManagerSetting::kOfferToSavePasswords);
 }
 
 void ChromeAutofillClient::PropagateAutofillPredictions(
@@ -1048,6 +1053,19 @@ std::u16string ChromeAutofillClient::GetAccountHolderName() {
   AccountInfo primary_account_info = identity_manager->FindExtendedAccountInfo(
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
   return base::UTF8ToUTF16(primary_account_info.full_name);
+}
+
+std::u16string ChromeAutofillClient::GetAccountHolderEmail() {
+  Profile* profile = GetProfile();
+  if (!profile)
+    return std::u16string();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  if (!identity_manager)
+    return std::u16string();
+  AccountInfo primary_account_info = identity_manager->FindExtendedAccountInfo(
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
+  return base::UTF8ToUTF16(primary_account_info.email);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeAutofillClient);

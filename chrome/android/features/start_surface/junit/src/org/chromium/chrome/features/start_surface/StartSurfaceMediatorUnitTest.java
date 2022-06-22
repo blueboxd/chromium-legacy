@@ -61,10 +61,12 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.jank_tracker.DummyJankTracker;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
@@ -144,6 +146,8 @@ public class StartSurfaceMediatorUnitTest {
     private OneshotSupplier<StartSurface> mStartSurfaceSupplier;
     @Mock
     private Runnable mInitializeMVTilesRunnable;
+    @Mock
+    private FeedReliabilityLogger mFeedReliabilityLogger;
     @Captor
     private ArgumentCaptor<TabModelSelectorObserver> mTabModelSelectorObserverCaptor;
     @Captor
@@ -175,11 +179,26 @@ public class StartSurfaceMediatorUnitTest {
         doReturn(false).when(mNormalTabModel).isIncognito();
         doReturn(true).when(mIncognitoTabModel).isIncognito();
         doReturn(TabSwitcherType.CAROUSEL).when(mMainTabGridController).getTabSwitcherType();
+        doReturn(new ObservableSupplierImpl<Boolean>())
+                .when(mMainTabGridController)
+                .getHandleBackPressChangedSupplier();
         doReturn(mSecondaryTasksSurfaceController)
                 .when(mSecondaryTasksSurfaceInitializer)
                 .initialize();
+        doReturn(new ObservableSupplierImpl<Boolean>())
+                .when(mSecondaryTasksSurfaceController)
+                .getHandleBackPressChangedSupplier();
+        doReturn(new ObservableSupplierImpl<Boolean>())
+                .when(mSecondaryTasksSurfaceController)
+                .isDialogVisibleSupplier();
         doReturn(false).when(mActivityStateChecker).isFinishingOrDestroyed();
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
+        doReturn(mExploreSurfaceCoordinator)
+                .when(mExploreSurfaceCoordinatorFactory)
+                .create(anyBoolean(), anyBoolean(), anyInt());
+        doReturn(mFeedReliabilityLogger)
+                .when(mExploreSurfaceCoordinator)
+                .getFeedReliabilityLogger();
     }
 
     @After
@@ -232,7 +251,8 @@ public class StartSurfaceMediatorUnitTest {
 
         mediator.showOverview(false);
         verify(mMainTabGridController).showOverview(eq(false));
-        verify(mOmniboxStub).addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
+        verify(mOmniboxStub, times(2))
+                .addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
         assertThat(mediator.getStartSurfaceState(), equalTo(StartSurfaceState.SHOWN_HOMEPAGE));
         assertThat(mPropertyModel.get(IS_INCOGNITO), equalTo(false));
         assertThat(mPropertyModel.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), equalTo(true));
@@ -243,9 +263,12 @@ public class StartSurfaceMediatorUnitTest {
         mOverviewModeObserverCaptor.getValue().startedShowing();
         mOverviewModeObserverCaptor.getValue().finishedShowing();
 
-        mUrlFocusChangeListenerCaptor.getValue().onUrlFocusChange(true);
+        UrlFocusChangeListener urlFocusChangeListener =
+                mUrlFocusChangeListenerCaptor.getAllValues().get(1);
+
+        urlFocusChangeListener.onUrlFocusChange(true);
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(false));
-        mUrlFocusChangeListenerCaptor.getValue().onUrlFocusChange(false);
+        urlFocusChangeListener.onUrlFocusChange(false);
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
         assertThat(mPropertyModel.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), equalTo(true));
 
@@ -281,7 +304,8 @@ public class StartSurfaceMediatorUnitTest {
 
         mediator.showOverview(false);
         verify(mMainTabGridController).showOverview(eq(false));
-        verify(mOmniboxStub).addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
+        verify(mOmniboxStub, times(2))
+                .addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
         assertThat(mediator.getStartSurfaceState(), equalTo(StartSurfaceState.SHOWN_HOMEPAGE));
         assertThat(mPropertyModel.get(IS_INCOGNITO), equalTo(false));
         assertThat(mPropertyModel.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), equalTo(true));
@@ -292,9 +316,12 @@ public class StartSurfaceMediatorUnitTest {
         mOverviewModeObserverCaptor.getValue().startedShowing();
         mOverviewModeObserverCaptor.getValue().finishedShowing();
 
-        mUrlFocusChangeListenerCaptor.getValue().onUrlFocusChange(true);
+        UrlFocusChangeListener urlFocusChangeListener =
+                mUrlFocusChangeListenerCaptor.getAllValues().get(1);
+
+        urlFocusChangeListener.onUrlFocusChange(true);
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(false));
-        mUrlFocusChangeListenerCaptor.getValue().onUrlFocusChange(false);
+        urlFocusChangeListener.onUrlFocusChange(false);
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
         assertThat(mPropertyModel.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), equalTo(true));
 
@@ -303,7 +330,7 @@ public class StartSurfaceMediatorUnitTest {
 
         mOverviewModeObserverCaptor.getValue().startedHiding();
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(false));
-        verify(mOmniboxStub).removeUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.getValue());
+        verify(mOmniboxStub).removeUrlFocusChangeListener(urlFocusChangeListener);
 
         mOverviewModeObserverCaptor.getValue().finishedHiding();
 
@@ -866,16 +893,20 @@ public class StartSurfaceMediatorUnitTest {
         mediator.showOverview(false);
         verify(mTabModelSelector).addObserver(mTabModelSelectorObserverCaptor.capture());
         verify(mMainTabGridController).showOverview(eq(false));
-        verify(mOmniboxStub).addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
+        verify(mOmniboxStub, times(2))
+                .addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
         assertThat(mediator.getStartSurfaceState(), equalTo(StartSurfaceState.SHOWN_HOMEPAGE));
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
         assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
 
-        mUrlFocusChangeListenerCaptor.getValue().onUrlFocusChange(true);
+        UrlFocusChangeListener urlFocusChangeListener =
+                mUrlFocusChangeListenerCaptor.getAllValues().get(1);
+
+        urlFocusChangeListener.onUrlFocusChange(true);
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(false));
         assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(false));
 
-        mUrlFocusChangeListenerCaptor.getValue().onUrlFocusChange(false);
+        urlFocusChangeListener.onUrlFocusChange(false);
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
         assertThat(mPropertyModel.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), equalTo(true));
         assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
@@ -955,16 +986,20 @@ public class StartSurfaceMediatorUnitTest {
         mediator.setOverviewState(StartSurfaceState.SHOWING_HOMEPAGE);
         mediator.showOverview(false);
         verify(mMainTabGridController).showOverview(eq(false));
-        verify(mOmniboxStub).addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
+        verify(mOmniboxStub, times(2))
+                .addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
         assertThat(mediator.getStartSurfaceState(), equalTo(StartSurfaceState.SHOWN_HOMEPAGE));
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
         assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
 
-        mUrlFocusChangeListenerCaptor.getValue().onUrlFocusChange(true);
+        UrlFocusChangeListener urlFocusChangeListener =
+                mUrlFocusChangeListenerCaptor.getAllValues().get(1);
+
+        urlFocusChangeListener.onUrlFocusChange(true);
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(false));
         assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(false));
 
-        mUrlFocusChangeListenerCaptor.getValue().onUrlFocusChange(false);
+        urlFocusChangeListener.onUrlFocusChange(false);
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
         assertThat(mPropertyModel.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), equalTo(true));
         assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
@@ -994,7 +1029,7 @@ public class StartSurfaceMediatorUnitTest {
         mediator.showOverview(false);
         mainTabGridController.verify(mMainTabGridController).showOverview(eq(false));
         InOrder omniboxStub = inOrder(mOmniboxStub);
-        omniboxStub.verify(mOmniboxStub)
+        omniboxStub.verify(mOmniboxStub, times(2))
                 .addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
         assertThat(mediator.getStartSurfaceState(), equalTo(StartSurfaceState.SHOWN_HOMEPAGE));
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
@@ -1007,7 +1042,7 @@ public class StartSurfaceMediatorUnitTest {
         mediator.setOverviewState(StartSurfaceState.SHOWING_PREVIOUS);
         mediator.showOverview(false);
         mainTabGridController.verify(mMainTabGridController).showOverview(eq(false));
-        omniboxStub.verify(mOmniboxStub)
+        omniboxStub.verify(mOmniboxStub, times(2))
                 .addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
         assertThat(mediator.getStartSurfaceState(), equalTo(StartSurfaceState.SHOWN_HOMEPAGE));
         assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
@@ -1280,6 +1315,59 @@ public class StartSurfaceMediatorUnitTest {
         verify(mInitializeMVTilesRunnable).run();
     }
 
+    @Test
+    public void testFeedReliabilityLoggerPageLoadStarted() {
+        doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
+
+        StartSurfaceMediator mediator =
+                createStartSurfaceMediator(/*isStartSurfaceEnabled=*/true, false);
+        mediator.setOverviewState(StartSurfaceState.SHOWN_HOMEPAGE);
+        mediator.showOverview(true);
+
+        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
+        assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(true));
+        mTabModelObserverCaptor.getValue().willAddTab(/*tab=*/null, TabLaunchType.FROM_LINK);
+        verify(mFeedReliabilityLogger, times(1)).onPageLoadStarted();
+    }
+
+    @Test
+    public void testFeedReliabilityLoggerObservesUrlFocus() {
+        doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
+
+        StartSurfaceMediator mediator =
+                createStartSurfaceMediator(/*isStartSurfaceEnabled=*/true, false);
+        verify(mMainTabGridController)
+                .addOverviewModeObserver(mOverviewModeObserverCaptor.capture());
+        mediator.setOverviewState(StartSurfaceState.SHOWN_HOMEPAGE);
+        mediator.showOverview(true);
+
+        assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(true));
+        verify(mOmniboxStub, times(2))
+                .addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
+        UrlFocusChangeListener listener = mUrlFocusChangeListenerCaptor.getAllValues().get(0);
+        assertThat(listener, equalTo(mFeedReliabilityLogger));
+
+        mOverviewModeObserverCaptor.getValue().startedShowing();
+        mOverviewModeObserverCaptor.getValue().finishedShowing();
+        mOverviewModeObserverCaptor.getValue().startedHiding();
+
+        mediator.hideOverview(true);
+        verify(mOmniboxStub).removeUrlFocusChangeListener(listener);
+
+        mOverviewModeObserverCaptor.getValue().finishedHiding();
+    }
+
+    @Test
+    public void testFeedReliabilityLoggerBackPressed() {
+        doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
+        StartSurfaceMediator mediator =
+                createStartSurfaceMediator(/*isStartSurfaceEnabled=*/true, false);
+        mediator.setOverviewState(StartSurfaceState.SHOWN_HOMEPAGE);
+        mediator.showOverview(true);
+        mediator.onBackPressed();
+        verify(mFeedReliabilityLogger).onNavigateBack();
+    }
+
     private StartSurfaceMediator createStartSurfaceMediator(
             boolean isStartSurfaceEnabled, boolean excludeMVTiles) {
         return createStartSurfaceMediator(
@@ -1308,7 +1396,7 @@ public class StartSurfaceMediatorUnitTest {
                         isStartSurfaceEnabled, ContextUtils.getApplicationContext(),
                         mBrowserControlsStateProvider, mActivityStateChecker, excludeMVTiles,
                         true /* excludeQueryTiles */, mStartSurfaceSupplier, hadWarmStart,
-                        new DummyJankTracker(), mInitializeMVTilesRunnable);
+                        new DummyJankTracker(), mInitializeMVTilesRunnable, null);
         return mediator;
     }
 

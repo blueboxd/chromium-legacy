@@ -60,9 +60,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
@@ -737,8 +737,8 @@ class CrostiniAppTest : public AppServiceAppModelBuilderTest {
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
     ash::SeneschalClient::InitializeFake();
     AppServiceAppModelBuilderTest::SetUp();
     test_helper_ = std::make_unique<CrostiniTestHelper>(testing_profile());
@@ -757,8 +757,8 @@ class CrostiniAppTest : public AppServiceAppModelBuilderTest {
     // clients are destroyed.
     profile_.reset();
     ash::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -977,14 +977,14 @@ class PluginVmAppTest : public testing::Test {
   struct ScopedDBusThreadManager {
     ScopedDBusThreadManager() {
       chromeos::DBusThreadManager::Initialize();
-      chromeos::CiceroneClient::InitializeFake();
-      chromeos::ConciergeClient::InitializeFake();
+      ash::CiceroneClient::InitializeFake();
+      ash::ConciergeClient::InitializeFake();
       ash::SeneschalClient::InitializeFake();
     }
     ~ScopedDBusThreadManager() {
       ash::SeneschalClient::Shutdown();
-      chromeos::ConciergeClient::Shutdown();
-      chromeos::CiceroneClient::Shutdown();
+      ash::ConciergeClient::Shutdown();
+      ash::CiceroneClient::Shutdown();
       chromeos::DBusThreadManager::Shutdown();
     }
   } dbus_thread_manager_;

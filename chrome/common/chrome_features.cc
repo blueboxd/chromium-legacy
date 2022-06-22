@@ -360,7 +360,7 @@ const base::FeatureParam<std::string> kDnsOverHttpsTemplatesParam{
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables the DNS-Over-HTTPS in the DNS proxy.
 const base::Feature kDnsProxyEnableDOH{"DnsProxyEnableDOH",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -415,12 +415,6 @@ const base::Feature kExtensionWorkflowJustification{
 // default.
 const base::Feature kExternalExtensionDefaultButtonControl{
     "ExternalExtensionDefaultButtonControl", base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if !BUILDFLAG(IS_ANDROID)
-// Field trial boolean parameter which indicates whether FedCM desktop settings
-// are enabled.
-const char kFedCmDesktopSettingsFieldTrialParamName[] = "DesktopSettings";
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Show Flash deprecation warning to users who have manually enabled Flash.
@@ -626,6 +620,10 @@ const base::Feature kIncognitoBrandConsistencyForAndroid{
     "IncognitoBrandConsistencyForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// When enabled, users will see a warning when downloading from Incognito.
+const base::Feature kIncognitoDownloadsWarning{
+    "IncognitoDownloadsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, users will see updated UI in Incognito NTP
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -640,11 +638,6 @@ const base::Feature kIncognitoParamFilterEnabled{
 // When enabled, shows a demo of in-product help in a WebUI context.
 const base::Feature kIPHInWebUIDemo{"IPHInWebUIDemo",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kKernelnextVMs{"KernelnextVMs",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -662,21 +655,6 @@ constexpr base::FeatureParam<int> kLinuxLowMemoryMonitorCriticalLevel{
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 const base::Feature kListWebAppsSwitch{"ListWebAppsSwitch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if BUILDFLAG(IS_MAC)
-// Uses NSFullSizeContentViewWindowMask where available instead of adding our
-// own views to the window frame. This is a temporary kill switch, it can be
-// removed once we feel okay about leaving it on.
-const base::Feature kMacFullSizeContentView{"MacFullSizeContentView",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-#endif
-
-#if BUILDFLAG(IS_MAC)
-// Enables the Material Design download shelf on Mac.
-const base::Feature kMacMaterialDesignDownloadShelf{
-    "MacMDDownloadShelf", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -1040,6 +1018,10 @@ const base::FeatureParam<double>
     kTrustSafetySentimentSurveyPrivacySandbox3NoticeSettingsProbability{
         &kTrustSafetySentimentSurvey,
         "privacy-sandbox-3-notice-settings-probability", 0.8};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreProbability{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-3-notice-learn-more-probability", 0.2};
 // The HaTS trigger IDs, which determine which survey is delivered from the HaTS
 // backend.
 const base::FeatureParam<std::string>
@@ -1071,6 +1053,10 @@ extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyPrivacySandbox3NoticeSettingsTriggerId{
         &kTrustSafetySentimentSurvey,
         "privacy-sandbox-3-notice-settings-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreTriggerId{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-3-notice-learn-more-trigger-id", ""};
 // The time the user must remain on settings after interacting with a privacy
 // setting to be considered.
 const base::FeatureParam<base::TimeDelta>

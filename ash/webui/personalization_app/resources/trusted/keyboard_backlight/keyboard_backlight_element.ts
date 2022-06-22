@@ -12,12 +12,14 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {IronA11yKeysElement} from 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 
+import {isSelectionEvent} from '../../common/utils.js';
 import {BacklightColor} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
 import {setBacklightColor} from './keyboard_backlight_controller.js';
 import {getTemplate} from './keyboard_backlight_element.html.js';
 import {getKeyboardBacklightProvider} from './keyboard_backlight_interface_provider.js';
+import {KeyboardBacklightObserver} from './keyboard_backlight_observer.js';
 
 
 /**
@@ -91,6 +93,7 @@ export class KeyboardBacklight extends WithPersonalizationStore {
 
   override connectedCallback() {
     super.connectedCallback();
+    KeyboardBacklightObserver.initKeyboardBacklightObserverIfNeeded();
     this.watch<KeyboardBacklight['backlightColor_']>(
         'backlightColor_', state => state.keyboardBacklight.backlightColor);
     this.updateFromStore();
@@ -98,13 +101,13 @@ export class KeyboardBacklight extends WithPersonalizationStore {
 
   private computePresetColors_(): Record<string, ColorInfo> {
     return {
-      'white': {hexVal: '#FFFFFF', enumVal: BacklightColor.kWhite},
-      'red': {hexVal: '#F28B82', enumVal: BacklightColor.kRed},
-      'yellow': {hexVal: '#FDD663', enumVal: BacklightColor.kYellow},
-      'green': {hexVal: '#81C995', enumVal: BacklightColor.kGreen},
-      'blue': {hexVal: '#78D9EC', enumVal: BacklightColor.kBlue},
-      'indigo': {hexVal: '#8AB4F8', enumVal: BacklightColor.kIndigo},
-      'purple': {hexVal: '#C58AF9', enumVal: BacklightColor.kPurple},
+      'whiteColor': {hexVal: '#FFFFFF', enumVal: BacklightColor.kWhite},
+      'redColor': {hexVal: '#F28B82', enumVal: BacklightColor.kRed},
+      'yellowColor': {hexVal: '#FDD663', enumVal: BacklightColor.kYellow},
+      'greenColor': {hexVal: '#81C995', enumVal: BacklightColor.kGreen},
+      'blueColor': {hexVal: '#78D9EC', enumVal: BacklightColor.kBlue},
+      'indigoColor': {hexVal: '#8AB4F8', enumVal: BacklightColor.kIndigo},
+      'purpleColor': {hexVal: '#C58AF9', enumVal: BacklightColor.kPurple},
     };
   }
 
@@ -127,16 +130,20 @@ export class KeyboardBacklight extends WithPersonalizationStore {
         selector.selectNext();
         break;
       case 'enter':
-      case 'space':
         switch (this.ironSelectedColor_.id) {
           case this.rainbowColorId_:
-            this.onRainbowColorSelected_();
+            this.onRainbowColorSelected_(e.detail.keyboardEvent);
             break;
           case this.wallpaperColorId_:
-            // TODO(b/224871280): Handle selecting wallpaper color.
+            this.onWallpaperColorSelected_(e.detail.keyboardEvent);
             break;
           default:
-            this.onPresetColorSelected_(e);
+            // |onPresetColorSelected_| is not invoked here because the event
+            // listener target is iron-selector, which results in undefined
+            // colorId.
+            setBacklightColor(
+                this.presetColors_[this.ironSelectedColor_.id].enumVal,
+                getKeyboardBacklightProvider(), this.getStore());
             break;
         }
         break;
@@ -155,9 +162,22 @@ export class KeyboardBacklight extends WithPersonalizationStore {
     e.detail.keyboardEvent.preventDefault();
   }
 
+  /** Invoked when the wallpaper color is selected. */
+  private onWallpaperColorSelected_(e: Event) {
+    if (!isSelectionEvent(e)) {
+      return;
+    }
+    setBacklightColor(
+        BacklightColor.kWallpaper, getKeyboardBacklightProvider(),
+        this.getStore());
+  }
+
   /** Invoked when a preset color is selected. */
-  private onPresetColorSelected_(event: Event) {
-    const htmlElement = event.currentTarget as HTMLElement;
+  private onPresetColorSelected_(e: Event) {
+    if (!isSelectionEvent(e)) {
+      return;
+    }
+    const htmlElement = e.currentTarget as HTMLElement;
     const colorId = htmlElement.id;
     assert(colorId !== undefined, 'colorId not found');
     setBacklightColor(
@@ -166,7 +186,10 @@ export class KeyboardBacklight extends WithPersonalizationStore {
   }
 
   /** Invoked when the rainbow color is selected. */
-  private onRainbowColorSelected_() {
+  private onRainbowColorSelected_(e: Event) {
+    if (!isSelectionEvent(e)) {
+      return;
+    }
     setBacklightColor(
         BacklightColor.kRainbow, getKeyboardBacklightProvider(),
         this.getStore());
@@ -181,7 +204,7 @@ export class KeyboardBacklight extends WithPersonalizationStore {
         return `background-image: linear-gradient(${hexColors})`;
       case this.wallpaperColorId_:
         return `background-color: #8AB4F8`;
-      case 'white':
+      case 'whiteColor':
         // Add the border for the white background.
         return `background-color: ${
             colors[colorId]
@@ -189,6 +212,27 @@ export class KeyboardBacklight extends WithPersonalizationStore {
       default:
         return `background-color: ${colors[colorId].hexVal}`;
     }
+  }
+
+  private getPresetColorAriaLabel_(presetColorId: string): string {
+    return this.i18n(presetColorId);
+  }
+
+  private getWallpaperColorAriaSelected_(selectedColor: BacklightColor) {
+    return (selectedColor === BacklightColor.kWallpaper).toString();
+  }
+
+  private getPresetColorAriaSelected_(
+      colorId: string, colors: Record<string, ColorInfo>,
+      selectedColor: BacklightColor) {
+    if (!colorId || !colors[colorId]) {
+      return 'false';
+    }
+    return (colors[colorId].enumVal === selectedColor).toString();
+  }
+
+  private getRainbowColorAriaSelected(selectedColor: BacklightColor) {
+    return (selectedColor === BacklightColor.kRainbow).toString();
   }
 }
 

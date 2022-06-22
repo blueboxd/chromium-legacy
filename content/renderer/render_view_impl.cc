@@ -30,7 +30,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "third_party/blink/public/mojom/page/page.mojom.h"
-#include "third_party/blink/public/platform/impression_conversions.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
@@ -145,7 +144,10 @@ void RenderViewImpl::Initialize(
   if (local_main_frame) {
     RenderFrameImpl::CreateMainFrame(
         agent_scheduling_group_, this, opener_frame,
-        params->type != mojom::ViewWidgetType::kTopLevel,
+        /*is_for_nested_main_frame=*/params->type !=
+            mojom::ViewWidgetType::kTopLevel,
+        /*is_for_scalable_page=*/params->type !=
+            mojom::ViewWidgetType::kFencedFrame,
         std::move(params->replication_state), params->devtools_main_frame_token,
         std::move(params->main_frame->get_local_params()));
   } else {
@@ -258,7 +260,7 @@ WebView* RenderViewImpl::CreateView(
     network::mojom::WebSandboxFlags sandbox_flags,
     const blink::SessionStorageNamespaceId& session_storage_namespace_id,
     bool& consumed_user_gesture,
-    const absl::optional<blink::WebImpression>& impression) {
+    const absl::optional<blink::Impression>& impression) {
   consumed_user_gesture = false;
   RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   mojom::CreateNewWindowParamsPtr params = mojom::CreateNewWindowParams::New();
@@ -291,9 +293,7 @@ WebView* RenderViewImpl::CreateView(
   }
   params->features = ConvertWebWindowFeaturesToMojoWindowFeatures(features);
 
-  if (impression) {
-    params->impression = blink::ConvertWebImpressionToImpression(*impression);
-  }
+  params->impression = impression;
 
   params->download_policy.ApplyDownloadFramePolicy(
       /*is_opener_navigation=*/false, request.HasUserGesture(),

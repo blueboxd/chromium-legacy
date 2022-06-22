@@ -57,6 +57,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -640,6 +641,27 @@ public class NewTabPageTest {
             mNtp.getNewTabPageManagerForTesting().focusSearchBox(
                     /*beginVoiceSearch=*/true, /*pastedText=*/"");
             verify(mFeedReliabilityLogger).onVoiceSearch();
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.FEED_ABLATION)
+    public void testRender_LoadNewTabPageWithDisabledFeed() throws IOException {
+        mRenderTestRule.render(
+                mActivityTestRule.getActivity().getActivityTab().getNativePage().getView(),
+                "feed_is_ablated");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    public void testFeedReliabilityLoggingHideWithBack() throws IOException {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeTabbedActivity activity = (ChromeTabbedActivity) mActivityTestRule.getActivity();
+            activity.handleBackPressed();
+            verify(mFeedReliabilityLogger).onNavigateBack();
         });
     }
 

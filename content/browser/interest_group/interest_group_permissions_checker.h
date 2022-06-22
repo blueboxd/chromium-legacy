@@ -13,6 +13,7 @@
 #include <tuple>
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/network_isolation_key.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -37,7 +38,6 @@ namespace content {
 //   pending operations the renderer sends to the browser process at a time.
 // * Add detailed error information to DevTools or as a Promise failure on
 //   rejection.
-// * Add rate limiting in some manner in a way that avoids leaking information.
 // * Figure out integration with IsInterestGroupAPIAllowed() - e.g., for
 //   cross-origin iframes, there are 3 origins (top-level frame, iframe,
 //   interest group frame). Currently we're not considering iframe origin at
@@ -134,9 +134,6 @@ class CONTENT_EXPORT InterestGroupPermissionsChecker {
 
     // Used to fetch the .well-known URL.
     std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
-
-    // Used to decode the .well-known URL's response body.
-    data_decoder::DataDecoder data_decoder;
   };
 
   // A map of interest group origins to their ActiveRequests.
@@ -162,6 +159,8 @@ class CONTENT_EXPORT InterestGroupPermissionsChecker {
   static bool AllowsOperation(Permissions permissions, Operation operation);
 
   ActiveRequestMap active_requests_;
+
+  base::WeakPtrFactory<InterestGroupPermissionsChecker> weak_factory_{this};
 };
 
 }  // namespace content

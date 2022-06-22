@@ -42,7 +42,7 @@ enable_unix_sockets = is_posix && !is_ios
 # x86/x64 cast_shell builds run on regular trybots and can use python runtime
 # and remote test server. ARM cast_shell builds don't have python runtime.
 is_arm_cast_shell_build =
-    is_chromecast && (current_cpu == "arm" || current_cpu == "arm64")
+    is_castos && (current_cpu == "arm" || current_cpu == "arm64")
 
 # Python works only on Linux, MacOS and Windows so exclude the others,
 # chromecast, android, fuchsia, ios.
@@ -1311,6 +1311,8 @@ component("net") {
       "base/file_stream_context_posix.cc",
       "base/network_interfaces_posix.cc",
       "base/network_interfaces_posix.h",
+      "base/sockaddr_util_posix.cc",
+      "base/sockaddr_util_posix.h",
       "disk_cache/cache_util_posix.cc",
       "disk_cache/simple/simple_util_posix.cc",
       "http/url_security_manager_posix.cc",
@@ -1415,7 +1417,7 @@ component("net") {
       "third_party/nss/ssl/cmpcert.cc",
       "third_party/nss/ssl/cmpcert.h",
     ]
-    if (!is_chromecast) {
+    if (!is_castos) {
       sources += [
         "ssl/client_cert_store_nss.cc",
         "ssl/client_cert_store_nss.h",
@@ -4447,6 +4449,10 @@ test("net_unittests") {
     deps += [ "//net/server:tests" ]
   }
 
+  if (is_posix) {
+    sources += [ "base/sockaddr_util_posix_unittest.cc" ]
+  }
+
   if (is_posix || is_fuchsia) {
     sources += [ "socket/udp_socket_posix_unittest.cc" ]
   }
@@ -4562,7 +4568,7 @@ test("net_unittests") {
       "cert/nss_cert_database_unittest.cc",
       "cert/x509_util_nss_unittest.cc",
     ]
-    if (!is_chromecast) {
+    if (!is_castos) {
       sources += [
         "ssl/client_cert_store_nss_unittest.cc",
         "ssl/ssl_platform_key_nss_unittest.cc",

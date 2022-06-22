@@ -60,6 +60,9 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.SurfaceType;
@@ -75,6 +78,8 @@ import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.util.ArrayList;
 
 /**
  * Tests for {@link FeedSurfaceCoordinator}.
@@ -114,6 +119,23 @@ public class FeedSurfaceCoordinatorTest {
             return false;
         }
     }
+
+    private class TestTabModel extends EmptyTabModel {
+        public ArrayList<TabModelObserver> mObservers = new ArrayList<TabModelObserver>();
+
+        @Override
+        public void addObserver(TabModelObserver observer) {
+            mObservers.add(observer);
+        }
+
+        void selectTab() {
+            for (TabModelObserver observer : mObservers) {
+                observer.didSelectTab(null, 0, 0);
+            }
+        }
+    }
+    private TestTabModel mTabModel = new TestTabModel();
+    private TestTabModel mTabModelIncognito = new TestTabModel();
 
     private FeedSurfaceCoordinator mCoordinator;
 
@@ -195,6 +217,8 @@ public class FeedSurfaceCoordinatorTest {
     private PrivacyPreferencesManagerImpl mPrivacyPreferencesManager;
     @Mock
     private Tracker mTracker;
+    @Mock
+    private TabModelSelector mTabModelSelector;
 
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -222,6 +246,9 @@ public class FeedSurfaceCoordinatorTest {
         // Preferences to enable feed.
         FeedSurfaceMediator.setPrefForTest(mPrefChangeRegistrar, mPrefService);
         FeedFeatures.setFakePrefsForTest(mPrefService);
+        // We want to make the feed service bridge ignore the ablation flag.
+        when(mFeedServiceBridgeJniMock.isEnabled())
+                .thenAnswer(invocation -> mPrefService.getBoolean(Pref.ENABLE_SNIPPETS));
         when(mPrefService.getBoolean(Pref.ENABLE_SNIPPETS)).thenReturn(true);
         when(mPrefService.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(true);
         TemplateUrlServiceFactory.setInstanceForTesting(mUrlService);
@@ -242,6 +269,8 @@ public class FeedSurfaceCoordinatorTest {
         when(mRenderer.bind(mContentManagerCaptor.capture(), isNull())).thenReturn(mRecyclerView);
         when(mSurfaceScope.getFeedLaunchReliabilityLogger()).thenReturn(mLaunchReliabilityLogger);
         TrackerFactory.setTrackerForTests(mTracker);
+        when(mTabModelSelector.getModel(eq(false))).thenReturn(mTabModel);
+        when(mTabModelSelector.getModel(eq(true))).thenReturn(mTabModelIncognito);
 
         mCoordinator = createCoordinator();
 
@@ -408,6 +437,24 @@ public class FeedSurfaceCoordinatorTest {
                 .logUiStarting(SURFACE_TYPE, SURFACE_CREATION_TIME_NS);
     }
 
+    @Test
+    public void testLogSwitchTabs() {
+        when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(true);
+        mTabModel.selectTab();
+        verify(mLaunchReliabilityLogger, times(1))
+                .logLaunchFinished(
+                        anyLong(), eq(DiscoverLaunchResult.NAVIGATED_TO_ANOTHER_TAB.getNumber()));
+    }
+
+    @Test
+    public void testLogSwitchTabsIncognito() {
+        when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(true);
+        mTabModelIncognito.selectTab();
+        verify(mLaunchReliabilityLogger, times(1))
+                .logLaunchFinished(
+                        anyLong(), eq(DiscoverLaunchResult.NAVIGATED_TO_ANOTHER_TAB.getNumber()));
+    }
+
     private boolean hasStreamBound() {
         if (mCoordinator.getMediatorForTesting().getCurrentStreamForTesting() == null) {
             return false;
@@ -425,6 +472,6 @@ public class FeedSurfaceCoordinatorTest {
                         -> { return null; },
                 SURFACE_TYPE, SURFACE_CREATION_TIME_NS, null, false,
                 /*viewportView=*/null, mFeedActionDelegate,
-                /*helpAndFeedbackLauncher=*/null);
+                /*helpAndFeedbackLauncher=*/null, mTabModelSelector);
     }
 }

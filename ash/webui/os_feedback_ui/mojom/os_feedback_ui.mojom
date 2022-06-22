@@ -97,6 +97,9 @@ struct Report {
   mojo_base.mojom.String16 description;
   // Whether or not to send system logs and metrics/histograms with this report.
   bool include_system_logs_and_histograms;
+  // Whether or not to include the screenshot with this report. The screenshot
+  // data should have been cached in C++ side.
+  bool include_screenshot;
 };
 
 // Provides services needed by the feedback UI to display data and send reports.
@@ -106,6 +109,9 @@ interface FeedbackServiceProvider {
   // Returns the feedback context info, e.g., the email of the currently active
   // or logged in user, the URL of the active page, etc.
   GetFeedbackContext() => (FeedbackContext feedback_context);
+  // Returns the screenshot of the primary display in PNG format taken before
+  // the feedback tool is launched.
+  GetScreenshotPng() => (array<uint8> png_data);
   // Sends a feedback report and returns its status.
   SendReport(Report report) => (SendReportStatus status);
 };

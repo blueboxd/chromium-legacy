@@ -17,6 +17,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/rand_util.h"
@@ -27,6 +28,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
+#include "components/history/core/browser/keyword_search_term_util.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
@@ -101,6 +103,16 @@ bool IsSearchEngineGoogle(const TemplateURL* template_url,
          template_url->GetEngineType(
              client->GetTemplateURLService()->search_terms_data()) ==
              SEARCH_ENGINE_GOOGLE;
+}
+
+void RecordDBMetrics(const base::TimeTicks db_query_time,
+                     const size_t result_size) {
+  base::UmaHistogramTimes(
+      "Omnibox.LocalHistoryPrefixSuggest.SearchTermsExtractionTime",
+      base::TimeTicks::Now() - db_query_time);
+  base::UmaHistogramCounts10000(
+      "Omnibox.LocalHistoryPrefixSuggest.SearchTermsExtractedCount",
+      result_size);
 }
 
 }  // namespace
@@ -671,20 +683,52 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   // now, this seems OK compared with the complexity of a real fix, which would
   // require multiple searches and tracking of "single- vs. multi-word" in the
   // database.
-  int num_matches = provider_max_matches_ * 5;
+  size_t num_matches = provider_max_matches_ * 5;
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (default_url) {
-    url_db->GetMostRecentKeywordSearchTerms(default_url->id(),
-                                            input_.text(),
-                                            num_matches,
-                                            &raw_default_history_results_);
+    const base::TimeTicks db_query_time = base::TimeTicks::Now();
+    if (base::FeatureList::IsEnabled(omnibox::kLocalHistorySuggestRevamp)) {
+      auto enumerator = url_db->CreateKeywordSearchTermVisitEnumerator(
+          default_url->id(), input_.text());
+      if (enumerator) {
+        history::GetAutocompleteSearchTermsFromEnumerator(
+            *enumerator,
+            OmniboxFieldTrial::kPrefixSuggestIgnoreDuplicateVisits.Get(),
+            history::SearchTermRankingPolicy::kRecency,
+            &raw_default_history_results_);
+      }
+    } else {
+      url_db->GetMostRecentKeywordSearchTerms(default_url->id(), input_.text(),
+                                              num_matches,
+                                              &raw_default_history_results_);
+    }
+    RecordDBMetrics(db_query_time, raw_default_history_results_.size());
+    if (raw_default_history_results_.size() > num_matches) {
+      raw_default_history_results_.resize(num_matches);
+    }
   }
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
   if (keyword_url) {
-    url_db->GetMostRecentKeywordSearchTerms(keyword_url->id(),
-                                            keyword_input_.text(),
-                                            num_matches,
-                                            &raw_keyword_history_results_);
+    const base::TimeTicks db_query_time = base::TimeTicks::Now();
+    if (base::FeatureList::IsEnabled(omnibox::kLocalHistorySuggestRevamp)) {
+      auto enumerator = url_db->CreateKeywordSearchTermVisitEnumerator(
+          keyword_url->id(), keyword_input_.text());
+      if (enumerator) {
+        history::GetAutocompleteSearchTermsFromEnumerator(
+            *enumerator,
+            OmniboxFieldTrial::kPrefixSuggestIgnoreDuplicateVisits.Get(),
+            history::SearchTermRankingPolicy::kRecency,
+            &raw_keyword_history_results_);
+      }
+    } else {
+      url_db->GetMostRecentKeywordSearchTerms(
+          keyword_url->id(), keyword_input_.text(), num_matches,
+          &raw_keyword_history_results_);
+    }
+    RecordDBMetrics(db_query_time, raw_keyword_history_results_.size());
+    if (raw_keyword_history_results_.size() > num_matches) {
+      raw_keyword_history_results_.resize(num_matches);
+    }
   }
 }
 
@@ -1214,17 +1258,17 @@ SearchProvider::ScoreHistoryResultsHelper(const HistoryResults& results,
       base::CollapseWhitespace(input_text, false);
   for (const auto& result : results) {
     const std::u16string& trimmed_suggestion =
-        base::CollapseWhitespace(result.term, false);
+        base::CollapseWhitespace(result->term, false);
 
     // Don't autocomplete multi-word queries that have only been seen once
     // unless the user has typed more than one word.
     bool prevent_inline_autocomplete =
         base_prevent_inline_autocomplete ||
-        (!input_multiple_words && (result.visit_count < 2) &&
+        (!input_multiple_words && (result->visit_count < 2) &&
          HasMultipleWords(trimmed_suggestion));
 
     int relevance = CalculateRelevanceForHistory(
-        result.last_visit_time, is_keyword, !prevent_inline_autocomplete,
+        result->last_visit_time, is_keyword, !prevent_inline_autocomplete,
         prevent_search_history_inlining);
     // Add the match to |scored_results| by putting the what-you-typed match
     // on the front and appending all other matches.  We want the what-you-

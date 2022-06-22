@@ -148,11 +148,9 @@ bool ShouldSetPendingUpdate(StyleResolverState& state, Element& element) {
 void SetAnimationUpdateIfNeeded(const StyleRecalcContext& style_recalc_context,
                                 StyleResolverState& state,
                                 Element& element) {
-  if (RuntimeEnabledFeatures::CSSDelayedAnimationUpdatesEnabled()) {
-    if (auto* data = PostStyleUpdateScope::CurrentAnimationData()) {
-      if (ShouldStoreOldStyle(style_recalc_context, state))
-        data->StoreOldStyleIfNeeded(element);
-    }
+  if (auto* data = PostStyleUpdateScope::CurrentAnimationData()) {
+    if (ShouldStoreOldStyle(style_recalc_context, state))
+      data->StoreOldStyleIfNeeded(element);
   }
 
   // If any changes to CSS Animations were detected, stash the update away for
@@ -161,13 +159,8 @@ void SetAnimationUpdateIfNeeded(const StyleRecalcContext& style_recalc_context,
   if (!ShouldSetPendingUpdate(state, element))
     return;
 
-  if (RuntimeEnabledFeatures::CSSDelayedAnimationUpdatesEnabled()) {
-    if (auto* data = PostStyleUpdateScope::CurrentAnimationData())
-      data->SetPendingUpdate(element, state.AnimationUpdate());
-  } else {
-    element.EnsureElementAnimations().CssAnimations().SetPendingUpdate(
-        state.AnimationUpdate());
-  }
+  if (auto* data = PostStyleUpdateScope::CurrentAnimationData())
+    data->SetPendingUpdate(element, state.AnimationUpdate());
 }
 
 bool HasAnimationsOrTransitions(const StyleResolverState& state) {
@@ -1845,6 +1838,8 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
           *cached_matched_properties->computed_style);
       // If the child style is a cache hit, we'll never reach StyleBuilder::
       // ApplyProperty, hence we'll never set the flag on the parent.
+      // (We do the same thing for independently inherited properties in
+      // Element::RecalcOwnStyle().)
       if (state.Style()->HasExplicitInheritance())
         state.ParentStyle()->SetChildHasExplicitInheritance();
       is_non_inherited_cache_hit = true;

@@ -33,10 +33,15 @@ const char kQueryTilesSegmentationKey[] = "query_tiles";
 const char kChromeLowUserEngagementSegmentationKey[] =
     "chrome_low_user_engagement";
 
+// The key is used to decide whether the user likes to use Feed.
+const char kFeedUserSegmentationKey[] = "feed_user_segment";
+
 // The key provide a list of segment IDs, separated by commas, whose ML model
 // execution results are allowed to be uploaded through UKM.
 const char kSegmentIdsAllowedForReportingKey[] =
     "segment_ids_allowed_for_reporting";
+
+const char kSubsegmentDiscreteMappingSuffix[] = "_subsegment";
 
 // Contains various finch configuration params used by the segmentation
 // platform.

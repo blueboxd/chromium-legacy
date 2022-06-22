@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/notreached.h"
 #include "base/syslog_logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -146,10 +147,10 @@ void StartupAppLauncher::OnKioskAppDataLoadStatusChanged(
     const std::string& app_id) {
   DCHECK(state_ == LaunchState::kWaitingForCache);
 
-  kiosk_app_manager_observation_.Reset();
-
   if (app_id != app_id_)
     return;
+
+  kiosk_app_manager_observation_.Reset();
 
   if (KioskAppManager::Get()->HasCachedCrx(app_id_))
     BeginInstall();
@@ -176,17 +177,21 @@ void StartupAppLauncher::OnInstallComplete(
     case ChromeKioskAppInstaller::InstallResult::kSuccess:
       OnInstallSuccess();
       return;
-    case ChromeKioskAppInstaller::InstallResult::kUnableToInstallPrimaryApp:
+    case ChromeKioskAppInstaller::InstallResult::kPrimaryAppInstallFailed:
       OnLaunchFailure(KioskAppLaunchError::Error::kUnableToInstall);
       return;
-    case ChromeKioskAppInstaller::InstallResult::kNotKioskEnabled:
+    case ChromeKioskAppInstaller::InstallResult::kPrimaryAppNotKioskEnabled:
       OnLaunchFailure(KioskAppLaunchError::Error::kNotKioskEnabled);
       return;
     case ChromeKioskAppInstaller::InstallResult::kPrimaryAppNotCached:
-    case ChromeKioskAppInstaller::InstallResult::kUnableToInstallSecondaryApp:
+    case ChromeKioskAppInstaller::InstallResult::kSecondaryAppInstallFailed:
       if (!RetryWhenNetworkIsAvailable()) {
         OnLaunchFailure(KioskAppLaunchError::Error::kUnableToInstall);
       }
+      return;
+    case ChromeKioskAppInstaller::InstallResult::kUnknown:
+      SYSLOG(ERROR) << "Received unknown InstallResult";
+      OnLaunchFailure(KioskAppLaunchError::Error::kUnableToInstall);
       return;
   }
 }
@@ -227,6 +232,10 @@ void StartupAppLauncher::OnLaunchComplete(
     case ChromeKioskAppLauncher::LaunchResult::kNetworkMissing:
       if (!RetryWhenNetworkIsAvailable())
         OnLaunchFailure(KioskAppLaunchError::Error::kUnableToLaunch);
+      return;
+    case ChromeKioskAppLauncher::LaunchResult::kUnknown:
+      SYSLOG(ERROR) << "Received unknown LaunchResult";
+      OnLaunchFailure(KioskAppLaunchError::Error::kUnableToLaunch);
       return;
   }
 }

@@ -113,8 +113,7 @@ constexpr base::TimeDelta kNearbyVisibilityReminderTimerDelay = base::Days(180);
 
 bool IsBackgroundScanningFeatureEnabled() {
   return base::FeatureList::IsEnabled(
-             features::kNearbySharingBackgroundScanning) &&
-         chromeos::features::IsBluetoothAdvertisementMonitoringEnabled();
+      features::kNearbySharingBackgroundScanning);
 }
 
 std::string ReceiveSurfaceStateToString(
@@ -3998,6 +3997,12 @@ bool NearbySharingServiceImpl::OnIncomingPayloadsComplete(
 
       if (credentials_proto.password().empty()) {
         NS_LOG(WARNING) << __func__ << ": No Wi-Fi password found";
+        return false;
+      }
+
+      if (credentials_proto.has_hidden_ssid() &&
+          credentials_proto.hidden_ssid()) {
+        NS_LOG(WARNING) << __func__ << ": Network is hidden";
         return false;
       }
 

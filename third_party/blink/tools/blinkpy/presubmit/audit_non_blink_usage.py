@@ -87,7 +87,9 @@ _CONFIG = [
             'base::ScopedAllowBlocking',
             'base::ScopedFD',
             'base::ScopedClosureRunner',
+            'base::StringPattern',
             'base::StringPiece',
+            'base::SubstringSetMatcher',
             'base::SupportsWeakPtr',
             'base::SysInfo',
             'base::ThreadChecker',
@@ -120,7 +122,7 @@ _CONFIG = [
             'base::PassKey',
 
             # //base/allocator/partition_allocator/partition_alloc_constants.h
-            'base::kAlignment',
+            'partition_alloc::internal::kAlignment',
 
             # //base/task/bind_post_task.h
             'base::BindPostTask',
@@ -527,6 +529,7 @@ _CONFIG = [
             'root_scroller_util::.+',
             'scheduler::.+',
             'scroll_customization::.+',
+            'scroll_into_view_util::.+',
             'scroll_timeline_util::.+',
             'style_change_extra_data::.+',
             'style_change_reason::.+',

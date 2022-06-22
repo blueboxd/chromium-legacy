@@ -20,6 +20,11 @@ extern const char kAddPasswordsInSettingsDescription[];
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
 
+// Title and description for the flag to control the new autofill suggestion
+// ranking formula.
+extern const char kAutofillEnableRankingFormulaName[];
+extern const char kAutofillEnableRankingFormulaDescription[];
+
 // Title and description for the flag enable sending billing customer number in
 // GetUploadDetails preflight call.
 extern const char kAutofillEnableSendingBcnInGetUploadDetailsName[];
@@ -197,6 +202,10 @@ extern const char kEnableDiscoverFeedStaticResourceServingDescription[];
 extern const char kEnableFaviconForPasswordsName[];
 extern const char kEnableFaviconForPasswordsDescription[];
 
+// Title and description for the flag to remove the Feed from the NTP.
+extern const char kEnableFeedAblationName[];
+extern const char kEnableFeedAblationDescription[];
+
 // Title and description for the flag to test the FRE default browser promo
 // experiment.
 extern const char kEnableFREDefaultBrowserScreenTestingName[];
@@ -343,9 +352,24 @@ extern const char kMuteCompromisedPasswordsDescription[];
 extern const char kNewMobileIdentityConsistencyFREName[];
 extern const char kNewMobileIdentityConsistencyFREDescription[];
 
+// Title and description for the flag to add a Clear Browsing Data action to
+// the new overflow menu.
+extern const char kNewOverflowMenuCBDActionName[];
+extern const char kNewOverflowMenuCBDActionDescription[];
+
 // Title and description for the flag to enable the new overflow menu.
 extern const char kNewOverflowMenuName[];
 extern const char kNewOverflowMenuDescription[];
+
+// Title and description for the flag to add a Settings action to the new
+// overflow menu.
+extern const char kNewOverflowMenuSettingsActionName[];
+extern const char kNewOverflowMenuSettingsActionDescription[];
+
+// Title and description for the flag to use simple icons for the Destinations
+// in the new overflow menu.
+extern const char kNewOverflowMenuSimpleDestinationIconsName[];
+extern const char kNewOverflowMenuSimpleDestinationIconsDescription[];
 
 // Title and description for temporary bug fix to broken NTP view hierarhy.
 // TODO(crbug.com/1262536): Remove this when fixed.

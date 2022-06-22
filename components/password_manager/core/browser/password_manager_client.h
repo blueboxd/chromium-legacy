@@ -134,6 +134,9 @@ class PasswordManagerClient {
   // address.
   virtual bool IsFillingFallbackEnabled(const GURL& url) const;
 
+  // Checks if the auto sign-in functionality is enabled.
+  virtual bool IsAutoSignInEnabled() const;
+
   // Informs the embedder of a password form that can be saved or updated in
   // password store if the user allows it. The embedder is not required to
   // prompt the user if it decides that this form doesn't need to be saved or
@@ -186,6 +189,7 @@ class PasswordManagerClient {
       const url::Origin& origin,
       CredentialsCallback callback) = 0;
 
+#if BUILDFLAG(IS_ANDROID)
   // Instructs the client to show the Touch To Fill UI.
   virtual void ShowTouchToFill(
       PasswordManagerDriver* driver,
@@ -194,6 +198,7 @@ class PasswordManagerClient {
   // Informs `PasswordReuseDetectionManager` about reused passwords selected
   // from the AllPasswordsBottomSheet.
   virtual void OnPasswordSelected(const std::u16string& text);
+#endif
 
   // Returns a pointer to a BiometricAuthenticator. Might be null if
   // BiometricAuthentication is not available for a given platform.
@@ -472,6 +477,9 @@ class PasswordManagerClient {
 
   // Returns the Chrome channel for the installation.
   virtual version_info::Channel GetChannel() const;
+
+  // Refreshes password manager settings stored in prefs.
+  virtual void RefreshPasswordManagerSettingsIfNeeded() const;
 };
 
 }  // namespace password_manager

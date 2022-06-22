@@ -38,7 +38,6 @@ class CSPContextTest : public CSPContext {
   }
 
   void SanitizeDataForUseInCspViolation(
-      bool is_redirect,
       CSPDirectiveName directive,
       GURL* blocked_url,
       network::mojom::SourceLocation* source_location) const override {
@@ -352,7 +351,8 @@ TEST(CSPContextTest, BlockedDespiteWildcard) {
             "violates the following Content Security Policy directive: "
             "\"frame-src *\". Note that '*' matches only URLs with network "
             "schemes ('http', 'https', 'ws', 'wss'), or URLs whose scheme "
-            "matches `self`'s scheme. data:' must be added explicitely.\n");
+            "matches `self`'s scheme. The scheme 'data:' must be added "
+            "explicitly.\n");
 }
 
 }  // namespace network

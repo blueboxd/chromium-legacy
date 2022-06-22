@@ -538,7 +538,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockDemoPreferencesScreenView>();
     mock_demo_preferences_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockDemoPreferencesScreen>(
-            mock_demo_preferences_screen_view_.get(),
+            mock_demo_preferences_screen_view_->AsWeakPtr(),
             base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -567,7 +567,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     mock_update_view_ = std::make_unique<MockUpdateView>();
     mock_update_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockUpdateScreen>(
-            mock_update_view_.get(), GetErrorScreen(),
+            mock_update_view_.get()->AsWeakPtr(), GetErrorScreen(),
             base::BindRepeating(&WizardController::OnUpdateScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -622,19 +622,17 @@ class WizardControllerFlowTest : public WizardControllerTest {
                                 base::Unretained(wizard_controller))));
 
     mock_demo_setup_screen_view_ = std::make_unique<MockDemoSetupScreenView>();
-    ExpectBind(mock_demo_setup_screen_view_.get());
     mock_demo_setup_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockDemoSetupScreen>(
-            mock_demo_setup_screen_view_.get(),
+            mock_demo_setup_screen_view_->AsWeakPtr(),
             base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
                                 base::Unretained(wizard_controller))));
 
     mock_demo_preferences_screen_view_ =
         std::make_unique<MockDemoPreferencesScreenView>();
-    ExpectBind(mock_demo_preferences_screen_view_.get());
     mock_demo_preferences_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockDemoPreferencesScreen>(
-            mock_demo_preferences_screen_view_.get(),
+            mock_demo_preferences_screen_view_->AsWeakPtr(),
             base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -3189,8 +3187,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
   mock_enrollment_screen_->ExitScreen(EnrollmentScreen::Result::COMPLETED);
 }
 
+// TODO(crbug.com/1324410): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
-                       SkipEnrollmentAfterRollback) {
+                       DISABLED_SkipEnrollmentAfterRollback) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);

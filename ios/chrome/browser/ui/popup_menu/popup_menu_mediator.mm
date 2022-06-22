@@ -10,6 +10,8 @@
 #include "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -29,6 +31,7 @@
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/follow/follow_menu_updater.h"
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
+#import "ios/chrome/browser/follow/follow_util.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter_observer_bridge.h"
@@ -49,6 +52,7 @@
 #import "ios/chrome/browser/ui/icons/action_icon.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_text_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
@@ -69,6 +73,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/follow/follow_provider.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #include "ios/web/common/features.h"
@@ -86,6 +91,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::RecordAction;
+using base::UserMetricsAction;
 
 namespace {
 PopupMenuToolsItem* CreateTableViewItem(int titleID,
@@ -189,6 +197,12 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 // Whether the web content is currently being blocked.
 @property(nonatomic, assign) BOOL contentBlocked;
 
+// URLs for the current webpage, which are used to update the follow status.
+@property(nonatomic, strong) FollowWebPageURLs* webPageURLs;
+
+// YES if the current website has been followed.
+@property(nonatomic, assign) BOOL followStatus;
+
 #pragma mark*** Specific Items ***
 
 @property(nonatomic, strong) PopupMenuToolsItem* openNewIncognitoTabItem;
@@ -247,6 +261,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
     _webStateObserver.reset();
     if (self.followItem) {
       FollowTabHelper::FromWebState(_webState)->remove_follow_menu_updater();
+      self.webPageURLs = nil;
     }
     _webState = nullptr;
   }
@@ -640,6 +655,17 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
       }));
 }
 
+- (void)updateFollowStatus {
+  DCHECK(IsWebChannelsEnabled());
+  if (self.followStatus) {
+    [self.feedMetricsRecorder recordUnfollowFromMenu];
+  } else {
+    [self.feedMetricsRecorder recordFollowFromMenu];
+  }
+  ios::GetChromeBrowserProvider().GetFollowProvider()->UpdateFollowStatus(
+      self.webPageURLs, !self.followStatus);
+}
+
 #pragma mark - IOSLanguageDetectionTabHelperObserving
 
 - (void)iOSLanguageDetectionTabHelper:
@@ -665,15 +691,25 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 #pragma mark - FollowMenuUpdater
 
-- (void)updateFollowMenuItemWithFollowStatus:(BOOL)status
-                                       title:(NSString*)title
-                                     enabled:(BOOL)enable {
+- (void)updateFollowMenuItemWithFollowWebPageURLs:
+            (FollowWebPageURLs*)webPageURLs
+                                           status:(BOOL)status
+                                       domainName:(NSString*)domainName
+                                          enabled:(BOOL)enabled {
   DCHECK(IsWebChannelsEnabled());
-  self.followItem.enabled = enable;
-  self.followItem.title = title;
-  self.followItem.image = [[UIImage
-      imageNamed:status ? @"popup_menu_unfollow" : @"popup_menu_follow"]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  self.webPageURLs = webPageURLs;
+  self.followStatus = status;
+  self.followItem.enabled = enabled;
+  self.followItem.title =
+      status ? l10n_util::GetNSStringF(IDS_IOS_TOOLS_MENU_UNFOLLOW,
+                                       base::SysNSStringToUTF16(@""))
+             : l10n_util::GetNSStringF(IDS_IOS_TOOLS_MENU_FOLLOW,
+                                       base::SysNSStringToUTF16(@""));
+  self.followItem.image =
+      [[UIImage imageNamed:self.followStatus ? @"popup_menu_unfollow"
+                                             : @"popup_menu_follow"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
   [self.popupMenu itemsHaveChanged:@[ self.followItem ]];
 }
 
@@ -1055,7 +1091,8 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 - (NSArray<TableViewItem*>*)actionItems {
   NSMutableArray* actionsArray = [NSMutableArray array];
 
-  if (!self.isIncognito && IsWebChannelsEnabled()) {
+  if (!self.isIncognito && IsWebChannelsEnabled() &&
+      GetFollowActionState(self.webState) != FollowActionStateHidden) {
     // Follow.
     self.followItem =
         CreateFollowItem(IDS_IOS_TOOLS_MENU_FOLLOW, PopupMenuActionFollow,

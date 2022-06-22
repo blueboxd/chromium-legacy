@@ -21,12 +21,12 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
@@ -44,11 +44,11 @@ namespace crostini {
 
 namespace {
 
+using ::ash::FakeCiceroneClient;
+using ::ash::FakeConciergeClient;
 using ::ash::FakeSeneschalClient;
 using ::chromeos::DBusMethodCallback;
 using ::chromeos::DBusThreadManager;
-using ::chromeos::FakeCiceroneClient;
-using ::chromeos::FakeConciergeClient;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::IsEmpty;
@@ -175,10 +175,10 @@ class CrostiniPackageServiceTest : public testing::Test {
   void SetUp() override {
     DBusThreadManager::Initialize();
 
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
     ash::SeneschalClient::InitializeFake();
-    fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
+    fake_cicerone_client_ = ash::FakeCiceroneClient::Get();
     ASSERT_TRUE(fake_cicerone_client_);
     fake_seneschal_client_ = FakeSeneschalClient::Get();
     ASSERT_TRUE(fake_seneschal_client_);
@@ -234,8 +234,8 @@ class CrostiniPackageServiceTest : public testing::Test {
     profile_.reset();
     task_environment_.reset();
     ash::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     DBusThreadManager::Shutdown();
   }
 

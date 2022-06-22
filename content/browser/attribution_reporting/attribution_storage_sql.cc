@@ -147,6 +147,23 @@ constexpr int64_t kUnsetReportId = -1;
   DCHECK_SQL_INDEXED_BY("aggregate_report_time_idx")                   \
   "JOIN sources I ON A.source_id = I.source_id "
 
+// This query should be reasonably optimized via
+// `kConversionDestinationIndexSql`. The conversion origin is the third
+// column in a multi-column index where the first two columns are just booleans.
+// Therefore the third column in the index should be very well-sorted.
+//
+// Note: to take advantage of this, we need to hint to the query planner that
+// |event_level_active| and |aggregatable_active| are booleans, so include
+// them in the conditional.
+#define ATTRIBUTION_COUNT_REPORTS_SQL(table) \
+  "SELECT COUNT(*)FROM " table " R "         \
+  "JOIN sources I "                          \
+  DCHECK_SQL_INDEXED_BY("sources_by_active_destination_site_reporting_origin") \
+  "ON I.source_id=R.source_id "              \
+  "WHERE I.destination_site=? "              \
+  "AND(event_level_active BETWEEN 0 AND 1)"  \
+  "AND(aggregatable_active BETWEEN 0 AND 1)"
+
 // clang-format on
 
 void RecordInitializationStatus(
@@ -378,12 +395,12 @@ AttributionStorageSql::~AttributionStorageSql() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-absl::optional<std::vector<DeactivatedSource>>
+absl::optional<std::vector<StoredSource>>
 AttributionStorageSql::DeactivateSources(
     const std::string& serialized_conversion_destination,
     const std::string& serialized_reporting_origin,
     int return_limit) {
-  std::vector<DeactivatedSource> deactivated_sources;
+  std::vector<StoredSource> deactivated_sources;
 
   if (return_limit != 0) {
     // Get at most `return_limit` sources that will be deactivated. We do this
@@ -411,9 +428,7 @@ AttributionStorageSql::DeactivateSources(
       if (!source_data.has_value())
         return absl::nullopt;
 
-      deactivated_sources.emplace_back(
-          std::move(source_data->source),
-          DeactivatedSource::Reason::kReplacedByNewerSource);
+      deactivated_sources.push_back(std::move(source_data->source));
     }
     if (!get_statement.Succeeded())
       return absl::nullopt;
@@ -441,10 +456,10 @@ AttributionStorageSql::DeactivateSources(
 
   for (auto& deactivated_source : deactivated_sources) {
     absl::optional<std::vector<uint64_t>> dedup_keys =
-        ReadDedupKeys(deactivated_source.source.source_id());
+        ReadDedupKeys(deactivated_source.source_id());
     if (!dedup_keys.has_value())
       return absl::nullopt;
-    deactivated_source.source.SetDedupKeys(std::move(*dedup_keys));
+    deactivated_source.SetDedupKeys(std::move(*dedup_keys));
   }
 
   return deactivated_sources;
@@ -511,7 +526,7 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
   // In the case where we get a new source for a given <reporting_origin,
   // conversion_destination> we should mark all active, converted impressions
   // with the matching <reporting_origin, conversion_destination> as not active.
-  absl::optional<std::vector<DeactivatedSource>> deactivated_sources =
+  absl::optional<std::vector<StoredSource>> deactivated_sources =
       DeactivateSources(serialized_conversion_destination,
                         serialized_reporting_origin,
                         deactivated_source_return_limit);
@@ -824,18 +839,6 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
                                   /*new_aggregaable_status=*/absl::nullopt);
   }
 
-  switch (CapacityForStoringReport(trigger)) {
-    case ConversionCapacityStatus::kHasCapacity:
-      break;
-    case ConversionCapacityStatus::kNoCapacity:
-      return assemble_report_result(
-          EventLevelResult::kNoCapacityForConversionDestination,
-          AggregatableResult::kNoCapacityForConversionDestination);
-    case ConversionCapacityStatus::kError:
-      return assemble_report_result(EventLevelResult::kInternalError,
-                                    AggregatableResult::kInternalError);
-  }
-
   switch (rate_limit_table_.AttributionAllowedForAttributionLimit(
       db_.get(), attribution_info)) {
     case RateLimitResult::kAllowed:
@@ -1032,6 +1035,16 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
     case ReportAlreadyStoredStatus::kStored:
       return EventLevelResult::kDeduplicated;
     case ReportAlreadyStoredStatus::kError:
+      return EventLevelResult::kInternalError;
+  }
+
+  switch (CapacityForStoringReport(
+      trigger, AttributionReport::ReportType::kEventLevel)) {
+    case ConversionCapacityStatus::kHasCapacity:
+      break;
+    case ConversionCapacityStatus::kNoCapacity:
+      return EventLevelResult::kNoCapacityForConversionDestination;
+    case ConversionCapacityStatus::kError:
       return EventLevelResult::kInternalError;
   }
 
@@ -1785,31 +1798,28 @@ AttributionStorageSql::ReportAlreadyStored(StoredSource::Id source_id,
 
 AttributionStorageSql::ConversionCapacityStatus
 AttributionStorageSql::CapacityForStoringReport(
-    const AttributionTrigger& trigger) {
-  // This query should be reasonably optimized via
-  // `kConversionDestinationIndexSql`. The conversion origin is the second
-  // column in a multi-column index where the first column is just a boolean.
-  // Therefore the second column in the index should be very well-sorted.
-  //
-  // Note: to take advantage of this, we need to hint to the query planner that
-  // |event_level_active| and |aggregatable_active| are booleans, so include
-  // them in the conditional.
-  static constexpr char kCountReportsSql[] =
-      "SELECT COUNT(*)FROM event_level_reports C "
-      "JOIN sources I "
-      DCHECK_SQL_INDEXED_BY("sources_by_active_destination_site_reporting_origin")
-      "ON I.source_id = C.source_id "
-      "WHERE I.destination_site = ? AND "
-      "(event_level_active BETWEEN 0 AND 1) AND "
-      "(aggregatable_active BETWEEN 0 AND 1)";
-  sql::Statement statement(
-      db_->GetCachedStatement(SQL_FROM_HERE, kCountReportsSql));
+    const AttributionTrigger& trigger,
+    AttributionReport::ReportType report_type) {
+  sql::Statement statement;
+  switch (report_type) {
+    case AttributionReport::ReportType::kEventLevel:
+      statement.Assign(db_->GetCachedStatement(
+          SQL_FROM_HERE,
+          ATTRIBUTION_COUNT_REPORTS_SQL(ATTRIBUTION_CONVERSIONS_TABLE)));
+      break;
+    case AttributionReport::ReportType::kAggregatableAttribution:
+      statement.Assign(db_->GetCachedStatement(
+          SQL_FROM_HERE, ATTRIBUTION_COUNT_REPORTS_SQL(
+                             ATTRIBUTION_AGGREGATABLE_REPORT_METADATA_TABLE)));
+      break;
+  }
+
   statement.BindString(
       0, net::SchemefulSite(trigger.destination_origin()).Serialize());
   if (!statement.Step())
     return ConversionCapacityStatus::kError;
   int64_t count = statement.ColumnInt64(0);
-  return count < delegate_->GetMaxAttributionsPerOrigin()
+  return count < delegate_->GetMaxAttributionsPerOrigin(report_type)
              ? ConversionCapacityStatus::kHasCapacity
              : ConversionCapacityStatus::kNoCapacity;
 }
@@ -2577,6 +2587,9 @@ AttributionStorageSql::MaybeCreateAggregatableAttributionReport(
     const AttributionTrigger& trigger,
     bool top_level_filters_match,
     absl::optional<AttributionReport>& report) {
+  if (!top_level_filters_match)
+    return AggregatableResult::kNoMatchingSourceFilterData;
+
   std::vector<AggregatableHistogramContribution> contributions =
       CreateAggregatableHistogram(
           attribution_info.source.common_info().filter_data(),
@@ -2585,8 +2598,15 @@ AttributionStorageSql::MaybeCreateAggregatableAttributionReport(
   if (contributions.empty())
     return AggregatableResult::kNoHistograms;
 
-  if (!top_level_filters_match)
-    return AggregatableResult::kNoMatchingSourceFilterData;
+  switch (CapacityForStoringReport(
+      trigger, AttributionReport::ReportType::kAggregatableAttribution)) {
+    case ConversionCapacityStatus::kHasCapacity:
+      break;
+    case ConversionCapacityStatus::kNoCapacity:
+      return AggregatableResult::kNoCapacityForConversionDestination;
+    case ConversionCapacityStatus::kError:
+      return AggregatableResult::kInternalError;
+  }
 
   base::Time report_time =
       delegate_->GetAggregatableReportTime(attribution_info.time);

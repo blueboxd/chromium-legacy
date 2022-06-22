@@ -23,12 +23,12 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -63,17 +63,16 @@ class CrostiniInstallerTest : public testing::Test {
     MOCK_METHOD0(OnCanceled, void());
   };
 
-  class WaitingFakeConciergeClient : public chromeos::FakeConciergeClient {
+  class WaitingFakeConciergeClient : public ash::FakeConciergeClient {
    public:
-    explicit WaitingFakeConciergeClient(chromeos::FakeCiceroneClient* client)
-        : chromeos::FakeConciergeClient(client) {}
+    explicit WaitingFakeConciergeClient(ash::FakeCiceroneClient* client)
+        : ash::FakeConciergeClient(client) {}
 
     void StartTerminaVm(
         const vm_tools::concierge::StartVmRequest& request,
         chromeos::DBusMethodCallback<vm_tools::concierge::StartVmResponse>
             callback) override {
-      chromeos::FakeConciergeClient::StartTerminaVm(request,
-                                                    std::move(callback));
+      ash::FakeConciergeClient::StartTerminaVm(request, std::move(callback));
       if (quit_closure_) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                       std::move(quit_closure_));
@@ -103,8 +102,7 @@ class CrostiniInstallerTest : public testing::Test {
     vm_tools::cicerone::OsRelease os_release;
     os_release.set_id("debian");
     os_release.set_version_id("10");
-    chromeos::FakeCiceroneClient::Get()->set_lxd_container_os_release(
-        os_release);
+    ash::FakeCiceroneClient::Get()->set_lxd_container_os_release(os_release);
   }
 
   void SetUp() override {
@@ -120,10 +118,10 @@ class CrostiniInstallerTest : public testing::Test {
 
     chromeos::DlcserviceClient::InitializeFake();
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
     SetOSRelease();
     waiting_fake_concierge_client_ =
-        new WaitingFakeConciergeClient(chromeos::FakeCiceroneClient::Get());
+        new WaitingFakeConciergeClient(ash::FakeCiceroneClient::Get());
 
     ash::SeneschalClient::InitializeFake();
 
@@ -155,8 +153,8 @@ class CrostiniInstallerTest : public testing::Test {
 
     ash::disks::MockDiskMountManager::Shutdown();
     ash::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     chromeos::DlcserviceClient::Shutdown();
 

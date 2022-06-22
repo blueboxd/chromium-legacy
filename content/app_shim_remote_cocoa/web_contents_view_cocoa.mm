@@ -197,8 +197,8 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 - (void)mouseEvent:(NSEvent*)theEvent {
   if (!_host)
     return;
-  _host->OnMouseEvent([theEvent type] == NSMouseMoved,
-                      [theEvent type] == NSMouseExited);
+  _host->OnMouseEvent([theEvent type] == NSEventTypeMouseMoved,
+                      [theEvent type] == NSEventTypeMouseExited);
 }
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove {
@@ -375,11 +375,20 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   _host->OnBecameFirstResponder(direction);
 }
 
-- (void)updateWebContentsVisibility:
-    (remote_cocoa::mojom::Visibility)visibility {
+- (void)setWebContentsVisibility:(remote_cocoa::mojom::Visibility)visibility {
   DCHECK(base::FeatureList::IsEnabled(kMacWebContentsOcclusion));
   if (_host)
     _host->OnWindowVisibilityChanged(visibility);
+}
+
+- (void)updateWebContentsVisibilityFromWindowVisibility:
+    (remote_cocoa::mojom::Visibility)windowVisibilityState {
+  remote_cocoa::mojom::Visibility visibilityState =
+      [self isHiddenOrHasHiddenAncestor]
+          ? remote_cocoa::mojom::Visibility::kHidden
+          : windowVisibilityState;
+
+  [self setWebContentsVisibility:visibilityState];
 }
 
 - (void)legacyUpdateWebContentsVisibility {
@@ -485,7 +494,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
     return;
   }
   if ([self window] == nil) {
-    [self updateWebContentsVisibility:remote_cocoa::mojom::Visibility::kHidden];
+    [self setWebContentsVisibility:remote_cocoa::mojom::Visibility::kHidden];
   } else {
     [[WebContentsOcclusionCheckerMac sharedInstance]
         updateWebContentsVisibility:self];
@@ -497,7 +506,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
     [self legacyUpdateWebContentsVisibility];
     return;
   }
-  [self updateWebContentsVisibility:remote_cocoa::mojom::Visibility::kHidden];
+  [self setWebContentsVisibility:remote_cocoa::mojom::Visibility::kHidden];
 }
 
 - (void)viewDidUnhide {

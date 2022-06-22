@@ -65,9 +65,6 @@ namespace base {
 // TODO(https://crbug.com/1288247): Remove these 'using' declarations once
 // the migration to the new namespaces gets done.
 using ::partition_alloc::PartitionRoot;
-using ::partition_alloc::PartitionStatsDumper;
-using ::partition_alloc::ThreadSafePartitionRoot;
-using ::partition_alloc::internal::kAlignment;
 
 }  // namespace base
 

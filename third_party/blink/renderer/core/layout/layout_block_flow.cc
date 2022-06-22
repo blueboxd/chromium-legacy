@@ -2858,10 +2858,6 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
 
   if (ChildrenInline()) {
     if (child_is_block_level) {
-      if (GetDisplayLockContext() && IsShapingDeferred()) {
-        GetDisplayLockContext()->SetRequestedState(
-            EContentVisibility::kVisible);
-      }
       // Wrap the inline content in anonymous blocks, to allow for the new block
       // child to be inserted.
       MakeChildrenNonInline(before_child);
@@ -3319,6 +3315,10 @@ static void GetInlineRun(LayoutObject* start,
 
 void LayoutBlockFlow::MakeChildrenNonInline(LayoutObject* insertion_point) {
   NOT_DESTROYED();
+
+  if (GetDisplayLockContext() && IsShapingDeferred())
+    GetDisplayLockContext()->SetRequestedState(EContentVisibility::kVisible);
+
   // makeChildrenNonInline takes a block whose children are *all* inline and it
   // makes sure that inline children are coalesced under anonymous blocks.
   // If |insertionPoint| is defined, then it represents the insertion point for
@@ -3983,10 +3983,17 @@ LayoutUnit LayoutBlockFlow::LogicalHeightWithVisibleOverflow() const {
 Node* LayoutBlockFlow::NodeForHitTest() const {
   NOT_DESTROYED();
   // If we are in the margins of block elements that are part of a
-  // continuation we're actually still inside the enclosing element
+  // block-in-inline we're actually still inside the enclosing element
   // that was split. Use the appropriate inner node.
-  return IsAnonymousBlockContinuation() ? Continuation()->NodeForHitTest()
-                                        : LayoutBlock::NodeForHitTest();
+  if (UNLIKELY(IsBlockInInline())) {
+    DCHECK(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled());
+    DCHECK(Parent());
+    DCHECK(Parent()->IsLayoutInline());
+    return Parent()->NodeForHitTest();
+  }
+  if (UNLIKELY(IsAnonymousBlockContinuation()))
+    return Continuation()->NodeForHitTest();
+  return LayoutBlock::NodeForHitTest();
 }
 
 bool LayoutBlockFlow::HitTestChildren(HitTestResult& result,

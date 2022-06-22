@@ -86,7 +86,6 @@
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/chrome/browser/web/web_performance_metrics/web_performance_metrics_tab_helper.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper.h"
-#import "ios/components/security_interstitials/https_only_mode/https_only_mode_allowlist.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
@@ -151,9 +150,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   SafeBrowsingUrlAllowList::CreateForWebState(web_state);
   SafeBrowsingUnsafeResourceContainer::CreateForWebState(web_state);
 
-  if (IsURLBlocklistEnabled()) {
-    PolicyUrlBlockingTabHelper::CreateForWebState(web_state);
-  }
+  PolicyUrlBlockingTabHelper::CreateForWebState(web_state);
 
   ImageFetchTabHelper::CreateForWebState(web_state);
 
@@ -239,7 +236,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   HttpsOnlyModeUpgradeTabHelper::CreateForWebState(web_state,
                                                    browser_state->GetPrefs());
   HttpsOnlyModeContainer::CreateForWebState(web_state);
-  HttpsOnlyModeAllowlist::CreateForWebState(web_state);
 
   if (IsWebChannelsEnabled()) {
     FollowTabHelper::CreateForWebState(web_state);

@@ -24,9 +24,11 @@ import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.feed.FeedSwipeRefreshLayout;
@@ -40,6 +42,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.share.crow.CrowButtonDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -47,6 +50,7 @@ import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.features.tasks.TasksSurface;
@@ -95,6 +99,10 @@ public class StartSurfaceCoordinator implements StartSurface {
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
     private final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
     private final Supplier<Toolbar> mToolbarSupplier;
+    // TODO(crbug.com/1315676): Directly return the supplier from {@link TabSwitcherCoordinator}.
+    private final OneshotSupplierImpl<TabSwitcherCustomViewManager>
+            mTabSwitcherCustomViewManagerSupplier;
+    private final CrowButtonDelegate mCrowButtonDelegate;
 
     @VisibleForTesting
     static final String START_SHOWN_AT_STARTUP_UMA = "Startup.Android.StartSurfaceShownAtStartup";
@@ -214,6 +222,8 @@ public class StartSurfaceCoordinator implements StartSurface {
      * @param multiWindowModeStateDispatcher Gives access to the multi window mode state.
      * @param jankTracker Measures jank while feed or tab switcher are visible.
      * @param toolbarSupplier Supplies the {@link Toolbar}.
+     * @param crowButtonDelegate The {@link CrowButtonDelegate} to handle Crow click events.
+     * @param backPressManager {@link BackPressManager} to handle back press.
      */
     public StartSurfaceCoordinator(@NonNull Activity activity,
             @NonNull ScrimCoordinator scrimCoordinator,
@@ -234,7 +244,8 @@ public class StartSurfaceCoordinator implements StartSurface {
             @NonNull TabCreatorManager tabCreatorManager,
             @NonNull MenuOrKeyboardActionController menuOrKeyboardActionController,
             @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
-            @NonNull JankTracker jankTracker, @NonNull Supplier<Toolbar> toolbarSupplier) {
+            @NonNull JankTracker jankTracker, @NonNull Supplier<Toolbar> toolbarSupplier,
+            @NonNull CrowButtonDelegate crowButtonDelegate, BackPressManager backPressManager) {
         mConstructedTimeNs = SystemClock.elapsedRealtimeNanos();
         mActivity = activity;
         mScrimCoordinator = scrimCoordinator;
@@ -257,7 +268,9 @@ public class StartSurfaceCoordinator implements StartSurface {
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;
         mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
         mToolbarSupplier = toolbarSupplier;
+        mCrowButtonDelegate = crowButtonDelegate;
 
+        mTabSwitcherCustomViewManagerSupplier = new OneshotSupplierImpl<>();
         boolean excludeMVTiles = StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES.getValue()
                 || !mIsStartSurfaceEnabled;
         boolean excludeQueryTiles =
@@ -270,6 +283,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                     browserControlsManager, tabCreatorManager, menuOrKeyboardActionController,
                     containerView, shareDelegateSupplier, multiWindowModeStateDispatcher,
                     scrimCoordinator, /* rootView= */ containerView);
+            mTabSwitcherCustomViewManagerSupplier.set(
+                    mTabSwitcher.getTabSwitcherCustomViewManager());
         } else {
             // createSwipeRefreshLayout has to be called before creating any surface.
             createSwipeRefreshLayout();
@@ -284,7 +299,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mIsStartSurfaceEnabled, mActivity, mBrowserControlsManager,
                 this::isActivityFinishingOrDestroyed, excludeMVTiles, excludeQueryTiles,
                 startSurfaceOneshotSupplier, hadWarmStart, jankTracker,
-                mTasksSurface != null ? mTasksSurface::initializeMVTiles : null);
+                mTasksSurface != null ? mTasksSurface::initializeMVTiles : null, backPressManager);
 
         // Show feed loading image.
         if (mStartSurfaceMediator.shouldShowFeedPlaceholder()) {
@@ -394,7 +409,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                     mTasksSurface.getBodyViewContainer(), mPropertyModel, mBottomSheetController,
                     mParentTabSupplier, new ScrollableContainerDelegateImpl(), mSnackbarManager,
                     mShareDelegateSupplier, mWindowAndroid, mTabModelSelector, mToolbarSupplier,
-                    mConstructedTimeNs, mSwipeRefreshLayout);
+                    mConstructedTimeNs, mSwipeRefreshLayout, mCrowButtonDelegate);
         }
         mStartSurfaceMediator.initWithNative(
                 mIsStartSurfaceEnabled ? mOmniboxStubSupplier.get() : null,
@@ -406,7 +421,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                     mDynamicResourceLoaderSupplier.get(), mSnackbarManager, mModalDialogManager);
         }
         if (mTasksSurface != null) {
-            mTasksSurface.onFinishNativeInitialization(mActivity, mOmniboxStubSupplier.get());
+            mTasksSurface.onFinishNativeInitialization(mActivity, mOmniboxStubSupplier.get(),
+                    mStartSurfaceMediator.getFeedReliabilityLogger());
         }
 
         if (mIsInitPending) {
@@ -416,7 +432,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (mIsSecondaryTaskInitPending) {
             mIsSecondaryTaskInitPending = false;
             mSecondaryTasksSurface.onFinishNativeInitialization(
-                    mActivity, mOmniboxStubSupplier.get());
+                    mActivity, mOmniboxStubSupplier.get(), /*feedReliabilityLogger=*/null);
             mSecondaryTasksSurface.initialize();
         }
     }
@@ -496,6 +512,11 @@ public class StartSurfaceCoordinator implements StartSurface {
     @Nullable
     public TasksSurface getPrimaryTasksSurface() {
         return mTasksSurface;
+    }
+
+    @Override
+    public OneshotSupplier<TabSwitcherCustomViewManager> getTabSwitcherCustomViewManagerSupplier() {
+        return mTabSwitcherCustomViewManagerSupplier;
     }
 
     /**
@@ -618,7 +639,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mShareDelegateSupplier, mMultiWindowModeStateDispatcher, mContainerView);
         if (mIsInitializedWithNative) {
             mSecondaryTasksSurface.onFinishNativeInitialization(
-                    mActivity, mOmniboxStubSupplier.get());
+                    mActivity, mOmniboxStubSupplier.get(), /*feedReliabilityLogger=*/null);
             mSecondaryTasksSurface.initialize();
         } else {
             mIsSecondaryTaskInitPending = true;
@@ -633,6 +654,11 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (mOnTabSelectingListener != null) {
             mSecondaryTasksSurface.setOnTabSelectingListener(mOnTabSelectingListener);
             mOnTabSelectingListener = null;
+        }
+
+        if (!mTabSwitcherCustomViewManagerSupplier.hasValue()) {
+            mTabSwitcherCustomViewManagerSupplier.set(
+                    mSecondaryTasksSurface.getTabSwitcherCustomViewManager());
         }
         return mSecondaryTasksSurface.getController();
     }
@@ -693,11 +719,6 @@ public class StartSurfaceCoordinator implements StartSurface {
                 + (getPixelSize(R.dimen.fake_search_box_lateral_padding)
                         - getPixelSize(R.dimen.search_box_start_padding));
 
-        float fakeTextSize = mActivity.getResources().getDimension(
-                R.dimen.tasks_surface_location_bar_url_text_size);
-        float realTextSize =
-                mActivity.getResources().getDimension(R.dimen.location_bar_url_text_size);
-
         int fakeButtonSize = getPixelSize(R.dimen.tasks_surface_location_bar_url_button_size);
         int realButtonSize = getPixelSize(R.dimen.location_bar_action_icon_width);
 
@@ -722,7 +743,6 @@ public class StartSurfaceCoordinator implements StartSurface {
 
             mTasksSurface.updateFakeSearchBox(fakeHeight - reducedHeight, reducedHeight,
                     (int) (fakeEndPadding * (1 - expansionFraction)),
-                    fakeTextSize + (realTextSize - fakeTextSize) * expansionFraction,
                     SearchEngineLogoUtils.getInstance().shouldShowSearchEngineLogo(false)
                             ? realTranslationX * expansionFraction
                             : 0,

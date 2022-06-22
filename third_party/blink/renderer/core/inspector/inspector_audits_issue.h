@@ -57,10 +57,7 @@ enum class DeprecationIssueType {
   kGetUserMediaInsecureOrigin,
   kHostCandidateAttributeGetter,
   kInsecurePrivateNetworkSubresourceRequest,
-  kLegacyConstraintGoogCpuOveruseDetection,
   kLegacyConstraintGoogIPv6,
-  kLegacyConstraintGoogScreencastMinBitrate,
-  kLegacyConstraintGoogSuspendBelowMinBitrate,
   kLocalCSSFileExtensionRejected,
   kMediaElementAudioSourceNode,
   kMediaSourceAbortRemove,
@@ -87,11 +84,9 @@ enum class DeprecationIssueType {
   kRTCConstraintEnableDtlsSrtpFalse,
   kRTCConstraintEnableDtlsSrtpTrue,
   kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics,
-  kRTCPeerConnectionLegacyCreateWithMediaConstraints,
   kRTCPeerConnectionSdpSemanticsPlanB,
   kRtcpMuxPolicyNegotiate,
   kRTPDataChannel,
-  kSelectionAddRangeIntersect,
   kSharedArrayBufferConstructedWithoutIsolation,
   kTextToSpeech_DisallowedByAutoplay,
   kV8SharedArrayBufferConstructedInExtensionWithoutIsolation,
@@ -108,11 +103,9 @@ enum class RendererCorsIssueCode {
 
 enum class AttributionReportingIssueType {
   kPermissionPolicyDisabled,
-  kInvalidAttributionSourceEventId,
   kAttributionSourceUntrustworthyOrigin,
   kAttributionUntrustworthyOrigin,
-  kInvalidAttributionSourceExpiry,
-  kInvalidAttributionSourcePriority,
+  kInvalidHeader,
 };
 
 enum class SharedArrayBufferIssueType {

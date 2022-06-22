@@ -25,10 +25,8 @@
 
 namespace {
 
-// Width of the identity control if nothing is contraining it.
-constexpr CGFloat kIdentityControlMaxWidth = 327.;
-// Margin above the identity button.
-constexpr CGFloat kTopMarginForBottomView = 16.;
+// Top margin for the managed icon in the enteprised image view
+constexpr CGFloat kTopMarginForManagedIcon = 16.;
 
 // Banner at the top of the view.
 NSString* const kSigninBannerName = @"signin_banner";
@@ -52,7 +50,7 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
 @implementation SigninScreenViewController
 
 @dynamic delegate;
-@synthesize managedEnabled = _managedEnabled;
+@synthesize isManaged = _isManaged;
 @synthesize screenIntent = _screenIntent;
 @synthesize signinStatus = _signinStatus;
 
@@ -105,18 +103,13 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
   if (self.signinStatus != SigninScreenConsumerSigninStatusDisabled) {
     [self.specificContentView addSubview:self.identityControl];
 
-    NSLayoutConstraint* widthConstraint = [self.identityControl.widthAnchor
-        constraintEqualToConstant:kIdentityControlMaxWidth];
-    widthConstraint.priority = UILayoutPriorityDefaultHigh;
     [NSLayoutConstraint activateConstraints:@[
       [self.identityControl.topAnchor
           constraintEqualToAnchor:self.specificContentView.topAnchor],
       [self.identityControl.centerXAnchor
           constraintEqualToAnchor:self.specificContentView.centerXAnchor],
       [self.identityControl.widthAnchor
-          constraintLessThanOrEqualToAnchor:self.specificContentView
-                                                .widthAnchor],
-      widthConstraint,
+          constraintEqualToAnchor:self.specificContentView.widthAnchor],
       [self.identityControl.bottomAnchor
           constraintLessThanOrEqualToAnchor:self.specificContentView
                                                 .bottomAnchor],
@@ -124,7 +117,7 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
   }
 
   // Add enterprise image view.
-  if (self.managedEnabled) {
+  if (self.isManaged) {
     NSLayoutYAxisAnchor* topAnchorForEnterpriseIcon =
         self.signinStatus == SigninScreenConsumerSigninStatusDisabled
             ? self.specificContentView.topAnchor
@@ -137,7 +130,7 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
     [NSLayoutConstraint activateConstraints:@[
       [enterpriseImageView.topAnchor
           constraintGreaterThanOrEqualToAnchor:topAnchorForEnterpriseIcon
-                                      constant:kTopMarginForBottomView],
+                                      constant:kTopMarginForManagedIcon],
       [enterpriseImageView.bottomAnchor
           constraintEqualToAnchor:self.specificContentView.bottomAnchor],
       [enterpriseImageView.centerXAnchor
@@ -203,7 +196,7 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
 - (void)generateDisclaimer {
   NSMutableArray<NSString*>* array = [NSMutableArray array];
   NSMutableArray<NSURL*>* urls = [NSMutableArray array];
-  if (self.managedEnabled) {
+  if (self.isManaged) {
     [array addObject:l10n_util::GetNSString(
                          IDS_IOS_FIRST_RUN_WELCOME_SCREEN_BROWSER_MANAGED)];
   }

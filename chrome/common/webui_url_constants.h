@@ -107,7 +107,7 @@ extern const char kChromeUIHistoryClustersURL[];
 extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIHistorySyncedTabs[];
 extern const char kChromeUIHistoryURL[];
-extern const char kChromeUIHpsInternalsHost[];
+extern const char kChromeUIHumanPresenceInternalsHost[];
 extern const char kChromeUIIdentityInternalsHost[];
 extern const char kChromeUIImageEditorHost[];
 extern const char kChromeUIImageEditorURL[];
@@ -499,6 +499,7 @@ extern const char kSignOutSubPage[];
 extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
 extern const char kPrivacySandboxAdPersonalizationSubPage[];
+extern const char kPrivacySandboxLearnMoreSubPage[];
 extern const char kPrivacySandboxSubPage[];
 
 #if !BUILDFLAG(IS_ANDROID)

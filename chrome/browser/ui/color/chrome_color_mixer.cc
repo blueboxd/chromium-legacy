@@ -244,8 +244,6 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       SkColorSetA(kColorDownloadToolbarButtonInactive, 0x33)};
   mixer[kColorExtensionDialogBackground] = {SK_ColorWHITE};
   mixer[kColorExtensionIconBadgeBackgroundDefault] = {ui::kColorAccent};
-  mixer[kColorExtensionIconBadgeForegroundDefault] =
-      ui::GetColorWithMaxContrast(kColorExtensionIconBadgeBackgroundDefault);
   mixer[kColorExtensionIconDecorationAmbientShadow] =
       ui::SetAlpha(ui::kColorShadowBase, 0x26);
   mixer[kColorExtensionIconDecorationBackground] = {SK_ColorWHITE};
@@ -325,8 +323,9 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorNewTabPageHeader] = {SkColorSetRGB(0x96, 0x96, 0x96)};
   mixer[kColorNewTabPageLink] = {dark_mode ? gfx::kGoogleBlue300
                                            : SkColorSetRGB(0x06, 0x37, 0x74)};
-  mixer[kColorNewTabPageLogo] = {kColorNewTabPageLogoUnthemed};
-  mixer[kColorNewTabPageLogoUnthemed] = {SkColorSetRGB(0xEE, 0xEE, 0xEE)};
+  mixer[kColorNewTabPageLogo] = {kColorNewTabPageLogoUnthemedLight};
+  mixer[kColorNewTabPageLogoUnthemedDark] = {gfx::kGoogleGrey700};
+  mixer[kColorNewTabPageLogoUnthemedLight] = {SkColorSetRGB(0xEE, 0xEE, 0xEE)};
   if (dark_mode) {
     mixer[kColorNewTabPageMostVisitedTileBackground] = {gfx::kGoogleGrey900};
   } else {

@@ -14,7 +14,6 @@
  * or to provide other customizations.
  */
 import {AbstractTts} from '/chromevox/common/abstract_tts.js';
-import {ChromeVoxEvent} from '/chromevox/common/custom_automation_event.js';
 
 /**
  * A class containing the information needed to speak
@@ -261,7 +260,9 @@ export class ChromeVoxEditableTextBase {
     if (opt_triggeredByUser === true) {
       queueMode = QueueMode.CATEGORY_FLUSH;
     }
-    this.tts.speak(str, queueMode, opt_personality || {});
+    const props = opt_personality || {};
+    props['category'] = TtsCategory.NAV;
+    this.tts.speak(str, queueMode, props);
   }
 
   /**

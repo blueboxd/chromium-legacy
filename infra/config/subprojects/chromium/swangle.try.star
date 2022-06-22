@@ -38,7 +38,7 @@ consoles.list_view(
 
 def swangle_linux_builder(*, name, **kwargs):
     kwargs.setdefault("cores", 8)
-    kwargs.setdefault("os", os.LINUX_BIONIC_SWITCH_TO_DEFAULT)
+    kwargs.setdefault("os", os.LINUX_DEFAULT)
     return try_.builder(name = name, **kwargs)
 
 def swangle_mac_builder(*, name, **kwargs):
@@ -55,11 +55,6 @@ swangle_linux_builder(
     pool = "luci.chromium.swangle.chromium.linux.x64.try",
     executable = "recipe:chromium_trybot",
     execution_timeout = 6 * time.hour,
-)
-
-swangle_linux_builder(
-    name = "linux-swangle-try-tot-angle-x64",
-    pool = "luci.chromium.swangle.angle.linux.x64.try",
 )
 
 swangle_linux_builder(
@@ -85,16 +80,6 @@ swangle_windows_builder(
     pool = "luci.chromium.swangle.chromium.win.x86.try",
     executable = "recipe:chromium_trybot",
     execution_timeout = 6 * time.hour,
-)
-
-swangle_windows_builder(
-    name = "win-swangle-try-tot-angle-x64",
-    pool = "luci.chromium.swangle.win.x64.try",
-)
-
-swangle_windows_builder(
-    name = "win-swangle-try-tot-angle-x86",
-    pool = "luci.chromium.swangle.angle.win.x86.try",
 )
 
 swangle_windows_builder(

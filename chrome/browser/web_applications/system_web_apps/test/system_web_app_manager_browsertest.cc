@@ -205,8 +205,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
   auto* proxy = GetAppServiceProxy(browser()->profile());
 
   proxy->Launch(GetManager().GetAppIdForSystemApp(GetMockAppType()).value(),
-                ui::EventFlags::EF_NONE,
-                apps::mojom::LaunchSource::kFromAppListGrid,
+                ui::EF_NONE, apps::mojom::LaunchSource::kFromAppListGrid,
                 apps::MakeWindowInfo(display::kDefaultDisplayId));
   navigation_observer.Wait();
 
@@ -229,9 +228,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
   intent->mime_type = "text/plain";
 
   proxy->LaunchAppWithIntent(
-      GetManager().GetAppIdForSystemApp(GetMockAppType()).value(),
-      ui::EventFlags::EF_NONE, std::move(intent),
-      apps::mojom::LaunchSource::kFromAppListGrid,
+      GetManager().GetAppIdForSystemApp(GetMockAppType()).value(), ui::EF_NONE,
+      std::move(intent), apps::mojom::LaunchSource::kFromAppListGrid,
       apps::MakeWindowInfo(display::kDefaultDisplayId));
   navigation_observer.Wait();
 
@@ -1793,6 +1791,26 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppAccessibilityTest,
   // Start the actions.
   speech_monitor_.Replay();
 }
+
+class SystemWebAppAbortsLaunchTest : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppAbortsLaunchTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock*/ false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppThatAbortsLaunch();
+  }
+  ~SystemWebAppAbortsLaunchTest() override = default;
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppAbortsLaunchTest, LaunchAborted) {
+  WaitForTestSystemAppInstall();
+
+  LaunchSystemWebAppAsync(browser()->profile(), maybe_installation_->GetType());
+  FlushSystemWebAppLaunchesForTesting(browser()->profile());
+
+  EXPECT_EQ(0U, GetSystemWebAppBrowserCount(maybe_installation_->GetType()));
+}
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -1861,6 +1879,8 @@ INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerDefaultBoundsTest);
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppAccessibilityTest);
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppAbortsLaunchTest);
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)

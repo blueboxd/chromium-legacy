@@ -18,7 +18,7 @@ try_.defaults.set(
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
@@ -38,6 +38,9 @@ try_.builder(
 try_.builder(
     name = "chromeos-amd64-generic-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/chromeos-amd64-generic-dbg",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -54,6 +57,9 @@ try_.orchestrator_builder(
     mirrors = ["ci/chromeos-amd64-generic-rel"],
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -65,6 +71,9 @@ try_.compilator_builder(
 
 try_.builder(
     name = "chromeos-arm-generic-dbg",
+    mirrors = [
+        "ci/chromeos-arm-generic-dbg",
+    ],
 )
 
 try_.builder(
@@ -73,7 +82,6 @@ try_.builder(
     mirrors = ["ci/chromeos-arm-generic-rel"],
     builderless = not settings.is_main,
     main_list_view = "try",
-    os = os.LINUX_BIONIC_REMOVE,
     tryjob = try_.job(),
 )
 
@@ -81,39 +89,47 @@ try_.builder(
     name = "chromeos-arm64-generic-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
     mirrors = ["ci/chromeos-arm64-generic-rel"],
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 try_.builder(
     name = "lacros-amd64-generic-rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/lacros-amd64-generic-rel",
+    ],
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 try_.builder(
     name = "chromeos-amd64-generic-lacros-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 try_.builder(
     name = "lacros-arm-generic-rel",
+    mirrors = [
+        "ci/lacros-arm-generic-rel",
+    ],
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 try_.builder(
     name = "linux-chromeos-compile-dbg",
+    mirrors = [
+        "ci/linux-chromeos-dbg",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
-    os = os.LINUX_BIONIC_REMOVE,
     tryjob = try_.job(),
 )
 
@@ -160,6 +176,9 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -185,6 +204,10 @@ try_.builder(
 
 try_.builder(
     name = "linux-lacros-rel",
+    mirrors = [
+        "ci/linux-lacros-builder-rel",
+        "ci/linux-lacros-tester-rel",
+    ],
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     cores = 16,
@@ -192,18 +215,20 @@ try_.builder(
     goma_jobs = goma.jobs.J300,
     main_list_view = "try",
     tryjob = try_.job(),
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 try_.builder(
     name = "linux-lacros-rel-code-coverage",
+    mirrors = [
+        "ci/linux-lacros-builder-rel",
+        "ci/linux-lacros-tester-rel",
+    ],
     cores = 16,
     ssd = True,
     goma_jobs = goma.jobs.J300,
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    os = os.LINUX_BIONIC_REMOVE,
     tryjob = try_.job(
         experiment_percentage = 3,
     ),
@@ -211,6 +236,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-dbg",
+    mirrors = [
+        "ci/linux-chromeos-dbg",
+    ],
     # The CI builder that this mirrors is enabled on branches, so this will
     # allow testing changes that would break it before submitting
     branch_selector = branches.STANDARD_MILESTONE,

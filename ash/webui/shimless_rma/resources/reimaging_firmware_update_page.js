@@ -62,10 +62,10 @@ export class UpdateRoFirmwarePage extends UpdateRoFirmwarePageBase {
 
   static get properties() {
     return {
-      /** @protected {!UpdateRoFirmwareStatus} */
+      /** @protected {?UpdateRoFirmwareStatus} */
       status_: {
         type: Object,
-        value: UpdateRoFirmwareStatus.kWaitUsb,
+        value: null,
       },
 
       /** @protected {string} */
@@ -83,6 +83,7 @@ export class UpdateRoFirmwarePage extends UpdateRoFirmwarePageBase {
       shouldShowWarning_: {
         type: Boolean,
         value: false,
+        reflectToAttribute: true,
       },
     };
   }
@@ -136,7 +137,8 @@ export class UpdateRoFirmwarePage extends UpdateRoFirmwarePageBase {
    * @protected
    */
   getStatusString_() {
-    return this.i18n(STATUS_TEXT_KEY_MAP[this.status_]);
+    return this.status_ === null ? '' :
+                                   this.i18n(STATUS_TEXT_KEY_MAP[this.status_]);
   }
 
   /**
@@ -144,7 +146,9 @@ export class UpdateRoFirmwarePage extends UpdateRoFirmwarePageBase {
    * @protected
    */
   getImgSrc_() {
-    return `illustrations/${STATUS_IMG_MAP[this.status_]}.svg`;
+    return `illustrations/${
+        this.status_ === null ? 'downloading' :
+                                STATUS_IMG_MAP[this.status_]}.svg`;
   }
 }
 

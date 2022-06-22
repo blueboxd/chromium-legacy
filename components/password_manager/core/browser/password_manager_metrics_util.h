@@ -544,6 +544,7 @@ enum class PasswordAccountStorageUsageLevel {
   // The user has enabled Sync.
   kSyncing = 2,
 };
+
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
     PasswordAccountStorageUsageLevel usage_level);
 
@@ -663,9 +664,11 @@ void LogPasswordSettingsReauthResult(ReauthResult result);
 void LogDeleteUndecryptableLoginsReturnValue(
     DeleteCorruptedPasswordsResult result);
 
-// Log whether a saved password was generated.
-void LogNewlySavedPasswordIsGenerated(
-    bool value,
+// Log metrics about a newly saved password (e.g. whether a saved password was
+// generated).
+void LogNewlySavedPasswordMetrics(
+    bool is_generated_password,
+    bool is_username_empty,
     PasswordAccountStorageUsageLevel account_storage_usage_level);
 
 // Log whether the generated password was accepted or rejected for generation of

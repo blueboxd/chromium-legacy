@@ -82,6 +82,11 @@ generate_grd("build_grd") {
         "$root_gen_dir/third_party/polymer/v1_0/polymer_1_0_resources.grdp",
       ]
     }
+
+    if (!is_android) {
+      deps += [ "cr_components/history_clusters:build_grdp" ]
+      grdp_files += [ "$root_gen_dir/ui/webui/resources/cr_components/history_clusters/resources.grdp" ]
+    }
   }
 
   if (is_chromeos_ash) {
@@ -142,19 +147,6 @@ group("closure_compile") {
     if (is_chromeos_ash) {
       deps += [ "cr_components/chromeos:closure_compile" ]
     }
-  }
-}
-
-group("modulize") {
-  public_deps = [
-    "cr_elements:custom_elements",
-    "js:modulize",
-    "js/cr:modulize",
-    "js/cr/ui:modulize",
-  ]
-
-  if (include_polymer) {
-    public_deps += [ "cr_components:polymer3_elements" ]
   }
 }
 
@@ -257,7 +249,6 @@ if (include_polymer) {
     "cr_elements/cr_actionable_row_style.m.js",
     "cr_elements/cr_icons_css.m.js",
     "cr_elements/cr_input/cr_input_style_css.m.js",
-    "cr_elements/cr_page_host_style_css.js",
     "cr_elements/cr_radio_button/cr_radio_button_style_css.m.js",
     "cr_elements/hidden_style_css.m.js",
     "cr_elements/icons.m.js",
@@ -322,9 +313,13 @@ ts_library("library") {
 
   if (include_polymer) {
     in_files += [
+      "cr_components/iph_bubble/iph_bubble.html.ts",
       "cr_components/iph_bubble/iph_bubble.ts",
+      "cr_components/localized_link/localized_link.html.ts",
       "cr_components/localized_link/localized_link.ts",
+      "cr_components/managed_footnote/managed_footnote.html.ts",
       "cr_components/managed_footnote/managed_footnote.ts",
+      "cr_components/managed_dialog/managed_dialog.html.ts",
       "cr_components/managed_dialog/managed_dialog.ts",
       "cr_elements/cr_auto_img/cr_auto_img.ts",
       "cr_elements/cr_grid/cr_grid.html.ts",
@@ -339,7 +334,8 @@ ts_library("library") {
       "cr_elements/cr_link_row/cr_link_row.html.ts",
       "cr_elements/cr_link_row/cr_link_row.ts",
       "cr_elements/cr_menu_selector/cr_menu_selector.ts",
-      "cr_elements/cr_nav_menu_item_style.ts",
+      "cr_elements/cr_nav_menu_item_style.css.ts",
+      "cr_elements/cr_page_host_style.css.ts",
       "cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector_grid.html.ts",
       "cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector_grid.ts",
       "cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.html.ts",
@@ -366,11 +362,11 @@ ts_library("library") {
       "cr_elements/cr_view_manager/cr_view_manager.ts",
       "cr_elements/find_shortcut_mixin.ts",
       "cr_elements/mouse_hoverable_mixin.ts",
-      "cr_elements/mwb_element_shared_style.ts",
-      "cr_elements/mwb_shared_icons.ts",
-      "cr_elements/mwb_shared_style.ts",
-      "cr_elements/mwb_shared_vars.ts",
-      "cr_elements/search_highlight_style_css.ts",
+      "cr_elements/mwb_element_shared_style.css.ts",
+      "cr_elements/mwb_shared_icons.html.ts",
+      "cr_elements/mwb_shared_style.css.ts",
+      "cr_elements/mwb_shared_vars.css.ts",
+      "cr_elements/search_highlight_style.css.ts",
       "js/i18n_mixin.ts",
       "js/list_property_update_mixin.ts",
       "js/web_ui_listener_mixin.ts",

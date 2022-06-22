@@ -46,10 +46,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
-#if BUILDFLAG(IS_CHROMEOS)
-#include "components/arc/common/intent_helper/arc_intent_helper_package.h"  // nogncheck
-#endif  // BUILDFLAG(IS_CHROMEOS)
-
 namespace {
 
 constexpr char kInvalidLaunchName[] = "";
@@ -133,49 +129,17 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   intent_picker_bubble_->Initialize();
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(intent_picker_bubble_);
-  // TODO(aleventhal) Should not need to be focusable as only descendant widgets
-  // are interactive; however, it does call RequestFocus(). If it is going to be
-  // focusable, it needs an accessible name so that it can pass accessibility
-  // checks. Use the same accessible name as the icon. Set the role as kDialog
-  // to ensure screen readers immediately announce the text of this view.
-  intent_picker_bubble_->GetViewAccessibility().OverrideRole(
-      ax::mojom::Role::kDialog);
+
   if (bubble_type == BubbleType::kClickToCall) {
-    intent_picker_bubble_->GetViewAccessibility().OverrideName(
-        l10n_util::GetStringUTF16(
-            IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL));
     ClickToCallUiController::GetOrCreateFromWebContents(web_contents)
         ->ClearLastDialog();
-  } else {
-    intent_picker_bubble_->GetViewAccessibility().OverrideName(
-        l10n_util::GetStringUTF16(IDS_TOOLTIP_INTENT_PICKER_ICON));
   }
-  intent_picker_bubble_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
   DCHECK(intent_picker_bubble_->HasCandidates());
   widget->Show();
   intent_picker_bubble_->GetIntentPickerLabelButtonAt(0)->MarkAsSelected(
       nullptr);
   return widget;
-}
-
-// static
-std::unique_ptr<IntentPickerBubbleView>
-IntentPickerBubbleView::CreateBubbleViewForTesting(
-    views::View* anchor_view,
-    BubbleType bubble_type,
-    std::vector<AppInfo> app_info,
-    bool show_stay_in_chrome,
-    bool show_remember_selection,
-    const absl::optional<url::Origin>& initiating_origin,
-    IntentPickerResponse intent_picker_cb,
-    content::WebContents* web_contents) {
-  auto bubble = std::make_unique<IntentPickerBubbleView>(
-      anchor_view, bubble_type, std::move(app_info),
-      std::move(intent_picker_cb), web_contents, show_stay_in_chrome,
-      show_remember_selection, initiating_origin);
-  bubble->Initialize();
-  return bubble;
 }
 
 // static
@@ -285,7 +249,6 @@ void IntentPickerBubbleView::OnWidgetDestroying(views::Widget* widget) {
 void IntentPickerBubbleView::AppButtonPressed(size_t index,
                                               const ui::Event& event) {
   SetSelectedAppIndex(index, &event);
-  RequestFocus();
   if ((event.IsMouseEvent() && event.AsMouseEvent()->GetClickCount() == 2) ||
       (event.IsGestureEvent() &&
        event.AsGestureEvent()->details().tap_count() == 2)) {
@@ -332,26 +295,13 @@ void IntentPickerBubbleView::Initialize() {
   scrollable_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  size_t i = 0;
-  size_t to_erase = app_info_.size();
-  for (const auto& app_info : app_info_) {
-#if BUILDFLAG(IS_CHROMEOS)
-    if (app_info.launch_name == arc::kArcIntentHelperPackageName) {
-      to_erase = i;
-      continue;
-    }
-#endif  // BUILDFLAG(IS_CHROMEOS)
+  for (size_t i = 0; i < app_info_.size(); i++) {
     auto app_button = std::make_unique<IntentPickerLabelButton>(
         base::BindRepeating(&IntentPickerBubbleView::AppButtonPressed,
                             base::Unretained(this), i),
-        app_info.icon_model, app_info.display_name);
-    scrollable_view->AddChildViewAt(std::move(app_button), i++);
+        app_info_[i].icon_model, app_info_[i].display_name);
+    scrollable_view->AddChildViewAt(std::move(app_button), i);
   }
-
-  // We should delete at most one entry, this is the case when Chrome is listed
-  // as a candidate to handle a given URL.
-  if (to_erase != app_info_.size())
-    app_info_.erase(app_info_.begin() + to_erase);
 
   auto scroll_view = std::make_unique<views::ScrollView>();
   scroll_view->SetBackgroundThemeColorId(ui::kColorBubbleBackground);

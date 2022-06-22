@@ -17,9 +17,13 @@
   }
   user-preview + avatar-list {
     border-top: 1px solid var(--cros-separator-color);
+    padding-top: 8px;
   }
 </style>
 <div id="container">
-  <user-preview></user-preview>
-  <avatar-list></avatar-list>
+  <template is="dom-if"
+      if="[[isNotEnterpriseManaged_(isUserImageEnterpriseManaged_)]]">
+    <user-preview path="[[path]]"></user-preview>
+    <avatar-list></avatar-list>
+  </template>
 </div>

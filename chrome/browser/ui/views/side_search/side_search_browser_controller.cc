@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -29,6 +28,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/user_education/common/feature_promo_controller.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -458,6 +458,10 @@ void SideSearchBrowserController::SidePanelCloseButtonPressed() {
 void SideSearchBrowserController::OpenSidePanel() {
   RecordSideSearchOpenAction(
       SideSearchOpenActionType::kTapOnSideSearchToolbarButton);
+  RecordSidePanelOpenedMetrics();
+
+  shown_via_entrypoint_ = true;
+
   // Close the Side Search IPH if it is showing.
   browser_view_->CloseFeaturePromo(feature_engagement::kIPHSideSearchFeature);
   auto* tracker = feature_engagement::TrackerFactory::GetForBrowserContext(
@@ -556,9 +560,35 @@ void SideSearchBrowserController::UpdateSidePanel() {
   }
 
   // The side panel contents will be created if it does not already exist.
+  const auto* previous_hosted_contents = web_view_->web_contents();
   web_view_->SetWebContents(will_show_side_panel
                                 ? tab_contents_helper->GetSidePanelContents()
                                 : nullptr);
+
+  // Log time shown metrics whenever a new contents is hosted in the side panel.
+  if (previous_hosted_contents != web_view_->web_contents()) {
+    // If we were hosting a side panel contents, log its open duration.
+    if (previous_hosted_contents) {
+      DCHECK(side_panel_shown_timer_);
+      RecordSideSearchSidePanelTimeShown(shown_via_entrypoint_,
+                                         side_panel_shown_timer_->Elapsed());
+    }
+
+    // Reset the `shown_via_entrypoint_` flag only if we were previously hosting
+    // a side panel contents. Do this to avoid prematurely resetting the flag
+    // when the side panel is first shown before the shown duration is logged.
+    if (previous_hosted_contents)
+      shown_via_entrypoint_ = false;
+
+    // If hosting a new side panel contents start a new timer. If no longer
+    // hosting a side panel contents clear the timer.
+    DCHECK_EQ(will_show_side_panel, !!web_view_->web_contents());
+    if (web_view_->web_contents()) {
+      side_panel_shown_timer_ = base::ElapsedTimer();
+    } else {
+      side_panel_shown_timer_.reset();
+    }
+  }
 
   // Update the side panel header title text if necessary
   if (auto last_search_url = tab_contents_helper->last_search_url()) {
@@ -621,4 +651,14 @@ void SideSearchBrowserController::OnWebViewVisibilityChanged() {
   // by the hosting Widget.
   if (web_view_->GetVisible())
     web_view_->web_contents()->Focus();
+}
+
+void SideSearchBrowserController::RecordSidePanelOpenedMetrics() {
+  auto* active_contents = browser_view_->GetActiveWebContents();
+  if (!active_contents)
+    return;
+
+  auto* helper = SideSearchTabContentsHelper::FromWebContents(active_contents);
+  if (helper)
+    helper->MaybeRecordDurationSidePanelAvailableToFirstOpen();
 }

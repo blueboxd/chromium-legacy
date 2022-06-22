@@ -546,7 +546,7 @@ WizardController::CreateScreens() {
                             weak_factory_.GetWeakPtr())));
 
     append(std::make_unique<DemoPreferencesScreen>(
-        oobe_ui->GetView<DemoPreferencesScreenHandler>(),
+        oobe_ui->GetView<DemoPreferencesScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                             weak_factory_.GetWeakPtr())));
 
@@ -567,7 +567,8 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnEulaScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateScreen>(
-      oobe_ui->GetView<UpdateScreenHandler>(), oobe_ui->GetErrorScreen(),
+      oobe_ui->GetView<UpdateScreenHandler>()->AsWeakPtr(),
+      oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnUpdateScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnrollmentScreen>(
@@ -579,7 +580,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnResetScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<DemoSetupScreen>(
-      oobe_ui->GetView<DemoSetupScreenHandler>(),
+      oobe_ui->GetView<DemoSetupScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnableAdbSideloadingScreen>(

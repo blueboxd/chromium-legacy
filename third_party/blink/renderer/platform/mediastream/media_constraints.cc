@@ -366,20 +366,12 @@ MediaTrackConstraintSetPlatform::MediaTrackConstraintSetPlatform()
       goog_audio_mirroring("googAudioMirroring"),
       goog_da_echo_cancellation("googDAEchoCancellation"),
       goog_noise_reduction("googNoiseReduction"),
-      offer_to_receive_audio("offerToReceiveAudio"),
-      offer_to_receive_video("offerToReceiveVideo"),
-      voice_activity_detection("voiceActivityDetection"),
-      ice_restart("iceRestart"),
 #if BUILDFLAG(IS_FUCHSIA)
       // TODO(crbug.com/804275): Delete when Fuchsia no longer depends on it.
       enable_dtls_srtp("enableDtlsSrtp"),
 #endif
       enable_rtp_data_channels("enableRtpDataChannels"),
-      enable_i_pv6("enableIPv6"),
-      goog_enable_video_suspend_below_min_bitrate(
-          "googEnableVideoSuspendBelowMinBitrate"),
-      goog_screencast_min_bitrate("googScreencastMinBitrate"),
-      goog_cpu_overuse_detection("googCpuOveruseDetection") {
+      enable_i_pv6("enableIPv6") {
 }
 
 Vector<const BaseConstraint*> MediaTrackConstraintSetPlatform::AllConstraints()
@@ -394,15 +386,12 @@ Vector<const BaseConstraint*> MediaTrackConstraintSetPlatform::AllConstraints()
         &goog_experimental_auto_gain_control, &goog_noise_suppression,
         &goog_highpass_filter, &goog_experimental_noise_suppression,
         &goog_audio_mirroring, &goog_da_echo_cancellation,
-        &goog_noise_reduction, &offer_to_receive_audio, &offer_to_receive_video,
-        &voice_activity_detection, &ice_restart,
+        &goog_noise_reduction,
 #if BUILDFLAG(IS_FUCHSIA)
         // TODO(crbug.com/804275): Delete when Fuchsia no longer depends on it.
         &enable_dtls_srtp,
 #endif
-        &enable_rtp_data_channels, &enable_i_pv6,
-        &goog_enable_video_suspend_below_min_bitrate,
-        &goog_screencast_min_bitrate, &goog_cpu_overuse_detection
+        &enable_rtp_data_channels, &enable_i_pv6
   };
 }
 

@@ -11,6 +11,7 @@
 #include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/components/phonehub/tether_controller.h"
 #include "ash/components/phonehub/user_action_recorder.h"
+#include "ash/constants/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -107,7 +108,7 @@ std::unique_ptr<PhoneHubContentView> PhoneHubUiController::CreateContentView(
 
 void PhoneHubUiController::HandleBubbleOpened() {
   // Make sure Eche window is not shown.
-  if (features::IsEcheCustomWidgetEnabled()) {
+  if (features::IsEcheSWAEnabled()) {
     EcheTray* eche_tray = Shell::GetPrimaryRootWindowController()
                               ->GetStatusAreaWidget()
                               ->eche_tray();
@@ -124,7 +125,6 @@ void PhoneHubUiController::HandleBubbleOpened() {
     phone_hub_manager_->GetConnectionScheduler()->ScheduleConnectionNow();
 
   phone_hub_manager_->GetBrowserTabsModelProvider()->TriggerRefresh();
-  phone_hub_manager_->GetUserActionRecorder()->RecordUiOpened();
 
   bool is_feature_enabled =
       feature_status == FeatureStatus::kEnabledAndConnected ||

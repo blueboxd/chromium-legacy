@@ -409,6 +409,8 @@ std::unique_ptr<CommitState> LayerTreeHost::WillCommit(
   client_->WillCommit(has_updates ? *result : *pending_commit_state());
   pending_commit_state()->source_frame_number++;
   commit_completion_event_ = std::move(completion);
+  pending_commit_state()->previous_surfaces_visual_update_duration =
+      base::TimeDelta();
   return result;
 }
 
@@ -732,7 +734,7 @@ void LayerTreeHost::SetDebugState(const LayerTreeDebugState& new_debug_state) {
 
 void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(float page_scale_delta) {
   DCHECK(IsMainThread());
-  DCHECK(CommitRequested());
+  DCHECK(syncing_deltas_for_test_ || CommitRequested());
   if (page_scale_delta == 1.f)
     return;
   float page_scale =
@@ -1011,6 +1013,21 @@ void LayerTreeHost::UpdateScrollOffsetFromImpl(
         transform_node->needs_local_transform_update = true;
         transform_node->transform_changed = true;
         transform_tree.set_needs_update(true);
+
+        // If the scroll was realized on the compositor, then its transform node
+        // is already updated (see LayerTreeImpl::DidUpdateScrollOffset) and we
+        // are now "catching up" to it on main, so we don't need a commit.
+        //
+        // But if the scroll was NOT realized on the compositor, we need a
+        // commit to push the transform change.
+        //
+        // Skip this if scroll unification is disabled as we will not set
+        // ScrollNode::is_composited in that case.
+        //
+        if (base::FeatureList::IsEnabled(features::kScrollUnification) &&
+            !scroll_tree.CanRealizeScrollsOnCompositor(*scroll_node)) {
+          SetNeedsCommit();
+        }
       }
 
       // The transform tree has been modified which requires a call to
@@ -1087,6 +1104,11 @@ void LayerTreeHost::NotifyThroughputTrackerResults(
     CustomTrackerResults results) {
   DCHECK(IsMainThread());
   client_->NotifyThroughputTrackerResults(std::move(results));
+}
+
+void LayerTreeHost::ReportEventLatency(
+    std::vector<EventLatencyTracker::LatencyData> latencies) {
+  client_->ReportEventLatency(std::move(latencies));
 }
 
 const base::WeakPtr<CompositorDelegateForInput>&
@@ -1497,6 +1519,13 @@ void LayerTreeHost::SetLocalSurfaceIdFromParent(
   pending_commit_state()->local_surface_id_from_parent =
       local_surface_id_from_parent;
 
+  // When we are switching to a new viz::LocalSurfaceId add our current visual
+  // update duration to that of previous surfaces, and clear out the total. So
+  // that we can begin to track the updates for this new Surface.
+  pending_commit_state()->previous_surfaces_visual_update_duration +=
+      pending_commit_state()->visual_update_duration;
+  pending_commit_state()->visual_update_duration = base::TimeDelta();
+
   // If the parent sequence number has not advanced, then there is no need to
   // commit anything. This can occur when the child sequence number has
   // advanced. Which means that child has changed visual properites, and the
@@ -1574,14 +1603,14 @@ void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
 }
 
 void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {
-  DCHECK(CommitRequested());
+  DCHECK(syncing_deltas_for_test_ || CommitRequested());
   pending_commit_state()->page_scale_factor = page_scale;
   SetPropertyTreesNeedRebuild();
 }
 
 void LayerTreeHost::SetElasticOverscrollFromImplSide(
     gfx::Vector2dF elastic_overscroll) {
-  DCHECK(CommitRequested());
+  DCHECK(syncing_deltas_for_test_ || CommitRequested());
   pending_commit_state()->elastic_overscroll = elastic_overscroll;
 }
 
@@ -1924,6 +1953,11 @@ LayerTreeHost::TakeDocumentTransitionCallbacksForTesting() {
 uint32_t LayerTreeHost::GetAverageThroughput() const {
   DCHECK(IsMainThread());
   return proxy_->GetAverageThroughput();
+}
+
+void LayerTreeHost::IncrementVisualUpdateDuration(
+    base::TimeDelta visual_update_duration) {
+  pending_commit_state()->visual_update_duration += visual_update_duration;
 }
 
 }  // namespace cc

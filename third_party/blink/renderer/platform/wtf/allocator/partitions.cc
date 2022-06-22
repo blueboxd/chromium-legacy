@@ -65,9 +65,11 @@ bool Partitions::scan_is_enabled_ = false;
 
 // These statics are inlined, so cannot be LazyInstances. We create the values,
 // and then set the pointers correctly in Initialize().
-base::ThreadSafePartitionRoot* Partitions::fast_malloc_root_ = nullptr;
-base::ThreadSafePartitionRoot* Partitions::array_buffer_root_ = nullptr;
-base::ThreadSafePartitionRoot* Partitions::buffer_root_ = nullptr;
+partition_alloc::ThreadSafePartitionRoot* Partitions::fast_malloc_root_ =
+    nullptr;
+partition_alloc::ThreadSafePartitionRoot* Partitions::array_buffer_root_ =
+    nullptr;
+partition_alloc::ThreadSafePartitionRoot* Partitions::buffer_root_ = nullptr;
 
 // static
 void Partitions::Initialize() {
@@ -221,7 +223,7 @@ void Partitions::StartPeriodicReclaim(
 // static
 void Partitions::DumpMemoryStats(
     bool is_light_dump,
-    base::PartitionStatsDumper* partition_stats_dumper) {
+    partition_alloc::PartitionStatsDumper* partition_stats_dumper) {
   // Object model and rendering partitions are not thread safe and can be
   // accessed only on the main thread.
   DCHECK(IsMainThread());
@@ -239,7 +241,8 @@ void Partitions::DumpMemoryStats(
 
 namespace {
 
-class LightPartitionStatsDumperImpl : public base::PartitionStatsDumper {
+class LightPartitionStatsDumperImpl
+    : public partition_alloc::PartitionStatsDumper {
  public:
   LightPartitionStatsDumperImpl() : total_active_bytes_(0) {}
 

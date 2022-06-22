@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 
 #include <alpha-compositing-unstable-v1-client-protocol.h>
+#include <keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <overlay-prioritizer-client-protocol.h>
 #include <surface-augmenter-client-protocol.h>
@@ -27,6 +28,8 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_handle.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
+#include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_seat.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
@@ -76,7 +79,13 @@ WaylandSurface::WaylandSurface(WaylandConnection* connection,
       root_window_(root_window),
       surface_(connection->CreateSurface()) {}
 
-WaylandSurface::~WaylandSurface() = default;
+WaylandSurface::~WaylandSurface() {
+  if (explicit_release_callback_.is_null())
+    return;
+  for (auto& release : linux_buffer_releases_) {
+    explicit_release_callback_.Run(release.second.buffer, base::ScopedFD());
+  }
+}
 
 uint32_t WaylandSurface::GetSurfaceId() const {
   if (!surface_)
@@ -323,9 +332,10 @@ augmented_surface* WaylandSurface::GetAugmentedSurface() {
   return augmented_surface_.get();
 }
 
-void WaylandSurface::SetBufferCrop(const gfx::RectF& crop) {
+void WaylandSurface::SetViewportSource(const gfx::RectF& src_rect) {
   DCHECK(!apply_state_immediately_);
-  pending_state_.crop = crop == gfx::RectF{1.f, 1.f} ? gfx::RectF() : crop;
+  pending_state_.crop =
+      src_rect == gfx::RectF{1.f, 1.f} ? gfx::RectF() : src_rect;
 }
 
 void WaylandSurface::SetOpacity(const float opacity) {
@@ -456,7 +466,7 @@ void WaylandSurface::ApplyPendingState() {
 
   if (pending_state_.background_color != state_.background_color) {
     DCHECK(GetAugmentedSurface());
-    if (augmented_surface_get_version(GetAugmentedSurface()),
+    if (augmented_surface_get_version(GetAugmentedSurface()) >=
         static_cast<uint32_t>(
             AUGMENTED_SURFACE_SET_BACKGROUND_COLOR_SINCE_VERSION)) {
       wl_array color_data;
@@ -540,17 +550,30 @@ void WaylandSurface::ApplyPendingState() {
   if (pending_state_.crop.IsEmpty()) {
     viewport_src_dip = gfx::RectF(bounds);
   } else {
-    // viewport_src_dip needs to be in post-transform coordinates.
-    gfx::RectF crop_transformed = wl::ApplyWaylandTransform(
-        pending_state_.crop, gfx::SizeF(1, 1),
-        wl::ToWaylandTransform(pending_state_.buffer_transform));
     viewport_src_dip =
-        gfx::ScaleRect(crop_transformed, bounds.width(), bounds.height());
+        gfx::ScaleRect(pending_state_.crop, bounds.width(), bounds.height());
     DCHECK(viewport());
     if (wl_fixed_from_double(viewport_src_dip.width()) == 0 ||
         wl_fixed_from_double(viewport_src_dip.height()) == 0) {
       LOG(ERROR) << "Sending viewport src with width/height zero will result "
                     "in wayland disconnection";
+      // TODO(crbug.com/1325344): Resolve why this viewport size ends up being
+      // zero and remove the fix below.
+      LOG(ERROR) << "viewport_src_dip=" << viewport_src_dip.ToString()
+                 << " pending_state_.crop=" << pending_state_.crop.ToString()
+                 << " bounds=" << bounds.ToString()
+                 << "  pending_state_.buffer_size_px="
+                 << pending_state_.buffer_size_px.ToString();
+      constexpr wl_fixed_t kViewportSizeMin = 1;
+      const float kViewPortSizeMinFloat =
+          static_cast<float>(wl_fixed_to_double(kViewportSizeMin));
+      LOG(ERROR)
+          << "Limiting viewport_src_dip size to be non zero with a minium of "
+          << kViewportSizeMin;
+      viewport_src_dip.set_width(
+          std::max(viewport_src_dip.width(), kViewPortSizeMinFloat));
+      viewport_src_dip.set_height(
+          std::max(viewport_src_dip.height(), kViewPortSizeMinFloat));
     }
     src_to_set[0] = wl_fixed_from_double(viewport_src_dip.x()),
     src_to_set[1] = wl_fixed_from_double(viewport_src_dip.y());
@@ -657,14 +680,25 @@ void WaylandSurface::SetApplyStateImmediately() {
   apply_state_immediately_ = true;
 }
 
+void WaylandSurface::InhibitKeyboardShortcuts() {
+  if (auto* keyboard_shortcuts_inhibit_manager =
+          connection_->keyboard_shortcuts_inhibit_manager_v1()) {
+    keyboard_shortcuts_inhibitor_ =
+        wl::Object<zwp_keyboard_shortcuts_inhibitor_v1>(
+            zwp_keyboard_shortcuts_inhibit_manager_v1_inhibit_shortcuts(
+                keyboard_shortcuts_inhibit_manager, surface_.get(),
+                connection_->seat()->wl_object()));
+  }
+}
+
 void WaylandSurface::ExplicitRelease(
     struct zwp_linux_buffer_release_v1* linux_buffer_release,
-    absl::optional<int32_t> fence) {
+    base::ScopedFD fence) {
   auto iter = linux_buffer_releases_.find(linux_buffer_release);
   DCHECK(iter != linux_buffer_releases_.end());
   DCHECK(iter->second.buffer);
   if (!explicit_release_callback_.is_null())
-    explicit_release_callback_.Run(iter->second.buffer, fence);
+    explicit_release_callback_.Run(iter->second.buffer, std::move(fence));
   linux_buffer_releases_.erase(iter);
 }
 
@@ -700,10 +734,15 @@ void WaylandSurface::Enter(void* data,
 
   auto* wayland_output =
       static_cast<WaylandOutput*>(wl_output_get_user_data(output));
+
+  DCHECK_NE(surface->connection_->wayland_output_manager()->GetOutput(
+                wayland_output->output_id()),
+            nullptr);
+
   surface->entered_outputs_.emplace_back(wayland_output->output_id());
 
   if (surface->root_window_)
-    surface->root_window_->OnEnteredOutputIdAdded();
+    surface->root_window_->OnEnteredOutput();
 }
 
 // static
@@ -719,27 +758,21 @@ void WaylandSurface::Leave(void* data,
 }
 
 void WaylandSurface::RemoveEnteredOutput(uint32_t output_id) {
-  if (entered_outputs().empty())
-    return;
-
   auto entered_outputs_it_ =
       std::find_if(entered_outputs_.begin(), entered_outputs_.end(),
                    [&output_id](uint32_t id) { return id == output_id; });
+  if (entered_outputs_it_ == entered_outputs_.end())
+    return;
 
-  // The `entered_outputs_` list should be updated,
-  // 1. for wl_surface::leave, when a user switches physical output between two
-  // displays, a surface does not necessarily receive enter events immediately
-  // or until a user resizes/moves it.  This means that switching output between
-  // displays in a single output mode results in leave events, but the surface
-  // might not have received enter event before.  Thus, remove the id of the
-  // output that the surface leaves only if it was stored before.
-  // 2. for wl_registry::global_remove, when wl_output is removed by a server
-  // after the display is unplugged or switched off.
-  if (entered_outputs_it_ != entered_outputs_.end())
-    entered_outputs_.erase(entered_outputs_it_);
+  // In certain use cases, such as switching outputs in the single output
+  // configuration, the compositor may move the surface from one output to
+  // another one, send wl_surface::leave event to it, but defer sending
+  // wl_surface::enter until the user moves or resizes the surface on the new
+  // output.
+  entered_outputs_.erase(entered_outputs_it_);
 
   if (root_window_)
-    root_window_->OnEnteredOutputIdRemoved();
+    root_window_->OnLeftOutput();
 }
 
 void WaylandSurface::SetOverlayPriority(
@@ -769,8 +802,9 @@ void WaylandSurface::FencedRelease(
     void* data,
     struct zwp_linux_buffer_release_v1* linux_buffer_release,
     int32_t fence) {
+  auto fd = base::ScopedFD(fence);
   static_cast<WaylandSurface*>(data)->ExplicitRelease(linux_buffer_release,
-                                                      fence);
+                                                      std::move(fd));
 }
 
 // static
@@ -778,7 +812,7 @@ void WaylandSurface::ImmediateRelease(
     void* data,
     struct zwp_linux_buffer_release_v1* linux_buffer_release) {
   static_cast<WaylandSurface*>(data)->ExplicitRelease(linux_buffer_release,
-                                                      absl::nullopt);
+                                                      base::ScopedFD());
 }
 
 }  // namespace ui

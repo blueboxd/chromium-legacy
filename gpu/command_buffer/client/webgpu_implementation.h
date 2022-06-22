@@ -115,7 +115,7 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
 
   // WebGPUInterface implementation
   void FlushCommands() override;
-  void EnsureAwaitingFlush(bool* needs_flush) override;
+  bool EnsureAwaitingFlush() override;
   void FlushAwaitingCommands() override;
   scoped_refptr<APIChannel> GetAPIChannel() const override;
   ReservedTexture ReserveTexture(WGPUDevice device) override;
@@ -145,7 +145,6 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
 #if BUILDFLAG(USE_DAWN)
   scoped_refptr<DawnWireServices> dawn_wire_;
 #endif
-  WGPUDevice deprecated_default_device_ = nullptr;
 
   LogSettings log_settings_;
 

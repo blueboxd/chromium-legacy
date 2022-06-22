@@ -26,8 +26,8 @@
 #include "chrome/browser/ui/ash/shelf/app_window_base.h"
 #include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/cicerone/cicerone_service.pb.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_service.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -107,7 +107,7 @@ void LaunchPluginVmAppImpl(Profile* profile,
       std::make_move_iterator(file_paths.end()),
       google::protobuf::RepeatedFieldBackInserter(request.mutable_files()));
 
-  chromeos::CiceroneClient::Get()->LaunchContainerApplication(
+  ash::CiceroneClient::Get()->LaunchContainerApplication(
       std::move(request),
       base::BindOnce(
           [](const std::string& app_id, LaunchPluginVmAppCallback callback,

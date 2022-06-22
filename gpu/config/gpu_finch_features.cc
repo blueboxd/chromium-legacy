@@ -218,6 +218,11 @@ const base::Feature kVulkan {
 const base::Feature kEnableDrDc{"EnableDrDc",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(IS_ANDROID)
+const base::Feature kEnableDrDcVulkan{"EnableDrDcVulkan",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_ANDROID)
+
 // Enable WebGPU on gpu service side only. This is used with origin trial
 // before gpu service is enabled by default.
 const base::Feature kWebGPUService{"WebGPUService",
@@ -346,7 +351,11 @@ bool IsDrDcEnabled() {
   if (IsDeviceBlocked(build_info->device(), kDrDcBlockListByDevice.Get()))
     return false;
 
-  return base::FeatureList::IsEnabled(kEnableDrDc);
+  if (!base::FeatureList::IsEnabled(kEnableDrDc))
+    return false;
+
+  return IsUsingVulkan() ? base::FeatureList::IsEnabled(kEnableDrDcVulkan)
+                         : true;
 #else
   return false;
 #endif
@@ -388,6 +397,14 @@ bool IsANGLEValidationEnabled() {
 
 #if BUILDFLAG(IS_ANDROID)
 bool IsAImageReaderEnabled() {
+  // Device Hammer_Energy_2 seems to be very crash with image reader during
+  // gl::GLImageEGL::BindTexImage(). Disable image reader on that device for
+  // now. crbug.com/1323921
+  if (IsDeviceBlocked(base::android::BuildInfo::GetInstance()->device(),
+                      "Hammer_Energy_2")) {
+    return false;
+  }
+
   return base::FeatureList::IsEnabled(kAImageReader) &&
          base::android::AndroidImageReader::GetInstance().IsSupported();
 }

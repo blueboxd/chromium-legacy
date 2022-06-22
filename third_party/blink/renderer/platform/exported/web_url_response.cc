@@ -265,6 +265,10 @@ void WebURLResponse::SetWasFetchedViaServiceWorker(bool value) {
   resource_response_->SetWasFetchedViaServiceWorker(value);
 }
 
+void WebURLResponse::SetArrivalTimeAtRenderer(base::TimeTicks value) {
+  resource_response_->SetArrivalTimeAtRenderer(value);
+}
+
 network::mojom::FetchResponseSource
 WebURLResponse::GetServiceWorkerResponseSource() const {
   return resource_response_->GetServiceWorkerResponseSource();
@@ -485,5 +489,9 @@ bool WebURLResponse::RequestIncludeCredentials() const {
 }
 
 WebURLResponse::WebURLResponse(ResourceResponse& r) : resource_response_(&r) {}
+
+void WebURLResponse::SetHasPartitionedCookie(bool has_partitioned_cookie) {
+  resource_response_->SetHasPartitionedCookie(has_partitioned_cookie);
+}
 
 }  // namespace blink

@@ -152,9 +152,15 @@ int ConfigurableStorageDelegate::GetMaxSourcesPerOrigin() const {
   return max_sources_per_origin_;
 }
 
-int ConfigurableStorageDelegate::GetMaxAttributionsPerOrigin() const {
+int ConfigurableStorageDelegate::GetMaxAttributionsPerOrigin(
+    AttributionReport::ReportType report_type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return max_attributions_per_origin_;
+  switch (report_type) {
+    case AttributionReport::ReportType::kEventLevel:
+      return max_event_level_attributions_per_origin_;
+    case AttributionReport::ReportType::kAggregatableAttribution:
+      return max_aggregatable_attributions_per_origin_;
+  }
 }
 
 int ConfigurableStorageDelegate::
@@ -250,9 +256,18 @@ void ConfigurableStorageDelegate::set_max_sources_per_origin(int max) {
   max_sources_per_origin_ = max;
 }
 
-void ConfigurableStorageDelegate::set_max_attributions_per_origin(int max) {
+void ConfigurableStorageDelegate::set_max_attributions_per_origin(
+    AttributionReport::ReportType report_type,
+    int max) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  max_attributions_per_origin_ = max;
+  switch (report_type) {
+    case AttributionReport::ReportType::kEventLevel:
+      max_event_level_attributions_per_origin_ = max;
+      break;
+    case AttributionReport::ReportType::kAggregatableAttribution:
+      max_aggregatable_attributions_per_origin_ = max;
+      break;
+  }
 }
 
 void ConfigurableStorageDelegate::
@@ -363,7 +378,7 @@ void MockAttributionManager::NotifyReportsChanged(
 }
 
 void MockAttributionManager::NotifySourceDeactivated(
-    const DeactivatedSource& source) {
+    const StoredSource& source) {
   for (auto& observer : observers_)
     observer.OnSourceDeactivated(source);
 }
@@ -861,14 +876,6 @@ bool operator==(const SendResult& a, const SendResult& b) {
   return tie(a) == tie(b);
 }
 
-bool operator==(const DeactivatedSource& a, const DeactivatedSource& b) {
-  const auto tie = [](const DeactivatedSource& deactivated_source) {
-    return std::make_tuple(deactivated_source.source,
-                           deactivated_source.reason);
-  };
-  return tie(a) == tie(b);
-}
-
 bool operator==(const AttributionAggregatableTriggerData& a,
                 const AttributionAggregatableTriggerData& b) {
   const auto tie = [](const AttributionAggregatableTriggerData& trigger_data) {
@@ -968,15 +975,6 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case AttributionTrigger::AggregatableResult::kProhibitedByBrowserPolicy:
       out << "prohibitedByBrowserPolicy";
-      break;
-  }
-  return out;
-}
-
-std::ostream& operator<<(std::ostream& out, DeactivatedSource::Reason reason) {
-  switch (reason) {
-    case DeactivatedSource::Reason::kReplacedByNewerSource:
-      out << "kReplacedByNewerSource";
       break;
   }
   return out;
@@ -1222,12 +1220,6 @@ std::ostream& operator<<(std::ostream& out, const SendResult& info) {
              << ",http_response_code=" << info.http_response_code << "}";
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         const DeactivatedSource& deactivated_source) {
-  return out << "{source=" << deactivated_source.source
-             << ",reason=" << deactivated_source.reason << "}";
-}
-
 std::ostream& operator<<(std::ostream& out, StorableSource::Result status) {
   switch (status) {
     case StorableSource::Result::kSuccess:
@@ -1315,6 +1307,18 @@ std::ostream& operator<<(
   return out << "]}";
 }
 
+EventTriggerDataMatcherConfig::EventTriggerDataMatcherConfig(
+    ::testing::Matcher<uint64_t> data,
+    ::testing::Matcher<int64_t> priority,
+    ::testing::Matcher<absl::optional<uint64_t>> dedup_key,
+    ::testing::Matcher<const AttributionFilterData&> filters,
+    ::testing::Matcher<const AttributionFilterData&> not_filters)
+    : data(std::move(data)),
+      priority(std::move(priority)),
+      dedup_key(std::move(dedup_key)),
+      filters(std::move(filters)),
+      not_filters(std::move(not_filters)) {}
+
 EventTriggerDataMatcherConfig::~EventTriggerDataMatcherConfig() = default;
 
 ::testing::Matcher<const AttributionTrigger::EventTriggerData&>
@@ -1330,6 +1334,19 @@ EventTriggerDataMatches(const EventTriggerDataMatcherConfig& cfg) {
       Field("not_filters", &AttributionTrigger::EventTriggerData::not_filters,
             cfg.not_filters));
 }
+
+AttributionTriggerMatcherConfig::AttributionTriggerMatcherConfig(
+    ::testing::Matcher<const url::Origin&> destination_origin,
+    ::testing::Matcher<const url::Origin&> reporting_origin,
+    ::testing::Matcher<const AttributionFilterData&> filters,
+    ::testing::Matcher<absl::optional<uint64_t>> debug_key,
+    ::testing::Matcher<const std::vector<AttributionTrigger::EventTriggerData>&>
+        event_triggers)
+    : destination_origin(std::move(destination_origin)),
+      reporting_origin(std::move(reporting_origin)),
+      filters(std::move(filters)),
+      debug_key(std::move(debug_key)),
+      event_triggers(std::move(event_triggers)) {}
 
 AttributionTriggerMatcherConfig::~AttributionTriggerMatcherConfig() = default;
 

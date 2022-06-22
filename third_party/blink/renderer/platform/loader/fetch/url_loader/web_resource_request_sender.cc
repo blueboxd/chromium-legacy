@@ -250,6 +250,20 @@ int WebResourceRequestSender::SendAsync(
     WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper) {
   CheckSchemeForReferrerPolicy(*request);
 
+#if BUILDFLAG(IS_ANDROID)
+  // TODO(crbug.com/1286053): This used to be a DCHECK asserting "Main frame
+  // shouldn't come here", but after removing and re-landing the DCHECK later it
+  // started tripping in some teses. Was the DCHECK invalid or is there a bug
+  // somewhere?
+  if (!(request->is_outermost_main_frame &&
+        IsRequestDestinationFrame(request->destination))) {
+    if (request->has_user_gesture) {
+      resource_load_info_notifier_wrapper
+          ->NotifyUpdateUserGestureCarryoverInfo();
+    }
+  }
+#endif
+
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
   request_info_ = std::make_unique<PendingRequestInfo>(
@@ -413,7 +427,8 @@ void WebResourceRequestSender::OnUploadProgress(int64_t position,
 }
 
 void WebResourceRequestSender::OnReceivedResponse(
-    network::mojom::URLResponseHeadPtr response_head) {
+    network::mojom::URLResponseHeadPtr response_head,
+    base::TimeTicks response_arrival) {
   TRACE_EVENT0("loading", "WebResourceRequestSender::OnReceivedResponse");
   if (!request_info_)
     return;
@@ -439,7 +454,8 @@ void WebResourceRequestSender::OnReceivedResponse(
     request_info_->peer = std::move(new_peer);
   }
 
-  request_info_->peer->OnReceivedResponse(response_head.Clone());
+  request_info_->peer->OnReceivedResponse(response_head.Clone(),
+                                          response_arrival);
   if (!request_info_)
     return;
 

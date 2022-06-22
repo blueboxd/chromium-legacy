@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -38,6 +39,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.LoadingView;
 import org.chromium.url.GURL;
@@ -91,8 +93,9 @@ public class WebFeedMainMenuItem extends FrameLayout {
                     mContext, R.color.default_text_color_accent1_tint_list);
             mFollowingChipView.getPrimaryTextView().setTextColor(textColor);
             mFollowChipView.getPrimaryTextView().setTextColor(textColor);
+            mCrowButton.getPrimaryTextView().setTextColor(textColor);
             final ColorStateList backgroundColor = AppCompatResources.getColorStateList(
-                    mContext, R.color.menu_footer_chip_background);
+                    mContext, R.color.menu_footer_chip_background_list);
             mFollowChipView.setBackgroundTintList(backgroundColor);
         }
     }
@@ -123,7 +126,7 @@ public class WebFeedMainMenuItem extends FrameLayout {
             initializeFavicon(result);
             initializeText(result);
             initializeChipView(result);
-            initializeCrowButton();
+            initializeCrowButton(result);
 
             if (mChipView != null && mTab.isShowingErrorPage()) {
                 mChipView.setEnabled(false);
@@ -166,9 +169,12 @@ public class WebFeedMainMenuItem extends FrameLayout {
         }
     }
 
-    private void initializeCrowButton() {
+    private void initializeCrowButton(WebFeedMetadata webFeedMetadata) {
+        boolean isFollowing = webFeedMetadata != null
+                && webFeedMetadata.subscriptionStatus == WebFeedSubscriptionStatus.SUBSCRIBED;
         if (mCrowButtonDelegate.isEnabledForSite(mUrl)) {
-            showCrowButton();
+            moveChipsToDedicatedRow();
+            showCrowButton(isFollowing);
         }
     }
 
@@ -268,14 +274,15 @@ public class WebFeedMainMenuItem extends FrameLayout {
         chipView.setVisibility(View.VISIBLE);
     }
 
-    private void showCrowButton() {
+    private void showCrowButton(boolean isFollowing) {
         mCrowButton.getPrimaryTextView().setText(mCrowButtonDelegate.getButtonText());
+        mCrowButton.setIcon(R.drawable.crow_icon, /*tintWithTextColor=*/true);
         mCrowButton.setOnClickListener((view) -> {
             if (mTab == null) return;
             RecordUserAction.record("Crow.LaunchCustomTab.AppMenu");
             Activity activity = mTab.getWindowAndroid().getActivity().get();
             mCrowButtonDelegate.requestCanonicalUrl(mTab, (canonicalUrl) -> {
-                mCrowButtonDelegate.launchCustomTab(activity, mUrl, canonicalUrl);
+                mCrowButtonDelegate.launchCustomTab(activity, mUrl, canonicalUrl, isFollowing);
             });
         });
         RecordUserAction.record("Crow.EntryPointShown.AppMenu");
@@ -287,5 +294,13 @@ public class WebFeedMainMenuItem extends FrameLayout {
         if (icon == null) {
             mIcon.setVisibility(View.GONE);
         }
+    }
+
+    private void moveChipsToDedicatedRow() {
+        ViewGroup secondRow = (ViewGroup) findViewById(R.id.footer_second_chip_row);
+        ViewGroup chipGroup = (ViewGroup) findViewById(R.id.chip_container);
+        UiUtils.removeViewFromParent(chipGroup);
+        secondRow.addView(chipGroup);
+        secondRow.setVisibility(View.VISIBLE);
     }
 }

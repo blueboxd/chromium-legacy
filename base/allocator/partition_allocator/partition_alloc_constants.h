@@ -23,7 +23,7 @@
 
 namespace partition_alloc {
 
-// Bit flag constants used at `flag` argument of PartitionRoot::AllocWithFlags,
+// Bit flag constants used as `flag` argument of PartitionRoot::AllocWithFlags,
 // AlignedAllocWithFlags, etc.
 struct AllocFlags {
   // In order to support bit operations like `flag_a | flag_b`, the old-
@@ -31,12 +31,16 @@ struct AllocFlags {
   enum : int {
     kReturnNull = 1 << 0,
     kZeroFill = 1 << 1,
-    kNoHooks = 1 << 2,  // Internal only.
+    // Don't allow allocation override hooks. Override hooks are expected to
+    // check for the presence of this flag and return false if it is active.
+    kNoOverrideHooks = 1 << 2,
+    // Don't allow any hooks (override or observers).
+    kNoHooks = 1 << 3,  // Internal only.
     // If the allocation requires a "slow path" (such as allocating/committing a
     // new slot span), return nullptr instead. Note this makes all large
     // allocations return nullptr, such as direct-mapped ones, and even for
     // smaller ones, a nullptr value is common.
-    kFastPathOrReturnNull = 1 << 3,  // Internal only.
+    kFastPathOrReturnNull = 1 << 4,  // Internal only.
 
     kLastFlag = kFastPathOrReturnNull
   };
@@ -425,65 +429,16 @@ constexpr size_t kInvalidBucketSize = 1;
 
 }  // namespace internal
 
-}  // namespace partition_alloc
-
-namespace base {
-
-// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
-// the migration to the new namespaces gets done.
-using ::partition_alloc::AllocFlags;
-using ::partition_alloc::internal::DirectMapAllocationGranularity;
-using ::partition_alloc::internal::DirectMapAllocationGranularityOffsetMask;
-using ::partition_alloc::internal::DirectMapAllocationGranularityShift;
-#if defined(PA_HAS_MEMORY_TAGGING)
-using ::partition_alloc::internal::HasOverflowTag;
-#endif  // defined(PA_HAS_MEMORY_TAGGING)
-using ::partition_alloc::internal::kBitsPerSizeT;
-using ::partition_alloc::internal::kBRPPoolHandle;
-using ::partition_alloc::internal::kConfigurablePoolHandle;
-using ::partition_alloc::internal::kDefaultEmptySlotSpanRingSize;
-using ::partition_alloc::internal::kEmptyCacheIndexBits;
-using ::partition_alloc::internal::kFreedByte;
-using ::partition_alloc::internal::kGiB;
+// These constants are used outside PartitionAlloc itself, so we provide
+// non-internal aliases here.
 using ::partition_alloc::internal::kInvalidBucketSize;
-using ::partition_alloc::internal::kMaxBucketed;
-using ::partition_alloc::internal::kMaxBucketedOrder;
-using ::partition_alloc::internal::kMaxBucketSpacing;
-using ::partition_alloc::internal::kMaxFreeableSpans;
-using ::partition_alloc::internal::kMaxMemoryTaggingSize;
-using ::partition_alloc::internal::kMaxPartitionPagesPerRegularSlotSpan;
 using ::partition_alloc::internal::kMaxSuperPagesInPool;
 using ::partition_alloc::internal::kMaxSupportedAlignment;
-using ::partition_alloc::internal::kMinBucketedOrder;
-using ::partition_alloc::internal::kMinDirectMappedDownsize;
-using ::partition_alloc::internal::kNumBucketedOrders;
 using ::partition_alloc::internal::kNumBuckets;
-using ::partition_alloc::internal::kNumBucketsPerOrder;
-using ::partition_alloc::internal::kNumBucketsPerOrderBits;
-using ::partition_alloc::internal::kNumPools;
-using ::partition_alloc::internal::kPartitionCachelineSize;
-using ::partition_alloc::internal::kPoolMaxSize;
-using ::partition_alloc::internal::kQuarantinedByte;
-using ::partition_alloc::internal::kReasonableSizeOfUnusedPages;
-using ::partition_alloc::internal::kRegularPoolHandle;
-using ::partition_alloc::internal::kSmallestBucket;
-using ::partition_alloc::internal::kSuperPageAlignment;
-using ::partition_alloc::internal::kSuperPageBaseMask;
-using ::partition_alloc::internal::kSuperPageOffsetMask;
-using ::partition_alloc::internal::kSuperPageShift;
 using ::partition_alloc::internal::kSuperPageSize;
-using ::partition_alloc::internal::kUninitializedByte;
 using ::partition_alloc::internal::MaxDirectMapped;
-using ::partition_alloc::internal::MaxRegularSlotSpanSize;
-using ::partition_alloc::internal::MaxSuperPagesInPool;
-using ::partition_alloc::internal::MaxSystemPagesPerRegularSlotSpan;
-using ::partition_alloc::internal::NumPartitionPagesPerSuperPage;
-using ::partition_alloc::internal::NumSystemPagesPerPartitionPage;
-using ::partition_alloc::internal::PartitionPageBaseMask;
-using ::partition_alloc::internal::PartitionPageOffsetMask;
-using ::partition_alloc::internal::PartitionPageShift;
 using ::partition_alloc::internal::PartitionPageSize;
 
-}  // namespace base
+}  // namespace partition_alloc
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONSTANTS_H_

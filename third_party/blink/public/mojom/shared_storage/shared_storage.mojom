@@ -43,15 +43,19 @@ interface SharedStorageDocumentService {
   // SharedStorageRunOperationMethodOptions.data using v8::ValueSerializer.
   // There's no need to sanitize `serialized_data` at the browser process as the
   // data will be only consumed in an environment (i.e. the worklet) in control
-  // by the same origin.
-  RunOperationOnWorklet(string name, array<uint8> serialized_data);
+  // by the same origin. The only error reported is if the API is disabled;
+  // other errors are suppressed and reported as success.
+  RunOperationOnWorklet(string name, array<uint8> serialized_data)
+      => (bool success,
+          string error_message);
 
   // Handle sharedStorage.runURLSelectionOperation(): run the operation
   // previously registered by registerURLSelectionOperation() with matching
-  // `name`. The length of the `urls` array should be checked at the renderer
-  // and be enforced at the browser to ensure it's below the configured limit
-  // number `kSharedStorageURLSelectionOperationInputURLSizeLimit`.
-  // `serialized_data` is the serialization result of JavaScript value
+  // `name`. Restrictions be checked at the renderer and be enforced at the
+  // browser: 1) This is not allowed in fenced frame. 2) The length of the
+  // `urls` array is below the configured limit number
+  // `kSharedStorageURLSelectionOperationInputURLSizeLimit`. `serialized_data`
+  // is the serialization result of JavaScript value
   // SharedStorageRunOperationMethodOptions.data using v8::ValueSerializer.
   // There's no need to sanitize `serialized_data` at the browser process as the
   // data will be only consumed in an environment (i.e. the worklet) in control
@@ -63,20 +67,35 @@ interface SharedStorageDocumentService {
 
   // Handle sharedStorage.set(): set `key`’s entry to `value`. If
   // `ignore_if_present` is true, the entry is not updated if `key` already
-  // exists.
+  // exists. The only error reported is if the API is disabled; other errors are
+  // suppressed and reported as success.
   SharedStorageSet(blink.mojom.SharedStorageKeyArgument key,
                    blink.mojom.SharedStorageValueArgument value,
-                   bool ignore_if_present);
+                   bool ignore_if_present)
+      => (bool success,
+          string error_message);
 
   // Handle sharedStorage.append(): append `value` to the entry for `key`.
-  // Equivalent to "set" if the `key` is not present.
+  // Equivalent to "set" if the `key` is not present. The only error reported
+  // is if the API is disabled; other errors are suppressed and reported as
+  // success.
   SharedStorageAppend(blink.mojom.SharedStorageKeyArgument key,
-                      blink.mojom.SharedStorageValueArgument value);
+                      blink.mojom.SharedStorageValueArgument value)
+      => (bool success,
+          string error_message);
 
-  // Handle sharedStorage.delete(): delete the entry at the given `key`.
-  SharedStorageDelete(blink.mojom.SharedStorageKeyArgument key);
+  // Handle sharedStorage.delete(): delete the entry at the given `key`. The
+  // only error reported is if the API is disabled; other errors are suppressed
+  // and reported as success.
+  SharedStorageDelete(blink.mojom.SharedStorageKeyArgument key)
+      => (bool success,
+          string error_message);
 
-  // Handle sharedStorage.clear(): delete all entries.
-  SharedStorageClear();
+  // Handle sharedStorage.clear(): delete all entries. The only error reported
+  // is if the API is disabled; other errors are suppressed and reported as
+  // success.
+  SharedStorageClear()
+      => (bool success,
+          string error_message);
 };
 

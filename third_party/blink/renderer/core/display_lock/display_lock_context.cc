@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -44,6 +45,9 @@ const char* kContainmentNotSatisfied =
 const char* kUnsupportedDisplay =
     "Element has unsupported display type (display: contents).";
 }  // namespace rejection_names
+
+const char kForcedRendering[] =
+    "Rendering was performed in a subtree hidden by content-visibility:hidden.";
 
 ScrollableArea* GetScrollableArea(Node* node) {
   if (!node)
@@ -478,7 +482,8 @@ bool DisplayLockContext::ShouldCommitForActivation(
   return IsActivatable(reason) && IsLocked();
 }
 
-void DisplayLockContext::NotifyForcedUpdateScopeStarted(ForcedPhase phase) {
+void DisplayLockContext::NotifyForcedUpdateScopeStarted(ForcedPhase phase,
+                                                        bool emit_warnings) {
   forced_info_.start(phase);
   if (IsLocked()) {
     // Now that the update is forced, we should ensure that style layout, and
@@ -496,6 +501,20 @@ void DisplayLockContext::NotifyForcedUpdateScopeStarted(ForcedPhase phase) {
       MarkForLayoutIfNeeded();
     if (forced_info_.is_forced(ForcedPhase::kPrePaint))
       MarkAncestorsForPrePaintIfNeeded();
+
+    if (emit_warnings && v8::Isolate::GetCurrent()->InContext() &&
+        !IsActivatable(DisplayLockActivationReason::kAny) && document_ &&
+        element_) {
+      // Note that this is a verbose level message, since it can happen
+      // frequently and is not necessarily a problem if the developer is
+      // accessing content-visibility: hidden subtrees intentionally.
+      auto* console_message = MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kJavaScript,
+          mojom::blink::ConsoleMessageLevel::kVerbose, kForcedRendering);
+      console_message->SetNodes(document_->GetFrame(),
+                                {DOMNodeIds::IdForNode(element_)});
+      document_->AddConsoleMessage(console_message);
+    }
   }
 }
 
@@ -641,6 +660,7 @@ bool DisplayLockContext::MarkForLayoutIfNeeded() {
         layout_object->SetIntrinsicLogicalWidthsDirty();
         layout_object->SetChildNeedsLayout();
         // Make sure we don't use cached NGFragmentItem objects.
+        To<LayoutBox>(layout_object)->DisassociatePhysicalFragments();
         To<LayoutBox>(layout_object)->ClearLayoutResults();
       }
     }
@@ -903,6 +923,8 @@ void DisplayLockContext::ScheduleTopLayerCheck() {
 }
 
 bool DisplayLockContext::IsShapingDeferred() const {
+  if (!element_)
+    return false;
   if (const auto* layout_object = element_->GetLayoutObject())
     return layout_object->IsShapingDeferred();
   return false;
@@ -1197,6 +1219,17 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
         !state(RenderAffectingState::kAutoStateUnlockedUntilLifecycle) &&
         !state(RenderAffectingState::kAutoUnlockedForPrint) &&
         !state(RenderAffectingState::kSubtreeHasTopLayerElement)));
+
+  // For shaping-deferred boxes, we'd like to unlock permanently.
+  if (IsShapingDeferred() && state_ != EContentVisibility::kVisible &&
+      !should_be_locked && IsLocked()) {
+    SetRequestedState(EContentVisibility::kVisible);
+    // We need to change the document lifecycle explicitly because Unlock()
+    // inside the above SetRequestedState() didn't change the lifecycle.
+    // See CanDirtyStyle() check in Unlock().
+    document_->Lifecycle().EnsureStateAtMost(DocumentLifecycle::kStyleClean);
+    return;
+  }
 
   if (should_be_locked && !IsLocked())
     Lock();

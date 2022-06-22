@@ -656,16 +656,8 @@ LoginShelfView::LoginShelfView(
       lock_screen_action_background);
   login_data_dispatcher_observation_.Observe(
       Shell::Get()->login_screen_controller()->data_dispatcher());
-
-  // If feature is enabled, update the boolean kiosk_license_mode_. Otherwise,
-  // it's false by default.
-  if (features::IsKioskEnrollmentInOobeEnabled()) {
-    kiosk_license_mode_ =
-        Shell::Get()
-            ->system_tray_model()
-            ->enterprise_domain()
-            ->management_device_mode() == ManagementDeviceMode::kKioskSku;
-  }
+  enterprise_domain_model_observation_.Observe(
+      Shell::Get()->system_tray_model()->enterprise_domain());
 }
 
 LoginShelfView::~LoginShelfView() = default;
@@ -758,8 +750,10 @@ void LoginShelfView::SetKioskApps(
   kiosk_apps_button_->SetApps(kiosk_apps);
   UpdateUi();
   if (LockScreen::HasInstance()) {
+    // Consider Kiosk apps button to be present when there are Kiosk apps installed.
+    // TODO(b/234765162): rename the method as the naming is confusing.
     LockScreen::Get()->SetKioskAppsButtonPresence(
-        kiosk_apps_button_->GetVisible());
+        kiosk_apps_button_->HasApps());
   }
 }
 
@@ -880,6 +874,21 @@ void LoginShelfView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
 void LoginShelfView::OnOobeDialogStateChanged(OobeDialogState state) {
   SetLoginDialogState(state);
 }
+
+void LoginShelfView::OnDeviceEnterpriseInfoChanged() {
+  // If feature is enabled, update the boolean kiosk_license_mode_. Otherwise,
+  // it's false by default.
+  if (features::IsKioskEnrollmentInOobeEnabled()) {
+    kiosk_license_mode_ =
+        Shell::Get()
+            ->system_tray_model()
+            ->enterprise_domain()
+            ->management_device_mode() == ManagementDeviceMode::kKioskSku;
+    UpdateUi();
+  }
+}
+
+void LoginShelfView::OnEnterpriseAccountDomainChanged() {}
 
 void LoginShelfView::HandleLocaleChange() {
   for (views::View* child : children()) {

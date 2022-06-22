@@ -210,6 +210,12 @@ class ASH_EXPORT CaptureModeCameraController
   // `is_camera_preview_collapsed_` when the resize button is pressed.
   void ToggleCameraPreviewSize();
 
+  // Called when a capture session gets started so we can refresh the cameras
+  // list, since the cros-camera service might have not been running when we
+  // tried to refresh the cameras at the beginning. (See
+  // http://b/230917107#comment12 for more details).
+  void OnCaptureSessionStarted();
+
   void OnRecordingStarted(bool is_in_projector_mode);
   void OnRecordingEnded();
 
@@ -313,16 +319,6 @@ class ASH_EXPORT CaptureModeCameraController
   // camera preview and floating windows, such as PIP windows and some a11y
   // panels.
   void RunPostRefreshCameraPreview(bool was_preview_visible_before);
-
-  // Sets the visibility of the camera preview to the given `target_visibility`
-  // and returns true only if the `target_visibility` is different than the
-  // current.
-  bool SetCameraPreviewVisibility(bool target_visibility, bool animate);
-
-  // Fades in or out the `camera_preview_widget_` and updates its visibility
-  // accordingly.
-  void FadeInCameraPreview();
-  void FadeOutCameraPreview();
 
   // Sets the given `target_bounds` on the camera preview widget, potentially
   // animating to it if `animate` is true. Returns true if the bounds actually

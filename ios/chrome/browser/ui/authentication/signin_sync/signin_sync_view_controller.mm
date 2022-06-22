@@ -25,8 +25,7 @@
 
 namespace {
 
-// Width of the identity control if nothing is contraining it.
-constexpr CGFloat kIdentityControlMaxWidth = 327;
+// Width of the identity control.
 constexpr CGFloat kIdentityControlMarginDefault = 16;
 
 // URL for the Settings link.
@@ -128,9 +127,8 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
       l10n_util::GetNSString([self secondaryActionStringID]);
 
   // Set constraints specific to the identity control button that don't change.
-  NSLayoutConstraint* areaWidthConstraint =
-      [self.identityControlArea.widthAnchor
-          constraintEqualToConstant:kIdentityControlMaxWidth];
+  NSLayoutConstraint* areaWidthConstraint = [self.identityControl.widthAnchor
+      constraintEqualToAnchor:self.specificContentView.widthAnchor];
   areaWidthConstraint.priority = UILayoutPriorityDefaultHigh;
   int topMargin = self.identityControlInTop ? 0 : kIdentityControlMarginDefault;
   [NSLayoutConstraint activateConstraints:@[
@@ -156,6 +154,15 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
     [self.identityControlArea.topAnchor
         constraintEqualToAnchor:self.specificContentView.topAnchor]
         .active = YES;
+    [self.identityControlArea.bottomAnchor
+        constraintLessThanOrEqualToAnchor:self.specificContentView.bottomAnchor]
+        .active = YES;
+    if (self.enterpriseSignInRestrictions != kNoEnterpriseRestriction) {
+      [self.learnMoreTextView.topAnchor
+          constraintGreaterThanOrEqualToAnchor:self.identityControlArea
+                                                   .bottomAnchor]
+          .active = YES;
+    }
   } else {
     [self.identityControlArea.topAnchor
         constraintGreaterThanOrEqualToAnchor:self.specificContentView.topAnchor]
@@ -273,7 +280,7 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
     NSDictionary* textAttributes = @{
       NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
       NSFontAttributeName :
-          [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
+          [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2],
       NSParagraphStyleAttributeName : paragraphStyle
     };
 

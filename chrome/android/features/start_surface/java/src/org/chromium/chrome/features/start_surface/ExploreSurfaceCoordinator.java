@@ -17,6 +17,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.feed.FeedActionDelegateImpl;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.feed.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.FeedSurfaceLifecycleManager;
@@ -28,7 +29,9 @@ import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.share.crow.CrowButtonDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.SurfaceType;
@@ -64,7 +67,8 @@ public class ExploreSurfaceCoordinator {
             @NewTabPageLaunchOrigin int launchOrigin, @NonNull Supplier<Toolbar> toolbarSupplier,
             long embeddingSurfaceConstructedTimeNs, FeedSwipeRefreshLayout swipeRefreshLayout,
             ViewGroup parentView, Supplier<Tab> parentTabSupplier, SnackbarManager snackbarManager,
-            Supplier<ShareDelegate> shareDelegateSupplier, WindowAndroid windowAndroid) {
+            Supplier<ShareDelegate> shareDelegateSupplier, CrowButtonDelegate crowButtonDelegate,
+            WindowAndroid windowAndroid, TabModelSelector tabModelSelector) {
         mActivity = activity;
         mExploreSurfaceNavigationDelegate = new ExploreSurfaceNavigationDelegate(parentTabSupplier);
         mIsPlaceholderShownInitially = isPlaceholderShown;
@@ -78,8 +82,9 @@ public class ExploreSurfaceCoordinator {
                 PrivacyPreferencesManagerImpl.getInstance(), toolbarSupplier,
                 SurfaceType.START_SURFACE, embeddingSurfaceConstructedTimeNs, swipeRefreshLayout,
                 /*overScrollDisabled=*/true, parentView,
-                new ExploreSurfaceActionDelegate(snackbarManager, new BookmarkBridge(profile)),
-                HelpAndFeedbackLauncherImpl.getInstance());
+                new ExploreSurfaceActionDelegate(
+                        snackbarManager, new BookmarkBridge(profile), crowButtonDelegate),
+                HelpAndFeedbackLauncherImpl.getInstance(), tabModelSelector);
 
         mFeedSurfaceCoordinator.getView().setId(R.id.start_surface_explore_view);
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.
@@ -126,10 +131,15 @@ public class ExploreSurfaceCoordinator {
         mFeedSurfaceCoordinator.enableSwipeRefresh(isVisible);
     }
 
+    public FeedReliabilityLogger getFeedReliabilityLogger() {
+        return mFeedSurfaceCoordinator.getReliabilityLogger();
+    }
+
     private class ExploreSurfaceActionDelegate extends FeedActionDelegateImpl {
-        ExploreSurfaceActionDelegate(
-                SnackbarManager snackbarManager, BookmarkBridge bookmarkBridge) {
-            super(mActivity, snackbarManager, mExploreSurfaceNavigationDelegate, bookmarkBridge);
+        ExploreSurfaceActionDelegate(SnackbarManager snackbarManager, BookmarkBridge bookmarkBridge,
+                CrowButtonDelegate crowButtonDelegate) {
+            super(mActivity, snackbarManager, mExploreSurfaceNavigationDelegate, bookmarkBridge,
+                    crowButtonDelegate);
         }
 
         @Override

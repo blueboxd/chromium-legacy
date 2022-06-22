@@ -460,7 +460,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchEnterClosed"
-    enum="ContextualSearchEnterClosedStateChange" expires_after="M72">
+    enum="ContextualSearchEnterClosedStateChange" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -470,7 +473,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchEnterExpanded"
-    enum="ContextualSearchEnterExpandedStateChange" expires_after="M72">
+    enum="ContextualSearchEnterExpandedStateChange" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -480,7 +486,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchEnterMaximized"
-    enum="ContextualSearchEnterMaximizedStateChange" expires_after="M72">
+    enum="ContextualSearchEnterMaximizedStateChange" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -490,7 +499,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchEnterPeeked"
-    enum="ContextualSearchEnterPeekedStateChange" expires_after="M72">
+    enum="ContextualSearchEnterPeekedStateChange" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -500,7 +512,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchEntitySeen"
-    enum="ContextualSearchResultsSeen" expires_after="M77">
+    enum="ContextualSearchResultsSeen" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -511,7 +526,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchExitClosed"
-    enum="ContextualSearchExitClosedStateChange" expires_after="M72">
+    enum="ContextualSearchExitClosedStateChange" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -521,7 +539,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchExitExpanded"
-    enum="ContextualSearchExitExpandedStateChange" expires_after="M72">
+    enum="ContextualSearchExitExpandedStateChange" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -531,7 +552,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchExitMaximized"
-    enum="ContextualSearchExitMaximizedStateChange" expires_after="M72">
+    enum="ContextualSearchExitMaximizedStateChange" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -541,7 +565,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchExitPeeked"
-    enum="ContextualSearchExitPeekedStateChange" expires_after="M77">
+    enum="ContextualSearchExitPeekedStateChange" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -557,16 +584,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The status of the Contextual Search fallback Search request. Implemented for
     Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchFirstRunFlowOutcome"
-    enum="ContextualSearchPreferenceState" expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The state of the Contextual Search Preference after the first run flow.
-    Implemented for Android.
   </summary>
 </histogram>
 
@@ -611,16 +628,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The status of the Contextual Search low priority Search request. Implemented
     for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchMandatoryPromoOutcomeByGesture"
-    enum="ContextualSearchOutcomeByGesture" expires_after="M85">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The outcome of the mandatory Promo broken down by original triggering
-    gesture. Logged for each view of the promo. Implemented for Android.
   </summary>
 </histogram>
 
@@ -721,16 +728,6 @@ chromium-metrics-reviews@google.com.
     The total count of times that the revised promo has been shown. Once the
     user decides, this counter is no longer updated. Logged for each show of the
     promo card. Implemented for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchPromoOutcomeByGesture"
-    enum="ContextualSearchOutcomeByGesture" expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The outcome of the promo broken down by original triggering gesture. Logged
-    for each view of the promo. Implemented for Android.
   </summary>
 </histogram>
 
@@ -897,7 +894,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchScreenTopSuppressed"
-    enum="ContextualSearchTapSuppression" expires_after="M72">
+    enum="ContextualSearchTapSuppression" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -961,7 +961,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchTapDurationNotSeen" units="ms"
-    expires_after="M72">
+    expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -972,7 +975,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchTapDurationSeen" units="ms"
-    expires_after="M72">
+    expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -995,7 +1001,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchTapLongDurationSeen"
-    enum="ContextualSearchResultsSeen" expires_after="M72">
+    enum="ContextualSearchResultsSeen" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1004,43 +1013,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Search.ContextualSearchTapLongWordSeen"
-    enum="ContextualSearchResultsSeen" expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Whether results were seen for a Tap that was on a word considered long.
-    Recorded when the UX is hidden. Implemented for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchTapOnWordMiddleSeen"
-    enum="ContextualSearchResultsSeen" expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Whether results were seen for a Tap that was on the middle part of a word.
-    Recorded when the UX is hidden. Implemented for Android.
-  </summary>
-</histogram>
-
 <histogram name="Search.ContextualSearchTapShortDurationSeen"
-    enum="ContextualSearchResultsSeen" expires_after="M72">
+    enum="ContextualSearchResultsSeen" expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
     Whether results were seen for a Tap that was of short duration. Recorded
     when the UX is hidden. Implemented for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchTapShortWordSeen"
-    enum="ContextualSearchResultsSeen" expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Whether results were seen for a Tap that was on a word considered short.
-    Recorded when the UX is hidden. Implemented for Android.
   </summary>
 </histogram>
 
@@ -1087,7 +1069,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchTopLocationNotSeen" units="dps"
-    expires_after="M72">
+    expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1097,7 +1082,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchTopLocationSeen" units="dps"
-    expires_after="M72">
+    expires_after="M103">
+  <obsolete>
+    Removed as of 05/2022
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>

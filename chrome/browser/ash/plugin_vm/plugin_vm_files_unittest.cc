@@ -22,10 +22,10 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "content/public/test/browser_task_environment.h"
@@ -98,14 +98,14 @@ class PluginVmFilesTest : public testing::Test {
   struct ScopedDBusThreadManager {
     ScopedDBusThreadManager() {
       chromeos::DBusThreadManager::Initialize();
-      chromeos::CiceroneClient::InitializeFake();
-      chromeos::ConciergeClient::InitializeFake();
+      ash::CiceroneClient::InitializeFake();
+      ash::ConciergeClient::InitializeFake();
       ash::SeneschalClient::InitializeFake();
     }
     ~ScopedDBusThreadManager() {
       ash::SeneschalClient::Shutdown();
-      chromeos::ConciergeClient::Shutdown();
-      chromeos::CiceroneClient::Shutdown();
+      ash::ConciergeClient::Shutdown();
+      ash::CiceroneClient::Shutdown();
       chromeos::DBusThreadManager::Shutdown();
     }
   } dbus_thread_manager_;
@@ -180,7 +180,7 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
   ASSERT_FALSE(launch_plugin_vm_callback.is_null());
 
   LaunchContainerApplicationCallback cicerone_response_callback;
-  chromeos::FakeCiceroneClient::Get()->SetOnLaunchContainerApplicationCallback(
+  ash::FakeCiceroneClient::Get()->SetOnLaunchContainerApplicationCallback(
       base::BindLambdaForTesting(
           [&](const vm_tools::cicerone::LaunchContainerApplicationRequest&
                   request,

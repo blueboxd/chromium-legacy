@@ -85,6 +85,7 @@
 
 #if BUILDFLAG(IS_FUCHSIA)
 #include "media/fuchsia/cdm/client/fuchsia_cdm_util.h"
+#include "media/fuchsia/video/fuchsia_decoder_factory.h"
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
 #else
@@ -316,11 +317,7 @@ MediaFactory::MediaFactory(
     RenderFrameImpl* render_frame,
     media::RequestRoutingTokenCallback request_routing_token_cb)
     : render_frame_(render_frame),
-      request_routing_token_cb_(std::move(request_routing_token_cb)) {
-  // Requesting a support check will ensure that the supplemental profiles
-  // cache is populated prior to anything that needs it on the media thread.
-  media::IsSupportedVideoType({});
-}
+      request_routing_token_cb_(std::move(request_routing_token_cb)) {}
 
 MediaFactory::~MediaFactory() {
   // Release the DecoderFactory to the media thread since it may still be in use
@@ -497,8 +494,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
                      parent_frame_sink_id,
                      blink::WebSurfaceLayerBridge::ContainsVideo::kYes),
       RenderThreadImpl::current()->SharedMainThreadContextProvider(),
-      use_surface_layer ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
-                        : blink::WebMediaPlayer::SurfaceLayerMode::kNever,
+      use_surface_layer,
       render_frame_->GetRenderFrameMediaPlaybackOptions()
           .is_background_suspend_enabled,
       render_frame_->GetRenderFrameMediaPlaybackOptions()
@@ -769,9 +765,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       base::BindOnce(&blink::WebSurfaceLayerBridge::Create,
                      parent_frame_sink_id,
                      blink::WebSurfaceLayerBridge::ContainsVideo::kYes),
-      std::move(submitter),
-      use_surface_layer ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
-                        : blink::WebMediaPlayer::SurfaceLayerMode::kNever);
+      std::move(submitter), use_surface_layer);
 }
 
 media::RendererWebMediaPlayerDelegate*
@@ -791,6 +785,9 @@ base::WeakPtr<media::DecoderFactory> MediaFactory::GetDecoderFactory() {
         GetMediaInterfaceFactory();
     external_decoder_factory =
         std::make_unique<media::MojoDecoderFactory>(interface_factory);
+#elif BUILDFLAG(IS_FUCHSIA)
+    external_decoder_factory =
+        std::make_unique<media::FuchsiaDecoderFactory>(interface_broker_);
 #endif
     decoder_factory_ = std::make_unique<media::DefaultDecoderFactory>(
         std::move(external_decoder_factory));

@@ -720,7 +720,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   }
 
   // Run only for keyboard-initiated quits.
-  if ([[NSApp currentEvent] type] != NSKeyDown)
+  if ([[NSApp currentEvent] type] != NSEventTypeKeyDown)
     return NSTerminateNow;
 
   return [[ConfirmQuitPanelController sharedController]
@@ -771,7 +771,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 - (void)adjustCloseWindowMenuItemKeyEquivalent:(BOOL)enableCloseTabShortcut {
   [_closeWindowMenuItem setKeyEquivalent:(enableCloseTabShortcut ? @"W" :
                                                                    @"w")];
-  [_closeWindowMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+  [_closeWindowMenuItem
+      setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 }
 
 // If the window has a tab controller, make "close tab" take over cmd-w,
@@ -779,7 +780,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 - (void)adjustCloseTabMenuItemKeyEquivalent:(BOOL)enableCloseTabShortcut {
   if (enableCloseTabShortcut) {
     [_closeTabMenuItem setKeyEquivalent:@"w"];
-    [_closeTabMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+    [_closeTabMenuItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
   } else {
     [_closeTabMenuItem setKeyEquivalent:@""];
     [_closeTabMenuItem setKeyEquivalentModifierMask:0];

@@ -170,10 +170,7 @@ DownloadItemModel::~DownloadItemModel() {
 }
 
 ContentId DownloadItemModel::GetContentId() const {
-  bool off_the_record = content::DownloadItemUtils::GetBrowserContext(download_)
-                            ->IsOffTheRecord();
-  return ContentId(OfflineItemUtils::GetDownloadNamespacePrefix(off_the_record),
-                   download_->GetGuid());
+  return OfflineItemUtils::GetContentIdForDownload(download_);
 }
 
 Profile* DownloadItemModel::profile() const {
@@ -289,10 +286,6 @@ bool DownloadItemModel::IsMalicious() const {
 
 bool DownloadItemModel::IsMixedContent() const {
   return download_->IsMixedContent();
-}
-
-bool DownloadItemModel::ShouldShowIncognitoWarning() const {
-  return download_->ShouldShowIncognitoWarning();
 }
 
 bool DownloadItemModel::ShouldAllowDownloadFeedback() const {
@@ -739,12 +732,6 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
 #endif
       [[fallthrough]];
     case DownloadCommands::KEEP:
-      // Order of these warning validations should be same as the order that
-      // GetDesiredDownloadItemMode() method follows.
-      if (ShouldShowIncognitoWarning()) {
-        download_->AcceptIncognitoWarning();
-        break;
-      }
       if (IsMixedContent()) {
         download_->ValidateMixedContentDownload();
         break;

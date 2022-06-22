@@ -11,20 +11,22 @@
 
 namespace chromeos {
 
-// Fake implementation of HpsDBusClient. Allows callers to set a response value
-// and count the number of calls to GetResultHpsNotify.
-class COMPONENT_EXPORT(HPS) FakeHpsDBusClient : public HpsDBusClient {
+// Fake implementation of HumanPresenceDBusClient. Allows callers to set a
+// response value and count the number of calls to GetResultHpsNotify.
+class COMPONENT_EXPORT(HPS) FakeHumanPresenceDBusClient
+    : public HumanPresenceDBusClient {
  public:
-  FakeHpsDBusClient();
-  ~FakeHpsDBusClient() override;
+  FakeHumanPresenceDBusClient();
+  ~FakeHumanPresenceDBusClient() override;
 
-  FakeHpsDBusClient(const FakeHpsDBusClient&) = delete;
-  FakeHpsDBusClient& operator=(const FakeHpsDBusClient&) = delete;
+  FakeHumanPresenceDBusClient(const FakeHumanPresenceDBusClient&) = delete;
+  FakeHumanPresenceDBusClient& operator=(const FakeHumanPresenceDBusClient&) =
+      delete;
 
   // Returns the fake global instance if initialized. May return null.
-  static FakeHpsDBusClient* Get();
+  static FakeHumanPresenceDBusClient* Get();
 
-  // HpsDBusClient:
+  // HumanPresenceDBusClient:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   void GetResultHpsSense(GetResultCallback cb) override;
@@ -38,10 +40,10 @@ class COMPONENT_EXPORT(HPS) FakeHpsDBusClient : public HpsDBusClient {
 
   // Methods for co-ordinating GetResultHpsNotify calls in tests.
 
-  void set_hps_notify_result(absl::optional<hps::HpsResult> result) {
+  void set_hps_notify_result(absl::optional<hps::HpsResultProto> result) {
     hps_notify_result_ = result;
   }
-  void set_hps_sense_result(absl::optional<hps::HpsResult> result) {
+  void set_hps_sense_result(absl::optional<hps::HpsResultProto> result) {
     hps_sense_result_ = result;
   }
 
@@ -71,8 +73,8 @@ class COMPONENT_EXPORT(HPS) FakeHpsDBusClient : public HpsDBusClient {
   void Reset();
 
  private:
-  absl::optional<hps::HpsResult> hps_notify_result_;
-  absl::optional<hps::HpsResult> hps_sense_result_;
+  absl::optional<hps::HpsResultProto> hps_notify_result_;
+  absl::optional<hps::HpsResultProto> hps_sense_result_;
   int hps_notify_count_ = 0;
   int hps_sense_count_ = 0;
   int enable_hps_notify_count_ = 0;

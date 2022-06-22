@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -93,6 +94,26 @@ class POLICY_EXPORT EncryptedReportingJobConfiguration
   // fields (check reporting::GetContext for specifics).
   void UpdateContext(base::Value::Dict context);
 
+  // Checks the new job against the history, determines how soon the upload will
+  // be allowed. Returns positive value if not allowed, and 0 or negative
+  // otherwise.
+  base::TimeDelta WhenIsAllowedToProceed() const;
+
+  // Account for the job, that was allowed to proceed.
+  void AccountForAllowedJob();
+
+  // Cancels the job, that was not allowed to proceed.
+  void CancelNotAllowedJob();
+
+  // Callback to process error codes and, in case of success, response body.
+  void OnURLLoadComplete(DeviceManagementService::Job* job,
+                         int net_error,
+                         int response_code,
+                         const std::string& response_body) override;
+
+  // Test-only method that resets collected uploads state.
+  static void ResetUploadsStateForTest();
+
  protected:
   void UpdatePayloadBeforeGetInternal() override;
 
@@ -104,9 +125,12 @@ class POLICY_EXPORT EncryptedReportingJobConfiguration
   std::string GetUmaString() const override;
 
  private:
-  friend class EncryptedReportingJobConfigurationTest;
-
   std::set<std::string> GetTopLevelKeyAllowList();
+
+  // Parameters populated from the payload_.
+  ::reporting::Priority priority_;
+  int64_t generation_id_{-1};
+  int64_t sequence_id_{-1};
 };
 
 }  // namespace policy

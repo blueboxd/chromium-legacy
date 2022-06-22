@@ -17,7 +17,7 @@
 
 namespace {
 
-TutorialService* GetTutorialService(Profile* profile) {
+user_education::TutorialService* GetTutorialService(Profile* profile) {
   auto* service = UserEducationServiceFactory::GetForProfile(profile);
   return service ? &service->tutorial_service() : nullptr;
 }
@@ -26,10 +26,14 @@ TutorialService* GetTutorialService(Profile* profile) {
 
 UserEducationInternalsPageHandlerImpl::UserEducationInternalsPageHandlerImpl(
     content::WebUI* web_ui,
-    Profile* profile)
+    Profile* profile,
+    mojo::PendingReceiver<
+        mojom::user_education_internals::UserEducationInternalsPageHandler>
+        receiver)
     : tutorial_service_(GetTutorialService(profile)),
       web_ui_(web_ui),
-      profile_(profile) {}
+      profile_(profile),
+      receiver_(this, std::move(receiver)) {}
 
 UserEducationInternalsPageHandlerImpl::
     ~UserEducationInternalsPageHandlerImpl() = default;
@@ -98,7 +102,7 @@ void UserEducationInternalsPageHandlerImpl::ShowFeaturePromo(
     return;
   }
 
-  FeaturePromoController* feature_promo_controller =
+  user_education::FeaturePromoController* feature_promo_controller =
       chrome::FindBrowserWithWebContents(web_ui_->GetWebContents())
           ->window()
           ->GetFeaturePromoController();
@@ -116,7 +120,7 @@ void UserEducationInternalsPageHandlerImpl::ShowFeaturePromo(
 const std::string
 UserEducationInternalsPageHandlerImpl::GetTitleFromFeaturePromoData(
     const base::Feature* feature,
-    const FeaturePromoSpecification& spec) {
+    const user_education::FeaturePromoSpecification& spec) {
   return (!spec.demo_page_info().display_title.empty()
               ? spec.demo_page_info().display_title
               : feature->name);

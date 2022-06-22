@@ -62,7 +62,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DeepScanType" enum="SBDeepScanType"
-    expires_after="2022-09-01">
+    expires_after="2022-11-06">
   <owner>domfc@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -621,6 +621,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SBClientPhishing.MainFrameRemoteExists" enum="BooleanExists"
     expires_after="2022-08-29">
+  <obsolete>
+    Removed 04-2022 since the logic for how PhishingDetectors are managed
+    changed.
+  </obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

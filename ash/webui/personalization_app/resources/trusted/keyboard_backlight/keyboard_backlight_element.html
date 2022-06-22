@@ -58,9 +58,11 @@
     width: 24px;
   }
 
-  .color-inner-container iron-icon {
-    /* TODO(b/227374197): Show the icon for selected color. */
+  .color-container:not([aria-selected='true']) .color-inner-container iron-icon {
     display: none;
+  }
+
+  .color-inner-container iron-icon {
     padding-block-start: 5px;
     padding-inline-start: 5px;
     --iron-icon-fill-color: var(--cros-text-color-primary);
@@ -86,11 +88,15 @@
   <div id="keyboardBacklightLabel">
     <p class="title">$i18n{keyboardBacklightTitle}</p>
   </div>
-  <iron-a11y-keys id="keys" keys="left right space enter" on-keys-pressed="onKeysPress_">
+  <iron-a11y-keys id="keys" keys="left right enter" on-keys-pressed="onKeysPress_">
   </iron-a11y-keys>
   <iron-selector id="selector" selected="0" selectable=".color-container"
       selected-item="{{ironSelectedColor_}}">
-    <div id$="[[wallpaperColorId_]]" class="color-container" tabindex="0">
+    <div id$="[[wallpaperColorId_]]" class="color-container" tabindex="0"
+        on-click="onWallpaperColorSelected_"
+        on-keypress="onWallpaperColorSelected_"
+        aria-label="$i18n{wallpaperColor}"
+        aria-selected$="[[getWallpaperColorAriaSelected_(backlightColor_)]]">
       <div class="color-inner-container"
           style$="[[getColorInnerContainerStyle_(wallpaperColorId_, presetColors_)]]">
         <paper-ripple class="circle"></paper-ripple>
@@ -100,7 +106,9 @@
     <div class="divider"></div>
     <template is="dom-repeat" items="[[presetColorIds_]]" as="presetColorId">
       <div id$="[[presetColorId]]" class="color-container"
-          on-click="onPresetColorSelected_" on-keypress="onPresetColorSelected_">
+          on-click="onPresetColorSelected_" on-keypress="onPresetColorSelected_"
+          aria-label$="[[getPresetColorAriaLabel_(presetColorId)]]"
+          aria-selected$="[[getPresetColorAriaSelected_(presetColorId, presetColors_, backlightColor_)]]">
         <div class="color-inner-container"
             style$="[[getColorInnerContainerStyle_(presetColorId, presetColors_)]]">
           <paper-ripple class="circle"></paper-ripple>
@@ -109,7 +117,9 @@
       </div>
     </template>
     <div id$="[[rainbowColorId_]]" class="color-container" tabindex="0"
-        on-click="onRainbowColorSelected_" on-keypress="onRainbowColorSelected_">
+        on-click="onRainbowColorSelected_" on-keypress="onRainbowColorSelected_"
+        aria-label="$i18n{rainbowColor}"
+        aria-selected$="[[getRainbowColorAriaSelected(backlightColor_)]]">
       <div class="color-inner-container"
           style$="[[getColorInnerContainerStyle_(rainbowColorId_, presetColors_)]]">
         <paper-ripple class="circle"></paper-ripple>

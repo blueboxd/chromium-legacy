@@ -75,4 +75,19 @@
   SafeBrowsingTabHelper::FromWebState(webState)->SetDelegate(self);
 }
 
+- (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  DCHECK(base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection));
+  DCHECK(newWebState);
+  SafeBrowsingTabHelper::FromWebState(newWebState)->SetDelegate(self);
+}
+
+- (void)webStateList:(WebStateList*)webStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)atIndex {
+  SafeBrowsingTabHelper::FromWebState(webState)->RemoveDelegate();
+}
+
 @end

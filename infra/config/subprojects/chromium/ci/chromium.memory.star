@@ -15,7 +15,7 @@ ci.defaults.set(
     cores = 8,
     executable = ci.DEFAULT_EXECUTABLE,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     main_console_view = "main",
     pool = ci.DEFAULT_POOL,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
@@ -47,6 +47,21 @@ def linux_memory_builder(*, name, **kwargs):
 linux_memory_builder(
     name = "Linux ASan LSan Builder",
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_asan",
+            apply_configs = [
+                "lsan",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-memory-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "linux|asan lsan",
         short_name = "bld",
@@ -64,6 +79,22 @@ linux_memory_builder(
         short_name = "tst",
     ),
     cq_mirrors_console_view = "mirrors",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_asan",
+            apply_configs = [
+                "lsan",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-memory-archive",
+    ),
     triggered_by = ["ci/Linux ASan LSan Builder"],
     os = os.LINUX_BIONIC,
     reclient_instance = None,
@@ -72,6 +103,21 @@ linux_memory_builder(
 linux_memory_builder(
     name = "Linux ASan Tests (sandboxed)",
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_asan",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-memory-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "linux|asan lsan",
         short_name = "sbx",
@@ -83,6 +129,23 @@ linux_memory_builder(
 
 linux_memory_builder(
     name = "Linux TSan Builder",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_tsan2",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-memory-archive",
+    ),
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "linux|TSan v2",
@@ -186,6 +249,24 @@ ci.builder(
 
 linux_memory_builder(
     name = "Linux TSan Tests",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_tsan2",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-memory-archive",
+    ),
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "linux|TSan v2",
@@ -215,7 +296,6 @@ ci.builder(
         category = "linux|webkit",
         short_name = "asn",
     ),
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.builder(
@@ -224,7 +304,6 @@ ci.builder(
         category = "linux|webkit",
         short_name = "lk",
     ),
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.builder(
@@ -233,7 +312,6 @@ ci.builder(
         category = "linux|webkit",
         short_name = "msn",
     ),
-    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.builder(
@@ -242,13 +320,30 @@ ci.builder(
         category = "android",
         short_name = "asn",
     ),
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
 )
 
 ci.builder(
     name = "linux-ubsan-vptr",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-memory-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "linux|ubsan",
         short_name = "vpt",
@@ -256,7 +351,6 @@ ci.builder(
     builderless = 1,
     cores = 32,
     tree_closing = False,
-    os = os.LINUX_BIONIC_REMOVE,
     reclient_jobs = rbe_jobs.DEFAULT,
 )
 

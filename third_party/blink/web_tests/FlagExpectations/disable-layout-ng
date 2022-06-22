@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Win Win7 Win10 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Mac11 Mac12 Win Win7 Win10 Win11 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
@@ -621,6 +621,8 @@ crbug.com/1035708 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/
 crbug.com/1035708 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/selection-originating-decoration-color.html [ Failure ]
 
 ### external/wpt/css/css-ruby/
+crbug.com/591099 external/wpt/css/css-ruby/abs-in-ruby-base-container.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-ruby/abs-in-ruby-base.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-ruby/br-clear-all-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-ruby/ruby-line-breaking-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-ruby/ruby-with-floats-002.html [ Failure ]
@@ -650,6 +652,7 @@ crbug.com/591099 external/wpt/css/css-shapes/shape-outside/supported-shapes/poly
 ### external/wpt/css/css-sizing/
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-013.html [ Pass ]
 crbug.com/1154572 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-030.html [ Failure ]
+crbug.com/1154572 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-037.html [ Failure ]
 crbug.com/1251788 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-002.html [ Failure ]
 crbug.com/1251788 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-004.html [ Failure ]
 crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-024.html [ Failure ]
@@ -1279,6 +1282,9 @@ crbug.com/958381 fast/table/border-collapsing/composited-row-collapsed-border.ht
 ### Tests that pass in ng and fail in Legacy
 
 # external/wpt/css/CSS2/normal-flow/
+crbug.com/716930 external/wpt/css/CSS2/normal-flow/block-in-inline-float-in-layer-001.html [ Failure ]
+crbug.com/711807 external/wpt/css/CSS2/normal-flow/block-in-inline-insert-001f.xht [ Failure ]
+crbug.com/711807 external/wpt/css/CSS2/normal-flow/block-in-inline-insert-002f.xht [ Failure ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-013.xht [ Failure ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-014.xht [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]

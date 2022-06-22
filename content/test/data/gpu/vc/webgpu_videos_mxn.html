@@ -15,6 +15,8 @@ found in the LICENSE file.
       left: 400px;
     }
   </style>
+  <script type="text/javascript" src="../third_party/stats-js/stats.js"></script>
+  <script type="text/javascript" src="video_utils.js"></script>
   <script type="text/javascript" src="webgpu_video.js"></script>
   <script>
     const _defaultRows = 7;
@@ -22,51 +24,9 @@ found in the LICENSE file.
     const _totalVideoWidth = 1600;
     const _totalVideoHeight = 900;
     var hasUIOnTop = true;
+    var hasFPSOnTop = true;
     var useImportTextureApi = true;
     var codec = 'vp9';
-
-    const parsedString = (function (names) {
-      const pairs = {};
-      for (let i = 0; i < names.length; ++i) {
-        var keyValue = names[i].split('=', 2);
-        if (keyValue.length == 1)
-          pairs[keyValue[0]] = '';
-        else
-          pairs[keyValue[0]] = decodeURIComponent(keyValue[1].replace(/\+/g, ' '));
-      }
-      return pairs;
-    })(window.location.search.substr(1).split('&'));
-
-    function GetVideoSource(videoCount, index, codec) {
-      switch (codec) {
-        case 'vp8':
-          if (videoCount <= 4) {
-            return './teddy1_vp8_640x360_30fps.webm';
-          } else {
-            if (index < 4)
-              return './teddy3_vp8_320x180_30fps.webm';
-            else if (index < 16)
-              return './teddy2_vp8_320x180_15fps.webm';
-            else
-              return './teddy1_vp8_320x180_7fps.webm';
-          }
-          break;
-
-        case 'vp9':
-        default:
-          if (videoCount <= 4) {
-            return './teddy1_vp9_640x360_30fps.webm';
-          } else {
-            if (index < 4)
-              return './teddy3_vp9_320x180_30fps.webm';
-            else if (index < 16)
-              return './teddy2_vp9_320x180_15fps.webm';
-            else
-              return './teddy1_vp9_320x180_7fps.webm';
-          }
-          break;
-      }
-    }
 
     async function startMxNVideos() {
       const container = document.getElementById('container');
@@ -86,6 +46,10 @@ found in the LICENSE file.
       const uiOption = parsedString['ui'];
       if (uiOption == 'none')
         hasUIOnTop = false;
+
+      const fpsOption = parsedString['fps'];
+      if (fpsOption == 'none')
+        hasFPSOnTop = false;
 
       const api = parsedString['import_texture_api']
       if (api == '0')
@@ -149,7 +113,7 @@ found in the LICENSE file.
 
       // Simulate video playback by WebGpu rendering.
       webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
-        hasUIOnTop , useImportTextureApi);
+        hasUIOnTop , hasFPSOnTop, useImportTextureApi);
     }
 
   </script>

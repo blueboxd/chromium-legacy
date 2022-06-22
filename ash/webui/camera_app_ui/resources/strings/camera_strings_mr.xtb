@@ -32,6 +32,7 @@
 <translation id="2134029355740465625">व्हिडिओ सेटिंग्ज</translation>
 <translation id="2144806332417375165">कस्टम व्हिडिओ पॅरामीटर</translation>
 <translation id="2175927920773552910">QR कोड</translation>
+<translation id="2244252133441425811">व्हिडिओ FPS पिकर सुरू करा</translation>
 <translation id="2271433936731426666">पूर्ण आकाराचा व्हिडिओ स्नॅपशॉट सुरू करा</translation>
 <translation id="229579744168541441">डिस्कवर एक्सपोर्ट करा</translation>
 <translation id="2320741269052147773">डावीकडे पॅन करा</translation>
@@ -81,6 +82,7 @@
 <translation id="4445542136948522167">फोटो घेणे थांबवा</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> मेगा पिक्सेल</translation>
 <translation id="4570032796877367747">पुढील कॅमेरा</translation>
+<translation id="4620818268515773682">मायक्रोफोन म्यूट टॉगल करा. म्यूट बंद आहे</translation>
 <translation id="4628948037717959914">फोटो</translation>
 <translation id="4649291346448517080">फाइल सेव्‍ह करता आली नाही</translation>
 <translation id="4695379108709712600">सर्वात वरच्या दिशेने हलत आहे</translation>
@@ -118,6 +120,7 @@
 तुमचा फीडबॅक इमेज किंवा व्हिडिओच्या गुणवत्तेबाबत असल्यास, कृपया एखादा फोटो किंवा व्हिडिओ नमुना म्हणून अटॅच करा आणि समस्येचे वर्णन करा. (उदाहरणार्थ, फोटो खूपच गडद आहे किंवा ज्या गोष्टीचा फोटो घ्यायचा त्यावर फोकस नाही)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> मेगा पिक्सेल</translation>
 <translation id="6527303717912515753">शेअर करा</translation>
+<translation id="6617916774429601017">सर्व रेझोल्यूशन दाखवा</translation>
 <translation id="6631515515009660915">मिरर करणे बंद करा</translation>
 <translation id="6652737148136672975">ॲरो की वापरून कोपऱ्यातील स्थान हलवा</translation>
 <translation id="667999046851023355">दस्तऐवज</translation>
@@ -156,6 +159,7 @@
 <translation id="8425673304802773841">खाली टिल्ट करा</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8711011893539266636">मायक्रोफोन म्यूट टॉगल करा. म्यूट सुरू आहे</translation>
 <translation id="8712637175834984815">समजले</translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8732462232047530626">मेटाडेटाचे पूर्वावलोकन करा</translation>

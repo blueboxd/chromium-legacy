@@ -33,6 +33,7 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/input_method/input_method_persistence.h"
 #include "chrome/browser/ash/input_method/input_method_syncer.h"
+#include "chrome/browser/ash/login/consolidated_consent_field_trial.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -154,6 +155,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(::prefs::kConsumerAutoUpdateToggle, true);
 
   RegisterLocalStatePrefs(registry);
+  ash::consolidated_consent_field_trial::RegisterLocalStatePrefs(registry);
 }
 
 // static
@@ -608,6 +610,22 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   pref_change_registrar_.Add(::prefs::kParentAccessCodeConfig, callback);
   for (auto* copy_pref : kCopyToKnownUserPrefs)
     pref_change_registrar_.Add(copy_pref, callback);
+
+  // Re-enable OTA update when feature flag is disabled by owner.
+  auto* update_engine_client =
+      DBusThreadManager::Get()->GetUpdateEngineClient();
+  if (user_manager::UserManager::Get()->IsCurrentUserOwner() &&
+      !features::IsConsumerAutoUpdateToggleAllowed()) {
+    // Write into the platform will signal back so pref gets synced.
+    update_engine_client->ToggleFeature(
+        update_engine::kFeatureConsumerAutoUpdate, true);
+  } else {
+    // Otherwise, trigger a read + sync with signal.
+    update_engine_client->IsFeatureEnabled(
+        update_engine::kFeatureConsumerAutoUpdate,
+        base::BindOnce(&Preferences::OnIsConsumerAutoUpdateEnabled,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
@@ -618,20 +636,14 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
   // This causes OnIsSyncingChanged to be called when the value of
   // PrefService::IsSyncing() changes.
   prefs->AddObserver(this);
+  DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
+
   user_ = user;
   user_is_primary_ =
       user_manager::UserManager::Get()->GetPrimaryUser() == user_;
   InitUserPrefs(prefs);
 
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
-
-  auto* update_engine_client =
-      DBusThreadManager::Get()->GetUpdateEngineClient();
-  update_engine_client->AddObserver(this);
-  update_engine_client->IsFeatureEnabled(
-      update_engine::kFeatureConsumerAutoUpdate,
-      base::BindOnce(&Preferences::OnIsConsumerAutoUpdateEnabled,
-                     weak_ptr_factory_.GetWeakPtr()));
 
   UserSessionManager* session_manager = UserSessionManager::GetInstance();
   DCHECK(session_manager);

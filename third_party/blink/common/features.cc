@@ -474,8 +474,14 @@ const base::Feature kAllowSyncXHRInPageDismissal{
     "AllowSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Font enumeration and data access. https://crbug.com/535764
-const base::Feature kFontAccess{"FontAccess",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFontAccess {
+  "FontAccess",
+#if BUILDFLAG(IS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Kill switch for the Compute Pressure API. https://crbug.com/1067627
 const base::Feature kComputePressure{"ComputePressure",
@@ -984,7 +990,7 @@ const base::Feature kManagedConfiguration{"ManagedConfiguration",
 // have their rendering throttled on display:none or zero-area.
 const base::Feature kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes{
     "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the Interest Group API, i.e. if disabled, the
 // API exposure will be disabled regardless of the OT config.
@@ -1348,9 +1354,6 @@ const base::Feature kNoForcedFrameUpdatesForWebTests{
 const base::Feature kElementSuperRareData{"ElementSuperRareData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kClientHintsPartitionedCookies{
-    "ClientHintsPartitionedCookies", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, the memory limit used for tiles is scaled by
 // `kScaleTileMemoryLimitFactor`.
 const base::Feature kScaleTileMemoryLimit{"ScaleTileMemoryLimit",
@@ -1457,6 +1460,13 @@ const base::Feature kAllowSourceSwitchOnPausedVideoMediaStream{
 
 const base::Feature kDispatchPopstateSync{"DispatchPopstateSync",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Exposes non-standard stats in the WebRTC getStats() API.
+const base::Feature kWebRtcExposeNonStandardStats{
+    "WebRtc-ExposeNonStandardStats", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSubstringSetTreeForAttributeBuckets{
+    "SubstringSetTreeForAttributeBuckets", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

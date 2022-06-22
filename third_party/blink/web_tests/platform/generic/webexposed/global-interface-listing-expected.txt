@@ -2701,6 +2701,14 @@ interface FocusableMediaStreamTrack : MediaStreamTrack
     attribute @@toStringTag
     method constructor
     method focus
+interface FontData
+    attribute @@toStringTag
+    getter family
+    getter fullName
+    getter postscriptName
+    getter style
+    method blob
+    method constructor
 interface FontFace
     attribute @@toStringTag
     getter ascentOverride
@@ -2881,11 +2889,6 @@ interface HTMLAllCollection
     method namedItem
 interface HTMLAnchorElement : HTMLElement
     attribute @@toStringTag
-    getter attributionDestination
-    getter attributionExpiry
-    getter attributionReportTo
-    getter attributionSourceEventId
-    getter attributionSourcePriority
     getter attributionSrc
     getter charset
     getter coords
@@ -2915,11 +2918,6 @@ interface HTMLAnchorElement : HTMLElement
     getter username
     method constructor
     method toString
-    setter attributionDestination
-    setter attributionExpiry
-    setter attributionReportTo
-    setter attributionSourceEventId
-    setter attributionSourcePriority
     setter attributionSrc
     setter charset
     setter coords
@@ -8526,8 +8524,8 @@ interface SharedStorage
     method clear
     method constructor
     method delete
-    method runOperation
-    method runURLSelectionOperation
+    method run
+    method selectURL
     method set
 interface SharedWorker : EventTarget
     attribute @@toStringTag
@@ -11735,6 +11733,7 @@ namespace CSS
     method postMessage
     method print
     method prompt
+    method queryLocalFonts
     method queueMicrotask
     method releaseEvents
     method reportError

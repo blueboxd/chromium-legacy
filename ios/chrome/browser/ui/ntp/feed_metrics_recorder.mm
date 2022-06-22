@@ -10,8 +10,11 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
+#import "base/time/time.h"
 #import "components/feed/core/v2/public/common_enums.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
+#import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -48,6 +51,34 @@ enum class FeedLoadStreamStatus {
   kCannotLoadMoreNoNextPageToken = 19,
   // Highest enumerator. Recommended by Histogram metrics best practices.
   kMaxValue = kCannotLoadMoreNoNextPageToken,
+};
+
+// Values for the UMA ContentSuggestions.Feed.UserSettingsOnStart
+// histogram. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused. This must be kept
+// in sync with FeedUserSettingsOnStart in enums.xml.
+// Reports last known state of user settings which affect Feed content.
+// This includes WAA (whether activity is recorded), and DP (whether
+// Discover personalization is enabled).
+enum class UserSettingsOnStart {
+  // The Feed is disabled by enterprise policy.
+  kFeedNotEnabledByPolicy = 0,
+  // The Feed is enabled by enterprise policy, but the user has hidden and
+  // disabled the Feed, so other user settings beyond sign-in status are not
+  // available.
+  kFeedNotVisibleSignedOut = 1,
+  kFeedNotVisibleSignedIn = 2,
+  // The Feed is enabled, the user is not signed in.
+  kSignedOut = 3,
+  // The Feed is enabled, the user is signed in, and setting states are known.
+  kSignedInWaaOnDpOn = 4,
+  kSignedInWaaOnDpOff = 5,
+  kSignedInWaaOffDpOn = 6,
+  kSignedInWaaOffDpOff = 7,
+  // The Feed is enabled, but there is no recent Feed data, so user settings
+  // state is unknown.
+  kSignedInNoRecentData = 8,
+  kMaxValue = kSignedInNoRecentData,
 };
 
 namespace {
@@ -119,6 +150,18 @@ const char kDiscoverFeedUserActionManageHiddenTapped[] =
 const char kDiscoverFeedUserActionManageFollowingTapped[] =
     "ContentSuggestions.Feed.HeaderAction.ManageFollowing";
 
+// User action names for following operations.
+const char kFollowRequested[] = "ContentSuggestions.Follow.FollowRequested";
+const char kUnfollowRequested[] = "ContentSuggestions.Follow.UnfollowRequested";
+const char kSnackbarGoToFeedButtonTapped[] =
+    "ContentSuggestions.Follow.SnackbarGoToFeedButtonTapped";
+const char kSnackbarUndoButtonTapped[] =
+    "ContentSuggestions.Follow.SnackbarUndoButtonTapped";
+const char kSnackbarRetryFollowButtonTapped[] =
+    "ContentSuggestions.Follow.SnackbarRetryFollowButtonTapped";
+const char kSnackbarRetryUnfollowButtonTapped[] =
+    "ContentSuggestions.Follow.SnackbarRetryUnfollowButtonTapped";
+
 // User action names for management surface.
 const char kDiscoverFeedUserActionManagementTappedUnfollow[] =
     "ContentSuggestions.Feed.Management.TappedUnfollow";
@@ -135,6 +178,13 @@ const char kDiscoverFeedUserActionEngaged[] = "ContentSuggestions.Feed.Engaged";
 // User action indicating that the feed will refresh.
 const char kFeedWillRefresh[] = "ContentSuggestions.Feed.WillRefresh";
 
+// User action indicating that the Discover feed was selected.
+const char kDiscoverFeedSelected[] = "ContentSuggestions.Feed.Selected";
+
+// User action indicating that the Following feed was selected.
+const char kFollowingFeedSelected[] =
+    "ContentSuggestions.Feed.WebFeed.Selected";
+
 // User action triggered when the NTP view hierarchy was fixed after being
 // detected as broken.
 // TODO(crbug.com/1262536): Remove this when issue is fixed.
@@ -148,13 +198,21 @@ const char kFollowingFeedEngagementTypeHistogram[] =
 const char kAllFeedsEngagementTypeHistogram[] =
     "ContentSuggestions.Feed.AllFeeds.EngagementType";
 
-// Histogram name for a feed card shown at index.
+// Histogram name for a Discover feed card shown at index.
 const char kDiscoverFeedCardShownAtIndex[] =
     "NewTabPage.ContentSuggestions.Shown";
 
-// Histogram name for a feed card tapped at index.
+// Histogram name for a Following feed card shown at index.
+const char kFollowingFeedCardShownAtIndex[] =
+    "ContentSuggestions.Feed.WebFeed.Shown";
+
+// Histogram name for a Discover feed card tapped at index.
 const char kDiscoverFeedCardOpenedAtIndex[] =
     "NewTabPage.ContentSuggestions.Opened";
+
+// Histogram name for a Following feed card tapped at index.
+const char kFollowingFeedCardOpenedAtIndex[] =
+    "ContentSuggestions.Feed.WebFeed.Opened";
 
 // Histogram name to capture Feed Notice card impressions.
 const char kDiscoverFeedNoticeCardFulfilled[] =
@@ -208,6 +266,27 @@ const char kDiscoverFeedActivityLoggingEnabled[] =
 const char kDiscoverFeedBrokenNTPHierarchy[] =
     "ContentSuggestions.Feed.BrokenNTPHierarchy";
 
+// Histogram name for the Feed settings when the App is being start.
+const char kFeedUserSettingsOnStart[] =
+    "ContentSuggestions.Feed.UserSettingsOnStart";
+
+// Histogram names for logging followed publisher count after certain events.
+// After showing Following feed with content.
+const char kFollowCountFollowingContentShown[] =
+    "ContentSuggestions.Feed.WebFeed.FollowCount.ContentShown";
+// After showing Following feed without content.
+const char kFollowCountFollowingNoContentShown[] =
+    "ContentSuggestions.Feed.WebFeed.FollowCount.NoContentShown";
+// After following a channel.
+const char kFollowCountAfterFollow[] =
+    "ContentSuggestions.Feed.WebFeed.FollowCount.AfterFollow";
+// After unfollowing a channel.
+const char kFollowCountAfterUnfollow[] =
+    "ContentSuggestions.Feed.WebFeed.FollowCount.AfterUnfollow";
+// After engaging with the Following feed.
+const char kFollowCountWhenEngaged[] =
+    "ContentSuggestions.Feed.WebFeed.FollowCount.Engaged";
+
 // Minimum scrolling amount to record a FeedEngagementType::kFeedEngaged due to
 // scrolling.
 const int kMinScrollThreshold = 160;
@@ -217,6 +296,9 @@ const int kMinutesBetweenSessions = 5;
 
 // The max amount of cards in the Discover Feed.
 const int kMaxCardsInFeed = 50;
+
+// If cached user setting info is older than this, it will not be reported.
+constexpr base::TimeDelta kUserSettingsMaxAge = base::Days(14);
 }  // namespace
 
 @interface FeedMetricsRecorder ()
@@ -252,7 +334,7 @@ const int kMaxCardsInFeed = 50;
   }
 
   // Log scrolled into Discover feed.
-  if (self.selectedFeedType == FeedTypeDiscover &&
+  if ([self.feedControlDelegate selectedFeed] == FeedTypeDiscover &&
       !self.scrolledReportedDiscover) {
     UMA_HISTOGRAM_ENUMERATION(kDiscoverFeedEngagementTypeHistogram,
                               FeedEngagementType::kFeedScrolled);
@@ -260,7 +342,7 @@ const int kMaxCardsInFeed = 50;
   }
 
   // Log scrolled into Following feed.
-  if (self.selectedFeedType == FeedTypeFollowing &&
+  if ([self.feedControlDelegate selectedFeed] == FeedTypeFollowing &&
       !self.scrolledReportedFollowing) {
     UMA_HISTOGRAM_ENUMERATION(kFollowingFeedEngagementTypeHistogram,
                               FeedEngagementType::kFeedScrolled);
@@ -326,27 +408,6 @@ const int kMaxCardsInFeed = 50;
                                                   kTappedManageFollowing];
   base::RecordAction(
       base::UserMetricsAction(kDiscoverFeedUserActionManageFollowingTapped));
-}
-
-- (void)recordManagementTappedUnfollow {
-  [self recordDiscoverFeedUserActionHistogram:
-            FeedUserActionType::kTappedUnfollowOnManagementSurface];
-  base::RecordAction(
-      base::UserMetricsAction(kDiscoverFeedUserActionManagementTappedUnfollow));
-}
-
-- (void)recordManagementTappedRefollowAfterUnfollowOnSnackbar {
-  [self recordDiscoverFeedUserActionHistogram:
-            FeedUserActionType::kTappedRefollowAfterUnfollowOnSnackbar];
-  base::RecordAction(base::UserMetricsAction(
-      kDiscoverFeedUserActionManagementTappedRefollowAfterUnfollowOnSnackbar));
-}
-
-- (void)recordManagementTappedUnfollowTryAgainOnSnackbar {
-  [self recordDiscoverFeedUserActionHistogram:
-            FeedUserActionType::kTappedUnfollowTryAgainOnSnackbar];
-  base::RecordAction(base::UserMetricsAction(
-      kDiscoverFeedUserActionManagementTappedUnfollowTryAgainOnSnackbar));
 }
 
 - (void)recordDiscoverFeedVisibilityChanged:(BOOL)visible {
@@ -460,13 +521,27 @@ const int kMaxCardsInFeed = 50;
 }
 
 - (void)recordCardShownAtIndex:(int)index {
-  UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedCardShownAtIndex, index,
-                             kMaxCardsInFeed);
+  switch ([self.feedControlDelegate selectedFeed]) {
+    case FeedTypeDiscover:
+      UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedCardShownAtIndex, index,
+                                 kMaxCardsInFeed);
+      break;
+    case FeedTypeFollowing:
+      UMA_HISTOGRAM_EXACT_LINEAR(kFollowingFeedCardShownAtIndex, index,
+                                 kMaxCardsInFeed);
+  }
 }
 
 - (void)recordCardTappedAtIndex:(int)index {
-  UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedCardOpenedAtIndex, index,
-                             kMaxCardsInFeed);
+  switch ([self.feedControlDelegate selectedFeed]) {
+    case FeedTypeDiscover:
+      UMA_HISTOGRAM_EXACT_LINEAR(kDiscoverFeedCardOpenedAtIndex, index,
+                                 kMaxCardsInFeed);
+      break;
+    case FeedTypeFollowing:
+      UMA_HISTOGRAM_EXACT_LINEAR(kFollowingFeedCardOpenedAtIndex, index,
+                                 kMaxCardsInFeed);
+  }
 }
 
 - (void)recordNoticeCardShown:(BOOL)shown {
@@ -556,7 +631,205 @@ const int kMaxCardsInFeed = 50;
   base::RecordAction(base::UserMetricsAction(kFeedWillRefresh));
 }
 
+- (void)recordFeedSelected:(FeedType)feedType {
+  DCHECK(self.followDelegate);
+  switch (feedType) {
+    case FeedTypeDiscover:
+      [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
+                                                      kDiscoverFeedSelected];
+      base::RecordAction(base::UserMetricsAction(kDiscoverFeedSelected));
+      break;
+    case FeedTypeFollowing:
+      [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
+                                                      kFollowingFeedSelected];
+      base::RecordAction(base::UserMetricsAction(kFollowingFeedSelected));
+      NSUInteger followCount = [self.followDelegate followedPublisherCount];
+      if (followCount > 0 &&
+          [self.followDelegate doesFollowingFeedHaveContent]) {
+        [self recordFollowCount:followCount
+                   forLogReason:FollowCountLogReasonContentShown];
+      } else {
+        [self recordFollowCount:followCount
+                   forLogReason:FollowCountLogReasonNoContentShown];
+      }
+      break;
+  }
+}
+
+- (void)recordFollowCount:(NSUInteger)followCount
+             forLogReason:(FollowCountLogReason)logReason {
+  switch (logReason) {
+    case FollowCountLogReasonContentShown:
+      base::UmaHistogramSparse(kFollowCountFollowingContentShown, followCount);
+      break;
+    case FollowCountLogReasonNoContentShown:
+      base::UmaHistogramSparse(kFollowCountFollowingNoContentShown,
+                               followCount);
+      break;
+    case FollowCountLogReasonAfterFollow:
+      base::UmaHistogramSparse(kFollowCountAfterFollow, followCount);
+      break;
+    case FollowCountLogReasonAfterUnfollow:
+      base::UmaHistogramSparse(kFollowCountAfterUnfollow, followCount);
+      break;
+    case FollowCountLogReasonEngaged:
+      base::UmaHistogramSparse(kFollowCountWhenEngaged, followCount);
+      break;
+  }
+}
+
+- (void)recordFeedSettingsOnStartForEnterprisePolicy:(BOOL)enterprisePolicy
+                                         feedVisible:(BOOL)feedVisible
+                                            signedIn:(BOOL)signedIn
+                                          waaEnabled:(BOOL)waaEnabled
+                                         spywEnabled:(BOOL)spywEnabled
+                                     lastRefreshTime:
+                                         (base::Time)lastRefreshTime {
+  UserSettingsOnStart settings =
+      [self userSettingsOnStartForEnterprisePolicy:enterprisePolicy
+                                       feedVisible:feedVisible
+                                          signedIn:signedIn
+                                        waaEnabled:waaEnabled
+                                   lastRefreshTime:lastRefreshTime];
+  base::UmaHistogramEnumeration(kFeedUserSettingsOnStart, settings);
+}
+
+#pragma mark - Follow
+
+- (void)recordFollowRequestedWithType:(FollowRequestType)followRequestType {
+  switch (followRequestType) {
+    case FollowRequestType::kFollowRequestFollow:
+      base::RecordAction(base::UserMetricsAction(kFollowRequested));
+      break;
+    case FollowRequestType::kFollowRequestUnfollow:
+      base::RecordAction(base::UserMetricsAction(kUnfollowRequested));
+      break;
+  }
+}
+
+- (void)recordFollowFromMenu {
+  [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
+                                                  kTappedFollowButton];
+  base::RecordAction(base::UserMetricsAction("MobileMenuUnfollow"));
+}
+
+- (void)recordUnfollowFromMenu {
+  [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
+                                                  kTappedUnfollowButton];
+  base::RecordAction(base::UserMetricsAction("MobileMenuFollow"));
+}
+
+- (void)recordFollowConfirmationShownWithType:
+    (FollowConfirmationType)followConfirmationType {
+  UMA_HISTOGRAM_ENUMERATION(kDiscoverFeedUserActionHistogram,
+                            FeedUserActionType::kShowSnackbar);
+  switch (followConfirmationType) {
+    case FollowConfirmationType::kFollowSucceedSnackbarShown:
+      UMA_HISTOGRAM_ENUMERATION(kDiscoverFeedUserActionHistogram,
+                                FeedUserActionType::kShowFollowSucceedSnackbar);
+      break;
+    case FollowConfirmationType::kFollowErrorSnackbarShown:
+      UMA_HISTOGRAM_ENUMERATION(kDiscoverFeedUserActionHistogram,
+                                FeedUserActionType::kShowFollowFailedSnackbar);
+      break;
+    case FollowConfirmationType::kUnfollowSucceedSnackbarShown:
+      UMA_HISTOGRAM_ENUMERATION(
+          kDiscoverFeedUserActionHistogram,
+          FeedUserActionType::kShowUnfollowSucceedSnackbar);
+      break;
+    case FollowConfirmationType::kUnfollowErrorSnackbarShown:
+      UMA_HISTOGRAM_ENUMERATION(
+          kDiscoverFeedUserActionHistogram,
+          FeedUserActionType::kShowUnfollowFailedSnackbar);
+      break;
+  }
+}
+
+- (void)recordFollowSnackbarTappedWithAction:
+    (FollowSnackbarActionType)followSnackbarActionType {
+  switch (followSnackbarActionType) {
+    case FollowSnackbarActionType::kSnackbarActionGoToFeed:
+      [self recordDiscoverFeedUserActionHistogram:
+                FeedUserActionType::kTappedGoToFeedOnSnackbar];
+      base::RecordAction(
+          base::UserMetricsAction(kSnackbarGoToFeedButtonTapped));
+      break;
+    case FollowSnackbarActionType::kSnackbarActionUndo:
+      [self recordDiscoverFeedUserActionHistogram:
+                FeedUserActionType::kTappedRefollowAfterUnfollowOnSnackbar];
+      base::RecordAction(base::UserMetricsAction(kSnackbarUndoButtonTapped));
+      break;
+    case FollowSnackbarActionType::kSnackbarActionRetryFollow:
+      [self recordDiscoverFeedUserActionHistogram:
+                FeedUserActionType::kTappedFollowTryAgainOnSnackbar];
+      base::RecordAction(
+          base::UserMetricsAction(kSnackbarRetryFollowButtonTapped));
+      break;
+    case FollowSnackbarActionType::kSnackbarActionRetryUnfollow:
+      [self recordDiscoverFeedUserActionHistogram:
+                FeedUserActionType::kTappedUnfollowTryAgainOnSnackbar];
+      base::RecordAction(
+          base::UserMetricsAction(kSnackbarRetryUnfollowButtonTapped));
+      break;
+  }
+}
+
+- (void)recordManagementTappedUnfollow {
+  [self recordDiscoverFeedUserActionHistogram:
+            FeedUserActionType::kTappedUnfollowOnManagementSurface];
+  base::RecordAction(
+      base::UserMetricsAction(kDiscoverFeedUserActionManagementTappedUnfollow));
+}
+
+- (void)recordManagementTappedRefollowAfterUnfollowOnSnackbar {
+  [self recordDiscoverFeedUserActionHistogram:
+            FeedUserActionType::kTappedRefollowAfterUnfollowOnSnackbar];
+  base::RecordAction(base::UserMetricsAction(
+      kDiscoverFeedUserActionManagementTappedRefollowAfterUnfollowOnSnackbar));
+}
+
+- (void)recordManagementTappedUnfollowTryAgainOnSnackbar {
+  [self recordDiscoverFeedUserActionHistogram:
+            FeedUserActionType::kTappedUnfollowTryAgainOnSnackbar];
+  base::RecordAction(base::UserMetricsAction(
+      kDiscoverFeedUserActionManagementTappedUnfollowTryAgainOnSnackbar));
+}
+
 #pragma mark - Private
+
+// Returns the UserSettingsOnStart value based on the user settings.
+- (UserSettingsOnStart)
+    userSettingsOnStartForEnterprisePolicy:(BOOL)enterprisePolicy
+                               feedVisible:(BOOL)feedVisible
+                                  signedIn:(BOOL)signedIn
+                                waaEnabled:(BOOL)waaEnabled
+                           lastRefreshTime:(base::Time)lastRefreshTime {
+  if (!enterprisePolicy) {
+    return UserSettingsOnStart::kFeedNotEnabledByPolicy;
+  }
+
+  if (!feedVisible) {
+    if (signedIn) {
+      return UserSettingsOnStart::kFeedNotVisibleSignedIn;
+    }
+    return UserSettingsOnStart::kFeedNotVisibleSignedOut;
+  }
+
+  if (!signedIn) {
+    return UserSettingsOnStart::kSignedOut;
+  }
+
+  const base::TimeDelta delta = base::Time::Now() - lastRefreshTime;
+  if (delta >= base::TimeDelta() && delta <= kUserSettingsMaxAge) {
+    return UserSettingsOnStart::kSignedInNoRecentData;
+  }
+
+  if (waaEnabled) {
+    return UserSettingsOnStart::kSignedInWaaOnDpOff;
+  } else {
+    return UserSettingsOnStart::kSignedInWaaOffDpOff;
+  }
+}
 
 // Records histogram metrics for Discover feed user actions.
 - (void)recordDiscoverFeedUserActionHistogram:(FeedUserActionType)actionType {
@@ -601,19 +874,19 @@ const int kMaxCardsInFeed = 50;
                             FeedEngagementType::kFeedInteracted);
 
   // Log interaction for Discover feed.
-  if (self.selectedFeedType == FeedTypeDiscover) {
+  if ([self.feedControlDelegate selectedFeed] == FeedTypeDiscover) {
     UMA_HISTOGRAM_ENUMERATION(kDiscoverFeedEngagementTypeHistogram,
                               FeedEngagementType::kFeedInteracted);
   }
 
   // Log interaction for Following feed.
-  if (self.selectedFeedType == FeedTypeFollowing) {
+  if ([self.feedControlDelegate selectedFeed] == FeedTypeFollowing) {
     UMA_HISTOGRAM_ENUMERATION(kFollowingFeedEngagementTypeHistogram,
                               FeedEngagementType::kFeedInteracted);
   }
 }
 
-// Records simple engagement for the current |selectedFeedType|.
+// Records simple engagement for the current |selectedFeed|.
 - (void)recordEngagedSimple {
   // If neither feed has been engaged with, log "AllFeeds" simple engagement.
   if (!self.engagedSimpleReportedDiscover &&
@@ -623,7 +896,7 @@ const int kMaxCardsInFeed = 50;
   }
 
   // Log simple engagment for Discover feed.
-  if (self.selectedFeedType == FeedTypeDiscover &&
+  if ([self.feedControlDelegate selectedFeed] == FeedTypeDiscover &&
       !self.engagedSimpleReportedDiscover) {
     UMA_HISTOGRAM_ENUMERATION(kDiscoverFeedEngagementTypeHistogram,
                               FeedEngagementType::kFeedEngagedSimple);
@@ -631,7 +904,7 @@ const int kMaxCardsInFeed = 50;
   }
 
   // Log simple engagement for Following feed.
-  if (self.selectedFeedType == FeedTypeFollowing &&
+  if ([self.feedControlDelegate selectedFeed] == FeedTypeFollowing &&
       !self.engagedSimpleReportedFollowing) {
     UMA_HISTOGRAM_ENUMERATION(kFollowingFeedEngagementTypeHistogram,
                               FeedEngagementType::kFeedEngagedSimple);
@@ -639,7 +912,7 @@ const int kMaxCardsInFeed = 50;
   }
 }
 
-// Records engagement for the current |selectedFeedType|.
+// Records engagement for the currently selected feed.
 - (void)recordEngaged {
   // If neither feed has been engaged with, log "AllFeeds" engagement.
   if (!self.engagedReportedDiscover && !self.engagedReportedFollowing) {
@@ -648,7 +921,7 @@ const int kMaxCardsInFeed = 50;
   }
 
   // Log engagment for Discover feed.
-  if (self.selectedFeedType == FeedTypeDiscover &&
+  if ([self.feedControlDelegate selectedFeed] == FeedTypeDiscover &&
       !self.engagedReportedDiscover) {
     UMA_HISTOGRAM_ENUMERATION(kDiscoverFeedEngagementTypeHistogram,
                               FeedEngagementType::kFeedEngaged);
@@ -656,11 +929,15 @@ const int kMaxCardsInFeed = 50;
   }
 
   // Log engagement for Following feed.
-  if (self.selectedFeedType == FeedTypeFollowing &&
+  if ([self.feedControlDelegate selectedFeed] == FeedTypeFollowing &&
       !self.engagedReportedFollowing) {
     UMA_HISTOGRAM_ENUMERATION(kFollowingFeedEngagementTypeHistogram,
                               FeedEngagementType::kFeedEngaged);
     self.engagedReportedFollowing = YES;
+
+    // Log follow count when engaging with Following feed.
+    [self recordFollowCount:[self.followDelegate followedPublisherCount]
+               forLogReason:FollowCountLogReasonEngaged];
   }
 
   // TODO(crbug.com/1322640): Separate user action for Following feed

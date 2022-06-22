@@ -160,7 +160,15 @@ struct PopupView: View {
   }
 
   func listContent(geometry: GeometryProxy) -> some View {
-    ForEach(Array(zip(model.sections.indices, model.sections)), id: \.0) {
+    let layoutDirection =
+      (model.rtlContentAttribute == .unspecified)
+      ? (UIApplication.shared.userInterfaceLayoutDirection
+        == UIUserInterfaceLayoutDirection.leftToRight
+        ? LayoutDirection.leftToRight : LayoutDirection.rightToLeft)
+      : ((model.rtlContentAttribute == .forceLeftToRight)
+        ? LayoutDirection.leftToRight : LayoutDirection.rightToLeft)
+    
+    return ForEach(Array(zip(model.sections.indices, model.sections)), id: \.0) {
       sectionIndex, section in
 
       let sectionContents =
@@ -188,6 +196,7 @@ struct PopupView: View {
                 model, didTapTrailingButtonForRow: UInt(matchIndex),
                 inSection: UInt(sectionIndex))
             },
+            uiConfiguration: uiConfiguration,
             shouldDisplayCustomSeparator: shouldDisplayCustomSeparator
           )
           .id(indexPath)
@@ -196,7 +205,9 @@ struct PopupView: View {
           .listRowBackground(Color.clear)
           .accessibilityElement(children: .combine)
           .accessibilityIdentifier(
-            OmniboxPopupAccessibilityIdentifierHelper.accessibilityIdentifierForRow(at: indexPath))
+            OmniboxPopupAccessibilityIdentifierHelper.accessibilityIdentifierForRow(at: indexPath)
+          )
+          .environment(\.layoutDirection, layoutDirection)
         }
         .onDelete { indexSet in
           for matchIndex in indexSet {
@@ -243,46 +254,47 @@ struct PopupView: View {
     .concat(ScrollOnChangeModifier(value: $model.sections, action: onNewSections))
     .concat(ListStyleModifier())
     .concat(EnvironmentValueModifier(\.defaultMinListHeaderHeight, 0))
+    .concat(omniboxPaddingModifier)
 
     GeometryReader { geometry in
-      if shouldSelfSize {
-        let selfSizingListModifier =
-          commonListModifier
-          .concat(omniboxPaddingModifier)
-        ZStack(alignment: .top) {
-          listBackground.frame(height: selfSizingListHeight)
-          SelfSizingList(
-            bottomMargin: selfSizingListBottomMargin,
-            listModifier: selfSizingListModifier,
-            content: {
-              listContent(geometry: geometry)
-            },
-            emptySpace: {
-              PopupEmptySpaceView()
+      ZStack(alignment: .top) {
+        listBackground.frame(height: selfSizingListHeight)
+        if shouldSelfSize {
+          ZStack(alignment: .top) {
+            SelfSizingList(
+              bottomMargin: selfSizingListBottomMargin,
+              listModifier: commonListModifier,
+              content: {
+                listContent(geometry: geometry)
+              },
+              emptySpace: {
+                PopupEmptySpaceView()
+              }
+            )
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .onPreferenceChange(SelfSizingListHeightPreferenceKey.self) { height in
+              selfSizingListHeight = height
             }
-          )
-          .frame(width: geometry.size.width, height: geometry.size.height)
-          .onPreferenceChange(SelfSizingListHeightPreferenceKey.self) { height in
-            selfSizingListHeight = height
+            bottomSeparator.offset(x: 0, y: selfSizingListHeight ?? 0)
           }
+        } else {
+          List {
+            listContent(geometry: geometry)
+          }
+          // This fixes list section header internal representation from overlapping safe areas.
+          .padding([.leading, .trailing], 0.2)
+          .modifier(commonListModifier)
+          .ignoresSafeArea(.keyboard)
+          .ignoresSafeArea(.container, edges: [.leading, .trailing])
+          .frame(width: geometry.size.width, height: geometry.size.height)
         }
-        bottomSeparator.offset(x: 0, y: selfSizingListHeight ?? 0)
-      } else {
-        List {
-          listContent(geometry: geometry)
-        }
-        // This fixes list section header internal representation from overlapping safe areas.
-        .padding([.leading, .trailing], 0.2)
-        .background(listBackground)
-        .modifier(commonListModifier)
-        .ignoresSafeArea(.keyboard)
-        .frame(width: geometry.size.width, height: geometry.size.height)
       }
     }
   }
 
   var body: some View {
-    listView.onAppear(perform: onAppear)
+    listView
+      .onAppear(perform: onAppear)
   }
 
   @ViewBuilder
@@ -328,23 +340,32 @@ struct PopupView: View {
     }
   }
 
+  @Environment(\.layoutDirection) var layoutDirection: LayoutDirection
+
   /// Returns a `ViewModifier` to correctly space the sides of the list based
   /// on the current omnibox spacing
   var omniboxPaddingModifier: some ViewModifier {
     let leadingSpace: CGFloat
     let trailingSpace: CGFloat
-    if sizeClass == .compact {
+    let leadingHorizontalMargin: CGFloat
+    let trailingHorizontalMargin: CGFloat
+    switch popupUIVariation {
+    case .one:
       leadingSpace = 0
       trailingSpace = 0
-    } else {
-      leadingSpace = uiConfiguration.omniboxLeadingSpace
-      trailingSpace = uiConfiguration.omniboxTrailingSpace
+      leadingHorizontalMargin = 0
+      trailingHorizontalMargin = 0
+    case .two:
+      leadingSpace = uiConfiguration.omniboxLeadingSpace - Dimensions.VariationTwo.defaultInset
+      trailingSpace =
+        (shouldSelfSize && sizeClass != .compact
+          ? uiConfiguration.omniboxTrailingSpace : uiConfiguration.safeAreaTrailingSpace)
+        - Dimensions.VariationTwo.defaultInset
+      leadingHorizontalMargin = 0
+      trailingHorizontalMargin = sizeClass == .compact ? kContractedLocationBarHorizontalMargin : 0
     }
-    let inset: CGFloat =
-      (popupUIVariation == .one || sizeClass == .compact)
-      ? 0 : -Dimensions.VariationTwo.defaultInset
-    return PaddingModifier([.leading], leadingSpace + inset).concat(
-      PaddingModifier([.trailing], trailingSpace + inset))
+    return PaddingModifier([.leading], leadingSpace + leadingHorizontalMargin).concat(
+      PaddingModifier([.trailing], trailingSpace + trailingHorizontalMargin))
   }
 
   var listBackground: some View {
@@ -408,7 +429,9 @@ struct PopupView: View {
 
   func onNewSections(sections: [PopupMatchSection], scrollProxy: ScrollViewProxy) {
     // Scroll to the very top of the list.
-    scrollProxy.scrollTo(IndexPath(row: 0, section: 0), anchor: UnitPoint(x: 0, y: -.infinity))
+    if !sections.isEmpty || !sections.first!.matches.isEmpty {
+      scrollProxy.scrollTo(IndexPath(row: 0, section: 0), anchor: UnitPoint(x: 0, y: -.infinity))
+    }
   }
 }
 
@@ -421,6 +444,12 @@ struct PopupView_Previews: PreviewProvider {
         uiConfiguration: PopupUIConfiguration(
           toolbarConfiguration: ToolbarConfiguration(style: .NORMAL))
       )
+
+    sample.environment(\.popupUIVariation, .one)
+      .environment(\.locale, .init(identifier: "ar"))
+
+    sample.environment(\.popupUIVariation, .two)
+      .environment(\.locale, .init(identifier: "ar"))
 
     sample.environment(\.popupUIVariation, .one)
     sample.environment(\.popupUIVariation, .two)

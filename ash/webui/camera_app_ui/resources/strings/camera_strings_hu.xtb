@@ -32,6 +32,7 @@
 <translation id="2134029355740465625">Videobeállítások</translation>
 <translation id="2144806332417375165">Egyedi videóparaméterek</translation>
 <translation id="2175927920773552910">QR-kód</translation>
+<translation id="2244252133441425811">FPS-választó engedélyezése a videóknál</translation>
 <translation id="2271433936731426666">Teljes méretű videó-pillanatkép engedélyezése</translation>
 <translation id="229579744168541441">Exportálás lemezre</translation>
 <translation id="2320741269052147773">Pásztázás balra</translation>
@@ -81,6 +82,7 @@
 <translation id="4445542136948522167">Fotókészítés leállítása</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> megapixel</translation>
 <translation id="4570032796877367747">Elülső kamera</translation>
+<translation id="4620818268515773682">Némítsa el a mikrofont. A némítás ki van kapcsolva.</translation>
 <translation id="4628948037717959914">Fénykép</translation>
 <translation id="4649291346448517080">Nem sikerült menteni a fájlt</translation>
 <translation id="4695379108709712600">Mozgatás felfelé</translation>
@@ -118,6 +120,7 @@
 Ha visszajelzése a kép vagy a videó minőségével kapcsolatos, kérjük, mellékeljen valamilyen mintafotót vagy -videót, és ismertesse a problémát. (Például túl sötét a fotó, vagy a kép tárgya nincs fókuszban.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> – <ph name="WIDTH" /> × <ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapixel</translation>
 <translation id="6527303717912515753">Megosztás</translation>
+<translation id="6617916774429601017">Minden felbontás megjelenítése</translation>
 <translation id="6631515515009660915">Tükrözés ki</translation>
 <translation id="6652737148136672975">A sarok pozícióját a nyílbillentyűkkel mozgathatja</translation>
 <translation id="667999046851023355">Dokumentum</translation>
@@ -156,6 +159,7 @@ Ha visszajelzése a kép vagy a videó minőségével kapcsolatos, kérjük, mel
 <translation id="8425673304802773841">Billentés lefelé</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" /> × <ph name="HEIGHT" />)</translation>
+<translation id="8711011893539266636">Némítsa el a mikrofont. A némítás be van kapcsolva.</translation>
 <translation id="8712637175834984815">Sikerült</translation>
 <translation id="8730621377337864115">Kész</translation>
 <translation id="8732462232047530626">Metaadatok előnézete</translation>

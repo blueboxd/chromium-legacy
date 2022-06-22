@@ -25,12 +25,12 @@
 #include "chrome/browser/ash/vm_starting_observer.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/anomaly_detector/anomaly_detector.pb.h"
 #include "chromeos/dbus/anomaly_detector/anomaly_detector_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -154,9 +154,9 @@ class CrostiniFileChangeObserver : public base::CheckedObserver {
 // only the Concierge name is exposed outside of here.
 class CrostiniManager : public KeyedService,
                         public chromeos::AnomalyDetectorClient::Observer,
-                        public chromeos::ConciergeClient::VmObserver,
-                        public chromeos::ConciergeClient::ContainerObserver,
-                        public chromeos::CiceroneClient::Observer,
+                        public ash::ConciergeClient::VmObserver,
+                        public ash::ConciergeClient::ContainerObserver,
+                        public ash::CiceroneClient::Observer,
                         public chromeos::NetworkStateHandlerObserver,
                         public chromeos::PowerManagerClient::Observer {
  public:

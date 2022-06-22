@@ -7,8 +7,12 @@
 #include <string>
 #include <utility>
 
+#include "ash/shell.h"
 #include "ash/webui/os_feedback_ui/mojom/os_feedback_ui.mojom.h"
 #include "base/bind.h"
+#include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -30,6 +34,8 @@
 #include "extensions/browser/api/feedback_private/feedback_service.h"
 #include "net/base/network_change_notifier.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/aura/window.h"
+#include "ui/snapshot/snapshot.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -39,6 +45,15 @@ namespace {
 feedback::FeedbackUploader* GetFeedbackUploaderForContext(
     content::BrowserContext* context) {
   return feedback::FeedbackUploaderFactoryChrome::GetForBrowserContext(context);
+}
+
+void TakeScreenshot(
+    base::OnceCallback<void(scoped_refptr<base::RefCountedMemory>)> callback) {
+  aura::Window* primary_window = ash::Shell::GetPrimaryRootWindow();
+  if (primary_window) {
+    gfx::Rect rect = primary_window->bounds();
+    ui::GrabWindowSnapshotAsyncPNG(primary_window, rect, std::move(callback));
+  }
 }
 
 }  // namespace
@@ -57,6 +72,10 @@ ChromeOsFeedbackDelegate::ChromeOsFeedbackDelegate(
     Profile* profile,
     scoped_refptr<extensions::FeedbackService> feedback_service)
     : profile_(profile), feedback_service_(feedback_service) {
+  // TODO(xiangdongkong): Take screenshot first, then open the feedback app.
+  TakeScreenshot(base::BindOnce(&ChromeOsFeedbackDelegate::OnScreenshotTaken,
+                                weak_ptr_factory_.GetWeakPtr()));
+
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (browser) {
     // Save the last active page url before opening the feedback tool.
@@ -85,6 +104,19 @@ absl::optional<std::string> ChromeOsFeedbackDelegate::GetSignedInUserEmail()
       .email;
 }
 
+void ChromeOsFeedbackDelegate::GetScreenshotPng(
+    GetScreenshotPngCallback callback) {
+  if (screenshot_png_data_ && screenshot_png_data_.get()) {
+    std::vector<uint8_t> data(
+        screenshot_png_data_->data(),
+        screenshot_png_data_->data() + screenshot_png_data_->size());
+    std::move(callback).Run(data);
+  } else {
+    std::vector<uint8_t> empty_data;
+    std::move(callback).Run(empty_data);
+  }
+}
+
 void ChromeOsFeedbackDelegate::SendReport(
     os_feedback_ui::mojom::ReportPtr report,
     SendReportCallback callback) {
@@ -110,6 +142,12 @@ void ChromeOsFeedbackDelegate::SendReport(
     feedback_data->set_page_url(feedback_context->page_url.value().spec());
   }
 
+  if (report->include_screenshot && screenshot_png_data_ &&
+      screenshot_png_data_.get()) {
+    feedback_data->set_image(std::string(screenshot_png_data_->front_as<char>(),
+                                         screenshot_png_data_->size()));
+  }
+
   feedback_service_->SendFeedback(
       feedback_params, feedback_data,
       base::BindOnce(&ChromeOsFeedbackDelegate::OnSendFeedbackDone,
@@ -121,6 +159,15 @@ void ChromeOsFeedbackDelegate::OnSendFeedbackDone(SendReportCallback callback,
   const SendReportStatus send_status =
       status ? SendReportStatus::kDelayed : SendReportStatus::kSuccess;
   std::move(callback).Run(send_status);
+}
+
+void ChromeOsFeedbackDelegate::OnScreenshotTaken(
+    scoped_refptr<base::RefCountedMemory> data) {
+  if (data && data.get()) {
+    screenshot_png_data_ = std::move(data);
+  } else {
+    LOG(ERROR) << "failed to take screenshot.";
+  }
 }
 
 }  // namespace ash

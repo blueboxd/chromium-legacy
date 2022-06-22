@@ -16,7 +16,7 @@ import SwiftUI
   ) {
     self.link = link
     super.init(
-      name: name, imageName: imageName, accessibilityIdentifier: accessibilityIdentifier,
+      name: name, image: .name(imageName), accessibilityIdentifier: accessibilityIdentifier,
       enterpriseDisabled: false,
       handler: handler)
   }

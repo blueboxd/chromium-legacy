@@ -86,12 +86,12 @@ namespace crostini {
 
 namespace {
 
-chromeos::CiceroneClient* GetCiceroneClient() {
-  return chromeos::CiceroneClient::Get();
+ash::CiceroneClient* GetCiceroneClient() {
+  return ash::CiceroneClient::Get();
 }
 
-chromeos::ConciergeClient* GetConciergeClient() {
-  return chromeos::ConciergeClient::Get();
+ash::ConciergeClient* GetConciergeClient() {
+  return ash::ConciergeClient::Get();
 }
 
 chromeos::AnomalyDetectorClient* GetAnomalyDetectorClient() {
@@ -367,7 +367,7 @@ void CrostiniManager::CrostiniRestarter::Restart() {
   if (!CrostiniFeatures::Get()->IsAllowedNow(profile_)) {
     LOG(ERROR) << "Crostini UI not allowed for profile "
                << profile_->GetProfileUserName();
-    std::move(completed_callback_).Run(CrostiniResult::NOT_ALLOWED);
+    FinishRestart(CrostiniResult::NOT_ALLOWED);
     return;
   }
 
@@ -2867,6 +2867,9 @@ void CrostiniManager::OnCreateLxdContainer(
                                               std::move(callback));
       break;
     case vm_tools::cicerone::CreateLxdContainerResponse::EXISTS:
+      // Containers are registered in OnContainerCreated() when created via the
+      // UI. But for any created manually also register now (crbug.com/1330168).
+      AddNewLxdContainerToPrefs(profile_, container_id);
       std::move(callback).Run(CrostiniResult::SUCCESS);
       break;
     default:

@@ -8,6 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -22,8 +23,26 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 
+#if BUILDFLAG(IS_LINUX)
+#include "base/environment.h"
+#include "base/nix/xdg_util.h"
+#include "base/strings/string_util.h"
+#elif BUILDFLAG(IS_WIN)
+#include <windows.h>
+
+#include <knownfolders.h>
+#include <shlobj.h>
+#include <wtsapi32.h>
+
+#include "base/win/scoped_co_mem.h"
+#include "base/win/scoped_handle.h"
+#endif
+
 namespace remoting {
 namespace {
+
+// Content of file doesn't matter so we just write an empty string.
+static constexpr char kExtensionWakeupFileContent[] = "";
 
 // Returns a list of directories that different Chrome channels might use to
 // watch for file changes for firing the onRemoteSessionStateChange event on the
@@ -57,12 +76,17 @@ std::vector<base::FilePath> GetRemoteStateChangeDirPaths() {
   std::vector<base::FilePath> dirs;
 
 #if BUILDFLAG(IS_LINUX)
+  // See: chrome/common/chrome_paths_linux.cc
+  auto env = base::Environment::Create();
   base::FilePath base_path;
-  if (!base::PathService::Get(base::DIR_HOME, &base_path)) {
-    LOG(ERROR) << "Failed to get local app data dir";
-    return dirs;
+  std::string chrome_config_home_str;
+  if (env->GetVar("CHROME_CONFIG_HOME", &chrome_config_home_str) &&
+      base::IsStringUTF8(chrome_config_home_str)) {
+    base_path = base::FilePath::FromUTF8Unsafe(chrome_config_home_str);
+  } else {
+    base_path = base::nix::GetXDGDirectory(
+        env.get(), base::nix::kXdgConfigHomeEnvVar, base::nix::kDotConfigDir);
   }
-  base_path = base_path.Append(".config");
   dirs.push_back(base_path.Append("google-chrome").Append(kStateChangeDirName));
   dirs.push_back(
       base_path.Append("google-chrome-beta").Append(kStateChangeDirName));
@@ -70,22 +94,46 @@ std::vector<base::FilePath> GetRemoteStateChangeDirPaths() {
       base_path.Append("google-chrome-unstable").Append(kStateChangeDirName));
   dirs.push_back(base_path.Append("chromium").Append(kStateChangeDirName));
 #elif BUILDFLAG(IS_WIN)
-  base::FilePath base_path;
-  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &base_path)) {
-    LOG(ERROR) << "Failed to get local app data dir";
+  // See: chrome/common/chrome_paths_win.cc
+  constexpr base::FilePath::CharType kUserDataDirName[] =
+      FILE_PATH_LITERAL("User Data");
+
+  // Get the LocalAppData path for the current logged in user. We can't just use
+  // base::PathService since it returns LocalAppData for administrator on the
+  // desktop process.
+  HANDLE user_token = nullptr;
+  if (!WTSQueryUserToken(WTS_CURRENT_SESSION, &user_token)) {
+    PLOG(ERROR) << "Failed to get current user token";
     return dirs;
   }
+  base::win::ScopedHandle scoped_user_token(user_token);
+  base::win::ScopedCoMem<wchar_t> local_app_data_path_buf;
+  if (!SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, /* dwFlags= */ 0,
+                                      scoped_user_token.get(),
+                                      &local_app_data_path_buf))) {
+    PLOG(ERROR) << "SHGetKnownFolderPath failed";
+    return dirs;
+  }
+
+  base::FilePath base_path = base::FilePath(local_app_data_path_buf.get());
   base::FilePath base_path_google = base_path.Append(L"Google");
-  dirs.push_back(
-      base_path_google.Append(L"Chrome").Append(kStateChangeDirName));
-  dirs.push_back(
-      base_path_google.Append(L"Chrome Beta").Append(kStateChangeDirName));
-  dirs.push_back(
-      base_path_google.Append(L"Chrome Dev").Append(kStateChangeDirName));
-  dirs.push_back(
-      base_path_google.Append(L"Chrome SxS").Append(kStateChangeDirName));
-  dirs.push_back(base_path.Append(L"Chromium").Append(kStateChangeDirName));
+  dirs.push_back(base_path_google.Append(L"Chrome")
+                     .Append(kUserDataDirName)
+                     .Append(kStateChangeDirName));
+  dirs.push_back(base_path_google.Append(L"Chrome Beta")
+                     .Append(kUserDataDirName)
+                     .Append(kStateChangeDirName));
+  dirs.push_back(base_path_google.Append(L"Chrome Dev")
+                     .Append(kUserDataDirName)
+                     .Append(kStateChangeDirName));
+  dirs.push_back(base_path_google.Append(L"Chrome SxS")
+                     .Append(kUserDataDirName)
+                     .Append(kStateChangeDirName));
+  dirs.push_back(base_path.Append(L"Chromium")
+                     .Append(kUserDataDirName)
+                     .Append(kStateChangeDirName));
 #elif BUILDFLAG(IS_MAC)
+  // See: chrome/common/chrome_paths_mac.mm
   base::FilePath base_path;
   if (!base::PathService::Get(base::DIR_APP_DATA, &base_path)) {
     LOG(ERROR) << "Failed to get app data dir";
@@ -152,8 +200,11 @@ void RemoteWebAuthnExtensionNotifier::Core::WakeUpExtension() {
     }
     auto file_path = dir.Append(kRemoteWebAuthnExtensionId);
     VLOG(1) << "Writing extension wakeup file: " << file_path;
-    // Content of file doesn't matter so we just write an empty string.
-    base::WriteFile(file_path, "");
+    base::File file(file_path,
+                    base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+    file.WriteAtCurrentPos(kExtensionWakeupFileContent,
+                           sizeof(kExtensionWakeupFileContent));
+    file.Flush();
   }
 }
 

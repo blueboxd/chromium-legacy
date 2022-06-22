@@ -15,6 +15,11 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
 
+namespace views {
+class ImageView;
+class Label;
+}  // namespace views
+
 // Bubble dialog that is used in the FedCM flow. It creates a dialog with an
 // account chooser for the user, and it changes the content of that dialog as
 // user moves through the FedCM flow steps.
@@ -37,7 +42,7 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
  private:
   // Returns a View containing the logo of the identity provider and the title
   // of the bubble, properly formatted.
-  std::unique_ptr<views::View> CreateHeaderView();
+  std::unique_ptr<views::View> CreateHeaderView(const std::u16string& title);
 
   void CloseBubble();
 
@@ -70,6 +75,10 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
                              const gfx::Image& image,
                              const image_fetcher::RequestMetadata& metadata);
 
+  // Called when the brand icon image has beend downloaded.
+  void OnBrandImageFetched(const gfx::Image& image,
+                           const image_fetcher::RequestMetadata& metadata);
+
   // Called when the user clicks on the privacy policy or terms of service URL.
   // Opens the URL in a new tab.
   void OnLinkClicked(const GURL& gurl);
@@ -87,6 +96,9 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
   // Shows 'verifying' once the user has clicked to continue with a given
   // account.
   void ShowVerifySheet(const content::IdentityRequestAccount& account);
+
+  // Removes all children except for `header_view_`.
+  void RemoveNonHeaderChildViews();
 
   // The ImageFetcher used to fetch the account pictures for FedCM.
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
@@ -108,11 +120,20 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
   // The privacy policy and terms of service URLs
   const content::ClientIdData client_data_;
 
-  // The bubble's icon, shown at the top left.
-  gfx::ImageSkia bubble_icon_;
+  // View containing the logo of the identity provider and the title.
+  views::View* header_view_{nullptr};
 
-  // The bubble's current title.
-  std::u16string title_;
+  // View containing the bubble icon.
+  views::ImageView* bubble_icon_view_{nullptr};
+
+  // View containing the bubble title.
+  views::Label* title_label_{nullptr};
+
+  // View containing the continue button.
+  views::View* continue_button_{nullptr};
+
+  // Used to differentiate UI dismissal scenarios.
+  bool verify_sheet_shown_{false};
 
   // Used to ensure that callbacks are not run if the AccountSelectionBubbleView
   // is destroyed.

@@ -29,8 +29,8 @@
 #include "ash/wm/desks/persistent_desks_bar_button.h"
 #include "ash/wm/desks/persistent_desks_bar_controller.h"
 #include "ash/wm/desks/scroll_arrow_button.h"
-#include "ash/wm/desks/templates/desks_templates_metrics_util.h"
-#include "ash/wm/desks/templates/desks_templates_presenter.h"
+#include "ash/wm/desks/templates/saved_desk_metrics_util.h"
+#include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -52,6 +52,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/event_monitor.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -219,7 +220,7 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
       const bool should_show_templates_ui =
           saved_desk_util::IsSavedDesksEnabled() &&
           !bar_view_->overview_grid()->overview_session()->is_shutting_down() &&
-          DesksTemplatesPresenter::Get()->should_show_templates_ui();
+          SavedDeskPresenter::Get()->should_show_templates_ui();
       auto* zero_state_desks_templates_button =
           bar_view_->zero_state_desks_templates_button();
       const gfx::Size zero_state_desks_templates_button_size =
@@ -328,6 +329,12 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  if (features::IsDarkLightModeEnabled()) {
+    SetBorder(std::make_unique<views::HighlightBorder>(
+        /*corner_radius=*/0, views::HighlightBorder::Type::kHighlightBorder2,
+        /*use_light_colors=*/false));
+  }
+
   SetBackground(
       views::CreateSolidBackground(AshColorProvider::Get()->GetShieldLayerColor(
           AshColorProvider::ShieldLayerType::kShield80)));
@@ -379,20 +386,22 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
                               base::Unretained(this),
                               DesksCreationRemovalSource::kButton)));
   if (saved_desk_util::IsSavedDesksEnabled()) {
+    int button_text_id = IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON_LIBRARY;
+    if (!saved_desk_util::AreDesksTemplatesEnabled())
+      button_text_id = IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON_SAVED_FOR_LATER;
+
     expanded_state_desks_templates_button_ =
         scroll_view_contents_->AddChildView(
             std::make_unique<ExpandedDesksBarButton>(
                 this, &kDesksTemplatesIcon,
-                l10n_util::GetStringUTF16(
-                    IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON),
+                l10n_util::GetStringUTF16(button_text_id),
                 /*initially_enabled=*/true,
                 base::BindRepeating(
                     &DesksBarView::OnDesksTemplatesButtonPressed,
                     base::Unretained(this))));
     zero_state_desks_templates_button_ = scroll_view_contents_->AddChildView(
         std::make_unique<ZeroStateIconButton>(
-            &kDesksTemplatesIcon,
-            l10n_util::GetStringUTF16(IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON),
+            &kDesksTemplatesIcon, l10n_util::GetStringUTF16(button_text_id),
             base::BindRepeating(&DesksBarView::OnDesksTemplatesButtonPressed,
                                 base::Unretained(this))));
   }
@@ -547,6 +556,9 @@ void DesksBarView::HandleLongPressEvent(DeskMiniView* mini_view,
   gfx::PointF location = event.target()->GetScreenLocationF(event);
   InitDragDesk(mini_view, location);
   StartDragDesk(mini_view, location, event.IsMouseEvent());
+
+  if (features::IsDesksCloseAllEnabled())
+    mini_view->OpenContextMenu(ui::MENU_SOURCE_LONG_PRESS);
 }
 
 void DesksBarView::HandleDragEvent(DeskMiniView* mini_view,
@@ -555,6 +567,9 @@ void DesksBarView::HandleDragEvent(DeskMiniView* mini_view,
   // animating to be removed.
   if (!drag_proxy_ || mini_view->is_animating_to_remove())
     return;
+
+  if (features::IsDesksCloseAllEnabled())
+    mini_view->MaybeCloseContextMenu();
 
   gfx::PointF location = event.target()->GetScreenLocationF(event);
 
@@ -993,7 +1008,7 @@ void DesksBarView::UpdateDesksTemplatesButtonVisibility() {
     return;
 
   const bool should_show_ui =
-      DesksTemplatesPresenter::Get()->should_show_templates_ui();
+      SavedDeskPresenter::Get()->should_show_templates_ui();
   const bool is_zero_state = IsZeroState();
 
   zero_state_desks_templates_button_->SetVisible(should_show_ui &&

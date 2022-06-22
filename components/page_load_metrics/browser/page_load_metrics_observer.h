@@ -105,8 +105,6 @@ struct PageRenderData {
 
 // Information related to layout shift normalization for different strategies.
 struct NormalizedCLSData {
-  NormalizedCLSData() = default;
-
   // Maximum CLS of session windows. The gap between two consecutive shifts is
   // not bigger than 1000ms and the maximum window size is 5000ms.
   float session_windows_gap1000ms_max5000ms_max_cls = 0.0;
@@ -221,6 +219,8 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
   void OnMainFrameIntersectionRectChanged(
       content::RenderFrameHost* rfh,
       const gfx::Rect& main_frame_intersection_rect) override {}
+  void OnMainFrameViewportRectChanged(
+      const gfx::Rect& main_frame_viewport_rect) override {}
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const mojom::PageLoadTiming& timing) override;
   void OnComplete(const mojom::PageLoadTiming& timing) override {}

@@ -24,6 +24,13 @@ const char kDisableModalAnimations[] = "disable-modal-animations";
 const char kShowMacOverlayBorders[] = "show-mac-overlay-borders";
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+// Enable resources file sharing with ash-chrome.
+// This flag is enabled when feature::kLacrosResourcesFileSharing is set and
+// ash-side operation is successfully done.
+const char kEnableResourcesFileSharing[] = "enable-resouces-file-sharing";
+#endif
+
 // Disables layer-edge anti-aliasing in the compositor.
 const char kDisableCompositedAntialiasing[] = "disable-composited-antialiasing";
 

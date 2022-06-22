@@ -4,43 +4,57 @@
 
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_button.h"
 
+#include <memory>
 #include <string>
+#include <vector>
 
+#include "base/bind.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_button_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/page_navigator.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/dialog_model.h"
+#include "ui/base/models/dialog_model_menu_model_adapter.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 namespace {
 constexpr float kBorderRadius = 4.5f;
 constexpr float kButtonRadius = 5.0f;
 constexpr float kBorderThickness = 2.0f;
+
+// This value comes from tab_group_header.cc as kEmptyChipSize. Since this
+// button and the tab_group_header are rendered on different surfaces, keep the
+// value here in case we want to change one but not the other.
+constexpr float kCircleRadius = 14.0f;
 }  // namespace
 
-SavedTabGroupButton::SavedTabGroupButton(PressedCallback callback,
-                                         const std::u16string& title,
+SavedTabGroupButton::SavedTabGroupButton(const SavedTabGroup& group,
+                                         content::PageNavigator* page_navigator,
+                                         PressedCallback callback,
                                          bool is_group_in_tabstrip,
-                                         tab_groups::TabGroupColorId color,
                                          bool animations_enabled)
-    : MenuButton(std::move(callback), title),
-      tab_group_color_id_(color),
-      is_group_in_tabstrip_(is_group_in_tabstrip) {
-  SetText(title);
-  SetAccessibleName(title);
+    : MenuButton(std::move(callback), group.title),
+      tab_group_color_id_(group.color),
+      is_group_in_tabstrip_(is_group_in_tabstrip),
+      context_menu_controller_(group.saved_tabs, page_navigator) {
+  SetText(group.title);
+  SetAccessibleName(group.title);
   SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
 
   // Since the theme provider is not currently available when instantiated the
@@ -66,8 +80,17 @@ SavedTabGroupButton::SavedTabGroupButton(PressedCallback callback,
     show_animation_->Show();
   }
 
-  SetSize(gfx::Size(GetPreferredSize().width(),
-                    GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT)));
+  int button_height = GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT);
+  if (GetText().empty()) {
+    // When the text is empty force the button to have square dimensions.
+    // Likewise, we already have a constant that denotes the standard button
+    // height for all elements in the bookmarks bar. As such, we will use this
+    // constant for the width of the button to create a square that will
+    // comfortably fit in the bookmarks bar.
+    SetPreferredSize(gfx::Size(button_height, button_height));
+  }
+
+  set_context_menu_controller(&context_menu_controller_);
 }
 
 SavedTabGroupButton::~SavedTabGroupButton() = default;
@@ -93,6 +116,7 @@ void SavedTabGroupButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void SavedTabGroupButton::OnPaintBackground(gfx::Canvas* canvas) {
   const ui::ThemeProvider* const tp = GetThemeProvider();
+  gfx::PointF center_point_f = gfx::PointF(width() / 2, height() / 2);
   gfx::RectF rect_f = gfx::RectF(width(), height());
   rect_f.Inset(1.0f);
 
@@ -110,13 +134,22 @@ void SavedTabGroupButton::OnPaintBackground(gfx::Canvas* canvas) {
   flags.setColor(background_color);
   canvas->DrawRoundRect(rect_f, kButtonRadius, flags);
 
-  if (is_group_in_tabstrip_) {
-    // Draw border.
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-    flags.setColor(text_and_outline_color);
-    flags.setStrokeWidth(kBorderThickness);
-    canvas->DrawRoundRect(rect_f, kBorderRadius, flags);
+  // At the time this was written, all non-background elements share the same
+  // color. As such, we can set the color once here.
+  flags.setColor(text_and_outline_color);
+
+  if (GetText().empty()) {
+    // When the title is empty, we draw a circle similar to the tab group header
+    // when there is no title.
+    canvas->DrawCircle(gfx::PointF(width() / 2, width() / 2), kCircleRadius / 2,
+                       flags);
   }
+
+  // Draw border.
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kBorderThickness);
+  if (is_group_in_tabstrip_)
+    canvas->DrawRoundRect(rect_f, kBorderRadius, flags);
 
   if (GetState() == STATE_HOVERED) {
     // TODO: Draw a box shadow on hover.
@@ -154,6 +187,49 @@ void SavedTabGroupButton::RemoveButtonOutline() {
 
 bool SavedTabGroupButton::HasButtonOutline() const {
   return is_group_in_tabstrip_;
+}
+
+SavedTabGroupButton::ContextMenuController::ContextMenuController(
+    const std::vector<SavedTabGroupTab>& tabs,
+    content::PageNavigator* page_navigator)
+    : tabs_(tabs), page_navigator_(page_navigator) {}
+SavedTabGroupButton::ContextMenuController::~ContextMenuController() = default;
+
+void SavedTabGroupButton::ContextMenuController::ShowContextMenuForViewImpl(
+    View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  ui::DialogModel::Builder dialog_model = ui::DialogModel::Builder();
+
+  for (const SavedTabGroupTab& tab : tabs_) {
+    dialog_model.AddMenuItem(
+        ui::ImageModel::FromImage(tab.favicon), tab.tab_title,
+        base::BindRepeating(
+            [](GURL url, content::PageNavigator* page_navigator,
+               int event_flags) {
+              content::OpenURLParams params(
+                  url, content::Referrer(),
+                  WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                  ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                  /*is_renderer_initiated=*/false,
+                  /*started_from_context_menu=*/true);
+              page_navigator->OpenURL(params);
+            },
+            tab.url, page_navigator_));
+  }
+
+  menu_model_ =
+      std::make_unique<ui::DialogModelMenuModelAdapter>(dialog_model.Build());
+
+  // TODO(pbos): See if there's a better way than IS_NESTED to force this to
+  // show icons (we need favicons, I haven't figured out why this doesn't show
+  // icons under Mac OS context menus).
+  menu_runner_ = std::make_unique<views::MenuRunner>(
+      menu_model_.get(),
+      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::IS_NESTED);
+  menu_runner_->RunMenuAt(source->GetWidget(), /*button_controller=*/nullptr,
+                          gfx::Rect(point, gfx::Size()),
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 BEGIN_METADATA(SavedTabGroupButton, MenuButton)

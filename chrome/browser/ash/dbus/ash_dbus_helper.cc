@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/ash/components/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/ash/components/dbus/biod/biod_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/ash/components/dbus/cups_proxy/cups_proxy_client.h"
@@ -41,7 +42,6 @@
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
@@ -115,9 +115,9 @@ void InitializeDBus() {
   InitializeDBusClient<AuthPolicyClient>(bus);
   InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.
   InitializeDBusClient<chromeos::CdmFactoryDaemonClient>(bus);
-  InitializeDBusClient<chromeos::CiceroneClient>(bus);
+  InitializeDBusClient<CiceroneClient>(bus);
   // ConciergeClient depends on CiceroneClient.
-  InitializeDBusClient<chromeos::ConciergeClient>(bus);
+  InitializeDBusClient<ConciergeClient>(bus);
   InitializeDBusClient<chromeos::CrasAudioClient>(bus);
   InitializeDBusClient<cros_healthd::CrosHealthdClient>(bus);
   InitializeDBusClient<chromeos::CryptohomeMiscClient>(bus);
@@ -185,7 +185,7 @@ void InitializeFeatureListDependentDBus() {
 
   if (ash::features::IsSnoopingProtectionEnabled() ||
       ash::features::IsQuickDimEnabled()) {
-    InitializeDBusClient<chromeos::HpsDBusClient>(bus);
+    InitializeDBusClient<chromeos::HumanPresenceDBusClient>(bus);
   }
 }
 
@@ -194,7 +194,7 @@ void ShutdownDBus() {
   // shut down in reverse order of initialization (in case of dependencies).
   if (ash::features::IsSnoopingProtectionEnabled() ||
       ash::features::IsQuickDimEnabled()) {
-    chromeos::HpsDBusClient::Shutdown();
+    chromeos::HumanPresenceDBusClient::Shutdown();
   }
   chromeos::WilcoDtcSupportdClient::Shutdown();
 #if BUILDFLAG(PLATFORM_CFM)
@@ -249,8 +249,8 @@ void ShutdownDBus() {
   chromeos::CryptohomeMiscClient::Shutdown();
   cros_healthd::CrosHealthdClient::Shutdown();
   chromeos::CrasAudioClient::Shutdown();
-  chromeos::ConciergeClient::Shutdown();
-  chromeos::CiceroneClient::Shutdown();
+  ConciergeClient::Shutdown();
+  CiceroneClient::Shutdown();
   chromeos::CdmFactoryDaemonClient::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();

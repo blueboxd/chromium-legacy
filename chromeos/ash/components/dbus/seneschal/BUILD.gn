@@ -12,7 +12,7 @@ component("seneschal") {
   deps = [
     ":seneschal_proto",
     "//base",
-    "//chromeos/dbus/cicerone",
+    "//chromeos/ash/components/dbus/cicerone",
     "//chromeos/dbus/common",
     "//dbus",
   ]

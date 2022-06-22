@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -129,30 +130,32 @@ void FollowTabHelper::WebStateDestroyed(web::WebState* web_state) {
 }
 
 void FollowTabHelper::UpdateFollowMenuItem(FollowWebPageURLs* web_page_urls) {
-  BOOL status =
-      ios::GetChromeBrowserProvider().GetFollowProvider()->GetFollowStatus(
-          web_page_urls);
+  DCHECK(web_state_);
 
-  NSString* title = nil;
-  std::string domainName =
-      web::GetMainFrame(web_state_)->GetSecurityOrigin().host();
-  if (domainName.substr(0, kRemovablePrefix.length()) == kRemovablePrefix) {
-    domainName =
-        domainName.substr(kRemovablePrefix.length(), domainName.length());
+  web::WebFrame* web_frame = web::GetMainFrame(web_state_);
+  // Only update the follow menu item when web_page_urls is not null and when
+  // webFrame can be retrieved. Otherwise, leave the option disabled.
+  if (web_page_urls && web_frame) {
+    BOOL status =
+        ios::GetChromeBrowserProvider().GetFollowProvider()->GetFollowStatus(
+            web_page_urls);
+
+    std::string domainName = web_frame->GetSecurityOrigin().host();
+    if (domainName.substr(0, kRemovablePrefix.length()) == kRemovablePrefix) {
+      domainName =
+          domainName.substr(kRemovablePrefix.length(), domainName.length());
+    }
+
+    bool enabled = GetFollowActionState(web_state_) == FollowActionStateEnabled;
+
+    [follow_menu_updater_
+        updateFollowMenuItemWithFollowWebPageURLs:web_page_urls
+                                           status:status
+                                       domainName:base::SysUTF8ToNSString(
+                                                      domainName)
+                                          enabled:enabled];
   }
-  if (!status) {
-    title = l10n_util::GetNSStringF(IDS_IOS_TOOLS_MENU_FOLLOW,
-                                    base::UTF8ToUTF16(domainName));
-  } else {
-    title = l10n_util::GetNSStringF(IDS_IOS_TOOLS_MENU_UNFOLLOW,
-                                    base::UTF8ToUTF16(domainName));
-  }
 
-  bool enable = GetFollowActionState(web_state_) == FollowActionStateEnabled;
-
-  [follow_menu_updater_ updateFollowMenuItemWithFollowStatus:status
-                                                       title:title
-                                                     enabled:enable];
   should_update_follow_item_ = false;
 }
 

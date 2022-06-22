@@ -32,6 +32,7 @@
               "external/wpt/animation-worklet",
               "external/wpt/css/css-animations",
               "external/wpt/css/css-backgrounds",
+              "external/wpt/css/css-color/animation",
               "external/wpt/css/css-scroll-snap",
               "external/wpt/css/css-transforms/animation",
               "external/wpt/feature-policy/experimental-features",
@@ -205,12 +206,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/css/css-position/sticky/"],
     "args": ["--enable-blink-features=FractionalScrollOffsets"]
-  },
-  {
-    "prefix": "font-access",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/font-access"],
-    "args": ["--enable-features=FontAccess"]
   },
   {
     "prefix": "compute-pressure",
@@ -778,6 +773,12 @@
       "external/wpt/document-policy/experimental-features/document-domain"
     ],
     "args": [ "--enable-features=DisableDocumentDomainByDefault" ]
+  },
+  {
+    "prefix": "subresource-web-bundles-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "http/tests/loading/wbn/origin-trial/" ],
+    "args": [ "--disable-blink-features=SubresourceWebBundles" ]
   },
   {
     "prefix": "backface-visibility-interop",

@@ -36,17 +36,18 @@ ScreenAIService::ScreenAIService(
       receiver_(this, std::move(receiver)) {
   auto init_result = InitializationResult::kOk;
 
-  if (features::IsScreenAIEnabled()) {
+  if (features::IsScreenAIVisualAnnotationsEnabled()) {
     if (!screen_ai_init_function_ || !annotate_function_)
       init_result = InitializationResult::kErrorInvalidLibraryFunctions;
-    else if (!screen_ai_init_function_())
+    else if (!screen_ai_init_function_(features::IsScreenAIDebugModeEnabled()))
       init_result = InitializationResult::kErrorInitializationFailed;
   }
 
   if (features::IsReadAnythingWithScreen2xEnabled()) {
     if (!screen_2x_init_function_ || !extract_main_content_function_)
       init_result = InitializationResult::kErrorInvalidLibraryFunctions;
-    else if (!screen_2x_init_function_()) {
+    else if (!screen_2x_init_function_(
+                 features::IsScreenAIDebugModeEnabled())) {
       init_result = InitializationResult::kErrorInitializationFailed;
     }
   }

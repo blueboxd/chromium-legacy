@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
-import org.chromium.base.TimeUtils;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
@@ -61,10 +60,6 @@ public class ContextualSearchSelectionController {
     // Max selection length must be limited or the entire request URL can go past the 2K limit.
     private static final int MAX_SELECTION_LENGTH = 1000;
 
-    private static final int INVALID_DURATION = -1;
-    // A default tap duration value when we can't compute it.
-    private static final int DEFAULT_DURATION = 0;
-
     private final Activity mActivity;
     private final ContextualSearchSelectionHandler mHandler;
     private final float mPxToDp;
@@ -101,10 +96,6 @@ public class ContextualSearchSelectionController {
     private float mX;
     private float mY;
 
-    // Additional tap info from Mojo.
-    int mFontSizeDips;
-    int mTextRunLength;
-
     // The time of the most last scroll activity, or 0 if none.
     private long mLastScrollTimeNs;
 
@@ -113,9 +104,6 @@ public class ContextualSearchSelectionController {
 
     // Whether the selection was empty before the most recent tap gesture.
     private boolean mWasSelectionEmptyBeforeTap;
-
-    // The duration of the last tap gesture in milliseconds, or 0 if not set.
-    private int mTapDurationMs = INVALID_DURATION;
 
     /** Tracks whether we're currently clearing the selection to prevent recursion. */
     private boolean mClearingSelection;
@@ -410,10 +398,7 @@ public class ContextualSearchSelectionController {
         mLastTapState = null;
         mLastScrollTimeNs = 0;
         mTapTimeNanoseconds = 0;
-        mTapDurationMs = INVALID_DURATION;
         mDidExpandSelection = false;
-        mFontSizeDips = 0;
-        mTextRunLength = 0;
     }
 
     /**
@@ -441,25 +426,17 @@ public class ContextualSearchSelectionController {
      * Handles an unhandled tap gesture.
      * @param x The x coordinate in px.
      * @param y The y coordinate in px.
-     * @param fontSizeDips The font size in DPs.
-     * @param textRunLength The run-length of the text of the tapped element.
      */
-    void handleShowUnhandledTapUIIfNeeded(int x, int y, int fontSizeDips, int textRunLength) {
+    void handleShowUnhandledTapUIIfNeeded(int x, int y) {
         mWasTapGestureDetected = false;
         // TODO(donnd): refactor to avoid needing a new handler API method as suggested by Pedro.
         if (mSelectionType != SelectionType.LONG_PRESS && !mAreSelectionHandlesShown
                 && mLastValidSelectionType != SelectionType.LONG_PRESS
                 && mLastValidSelectionType != SelectionType.RESOLVING_LONG_PRESS) {
-            if (mTapTimeNanoseconds != 0) {
-                mTapDurationMs = (int) ((System.nanoTime() - mTapTimeNanoseconds)
-                        / TimeUtils.NANOSECONDS_PER_MILLISECOND);
-            }
             mWasTapGestureDetected = true;
             mSelectionType = SelectionType.TAP;
             mX = x;
             mY = y;
-            mFontSizeDips = fontSizeDips;
-            mTextRunLength = textRunLength;
             mHandler.handleValidTap();
         } else {
             // Long press, or long-press selection handles shown; reset last tap state.
@@ -473,20 +450,15 @@ public class ContextualSearchSelectionController {
      * or #handleNonSuppressedTap() after a possible delay.
      * This should be called when the context is fully built (by gathering surrounding text
      * if needed, etc) but before showing any UX.
-     * @param contextualSearchContext The {@link ContextualSearchContext} for the Tap gesture.
      * @param interactionRecorder The {@link ContextualSearchInteractionRecorder} currently being
      * used to measure or suppress the UI by Ranker.
      */
-    void handleShouldSuppressTap(ContextualSearchContext contextualSearchContext,
-            ContextualSearchInteractionRecorder interactionRecorder) {
+    void handleShouldSuppressTap(ContextualSearchInteractionRecorder interactionRecorder) {
         int x = (int) mX;
         int y = (int) mY;
 
-        // TODO(donnd): Remove tap counters.
-        if (mTapDurationMs == INVALID_DURATION) mTapDurationMs = DEFAULT_DURATION;
-        TapSuppressionHeuristics tapHeuristics =
-                new TapSuppressionHeuristics(this, mLastTapState, x, y, contextualSearchContext,
-                        mTapDurationMs, mWasSelectionEmptyBeforeTap, mFontSizeDips, mTextRunLength);
+        TapSuppressionHeuristics tapHeuristics = new TapSuppressionHeuristics(
+                this, mLastTapState, x, y, mWasSelectionEmptyBeforeTap);
         // TODO(donnd): Move to be called when the panel closes to work with states that change.
         tapHeuristics.logConditionState();
 

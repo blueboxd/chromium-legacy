@@ -59,7 +59,6 @@
     <dimen name="tab_grid_card_thumbnail_corner_radius_top">4dp</dimen>
     <dimen name="tab_grid_card_thumbnail_corner_radius_bottom">12dp</dimen>
     <dimen name="tab_grid_card_thumbnail_margin">4dp</dimen>
-    <dimen name="tab_list_card_margin">2dp</dimen>
     <dimen name="tab_list_card_action_button_size">48dp</dimen>
     <dimen name="tab_list_card_action_button_margin">4dp</dimen>
     <dimen name="tab_list_card_title_fading_length">24dp</dimen>
@@ -77,7 +76,6 @@
     <integer name="tab_grid_hovered_card_background_selected_color_alpha">26</integer>
 
     <!-- Dimens for tasks view layout -->
-    <dimen name="tasks_surface_location_bar_url_text_size">18sp</dimen>
     <dimen name="search_box_start_padding">16dp</dimen>
     <dimen name="search_box_end_padding">10dp</dimen>
     <dimen name="tasks_surface_location_bar_url_button_size"> 20dp</dimen>

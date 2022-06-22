@@ -201,7 +201,8 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   int GetMaxAttributionsPerSource(
       AttributionSourceType source_type) const override;
   int GetMaxSourcesPerOrigin() const override;
-  int GetMaxAttributionsPerOrigin() const override;
+  int GetMaxAttributionsPerOrigin(
+      AttributionReport::ReportType report_type) const override;
   RateLimitConfig GetRateLimits() const override;
   int GetMaxDestinationsPerSourceSiteReportingOrigin() const override;
   base::TimeDelta GetDeleteExpiredSourcesFrequency() const override;
@@ -222,7 +223,9 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
 
   void set_max_sources_per_origin(int max);
 
-  void set_max_attributions_per_origin(int max);
+  void set_max_attributions_per_origin(
+      AttributionReport::ReportType report_type,
+      int max);
 
   void set_max_destinations_per_source_site_reporting_origin(int max);
 
@@ -258,7 +261,8 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
  private:
   int max_attributions_per_source_ = INT_MAX;
   int max_sources_per_origin_ = INT_MAX;
-  int max_attributions_per_origin_ = INT_MAX;
+  int max_event_level_attributions_per_origin_ = INT_MAX;
+  int max_aggregatable_attributions_per_origin_ = INT_MAX;
   int max_destinations_per_source_site_reporting_origin_ = INT_MAX;
   int64_t aggregatable_budget_per_source_ = std::numeric_limits<int64_t>::max();
 
@@ -346,7 +350,7 @@ class MockAttributionManager : public AttributionManager {
 
   void NotifySourcesChanged();
   void NotifyReportsChanged(AttributionReport::ReportType report_type);
-  void NotifySourceDeactivated(const DeactivatedSource& source);
+  void NotifySourceDeactivated(const StoredSource& source);
   void NotifySourceHandled(const StorableSource& source,
                            StorableSource::Result result);
   void NotifyReportSent(const AttributionReport& report,
@@ -387,7 +391,7 @@ class MockAttributionObserver : public AttributionObserver {
 
   MOCK_METHOD(void,
               OnSourceDeactivated,
-              (const DeactivatedSource& source),
+              (const StoredSource& source),
               (override));
 
   MOCK_METHOD(void,
@@ -661,8 +665,6 @@ bool operator==(const AttributionReport& a, const AttributionReport& b);
 
 bool operator==(const SendResult& a, const SendResult& b);
 
-bool operator==(const DeactivatedSource& a, const DeactivatedSource& b);
-
 bool operator==(const AttributionAggregatableTriggerData& a,
                 const AttributionAggregatableTriggerData& b);
 
@@ -674,8 +676,6 @@ std::ostream& operator<<(std::ostream& out,
 
 std::ostream& operator<<(std::ostream& out,
                          AttributionTrigger::AggregatableResult status);
-
-std::ostream& operator<<(std::ostream& out, DeactivatedSource::Reason reason);
 
 std::ostream& operator<<(std::ostream& out, RateLimitResult result);
 
@@ -727,9 +727,6 @@ std::ostream& operator<<(std::ostream& out,
 
 std::ostream& operator<<(std::ostream& out,
                          StoredSource::ActiveState active_state);
-
-std::ostream& operator<<(std::ostream& out,
-                         const DeactivatedSource& deactivated_source);
 
 std::ostream& operator<<(std::ostream& out, StorableSource::Result status);
 
@@ -915,13 +912,20 @@ MATCHER_P(NewAggregatableReportIs, matcher, "") {
 }
 
 struct EventTriggerDataMatcherConfig {
-  ::testing::Matcher<uint64_t> data = ::testing::_;
-  ::testing::Matcher<int64_t> priority = ::testing::_;
-  ::testing::Matcher<absl::optional<uint64_t>> dedup_key = ::testing::_;
-  ::testing::Matcher<const AttributionFilterData&> filters = ::testing::_;
-  ::testing::Matcher<const AttributionFilterData&> not_filters = ::testing::_;
+  ::testing::Matcher<uint64_t> data;
+  ::testing::Matcher<int64_t> priority;
+  ::testing::Matcher<absl::optional<uint64_t>> dedup_key;
+  ::testing::Matcher<const AttributionFilterData&> filters;
+  ::testing::Matcher<const AttributionFilterData&> not_filters;
 
   EventTriggerDataMatcherConfig() = delete;
+  EventTriggerDataMatcherConfig(
+      ::testing::Matcher<uint64_t> data = ::testing::_,
+      ::testing::Matcher<int64_t> priority = ::testing::_,
+      ::testing::Matcher<absl::optional<uint64_t>> dedup_key = ::testing::_,
+      ::testing::Matcher<const AttributionFilterData&> filters = ::testing::_,
+      ::testing::Matcher<const AttributionFilterData&> not_filters =
+          ::testing::_);
   ~EventTriggerDataMatcherConfig();
 };
 
@@ -937,6 +941,14 @@ struct AttributionTriggerMatcherConfig {
       event_triggers = ::testing::_;
 
   AttributionTriggerMatcherConfig() = delete;
+  AttributionTriggerMatcherConfig(
+      ::testing::Matcher<const url::Origin&> destination_origin = ::testing::_,
+      ::testing::Matcher<const url::Origin&> reporting_origin = ::testing::_,
+      ::testing::Matcher<const AttributionFilterData&> filters = ::testing::_,
+      ::testing::Matcher<absl::optional<uint64_t>> debug_key = ::testing::_,
+      ::testing::Matcher<
+          const std::vector<AttributionTrigger::EventTriggerData>&>
+          event_triggers = ::testing::_);
   ~AttributionTriggerMatcherConfig();
 };
 

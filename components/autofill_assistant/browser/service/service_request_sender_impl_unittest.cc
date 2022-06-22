@@ -187,7 +187,8 @@ TEST_F(ServiceRequestSenderImplTest, ForceAuthenticatedRequest) {
   EXPECT_CALL(*loader,
               SetRetryOptions(
                   2, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE |
-                         network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED));
+                         network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED |
+                         network::SimpleURLLoader::RETRY_ON_5XX));
   EXPECT_CALL(*loader,
               AttachStringForUpload(std::string("request"),
                                     std::string("application/x-protobuffer")));
@@ -661,6 +662,113 @@ TEST_F(ServiceRequestSenderImplTest, DoesNotRecordCupEventForNonSupportedRpcs) {
   histogram_tester.ExpectBucketCount(
       "Android.AutofillAssistant.CupRpcVerificationEvent",
       Metrics::CupRpcVerificationEvent::VERIFICATION_DISABLED, 0);
+}
+
+TEST_F(ServiceRequestSenderImplTest,
+       DoesNotPerformCupSigningIfRpcSigningDisabled) {
+  InitCupFeatures(true, true);
+  auto loader_factory =
+      std::make_unique<NiceMock<MockSimpleURLLoaderFactory>>();
+  auto loader = std::make_unique<NiceMock<MockURLLoader>>();
+  auto response_info = CreateResponseInfo(net::HTTP_OK, "OK");
+  EXPECT_CALL(*loader_factory, OnCreateLoader)
+      .WillOnce([&](::network::ResourceRequest* resource_request,
+                    const ::net::NetworkTrafficAnnotationTag& annotation_tag) {
+        return std::move(loader);
+      });
+  EXPECT_CALL(*loader, DownloadToStringOfUnboundedSizeUntilCrashAndDie)
+      .WillOnce(RunOnceCallback<1>(std::make_unique<std::string>("response")));
+  EXPECT_CALL(*loader, ResponseInfo)
+      .WillRepeatedly(Return(response_info.get()));
+  EXPECT_CALL(mock_response_callback_, Run(net::HTTP_OK, "response", _));
+
+  auto cup_factory =
+      std::make_unique<NiceMock<autofill_assistant::cup::MockCUPFactory>>();
+  EXPECT_CALL(*cup_factory, CreateInstance).Times(0);
+
+  ServiceRequestSenderImpl request_sender{
+      &context_,
+      /* access_token_fetcher = */ nullptr, std::move(cup_factory),
+      std::move(loader_factory), std::string("fake_api_key")};
+  request_sender.SetDisableRpcSigning(true);
+  request_sender.SendRequest(
+      GURL("https://www.example.com"), std::string("request"),
+      ServiceRequestSender::AuthMode::API_KEY, mock_response_callback_.Get(),
+      autofill_assistant::RpcType::GET_ACTIONS);
+}
+
+TEST_F(ServiceRequestSenderImplTest, TestRetryLoggingForGetUserData) {
+  base::HistogramTester histogram_tester;
+  auto loader_factory =
+      std::make_unique<NiceMock<MockSimpleURLLoaderFactory>>();
+  auto loader = std::make_unique<NiceMock<MockURLLoader>>();
+  auto* loader_ptr = loader.get();
+  auto response_info = CreateResponseInfo(net::HTTP_OK, "OK");
+  EXPECT_CALL(*loader_factory, OnCreateLoader)
+      .WillOnce([&](::network::ResourceRequest* resource_request,
+                    const ::net::NetworkTrafficAnnotationTag& annotation_tag) {
+        return std::move(loader);
+      });
+  EXPECT_CALL(*loader_ptr, DownloadToStringOfUnboundedSizeUntilCrashAndDie)
+      .WillOnce(RunOnceCallback<1>(std::make_unique<std::string>("response")));
+  EXPECT_CALL(*loader_ptr, ResponseInfo)
+      .WillRepeatedly(Return(response_info.get()));
+  EXPECT_CALL(*loader_ptr, GetNumRetries).WillOnce(Return(1));
+  EXPECT_CALL(mock_access_token_fetcher_, OnFetchAccessToken)
+      .WillOnce(RunOnceCallback<0>(true, "access_token"));
+  EXPECT_CALL(mock_access_token_fetcher_, InvalidateAccessToken).Times(0);
+  EXPECT_CALL(mock_response_callback_, Run(net::HTTP_OK, "response", _));
+
+  ServiceRequestSenderImpl request_sender{
+      &context_, &mock_access_token_fetcher_, /* cup_factory= */ nullptr,
+      std::move(loader_factory),
+      /* api_key= */ std::string()};
+  request_sender.SendRequest(GURL("https://www.example.com"),
+                             std::string("request"),
+                             ServiceRequestSender::AuthMode::OAUTH_STRICT,
+                             mock_response_callback_.Get(),
+                             autofill_assistant::RpcType::GET_USER_DATA);
+
+  histogram_tester.ExpectBucketCount(
+      "Android.AutofillAssistant.ServiceRequestSender.SuccessRetryCount", 1, 1);
+}
+
+TEST_F(ServiceRequestSenderImplTest, TestNoRetryLoggingForSupportsScripts) {
+  base::HistogramTester histogram_tester;
+  auto loader_factory =
+      std::make_unique<NiceMock<MockSimpleURLLoaderFactory>>();
+  auto loader = std::make_unique<NiceMock<MockURLLoader>>();
+  auto* loader_ptr = loader.get();
+  auto response_info = CreateResponseInfo(net::HTTP_OK, "OK");
+  EXPECT_CALL(*loader_factory, OnCreateLoader)
+      .WillOnce([&](::network::ResourceRequest* resource_request,
+                    const ::net::NetworkTrafficAnnotationTag& annotation_tag) {
+        return std::move(loader);
+      });
+  EXPECT_CALL(*loader_ptr, DownloadToStringOfUnboundedSizeUntilCrashAndDie)
+      .WillOnce(RunOnceCallback<1>(std::make_unique<std::string>("response")));
+  EXPECT_CALL(*loader_ptr, ResponseInfo)
+      .WillRepeatedly(Return(response_info.get()));
+  EXPECT_CALL(*loader_ptr, GetNumRetries).Times(0);
+  EXPECT_CALL(mock_access_token_fetcher_, OnFetchAccessToken)
+      .WillOnce(RunOnceCallback<0>(true, "access_token"));
+  EXPECT_CALL(mock_access_token_fetcher_, InvalidateAccessToken).Times(0);
+  EXPECT_CALL(mock_response_callback_, Run(net::HTTP_OK, "response", _));
+
+  ServiceRequestSenderImpl request_sender{
+      &context_, &mock_access_token_fetcher_, /* cup_factory= */ nullptr,
+      std::move(loader_factory),
+      /* api_key= */ std::string()};
+  request_sender.SendRequest(
+      GURL("https://www.example.com"), std::string("request"),
+      ServiceRequestSender::AuthMode::OAUTH_WITH_API_KEY_FALLBACK,
+      mock_response_callback_.Get(),
+      autofill_assistant::RpcType::SUPPORTS_SCRIPT);
+
+  histogram_tester.ExpectTotalCount(
+      "Android.AutofillAssistant.ServiceRequestSender.SuccessRetryCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "Android.AutofillAssistant.ServiceRequestSender.FailureRetryCount", 0);
 }
 
 // TODO(b/170934170): Add tests for full unit test coverage of

@@ -21,6 +21,12 @@ const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
 
+const char kAutofillEnableRankingFormulaName[] =
+    "Enable new Autofill suggestion ranking formula";
+const char kAutofillEnableRankingFormulaDescription[] =
+    "When enabled, Autofill will use a new ranking formula to rank Autofill "
+    "data model suggestions such as credit cards or profiles";
+
 const char kAutofillEnableSendingBcnInGetUploadDetailsName[] =
     "Enable sending billing customer number in GetUploadDetails";
 const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[] =
@@ -224,6 +230,10 @@ const char kEnableFaviconForPasswordsDescription[] =
     "and Never Saved sections and also for the AutoFill Passwords for the "
     "Credential Provider.";
 
+const char kEnableFeedAblationName[] = "Enables Feed Ablation";
+const char kEnableFeedAblationDescription[] =
+    "If Enabled the Feed will be removed from the NTP";
+
 const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module";
 const char kEnableFREUIModuleIOSDescription[] =
     "Use the new FRE UI module for first run.";
@@ -374,8 +384,23 @@ const char kNewMobileIdentityConsistencyFREName[] = "New MICE FRE";
 const char kNewMobileIdentityConsistencyFREDescription[] =
     "New Mobile Identity Consistency FRE";
 
+const char kNewOverflowMenuCBDActionName[] =
+    "Clear Browsing Data action in new overflow menu";
+const char kNewOverflowMenuCBDActionDescription[] =
+    "Adds a Clear Browsing Data action to the new overflow menu";
+
 const char kNewOverflowMenuName[] = "New Overflow Menu";
 const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
+
+const char kNewOverflowMenuSettingsActionName[] =
+    "Settings action in the new overflow menu";
+const char kNewOverflowMenuSettingsActionDescription[] =
+    "Adds a Settings action to the new overflow menu";
+
+extern const char kNewOverflowMenuSimpleDestinationIconsName[] =
+    "Simple Destination icons in the new overflow menu";
+extern const char kNewOverflowMenuSimpleDestinationIconsDescription[] =
+    "Uses a simple icon style for destination icons in the new overflow menu";
 
 const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =

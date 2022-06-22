@@ -244,6 +244,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/ignore_paint_timing_scope.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
@@ -611,11 +612,13 @@ WebFrameWidget* WebLocalFrame::InitializeFrameWidget(
         mojo_widget,
     const viz::FrameSinkId& frame_sink_id,
     bool is_for_nested_main_frame,
+    bool is_for_scalable_page,
     bool hidden) {
   CreateFrameWidgetInternal(
       base::PassKey<WebLocalFrame>(), std::move(mojo_frame_widget_host),
       std::move(mojo_frame_widget), std::move(mojo_widget_host),
-      std::move(mojo_widget), frame_sink_id, is_for_nested_main_frame, hidden);
+      std::move(mojo_widget), frame_sink_id, is_for_nested_main_frame,
+      is_for_scalable_page, hidden);
   return FrameWidget();
 }
 
@@ -1821,6 +1824,11 @@ bool WebLocalFrameImpl::CapturePaintPreview(const gfx::Rect& bounds,
                                             bool skip_accelerated_content) {
   bool success = false;
   {
+    // Ignore paint timing while capturing a paint preview as it can change LCP
+    // see crbug.com/1323073.
+    IgnorePaintTimingScope scope;
+    IgnorePaintTimingScope::IncrementIgnoreDepth();
+
     Document::PaintPreviewScope paint_preview(
         *GetFrame()->GetDocument(),
         skip_accelerated_content
@@ -2547,6 +2555,7 @@ void WebLocalFrameImpl::CreateFrameWidgetInternal(
         mojo_widget,
     const viz::FrameSinkId& frame_sink_id,
     bool is_for_nested_main_frame,
+    bool is_for_scalable_page,
     bool hidden) {
   DCHECK(!frame_widget_);
   DCHECK(frame_->IsLocalRoot());
@@ -2570,7 +2579,7 @@ void WebLocalFrameImpl::CreateFrameWidgetInternal(
             std::move(mojo_widget),
             Scheduler()->GetAgentGroupScheduler()->DefaultTaskRunner(),
             frame_sink_id, hidden, never_composited, is_for_child_local_root,
-            is_for_nested_main_frame));
+            is_for_nested_main_frame, is_for_scalable_page));
   } else {
     frame_widget_ = MakeGarbageCollected<WebFrameWidgetImpl>(
         std::move(pass_key), std::move(mojo_frame_widget_host),
@@ -2578,7 +2587,7 @@ void WebLocalFrameImpl::CreateFrameWidgetInternal(
         std::move(mojo_widget),
         Scheduler()->GetAgentGroupScheduler()->DefaultTaskRunner(),
         frame_sink_id, hidden, never_composited, is_for_child_local_root,
-        is_for_nested_main_frame);
+        is_for_nested_main_frame, is_for_scalable_page);
   }
   frame_widget_->BindLocalRoot(*this);
 

@@ -21,8 +21,10 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/browser/share/core/crow/crow_configuration.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/feed/feed_feature_list.h"
 
 using component_updater::ComponentUpdateService;
 
@@ -53,7 +55,7 @@ void LoadCrowConfigFromDisk(const base::FilePath& pb_path) {
     return;
   }
 
-  // TODO(crbug.com/1320476): Update a config class.
+  crow::CrowConfiguration::GetInstance()->PopulateFromBinaryPb(binary_pb);
 }
 
 }  // namespace
@@ -125,7 +127,7 @@ CrowDomainListComponentInstallerPolicy::GetInstallerAttributes() const {
 }
 
 void RegisterCrowDomainListComponent(ComponentUpdateService* cus) {
-  if (!base::FeatureList::IsEnabled(chrome::android::kShareCrowButton)) {
+  if (!base::FeatureList::IsEnabled(feed::kShareCrowButton)) {
     return;
   }
 

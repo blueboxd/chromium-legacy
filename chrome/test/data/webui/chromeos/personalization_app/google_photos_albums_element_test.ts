@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {getCountText, GooglePhotosAlbum, GooglePhotosAlbums, initializeGooglePhotosData, PersonalizationActionName, PersonalizationRouter, SetErrorAction, WallpaperGridItem} from 'chrome://personalization/trusted/personalization_app.js';
+import {fetchGooglePhotosAlbums, getCountText, GooglePhotosAlbum, GooglePhotosAlbums, initializeGooglePhotosData, PersonalizationActionName, PersonalizationRouter, SetErrorAction, WallpaperGridItem} from 'chrome://personalization/trusted/personalization_app.js';
 import {assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
@@ -85,6 +85,7 @@ suite('GooglePhotosAlbumsTest', function() {
 
     // Initialize Google Photos data in the |personalizationStore|.
     await initializeGooglePhotosData(wallpaperProvider, personalizationStore);
+    await fetchGooglePhotosAlbums(wallpaperProvider, personalizationStore);
     await waitAfterNextRender(googlePhotosAlbumsElement);
 
     // The wallpaper controller is expected to impose max resolution.
@@ -117,6 +118,8 @@ suite('GooglePhotosAlbumsTest', function() {
             personalizationStore.expectAction(
                 PersonalizationActionName.SET_ERROR);
             await initializeGooglePhotosData(
+                wallpaperProvider, personalizationStore);
+            await fetchGooglePhotosAlbums(
                 wallpaperProvider, personalizationStore);
             const {error} =
                 await personalizationStore.waitForAction(
@@ -171,9 +174,15 @@ suite('GooglePhotosAlbumsTest', function() {
     const selector = 'wallpaper-grid-item:not([hidden]).album';
     const albumSelector = `${selector}:not([placeholder])`;
     const placeholderSelector = `${selector}[placeholder]`;
+    const albumListSelector = 'iron-list:not([hidden])#grid';
     assertEquals(querySelectorAll(albumSelector)!.length, 0);
     const placeholderEls = querySelectorAll(placeholderSelector);
     assertNotEquals(placeholderEls!.length, 0);
+    let albumListEl = querySelectorAll(albumListSelector);
+    assertEquals(albumListEl!.length, 1);
+    assertEquals(
+        albumListEl![0]!.getAttribute('aria-setsize'),
+        placeholderEls!.length.toString());
 
     // Placeholders should be aria-labeled.
     placeholderEls!.forEach(placeholderEl => {
@@ -205,9 +214,18 @@ suite('GooglePhotosAlbumsTest', function() {
     assertNotEquals(albumEls!.length, 0);
     assertEquals(querySelectorAll(placeholderSelector)!.length, 0);
 
+    // The album list's aria-setsize should be consistent with the number of
+    // albums.
+    albumListEl = querySelectorAll(albumListSelector);
+    assertEquals(albumListEl!.length, 1);
+    assertEquals(
+        albumListEl![0]!.getAttribute('aria-setsize'),
+        albums.length.toString());
+
     // Albums should be aria-labeled.
     albumEls!.forEach((albumEl, i) => {
       assertEquals(albumEl.getAttribute('aria-label'), albums[i]!.title);
+      assertEquals(albumEl.getAttribute('aria-posinset'), (i + 1).toString());
     });
 
     // Clicking an album should do something.
@@ -236,6 +254,7 @@ suite('GooglePhotosAlbumsTest', function() {
 
     // Initialize Google Photos data in |personalizationStore|.
     await initializeGooglePhotosData(wallpaperProvider, personalizationStore);
+    await fetchGooglePhotosAlbums(wallpaperProvider, personalizationStore);
     assertEquals(
         await wallpaperProvider.whenCalled('fetchGooglePhotosAlbums'),
         /*resumeToken=*/ null);

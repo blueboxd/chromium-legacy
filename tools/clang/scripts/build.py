@@ -34,13 +34,13 @@ from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
 LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
 COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'compiler-rt')
-LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
-LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
-                                          'llvm-bootstrap-install')
-LLVM_INSTRUMENTED_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-instrumented')
-LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
-    os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
+    os.path.join(THIRD_PARTY_DIR, 'llvm-build-tools'))
+LLVM_BOOTSTRAP_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'llvm-bootstrap')
+LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR,
+                                          'llvm-bootstrap-install')
+LLVM_INSTRUMENTED_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'llvm-instrumented')
+LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_ndk')
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
@@ -620,7 +620,7 @@ def main():
   cxxflags = []
   ldflags = []
 
-  targets = 'AArch64;ARM;Mips;PowerPC;SystemZ;WebAssembly;X86'
+  targets = 'AArch64;ARM;Mips;PowerPC;RISCV;SystemZ;WebAssembly;X86'
 
   projects = 'clang;compiler-rt;lld;clang-tools-extra'
 
@@ -833,7 +833,7 @@ def main():
 
     RunCommand(['cmake'] + instrument_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
-    RunCommand(['ninja'], msvc_arch='x64')
+    RunCommand(['ninja', 'clang'], msvc_arch='x64')
     print('Instrumented compiler built.')
 
     # Train by building some C++ code.
@@ -983,6 +983,9 @@ def main():
     if platform.machine() == 'aarch64':
       cmake_args.append(
           '-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-unknown-linux-gnu')
+    elif platform.machine() == 'riscv64':
+      cmake_args.append(
+          '-DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-linux-gnu')
     else:
       cmake_args.append('-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-unknown-linux-gnu')
     cmake_args.append('-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON')

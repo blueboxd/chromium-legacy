@@ -103,7 +103,10 @@ source_set("omnibox_icon_type_constants") {
     "omnibox_icon_type.h",
     "omnibox_icon_type.mm",
   ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui/icons:symbols",
+  ]
 }
 
 source_set("omnibox_internal") {
@@ -136,6 +139,7 @@ source_set("omnibox_internal") {
     "web_omnibox_edit_controller_impl.mm",
   ]
   deps = [
+    ":features",
     ":omnibox",
     ":omnibox_popup_shared",
     ":omnibox_util",

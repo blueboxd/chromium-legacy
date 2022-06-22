@@ -426,6 +426,8 @@ void MultiDeviceSection::AddLoadTimeData(
        IDS_SETTINGS_MULTIDEVICE_NOTIFICATION_ACCESS_PROHIBITED_TOOLTIP},
       {"multideviceNotificationAccessProhibitedDisabledByAdminTooltip",
        IDS_SETTINGS_MULTIDEVICE_NOTIFICATION_ACCESS_PROHIBITED_DISABLED_BY_ADMIN_TOOLTIP},
+      {"multideviceAppsAccessProhibitedDisabledByAdminTooltip",
+       IDS_SETTINGS_MULTIDEVICE_APPS_ACCESS_PROHIBITED_DISABLED_BY_ADMIN_TOOLTIP},
       {"multideviceInstantTetheringItemTitle",
        IDS_SETTINGS_MULTIDEVICE_INSTANT_TETHERING},
       {"multideviceInstantTetheringItemSummary",
@@ -472,6 +474,14 @@ void MultiDeviceSection::AddLoadTimeData(
        IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_COMPLETED_SUMMARY},
       {"multidevicePermissionsSetupAwaitingResponseTitle",
        IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_AWAITING_RESPONSE_TITLE},
+      {"multidevicePermissionsSetupCouldNotEstablishConnectionTitle",
+       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_COULD_NOT_ESTABLISH_CONNECTION_TITLE},
+      {"multidevicePermissionsSetupEstablishFailureSummary",
+       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_COULD_NOT_ESTABLISH_CONNECTION_SUMMARY},
+      {"multidevicePermissionsSetupMaintainFailureSummary",
+       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_CONNECTION_LOST_WITH_PHONE_SUMMARY},
+      {"multidevicePermissionsSetupNotificationAccessProhibitedTitle",
+       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_NOTIFICATION_ACCESS_PROHIBITED_TITLE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -584,6 +594,11 @@ void MultiDeviceSection::AddLoadTimeData(
       "multidevicePermissionsSetupCompletedTitle",
       ui::SubstituteChromeOSDeviceType(
           IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_COMPLETED_TITLE));
+  html_source->AddString(
+      "multidevicePermissionsSetupNotificationAccessProhibitedSummary",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_NOTIFICATION_ACCESS_PROHIBITED_SUMMARY,
+          GetHelpUrlWithBoard(phonehub::kPhoneHubLearnMoreLink)));
 
   AddEasyUnlockStrings(html_source);
 
@@ -597,11 +612,9 @@ void MultiDeviceSection::AddLoadTimeData(
       NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
           profile()));
   // Background scanning depends on Bluetooth Advertisement Monitoring.
-  html_source->AddBoolean(
-      "isNearbyShareBackgroundScanningEnabled",
-      chromeos::features::IsBluetoothAdvertisementMonitoringEnabled() &&
-          base::FeatureList::IsEnabled(
-              ::features::kNearbySharingBackgroundScanning));
+  html_source->AddBoolean("isNearbyShareBackgroundScanningEnabled",
+                          base::FeatureList::IsEnabled(
+                              ::features::kNearbySharingBackgroundScanning));
   html_source->AddBoolean("isEcheAppEnabled", features::IsEcheSWAEnabled());
   bool is_phone_screen_lock_enabled =
       static_cast<phonehub::ScreenLockManager::LockStatus>(

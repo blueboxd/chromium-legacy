@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
+#include "components/optimization_guide/core/page_content_annotation_type.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -33,8 +35,12 @@ extern const char kDisableModelDownloadVerificationForTesting[];
 extern const char kModelOverride[];
 extern const char kDebugLoggingEnabled[];
 extern const char kModelValidate[];
-extern const char kStopHistoryVisitBatchAnnotateForTesting[];
 extern const char kPageContentAnnotationsLoggingEnabled[];
+extern const char kPageContentAnnotationsValidationStartupDelaySeconds[];
+extern const char kPageContentAnnotationsValidationBatchSizeOverride[];
+extern const char kPageContentAnnotationsValidationPageTopics[];
+extern const char kPageContentAnnotationsValidationPageEntities[];
+extern const char kPageContentAnnotationsValidationContentVisibility[];
 
 // Returns whether the hint component should be processed.
 // Available hint components are only processed if a proto override isn't being
@@ -89,12 +95,26 @@ absl::optional<std::string> GetModelOverride();
 // Returns true if debug logs are enabled for the optimization guide.
 bool IsDebugLogsEnabled();
 
-// Whether to prevent annotations from happening when in a batch. For testing
-// purposes only.
-bool StopHistoryVisitBatchAnnotateForTesting();
-
 // Returns true if page content annotations input should be logged.
 bool ShouldLogPageContentAnnotationsInput();
+
+// Returns the delay to use for page content annotations validation, if given
+// and valid on the command line.
+absl::optional<base::TimeDelta> PageContentAnnotationsValidationStartupDelay();
+
+// Returns the size of the batch to use for page content annotations validation,
+// if given and valid on the command line.
+absl::optional<size_t> PageContentAnnotationsValidationBatchSize();
+
+// Whether the result of page content annotations validation should be sent to
+// the console. True when any one of the corresponding command line flags is
+// enabled.
+bool LogPageContentAnnotationsValidationToConsole();
+
+// Returns a set on inputs to run the validation on for the given |type|,
+// using comma separated input from the command line.
+absl::optional<std::vector<std::string>>
+PageContentAnnotationsValidationInputForType(AnnotationType type);
 
 }  // namespace switches
 }  // namespace optimization_guide

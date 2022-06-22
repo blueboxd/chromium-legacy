@@ -64,7 +64,8 @@ struct ExtraRequestCompleteInfo {
   // The origin of the final URL for the request (final = after redirects).
   //
   // The full URL is not available, because in some cases the path and query
-  // be sanitized away - see https://crbug.com/973885.
+  // may be sanitized away - see https://crbug.com/973885.
+  // TODO(crbug.com/973885): use url::SchemeHostPort if applicable.
   const url::Origin origin_of_final_url;
 
   // The host (IP address) and port for the request.
@@ -131,6 +132,12 @@ class PageLoadMetricsObserverInterface {
   // receives forward metrics via FORWARD_OBSERVING, and returns STOP_OBSERVING,
   // It just stop observing forward metrics, and still see other callbacks for
   // the orinally bound page.
+  // Most events requiring preprocesses, such as lifecycle events, are forwarded
+  // to the outer page at the PageLoadTracker layer, and only events that are
+  // directly delivered to the observers need FORWARD_OBSERVING. See
+  // PageLoadMetricsForwardObserver to know which events need the observer layer
+  // forwarding. Eventually, we may treat all forwarding at the PageLoadTracker
+  // layer to deprecate the FORWARD_OBSERVING for simplicity.
   enum ObservePolicy {
     CONTINUE_OBSERVING,
     STOP_OBSERVING,
@@ -404,13 +411,26 @@ class PageLoadMetricsObserverInterface {
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host) = 0;
 
-  // Invoked when a frame's intersections with page elements changes and an
-  // update is received. The `main_frame_intersection_rect` is an empty rect for
-  // out of view subframes and is the root document size for the main frame.
+  // For the main frame, called when the main frame's dimensions have changed,
+  // e.g. resizing a tab causes the document width to change; loading additional
+  // content causes the document height to increase; explicitly changing the
+  // height of the body element.
+  //
+  // For a subframe, called when the intersection rect between the main frame
+  // and the subframe has changed, e.g. the subframe is initially added; the
+  // subframe's position is updated explicitly or inherently (e.g. sticky
+  // position while the page is being scrolled).
+  //
   // TODO(crbug/1048175): Expose intersections to observers via shared delegate.
   virtual void OnMainFrameIntersectionRectChanged(
       content::RenderFrameHost* rfh,
       const gfx::Rect& main_frame_intersection_rect) = 0;
+
+  // Called when the main frame's viewport rectangle (the viewport dimensions
+  // and the scroll position) changed, e.g. the user scrolled the main frame or
+  // the viewport dimensions themselves changed. Only invoked on the main frame.
+  virtual void OnMainFrameViewportRectChanged(
+      const gfx::Rect& main_frame_viewport_rect) = 0;
 
   // Invoked when the UMA metrics subsystem is persisting metrics as the
   // application goes into the background, on platforms where the browser

@@ -101,6 +101,8 @@ class CastStreamingSession {
   // lifespan of this object and only after a call to Start().
   void Stop();
 
+  bool is_running() const { return !!receiver_session_; }
+
   // Return a callback that may be used to request a buffer of the specified
   // type, to be returned asynchronously through the client API. May only be
   // called following a call to Start() and prior to a call to Stop().
@@ -128,8 +130,11 @@ class CastStreamingSession {
     // Requests a new buffer of the specified type, which will be provided
     // Return a callback that may be used to request a buffer of the specified
     // type, to be returned asynchronously through the |client_|.
-    AudioDemuxerStreamDataProvider::RequestBufferCB GetAudioBufferRequester();
-    VideoDemuxerStreamDataProvider::RequestBufferCB GetVideoBufferRequester();
+    void GetAudioBuffer(base::OnceClosure no_frames_available_cb);
+    void GetVideoBuffer(base::OnceClosure no_frames_available_cb);
+
+    // Returns a WeakPtr associated with this instance;
+    base::WeakPtr<ReceiverSessionClient> GetWeakPtr();
 
    private:
     void OnInitializationTimeout();
@@ -178,6 +183,8 @@ class CastStreamingSession {
     const raw_ptr<CastStreamingSession::Client> client_;
     std::unique_ptr<StreamConsumer> audio_consumer_;
     std::unique_ptr<StreamConsumer> video_consumer_;
+
+    base::WeakPtrFactory<ReceiverSessionClient> weak_factory_;
   };
 
   std::unique_ptr<ReceiverSessionClient> receiver_session_;

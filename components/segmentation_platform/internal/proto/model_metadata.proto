@@ -15,10 +15,13 @@ import "components/segmentation_platform/internal/proto/types.proto";
 // new feature added to metadata proto, and add a log of the new changes in the
 // current version in this file.
 // Version 0 supports UMA features and aggregation in |features| field.
-// Version 1 supports UMA features and custom inputs in |input_features| field.
+// Version 1 supports UMA features, custom inputs and sql features in
+// |input_features| field.
 // Version 2 supports training data output collection in |training_outputs|
 // field.
-enum CurrentVersion { METADATA_VERSION = 0; }
+enum CurrentVersion {
+  METADATA_VERSION = 1;
+}
 
 // Version information for segmentation models.
 message VersionInfo {
@@ -112,6 +115,9 @@ message CustomInput {
 
   // If the fill type need additional arguments, use this value.
   map<string, string> additional_args = 4;
+
+  // The human readable name of the custom input.
+  optional string name = 5;
 }
 
 // Configuration for storing signals in the SQL database.
@@ -165,6 +171,9 @@ message SqlFeature {
     optional CustomInput value = 3;
   }
   repeated BindValue bind_values = 3;
+
+  // The human readable name of the ukm event and metric.
+  optional string name = 4;
 }
 
 // Contains a feature used as an input to the ML model.

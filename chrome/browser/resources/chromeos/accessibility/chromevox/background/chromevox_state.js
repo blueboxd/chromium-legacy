@@ -14,6 +14,7 @@ goog.provide('ChromeVoxStateObserver');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('BrailleKeyEvent');
+goog.require('BridgeHelper');
 goog.require('UserActionMonitor');
 
 /**
@@ -54,8 +55,6 @@ ChromeVoxState = function() {
 
   /** @private {!Array<!chrome.accessibilityPrivate.ScreenRect>} */
   this.focusBounds_ = [];
-  /** @private {UserActionMonitor} */
-  this.userActionMonitor_ = null;
 };
 
 /**
@@ -75,7 +74,7 @@ ChromeVoxState.backgroundTts;
 ChromeVoxState.isReadingContinuously;
 
 ChromeVoxState.prototype = {
-  /** @type {cursors.Range} */
+  /** @return {cursors.Range} */
   get currentRange() {
     return this.getCurrentRange();
   },
@@ -85,6 +84,11 @@ ChromeVoxState.prototype = {
    * @protected
    */
   getCurrentRange() {
+    return null;
+  },
+
+  /** @return {cursors.Range} */
+  get pageSel() {
     return null;
   },
 
@@ -99,6 +103,10 @@ ChromeVoxState.prototype = {
    * @param {boolean=} opt_fromEditing
    */
   setCurrentRange: goog.abstractMethod,
+
+  /** @param {cursors.Range} */
+  set pageSel(newPageSel) {},
+
   /**
    * Navigate to the given range - it both sets the range and outputs it.
    * @param {!cursors.Range} range The new range.
@@ -144,33 +152,6 @@ ChromeVoxState.prototype = {
   },
 
   /**
-   * Gets the user action monitor.
-   * @return {UserActionMonitor}
-   */
-  getUserActionMonitor() {
-    return this.userActionMonitor_;
-  },
-
-  /**
-   * Creates a new user action monitor.
-   * @param {!Array<{
-   *    type: string,
-   *    value: (string|Object),
-   *    beforeActionMsg: (string|undefined),
-   *    afterActionMsg: (string|undefined)
-   * }>} actions
-   * @param {function(): void} callback
-   */
-  createUserActionMonitor(actions, callback) {
-    this.userActionMonitor_ = new UserActionMonitor(actions, callback);
-  },
-
-  /** Destroys the user action monitor */
-  destroyUserActionMonitor() {
-    this.userActionMonitor_ = null;
-  },
-
-  /**
    * Forces the reading of the next change to the clipboard.
    */
   readNextClipboardDataChange: goog.abstractMethod,
@@ -179,16 +160,12 @@ ChromeVoxState.prototype = {
 /** @type {!Array<ChromeVoxStateObserver>} */
 ChromeVoxState.observers = [];
 
-/**
- * @param {ChromeVoxStateObserver} observer
- */
+/** @param {ChromeVoxStateObserver} observer */
 ChromeVoxState.addObserver = function(observer) {
   ChromeVoxState.observers.push(observer);
 };
 
-/**
- * @param {ChromeVoxStateObserver} observer
- */
+/** @param {ChromeVoxStateObserver} observer */
 ChromeVoxState.removeObserver = function(observer) {
   const index = ChromeVoxState.observers.indexOf(observer);
   if (index > -1) {
@@ -196,6 +173,9 @@ ChromeVoxState.removeObserver = function(observer) {
   }
 };
 
+BridgeHelper.registerHandler(
+    BridgeTarget.CHROMEVOX_STATE, BridgeAction.CLEAR_CURRENT_RANGE,
+    () => ChromeVoxState.instance.setCurrentRange(null));
 BridgeHelper.registerHandler(
     BridgeTarget.CHROMEVOX_STATE, BridgeAction.UPDATE_PUNCTUATION_ECHO,
     (echo) => ChromeVoxState.backgroundTts.updatePunctuationEcho(echo));

@@ -267,6 +267,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() override;
   const base::TickClock* GetTickClock() const override;
+  MainThreadSchedulerHelper& GetHelper() override { return helper_; }
 
   base::TimeTicks NowTicks() const;
 
@@ -395,9 +396,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   UseCase current_use_case() const;
 
   const SchedulingSettings& scheduling_settings() const;
-
-  void SetPrioritizeCompositingAfterInput(
-      bool prioritize_compositing_after_input);
 
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
@@ -851,7 +849,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<bool, TracingCategory::kDebug>
         has_visible_render_widget_with_touch_handler;
     TraceableState<bool, TracingCategory::kDebug> in_idle_period_for_testing;
-    TraceableState<bool, TracingCategory::kInfo> use_virtual_time;
     TraceableState<bool, TracingCategory::kTopLevel> is_audio_playing;
     TraceableState<bool, TracingCategory::kDebug>
         compositor_will_send_main_frame_not_expected;
@@ -871,8 +868,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         absl::optional<base::sequence_manager::TaskQueue::QueuePriority>,
         TracingCategory::kInfo>
         task_priority_for_tracing;  // Only used for tracing.
-    base::Time initial_virtual_time;
-    base::TimeTicks initial_virtual_time_ticks;
 
     VirtualTimePolicy virtual_time_policy;
 
@@ -917,6 +912,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     base::TimeTicks last_frame_time;
     bool should_prioritize_compositor_task_queue_after_delay;
     bool have_seen_a_frame;
+
+    // Set when a discrete input event is handled on the main thread. This is
+    // used by the kPrioritizeCompositingAfterInput experiment to determine if
+    // the next frame should be prioritized.
+    bool did_handle_discrete_input_event = false;
 
     WTF::Vector<AgentGroupSchedulerScope> agent_group_scheduler_scope_stack;
 

@@ -13,7 +13,7 @@
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "dbus/object_proxy.h"
 
-namespace chromeos {
+namespace ash {
 
 class FakeCiceroneClient;
 
@@ -316,12 +316,11 @@ class COMPONENT_EXPORT(CONCIERGE) ConciergeClient : public DBusClient {
   ConciergeClient();
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-using ::chromeos::ConciergeClient;
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+using ::ash::ConciergeClient;
 }
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DBUS_CONCIERGE_CONCIERGE_CLIENT_H_

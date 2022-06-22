@@ -29,6 +29,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
@@ -39,6 +40,7 @@
 #include "net/cert/ct_sct_to_string.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "net/cookies/parsed_cookie.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -261,7 +263,9 @@ class WebURLLoader::Context : public WebRequestPeer {
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           network::mojom::URLResponseHeadPtr head,
                           std::vector<std::string>* removed_headers) override;
-  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
+  void OnReceivedResponse(
+      network::mojom::URLResponseHeadPtr head,
+      base::TimeTicks response_arrival_at_renderer) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
@@ -547,7 +551,8 @@ bool WebURLLoader::Context::OnReceivedRedirect(
 }
 
 void WebURLLoader::Context::OnReceivedResponse(
-    network::mojom::URLResponseHeadPtr head) {
+    network::mojom::URLResponseHeadPtr head,
+    base::TimeTicks response_arrival_at_renderer) {
   if (!client_)
     return;
 
@@ -564,6 +569,7 @@ void WebURLLoader::Context::OnReceivedResponse(
   WebURLResponse response;
   PopulateURLResponse(url_, *head, &response, has_devtools_request_id_,
                       request_id_);
+  response.SetArrivalTimeAtRenderer(response_arrival_at_renderer);
 
   client_->DidReceiveResponse(response);
 
@@ -615,7 +621,8 @@ void WebURLLoader::Context::OnCompletedRequest(
     } else {
       client_->DidFinishLoading(status.completion_time, total_transfer_size,
                                 encoded_body_size, status.decoded_body_length,
-                                status.should_report_corb_blocking);
+                                status.should_report_corb_blocking,
+                                status.pervasive_payload_requested);
     }
   }
 }
@@ -783,6 +790,8 @@ void WebURLLoader::PopulateURLResponse(
     response->AddHttpHeaderField(WebString::FromLatin1(name),
                                  WebString::FromLatin1(value));
   }
+
+  response->SetHasPartitionedCookie(head.has_partitioned_cookie);
 }
 
 // static

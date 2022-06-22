@@ -2,12 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/args.gni")
 import("//build/config/chromeos/ui_mode.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 source_set("cpp") {
   sources = [
+    "data_collector.cc",
+    "data_collector.h",
     "internal_service_factory.cc",
     "internal_service_factory.h",
     "internal_service_factory_impl.cc",
@@ -15,21 +18,36 @@ source_set("cpp") {
   ]
   deps = [
     "//base",
-    "//chromeos/services/cros_healthd/private/mojom",
     "//chromeos/services/network_health/public/mojom",
+    "//content/public/browser:browser",
+    "//ui/events/devices",
+    "//ui/events/ozone/evdev:event_device_info",
   ]
+  public_deps = [ "//chromeos/services/cros_healthd/private/mojom" ]
+  defines = []
+  if (is_chromeos_device) {
+    defines += [ "USE_EVDEV_GESTURES" ]
+  }
+  if (use_libinput) {
+    defines += [ "USE_LIBINPUT" ]
+  }
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "internal_service_factory_impl_unittest.cc" ]
+  sources = [
+    "data_collector_unittest.cc",
+    "internal_service_factory_impl_unittest.cc",
+  ]
   deps = [
     ":cpp",
     "//base/test:test_support",
-    "//chromeos/services/cros_healthd/private/mojom",
+    "//content/test:test_support",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/events/devices",
+    "//ui/events/devices:test_support",
   ]
 }

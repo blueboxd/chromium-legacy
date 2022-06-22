@@ -125,7 +125,7 @@ void PageTimingMetricsSender::DidObserveMobileFriendlinessChanged(
 }
 
 void PageTimingMetricsSender::DidStartResponse(
-    const GURL& response_url,
+    const url::SchemeHostPort& final_response_url,
     int resource_id,
     const network::mojom::URLResponseHead& response_head,
     network::mojom::RequestDestination request_destination) {
@@ -135,7 +135,7 @@ void PageTimingMetricsSender::DidStartResponse(
       std::piecewise_construct, std::forward_as_tuple(resource_id),
       std::forward_as_tuple(std::make_unique<PageResourceDataUse>()));
   resource_it.first->second->DidStartResponse(
-      response_url, resource_id, response_head, request_destination);
+      final_response_url, resource_id, response_head, request_destination);
 }
 
 void PageTimingMetricsSender::DidReceiveTransferSizeUpdate(
@@ -205,8 +205,14 @@ void PageTimingMetricsSender::DidLoadResourceFromMemoryCache(
 }
 
 void PageTimingMetricsSender::OnMainFrameIntersectionChanged(
-    const gfx::Rect& main_frame_intersection) {
-  metadata_->main_frame_intersection_rect = main_frame_intersection;
+    const gfx::Rect& main_frame_intersection_rect) {
+  metadata_->main_frame_intersection_rect = main_frame_intersection_rect;
+  EnsureSendTimer();
+}
+
+void PageTimingMetricsSender::OnMainFrameViewportRectangleChanged(
+    const gfx::Rect& main_frame_viewport_rect) {
+  metadata_->main_frame_viewport_rect = main_frame_viewport_rect;
   EnsureSendTimer();
 }
 
@@ -319,6 +325,7 @@ void PageTimingMetricsSender::SendNow() {
   InitiateUserInteractionTiming();
   new_features_.clear();
   metadata_->main_frame_intersection_rect.reset();
+  metadata_->main_frame_viewport_rect.reset();
   last_cpu_timing_->task_time = base::TimeDelta();
   modified_resources_.clear();
   render_data_.new_layout_shifts.clear();

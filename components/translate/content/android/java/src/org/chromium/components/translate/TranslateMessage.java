@@ -6,7 +6,9 @@ package org.chromium.components.translate;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.text.TextUtils;
+import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -25,6 +27,7 @@ import org.chromium.components.messages.SecondaryMenuMaxSize;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.widget.RectProvider;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -103,6 +106,8 @@ class TranslateMessage implements TranslateMessageSecondaryMenu.Handler {
                                     MessageIdentifier.TRANSLATE)
                             .with(MessageBannerProperties.ICON_RESOURCE_ID,
                                     R.drawable.infobar_translate_compact)
+                            .with(MessageBannerProperties.ICON_TINT_COLOR,
+                                    MessageBannerProperties.TINT_NONE)
                             .with(MessageBannerProperties.SECONDARY_ICON_RESOURCE_ID,
                                     R.drawable.settings_cog)
                             .with(MessageBannerProperties.SECONDARY_MENU_BUTTON_DELEGATE,
@@ -186,13 +191,41 @@ class TranslateMessage implements TranslateMessageSecondaryMenu.Handler {
                 menuItem.overflowMenuItemId, menuItem.languageCode, menuItem.hasCheckmark);
     }
 
-    private final class SecondaryMenuButtonDelegate implements ListMenuButtonDelegate {
+    private final class SecondaryMenuButtonDelegate
+            extends DataSetObserver implements ListMenuButtonDelegate {
+        /**
+         * Keeps track of the RectProvider supplied to anchor the AnchoredPopupWindow to the
+         * ListMenuButton. It's kept as a WeakReference so that this doesn't inadvertently extend
+         * the lifetime of the RectProvider and all of its references past the time when the popup
+         * window is dismissed.
+         */
+        private WeakReference<RectProvider> mRectProvider;
+
+        // ListMenuButtonDelegate implementation:
+        @Override
+        public RectProvider getRectProvider(View listMenuButton) {
+            RectProvider provider = ListMenuButtonDelegate.super.getRectProvider(listMenuButton);
+            mRectProvider = new WeakReference<RectProvider>(provider);
+            return provider;
+        }
+
         @Override
         public ListMenu getListMenu() {
-            return new TranslateMessageSecondaryMenu(mContext, TranslateMessage.this,
+            return new TranslateMessageSecondaryMenu(mContext, /*handler=*/TranslateMessage.this,
+                    /*dataSetObserver=*/this,
                     mNativeTranslateMessage == 0
                             ? null
                             : TranslateMessageJni.get().buildOverflowMenu(mNativeTranslateMessage));
+        }
+
+        // DataSetObserver implementation:
+        @Override
+        public void onChanged() {
+            // If the mRectProvider is set, then call setRect() with the existing Rect in order to
+            // force it to notify its observer, which will cause the AnchoredPopupWindow to update
+            // its onscreen dimensions to fit the new menu items.
+            RectProvider provider = mRectProvider.get();
+            if (provider != null) provider.setRect(provider.getRect());
         }
     }
 

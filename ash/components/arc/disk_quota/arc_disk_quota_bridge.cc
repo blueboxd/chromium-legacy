@@ -74,7 +74,7 @@ bool ArcDiskQuotaBridge::convertPathForSetProjectId(
   *child_path_out = base::FilePath();
   if (kDownloadPath.IsParent(android_path)) {
     // /storage/emulated/0/Download/* =>
-    //     parent=/home/user/<hash>/Downloads/, child=*
+    //     parent=/home/user/<hash>/MyFiles/Downloads/, child=*
     *parent_path_out =
         user_data_auth::SetProjectIdAllowedPathType::PATH_DOWNLOADS;
     return kDownloadPath.AppendRelativePath(android_path, child_path_out);
@@ -302,7 +302,7 @@ void ArcDiskQuotaBridge::OnHostFreeSpace(
           << " current_disk_size=" << guest_total_space
           << " new_disk_size=" << new_disk_size;
 
-  chromeos::ConciergeClient::Get()->ResizeDiskImage(
+  ash::ConciergeClient::Get()->ResizeDiskImage(
       resize_request, base::BindOnce(&ArcDiskQuotaBridge::OnResizeDiskResponse,
                                      weak_factory_.GetWeakPtr(), new_disk_size,
                                      std::move(callback)));

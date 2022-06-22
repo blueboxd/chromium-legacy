@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/side_search/side_search_config.h"
 #include "chrome/browser/ui/side_search/side_search_side_contents_helper.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -94,6 +95,12 @@ class SideSearchTabContentsHelper
   // navigation entry.
   bool CanShowSidePanelForCommittedNavigation();
 
+  // This is called to log the duration between when the side panel was made
+  // available to the first time it was opened for the `last_search_url_`. This
+  // resets the `available_timer_` to avoid logging multiple times in the case a
+  // user closes and opens the panel repeatedly for the same `last_search_url_`.
+  void MaybeRecordDurationSidePanelAvailableToFirstOpen();
+
   void SetDelegate(base::WeakPtr<Delegate> delegate);
 
   const absl::optional<SidePanelRedirectInfo>&
@@ -105,6 +112,11 @@ class SideSearchTabContentsHelper
 
   bool toggled_open() const { return toggled_open_; }
   void set_toggled_open(bool toggled_open) { toggled_open_ = toggled_open; }
+
+  bool page_action_label_shown() const { return page_action_label_shown_; }
+  void set_page_action_label_shown(bool was_shown) {
+    page_action_label_shown_ = was_shown;
+  }
 
   void SetSidePanelContentsForTesting(
       std::unique_ptr<content::WebContents> side_panel_contents);
@@ -172,6 +184,17 @@ class SideSearchTabContentsHelper
   // Used to test if the side panel SRP for `last_search_url_` is currently
   // available. Reset every time `TestSRPAvailability()` is called.
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
+
+  // Time since the side panel became available for the `last_search_url_`.
+  absl::optional<base::ElapsedTimer> available_timer_;
+
+  // True if the side panel could be shown for the previously committed
+  // navigation.
+  bool could_show_for_last_committed_navigation_ = false;
+
+  // Tracks whether the page action icon has animated-in its label text. Track
+  // this to ensure we only show the label at most once per tab.
+  bool page_action_label_shown_ = false;
 
   base::ScopedObservation<SideSearchConfig, SideSearchConfig::Observer>
       config_observation_{this};

@@ -1031,6 +1031,15 @@ class ExtensionPrefsObsoletePrefRemoval : public ExtensionPrefsTest {
         &str_value));
     EXPECT_EQ(kTestValue, str_value);
 
+    // TODO(crbug.com/1015619): Remove 2023-05. kPrefStringForIdMapping.
+    auto dictionary = std::make_unique<base::DictionaryValue>();
+    prefs()->UpdateExtensionPref(extension_->id(), kPrefStringForIdMapping,
+                                 std::move(dictionary));
+    const base::DictionaryValue* dictionary_value = nullptr;
+    EXPECT_TRUE(prefs()->ReadPrefAsDictionary(
+        extension_->id(), kPrefStringForIdMapping, &dictionary_value));
+    EXPECT_TRUE(dictionary_value);
+
     prefs()->MigrateObsoleteExtensionPrefs();
   }
 
@@ -1039,10 +1048,18 @@ class ExtensionPrefsObsoletePrefRemoval : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->ReadPrefAsString(
         extension_->id(), ExtensionPrefs::kFakeObsoletePrefForTesting,
         &str_value));
+
+    // TODO(crbug.com/1015619): Remove 2023-05. kPrefStringForIdMapping.
+    const base::DictionaryValue* dictionary_value = nullptr;
+    EXPECT_FALSE(prefs()->ReadPrefAsDictionary(
+        extension_->id(), kPrefStringForIdMapping, &dictionary_value));
   }
 
  private:
   scoped_refptr<const Extension> extension_;
+
+  // Incorrect spelling since 2013 (https://codereview.chromium.org/21289004).
+  const char* kPrefStringForIdMapping = "id_mapping_dictioanry";
 };
 
 TEST_F(ExtensionPrefsObsoletePrefRemoval, ExtensionPrefsObsoletePrefRemoval) {}
@@ -1060,28 +1077,10 @@ class ExtensionPrefsMigratedPref : public ExtensionPrefsTest {
 
   void Initialize() override {
     extension_ = prefs_.AddExtension("a");
-    prefs()->UpdateExtensionPref(extension_->id(),
-                                 "settings.privacy.drm_enabled",
-                                 std::make_unique<base::Value>(false));
-    bool bool_value;
-    EXPECT_TRUE(prefs()->ReadPrefAsBoolean(
-        extension_->id(), "settings.privacy.drm_enabled", &bool_value));
-    EXPECT_FALSE(bool_value);
-
     prefs()->MigrateObsoleteExtensionPrefs();
   }
 
-  void Verify() override {
-    int int_value;
-    bool bool_value;
-    EXPECT_FALSE(prefs()->ReadPrefAsBoolean(
-        extension_->id(), "settings.privacy.drm_enabled", &bool_value));
-    EXPECT_TRUE(prefs()->ReadPrefAsInteger(
-        extension_->id(),
-        "profile.default_content_setting_values.protected_media_identifier",
-        &int_value));
-    EXPECT_EQ(int_value, CONTENT_SETTING_BLOCK);
-  }
+  void Verify() override {}
 
  private:
   scoped_refptr<const Extension> extension_;

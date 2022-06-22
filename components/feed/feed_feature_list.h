@@ -111,6 +111,14 @@ extern const base::Feature kPersonalizeFeedUnsignedUsers;
 // Feature that enables tracking the acknowledgement state for the info cards.
 extern const base::Feature kInfoCardAcknowledgementTracking;
 
+// Feature that enables the Crow feature.
+// Owned by the CwF team but located here until it makes sense to create a crow
+// component, since it is being used in the feed component.
+extern const base::Feature kShareCrowButton;
+
+// Feature that when enabled completely removes all Feeds from chrome.
+extern const base::Feature kIsAblated;
+
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_FEED_FEATURE_LIST_H_

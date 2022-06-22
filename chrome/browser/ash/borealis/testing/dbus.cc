@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ash/borealis/testing/dbus.h"
 
+#include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
-#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 
@@ -22,15 +22,15 @@ BasicDBusHelper::~BasicDBusHelper() {
 
 FakeCiceroneHelper::FakeCiceroneHelper(BasicDBusHelper* basic_helper) {
   DCHECK(basic_helper);
-  chromeos::CiceroneClient::InitializeFake();
+  ash::CiceroneClient::InitializeFake();
 }
 
 FakeCiceroneHelper::~FakeCiceroneHelper() {
-  chromeos::CiceroneClient::Shutdown();
+  ash::CiceroneClient::Shutdown();
 }
 
-chromeos::FakeCiceroneClient* FakeCiceroneHelper::FakeCiceroneClient() {
-  return chromeos::FakeCiceroneClient::Get();
+ash::FakeCiceroneClient* FakeCiceroneHelper::FakeCiceroneClient() {
+  return ash::FakeCiceroneClient::Get();
 }
 
 FakeSeneschalHelper::FakeSeneschalHelper(BasicDBusHelper* basic_helper) {
@@ -62,15 +62,15 @@ chromeos::FakeDlcserviceClient* FakeDlcserviceHelper::FakeDlcserviceClient() {
 
 FakeConciergeHelper::FakeConciergeHelper(FakeCiceroneHelper* cicerone_helper) {
   DCHECK(cicerone_helper);
-  chromeos::ConciergeClient::InitializeFake();
+  ash::ConciergeClient::InitializeFake();
 }
 
 FakeConciergeHelper::~FakeConciergeHelper() {
-  chromeos::ConciergeClient::Shutdown();
+  ash::ConciergeClient::Shutdown();
 }
 
-chromeos::FakeConciergeClient* FakeConciergeHelper::FakeConciergeClient() {
-  return chromeos::FakeConciergeClient::Get();
+ash::FakeConciergeClient* FakeConciergeHelper::FakeConciergeClient() {
+  return ash::FakeConciergeClient::Get();
 }
 
 FakeVmServicesHelper::FakeVmServicesHelper()

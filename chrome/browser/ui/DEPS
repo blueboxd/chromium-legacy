@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome/browser/image_decoder",
+  "+chrome/browser/share",
   "-chrome/browser/ui/views",
   "+chrome/updater",
   "+components/browser_ui/client_certificate",
@@ -14,6 +15,8 @@ include_rules = [
   "+components/safety_check",
   "+components/soda",
   "+components/translate/content/android",
+  "+components/user_education/common",
+  "+components/user_education/test",
   "+services/content/public",
   "+services/device/public/mojom",
   "+components/user_notes",

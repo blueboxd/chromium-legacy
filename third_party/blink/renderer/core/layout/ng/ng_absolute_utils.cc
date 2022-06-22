@@ -160,7 +160,7 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding,
   // Solving the equation:
   // |inset_start| + |margin_start| + |size| + |margin_end| + |inset_end| =
   // |available_size|
-  if (!inset_start && !inset_end && !size) {
+  if (!inset_start && !inset_end) {
     // "If all three of left, width, and right are auto:"
     if (!margin_start)
       margin_start = LayoutUnit();
@@ -190,8 +190,12 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding,
         computed_available_size = static_position_offset;
         break;
     }
-    size = ComputeShrinkToFitSize(computed_available_size,
-                                  *margin_start + *margin_end);
+
+    if (!size) {
+      size = ComputeShrinkToFitSize(computed_available_size,
+                                    *margin_start + *margin_end);
+    }
+
     LayoutUnit margin_size = *size + *margin_start + *margin_end;
     if (is_start_dominant) {
       inset_start = StaticPositionStartInset(
@@ -255,38 +259,22 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding,
   if (!margin_end)
     margin_end = LayoutUnit();
 
-  // Rules 1 through 3: 2 out of 3 are unknown.
-  if (!inset_start && !size) {
-    // Rule 1.
+  if (!inset_start) {
     DCHECK(inset_end.has_value());
     LayoutUnit computed_available_size = available_size - *inset_end;
-    size = ComputeShrinkToFitSize(computed_available_size,
-                                  *margin_start + *margin_end);
-  } else if (!inset_start && !inset_end) {
-    // Rule 2.
-    DCHECK(size.has_value());
-    LayoutUnit margin_size = *size + *margin_start + *margin_end;
-    if (is_start_dominant) {
-      inset_start = StaticPositionStartInset(
-          static_position_edge, static_position_offset, margin_size);
-    } else {
-      inset_end =
-          StaticPositionEndInset(static_position_edge, static_position_offset,
-                                 available_size, margin_size);
+    if (!size) {
+      size = ComputeShrinkToFitSize(computed_available_size,
+                                    *margin_start + *margin_end);
     }
-  } else if (!size && !inset_end) {
-    // Rule 3.
-    DCHECK(inset_start.has_value());
-    LayoutUnit computed_available_size = available_size - *inset_start;
-    size = ComputeShrinkToFitSize(computed_available_size,
-                                  *margin_start + *margin_end);
-  }
-
-  // Rules 4 through 6: 1 out of 3 are unknown.
-  if (!inset_start) {
     inset_start =
         available_size - *size - *inset_end - *margin_start - *margin_end;
   } else if (!inset_end) {
+    DCHECK(inset_start.has_value());
+    LayoutUnit computed_available_size = available_size - *inset_start;
+    if (!size) {
+      size = ComputeShrinkToFitSize(computed_available_size,
+                                    *margin_start + *margin_end);
+    }
     inset_end =
         available_size - *size - *inset_start - *margin_start - *margin_end;
   } else if (!size) {
@@ -387,19 +375,16 @@ bool ComputeOutOfFlowInlineDimensions(
   } else if (!style.LogicalWidth().IsAuto()) {
     inline_size = ResolveMainInlineLength(
         space, style, border_padding, MinMaxSizesFunc, style.LogicalWidth());
-  } else if (!style.AspectRatio().IsAuto()) {
-    const bool stretch_inline_size = !node.IsTable() &&
-                                     !style.LogicalLeft().IsAuto() &&
-                                     !style.LogicalRight().IsAuto();
+  } else if (!style.AspectRatio().IsAuto() &&
+             can_compute_block_size_without_layout) {
+    const bool stretch_inline_size =
+        !style.LogicalLeft().IsAuto() && !style.LogicalRight().IsAuto();
 
-    // The aspect-ratio applies from the block-axis if:
-    //  - Our auto inline-size would have stretched but we have an explicit
-    //    block-size.
-    //  - Our auto inline-size doesn't stretch but we can compute our
-    //    block-size without layout.
-    if ((stretch_inline_size &&
-         !style.LogicalHeight().IsAutoOrContentOrIntrinsic()) ||
-        (!stretch_inline_size && can_compute_block_size_without_layout)) {
+    // The aspect-ratio applies from the block-axis if we can compute our
+    // block-size without invoking layout, and:
+    //  - We aren't stretching our auto inline-size.
+    //  - We are stretching our auto inline-size, but the block-size isn't auto.
+    if (!stretch_inline_size || !style.LogicalHeight().IsAuto()) {
       is_shrink_to_fit = true;
 
       // Apply the automatic minimum size.

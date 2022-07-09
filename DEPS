@@ -307,7 +307,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Fuchsia sdk
   # and whatever else without interference from each other.
-  'fuchsia_version': 'version:8.20220708.2.1',
+  'fuchsia_version': 'version:8.20220709.1.1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -331,7 +331,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '3414fef74f9dd1858aca521f93ebadca9ab36f96',
+  'freetype_revision': '275b116b40c9d183d42242099ea9ff276985855b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -351,7 +351,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'f421cb0c667e21a59dc7939ed1a7a5a35cac7a88',
+  'catapult_revision': '1dee059cfe3ff27f6e12795142099f14afaff00e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -359,7 +359,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '7541e8b15460a3e9406aa6715892413570e66e81',
+  'devtools_frontend_revision': 'f45ffc559486def347ebd20084d475d06569c354',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1599,7 +1599,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/r8',
-              'version': 'Zmb3PQpaMmxHLKO-7rV_Zl3UzVWX40QwqDQQibl5kkYC',
+              'version': 'dS_Hv_yB_bdLi_Jd7mSg2O_33HDxYQwiOYSzBRapm1oC',
           },
       ],
       'condition': 'checkout_android',
@@ -1718,7 +1718,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '09c7fb0168c1d36ff110bf8286d416f8462fb061',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'b025b14b5fcb1a646164feb197d10eb76c4f43b6',
+    Var('webrtc_git') + '/src.git' + '@' + '4058b33eaf60c7ba2da44abe9294d85c2bb2a88e',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1791,7 +1791,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@26f8c66b41d9dab50cc65f2979290107bec8b78a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b27bf584cc8deb6a440f89c66bdd040b70ed2685',
     'condition': 'checkout_src_internal',
   },
 

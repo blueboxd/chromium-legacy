@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/guest_os/dbus_test_helper.h"
 
+#include "chromeos/ash/components/dbus/chunneld/fake_chunneld_client.h"
 #include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
@@ -73,10 +74,20 @@ ash::FakeConciergeClient* FakeConciergeHelper::FakeConciergeClient() {
   return ash::FakeConciergeClient::Get();
 }
 
+FakeChunneldHelper::FakeChunneldHelper(BasicDBusHelper* basic_helper) {
+  DCHECK(basic_helper);
+  ash::ChunneldClient::InitializeFake();
+}
+
+FakeChunneldHelper::~FakeChunneldHelper() {
+  ash::ChunneldClient::Shutdown();
+}
+
 FakeVmServicesHelper::FakeVmServicesHelper()
     : FakeCiceroneHelper(this),
       FakeSeneschalHelper(this),
       FakeDlcserviceHelper(this),
-      FakeConciergeHelper(this) {}
+      FakeConciergeHelper(this),
+      FakeChunneldHelper(this) {}
 
 }  // namespace guest_os

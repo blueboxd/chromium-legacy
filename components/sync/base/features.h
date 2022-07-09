@@ -23,6 +23,9 @@ inline constexpr base::Feature kAllowSilentTrustedVaultDeviceRegistration{
 inline constexpr base::Feature kCacheBaseEntitySpecificsInMetadata{
     "CacheBaseEntitySpecificsInMetadata", base::FEATURE_DISABLED_BY_DEFAULT};
 
+inline constexpr base::Feature kEnableSyncImmediatelyInFRE{
+    "EnableSyncImmediatelyInFRE", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Causes Sync to ignore updates encrypted with keys that have been missing for
 // too long from this client; Sync will proceed normally as if those updates
 // didn't exist.
@@ -31,7 +34,7 @@ inline constexpr base::Feature kIgnoreSyncEncryptionKeysLongMissing{
 // The threshold for kIgnoreSyncEncryptionKeysLongMissing to start ignoring keys
 // (measured in number of GetUpdatesResponses messages).
 inline constexpr base::FeatureParam<int> kMinGuResponsesToIgnoreKey{
-    &kIgnoreSyncEncryptionKeysLongMissing, "MinGuResponsesToIgnoreKey", 50};
+    &kIgnoreSyncEncryptionKeysLongMissing, "MinGuResponsesToIgnoreKey", 3};
 
 // When enabled, Sync machinery will read and writes password notes to the
 // `encrypted_notes_backup` field inside the PasswordSpecifics proto. Together
@@ -117,6 +120,13 @@ inline constexpr base::FeatureParam<base::TimeDelta>
     kTrustedVaultServiceThrottlingDuration{
         &kSyncTrustedVaultPassphraseRecovery,
         "TrustedVaultServiceThrottlingDuration", base::Days(1)};
+
+// Enables logging a UMA metric that requires first communicating with the
+// trusted vault server, in order to verify that the local notion of the device
+// being registered is consistent with the server-side state.
+inline constexpr base::Feature kSyncTrustedVaultVerifyDeviceRegistration{
+    "SyncTrustedVaultVerifyDeviceRegistration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the device will register with FCM and listen to new
 // invalidations. Also, FCM token will be set in DeviceInfo, which signals to

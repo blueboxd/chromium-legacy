@@ -291,9 +291,9 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
     return has_visible_content_;
   }
 
-  bool HasVisibleDescendant() const {
+  bool HasVisibleSelfPaintingDescendant() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
-    return has_visible_descendant_;
+    return has_visible_self_painting_descendant_;
   }
 
   void DirtyVisibleContentStatus();
@@ -715,16 +715,20 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
       const HitTestRecursionData& recursion_data,
       const HitTestingTransformState* root_transform_state) const;
 
-  bool HitTestContents(HitTestResult&,
-                       const NGPhysicalBoxFragment*,
-                       const PhysicalOffset& fragment_offset,
-                       const HitTestLocation&,
-                       HitTestFilter) const;
-  bool HitTestContentsForFragments(const PaintLayerFragments&,
-                                   HitTestResult&,
-                                   const HitTestLocation&,
-                                   HitTestFilter,
-                                   bool& inside_clip_rect) const;
+  bool HitTestFragmentWithPhase(HitTestResult&,
+                                const NGPhysicalBoxFragment*,
+                                const PhysicalOffset& fragment_offset,
+                                const HitTestLocation&,
+                                HitTestPhase phase) const;
+  bool HitTestFragmentsWithPhase(const PaintLayerFragments&,
+                                 HitTestResult&,
+                                 const HitTestLocation&,
+                                 HitTestPhase,
+                                 bool& inside_clip_rect) const;
+  bool HitTestForegroundForFragments(const PaintLayerFragments&,
+                                     HitTestResult&,
+                                     const HitTestLocation&,
+                                     bool& inside_clip_rect) const;
   PaintLayer* HitTestTransformedLayerInFragments(
       const PaintLayer& transform_container,
       const PaintLayerFragment* container_fragment,
@@ -806,7 +810,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   unsigned needs_descendant_dependent_flags_update_ : 1;
   unsigned needs_visual_overflow_recalc_ : 1;
 
-  unsigned has_visible_descendant_ : 1;
+  unsigned has_visible_self_painting_descendant_ : 1;
 
 #if DCHECK_IS_ON()
   unsigned needs_position_update_ : 1;

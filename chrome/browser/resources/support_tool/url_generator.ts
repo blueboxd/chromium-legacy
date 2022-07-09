@@ -8,9 +8,6 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
@@ -100,6 +97,7 @@ export class UrlGeneratorElement extends PolymerElement {
       this.generatedURL_ = result.url;
       navigator.clipboard.writeText(this.generatedURL_.toString());
       this.$.copyToast.show();
+      this.$.copyToast.focus();
     } else {
       this.showErrorMessageToast_(result.errorMessage);
     }

@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Uživatel</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Okno aktualizace firmwaru externích zařízení je otevřené. Dostupné aktualizace: <ph name="NUM_UPDATES" />.</translation>
+<translation id="1145516343487477149">Články nápovědy a odpovědi na časté dotazy ohledně Chromebooků</translation>
 <translation id="1165039591588034296">Chyba</translation>
 <translation id="1175697296044146566">Toto zařízení <ph name="DEVICE_TYPE" /> spravuje doména <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Průměrný (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Vypnout tmavý motiv</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Vypnout tmavý režim</translation>
+<translation id="1881188606372070653">Pokud chcete požádat o změny obsahu z právních důvodů, přejděte na stránku <ph name="BEGIN_LINK1" />Právní nápověda<ph name="END_LINK1" />. Některé údaje o účtu a systému mohou být předány společnosti Google. Informace, které jste nám poskytli, použijeme při řešení technických problémů a ke zlepšení našich služeb podléhajících našim <ph name="BEGIN_LINK2" />zásadám ochrany soukromí<ph name="END_LINK2" /> a <ph name="BEGIN_LINK3" />smluvním podmínkám<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Revize hardwaru</translation>
+<translation id="1904932688895783618">Další užitečné zdroje:</translation>
 <translation id="1905710495812624430">Byl překročen maximální povolený počet pokusů.</translation>
 <translation id="1908234395526491708">Selhání požadavků UDP</translation>
 <translation id="1932611479324127242">Úplné odpojení baterie</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Vyzkoušet postup odstraňování problémů</translation>
 <translation id="2016848882344942759">--žádný bílý štítek--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Pokud chcete zobrazit spořič obrazovky, připojte se k síti a znovu načtěte stránku.</translation>
 <translation id="2080070583977670716">Další nastavení</translation>
 <translation id="2085089206770112532">Snížit jas displeje</translation>
 <translation id="2105810540595158374">Zařízení je herní ovladač.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Zapnout tmavý režim</translation>
 <translation id="2177831236093724629">Byly zjištěny <ph name="LINK_BEGIN" />nekvalifikované komponenty<ph name="LINK_END" />. Pokud chcete zajistit, aby byly identifikovány všechny kvalifikované komponenty, aktualizujte systém Chrome OS na nejnovější verzi.</translation>
 <translation id="2180197493692062006">Došlo k chybě. Zkuste aplikaci otevřít znovu.</translation>
+<translation id="2182088270354640012">Díky za zpětnou vazbu. Zpětná vazba od vás nám s vylepšováním systému Chrome OS a tým Chrome OS si ji přečte. Vzhledem k množství odeslaných hlášení neobdržíte přímou odpověď.</translation>
 <translation id="2209788852729124853">Resetovat počítadla návštěvnosti</translation>
 <translation id="2212733584906323460">Rozlišení názvu</translation>
 <translation id="2217935453350629363">Aktuální rychlost</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Vyhledávání skenerů</translation>
 <translation id="3246869037381808805">Tiskové úlohy starší než 1 den budou odstraněny</translation>
 <translation id="3268178239013324452">Tisk selhal – jsou otevřená dvířka</translation>
+<translation id="3275729367986477355">Obrázek avatara</translation>
 <translation id="3283504360622356314">{0,plural, =1{Upravit soubor}few{Upravit soubory}many{Upravit soubory}other{Upravit soubory}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Směr klíče</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Další informace naleznete v <ph name="BEGIN_LINK" />centru nápovědy<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Kompresní algoritmus</translation>
 <translation id="4794140124556169553">Test procesoru může mít vliv na výkon systému</translation>
+<translation id="4800589996161293643">Komunita Chromebooků</translation>
 <translation id="4804818685124855865">Odpojit</translation>
 <translation id="4808449224298348341">Byla zrušena tisková úloha <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Světlý motiv</translation>
@@ -486,6 +493,7 @@
 Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
+<translation id="522307662484862935">Nezahrnovat e‑mailovou adresu</translation>
 <translation id="5227902338748591677">Plán tmavého motivu</translation>
 <translation id="5234764350956374838">Zavřít</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -612,6 +620,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="6284632978374966585">Zapnout tmavý motiv</translation>
 <translation id="6295178529664209245">Pokračovat v opravě?</translation>
 <translation id="6302401976930124515">Test <ph name="TEST_NAME" /> byl zrušen</translation>
+<translation id="631063167932043783">Prozkoumat aplikaci</translation>
 <translation id="6319207335391420837">Aktualizace firmwaru v zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Zapnout spořič obrazovky</translation>
 <translation id="6325525973963619867">Došlo k selhání</translation>
@@ -623,6 +632,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="6379086450106841622">Dotyková obrazovka</translation>
 <translation id="6381741036071372448">Vyzkoušejte si klávesnici</translation>
 <translation id="6388847657025262518">Podavač dokumentů skeneru je zaseknutý. Zkontrolujte podavač a zkuste to znovu.</translation>
+<translation id="6394634179843537518">Přidat soubor</translation>
 <translation id="6410257289063177456">Obrázkové soubory</translation>
 <translation id="641081527798843608">Shoda předmětu</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="6516990319416533844">Pokud chcete otestovat rychlost nabíjení baterie, nechte ji po krátkou dobu vybíjet</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6527081081771465939">Neznámý bezpečnostní protokol Wi-Fi</translation>
+<translation id="6535178685492749208">Jste offline. Zpětná vazba se odešle později.</translation>
 <translation id="65587193855025101">Předlohové sklo</translation>
 <translation id="6564646048574748301">Tisk selhal – tiskárna není dostupná</translation>
 <translation id="6566314079205407217">Skenování několika stránek</translation>
@@ -717,6 +728,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="7297226631177386107">Přes firewall se nelze připojit k webům HTTPS</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Zeptejte se odborníků ve fóru nápovědy pro Chromebooky</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Ve Vyhledávání Google výsledek zobrazíte stisknutím tlačítka Hledat a mezerníku.</translation>
 <translation id="7343649194310845056">Síťová zařízení</translation>
@@ -759,9 +771,11 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="773153675489693198">Počet cyklů</translation>
 <translation id="7747039790905080783">Předsdílený klíč</translation>
 <translation id="7762130827864645708">Změna hesla byla úspěšná. Odteď používejte nové heslo.</translation>
+<translation id="7762839321248874531">Odesílat <ph name="BEGIN_LINK1" />informace o systému a aplikacích<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Shoda přípon domén</translation>
 <translation id="7769672763586021400">ID modelu</translation>
 <translation id="7784116172884276937">Nejsou nastaveny žádné servery DNS</translation>
+<translation id="779591286616261875">Odeslat nové hlášení</translation>
 <translation id="7799817062559422778">Světlý režim</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7805768142964895445">Stav</translation>
@@ -828,6 +842,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="8382302752385457774">Bílý štítek</translation>
 <translation id="8395584934117017006">Toto zařízení <ph name="DEVICE_TYPE" /> spravuje podnik</translation>
 <translation id="8398927464629426868">Rychlost, s jakou se zařízení momentálně nabíjí nebo vybíjí</translation>
+<translation id="8420955526972171689">Testování a odstraňování problémů s hardwarem</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Interní klávesnice</translation>
 <translation id="8431300646573772016">Novinky v ChromeOS</translation>
@@ -913,6 +928,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="9082718469794970195">Použít toto video</translation>
 <translation id="9087578468327036362">Nahlaste tento dotaz</translation>
 <translation id="9088306295921699330">Současné využití</translation>
+<translation id="9092255287806472980">Vaše zpětná vazba nám pomáhá s vylepšováním systému Chrome OS a náš tým si ji přečte. Vzhledem k velkému počtu hlášení vám nebudeme moci odpovědět.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Budete zařízení muset rozebrat</translation>
 <translation id="9098156406873149060">Zachovat uživatelská data</translation>

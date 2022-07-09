@@ -24,7 +24,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/themes/theme_properties.h"  // nogncheck
-#include "printing/buildflags/buildflags.h"          // nogncheck
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -83,10 +83,6 @@
 #endif
 #if BUILDFLAG(OZONE_PLATFORM_X11)
 #define USE_X11
-#endif
-
-#if BUILDFLAG(ENABLE_PRINTING)
-#include "printing/printing_context_linux.h"
 #endif
 
 #if defined(USE_WAYLAND)
@@ -308,13 +304,6 @@ bool GtkUi::Initialize() {
                    G_CALLBACK(OnDeviceScaleFactorMaybeChangedThunk), this);
 
   LoadGtkValues();
-
-#if BUILDFLAG(ENABLE_PRINTING)
-  printing::PrintingContextLinux::SetCreatePrintDialogFunction(
-      &PrintDialogGtk::CreatePrintDialog);
-  printing::PrintingContextLinux::SetPdfPaperSizeFunction(
-      &GetPdfPaperSizeDeviceUnitsGtk);
-#endif
 
   // We must build this after GTK gets initialized.
   settings_provider_ = CreateSettingsProvider(this);
@@ -669,6 +658,17 @@ bool GtkUi::MatchEvent(const ui::Event& event,
   return key_bindings_handler_->MatchEvent(event, commands);
 }
 
+#if BUILDFLAG(ENABLE_PRINTING)
+printing::PrintDialogLinuxInterface* GtkUi::CreatePrintDialog(
+    printing::PrintingContextLinux* context) {
+  return PrintDialogGtk::CreatePrintDialog(context);
+}
+
+gfx::Size GtkUi::GetPdfPaperSize(printing::PrintingContextLinux* context) {
+  return GetPdfPaperSizeDeviceUnitsGtk(context);
+}
+#endif
+
 void GtkUi::OnThemeChanged(GtkSettings* settings, GtkParamSpec* param) {
   colors_.clear();
   custom_frame_colors_.clear();
@@ -731,7 +731,7 @@ void GtkUi::UpdateColors() {
            // Some theme colors, e.g. COLOR_NTP_LINK, are derived from color
            // provider colors. We assume that those sources' colors won't change
            // with frame type.
-           ui::ColorProviderManager::FrameType::kChromium, nullptr});
+           ui::ColorProviderManager::FrameType::kChromium});
 
   SkColor location_bar_border = GetBorderColor("GtkEntry#entry");
   if (SkColorGetA(location_bar_border))

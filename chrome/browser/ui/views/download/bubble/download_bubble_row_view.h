@@ -31,7 +31,7 @@ class DownloadBubbleUIController;
 
 class DownloadBubbleRowView : public views::View,
                               public views::ContextMenuController,
-                              public DownloadUIModel::Observer {
+                              public DownloadUIModel::Delegate {
  public:
   METADATA_HEADER(DownloadBubbleRowView);
 
@@ -52,10 +52,10 @@ class DownloadBubbleRowView : public views::View,
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
 
-  // Overrides DownloadUIModel::Observer:
+  // Overrides DownloadUIModel::Delegate:
   void OnDownloadOpened() override;
   void OnDownloadUpdated() override;
-  void OnDownloadDestroyed() override;
+  void OnDownloadDestroyed(const ContentId& id) override;
 
   // Overrides views::ContextMenuController:
   void ShowContextMenuForViewImpl(View* source,
@@ -81,6 +81,7 @@ class DownloadBubbleRowView : public views::View,
   void UpdateButtonsForItems();
   void UpdateProgressBar();
   void UpdateLabels();
+  void RecordMetricsOnUpdate();
 
   // Load the icon, from the cache or from IconManager::LoadIcon.
   void LoadIcon();
@@ -115,6 +116,7 @@ class DownloadBubbleRowView : public views::View,
   raw_ptr<views::MdTextButton> open_now_button_ = nullptr;
   raw_ptr<views::MdTextButton> resume_button_ = nullptr;
   raw_ptr<views::MdTextButton> review_button_ = nullptr;
+  raw_ptr<views::MdTextButton> retry_button_ = nullptr;
   raw_ptr<views::FlexLayoutView> main_button_holder_ = nullptr;
 
   // The progress bar for in-progress downloads.
@@ -158,6 +160,10 @@ class DownloadBubbleRowView : public views::View,
   bool dragging_ = false;
   // Position that a possible drag started at.
   absl::optional<gfx::Point> drag_start_point_;
+
+  // Whether the download's completion has already been logged. This is used to
+  // avoid inaccurate repeated logging.
+  bool has_download_completion_been_logged_ = false;
 
   base::WeakPtrFactory<DownloadBubbleRowView> weak_factory_{this};
 };

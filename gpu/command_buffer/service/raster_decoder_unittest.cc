@@ -229,11 +229,10 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
     shared_memory_address_ =
         static_cast<int8_t*>(buffer->memory()) + shared_memory_offset_;
 
-    workarounds.client_max_texture_size = INT_MAX - 1;
+    workarounds.webgl_or_caps_max_texture_size = INT_MAX - 1;
     shared_image_factory_ = std::make_unique<SharedImageFactory>(
         GpuPreferences(), workarounds, GpuFeatureInfo(), context_state_.get(),
         &mailbox_manager_, &shared_image_manager_, nullptr, nullptr,
-        /*enable_wrapped_sk_image=*/true,
         /*is_for_display_compositor=*/false);
 
     client_texture_mailbox_ =

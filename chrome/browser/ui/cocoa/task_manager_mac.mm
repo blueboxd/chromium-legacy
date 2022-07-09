@@ -99,9 +99,9 @@ NSString* ColumnIdentifier(int id) {
         _currentSortDescriptor;
     std::stable_sort(_viewToModelMap.begin(), _viewToModelMap.end(),
                      [tableModel, currentSortDescriptor](int a, int b) {
-                       int aStart, aLength;
+                       size_t aStart, aLength;
                        tableModel->GetRowsGroupRange(a, &aStart, &aLength);
-                       int bStart, bLength;
+                       size_t bStart, bLength;
                        tableModel->GetRowsGroupRange(b, &bStart, &bLength);
                        if (aStart == bStart) {
                          // The two rows are in the same group, sort so that
@@ -127,39 +127,21 @@ NSString* ColumnIdentifier(int id) {
 }
 
 - (void)reloadData {
-  [self reloadDataWithRows:0 addedAtIndex:0];
+  [self reloadDataWithRowsAdded:0 addedAtIndex:0];
 }
 
-- (void)reloadDataWithRows:(int)addedRows addedAtIndex:(int)addedRowIndex {
-  // Store old view indices, and the model indices they map to.
+- (std::vector<size_t>)getModelSelection {
   NSIndexSet* viewSelection = [_tableView selectedRowIndexes];
-  std::vector<int> modelSelection;
+  std::vector<size_t> modelSelection;
   for (NSUInteger i = [viewSelection lastIndex];
        i != NSNotFound;
        i = [viewSelection indexLessThanIndex:i]) {
     modelSelection.push_back(_viewToModelMap[i]);
   }
+  return modelSelection;
+}
 
-  // Adjust for any added or removed rows.
-  if (addedRows != 0) {
-    for (int& selectedItem : modelSelection) {
-      if (addedRowIndex > selectedItem) {
-        // Nothing to do; added/removed items are beyond the selected item.
-        continue;
-      }
-
-      if (addedRows > 0) {
-        selectedItem += addedRows;
-      } else {
-        int removedRows = -addedRows;
-        if (addedRowIndex + removedRows <= selectedItem)
-          selectedItem -= removedRows;
-        else
-          selectedItem = -1;  // The item was removed.
-      }
-    }
-  }
-
+- (void)reloadDataWithModelSelection:(std::vector<size_t>)modelSelection {
   // Sort.
   [self sortShuffleArray];
 
@@ -168,13 +150,40 @@ NSString* ColumnIdentifier(int id) {
 
   // Reload the selection.
   NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
-  for (auto selectedItem : modelSelection) {
-    if (selectedItem != -1)
-      [indexSet addIndex:_modelToViewMap[selectedItem]];
-  }
+  for (auto selectedItem : modelSelection)
+    [indexSet addIndex:_modelToViewMap[selectedItem]];
   [_tableView selectRowIndexes:indexSet byExtendingSelection:NO];
 
   [self adjustSelectionAndEndProcessButton];
+}
+
+- (void)reloadDataWithRowsAdded:(size_t)addedRows
+                   addedAtIndex:(size_t)addedRowIndex {
+  std::vector<size_t> modelSelection = [self getModelSelection];
+
+  // Adjust for any added rows.
+  for (size_t& selectedItem : modelSelection) {
+    if (selectedItem >= addedRowIndex)
+      selectedItem += addedRows;
+  }
+
+  [self reloadDataWithModelSelection:std::move(modelSelection)];
+}
+
+- (void)reloadDataWithRowsRemoved:(size_t)removedRows
+                   removedAtIndex:(size_t)removedRowIndex {
+  std::vector<size_t> modelSelection = [self getModelSelection];
+
+  // Adjust for any removed rows.
+  std::vector<size_t> newModelSelection;
+  for (size_t selectedItem : modelSelection) {
+    if (selectedItem < removedRowIndex)
+      newModelSelection.push_back(selectedItem);
+    else if (selectedItem >= removedRowIndex + removedRows)
+      newModelSelection.push_back(selectedItem - removedRows);
+  }
+
+  [self reloadDataWithModelSelection:std::move(newModelSelection)];
 }
 
 - (task_manager::TableSortDescriptor)sortDescriptor {
@@ -313,9 +322,19 @@ NSString* ColumnIdentifier(int id) {
   NSTableHeaderCell* headerCell = [column.get() headerCell];
   id dataCell = [column.get() dataCell];
 
-  NSTextAlignment textAlignment = (columnData.align == ui::TableColumn::LEFT)
-                                      ? NSTextAlignmentLeft
-                                      : NSTextAlignmentRight;
+  NSTextAlignment textAlignment;
+  // There are no "leading" and "trailing" constants in `NSTextAlignment` so do
+  // it manually.
+  if ([NSApp userInterfaceLayoutDirection] ==
+      NSUserInterfaceLayoutDirectionRightToLeft) {
+    textAlignment = (columnData.align == ui::TableColumn::LEFT)
+                        ? NSTextAlignmentRight
+                        : NSTextAlignmentLeft;
+  } else {
+    textAlignment = (columnData.align == ui::TableColumn::LEFT)
+                        ? NSTextAlignmentLeft
+                        : NSTextAlignmentRight;
+  }
 
   NSString* columnTitle = l10n_util::GetNSStringWithFixup(columnData.id);
   [headerCell setStringValue:columnTitle];
@@ -481,9 +500,9 @@ NSString* ColumnIdentifier(int id) {
     if (!_tableModel->IsTaskKillable(modelIndex))
       allSelectionRowsAreKillableTasks = false;
 
-    int groupStart, groupLength;
+    size_t groupStart, groupLength;
     _tableModel->GetRowsGroupRange(modelIndex, &groupStart, &groupLength);
-    for (int j = 0; j < groupLength; ++j)
+    for (size_t j = 0; j < groupLength; ++j)
       [groupIndexes addIndex:_modelToViewMap[groupStart + j]];
   }
 
@@ -673,16 +692,16 @@ void TaskManagerMac::OnModelChanged() {
   [window_controller_ reloadData];
 }
 
-void TaskManagerMac::OnItemsChanged(int start, int length) {
+void TaskManagerMac::OnItemsChanged(size_t start, size_t length) {
   [window_controller_ reloadData];
 }
 
-void TaskManagerMac::OnItemsAdded(int start, int length) {
-  [window_controller_ reloadDataWithRows:length addedAtIndex:start];
+void TaskManagerMac::OnItemsAdded(size_t start, size_t length) {
+  [window_controller_ reloadDataWithRowsAdded:length addedAtIndex:start];
 }
 
-void TaskManagerMac::OnItemsRemoved(int start, int length) {
-  [window_controller_ reloadDataWithRows:-length addedAtIndex:start];
+void TaskManagerMac::OnItemsRemoved(size_t start, size_t length) {
+  [window_controller_ reloadDataWithRowsRemoved:length removedAtIndex:start];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

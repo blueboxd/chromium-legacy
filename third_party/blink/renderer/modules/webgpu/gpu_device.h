@@ -60,6 +60,7 @@ class GPUDevice final : public EventTargetWithInlineData,
                         public ExecutionContextClient,
                         public DawnObject<WGPUDevice> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(GPUDevice, Dispose);
 
  public:
   explicit GPUDevice(ExecutionContext* execution_context,
@@ -126,7 +127,8 @@ class GPUDevice final : public EventTargetWithInlineData,
       const GPURenderBundleEncoderDescriptor* descriptor,
       ExceptionState& exception_state);
 
-  GPUQuerySet* createQuerySet(const GPUQuerySetDescriptor* descriptor);
+  GPUQuerySet* createQuerySet(const GPUQuerySetDescriptor* descriptor,
+                              ExceptionState& exception_state);
 
   void pushErrorScope(const V8GPUErrorFilter& filter);
   ScriptPromise popErrorScope(ScriptState* script_state);
@@ -145,10 +147,14 @@ class GPUDevice final : public EventTargetWithInlineData,
 
   bool ValidateTextureFormatUsage(V8GPUTextureFormat format,
                                   ExceptionState& exception_state);
+  std::string formattedLabel() const;
 
  private:
   using LostProperty =
       ScriptPromiseProperty<Member<GPUDeviceLostInfo>, ToV8UndefinedGenerator>;
+
+  // Used by USING_PRE_FINALIZER.
+  void Dispose();
 
   void DestroyAllExternalTextures();
 

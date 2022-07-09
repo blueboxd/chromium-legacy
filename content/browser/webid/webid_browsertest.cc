@@ -50,8 +50,8 @@ constexpr char kExpectedManifestPath[] = "/fedcm.json";
 constexpr char kTestContentType[] = "application/json";
 constexpr char kIdpForbiddenHeader[] = "Sec-FedCM-CSRF";
 
-// Id token value in //content/test/data/id_token_endpoint.json
-constexpr char kIdToken[] = "[not a real token]";
+// Token value in //content/test/data/id_token_endpoint.json
+constexpr char kToken[] = "[not a real token]";
 
 // This class implements the IdP logic, and responds to requests sent to the
 // test HTTP server.
@@ -182,22 +182,23 @@ class WebIdBrowserTest : public ContentBrowserTest {
 
   std::string BaseIdpUrl() {
     return std::string(kIdpOrigin) + ":" +
-           base::NumberToString(https_server().port());
+           base::NumberToString(https_server().port()) + "/fedcm.json";
   }
 
   std::string GetBasicRequestString() {
     return R"(
         (async () => {
           var x = (await navigator.credentials.get({
-            federated: {
+            identity: {
               providers: [{
-                url: ')" +
+                configURL: ')" +
            BaseIdpUrl() + R"(',
                 clientId: 'client_id_1',
+                nonce: '12345',
               }]
             }
           }));
-          return (await x.login({nonce: '12345'})).idToken;
+          return x.token;
         }) ()
     )";
   }
@@ -233,7 +234,7 @@ class WebIdBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, FullLoginFlow) {
   idp_server()->SetManifestResponseDetails(BuildValidManifestDetails());
 
-  EXPECT_EQ(std::string(kIdToken), EvalJs(shell(), GetBasicRequestString()));
+  EXPECT_EQ(std::string(kToken), EvalJs(shell(), GetBasicRequestString()));
 }
 
 // Verify full login flow where the IdP uses absolute rather than relative
@@ -247,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, AbsoluteURLs) {
 
   idp_server()->SetManifestResponseDetails(manifest_details);
 
-  EXPECT_EQ(std::string(kIdToken), EvalJs(shell(), GetBasicRequestString()));
+  EXPECT_EQ(std::string(kToken), EvalJs(shell(), GetBasicRequestString()));
 }
 
 // Verify an attempt to invoke FedCM with an insecure IDP path fails.
@@ -257,21 +258,23 @@ IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, FailsOnHTTP) {
   std::string script = R"(
         (async () => {
           var x = (await navigator.credentials.get({
-            federated: {
+            identity: {
               providers: [{
-                url: 'http://idp.example)" +
-                       base::NumberToString(https_server().port()) + R"(',
+                configURL: 'http://idp.example:)" +
+                       base::NumberToString(https_server().port()) +
+                       R"(/fedcm.json',
                 clientId: 'client_id_1',
+                nonce: '12345',
               }]
             }
           }));
-          return await x.login({nonce: '12345'});
+          return x.token;
         }) ()
     )";
 
   std::string expected_error =
       "a JavaScript error: \"NetworkError: Error "
-      "retrieving an id token.\"\n";
+      "retrieving a token.\"\n";
   EXPECT_EQ(expected_error, EvalJs(shell(), script).error);
 }
 

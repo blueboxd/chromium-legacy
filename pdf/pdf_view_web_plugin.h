@@ -241,6 +241,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool HasEditableText() const override;
   bool CanUndo() const override;
   bool CanRedo() const override;
+  bool CanCopy() const override;
   bool ExecuteEditCommand(const blink::WebString& name,
                           const blink::WebString& value) override;
   blink::WebURL LinkAtPosition(const gfx::Point& /*position*/) const override;
@@ -493,10 +494,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // The current cursor type.
   ui::mojom::CursorType cursor_type_ = ui::mojom::CursorType::kPointer;
 
-  // The id of the current find operation, or -1 if no current operation is
-  // present.
-  int find_identifier_ = -1;
-
   blink::WebTextInputType text_input_type_ =
       blink::WebTextInputType::kWebTextInputTypeNone;
 
@@ -586,6 +583,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Handler for accessibility data updates.
   std::unique_ptr<PdfAccessibilityDataHandler> const
       pdf_accessibility_data_handler_;
+
+  // The id of the current find operation, or -1 if no current operation is
+  // present.
+  int find_identifier_ = -1;
 
   // Whether an update to the number of find results found was sent less than
   // `kFindResultCooldown` TimeDelta ago.

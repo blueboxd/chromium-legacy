@@ -48,6 +48,7 @@ MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
 MEDIA_EXPORT extern const char kForceWaveAudio[];
 MEDIA_EXPORT extern const char kTrySupportedChannelLayouts[];
 MEDIA_EXPORT extern const char kWaveOutBuffers[];
+MEDIA_EXPORT extern const char kUseFakeAudioCaptureTimestamps[];
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -130,6 +131,8 @@ MEDIA_EXPORT extern const base::FeatureParam<bool>
     kChromeWideEchoCancellationMinimizeResampling;
 MEDIA_EXPORT extern const base::FeatureParam<double>
     kChromeWideEchoCancellationDynamicMixingTimeout;
+MEDIA_EXPORT extern const base::FeatureParam<bool>
+    kChromeWideEchoCancellationAllowAllSampleRates;
 #endif
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderUseSharedHandle;
 MEDIA_EXPORT extern const base::Feature kEnableTabMuting;

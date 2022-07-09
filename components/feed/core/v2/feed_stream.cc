@@ -109,6 +109,16 @@ ContentOrder GetValidWebFeedContentOrder(const PrefService& pref_service) {
   return ContentOrder::kGrouped;
 }
 
+LoadType RequestScheduleTypeToLoadType(RequestSchedule::Type type) {
+  switch (type) {
+    case RequestSchedule::Type::kFeedCloseRefresh:
+      return LoadType::kFeedCloseBackgroundRefresh;
+    case RequestSchedule::Type::kScheduledRefresh:
+    default:
+      return LoadType::kBackgroundRefresh;
+  }
+}
+
 }  // namespace
 
 FeedStream::Stream::Stream(const StreamType& stream_type)
@@ -300,7 +310,7 @@ void FeedStream::StreamLoadComplete(LoadStreamTask::Result result) {
       stream.type, result.load_from_store_status, result.final_status,
       result.load_type == LoadType::kInitialLoad,
       result.loaded_new_content_from_network, result.stored_content_age,
-      content_stats, GetRequestMetadata(stream.type, false),
+      content_stats, GetContentOrder(result.stream_type),
       std::move(result.latencies));
 
   stream.model_loading_in_progress = false;
@@ -376,7 +386,7 @@ void FeedStream::SetStreamStale(const StreamType& stream_type, bool is_stale) {
   if (stream_metadata.is_known_stale() != is_stale) {
     stream_metadata.set_is_known_stale(is_stale);
     if (is_stale) {
-      SetStreamViewContentIds(metadata_, stream_type, {});
+      SetStreamViewContentHashes(metadata_, stream_type, {});
     }
     SetMetadata(metadata);
   }
@@ -968,14 +978,14 @@ RequestMetadata FeedStream::GetRequestMetadata(const StreamType& stream_type,
         /*allow_expired_session_id =*/false);
   }
 
-  if (stream_type.IsWebFeed()) {
-    result.content_order = GetValidWebFeedContentOrder(*profile_prefs_);
-  }
+  result.content_order = GetContentOrder(stream_type);
 
-  if (stream->model) {
+  const feedstore::Metadata::StreamMetadata* stream_metadata =
+      FindMetadataForStream(GetMetadata(), stream_type);
+  if (stream_metadata != nullptr) {
     result.info_card_tracking_states = info_card_tracker_.GetAllStates(
-        stream->model->last_server_response_time_millis(),
-        stream->model->last_added_time_millis());
+        stream_metadata->last_server_response_time_millis(),
+        stream_metadata->last_fetch_time_millis());
   }
 
   return result;
@@ -1033,14 +1043,17 @@ void FeedStream::ExecuteRefreshTask(RefreshTaskId task_id) {
       ShouldAttemptLoad(stream_type, LoadType::kBackgroundRefresh)
           .load_stream_status;
 
+  RequestSchedule request_schedule =
+      feed::prefs::GetRequestSchedule(task_id, *profile_prefs_);
+  LoadType load_type = RequestScheduleTypeToLoadType(request_schedule.type);
+
   // If `do_not_attempt_reason` indicates the stream shouldn't be loaded, it's
   // unlikely that criteria will change, so we skip rescheduling.
   if (do_not_attempt_reason == LoadStreamStatus::kNoStatus ||
       do_not_attempt_reason == LoadStreamStatus::kModelAlreadyLoaded) {
     // Schedule the next refresh attempt. If a new refresh schedule is returned
     // through this refresh, it will be overwritten.
-    SetRequestSchedule(
-        task_id, feed::prefs::GetRequestSchedule(task_id, *profile_prefs_));
+    SetRequestSchedule(task_id, std::move(request_schedule));
   }
 
   if (do_not_attempt_reason != LoadStreamStatus::kNoStatus) {
@@ -1051,7 +1064,7 @@ void FeedStream::ExecuteRefreshTask(RefreshTaskId task_id) {
 
   LoadStreamTask::Options options;
   options.stream_type = stream_type;
-  options.load_type = LoadType::kBackgroundRefresh;
+  options.load_type = load_type;
   options.refresh_even_when_not_stale = true;
   task_queue_.AddTask(FROM_HERE,
                       std::make_unique<LoadStreamTask>(
@@ -1110,8 +1123,8 @@ bool FeedStream::HasUnreadContent(const StreamType& stream_type) {
   // ViewContentIds to whatever the current set is. This can happen if the
   // surface already shown is refreshed.
   if (stream.model && stream.surfaces.HasSurfaceShowingContent()) {
-    SetMetadata(SetStreamViewContentIds(metadata_, stream_type,
-                                        stream.model->GetContentIds()));
+    SetMetadata(SetStreamViewContentHashes(metadata_, stream_type,
+                                           stream.model->GetContentIds()));
     return false;
   }
   return true;
@@ -1407,13 +1420,9 @@ void FeedStream::SetContentOrder(const StreamType& stream_type,
           &FeedStream::ForceRefreshTask, base::Unretained(this), stream_type)));
 }
 
-ContentOrder FeedStream::GetContentOrder(const StreamType& stream_type) {
-  if (!stream_type.IsWebFeed()) {
-    NOTREACHED()
-        << "GetContentOrderFromPrefs is not supported for this stream_type "
-        << stream_type;
+ContentOrder FeedStream::GetContentOrder(const StreamType& stream_type) const {
+  if (!stream_type.IsWebFeed())
     return ContentOrder::kUnspecified;
-  }
   return GetValidWebFeedContentOrder(*profile_prefs_);
 }
 
@@ -1455,6 +1464,7 @@ void FeedStream::ScheduleFeedCloseRefresh(const StreamType& type) {
   RequestSchedule schedule;
   schedule.anchor_time = base::Time::Now();
   schedule.refresh_offsets = {delay, delay * 2, delay * 3};
+  schedule.type = RequestSchedule::Type::kFeedCloseRefresh;
   SetRequestSchedule(type, std::move(schedule));
 }
 

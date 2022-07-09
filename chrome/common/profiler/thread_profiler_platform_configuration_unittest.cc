@@ -151,10 +151,10 @@ MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
 MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
                              GetChildProcessEnableFraction) {
 #if BUILDFLAG(IS_ANDROID)
+  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
+                     metrics::CallStackProfileParams::Process::kGpu));
   EXPECT_EQ(0.75, config()->GetChildProcessEnableFraction(
                       metrics::CallStackProfileParams::Process::kRenderer));
-  EXPECT_EQ(1.0, config()->GetChildProcessEnableFraction(
-                     metrics::CallStackProfileParams::Process::kGpu));
   EXPECT_EQ(0.0,
             config()->GetChildProcessEnableFraction(
                 metrics::CallStackProfileParams::Process::kNetworkService));
@@ -180,20 +180,20 @@ MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
 MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
                              IsEnabledForThread) {
 #if BUILDFLAG(IS_ANDROID)
-  EXPECT_FALSE(config()->IsEnabledForThread(
+  EXPECT_TRUE(config()->IsEnabledForThread(
       metrics::CallStackProfileParams::Process::kBrowser,
       metrics::CallStackProfileParams::Thread::kMain));
   EXPECT_FALSE(config()->IsEnabledForThread(
       metrics::CallStackProfileParams::Process::kBrowser,
       metrics::CallStackProfileParams::Thread::kIo));
 
-  EXPECT_TRUE(config()->IsEnabledForThread(
+  EXPECT_FALSE(config()->IsEnabledForThread(
       metrics::CallStackProfileParams::Process::kGpu,
       metrics::CallStackProfileParams::Thread::kMain));
-  EXPECT_TRUE(config()->IsEnabledForThread(
+  EXPECT_FALSE(config()->IsEnabledForThread(
       metrics::CallStackProfileParams::Process::kGpu,
       metrics::CallStackProfileParams::Thread::kIo));
-  EXPECT_TRUE(config()->IsEnabledForThread(
+  EXPECT_FALSE(config()->IsEnabledForThread(
       metrics::CallStackProfileParams::Process::kGpu,
       metrics::CallStackProfileParams::Thread::kCompositor));
 

@@ -28,7 +28,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/network/device_state.h"
+#include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -234,7 +234,7 @@ class MobileSetupHandler : public content::WebUIMessageHandler,
   void Reset();
 
   // Handlers for JS WebUI messages.
-  void HandleGetDeviceInfo(const base::ListValue* args);
+  void HandleGetDeviceInfo(const base::Value::List& args);
 
   // NetworkStateHandlerObserver implementation.
   void NetworkConnectionStateChanged(const NetworkState* network) override;
@@ -317,19 +317,16 @@ void MobileSetupUIHTMLSource::StartDataRequest(
   }
 
   NET_LOG(EVENT) << "Starting mobile setup: " << NetworkId(network);
-  base::DictionaryValue strings;
+  base::Value::Dict strings;
 
-  strings.SetStringKey(
-      "view_account_error_title",
-      l10n_util::GetStringUTF16(IDS_MOBILE_VIEW_ACCOUNT_ERROR_TITLE));
-  strings.SetStringKey(
-      "view_account_error_message",
-      l10n_util::GetStringUTF16(IDS_MOBILE_VIEW_ACCOUNT_ERROR_MESSAGE));
-  strings.SetStringKey("title",
-                       l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE));
-  strings.SetStringKey("close_button", l10n_util::GetStringUTF16(IDS_CLOSE));
-  strings.SetStringKey("cancel_button", l10n_util::GetStringUTF16(IDS_CANCEL));
-  strings.SetStringKey("ok_button", l10n_util::GetStringUTF16(IDS_OK));
+  strings.Set("view_account_error_title",
+              l10n_util::GetStringUTF16(IDS_MOBILE_VIEW_ACCOUNT_ERROR_TITLE));
+  strings.Set("view_account_error_message",
+              l10n_util::GetStringUTF16(IDS_MOBILE_VIEW_ACCOUNT_ERROR_MESSAGE));
+  strings.Set("title", l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE));
+  strings.Set("close_button", l10n_util::GetStringUTF16(IDS_CLOSE));
+  strings.Set("cancel_button", l10n_util::GetStringUTF16(IDS_CANCEL));
+  strings.Set("ok_button", l10n_util::GetStringUTF16(IDS_OK));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &strings);
@@ -337,10 +334,10 @@ void MobileSetupUIHTMLSource::StartDataRequest(
   // mobile_setup_ui.cc will only be triggered from the detail page for
   // activated cellular network.
   DCHECK(network->activation_state() == shill::kActivationStateActivated);
-  static const base::NoDestructor<std::string> html_string(
+  std::string html_string =
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-          IDR_MOBILE_SETUP_PORTAL_PAGE_HTML));
-  std::string full_html = webui::GetI18nTemplateHtml(*html_string, &strings);
+          IDR_MOBILE_SETUP_PORTAL_PAGE_HTML);
+  std::string full_html = webui::GetI18nTemplateHtml(html_string, strings);
 
   std::move(callback).Run(base::RefCountedString::TakeString(&full_html));
 }
@@ -402,13 +399,13 @@ void MobileSetupHandler::Reset() {
 }
 
 void MobileSetupHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       kJsGetDeviceInfo,
       base::BindRepeating(&MobileSetupHandler::HandleGetDeviceInfo,
                           base::Unretained(this)));
 }
 
-void MobileSetupHandler::HandleGetDeviceInfo(const base::ListValue* args) {
+void MobileSetupHandler::HandleGetDeviceInfo(const base::Value::List& args) {
   DCHECK_NE(TYPE_ACTIVATION, type_);
   if (!web_ui())
     return;

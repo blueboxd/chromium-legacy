@@ -268,7 +268,6 @@ source_set("browser_sources") {
     "notification_service.h",
     "notification_source.h",
     "notification_types.h",
-    "origin_policy_commands.h",
     "overlay_window.h",
     "overscroll_configuration.h",
     "page.h",
@@ -346,6 +345,7 @@ source_set("browser_sources") {
     "service_worker_external_request_timeout_type.h",
     "service_worker_running_info.cc",
     "service_worker_running_info.h",
+    "service_worker_version_base_info.cc",
     "service_worker_version_base_info.h",
     "session_storage_namespace.cc",
     "session_storage_namespace.h",
@@ -397,6 +397,7 @@ source_set("browser_sources") {
     "url_loader_throttles.h",
     "usb_chooser.cc",
     "usb_chooser.h",
+    "usb_delegate.h",
     "video_capture_device_launcher.cc",
     "video_capture_device_launcher.h",
     "video_capture_service.h",
@@ -526,7 +527,6 @@ source_set("browser_sources") {
     sources += [
       "browser_ppapi_host.h",
       "pepper_vpn_provider_resource_host_proxy.h",
-      "plugin_data_remover.h",
       "plugin_service.h",
       "plugin_service_filter.h",
     ]

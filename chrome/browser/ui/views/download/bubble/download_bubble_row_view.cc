@@ -197,11 +197,7 @@ void DownloadBubbleRowView::LoadIcon() {
   }
 }
 
-DownloadBubbleRowView::~DownloadBubbleRowView() {
-  if (model_.get()) {
-    model_->RemoveObserver(this);
-  }
-}
+DownloadBubbleRowView::~DownloadBubbleRowView() = default;
 
 DownloadBubbleRowView::DownloadBubbleRowView(
     DownloadUIModel::DownloadUIModelPtr model,
@@ -215,7 +211,7 @@ DownloadBubbleRowView::DownloadBubbleRowView(
       row_list_view_(row_list_view),
       bubble_controller_(bubble_controller),
       navigation_handler_(navigation_handler) {
-  model_->AddObserver(this);
+  model_->SetDelegate(this);
   SetBorder(views::CreateEmptyBorder(kDownloadBubbleRowInsets));
 
   const int icon_label_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -305,6 +301,9 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   review_button_ =
       AddMainPageButton(DownloadCommands::REVIEW,
                         l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_REVIEW));
+  retry_button_ =
+      AddMainPageButton(DownloadCommands::RETRY,
+                        l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_RETRY));
 
   subpage_icon_holder_ =
       AddChildView(std::make_unique<views::FlexLayoutView>());
@@ -377,6 +376,7 @@ bool DownloadBubbleRowView::OnMouseDragged(const ui::MouseEvent& event) {
     const views::Widget* const widget = GetWidget();
     DragDownloadItem(model_->download(), file_icon,
                      widget ? widget->GetNativeView() : nullptr);
+    RecordDownloadBubbleDragInfo(DownloadDragInfo::DRAG_STARTED);
   }
   return true;
 }
@@ -422,6 +422,8 @@ void DownloadBubbleRowView::UpdateButtonsForItems() {
                              DownloadCommands::RESUME);
   review_button_->SetVisible(ui_info_.primary_button_command ==
                              DownloadCommands::REVIEW);
+  retry_button_->SetVisible(ui_info_.primary_button_command ==
+                            DownloadCommands::RETRY);
   subpage_icon_->SetVisible(ui_info_.has_subpage);
   subpage_icon_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(ui_info_.has_subpage ? kDownloadSubpageIconMargin : 0)));
@@ -439,6 +441,7 @@ void DownloadBubbleRowView::UpdateProgressBar() {
         ui_info_.is_progress_bar_looping
             ? -1
             : static_cast<double>(model_->PercentComplete()) / 100);
+    progress_bar_->SetPaused(model_->IsPaused());
   } else if (progress_bar_->GetVisible()) {
     // Hide the progress bar.
     progress_bar_->SetVisible(false);
@@ -464,7 +467,7 @@ void DownloadBubbleRowView::UpdateLabels() {
   }
 }
 
-void DownloadBubbleRowView::OnDownloadUpdated() {
+void DownloadBubbleRowView::RecordMetricsOnUpdate() {
   // This should only be logged once per download.
   if (is_download_warning(download::GetDesiredDownloadItemMode(model_.get())) &&
       !model_->WasUIWarningShown()) {
@@ -473,6 +476,15 @@ void DownloadBubbleRowView::OnDownloadUpdated() {
         model_->GetDangerType(), model_->GetTargetFilePath(),
         model_->GetURL().SchemeIs(url::kHttpsScheme), model_->HasUserGesture());
   }
+  if (!has_download_completion_been_logged_ &&
+      model_->GetState() == download::DownloadItem::COMPLETE) {
+    RecordDownloadBubbleDragInfo(DownloadDragInfo::DOWNLOAD_COMPLETE);
+    has_download_completion_been_logged_ = true;
+  }
+}
+
+void DownloadBubbleRowView::OnDownloadUpdated() {
+  RecordMetricsOnUpdate();
   UpdateBubbleUIInfo();
   UpdateLabels();
   LoadIcon();
@@ -484,7 +496,7 @@ void DownloadBubbleRowView::OnDownloadOpened() {
   bubble_controller_->RemoveContentIdFromPartialView(model_->GetContentId());
 }
 
-void DownloadBubbleRowView::OnDownloadDestroyed() {
+void DownloadBubbleRowView::OnDownloadDestroyed(const ContentId& id) {
   // This will return ownership and destroy this object at the end of the
   // method.
   std::unique_ptr<DownloadBubbleRowView> row_view_ptr =

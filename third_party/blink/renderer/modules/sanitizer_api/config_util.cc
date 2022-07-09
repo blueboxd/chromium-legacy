@@ -21,6 +21,8 @@ SanitizerConfigImpl FromAPI(const SanitizerConfig* config) {
 
   impl.allow_custom_elements_ =
       config->hasAllowCustomElements() && config->allowCustomElements();
+  impl.allow_unknown_markup_ =
+      config->hasAllowUnknownMarkup() && config->allowUnknownMarkup();
   impl.allow_comments_ = config->hasAllowComments() && config->allowComments();
 
   // Format dropElements to lower case.
@@ -55,6 +57,7 @@ SanitizerConfigImpl FromAPI(const SanitizerConfig* config) {
   impl.had_allow_elements_ = config->hasAllowElements();
   impl.had_allow_attributes_ = config->hasAllowAttributes();
   impl.had_allow_custom_elements_ = config->hasAllowCustomElements();
+  impl.had_allow_unknown_markup_ = config->hasAllowUnknownMarkup();
 
   return impl;
 }
@@ -88,6 +91,7 @@ bool IsValidCharacter(UChar ch) {
   //     obtuse, but it seems to allow all XML names. The HTML parser however
   //     allows only ascii. Here, we settle for the simplest, most restrictive
   //     variant. May it's too restrictive, though.
+  // TODO(vogelheim): "HTML parser allows only ascii" is no longer true.
   return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
          (ch >= '0' && ch <= '9') || ch == ':' || ch == '-' || ch == '_';
 }
@@ -113,22 +117,15 @@ String ElementFromAPI(const String& name) {
   if (!IsValidName(name))
     return Invalid();
 
-  // Normalize element name, using the GetMixedCaseElementNames table.
-  String normalized = name.LowerASCII();
-  const auto& mixed_case_names = GetMixedCaseElementNames();
-  const auto iter = mixed_case_names.find(normalized);
-  if (iter != mixed_case_names.end())
-    normalized = iter->value;
-
   // Handle namespace prefixes:
-  wtf_size_t pos = normalized.find(':');
+  wtf_size_t pos = name.find(':');
   // Two (or more) colons => invalid.
-  if (pos != WTF::kNotFound && normalized.find(':', pos + 1) != WTF::kNotFound)
+  if (pos != WTF::kNotFound && name.find(':', pos + 1) != WTF::kNotFound)
     return Invalid();
   // No prefix, or the ones explicitly allowed by the spec: okay.
-  if (pos == WTF::kNotFound || normalized.StartsWith("svg:") ||
-      normalized.StartsWith("math:")) {
-    return normalized;
+  if (pos == WTF::kNotFound || name.StartsWith("svg:") ||
+      name.StartsWith("math:")) {
+    return name;
   }
   // All else: invalid.
   return Invalid();
@@ -138,19 +135,12 @@ String AttributeFromAPI(const String& name) {
   if (!IsValidName(name))
     return Invalid();
 
-  // Normalize attribute name, using the GetMixedCaseAttributeNames table.
-  String normalized = name.LowerASCII();
-  const auto& mixed_case_names = GetMixedCaseAttributeNames();
-  const auto iter = mixed_case_names.find(normalized);
-  if (iter != mixed_case_names.end())
-    normalized = iter->value;
-
   // The spec allows only a specific list of prefixed attributes. Use the
   // GetBaselineAllowAttributes() table to check for those. All other uses
   // of colon are invalid.
-  if (normalized.find(':') == WTF::kNotFound ||
-      GetBaselineAllowAttributes().Contains(normalized))
-    return normalized;
+  if (name.find(':') == WTF::kNotFound ||
+      GetBaselineAllowAttributes().Contains(name))
+    return name;
   return Invalid();
 }
 
@@ -180,6 +170,9 @@ SanitizerConfig* ToAPI(const SanitizerConfigImpl& impl) {
   if (!impl.drop_attributes_.IsEmpty()) {
     config->setDropAttributes(ToAPI(impl.drop_attributes_));
   }
+
+  if (impl.had_allow_unknown_markup_)
+    config->setAllowUnknownMarkup(impl.allow_unknown_markup_);
 
   if (impl.had_allow_custom_elements_)
     config->setAllowCustomElements(impl.allow_custom_elements_);

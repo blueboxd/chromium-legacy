@@ -379,6 +379,12 @@ const base::Feature kEnableWebAppUninstallFromOsSettings{
     "EnableWebAppUninstallFromOsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !BUILDFLAG(IS_ANDROID)
+// Enable WebHID on extension service workers.
+const base::Feature kEnableWebHidOnExtensionServiceWorker{
+    "EnableWebHidOnExtensionServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
 // Lazy initialize IndividualSettings for extensions from enterprise policy
 // that are not installed.
 const base::Feature kExtensionDeferredIndividualSettings{
@@ -605,10 +611,6 @@ const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
     "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, shows a demo of in-product help in a WebUI context.
-const base::Feature kIPHInWebUIDemo{"IPHInWebUIDemo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 const base::Feature kLinuxLowMemoryMonitor{"LinuxLowMemoryMonitor",
@@ -772,9 +774,6 @@ const base::Feature kPrefixWebAppWindowsWithAppName{
 const base::Feature kPrerenderFallbackToPreconnect{
     "PrerenderFallbackToPreconnect", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kPrivacyGuide{"PrivacyGuide",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kPrivacyGuide2{"PrivacyGuide2",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -791,8 +790,14 @@ const base::Feature kPwaUpdateDialogForIcon{"PwaUpdateDialogForIcon",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Shows a confirmation dialog when updates to a PWAs name has been detected.
-const base::Feature kPwaUpdateDialogForName{"PwaUpdateDialogForName",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kPwaUpdateDialogForName {
+  "PwaUpdateDialogForName",
+#if BUILDFLAG(IS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enables using quiet prompts for notification permission requests.
 const base::Feature kQuietNotificationPrompts{"QuietNotificationPrompts",
@@ -1193,6 +1198,6 @@ const base::Feature kSupportsRtcWakeOver24Hours{
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 const base::Feature kUseWebAppDBInsteadOfExternalPrefs{
-    "UseWebAppDBInsteadOfExternalPrefs", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseWebAppDBInsteadOfExternalPrefs", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

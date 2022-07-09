@@ -72,8 +72,9 @@
                   'chrome/android/javatests/src/org/chromium/chrome/browser/.*ChooserDialogTest.java'
     },
     'android_lint': {
-      'filepath': '/lint-baseline.xml|'\
-                  '/lint-suppressions.xml'
+      'filepath': '/lint-baseline.xml' \
+                  '|/lint-suppressions.xml' \
+                  '|third_party/android_build_tools/lint'
     },
     'android_omnibox': {
       'filepath': 'chrome/browser/ui/android/omnibox/',
@@ -961,7 +962,7 @@
       'filepath': 'devtools',
     },
     'diagnostics_mojo': {
-      'filepath': 'chromeos/services/cros_healthd/public/mojom/',
+      'filepath': 'chromeos/ash/services/cros_healthd/public/mojom/',
     },
     'diagnostics_ui': {
       'filepath': 'ash/webui/diagnostics_ui/',
@@ -1636,7 +1637,7 @@
       'filepath': 'chrome/browser/chrome_content_browser_client_binder_policies' \
                   '|chrome/browser/prerender/' \
                   '|content/browser/mojo_binder_policy' \
-                  '|content/browser/prerender/'
+                  '|content/browser/preloading/prerender/'
     },
     'presentation': {
       'filepath': 'content/browser/presentation/' \
@@ -1780,8 +1781,7 @@
     'smb': {
       'filepath': 'chrome/browser/ash/file_system_provider' \
                   '|chrome/browser/ash/smb_client'\
-                  '|chromeos/dbus/fake_smb_provider_client'\
-                  '|chromeos/dbus/smb_provider_client',
+                  '|chromeos/ash/components/dbus/smbprovider',
     },
     'source_idls': {
       'filepath': 'third_party/blink/renderer/(core|modules|platform)/.*\.idl',
@@ -2034,7 +2034,6 @@
     'wallpapers': {
       'filepath': 'components/arc/common/wallpaper.mojom'\
                   '|ash/wallpaper/'\
-                  '|chrome/browser/resources/chromeos/wallpaper_manager/',
     },
     'web_applications': {
       'filepath': 'chrome/browser/web_applications'\
@@ -2152,7 +2151,8 @@
                       'kbabbitt@microsoft.com',
                       'nektar+watch@chromium.org',
                       'sarakato+watch@chromium.org',
-                      'yuzo+watch@chromium.org'],
+                      'yuzo+watch@chromium.org',
+                      'francisjp+watcha11y@google.com'],
     'accessibility_component_extensions': ['anastasi+watch@google.com',
                                            'shannc+watch@chromium.org'],
     'accessibility_minimal_core': ['aleventhal+watcha11y@chromium.org'],

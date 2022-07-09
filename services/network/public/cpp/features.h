@@ -107,13 +107,10 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kBatchSimpleURLLoader;
 
 COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kNetworkServiceMemoryCache;
+
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kOmitCorsClientCert;
-
-COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kOptimizeNetworkBuffers;
-
-COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit;
 
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCacheTransparency;

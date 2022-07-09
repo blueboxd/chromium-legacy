@@ -43,6 +43,7 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
+#include "chrome/browser/enterprise/connectors/reporting/realtime_reporting_client_factory.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -52,7 +53,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service_factory.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/cloud_binary_upload_service_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/test_binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/check_file_system_access_write_request.h"
@@ -178,7 +179,7 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
  public:
   explicit FakeSafeBrowsingService(Profile* profile) {
     services_delegate_ = ServicesDelegate::CreateForTest(this, this);
-    BinaryUploadServiceFactory::GetInstance()->SetTestingFactory(
+    CloudBinaryUploadServiceFactory::GetInstance()->SetTestingFactory(
         profile, base::BindRepeating(&CreateTestBinaryUploadService));
     mock_database_manager_ = new NiceMock<MockSafeBrowsingDatabaseManager>();
   }
@@ -370,6 +371,10 @@ class DownloadProtectionServiceTestBase
         ->SetTestingFactory(
             profile(),
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+
+    enterprise_connectors::RealtimeReportingClientFactory::GetInstance()
+        ->SetTestingFactory(profile(),
+                            base::BindRepeating(&BuildRealtimeReportingClient));
     client_ = std::make_unique<policy::MockCloudPolicyClient>();
 
     SetDMTokenForTesting(
@@ -2778,7 +2783,8 @@ TEST_F(DownloadProtectionServiceTest,
 
 TEST_F(DownloadProtectionServiceTest,
        VerifyBypassReportSentImmediatelyIfVerdictDangerous) {
-  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+  enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
+      profile())
       ->SetBrowserCloudPolicyClientForTesting(client_.get());
 
   safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
@@ -2821,7 +2827,8 @@ TEST_F(DownloadProtectionServiceTest,
 
 TEST_F(DownloadProtectionServiceTest,
        VerifyBypassReportSentImmediatelyIfVerdictSensitive) {
-  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+  enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
+      profile())
       ->SetBrowserCloudPolicyClientForTesting(client_.get());
 
   safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
@@ -2874,7 +2881,8 @@ TEST_F(DownloadProtectionServiceTest,
 
 TEST_F(DownloadProtectionServiceTest,
        VerifyBypassReportSentAfterDangerousVerdictReceived) {
-  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+  enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
+      profile())
       ->SetBrowserCloudPolicyClientForTesting(client_.get());
 
   safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
@@ -2922,7 +2930,8 @@ TEST_F(DownloadProtectionServiceTest,
 
 TEST_F(DownloadProtectionServiceTest,
        VerifyBypassReportSentAfterDlpVerdictReceived) {
-  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+  enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
+      profile())
       ->SetBrowserCloudPolicyClientForTesting(client_.get());
 
   safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
@@ -2978,7 +2987,8 @@ TEST_F(DownloadProtectionServiceTest,
 
 TEST_F(DownloadProtectionServiceTest,
        VerifyBypassReportSentAfterDlpBlockVerdictReceived) {
-  extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+  enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
+      profile())
       ->SetBrowserCloudPolicyClientForTesting(client_.get());
 
   safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(), true);
@@ -3311,7 +3321,7 @@ TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          BinaryUploadServiceFactory::GetForProfile(profile()));
+          CloudBinaryUploadServiceFactory::GetForProfile(profile()));
   test_upload_service->SetResponse(
       BinaryUploadService::Result::FILE_ENCRYPTED,
       enterprise_connectors::ContentAnalysisResponse());
@@ -3395,7 +3405,7 @@ TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          BinaryUploadServiceFactory::GetForProfile(profile()));
+          CloudBinaryUploadServiceFactory::GetForProfile(profile()));
   test_upload_service->SetResponse(
       BinaryUploadService::Result::FILE_TOO_LARGE,
       enterprise_connectors::ContentAnalysisResponse());
@@ -3469,7 +3479,7 @@ TEST_P(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          BinaryUploadServiceFactory::GetForProfile(profile()));
+          CloudBinaryUploadServiceFactory::GetForProfile(profile()));
   test_upload_service->SetResponse(
       BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE,
       enterprise_connectors::ContentAnalysisResponse());
@@ -4305,7 +4315,7 @@ TEST_P(DeepScanningDownloadTest, PolicyEnabled) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          BinaryUploadServiceFactory::GetForProfile(profile()));
+          CloudBinaryUploadServiceFactory::GetForProfile(profile()));
 
   {
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
@@ -4352,7 +4362,7 @@ TEST_P(DeepScanningDownloadTest, PolicyDisabled) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          BinaryUploadServiceFactory::GetForProfile(profile()));
+          CloudBinaryUploadServiceFactory::GetForProfile(profile()));
 
   {
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
@@ -4411,7 +4421,7 @@ TEST_P(DeepScanningDownloadTest, SafeVerdictPrecedence) {
 
     TestBinaryUploadService* test_upload_service =
         static_cast<TestBinaryUploadService*>(
-            BinaryUploadServiceFactory::GetForProfile(profile()));
+            CloudBinaryUploadServiceFactory::GetForProfile(profile()));
 
     PrepareResponse(response.first, net::HTTP_OK, net::OK);
     test_upload_service->SetResponse(
@@ -4651,7 +4661,7 @@ TEST_P(EnterpriseCsdDownloadTest, SkipsConsumerCsdWhenEnabled) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          BinaryUploadServiceFactory::GetForProfile(profile()));
+          CloudBinaryUploadServiceFactory::GetForProfile(profile()));
 
   PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
   test_upload_service->SetResponse(
@@ -4698,7 +4708,7 @@ TEST_P(EnterpriseCsdDownloadTest, PopulatesCsdFieldWhenEnabled) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          BinaryUploadServiceFactory::GetForProfile(profile()));
+          CloudBinaryUploadServiceFactory::GetForProfile(profile()));
 
   PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
   test_upload_service->SetResponse(
@@ -4744,7 +4754,7 @@ TEST_P(EnterpriseCsdDownloadTest, StillDoesMetadataCheckForLargeFile) {
 
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
-          BinaryUploadServiceFactory::GetForProfile(profile()));
+          CloudBinaryUploadServiceFactory::GetForProfile(profile()));
 
   PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
   test_upload_service->SetResponse(

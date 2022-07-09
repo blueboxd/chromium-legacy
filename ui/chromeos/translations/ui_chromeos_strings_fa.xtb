@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">هانگول روماجا</translation>
 <translation id="112387589102719461">‏انگلیسی (آمریکایی) با صفحه‌کلید «برنامه‌نویس Dvorak»</translation>
 <translation id="1134697384939541955">انگلیسی (آمریکایی) با صفحه‌کلید گسترده</translation>
+<translation id="1138691154716715755">اوایل این ماه</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> مورد پیدا شد.
     <ph name="LINE_BREAK1" />
     در حافظه محلی فضای کافی در دسترس نیست. <ph name="FILE_SIZE" /> فضای اضافی لازم است.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، سرپرستتان آن را مسدود کرده است، جزئیات</translation>
 <translation id="2142680004883808240">‏روسی با صفحه‌کلید آوایی YaZHert</translation>
 <translation id="2143778271340628265">پیکربندی پراکسی دستی</translation>
+<translation id="2148716181193084225">امروز</translation>
 <translation id="2163152940313951844">نویسه نامعتبر: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">پرتغالی با صفحه‌کلید بین‌المللی آمریکایی رایانه</translation>
 <translation id="2198315389084035571">چینی ساده</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">جابه‌جایی به نمای فهرستی</translation>
 <translation id="2377590462528165447">‏<ph name="NUMBER_OF_ITEMS" /> پوشه با Linux هم‌رسانی شد</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> فایل انتخاب شد</translation>
+<translation id="2387120140441437063">فایل‌های پوشه حذف‌شده‌ها را نمی‌توان باز کرد. لطفاً قبل‌از باز کردن، فایل‌ها را بازیابی کنید.</translation>
 <translation id="2387458720915042159">نوع اتصال پراکسی</translation>
 <translation id="2389832672041313158">برمه‌ای/میانمار</translation>
 <translation id="2392369802118427583">فعالسازی</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">محتوای این پوشه فقط خواندنی است. برخی از فعالیت‌ها پشتیبانی نمی‌شوند.</translation>
 <translation id="2542049655219295786">‏جدول Google </translation>
 <translation id="2544853746127077729">گواهینامه راستی‌آزمایی توسط شبکه رد شد</translation>
-<translation id="2547921442987553570">افزودن به <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">بین‌المللی آمریکایی</translation>
 <translation id="2563185590376525700">قورباغه</translation>
 <translation id="2578394532502990878">تامیل (آوایی)</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">چینی (دایی)</translation>
 <translation id="3057861065630527966">از عکس‌ها و ویدئوهایتان پشتیبان بگیرید</translation>
 <translation id="3067790092342515856">‏فایل‌های Windows</translation>
-<translation id="3078461028045006476">اشتراک‌گذاری با <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">‏دستگاه‌های Chromebit</translation>
 <translation id="3085752524577180175">‏میزبان SOCKS</translation>
 <translation id="3104793765551262433">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" /> شبکه، <ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، سرپرست آن را مسدود کرده است، جزئیات</translation>
@@ -281,7 +282,7 @@
 <translation id="3466147780910026086">در حال اسکن دستگاه رسانه شما...</translation>
 <translation id="3468522857997926824">‏<ph name="FILE_COUNT" /> عکس در <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> پشتیبان گرفته شدند</translation>
 <translation id="3475447146579922140">‏صفحه‌گسترده Google</translation>
-<translation id="3479552764303398839">اکنون نه</translation>
+<translation id="3479552764303398839">حالا نه</translation>
 <translation id="3486821258960016770">مغولی</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> خطا.</translation>
 <translation id="3509680540198371098">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، جزئیات</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3855472144336161447">نئو آلمان ۲</translation>
 <translation id="3858860766373142691">نام</translation>
-<translation id="386548886866354912">بسته‌بندی با <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">توضیح</translation>
 <translation id="3899991606604168269">فرانسوی (کانادایی) با صفحه‌کلید چندزبانه</translation>
 <translation id="3901991538546252627">در حال اتصال به <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">بارگیری نمایه تلفن همراه، شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">انگلیسی (بریتانیا)</translation>
 <translation id="3975895378829046965">بنگلا (آوایی)</translation>
+<translation id="3991446849494482687">این کار همچنین تنظیم «قفل سیم‌کارت» را در دستگاه غیرفعال می‌کند.</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4017788180641807848">‏انگلیسی (آمریکایی) با صفحه‌کلید Workman</translation>
 <translation id="4040753847560036377">‏PUK نادرست است</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، تحت‌مدیریت سرپرست، جزئیات</translation>
 <translation id="4387004326333427325">گواهینامه راستی‌آزمایی، ازراه‌دور، رد شد</translation>
 <translation id="4394214039309501350">پیوند خارجی</translation>
+<translation id="4394980935660306080">اوایل این هفته</translation>
 <translation id="4401287888955153199">استخراج همه</translation>
 <translation id="4410695710508688828">عملیات استخراج انجام نشد. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">ایجاد میان‌بر برای فایل‌ها</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">درحال باز کردن «<ph name="PATH" />»</translation>
 <translation id="4720185134442950733">شبکه داده تلفن همراه</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> عکس پشتیبان گرفته شدند</translation>
+<translation id="4725096204469550614">اوایل امسال</translation>
 <translation id="4725511304875193254">کورگی</translation>
 <translation id="4737050008115666127">فرود</translation>
 <translation id="4747271164117300400">مقدونی</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">درحال انتقال <ph name="NUMBER_OF_ITEMS" /> مورد به <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">خطایی روی داد.</translation>
 <translation id="5098629044894065541">عبری</translation>
+<translation id="5102922915594634436">مدیریت پوشه‌های همگام‌سازی‌شده</translation>
 <translation id="5109254780565519649">خطایی روی داد. ممکن است برخی از موارد بازیابی نشده باشد.</translation>
 <translation id="5110329002213341433">انگلیسی (کانادا)</translation>
 <translation id="5123433949759960244">بسکتبال</translation>
@@ -603,7 +607,6 @@
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6170470584681422115">ساندویچ</translation>
 <translation id="6187719147498869044">مجاری</translation>
-<translation id="6189412234224385711">بازکردن با <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">تغییر دادن پین</translation>
 <translation id="6199801702437275229">منتظر اطلاعات فضا...</translation>
 <translation id="6205710420833115353">برخی از کارکردها بیشتر از انتظار طول می‌کشند. می‌خواهید از آنها صرف‌نظر کنید؟</translation>
@@ -707,6 +710,7 @@
 <translation id="7075931588889865715">‏تایلندی با صفحه‌کلید TIS 820-2531</translation>
 <translation id="708278670402572152">برای فعال کردن اسکن، ارتباط را قطع کنید</translation>
 <translation id="7086590977277044826">تامیل با صفحه‌کلید هندی</translation>
+<translation id="7088615885725309056">قدیمی تر</translation>
 <translation id="7103992300314999525">مقدونی</translation>
 <translation id="7106346894903675391">خرید فضای ذخیره بیشتر...</translation>
 <translation id="7126604456862387217">‏'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;جستجوی Drive&lt;/em&gt;</translation>
@@ -771,6 +775,7 @@
 <translation id="7663224033570512922">هندی</translation>
 <translation id="7693909743393669729">با قالب‌بندی درایو همه داده‌های ذخیره‌شده در آن پاک می‌شود و همه پارتیشن‌های موجود برداشته می‌شوند، ازجمله پارتیشن‌هایی که ممکن است نمایان نباشند. این کنش واگردشدنی نیست.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> قالب‌بندی نشد</translation>
+<translation id="76959938259365003">پوشه حذف‌شده‌ها پاک نشد.</translation>
 <translation id="770015031906360009">یونانی</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> کپی شد.</translation>
 <translation id="7711920809702896782">اطلاعات تصویر</translation>
@@ -781,6 +786,7 @@
 <translation id="7760449188139285140">چینی (ووبی)</translation>
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7774365994322694683">پرنده</translation>
+<translation id="7781829728241885113">دیروز</translation>
 <translation id="7788080748068240085">برای ذخیره «<ph name="FILE_NAME" />» به‌صورت آفلاین باید <ph name="TOTAL_FILE_SIZE" /> فضای دیگر خالی کنید:<ph name="MARKUP_1" />
         <ph name="MARKUP_2" />سنجاق فایل‌هایی را که دیگر نمی‌خواهید به آن‌ها دسترسی آفلاین داشته باشید بردارید<ph name="MARKUP_3" />
         <ph name="MARKUP_4" />فایل‌ها را از پوشه بارگیری‌ها حذف کنید<ph name="MARKUP_5" /></translation>

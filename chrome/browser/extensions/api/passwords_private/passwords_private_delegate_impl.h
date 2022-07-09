@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -19,8 +20,6 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/browser/ui/passwords/settings/password_manager_porter.h"
-#include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"
-#include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
@@ -40,8 +39,9 @@ class WebContents;
 namespace extensions {
 
 // Concrete PasswordsPrivateDelegate implementation.
-class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
-                                     public PasswordUIView {
+class PasswordsPrivateDelegateImpl
+    : public PasswordsPrivateDelegate,
+      public password_manager::SavedPasswordsPresenter::Observer {
  public:
   explicit PasswordsPrivateDelegateImpl(Profile* profile);
 
@@ -63,11 +63,13 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
                    const std::u16string& note,
                    bool use_account_store,
                    content::WebContents* web_contents) override;
-  bool ChangeSavedPassword(
+  absl::optional<api::passwords_private::CredentialIds> ChangeSavedPassword(
       const std::vector<int>& ids,
       const api::passwords_private::ChangeSavedPasswordParams& params) override;
-  void RemoveSavedPasswords(const std::vector<int>& ids) override;
-  void RemovePasswordExceptions(const std::vector<int>& ids) override;
+  void RemoveSavedPassword(
+      int id,
+      api::passwords_private::PasswordStoreSet from_stores) override;
+  void RemovePasswordException(int id) override;
   void UndoRemoveSavedPasswordOrException() override;
   void RequestPlaintextPassword(int id,
                                 api::passwords_private::PlaintextReason reason,
@@ -107,27 +109,26 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void RecordChangePasswordFlowStarted(
       const api::passwords_private::InsecureCredential& credential,
       bool is_manual_flow) override;
+  void RefreshScriptsIfNecessary(
+      RefreshScriptsIfNecessaryCallback callback) override;
   void StartPasswordCheck(StartPasswordCheckCallback callback) override;
   void StopPasswordCheck() override;
   api::passwords_private::PasswordCheckStatus GetPasswordCheckStatus() override;
+  void StartAutomatedPasswordChange(
+      const api::passwords_private::InsecureCredential& credential,
+      StartAutomatedPasswordChangeCallback callback) override;
   password_manager::InsecureCredentialsManager* GetInsecureCredentialsManager()
       override;
-
-  // PasswordUIView implementation.
-  Profile* GetProfile() override;
-  void SetPasswordList(
-      const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
-          password_list) override;
-  void SetPasswordExceptionList(
-      const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
-          password_exception_list) override;
 
   // KeyedService overrides:
   void Shutdown() override;
 
-  IdGenerator<std::string>& GetPasswordIdGeneratorForTesting();
-
 #if defined(UNIT_TEST)
+  int GetIdForCredential(
+      const password_manager::CredentialUIEntry& credential) {
+    return credential_id_generator_.GenerateId(credential);
+  }
+
   // Use this in tests to mock the OS-level reauthentication.
   void set_os_reauth_call(
       password_manager::PasswordAccessAuthenticator::ReauthCallback
@@ -138,6 +139,11 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 #endif  // defined(UNIT_TEST)
 
  private:
+  // password_manager::SavedPasswordsPresenter::Observer implementation.
+  void OnSavedPasswordsChanged(
+      password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords)
+      override;
+
   // Called after the lists are fetched. Once both lists have been set, the
   // class is considered initialized and any queued functions (which could
   // not be executed immediately due to uninitialized data) are invoked.
@@ -147,11 +153,12 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // has been initialized or by deferring it until initialization has completed.
   void ExecuteFunction(base::OnceClosure callback);
 
-  void SendSavedPasswordsList();
-  void SendPasswordExceptionsList();
+  void SetCredentials(
+      const std::vector<password_manager::CredentialUIEntry>& credentials);
 
-  void RemoveSavedPasswordsInternal(const std::vector<int>& ids);
-  void RemovePasswordExceptionsInternal(const std::vector<int>& ids);
+  void RemoveEntryInternal(
+      int id,
+      api::passwords_private::PasswordStoreSet from_stores);
   void UndoRemoveSavedPasswordOrExceptionInternal();
 
   // Callback for when the password list has been written to the destination.
@@ -192,9 +199,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // Not owned by this class.
   raw_ptr<Profile> profile_;
 
-  // Used to communicate with the password store.
-  std::unique_ptr<PasswordManagerPresenter> password_manager_presenter_;
-
   // Used to add/edit passwords and to create |password_check_delegate_|.
   password_manager::SavedPasswordsPresenter saved_passwords_presenter_;
 
@@ -214,23 +218,20 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   UiEntries current_entries_;
   ExceptionEntries current_exceptions_;
 
-  // Generators that map between sort keys used by |password_manager_presenter_|
-  // and ids used by the JavaScript front end.
-  IdGenerator<std::string> password_id_generator_;
-  IdGenerator<std::string> password_frontend_id_generator_;
-  IdGenerator<std::string> exception_id_generator_;
-  IdGenerator<std::string> exception_frontend_id_generator_;
+  // An id generator for saved passwords and blocked websites.
+  IdGenerator<password_manager::CredentialUIEntry,
+              int,
+              password_manager::CredentialUIEntry::Less>
+      credential_id_generator_;
 
-  // Whether SetPasswordList and SetPasswordExceptionList have been called, and
-  // whether this class has been initialized, meaning both have been called.
+  // Whether SetCredentials has been called, and whether this class has been
+  // initialized.
   bool current_entries_initialized_;
-  bool current_exceptions_initialized_;
   bool is_initialized_;
 
   // Vector of callbacks which are queued up before the password store has been
-  // initialized. Once both SetPasswordList() and SetPasswordExceptionList()
-  // have been called, this class is considered initialized and can these
-  // callbacks are invoked.
+  // initialized. Once SetCredentials() has been called, this class is
+  // considered initialized and can these callbacks are invoked.
   std::vector<base::OnceClosure> pre_initialization_callbacks_;
   std::vector<UiEntriesCallback> get_saved_passwords_list_callbacks_;
   std::vector<ExceptionEntriesCallback> get_password_exception_list_callbacks_;

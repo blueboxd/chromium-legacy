@@ -40,6 +40,7 @@
 #include "base/win/sid.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "sandbox/features.h"
 #include "sandbox/policy/features.h"
@@ -542,13 +543,13 @@ ResultCode SetJobMemoryLimit(Sandbox sandbox_type, TargetPolicy* policy) {
   size_t memory_limit = static_cast<size_t>(kDataSizeLimit);
 
   if (sandbox_type == Sandbox::kGpu || sandbox_type == Sandbox::kRenderer) {
-    int64_t GB = 1024 * 1024 * 1024;
+    constexpr uint64_t GB = 1024 * 1024 * 1024;
     // Allow the GPU/RENDERER process's sandbox to access more physical memory
     // if it's available on the system.
     //
     // Renderer processes are allowed to access 16 GB; the GPU process, up
     // to 64 GB.
-    int64_t physical_memory = base::SysInfo::AmountOfPhysicalMemory();
+    uint64_t physical_memory = base::SysInfo::AmountOfPhysicalMemory();
     if (sandbox_type == Sandbox::kGpu && physical_memory > 64 * GB) {
       memory_limit = 64 * GB;
     } else if (sandbox_type == Sandbox::kGpu && physical_memory > 32 * GB) {
@@ -1245,8 +1246,10 @@ std::string SandboxWin::GetSandboxTypeInEnglish(Sandbox sandbox_type) {
       return "Utility";
     case Sandbox::kGpu:
       return "GPU";
+#if BUILDFLAG(ENABLE_PLUGINS)
     case Sandbox::kPpapi:
       return "PPAPI";
+#endif
     case Sandbox::kNetwork:
       return "Network";
     case Sandbox::kCdm:

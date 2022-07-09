@@ -89,7 +89,7 @@ class MockUDPSocketPosix : public UDPSocketPosix {
                      net::NetLog* net_log,
                      const net::NetLogSource& source)
       : UDPSocketPosix(bind_type, net_log, source) {
-    sender_ = new MockUDPSocketPosixSender();
+    sender_ = base::MakeRefCounted<MockUDPSocketPosixSender>();
   }
 
   MockUDPSocketPosixSender* sender() {
@@ -147,15 +147,15 @@ class UDPSocketPosixTest : public TestWithTaskEnvironment {
   }
 
   void AddBuffers() {
-    for (size_t i = 0; i < kNumMsgs; i++) {
-      AddBuffer(msgs_[i]);
+    for (const auto& msg : msgs_) {
+      AddBuffer(msg);
     }
   }
 
   void SaveBufferPtrs() {
     int i = 0;
-    for (auto it = buffers_.cbegin(); it != buffers_.cend(); it++) {
-      buffer_ptrs_[i] = it->get();
+    for (const auto& buffer : buffers_) {
+      buffer_ptrs_[i] = buffer.get();
       i++;
     }
   }

@@ -54,13 +54,6 @@ const char kOverlayColorParameterName[] = "OVERLAY_COLORS";
 // TODO(b/151401974): Eliminate duplicate parameter definitions.
 const char kPasswordChangeUsernameParameterName[] = "PASSWORD_CHANGE_USERNAME";
 
-// Parameter that contains a base64-encoded GetTriggerScriptsResponseProto
-// message. Instructs the client to decode and run this trigger script prior to
-// starting the regular flow. Takes precedence over REQUEST_TRIGGER_SCRIPT if
-// both are specified.
-const char kBase64TriggerScriptsResponseProtoParameterName[] =
-    "TRIGGER_SCRIPTS_BASE64";
-
 // Special parameter for instructing the client to request and run a trigger
 // script from a remote RPC prior to starting the regular flow.
 const char kRequestTriggerScriptParameterName[] = "REQUEST_TRIGGER_SCRIPT";
@@ -137,6 +130,7 @@ const char kDetailsImageAccessibilityHint[] =
 const char kDetailsImageClickthroughUrl[] = "DETAILS_IMAGE_CLICKTHROUGH_URL";
 const char kDetailsTotalPriceLabel[] = "DETAILS_TOTAL_PRICE_LABEL";
 const char kDetailsTotalPrice[] = "DETAILS_TOTAL_PRICE";
+const char kRunHeadless[] = "RUN_HEADLESS";
 
 ScriptParameters::ScriptParameters(
     const base::flat_map<std::string, std::string>& parameters) {
@@ -221,11 +215,6 @@ absl::optional<std::string> ScriptParameters::GetPasswordChangeUsername()
   return GetParameter(kPasswordChangeUsernameParameterName);
 }
 
-absl::optional<std::string>
-ScriptParameters::GetBase64TriggerScriptsResponseProto() const {
-  return GetParameter(kBase64TriggerScriptsResponseProtoParameterName);
-}
-
 absl::optional<bool> ScriptParameters::GetRequestsTriggerScript() const {
   return GetTypedParameter<bool>(parameters_,
                                  kRequestTriggerScriptParameterName);
@@ -290,6 +279,10 @@ absl::optional<bool> ScriptParameters::GetDisableRpcSigning() const {
 
 absl::optional<bool> ScriptParameters::GetSendAnnotateDomModelVersion() const {
   return GetTypedParameter<bool>(parameters_, kSendAnnotateDomModelVersion);
+}
+
+absl::optional<bool> ScriptParameters::GetRunHeadless() const {
+  return GetTypedParameter<bool>(parameters_, kRunHeadless);
 }
 
 absl::optional<bool> ScriptParameters::GetDetailsShowInitial() const {

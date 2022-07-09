@@ -32,18 +32,12 @@ class FederatedIdentitySharingPermissionContext
       const FederatedIdentitySharingPermissionContext&) = delete;
 
   // content::FederatedIdentitySharingPermissionContextDelegate:
-  bool HasSharingPermissionForAnyAccount(
-      const url::Origin& relying_party,
-      const url::Origin& identity_provider) override;
   bool HasSharingPermission(const url::Origin& relying_party,
                             const url::Origin& identity_provider,
                             const std::string& account_id) override;
   void GrantSharingPermission(const url::Origin& relying_party,
                               const url::Origin& identity_provider,
                               const std::string& account_id) override;
-  void RevokeSharingPermission(const url::Origin& relying_party,
-                               const url::Origin& identity_provider,
-                               const std::string& account_id) override;
 };
 
 #endif  // CHROME_BROWSER_WEBID_FEDERATED_IDENTITY_SHARING_PERMISSION_CONTEXT_H_

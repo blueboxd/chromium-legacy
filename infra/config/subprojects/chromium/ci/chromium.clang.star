@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.clang builder group."""
 
-load("//lib/builders.star", "os", "sheriff_rotations", "xcode")
+load("//lib/builders.star", "builders", "os", "sheriff_rotations", "xcode")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
@@ -301,6 +301,7 @@ ci.builder(
         short_name = "rel",
     ),
     os = os.WINDOWS_ANY,
+    free_space = builders.free_space.high,
 )
 
 ci.builder(
@@ -338,6 +339,7 @@ ci.builder(
         short_name = "dbg",
     ),
     os = os.WINDOWS_ANY,
+    free_space = builders.free_space.high,
 )
 
 ci.builder(
@@ -347,6 +349,7 @@ ci.builder(
         short_name = "dll",
     ),
     os = os.WINDOWS_ANY,
+    free_space = builders.free_space.high,
 )
 
 ci.builder(

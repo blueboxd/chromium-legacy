@@ -42,8 +42,7 @@ constexpr char kAP[] = "ap";    // Key for storing ap.
 
 constexpr char kHadApps[] = "had_apps";
 
-// TODO(crbug.com/1292189): rename "updater_time" to "last_checked".
-constexpr char kLastChecked[] = "update_time";
+constexpr char kLastChecked[] = "last_checked";
 constexpr char kLastStarted[] = "last_started";
 constexpr char kLastOSVersion[] = "last_os_version";
 
@@ -172,11 +171,9 @@ const base::Value::Dict* PersistedData::GetAppKey(const std::string& id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pref_service_)
     return nullptr;
-  const base::Value* dict =
-      pref_service_->GetDictionary(kPersistedDataPreference);
-  if (!dict)
-    return nullptr;
-  const base::Value::Dict* apps = dict->GetDict().FindDict("apps");
+  const base::Value::Dict& dict =
+      pref_service_->GetValueDict(kPersistedDataPreference);
+  const base::Value::Dict* apps = dict.FindDict("apps");
   if (!apps)
     return nullptr;
   return apps->FindDict(id);

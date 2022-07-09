@@ -23,13 +23,13 @@
 #include "content/browser/fenced_frame/fenced_frame.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/browser/webui_config_map.h"
@@ -84,15 +84,15 @@ const char kLoadDedicatedWorkerScript[] = R"(
 class TestWebUIMessageHandler : public WebUIMessageHandler {
  public:
   void RegisterMessages() override {
-    web_ui()->RegisterDeprecatedMessageCallback(
+    web_ui()->RegisterMessageCallback(
         "messageRequiringGesture",
         base::BindRepeating(&TestWebUIMessageHandler::OnMessageRequiringGesture,
                             base::Unretained(this)));
-    web_ui()->RegisterDeprecatedMessageCallback(
+    web_ui()->RegisterMessageCallback(
         "notifyFinish",
         base::BindRepeating(&TestWebUIMessageHandler::OnNotifyFinish,
                             base::Unretained(this)));
-    web_ui()->RegisterDeprecatedMessageCallback(
+    web_ui()->RegisterMessageCallback(
         "sendMessage",
         base::BindRepeating(&TestWebUIMessageHandler::OnSendMessase,
                             base::Unretained(this)));
@@ -111,16 +111,16 @@ class TestWebUIMessageHandler : public WebUIMessageHandler {
   }
 
  private:
-  void OnMessageRequiringGesture(const base::ListValue* args) {
+  void OnMessageRequiringGesture(const base::Value::List& args) {
     ++message_requiring_gesture_count_;
   }
 
-  void OnNotifyFinish(const base::ListValue* args) {
+  void OnNotifyFinish(const base::Value::List& args) {
     if (finish_closure_)
       finish_closure_.Run();
   }
 
-  void OnSendMessase(const base::ListValue* args) {
+  void OnSendMessase(const base::Value::List& args) {
     // This message will be invoked when WebContents changes the main RFH
     // and the old main RFH is still alive during navigating from WebUI page
     // to cross-site. WebUI message should be handled with old main RFH.
@@ -373,8 +373,10 @@ IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
   EXPECT_EQ(0, test_handler()->message_requiring_gesture_count());
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
-                       MessageRequiringGestureAllowedWithInteractiveEvent) {
+IN_PROC_BROWSER_TEST_F(
+    WebUIRequiringGestureBrowserTest,
+    // TODO(crbug.com/1342300): Re-enable this test
+    DISABLED_MessageRequiringGestureAllowedWithInteractiveEvent) {
   // Simulate a click at Now.
   content::SimulateMouseClick(web_contents(), 0,
                               blink::WebMouseEvent::Button::kLeft);
@@ -460,6 +462,48 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, CoopCoepPolicies) {
   auto* main_frame = web_contents->GetPrimaryMainFrame();
   EXPECT_EQ(true, EvalJs(main_frame, "window.crossOriginIsolated;",
                          EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+}
+
+// Regression test for: https://crbug.com/1308391
+// Check content/ supports its embedders closing WebContent during WebUI
+// destruction, after the RenderFrameHost owning it has unloaded.
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest,
+                       SynchronousWebContentDeletionInUnload) {
+  static std::unique_ptr<WebContents> web_contents;
+  web_contents = WebContents::Create(
+      WebContents::CreateParams(shell()->web_contents()->GetBrowserContext()));
+  // Install a WebUI. When destroyed, it executes a callback releasing the
+  // WebContent.
+  class Config : public WebUIConfig {
+   public:
+    Config() : WebUIConfig(kChromeUIUntrustedScheme, "test-host") {}
+    std::unique_ptr<WebUIController> CreateWebUIController(
+        WebUI* web_ui) final {
+      class Controller : public WebUIController {
+       public:
+        explicit Controller(WebUI* web_ui) : WebUIController(web_ui) {
+          AddUntrustedDataSource(web_contents->GetBrowserContext(),
+                                 "test-host");
+        }
+        ~Controller() override { web_contents.reset(); }
+      };
+      return std::make_unique<Controller>(web_ui);
+    };
+  };
+
+  content::WebUIConfigMap::GetInstance().AddUntrustedWebUIConfig(
+      std::make_unique<Config>());
+  ASSERT_TRUE(NavigateToURL(web_contents.get(),
+                            GetChromeUntrustedUIURL("test-host/title1.html")));
+  RenderFrameHost* main_rfh = web_contents->GetPrimaryMainFrame();
+  RenderFrameDeletedObserver rfh_deleted(web_contents->GetPrimaryMainFrame());
+  RenderFrameDeletedObserver delete_observer(main_rfh);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL dummy_url = embedded_test_server()->GetURL("/simple_page.html");
+  web_contents->GetController().LoadURL(
+      dummy_url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  delete_observer.WaitUntilDeleted();
+  ASSERT_FALSE(web_contents);
 }
 
 class WebUIRequestSchemesTest : public ContentBrowserTest {

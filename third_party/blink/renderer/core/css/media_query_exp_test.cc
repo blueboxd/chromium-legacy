@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/media_query_exp.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,6 +35,30 @@ MediaQueryExpValue RemValue(double value) {
 MediaQueryExpValue DvhValue(double value) {
   return MediaQueryExpValue(
       value, CSSPrimitiveValue::UnitType::kDynamicViewportHeight);
+}
+
+MediaQueryExpValue SvhValue(double value) {
+  return MediaQueryExpValue(value,
+                            CSSPrimitiveValue::UnitType::kSmallViewportHeight);
+}
+
+MediaQueryExpValue LvhValue(double value) {
+  return MediaQueryExpValue(value,
+                            CSSPrimitiveValue::UnitType::kLargeViewportHeight);
+}
+
+MediaQueryExpValue VhValue(double value) {
+  return MediaQueryExpValue(value,
+                            CSSPrimitiveValue::UnitType::kViewportHeight);
+}
+
+MediaQueryExpValue CqhValue(double value) {
+  return MediaQueryExpValue(value,
+                            CSSPrimitiveValue::UnitType::kContainerHeight);
+}
+
+MediaQueryExpValue CssValue(const CSSPrimitiveValue& value) {
+  return MediaQueryExpValue(value);
 }
 
 MediaQueryExpValue InvalidValue() {
@@ -364,6 +390,28 @@ TEST(MediaQueryExpTest, UnitFlags) {
   // 10dvh < width
   EXPECT_EQ(MediaQueryExpValue::UnitFlags::kDynamicViewport,
             LeftExp("width", LtCmp(DvhValue(10.0))).GetUnitFlags());
+  // 10svh < width
+  EXPECT_EQ(MediaQueryExpValue::UnitFlags::kStaticViewport,
+            LeftExp("width", LtCmp(SvhValue(10.0))).GetUnitFlags());
+  // 10lvh < width
+  EXPECT_EQ(MediaQueryExpValue::UnitFlags::kStaticViewport,
+            LeftExp("width", LtCmp(LvhValue(10.0))).GetUnitFlags());
+  // 10vh < width
+  EXPECT_EQ(MediaQueryExpValue::UnitFlags::kStaticViewport,
+            LeftExp("width", LtCmp(VhValue(10.0))).GetUnitFlags());
+  // 10cqh < width
+  EXPECT_EQ(MediaQueryExpValue::UnitFlags::kContainer,
+            LeftExp("width", LtCmp(CqhValue(10.0))).GetUnitFlags());
+
+  // width < calc(10em + 10dvh)
+  const auto* calc_value =
+      DynamicTo<CSSPrimitiveValue>(css_test_helpers::ParseValue(
+          *Document::CreateForTest(), "<length>", "calc(10em + 10dvh)"));
+  ASSERT_TRUE(calc_value);
+  EXPECT_EQ(
+      static_cast<unsigned>(MediaQueryExpValue::UnitFlags::kFontRelative |
+                            MediaQueryExpValue::UnitFlags::kDynamicViewport),
+      RightExp("width", LtCmp(CssValue(*calc_value))).GetUnitFlags());
 }
 
 TEST(MediaQueryExpTest, UtilsNullptrHandling) {

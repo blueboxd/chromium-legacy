@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/base_tracing.h"
@@ -284,16 +286,28 @@ bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
   return true;
 }
 
+bool BaseSearchPrefetchRequest::ShouldBeCancelledOnResultChanges() const {
+  static constexpr auto CancelableStatus =
+      base::MakeFixedFlatSet<SearchPrefetchStatus>({
+          SearchPrefetchStatus::kInFlight,
+          SearchPrefetchStatus::kCanBeServed,
+          SearchPrefetchStatus::kPrerendered,
+      });
+  return base::Contains(CancelableStatus, current_status_);
+}
+
 void BaseSearchPrefetchRequest::CancelPrefetch() {
   DCHECK(current_status_ == SearchPrefetchStatus::kInFlight ||
-         current_status_ == SearchPrefetchStatus::kCanBeServed);
+         current_status_ == SearchPrefetchStatus::kCanBeServed ||
+         current_status_ == SearchPrefetchStatus::kPrerendered);
   current_status_ = SearchPrefetchStatus::kRequestCancelled;
   StopPrefetch();
   StopPrerender();
 }
 
 void BaseSearchPrefetchRequest::MaybeStartPrerenderSearchResult(
-    PrerenderManager& prerender_manager) {
+    PrerenderManager& prerender_manager,
+    const GURL& prerender_url) {
   // Prerendering is supposed to be requested after prefetch received a servable
   // response and take over the prefetched main resource response. When
   // prerendering is requested while prefetching is still running, it has to
@@ -319,35 +333,52 @@ void BaseSearchPrefetchRequest::MaybeStartPrerenderSearchResult(
       // reuse the response and will fail for sure, so this does not start
       // prerendering.
       return;
-    case SearchPrefetchStatus::kServed:
+    case SearchPrefetchStatus::kPrerendered:
+    case SearchPrefetchStatus::kPrerenderedAndClicked:
+      // Case 4: Prerender has started and taken the response away. No action is
+      // needed.
+      return;
+    case SearchPrefetchStatus::kPrefetchServedForRealNavigation:
+    case SearchPrefetchStatus::kPrerenderActivated:
       NOTREACHED();
   }
+
+  // maintain a weak ptr so that this can cancel prerendering when
+  // needed.
+  prerender_url_ = prerender_url;
+  prerender_manager_ = prerender_manager.GetWeakPtr();
 
   if (servable_response_code_received_) {
     // Case 3, 4: This can start prerendering because it has received a
     // response.
+    // TODO(https://crbug.com/1295170): Do not start prerendering if this
+    // request is about to expire.
     prerender_manager.StartPrerenderSearchResult(prefetch_search_terms_,
-                                                 prefetch_url_);
-  } else {
-    // Case 2: this will start prerendering after it receives a
-    // servable response.
-    prerender_manager_ = prerender_manager.GetWeakPtr();
+                                                 prerender_url);
   }
 }
 
 void BaseSearchPrefetchRequest::ErrorEncountered() {
   DCHECK(current_status_ == SearchPrefetchStatus::kInFlight ||
          current_status_ == SearchPrefetchStatus::kCanBeServed ||
-         current_status_ == SearchPrefetchStatus::kCanBeServedAndUserClicked);
+         current_status_ == SearchPrefetchStatus::kCanBeServedAndUserClicked ||
+         current_status_ == SearchPrefetchStatus::kPrerendered);
   current_status_ = SearchPrefetchStatus::kRequestFailed;
   StopPrefetch();
+  StopPrerender();
 }
 
 void BaseSearchPrefetchRequest::OnServableResponseCodeReceived() {
   servable_response_code_received_ = true;
+  // TODO(https://crbug.com/1295170): Do not start prerendering if this request
+  // is about to expire.
   if (prerender_manager_) {
-    prerender_manager_->StartPrerenderSearchResult(prefetch_search_terms_,
-                                                   prefetch_url_);
+    // Start prerender asynchronously, so that the request can prepare the data
+    // pipe completely.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&PrerenderManager::StartPrerenderSearchResult,
+                                  prerender_manager_, prefetch_search_terms_,
+                                  prerender_url_));
   }
 }
 
@@ -356,8 +387,21 @@ void BaseSearchPrefetchRequest::MarkPrefetchAsServable() {
   current_status_ = SearchPrefetchStatus::kCanBeServed;
 }
 
+void BaseSearchPrefetchRequest::MarkPrefetchAsPrerendered() {
+  DCHECK(current_status_ == SearchPrefetchStatus::kCanBeServed ||
+         current_status_ == SearchPrefetchStatus::kComplete);
+  current_status_ = SearchPrefetchStatus::kPrerendered;
+}
+
+void BaseSearchPrefetchRequest::MarkPrefetchAsPrerenderActivated() {
+  DCHECK(current_status_ == SearchPrefetchStatus::kPrerenderedAndClicked ||
+         current_status_ == SearchPrefetchStatus::kPrerendered);
+  current_status_ = SearchPrefetchStatus::kPrerenderActivated;
+}
+
 void BaseSearchPrefetchRequest::ResetPrerenderUpgrader() {
   prerender_manager_ = nullptr;
+  prerender_url_ = GURL();
 }
 
 void BaseSearchPrefetchRequest::MarkPrefetchAsComplete() {
@@ -368,14 +412,19 @@ void BaseSearchPrefetchRequest::MarkPrefetchAsComplete() {
 }
 
 void BaseSearchPrefetchRequest::MarkPrefetchAsClicked() {
-  DCHECK(current_status_ == SearchPrefetchStatus::kCanBeServed);
-  current_status_ = SearchPrefetchStatus::kCanBeServedAndUserClicked;
+  DCHECK(current_status_ == SearchPrefetchStatus::kCanBeServed ||
+         current_status_ == SearchPrefetchStatus::kPrerendered);
+  if (current_status_ == SearchPrefetchStatus::kCanBeServed) {
+    current_status_ = SearchPrefetchStatus::kCanBeServedAndUserClicked;
+  } else if (current_status_ == SearchPrefetchStatus::kPrerendered) {
+    current_status_ = SearchPrefetchStatus::kPrerenderedAndClicked;
+  }
 }
 
 void BaseSearchPrefetchRequest::MarkPrefetchAsServed() {
   DCHECK(current_status_ == SearchPrefetchStatus::kCanBeServedAndUserClicked ||
          current_status_ == SearchPrefetchStatus::kComplete);
-  current_status_ = SearchPrefetchStatus::kServed;
+  current_status_ = SearchPrefetchStatus::kPrefetchServedForRealNavigation;
   UMA_HISTOGRAM_TIMES("Omnibox.SearchPrefetch.ClickToNavigationIntercepted",
                       base::TimeTicks::Now() - time_clicked_);
 }
@@ -388,5 +437,6 @@ void BaseSearchPrefetchRequest::StopPrerender() {
   if (prerender_manager_) {
     prerender_manager_->StopPrerenderSearchResult(prefetch_search_terms_);
     prerender_manager_ = nullptr;
+    prerender_url_ = GURL();
   }
 }

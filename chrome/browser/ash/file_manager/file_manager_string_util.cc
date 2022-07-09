@@ -4,11 +4,16 @@
 
 #include "chrome/browser/ash/file_manager/file_manager_string_util.h"
 
+#include <math.h>
+
 #include "ash/components/arc/arc_features.h"
 #include "ash/constants/ash_features.h"
+#include "ash/system/time/calendar_utils.h"
+#include "ash/system/time/date_helper.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -165,6 +170,8 @@ void AddStringsForDrive(base::Value::Dict* dict) {
   SET_STRING("SYNC_NO_SERVER_SPACE", IDS_FILE_BROWSER_SYNC_NO_SERVER_SPACE);
   SET_STRING("SYNC_SERVICE_UNAVAILABLE_ERROR",
              IDS_FILE_BROWSER_SYNC_SERVICE_UNAVAILABLE_ERROR);
+  SET_STRING("DRIVE_MANAGE_MIRRORSYNC",
+             IDS_FILE_BROWSER_DRIVE_MANAGE_MIRRORSYNC_LABEL);
 }
 
 void AddStringsForMediaView(base::Value::Dict* dict) {
@@ -182,6 +189,18 @@ void AddStringsForMediaView(base::Value::Dict* dict) {
   SET_STRING("RECENT_VIEW_FILTER_OFF", IDS_FILE_BROWSER_RECENT_VIEW_FILTER_OFF);
   SET_STRING("RECENT_VIEW_FILTER_RESET",
              IDS_FILE_BROWSER_RECENT_VIEW_FILTER_RESET);
+  SET_STRING("RECENT_TIME_HEADING_TODAY",
+             IDS_FILE_BROWSER_RECENT_TIME_HEADING_TODAY);
+  SET_STRING("RECENT_TIME_HEADING_YESTERDAY",
+             IDS_FILE_BROWSER_RECENT_TIME_HEADING_YESTERDAY);
+  SET_STRING("RECENT_TIME_HEADING_THIS_WEEK",
+             IDS_FILE_BROWSER_RECENT_TIME_HEADING_THIS_WEEK);
+  SET_STRING("RECENT_TIME_HEADING_THIS_MONTH",
+             IDS_FILE_BROWSER_RECENT_TIME_HEADING_THIS_MONTH);
+  SET_STRING("RECENT_TIME_HEADING_THIS_YEAR",
+             IDS_FILE_BROWSER_RECENT_TIME_HEADING_THIS_YEAR);
+  SET_STRING("RECENT_TIME_HEADING_OLDER",
+             IDS_FILE_BROWSER_RECENT_TIME_HEADING_OLDER);
 }
 
 void AddStringsForMediaPlayer(base::Value::Dict* dict) {
@@ -366,6 +385,8 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE);
   SET_STRING("COPY_BUTTON_LABEL", IDS_FILE_BROWSER_COPY_BUTTON_LABEL);
   SET_STRING("COPY_FILESYSTEM_ERROR", IDS_FILE_BROWSER_COPY_FILESYSTEM_ERROR);
+  SET_STRING("EMPTY_TRASH_UNEXPECTED_ERROR",
+             IDS_FILE_BROWSER_EMPTY_TRASH_UNEXPECTED_ERROR);
   SET_STRING("COPY_FILE_NAME", IDS_FILE_BROWSER_COPY_FILE_NAME);
   SET_STRING("COPY_ITEMS_REMAINING", IDS_FILE_BROWSER_COPY_ITEMS_REMAINING);
   SET_STRING("COPY_FILE_NAME_LONG", IDS_FILE_BROWSER_COPY_FILE_NAME_LONG);
@@ -661,15 +682,7 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_DROP_TARGET_OPENING_LINUX_FILES);
   SET_STRING("GO_TO_FILE_LOCATION_BUTTON_LABEL",
              IDS_FILE_BROWSER_GO_TO_FILE_LOCATION_BUTTON_LABEL);
-  SET_STRING("OPEN_WITH_VERB_BUTTON_LABEL",
-             IDS_FILE_BROWSER_OPEN_WITH_VERB_BUTTON_LABEL);
-  SET_STRING("ADD_TO_VERB_BUTTON_LABEL",
-             IDS_FILE_BROWSER_ADD_TO_VERB_BUTTON_LABEL);
-  SET_STRING("PACK_WITH_VERB_BUTTON_LABEL",
-             IDS_FILE_BROWSER_PACK_WITH_VERB_BUTTON_LABEL);
   SET_STRING("SEND_FEEDBACK", IDS_FILE_BROWSER_SEND_FEEDBACK_BUTTON_LABEL);
-  SET_STRING("SHARE_WITH_VERB_BUTTON_LABEL",
-             IDS_FILE_BROWSER_SHARE_WITH_VERB_BUTTON_LABEL);
   SET_STRING("PASTE_BUTTON_LABEL", IDS_FILE_BROWSER_PASTE_BUTTON_LABEL);
   SET_STRING("PASTE_INTO_FOLDER_BUTTON_LABEL",
              IDS_FILE_BROWSER_PASTE_INTO_FOLDER_BUTTON_LABEL);
@@ -951,6 +964,32 @@ base::Value::Dict GetFileManagerStrings() {
   return dict;
 }
 
+int GetLocaleBasedWeekStart() {
+  // To avoid the DST difference, use a certain date here to calculate the week
+  // start, since there are no daylight saving starts/ends in June worldwide.
+  base::Time fixed_date;
+  bool result = base::Time::FromString("15 Jun 2021 12:00 GMT", &fixed_date);
+  DCHECK(result);
+  int local_day_of_week = 2;  // 15 Jun 2021 is Tuesday.
+  // Adjust local_day_of_week according to the current timezone. We are using
+  // 12:00pm UTC above, so only need to check if the local time difference is
+  // larger than +12 or not, all other differences fall into the same day.
+  // Note: timezone difference will never be lower than -12.
+  base::TimeDelta time_difference =
+      ash::DateHelper::GetInstance()->GetTimeDifference(fixed_date);
+  if (time_difference.InHours() >= 12) {
+    // Local time is one day after, e.g. it's Wednesday.
+    local_day_of_week += 1;
+  }
+
+  const int day_of_week = ash::calendar_utils::GetDayOfWeekInt(fixed_date);
+  // We know the fixed date is Thursday, day_of_week is between 1 and 7.
+  // * if day_of_week is 4, then Monday is the start of the week, so return 1;
+  // * if day_of_week is 5, then Sunday is the start of the week, so return 0;
+  // * if day_of_week is 6, then Saturday is the start of the week, so return 6;
+  return fmod(local_day_of_week - (day_of_week - 1) + 7, 7);
+}
+
 void AddFileManagerFeatureStrings(const std::string& locale,
                                   Profile* profile,
                                   base::Value::Dict* dict) {
@@ -991,8 +1030,12 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->Set("FUSEBOX_DEBUG",
             base::FeatureList::IsEnabled(chromeos::features::kFuseBoxDebug));
 
+  dict->Set("DRIVEFS_MIRRORING",
+            chromeos::features::IsDriveFsMirroringEnabled());
+
   dict->Set("GUEST_OS",
             base::FeatureList::IsEnabled(chromeos::features::kGuestOsFiles));
 
   dict->Set("UI_LOCALE", locale);
+  dict->Set("WEEK_START_FROM", GetLocaleBasedWeekStart());
 }

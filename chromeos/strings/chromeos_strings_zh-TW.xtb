@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">使用者</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">更新外部裝置韌體的視窗已開啟。<ph name="NUM_UPDATES" /> 項可用的更新。</translation>
+<translation id="1145516343487477149">尋找說明文章，並回答 Chromebook 常見問題</translation>
 <translation id="1165039591588034296">錯誤</translation>
 <translation id="1175697296044146566">這部 <ph name="DEVICE_TYPE" /> 是由 <ph name="MANAGER" /> 管理。</translation>
 <translation id="1175951029573070619">一般 (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">關閉深色主題</translation>
 <translation id="1874612839560830905">最大傳輸單元</translation>
 <translation id="188114911237521550">關閉深色模式</translation>
+<translation id="1881188606372070653">如要基於法律原因提出內容變更要求，請前往<ph name="BEGIN_LINK1" />法律說明頁面<ph name="END_LINK1" />。系統可能會將部分帳戶和系統資訊傳送給 Google。我們會使用您提供的資訊處理技術問題及改善服務品質，且過程中會遵守《<ph name="BEGIN_LINK2" />隱私權政策<ph name="END_LINK2" />》和《<ph name="BEGIN_LINK3" />服務條款<ph name="END_LINK3" />》。</translation>
 <translation id="1887850431809612466">硬體版本</translation>
+<translation id="1904932688895783618">其他實用資源如下：</translation>
 <translation id="1905710495812624430">超過嘗試次數上限。</translation>
 <translation id="1908234395526491708">UDP 要求失敗</translation>
 <translation id="1932611479324127242">電池斷開</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">試試疑難排解步驟</translation>
 <translation id="2016848882344942759">--沒有白標--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">如要查看螢幕保護程式，請連上網路並重新載入頁面。</translation>
 <translation id="2080070583977670716">顯示更多設定</translation>
 <translation id="2085089206770112532">顯示亮度調低</translation>
 <translation id="2105810540595158374">裝置類型為遊戲控制器。</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">開啟深色模式</translation>
 <translation id="2177831236093724629">已偵測到<ph name="LINK_BEGIN" />不合格元件<ph name="LINK_END" />。為確保系統可偵測到所有合格元件，請將 Chrome OS 更新至最新版本。</translation>
 <translation id="2180197493692062006">發生錯誤，請嘗試重新開啟應用程式。</translation>
+<translation id="2182088270354640012">感謝你提供意見！你的寶貴意見有助於改善 Chrome OS，而且提交的內容會由 Google 團隊進行審查。由於回報數量眾多，我們將不會直接回覆你。</translation>
 <translation id="2209788852729124853">重設流量計數器</translation>
 <translation id="2212733584906323460">名稱解析</translation>
 <translation id="2217935453350629363">目前速度</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">正在尋找掃描器</translation>
 <translation id="3246869037381808805">系統會移除 1 天前的列印工作</translation>
 <translation id="3268178239013324452">失敗 - 蓋子處於開啟狀態</translation>
+<translation id="3275729367986477355">顯示圖片</translation>
 <translation id="3283504360622356314">{0,plural, =1{編輯檔案}other{編輯檔案}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">金鑰方向</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">如需其他協助，請前往<ph name="BEGIN_LINK" />說明中心<ph name="END_LINK" />。</translation>
 <translation id="4793756956024303490">壓縮演算法</translation>
 <translation id="4794140124556169553">執行 CPU 測試可能會影響系統效能</translation>
+<translation id="4800589996161293643">Chromebook 社群</translation>
 <translation id="4804818685124855865">中斷連線</translation>
 <translation id="4808449224298348341">已取消列印工作「<ph name="DOCUMENT_TITLE" />」</translation>
 <translation id="4809927044794281115">淺色主題</translation>
@@ -486,6 +493,7 @@
 請輕觸麥克風圖示，直接說出你的問題。</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">登出</translation>
+<translation id="522307662484862935">請勿輸入電子郵件地址</translation>
 <translation id="5227902338748591677">深色主題時間表</translation>
 <translation id="5234764350956374838">關閉</translation>
 <translation id="5252456968953390977">漫遊中</translation>
@@ -612,6 +620,7 @@
 <translation id="6284632978374966585">開啟深色主題</translation>
 <translation id="6295178529664209245">要繼續維修嗎？</translation>
 <translation id="6302401976930124515">已取消<ph name="TEST_NAME" />測試</translation>
+<translation id="631063167932043783">探索應用程式</translation>
 <translation id="6319207335391420837">更新「<ph name="DEVICE_NAME" />」的韌體</translation>
 <translation id="6321407676395378991">開啟螢幕保護程式</translation>
 <translation id="6325525973963619867">失敗</translation>
@@ -623,6 +632,7 @@
 <translation id="6379086450106841622">觸控螢幕</translation>
 <translation id="6381741036071372448">測試鍵盤</translation>
 <translation id="6388847657025262518">掃描器的文件送紙器發生卡紙。請檢查送紙器，然後再試一次。</translation>
+<translation id="6394634179843537518">新增檔案</translation>
 <translation id="6410257289063177456">圖片檔</translation>
 <translation id="641081527798843608">主題比對</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@
 <translation id="6516990319416533844">如要測試充電速率，請讓電池耗電一小段時間</translation>
 <translation id="6517239166834772319">探索</translation>
 <translation id="6527081081771465939">Wi-Fi 安全通訊協定不明</translation>
+<translation id="6535178685492749208">你已經離線，系統稍後才會傳送意見回饋。</translation>
 <translation id="65587193855025101">平台式</translation>
 <translation id="6564646048574748301">失敗 - 無法連上印表機</translation>
 <translation id="6566314079205407217">多頁掃描</translation>
@@ -717,6 +728,7 @@
 <translation id="7297226631177386107">無法透過防火牆連線到 HTTPS 網站</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">在 Chromebook 說明論壇中詢問專家</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />；<ph name="RESULT_TEXT" />；按下搜尋鍵加空白鍵即可在 Google 搜尋中查看結果。</translation>
 <translation id="7343649194310845056">網路裝置</translation>
@@ -759,9 +771,11 @@
 <translation id="773153675489693198">週期數</translation>
 <translation id="7747039790905080783">預先共用金鑰</translation>
 <translation id="7762130827864645708">已成功變更你的密碼。請從現在開始改用新的密碼。</translation>
+<translation id="7762839321248874531">傳送<ph name="BEGIN_LINK1" />系統和應用程式資訊<ph name="END_LINK1" />以及<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">網域字尾比對</translation>
 <translation id="7769672763586021400">型號 ID</translation>
 <translation id="7784116172884276937">尚未設定任何 DNS 伺服器</translation>
+<translation id="779591286616261875">傳送新的回報內容</translation>
 <translation id="7799817062559422778">淺色模式</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7805768142964895445">狀態</translation>
@@ -828,6 +842,7 @@
 <translation id="8382302752385457774">白標</translation>
 <translation id="8395584934117017006">這部 <ph name="DEVICE_TYPE" /> 是由企業管理</translation>
 <translation id="8398927464629426868">裝置目前的充電或放電速率</translation>
+<translation id="8420955526972171689">針對硬體問題進行測試及疑難排解</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">內部鍵盤</translation>
 <translation id="8431300646573772016">Chrome OS 新功能</translation>
@@ -913,6 +928,7 @@
 <translation id="9082718469794970195">使用這部影片</translation>
 <translation id="9087578468327036362">請回報這項查詢</translation>
 <translation id="9088306295921699330">目前用量</translation>
+<translation id="9092255287806472980">你的寶貴意見有助於改善 Chrome OS，且提交的內容將由 Google 團隊進行審查。由於回報數量眾多，我們將不會逐一回覆。</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">你必須拆解裝置</translation>
 <translation id="9098156406873149060">保留使用者資料</translation>

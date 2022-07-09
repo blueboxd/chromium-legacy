@@ -276,6 +276,7 @@ android_library("cronet_impl_common_base_java") {
     "java/src/org/chromium/net/impl/CronetExceptionImpl.java",
     "java/src/org/chromium/net/impl/CronetLogger.java",
     "java/src/org/chromium/net/impl/CronetLoggerFactory.java",
+    "java/src/org/chromium/net/impl/CronetManifest.java",
     "java/src/org/chromium/net/impl/NetworkExceptionImpl.java",
     "java/src/org/chromium/net/impl/NoOpLogger.java",
     "java/src/org/chromium/net/impl/Preconditions.java",
@@ -688,7 +689,7 @@ _jar_excluded_patterns = [
   "*/multidex/*.class",
   "*/process_launcher/*.class",
   "*/SysUtils*.class",
-  "org/chromium/base/FeatureList*.class",
+  "org/chromium/base/Feature*.class",
   "org/chromium/base/jank_tracker/*.class",
   "org/chromium/base/memory/MemoryPressureMonitor*.class",
 ]
@@ -926,6 +927,7 @@ if (!is_component_build) {
   android_library("cronet_common_javatests") {
     testonly = true
     sources = [
+      "test/javatests/src/org/chromium/net/CronetLoggerTestRule.java",
       "test/javatests/src/org/chromium/net/CronetTestRule.java",
       "test/javatests/src/org/chromium/net/TestUploadDataProvider.java",
       "test/javatests/src/org/chromium/net/TestUrlRequestCallback.java",
@@ -938,6 +940,7 @@ if (!is_component_build) {
       "//build/android:build_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/junit",
     ]
   }
@@ -1015,6 +1018,7 @@ if (!is_component_build) {
       "test/javatests/src/org/chromium/net/UploadDataProvidersTest.java",
       "test/javatests/src/org/chromium/net/UrlResponseInfoTest.java",
       "test/javatests/src/org/chromium/net/impl/CronetLoggerTest.java",
+      "test/javatests/src/org/chromium/net/impl/CronetManifestTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetBufferedOutputStreamTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetChunkedOutputStreamTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetFixedModeOutputStreamTest.java",
@@ -1049,6 +1053,7 @@ if (!is_component_build) {
     # This is the only Cronet APK with lint enabled. This one was chosen because
     # it depends on basically all source files.
     enable_lint = true
+    lint_baseline_file = "lint-baseline.xml"
     lint_suppressions_file = "lint-suppressions.xml"
 
     # Still needs to support KitKat. See crbug.com/1042122.
@@ -1121,8 +1126,8 @@ if (!is_component_build) {
     android_manifest = "test/javatests/AndroidManifest.xml"
 
     sources = cronet_smoketests_platform_only_common_srcs + [
-                "test/src/org/chromium/net/CronetTestApplication.java",
                 "test/smoketests/src/org/chromium/net/smoke/PlatformOnlyEngineTest.java",
+                "test/src/org/chromium/net/CronetTestApplication.java",
               ]
 
     deps = [
@@ -1524,11 +1529,11 @@ if (!is_component_build) {
   action("api_static_checks") {
     script = "//components/cronet/tools/api_static_checks.py"
     outputs = [ "$target_gen_dir/$target_name.stamp" ]
-    _api_jar =
-        "$root_build_dir/lib.java/components/cronet/android/cronet_api_java.jar"
-    _common_jar = "$root_build_dir/lib.java/components/cronet/android/cronet_impl_common_base_java.jar"
-    _platform_jar = "$root_build_dir/lib.java/components/cronet/android/cronet_impl_platform_base_java.jar"
-    _native_jar = "$root_build_dir/lib.java/components/cronet/android/cronet_impl_native_base_java.jar"
+    _api_jar = "$target_out_dir/cronet_api_java.processed.jar"
+    _common_jar = "$target_out_dir/cronet_impl_common_base_java.processed.jar"
+    _platform_jar =
+        "$target_out_dir/cronet_impl_platform_base_java.processed.jar"
+    _native_jar = "$target_out_dir/cronet_impl_native_base_java.processed.jar"
     args = [
       "--api_jar",
       rebase_path(_api_jar, root_build_dir),

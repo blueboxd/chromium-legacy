@@ -19,7 +19,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/pin_setup_screen_handler.h"
-#include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,7 +43,7 @@ const test::UIPath kPinKeyboardInput = {"pin-setup", "pinKeyboard",
 // which perform the necessary setup so that the PIN setup screen is shown.
 class PinSetupScreenTest : public OobeBaseTest {
  public:
-  PinSetupScreenTest() { chromeos::UserDataAuthClient::InitializeFake(); }
+  PinSetupScreenTest() { UserDataAuthClient::InitializeFake(); }
 
   ~PinSetupScreenTest() override = default;
 

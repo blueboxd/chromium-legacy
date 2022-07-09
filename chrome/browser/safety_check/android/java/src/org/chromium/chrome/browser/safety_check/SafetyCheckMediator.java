@@ -333,6 +333,9 @@ class SafetyCheckMediator
         if (status == PasswordCheckUIStatus.RUNNING || mLoadStage != PasswordCheckLoadStage.IDLE) {
             return;
         }
+
+        if (mModel == null) return;
+
         // Handle error state.
         if (status != PasswordCheckUIStatus.IDLE) {
             setRunnablePasswords(() -> {
@@ -567,6 +570,8 @@ class SafetyCheckMediator
     }
 
     private void onPasswordsLoaded() {
+        if (mModel == null) return;
+
         mPasswordsLoaded = true;
         if (mLeaksLoaded) {
             determinePasswordStateOnLoadComplete();
@@ -590,12 +595,14 @@ class SafetyCheckMediator
                 mPasswordCheckupHelper, getSyncingAccount(),
                 count
                 -> {
-                    if (weakRef.get() == null) return;
-                    weakRef.get().onBreachedCredentialsObtained(count, false);
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onBreachedCredentialsObtained(count, false);
                 },
                 error -> {
-                    if (weakRef.get() == null) return;
-                    weakRef.get().onPasswordCheckFailed(error);
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onPasswordCheckFailed(error);
                 });
     }
 
@@ -616,12 +623,14 @@ class SafetyCheckMediator
                 mPasswordCheckupHelper, getSyncingAccount(),
                 unused
                 -> {
-                    if (weakRef.get() == null) return;
-                    weakRef.get().onPasswordCheckFinished();
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onPasswordCheckFinished();
                 },
                 error -> {
-                    if (weakRef.get() == null) return;
-                    weakRef.get().onPasswordCheckFailed(error);
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onPasswordCheckFailed(error);
                 });
     }
 
@@ -637,6 +646,8 @@ class SafetyCheckMediator
      */
 
     private void onBreachedCredentialsObtained(Integer count, boolean duringCheck) {
+        if (mModel == null) return;
+
         if (duringCheck) {
             // Hand off the completed state to the method for handling loaded passwords data.
             mLoadStage = PasswordCheckLoadStage.COMPLETED_WAIT_FOR_LOAD;
@@ -650,21 +661,27 @@ class SafetyCheckMediator
     }
 
     private void onPasswordCheckFinished() {
+        if (mModel == null) return;
+
         WeakReference<SafetyCheckMediator> weakRef = new WeakReference(this);
         PasswordManagerHelper.getBreachedCredentialsCount(PasswordCheckReferrer.SAFETY_CHECK,
                 mPasswordCheckupHelper, getSyncingAccount(),
                 count
                 -> {
-                    if (weakRef.get() == null) return;
-                    weakRef.get().onBreachedCredentialsObtained(count, true);
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onBreachedCredentialsObtained(count, true);
                 },
                 error -> {
-                    if (weakRef.get() == null) return;
-                    weakRef.get().onPasswordCheckFailed(error);
+                    SafetyCheckMediator mediator = weakRef.get();
+                    if (mediator == null) return;
+                    mediator.onPasswordCheckFailed(error);
                 });
     }
 
     private void onPasswordCheckFailed(Exception error) {
+        if (mModel == null) return;
+
         setRunnablePasswords(() -> {
             if (mModel != null) {
                 RecordHistogram.recordEnumeratedHistogram("Settings.SafetyCheck.PasswordsResult",

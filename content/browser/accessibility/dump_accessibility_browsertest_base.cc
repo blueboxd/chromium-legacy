@@ -52,7 +52,8 @@ bool AccessibilityTreeContainsAllChildTrees(const ui::AXNode& node) {
   if (!num_children) {
     // No children. All content is contained unless there is supposed to be
     // a child tree for this node.
-    return !ui::IsChildTreeOwner(node.GetRole());
+    return !ui::IsChildTreeOwner(node.GetRole()) ||
+           node.data().GetRestriction() == ax::mojom::Restriction::kDisabled;
   }
 
   for (size_t i = 0; i < num_children; i++) {
@@ -317,13 +318,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
                  "platform.";
     return;
   }
-#if BUILDFLAG(IS_FUCHSIA)
-  else {
-    LOG(INFO) << "No expectation file present, ignoring test on this "
-                 "platform.";
-    return;
-  }
-#endif
 
   // Get the test URL.
   GURL url(embedded_test_server()->GetURL(

@@ -72,6 +72,7 @@ class FakeServer;
 }  // namespace fake_server
 
 namespace syncer {
+class FCMHandler;
 class SyncServiceImpl;
 }  // namespace syncer
 
@@ -200,6 +201,11 @@ class SyncTest : public PlatformBrowserTest {
   // tests are rewritten in a way to not use verifier.
   virtual bool UseVerifier();
 
+  // Used to determine whether to use the configuration refresher. It's used to
+  // mitigate test flakiness due to missed invalidations and download updates
+  // after SetupClients().
+  virtual bool UseConfigurationRefresher();
+
   // Initializes sync clients and profiles but does not sync any of them.
   [[nodiscard]] virtual bool SetupClients();
 
@@ -299,6 +305,10 @@ class SyncTest : public PlatformBrowserTest {
   // be provided to the client during initialization, before Sync starts. It is
   // an error to provide both a decryption and encryption passphrases for one
   // client.
+  // TODO(crbug.com/1338480): this and below are overused, most tests can use
+  // SyncUserSettings interface. Avoid usages, reintroduce logic in specific
+  // test that actually need it (if exists) and remove these functions together
+  // with relevant SyncTest SetupSync() code.
   void SetDecryptionPassphraseForClient(int index,
                                         const std::string& passphrase);
 
@@ -346,10 +356,7 @@ class SyncTest : public PlatformBrowserTest {
           profile_to_instance_id_driver_map,
       content::BrowserContext* context);
 
-  static std::unique_ptr<KeyedService> CreateSyncInvalidationsService(
-      std::map<const Profile*, std::unique_ptr<instance_id::InstanceIDDriver>>*
-          profile_to_instance_id_driver_map,
-      std::vector<syncer::FCMHandler*>* sync_invalidations_fcm_handlers,
+  std::unique_ptr<KeyedService> CreateSyncInvalidationsService(
       content::BrowserContext* context);
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -394,8 +401,8 @@ class SyncTest : public PlatformBrowserTest {
   // value of |server_type_|.
   void SetUpInvalidations(int index);
 
-  // Initializes the invalidations that were set up in SetUpInvalidations.
-  void InitializeInvalidations(int index);
+  // Initializes the configuration refresher.
+  void InitializeConfigurationRefresher(int index);
 
   // Internal routine for setting up sync.
   void SetupSyncInternal(SetupSyncMode setup_mode);
@@ -474,6 +481,8 @@ class SyncTest : public PlatformBrowserTest {
   std::map<const Profile*, std::unique_ptr<instance_id::InstanceIDDriver>>
       profile_to_instance_id_driver_map_;
 
+  std::map<const Profile*, syncer::FCMHandler*> profile_to_fcm_handler_map_;
+
   // Triggers a GetUpdates via refresh after a configuration.
   std::unique_ptr<ConfigurationRefresher> configuration_refresher_;
 
@@ -505,7 +514,6 @@ class SyncTest : public PlatformBrowserTest {
       model_updater_factory_;
 #endif
 
-  std::vector<syncer::FCMHandler*> sync_invalidations_fcm_handlers_;
   std::unique_ptr<fake_server::FakeServerSyncInvalidationSender>
       fake_server_sync_invalidation_sender_;
 };

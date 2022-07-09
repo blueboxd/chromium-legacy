@@ -167,22 +167,15 @@ public class WebViewLayoutTest {
                 + "webexposed/global-interface-listing.html", mTestActivity);
 
         // Process all expectations files.
-        String blinkExpected = readFile(PATH_BLINK_PREFIX + "platform/generic/"
-                + "webexposed/global-interface-listing-expected.txt");
-        String blinkPlatformSpecificExpected = readFile(PATH_BLINK_PREFIX
-                + "platform/generic/"
-                + "webexposed/global-interface-listing-platform-specific-expected.txt");
         String webviewExcluded =
                 readFile(PATH_WEBVIEW_PREFIX + "webexposed/not-webview-exposed.txt");
 
-        HashMap<String, HashSet<String>> blinkInterfacesMap = buildHashMap(blinkExpected);
         HashMap<String, HashSet<String>> webviewExcludedInterfacesMap =
                 buildHashMap(webviewExcluded);
-        blinkInterfacesMap = buildHashMap(blinkPlatformSpecificExpected, blinkInterfacesMap);
 
         // Wait for web test to finish running. Note we should wait for the web test to finish
         // running after processing all expectations files. All the expectations files have
-        // a combined total of 9000 lines and combined size of 216 KB. It is better to process
+        // a combined total of 300 lines and combined size of 12 KB. It is better to process
         // the expectations files in parallel with the web test run.
         mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
@@ -190,33 +183,53 @@ public class WebViewLayoutTest {
         String result = mTestActivity.getTestResult();
         HashMap<String, HashSet<String>> webviewInterfacesMap = buildHashMap(result);
 
-        StringBuilder unexpected = new StringBuilder();
+        HashSet<String> interfacesNotExposedInWebview = new HashSet<>();
+        HashMap<String, HashSet<String>> propertiesNotExposedInWebview = new HashMap<>();
 
-        // Check that each excluded interface and its properties are present in blinkInterfaceMap
-        // but not in webviewInterfacesMap.
-        for (HashMap.Entry<String, HashSet<String>> entry :
-                webviewExcludedInterfacesMap.entrySet()) {
-            String interfaceS = entry.getKey();
-            HashSet<String> subsetBlink = blinkInterfacesMap.get(interfaceS);
-            Assert.assertNotNull("Interface " + interfaceS + " not exposed in blink", subsetBlink);
-
-            HashSet<String> subsetWebView = webviewInterfacesMap.get(interfaceS);
-            HashSet<String> subsetExcluded = entry.getValue();
-            if (subsetExcluded.isEmpty() && subsetWebView != null) {
-                unexpected.append(interfaceS + "\n");
-                continue;
+        // Check that each excluded interface and its properties are
+        // not present in webviewInterfacesMap.
+        webviewExcludedInterfacesMap.forEach((interfaceInExcluded, excludedInterfaceProperties) -> {
+            if (excludedInterfaceProperties.isEmpty()
+                    && webviewInterfacesMap.containsKey(interfaceInExcluded)) {
+                // An interface with an empty property list in not-webview-exposed.txt
+                // should not be in the global-interface-listing.html results for WebView.
+                interfacesNotExposedInWebview.add(interfaceInExcluded);
             }
 
-            for (String property : subsetExcluded) {
-                Assert.assertTrue(
-                        "Interface " + interfaceS + "." + property + " not exposed in blink",
-                        subsetBlink.contains(property));
-                if (subsetWebView != null && subsetWebView.contains(property)) {
-                    unexpected.append(interfaceS + "." + property + "\n");
+            // global-interface-listing.html and not-webview-exposed.txt are mutually exclusive.
+            excludedInterfaceProperties.forEach((excludedProperty) -> {
+                if (webviewInterfacesMap.getOrDefault(interfaceInExcluded, new HashSet<>())
+                                .contains(excludedProperty)) {
+                    propertiesNotExposedInWebview.putIfAbsent(interfaceInExcluded, new HashSet<>());
+                    propertiesNotExposedInWebview.get(interfaceInExcluded).add(excludedProperty);
                 }
-            }
+            });
+        });
+
+        StringBuilder errorMessage = new StringBuilder();
+        if (!interfacesNotExposedInWebview.isEmpty()) {
+            errorMessage.append(
+                    String.format("\nThe Blink interfaces below are exposed in WebView. "
+                                    + "Remove them from\n%s\n to resolve this error.\n",
+                            NOT_WEBVIEW_EXPOSED_CHROMIUM_PATH));
+            interfacesNotExposedInWebview.forEach(illegallyExposedInterface -> {
+                errorMessage.append("\t- " + illegallyExposedInterface + "\n");
+            });
         }
-        Assert.assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
+        propertiesNotExposedInWebview.forEach((webviewInterface, propertiesNotExposed) -> {
+            errorMessage.append(String.format("\n%d of the properties of the Blink interface "
+                            + "\"%s\"\nare exposed in WebView. Remove them from the "
+                            + "list of properties excluded for the \n\"%s\" interface in \n%s\n "
+                            + "to resolve this error\n",
+                    propertiesNotExposed.size(), webviewInterface, webviewInterface,
+                    NOT_WEBVIEW_EXPOSED_CHROMIUM_PATH));
+            propertiesNotExposed.forEach(propertyNotExposed -> {
+                errorMessage.append("\t- " + propertyNotExposed + "\n");
+            });
+        });
+        if (errorMessage.length() > 0) {
+            Assert.fail(errorMessage.toString());
+        }
     }
 
     @Test
@@ -288,7 +301,7 @@ public class WebViewLayoutTest {
         StringBuilder errorMessage = new StringBuilder();
         if (!missingInterfaces.isEmpty()) {
             errorMessage.append(String.format("\nWebView does not expose the "
-                            + "Blink interfaces below. Add them to\n%s\nto suppress this error.\n",
+                            + "Blink interfaces below. Add them to\n%s\nto resolve this error.\n",
                     NOT_WEBVIEW_EXPOSED_CHROMIUM_PATH));
             missingInterfaces.forEach(
                     (missingInterface) -> errorMessage.append("\t- " + missingInterface + "\n"));
@@ -297,7 +310,7 @@ public class WebViewLayoutTest {
             errorMessage.append(String.format(
                     "\nAt least one of the properties of the Blink interface \"%s\" "
                             + "is not exposed in WebView.\nAdd them to the list of properties "
-                            + "not exposed for the \"%s\" interface in\n%s\nto suppress "
+                            + "not exposed for the \"%s\" interface in\n%s\nto resolve "
                             + "this error\n",
                     blinkInterface, blinkInterface, NOT_WEBVIEW_EXPOSED_CHROMIUM_PATH));
             missingProperties.forEach(

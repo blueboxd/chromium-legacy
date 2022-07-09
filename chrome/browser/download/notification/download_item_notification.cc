@@ -27,6 +27,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/notification/download_notification_manager.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -183,12 +184,16 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
       base::RecordAction(
           UserMetricsAction("DownloadNotification.Button_DeepScan"));
       break;
+    case DownloadCommands::REVIEW:
+      base::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_Review"));
+      break;
     // Not actually displayed in notification, so should never be reached.
     case DownloadCommands::ALWAYS_OPEN_TYPE:
     case DownloadCommands::PLATFORM_OPEN:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
-    case DownloadCommands::REVIEW:
+    case DownloadCommands::RETRY:
     case DownloadCommands::MAX:
       NOTREACHED();
       break;
@@ -242,7 +247,7 @@ DownloadItemNotification::DownloadItemNotification(
     Profile* profile,
     DownloadUIModel::DownloadUIModelPtr item)
     : profile_(profile), item_(std::move(item)) {
-  item_->AddObserver(this);
+  item_->SetDelegate(this);
   // Creates the notification instance. |title|, |body| and |icon| will be
   // overridden by UpdateNotificationData() below.
   message_center::RichNotificationData rich_notification_data;
@@ -276,8 +281,6 @@ DownloadItemNotification::DownloadItemNotification(
 }
 
 DownloadItemNotification::~DownloadItemNotification() {
-  ShutDown();
-
   if (image_decode_status_ == IN_PROGRESS)
     ImageDecoder::Cancel(this);
 }
@@ -294,16 +297,16 @@ void DownloadItemNotification::OnDownloadUpdated() {
   Update();
 }
 
-void DownloadItemNotification::OnDownloadDestroyed() {
+void DownloadItemNotification::OnDownloadDestroyed(const ContentId& id) {
+  item_.reset();
   NotificationDisplayServiceFactory::GetForProfile(profile())->Close(
-      NotificationHandler::Type::TRANSIENT, GetNotificationId());
+      NotificationHandler::Type::TRANSIENT, id.id);
   // |this| will be deleted before there's a chance for Close() to be called
   // through the delegate, so preemptively call it now.
   Close(false);
-  ShutDown();
 
   // This object may get deleted after this call.
-  observer_->OnDownloadDestroyed(item_->GetContentId());
+  observer_->OnDownloadDestroyed(id);
 }
 
 void DownloadItemNotification::DisablePopup() {
@@ -382,13 +385,21 @@ void DownloadItemNotification::Click(
 
     // ExecuteCommand() might cause |item_| to be destroyed.
     if (item_ && command != DownloadCommands::PAUSE &&
-        command != DownloadCommands::RESUME) {
+        command != DownloadCommands::RESUME &&
+        command != DownloadCommands::REVIEW) {
       CloseNotification();
     }
 
     // Shows the notification again after clicking "Keep" on dangerous download.
     if (command == DownloadCommands::KEEP) {
       show_next_ = true;
+      Update();
+    }
+
+    if (command == DownloadCommands::REVIEW) {
+      item_->ReviewScanningVerdict(
+          GetBrowser()->tab_strip_model()->GetActiveWebContents());
+      in_review_ = true;
       Update();
     }
 
@@ -441,11 +452,6 @@ void DownloadItemNotification::Click(
     case download::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
   }
-}
-
-void DownloadItemNotification::ShutDown() {
-  if (item_)
-    item_->RemoveObserver(this);
 }
 
 std::string DownloadItemNotification::GetNotificationId() const {
@@ -732,7 +738,17 @@ DownloadItemNotification::GetExtraActions() const {
       actions->push_back(DownloadCommands::LEARN_MORE_SCANNING);
     } else {
       actions->push_back(DownloadCommands::DISCARD);
-      actions->push_back(DownloadCommands::KEEP);
+
+      // Only include a keep/review button if there isn't an extra review dialog
+      // opened already.
+      if (!in_review_) {
+        if (enterprise_connectors::ShouldPromptReviewForDownload(
+                profile(), item_->GetDangerType())) {
+          actions->push_back(DownloadCommands::REVIEW);
+        } else {
+          actions->push_back(DownloadCommands::KEEP);
+        }
+      }
     }
     return actions;
   }
@@ -888,11 +904,14 @@ std::u16string DownloadItemNotification::GetCommandLabel(
     case DownloadCommands::DEEP_SCAN:
       id = IDS_SCAN_DOWNLOAD;
       break;
+    case DownloadCommands::REVIEW:
+      id = IDS_REVIEW_DOWNLOAD;
+      break;
     case DownloadCommands::ALWAYS_OPEN_TYPE:
     case DownloadCommands::PLATFORM_OPEN:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
-    case DownloadCommands::REVIEW:
+    case DownloadCommands::RETRY:
     case DownloadCommands::MAX:
       // Only for menu.
       NOTREACHED();

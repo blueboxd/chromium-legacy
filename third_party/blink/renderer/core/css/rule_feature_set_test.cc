@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
@@ -44,23 +45,33 @@ class RuleFeatureSetTest : public testing::Test {
   }
 
   static RuleFeatureSet::SelectorPreMatch CollectFeaturesTo(
-      CSSSelectorList selector_list,
+      CSSSelectorVector& selector_vector,
+      const StyleScope* style_scope,
+      RuleFeatureSet& set) {
+    if (selector_vector.IsEmpty()) {
+      return RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;
+    }
+
+    auto* style_rule = StyleRule::Create(
+        selector_vector,
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode));
+    return CollectFeaturesTo(style_rule, style_scope, set);
+  }
+
+  static RuleFeatureSet::SelectorPreMatch CollectFeaturesTo(
+      StyleRule* style_rule,
       const StyleScope* style_scope,
       RuleFeatureSet& set) {
     Vector<wtf_size_t> indices;
-    for (const CSSSelector* s = selector_list.First(); s;
-         s = selector_list.Next(*s)) {
-      indices.push_back(selector_list.SelectorIndex(*s));
+    for (const CSSSelector* s = style_rule->FirstSelector(); s;
+         s = CSSSelectorList::Next(*s)) {
+      indices.push_back(style_rule->SelectorIndex(*s));
     }
-
-    auto* style_rule = MakeGarbageCollected<StyleRule>(
-        std::move(selector_list),
-        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode));
 
     RuleFeatureSet::SelectorPreMatch result =
         RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;
-    for (unsigned i = 0; i < indices.size(); ++i) {
-      RuleData rule_data(style_rule, indices[i], 0, 0, kRuleHasNoSpecialState);
+    for (wtf_size_t index : indices) {
+      RuleData rule_data(style_rule, index, 0, 0, kRuleHasNoSpecialState);
       if (set.CollectFeaturesFromRuleData(&rule_data, style_scope))
         result = RuleFeatureSet::SelectorPreMatch::kSelectorMayMatch;
     }
@@ -70,11 +81,10 @@ class RuleFeatureSetTest : public testing::Test {
   static RuleFeatureSet::SelectorPreMatch CollectFeaturesTo(
       const String& selector_text,
       RuleFeatureSet& set) {
-    CSSSelectorList selector_list = CSSParser::ParseSelector(
+    CSSSelectorVector selector_vector = CSSParser::ParseSelector(
         StrictCSSParserContext(SecureContextMode::kInsecureContext), nullptr,
         selector_text);
-    return CollectFeaturesTo(std::move(selector_list),
-                             nullptr /* style_scope */, set);
+    return CollectFeaturesTo(selector_vector, nullptr /* style_scope */, set);
   }
 
   void ClearFeatures() { rule_feature_set_.Clear(); }
@@ -1813,9 +1823,7 @@ class RuleFeatureSetScopeRefTest
     auto* style_rule = DynamicTo<StyleRule>(rule);
     ASSERT_TRUE(style_rule);
 
-    DCHECK(style_rule->SelectorList().IsValid());
-
-    CollectFeaturesTo(style_rule->SelectorList().Copy(), scope, set);
+    CollectFeaturesTo(style_rule, scope, set);
   }
 
   void Compare(const RuleFeatureSet& main,

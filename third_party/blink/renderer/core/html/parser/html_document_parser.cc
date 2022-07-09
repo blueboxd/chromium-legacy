@@ -834,14 +834,10 @@ bool HTMLDocumentParser::PumpTokenizer() {
     ConstructTreeFromHTMLToken();
     if (!should_run_until_completion && !IsPaused()) {
       DCHECK_EQ(task_runner_state_->GetMode(), kAllowDeferredParsing);
-
-      DCHECK(base::FeatureList::IsEnabled(
-                 features::kDeferBeginMainFrameDuringLoading) ||
-             scheduler_->DontDeferBeginMainFrame());
       if (TimedParserBudgetEnabled())
         should_yield = chunk_parsing_timer_.Elapsed() >= timed_budget;
       else
-        should_yield = budget <= 0 && scheduler_->DontDeferBeginMainFrame();
+        should_yield = budget <= 0;
       should_yield |= scheduler_->ShouldYieldForHighPriorityWork();
       should_yield &= task_runner_state_->HaveExitedHeader();
 
@@ -949,24 +945,11 @@ void HTMLDocumentParser::ConstructTreeFromHTMLToken() {
   }
 
   // We clear the token_ in case ConstructTree() synchronously re-enters the
-  // parser. We don't clear the token immediately for kCharacter tokens because
-  // the AtomicHTMLToken avoids copying the characters by keeping a pointer to
-  // the underlying buffer in the HTMLToken. Fortunately, kCharacter tokens
-  // can't cause us to re-enter the parser.
-  if (Token().GetType() != HTMLToken::kCharacter)
-    Token().Clear();
+  // parser.
+  Token().Clear();
 
   tree_builder_->ConstructTree(&atomic_token);
   CheckIfBlockingStylesheetAdded();
-
-  // FIXME: ConstructTree may synchronously cause Document to be detached.
-  if (!token_)
-    return;
-
-  if (!Token().IsUninitialized()) {
-    DCHECK_EQ(Token().GetType(), HTMLToken::kCharacter);
-    Token().Clear();
-  }
 }
 
 bool HTMLDocumentParser::HasInsertionPoint() {
@@ -1494,8 +1477,10 @@ std::string HTMLDocumentParser::GetPreloadHistogramSuffix() {
 }
 
 void HTMLDocumentParser::ScanInBackground(const String& source) {
+  if (task_runner_state_->IsSynchronous() || !GetDocument()->Url().IsValid())
+    return;
+
   if (ThreadedPreloadScannerEnabled() && preloader_ &&
-      !task_runner_state_->IsSynchronous() && GetDocument()->Url().IsValid() &&
       // TODO(crbug.com/1329535): Support scanning prefetch documents in the
       // background.
       !GetDocument()->IsPrefetchOnly() &&
@@ -1511,7 +1496,7 @@ void HTMLDocumentParser::ScanInBackground(const String& source) {
     background_scanner_.AsyncCall(&HTMLPreloadScanner::ScanInBackground)
         .WithArgs(
             source, GetDocument()->ValidBaseElementURL(),
-            CrossThreadBindOnce(
+            CrossThreadBindRepeating(
                 &HTMLDocumentParser::AddPreloadDataOnBackgroundThread,
                 WrapCrossThreadPersistent(this),
                 GetDocument()->GetTaskRunner(TaskType::kInternalLoading)));
@@ -1533,30 +1518,43 @@ void HTMLDocumentParser::ScanInBackground(const String& source) {
 void HTMLDocumentParser::AddPreloadDataOnBackgroundThread(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     std::unique_ptr<PendingPreloadData> preload_data) {
+  DCHECK(!IsMainThread());
+  bool should_post_task = false;
   {
     base::AutoLock lock(pending_preload_lock_);
+    // Only post a task if the preload data is empty. Otherwise, a task has
+    // already been posted and will consume the new data.
+    should_post_task = pending_preload_data_.IsEmpty();
     pending_preload_data_.push_back(std::move(preload_data));
   }
 
-  PostCrossThreadTask(
-      *task_runner, FROM_HERE,
-      CrossThreadBindOnce(&HTMLDocumentParser::FlushPendingPreloads,
-                          WrapCrossThreadPersistent(this)));
+  if (should_post_task) {
+    PostCrossThreadTask(
+        *task_runner, FROM_HERE,
+        CrossThreadBindOnce(&HTMLDocumentParser::FlushPendingPreloads,
+                            WrapCrossThreadPersistent(this)));
+  }
 }
 
 void HTMLDocumentParser::FlushPendingPreloads() {
-  DCHECK(ThreadedPreloadScannerEnabled());
+  DCHECK(IsMainThread());
+  if (!ThreadedPreloadScannerEnabled())
+    return;
+
   if (IsDetached() || !preloader_)
     return;
 
-  Vector<std::unique_ptr<PendingPreloadData>> preload_data;
-  {
-    base::AutoLock lock(pending_preload_lock_);
-    preload_data = std::move(pending_preload_data_);
-  }
+  // Do this in a loop in case more preloads are added in the background.
+  while (HasPendingPreloads()) {
+    Vector<std::unique_ptr<PendingPreloadData>> preload_data;
+    {
+      base::AutoLock lock(pending_preload_lock_);
+      preload_data = std::move(pending_preload_data_);
+    }
 
-  for (auto& preload : preload_data)
-    ProcessPreloadData(std::move(preload));
+    for (auto& preload : preload_data)
+      ProcessPreloadData(std::move(preload));
+  }
 }
 
 }  // namespace blink

@@ -351,9 +351,9 @@ bool LayoutFlexibleBox::HitTestChildren(
     HitTestResult& result,
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
-    HitTestAction hit_test_action) {
+    HitTestPhase phase) {
   NOT_DESTROYED();
-  if (hit_test_action != kHitTestForeground)
+  if (phase != HitTestPhase::kForeground)
     return false;
 
   PhysicalOffset scrolled_offset = accumulated_offset;
@@ -839,8 +839,7 @@ LayoutUnit LayoutFlexibleBox::ComputeMainSizeFromAspectRatioUsing(
   LayoutUnit border_and_padding;
   if (ar_type == EAspectRatioType::kRatio ||
       (ar_type == EAspectRatioType::kAutoAndRatio && aspect_ratio.IsEmpty())) {
-    gfx::SizeF int_ratio = child.StyleRef().AspectRatio().GetRatio();
-    aspect_ratio = LayoutSize{int_ratio.width(), int_ratio.height()};
+    aspect_ratio = LayoutSize(child.StyleRef().AspectRatio().GetRatio());
     if (child.StyleRef().BoxSizingForAspectRatio() == EBoxSizing::kContentBox) {
       cross_size -= cross_axis_border_and_padding;
       border_and_padding = main_axis_border_and_padding;

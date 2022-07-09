@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Koreys kiritish usuli (Romaja)</translation>
 <translation id="112387589102719461">Ingliz (AQSH) va Dvorak dasturchilar klaviaturasi</translation>
 <translation id="1134697384939541955">Ingliz (AQSH) va Kengaytirilgan klaviatura</translation>
+<translation id="1138691154716715755">Shu oy boshi</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> ta fayl topildi.
     <ph name="LINE_BREAK1" />
     Xotirada bo‘sh joy yetishmaydi. Yana <ph name="FILE_SIZE" /> kerak.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" />%, Administrator tomonidan bloklangan, Batafsil</translation>
 <translation id="2142680004883808240">Rus (YaZHert fonetik klaviaturasi)</translation>
 <translation id="2143778271340628265">Proksini qo‘lda sozlash</translation>
+<translation id="2148716181193084225">Bugun</translation>
 <translation id="2163152940313951844">Yaroqsiz belgi: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portugal va kompyuter uchun AQSH klaviaturasi (xalqaro)</translation>
 <translation id="2198315389084035571">Xitoy (soddalashtirilgan) klaviaturasi</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Qator shaklida</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> ta jild Linuxga ulashilgan</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ta fayl belgilandi</translation>
+<translation id="2387120140441437063">Fayllar chiqindiga tashlangani uchun ochilmadi. Ochishdan oldin ularni tiklang.</translation>
 <translation id="2387458720915042159">Proksi-server orqali ulanish turi</translation>
 <translation id="2389832672041313158">Birma/Myanma</translation>
 <translation id="2392369802118427583">Faollashtirish</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Bu jild kontentini faqat oʻqish mumkin. Ayrim amallar ishlamaydi.</translation>
 <translation id="2542049655219295786">Google jadvali</translation>
 <translation id="2544853746127077729">Haqiqiylikni tekshirish sertifikati tarmoq tomonidan rad etildi</translation>
-<translation id="2547921442987553570">“<ph name="EXTENSION_NAME" />” kengaytmasiga qo‘shish</translation>
 <translation id="255937426064304553">AQSH (xalqaro)</translation>
 <translation id="2563185590376525700">Qurbaqa</translation>
 <translation id="2578394532502990878">Tamil (fonetik)</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">Xitoy (Dayi)</translation>
 <translation id="3057861065630527966">Rasmlar va videolarni zaxiralash</translation>
 <translation id="3067790092342515856">Windows fayllari</translation>
-<translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> orqali yuborish</translation>
 <translation id="3083975830683400843">Chromebit qurilmalari</translation>
 <translation id="3085752524577180175">SOCKS hosti</translation>
 <translation id="3104793765551262433">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" />%, Administrator tomonidan bloklangan, Batafsil</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Orqaga</translation>
 <translation id="3855472144336161447">Nemis Neo 2</translation>
 <translation id="3858860766373142691">Ism</translation>
-<translation id="386548886866354912"><ph name="EXTENSION_NAME" /> arxiv yaratish</translation>
 <translation id="3866249974567520381">Tavsif</translation>
 <translation id="3899991606604168269">Fransuz (Kanada) va bir nechta tilli klaviatura</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> tarmog‘iga ulanilmoqda</translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Mobil profil, tarmoq <ph name="NETWORK_INDEX" /><ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> kabilarni yuklab olish</translation>
 <translation id="3973925058222872294">Ingliz (Buyuk Britaniya)</translation>
 <translation id="3975895378829046965">Bangla (Fonetik)</translation>
+<translation id="3991446849494482687">Bunda qurilmadagi SIM kartani qulflash sozlamasi ham faolsizlantiriladi.</translation>
 <translation id="4002066346123236978">Nomi</translation>
 <translation id="4017788180641807848">Ingliz (AQSH) va Workman klaviaturasi</translation>
 <translation id="4040753847560036377">PUK kod xato</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, Nomi: <ph name="NETWORK_NAME" />, Himoyasi: <ph name="NETWORK_PROVIDER_NAME" />, Ulanish: <ph name="CONNECTION_STATUS" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" />%, Administrator boshqaruvida, Batafsil</translation>
 <translation id="4387004326333427325">Haqiqiylikni tekshirish sertifikati masofadan turib rad etildi</translation>
 <translation id="4394214039309501350">Tashqi havola</translation>
+<translation id="4394980935660306080">Shu hafta boshi</translation>
 <translation id="4401287888955153199">Barchasini ajratish</translation>
 <translation id="4410695710508688828">Arxivdan chiqarish amali bajarilmadi. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Fayllaringiz uchun yorliq yarating</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">“<ph name="PATH" />” ochilmoqda</translation>
 <translation id="4720185134442950733">Mobil internet tarmog‘i</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> ta rasm saqlab qolindi</translation>
+<translation id="4725096204469550614">Shu yil boshi</translation>
 <translation id="4725511304875193254">Korgi</translation>
 <translation id="4737050008115666127">Lending</translation>
 <translation id="4747271164117300400">Makedon</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> ta fayl <ph name="FOLDER_NAME" /> jildiga koʻchirilmoqda</translation>
 <translation id="509429900233858213">Xatolik yuz berdi.</translation>
 <translation id="5098629044894065541">Ivrit</translation>
+<translation id="5102922915594634436">Sinxronlangan jildlarni boshqarish</translation>
 <translation id="5109254780565519649">Xatolik yuz berdi. Ayrim elementlar tiklanmasligi mumkin.</translation>
 <translation id="5110329002213341433">Ingliz (Kanada)</translation>
 <translation id="5123433949759960244">Basketbol</translation>
@@ -602,7 +606,6 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="6165508094623778733">Batafsil</translation>
 <translation id="6170470584681422115">Sendvich</translation>
 <translation id="6187719147498869044">Venger</translation>
-<translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> bilan ochish</translation>
 <translation id="6198252989419008588">PIN-kodni o‘zgartirish</translation>
 <translation id="6199801702437275229">Bo‘sh joy haqidagi ma’lumot qabul qilinmoqda...</translation>
 <translation id="6205710420833115353">Ba’zi amallar kutilgandan ko‘proq vaqt olmoqda. Ularni to‘xtatishni istaysizmi?</translation>
@@ -706,6 +709,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7075931588889865715">Tay (TIS 820-2531 klaviaturasi)</translation>
 <translation id="708278670402572152">Tekshirish uchun tarmoqdan uzing</translation>
 <translation id="7086590977277044826">Tamil (InScript klaviaturasi)</translation>
+<translation id="7088615885725309056">Avvalgi</translation>
 <translation id="7103992300314999525">Makedon</translation>
 <translation id="7106346894903675391">Qo‘shimcha joy sotib olish...</translation>
 <translation id="7126604456862387217">“&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” - &lt;em&gt;Google Diskdan qidirish&lt;/em&gt;</translation>
@@ -770,6 +774,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7663224033570512922">Hind</translation>
 <translation id="7693909743393669729">Disk formatlansa, undagi barcha maʼlumotlar oʻchib ketadi va undagi barcha mavjud boʻlimlar, jumladan yashirinlari ham olib tashlanadi. Bu amal bekor qilinmaydi.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> formatlanmadi</translation>
+<translation id="76959938259365003">Chiqitdon boʻshatilmadi.</translation>
 <translation id="770015031906360009">Yunon tili</translation>
 <translation id="7705251383879779343">Nusxa olindi: <ph name="FILE_NAME" />.</translation>
 <translation id="7711920809702896782">Rasm haqida</translation>
@@ -780,6 +785,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7760449188139285140">Xitoy (Wubi)</translation>
 <translation id="7765158879357617694">Ko‘chirib o‘tkazish</translation>
 <translation id="7774365994322694683">Qush</translation>
+<translation id="7781829728241885113">Kecha</translation>
 <translation id="7788080748068240085">“<ph name="FILE_NAME" />” faylini oflayn foydalanish maqsadida saqlab olish uchun <ph name="TOTAL_FILE_SIZE" /> joy bo‘shatish zarur.<ph name="MARKUP_1" />
    <ph name="MARKUP_2" />oflayn rejimda ishlatmaydigan fayllaringizni ro‘yxatdan olib tashlang<ph name="MARKUP_3" />
    <ph name="MARKUP_4" />Yuklanishlar jildidagi fayllarni o‘chirib tashlang<ph name="MARKUP_5" /></translation>

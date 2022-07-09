@@ -7,19 +7,20 @@
  * 'settings-stylus' is the settings subpage with stylus-specific settings.
  */
 
-import '//resources/cr_elements/cr_link_row/cr_link_row.js';
-import '//resources/cr_elements/cr_toggle/cr_toggle.m.js';
-import '//resources/cr_elements/shared_vars_css.m.js';
-import '//resources/js/action_link.js';
-import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/js/action_link.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared_css.js';
 
-import {CrPolicyIndicatorType} from '//resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
-import {assert} from '//resources/js/assert.m.js';
-import {loadTimeData} from '//resources/js/load_time_data.m.js';
-import {html, microTask, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, microTask, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {recordSettingChange} from '../metrics_recorder.js';
@@ -113,15 +114,15 @@ class SettingsStylusElement extends SettingsStylusElementBase {
 
       /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
-       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       * @type {!Set<!Setting>}
        */
       supportedSettingIds: {
         type: Object,
         value: () => new Set([
-          chromeos.settings.mojom.Setting.kStylusToolsInShelf,
-          chromeos.settings.mojom.Setting.kStylusNoteTakingApp,
-          chromeos.settings.mojom.Setting.kStylusNoteTakingFromLockScreen,
-          chromeos.settings.mojom.Setting.kStylusLatestNoteOnLockScreen,
+          Setting.kStylusToolsInShelf,
+          Setting.kStylusNoteTakingApp,
+          Setting.kStylusNoteTakingFromLockScreen,
+          Setting.kStylusLatestNoteOnLockScreen,
         ]),
       },
 

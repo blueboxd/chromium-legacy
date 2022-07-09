@@ -307,7 +307,8 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
 
 // Tests that language detection is not performed and the tool manual trigger
 // button is disabled when the pref kOfferTranslateEnabled is set to false.
-- (void)testTranslateEnabled {
+// TODO(crbug.com/1341363): Disabled due to flakiness. Re-enabled when fixed.
+- (void)DISABLED_testTranslateEnabled {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL testURL = self.testServer->GetURL("/pony.html");
   const std::string pageText = "pony";
@@ -527,8 +528,8 @@ void VerifyManagedSettingItem(NSString* accessibilityID,
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Set restrictions.
-  std::vector<base::Value> restrictions;
-  restrictions.push_back(base::Value("restricted"));
+  base::Value::List restrictions;
+  restrictions.Append("restricted");
   SetPolicy(base::Value(std::move(restrictions)),
             policy::key::kRestrictAccountsToPatterns);
 

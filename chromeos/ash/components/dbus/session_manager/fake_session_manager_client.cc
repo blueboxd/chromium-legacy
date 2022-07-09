@@ -25,15 +25,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/login_manager/policy_descriptor.pb.h"
+#include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
-#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
-namespace chromeos {
+namespace ash {
 
 using RetrievePolicyCallback = FakeSessionManagerClient::RetrievePolicyCallback;
 using RetrievePolicyResponseType =
@@ -181,8 +181,8 @@ base::FilePath GetStubPolicyFilePath(
   switch (descriptor.account_type()) {
     case login_manager::ACCOUNT_TYPE_DEVICE: {
       base::FilePath owner_key_path;
-      CHECK(
-          base::PathService::Get(dbus_paths::FILE_OWNER_KEY, &owner_key_path));
+      CHECK(base::PathService::Get(chromeos::dbus_paths::FILE_OWNER_KEY,
+                                   &owner_key_path));
       if (key_path)
         *key_path = owner_key_path;
       return owner_key_path.DirName().Append(relative_policy_path);
@@ -191,8 +191,8 @@ base::FilePath GetStubPolicyFilePath(
     case login_manager::ACCOUNT_TYPE_USER:
     case login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT: {
       base::FilePath base_path;
-      CHECK(
-          base::PathService::Get(dbus_paths::DIR_USER_POLICY_KEYS, &base_path));
+      CHECK(base::PathService::Get(chromeos::dbus_paths::DIR_USER_POLICY_KEYS,
+                                   &base_path));
       if (key_path) {
         *key_path = base_path.Append(relative_policy_path.DirName())
                         .AppendASCII(kStubPerAccountPolicyKeyFileName);
@@ -646,7 +646,8 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
 
   if (policy_storage_ == PolicyStorageType::kOnDisk) {
     base::FilePath owner_key_path;
-    CHECK(base::PathService::Get(dbus_paths::FILE_OWNER_KEY, &owner_key_path));
+    CHECK(base::PathService::Get(chromeos::dbus_paths::FILE_OWNER_KEY,
+                                 &owner_key_path));
     const base::FilePath state_keys_path =
         owner_key_path.DirName().AppendASCII(kStubStateKeysFileName);
     base::ThreadPool::PostTaskAndReplyWithResult(
@@ -878,4 +879,4 @@ ScopedFakeInMemorySessionManagerClient::
   SessionManagerClient::Shutdown();
 }
 
-}  // namespace chromeos
+}  // namespace ash

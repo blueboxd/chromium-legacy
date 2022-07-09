@@ -36,6 +36,9 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/anomaly_detector/anomaly_detector_client.h"
+#include "chromeos/ash/components/dbus/anomaly_detector/fake_anomaly_detector_client.h"
+#include "chromeos/ash/components/dbus/chunneld/chunneld_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
@@ -44,11 +47,9 @@
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/dbus/anomaly_detector/anomaly_detector_client.h"
-#include "chromeos/dbus/anomaly_detector/fake_anomaly_detector_client.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
-#include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -192,25 +193,27 @@ class CrostiniManagerTest : public testing::Test {
             TestingBrowserProcess::GetGlobal())),
         browser_part_(g_browser_process->platform_part()) {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::AnomalyDetectorClient::InitializeFake();
+    ash::AnomalyDetectorClient::InitializeFake();
+    ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
     ash::SeneschalClient::InitializeFake();
     fake_cicerone_client_ = ash::FakeCiceroneClient::Get();
     fake_concierge_client_ = ash::FakeConciergeClient::Get();
     fake_anomaly_detector_client_ =
-        static_cast<chromeos::FakeAnomalyDetectorClient*>(
-            chromeos::AnomalyDetectorClient::Get());
+        static_cast<ash::FakeAnomalyDetectorClient*>(
+            ash::AnomalyDetectorClient::Get());
   }
 
   CrostiniManagerTest(const CrostiniManagerTest&) = delete;
   CrostiniManagerTest& operator=(const CrostiniManagerTest&) = delete;
 
   ~CrostiniManagerTest() override {
-    chromeos::AnomalyDetectorClient::Shutdown();
+    ash::AnomalyDetectorClient::Shutdown();
     ash::SeneschalClient::Shutdown();
     ash::ConciergeClient::Shutdown();
     ash::CiceroneClient::Shutdown();
+    ash::ChunneldClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -251,8 +254,8 @@ class CrostiniManagerTest : public testing::Test {
         ->WaylandServer()
         ->OverrideServerForTesting(vm_tools::launch::TERMINA, nullptr, {});
 
-    chromeos::CryptohomeMiscClient::InitializeFake();
-    chromeos::FakeCryptohomeMiscClient::Get()->set_requires_powerwash(false);
+    ash::CryptohomeMiscClient::InitializeFake();
+    ash::FakeCryptohomeMiscClient::Get()->set_requires_powerwash(false);
     policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());
@@ -266,7 +269,7 @@ class CrostiniManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    chromeos::CryptohomeMiscClient::Shutdown();
+    ash::CryptohomeMiscClient::Shutdown();
     g_browser_process->platform_part()->ShutdownSchedulerConfigurationManager();
     scoped_user_manager_.reset();
     crostini_manager_->Shutdown();
@@ -290,8 +293,7 @@ class CrostiniManagerTest : public testing::Test {
 
   ash::FakeCiceroneClient* fake_cicerone_client_;
   ash::FakeConciergeClient* fake_concierge_client_;
-  // Owned by chromeos::DBusThreadManager
-  chromeos::FakeAnomalyDetectorClient* fake_anomaly_detector_client_;
+  ash::FakeAnomalyDetectorClient* fake_anomaly_detector_client_;
 
   std::unique_ptr<base::RunLoop>
       run_loop_;  // run_loop_ must be created on the UI thread.
@@ -408,7 +410,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmPowerwashRequestError) {
       enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
 
   // Set cryptohome requiring powerwash.
-  chromeos::FakeCryptohomeMiscClient::Get()->set_requires_powerwash(true);
+  ash::FakeCryptohomeMiscClient::Get()->set_requires_powerwash(true);
   policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
 
   NotificationDisplayServiceTester notification_service(profile());
@@ -444,9 +446,9 @@ TEST_F(CrostiniManagerTest,
 
   // Reset cryptohome state to undefined and make cryptohome unavailable.
   policy::PowerwashRequirementsChecker::ResetForTesting();
-  chromeos::FakeCryptohomeMiscClient::Get()->SetServiceIsAvailable(false);
+  ash::FakeCryptohomeMiscClient::Get()->SetServiceIsAvailable(false);
   policy::PowerwashRequirementsChecker::Initialize();
-  chromeos::FakeCryptohomeMiscClient::Get()->ReportServiceIsNotAvailable();
+  ash::FakeCryptohomeMiscClient::Get()->ReportServiceIsNotAvailable();
 
   NotificationDisplayServiceTester notification_service(profile());
 
@@ -1701,8 +1703,8 @@ TEST_F(CrostiniManagerRestartTest, VmStoppedDuringRestart) {
 }
 
 TEST_F(CrostiniManagerRestartTest, RestartTriggersArcSideloadIfEnabled) {
-  chromeos::SessionManagerClient::InitializeFake();
-  chromeos::FakeSessionManagerClient::Get()->set_adb_sideload_enabled(true);
+  ash::SessionManagerClient::InitializeFake();
+  ash::FakeSessionManagerClient::Get()->set_adb_sideload_enabled(true);
 
   vm_tools::cicerone::ConfigureForArcSideloadResponse fake_response;
   fake_response.set_status(
@@ -1720,8 +1722,8 @@ TEST_F(CrostiniManagerRestartTest, RestartTriggersArcSideloadIfEnabled) {
 }
 
 TEST_F(CrostiniManagerRestartTest, RestartDoesNotTriggerArcSideloadIfDisabled) {
-  chromeos::SessionManagerClient::InitializeFake();
-  chromeos::FakeSessionManagerClient::Get()->set_adb_sideload_enabled(false);
+  ash::SessionManagerClient::InitializeFake();
+  ash::FakeSessionManagerClient::Get()->set_adb_sideload_enabled(false);
 
   vm_tools::cicerone::ConfigureForArcSideloadResponse fake_response;
   fake_response.set_status(
@@ -1746,29 +1748,6 @@ TEST_F(CrostiniManagerRestartTest, RestartWhileShuttingDown) {
       this);
   // crostini_manager() is destructed during test teardown, mimicking the effect
   // of shutting down chrome while a restart is running.
-}
-
-TEST_F(CrostiniManagerRestartTest, ComponentUpdateInProgress) {
-  crostini_manager()->set_component_manager_load_error_for_testing(
-      component_updater::CrOSComponentManager::Error::UPDATE_IN_PROGRESS);
-
-  crostini_manager()->RestartCrostini(
-      container_id(),
-      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), run_loop()->QuitClosure()));
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          &CrostiniManager::set_component_manager_load_error_for_testing,
-          base::Unretained(crostini_manager()),
-          component_updater::CrOSComponentManager::Error::NONE),
-      base::Seconds(3));
-
-  run_loop()->Run();
-
-  ExpectRestarterUmaCount(1);
-  ExpectCrostiniRestartResult(CrostiniResult::SUCCESS);
 }
 
 TEST_F(CrostiniManagerRestartTest, AllObservers) {

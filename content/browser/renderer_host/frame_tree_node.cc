@@ -569,7 +569,8 @@ void FrameTreeNode::CreatedNavigationRequest(
   DCHECK(!navigation_request->common_params().url.SchemeIs(
       url::kJavaScriptScheme));
 
-  bool was_previously_loading = frame_tree()->LoadingTree()->IsLoading();
+  bool was_previously_loading =
+      frame_tree()->LoadingTree()->IsLoadingIncludingInnerFrameTrees();
 
   // There's no need to reset the state: there's still an ongoing load, and the
   // RenderFrameHostManager will take care of updates to the speculative
@@ -720,8 +721,7 @@ bool FrameTreeNode::NotifyUserActivation(
   // enforced by default.
   // https://docs.google.com/document/d/1WnIhXOFycoje_sEoZR3Mo0YNSR2Ki7LABIC_HEWFaog
   bool shadow_dom_fenced_frame_enabled =
-      blink::features::IsFencedFramesEnabled() &&
-      blink::features::IsFencedFramesShadowDOMBased();
+      frame_tree()->IsFencedFramesShadowDOMBased();
 
   // User Activation V2 requires activating all ancestor frames in addition to
   // the current frame. See
@@ -777,8 +777,7 @@ bool FrameTreeNode::ConsumeTransientUserActivation() {
   // enforced by default.
   // https://docs.google.com/document/d/1WnIhXOFycoje_sEoZR3Mo0YNSR2Ki7LABIC_HEWFaog
   bool shadow_dom_fenced_frame_enabled =
-      blink::features::IsFencedFramesEnabled() &&
-      blink::features::IsFencedFramesShadowDOMBased();
+      frame_tree()->IsFencedFramesShadowDOMBased();
   absl::optional<base::UnguessableToken> originator_nonce =
       fenced_frame_nonce();
 

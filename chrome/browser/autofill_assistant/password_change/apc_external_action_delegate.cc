@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill_assistant/password_change/apc_external_action_delegate.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -11,11 +12,13 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autofill_assistant/password_change/proto/extensions.pb.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/assistant_display_delegate.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_controller.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_display.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill_assistant/browser/public/external_action.pb.h"
+#include "components/autofill_assistant/browser/public/external_action_delegate.h"
+#include "components/autofill_assistant/browser/public/password_change/proto/actions.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -39,24 +42,26 @@ void ApcExternalActionDelegate::OnActionRequested(
   end_action_callback_ = std::move(end_action_callback);
   start_dom_checks_callback_ = std::move(start_dom_checks_callback);
 
-  GenericPasswordChangeSpecification spec;
-  if (!spec.ParseFromString(action.info().action_payload())) {
-    DLOG(ERROR) << "unable to parse GenericPasswordChangeSpecification";
+  if (!action.info().has_generic_password_change_specification()) {
+    DLOG(ERROR) << "Action is not of type GenericPasswordChangeSpecification";
     EndAction(false);
     return;
   }
-
-  switch (spec.specification_case()) {
+  GenericPasswordChangeSpecification generic_password_change_specification =
+      action.info().generic_password_change_specification();
+  switch (generic_password_change_specification.specification_case()) {
     case GenericPasswordChangeSpecification::SpecificationCase::kBasePrompt:
-      HandleBasePrompt(spec.base_prompt());
+      HandleBasePrompt(generic_password_change_specification.base_prompt());
       break;
     case GenericPasswordChangeSpecification::SpecificationCase::
-        kGeneratedPasswordPrompt:
-      HandleGeneratedPasswordPrompt(spec.generated_password_prompt());
+        kUseGeneratedPasswordPrompt:
+      HandleGeneratedPasswordPrompt(generic_password_change_specification
+                                        .use_generated_password_prompt());
       break;
     case GenericPasswordChangeSpecification::SpecificationCase::
         kUpdateSidePanel:
-      HandleUpdateSidePanel(spec.update_side_panel());
+      HandleUpdateSidePanel(
+          generic_password_change_specification.update_side_panel());
       break;
     case GenericPasswordChangeSpecification::SpecificationCase::
         SPECIFICATION_NOT_SET:
@@ -157,29 +162,27 @@ void ApcExternalActionDelegate::OnBasePromptChoiceSelected(
     return;
   }
 
-  DCHECK(choice_index < base_prompt_return_values_.size());
-  autofill_assistant::password_change::BasePromptSpecification::Result result;
-  result.set_selected_tag(base_prompt_return_values_[choice_index]);
+  CHECK(choice_index < base_prompt_return_values_.size());
+  autofill_assistant::password_change::BasePromptSpecification::Result
+      base_prompt_result;
+  base_prompt_result.set_selected_tag(base_prompt_return_values_[choice_index]);
 
-  std::string serialized_result;
-  if (!result.SerializeToString(&serialized_result)) {
-    DLOG(ERROR) << "unable to base prompt result";
-    EndAction(false);
-    return;
-  }
-  EndAction(true, std::move(serialized_result));
+  autofill_assistant::password_change::GenericPasswordChangeSpecificationResult
+      action_result;
+  *action_result.mutable_base_prompt_result() = base_prompt_result;
+  EndAction(true, std::move(action_result));
 }
 
-void ApcExternalActionDelegate::ShowGeneratedPasswordPrompt(
+void ApcExternalActionDelegate::ShowUseGeneratedPasswordPrompt(
     const autofill_assistant::password_change::
-        GeneratedPasswordPromptSpecification& password_prompt,
+        UseGeneratedPasswordPromptSpecification& password_prompt,
     const std::u16string& generated_password) {
   // Showing the prompt will override both the title and the description. Since
   // they cannot be reconstructed from the model due to the additional field
   // for the password, we clear the model.
   model_.title = std::u16string();
   model_.description = std::u16string();
-  password_change_run_display_->ShowGeneratedPasswordPrompt(
+  password_change_run_display_->ShowUseGeneratedPasswordPrompt(
       base::UTF8ToUTF16(password_prompt.title()), generated_password,
       base::UTF8ToUTF16(password_prompt.description()),
       PasswordChangeRunDisplay::PromptChoice{
@@ -194,11 +197,22 @@ void ApcExternalActionDelegate::ShowGeneratedPasswordPrompt(
               password_prompt.generated_password_choice().highlighted()});
 }
 
-void ApcExternalActionDelegate::OnGeneratedPasswordSelected(bool selected) {
+void ApcExternalActionDelegate::OnGeneratedPasswordSelected(
+    bool generated_password_accepted) {
   password_change_run_display_->ClearPrompt();
   SetTitle(std::u16string());
 
-  // TODO(crbug.com/1331202): Terminate action and send return value.
+  autofill_assistant::password_change::UseGeneratedPasswordPromptSpecification::
+      Result generated_password_prompt_result;
+  generated_password_prompt_result.set_generated_password_accepted(
+      generated_password_accepted);
+
+  autofill_assistant::password_change::GenericPasswordChangeSpecificationResult
+      action_result;
+  *action_result.mutable_use_generated_password_prompt_result() =
+      generated_password_prompt_result;
+
+  EndAction(true, std::move(action_result));
 }
 
 void ApcExternalActionDelegate::ShowStartingScreen(const GURL& url) {
@@ -218,16 +232,19 @@ void ApcExternalActionDelegate::Show(
   password_change_run_display_->Show();
 }
 
-void ApcExternalActionDelegate::EndAction(bool success,
-                                          std::string serialized_result) {
+void ApcExternalActionDelegate::EndAction(
+    bool success,
+    absl::optional<autofill_assistant::password_change::
+                       GenericPasswordChangeSpecificationResult>
+        action_result) {
   autofill_assistant::external::Result result;
   result.set_success(success);
-  // Only set a payload for a non-empty serialized result to avoid triggering
-  // payload processing.
-  if (!serialized_result.empty()) {
-    result.mutable_result_info()->set_result_payload(serialized_result);
-  }
 
+  if (action_result.has_value()) {
+    *result.mutable_result_info()
+         ->mutable_generic_password_change_specification_result() =
+        action_result.value();
+  }
   std::move(end_action_callback_).Run(std::move(result));
 }
 
@@ -236,22 +253,67 @@ void ApcExternalActionDelegate::HandleBasePrompt(
         specification) {
   base_prompt_should_send_payload_ = specification.has_output_key();
 
-  // TODO(crbug.com/1331202): Set up DOM checking and matching of DOM conditions
-  // to return values.
-
+  // TODO(crbug.com/1331202): If this causes flickering, separate prompt
+  // argument extraction and showing the base prompt.
   ShowBasePrompt(specification);
+
+  // `this` outlives the script controller, therefore we can pass an unretained
+  // pointer.
+  std::move(start_dom_checks_callback_)
+      .Run(base::BindRepeating(
+          &ApcExternalActionDelegate::OnBasePromptDomUpdateReceived,
+          base::Unretained(this)));
 }
 
 void ApcExternalActionDelegate::HandleGeneratedPasswordPrompt(
     const autofill_assistant::password_change::
-        GeneratedPasswordPromptSpecification& specification) {
-  EndAction(false);
+        UseGeneratedPasswordPromptSpecification& specification) {
+  // TODO(crbug.com/1331202): Replace this hardcoded password with the real
+  // generated one.
+  ShowUseGeneratedPasswordPrompt(specification, u"verySecretPassword123");
 }
 
 void ApcExternalActionDelegate::HandleUpdateSidePanel(
     const autofill_assistant::password_change::UpdateSidePanelSpecification&
         specification) {
-  EndAction(false);
+  if (specification.has_top_icon()) {
+    SetTopIcon(specification.top_icon());
+  }
+  if (specification.has_progress_step()) {
+    SetProgressBarStep(specification.progress_step());
+  }
+  if (specification.has_description()) {
+    SetDescription(base::UTF8ToUTF16(specification.description()));
+  }
+  if (specification.has_title()) {
+    SetTitle(base::UTF8ToUTF16(specification.title()));
+  }
+  EndAction(true);
+}
+
+void ApcExternalActionDelegate::OnBasePromptDomUpdateReceived(
+    const autofill_assistant::external::ElementConditionsUpdate& update) {
+  // To ensure predictable behavior, we always choose the condition with the
+  // smallest index if there are multiple fulfilled conditions.
+  size_t minimum_satisfied_index = base_prompt_return_values_.size();
+
+  for (const auto& condition : update.results()) {
+    if (condition.satisfied()) {
+      // Ids must be within the range of the return values vector.
+      if (condition.id() < 0 || static_cast<size_t>(condition.id()) >=
+                                    base_prompt_return_values_.size()) {
+        DLOG(ERROR) << "dom condition id is out of bounds";
+        EndAction(false);
+        return;
+      }
+      minimum_satisfied_index = std::min(minimum_satisfied_index,
+                                         static_cast<size_t>(condition.id()));
+    }
+  }
+
+  if (minimum_satisfied_index < base_prompt_return_values_.size()) {
+    OnBasePromptChoiceSelected(minimum_satisfied_index);
+  }
 }
 
 base::WeakPtr<PasswordChangeRunController>

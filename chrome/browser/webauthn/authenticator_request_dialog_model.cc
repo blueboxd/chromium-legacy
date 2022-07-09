@@ -12,6 +12,7 @@
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
@@ -26,6 +27,10 @@
 #include "device/fido/public_key_credential_user_entity.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
+
+#if BUILDFLAG(IS_MAC)
+#include "base/mac/mac_util.h"
+#endif
 
 namespace {
 
@@ -167,21 +172,20 @@ void AuthenticatorRequestDialogModel::HideDialog() {
 
 void AuthenticatorRequestDialogModel::StartFlow(
     TransportAvailabilityInfo transport_availability,
-    bool use_location_bar_bubble,
+    bool use_conditional_mediation,
     bool prefer_native_api) {
   DCHECK(!started_);
   DCHECK_EQ(current_step(), Step::kNotStarted);
 
   started_ = true;
   transport_availability_ = std::move(transport_availability);
-  use_location_bar_bubble_ = use_location_bar_bubble;
+  use_conditional_mediation_ = use_conditional_mediation;
 
   PopulateMechanisms(prefer_native_api);
 
-  if (use_location_bar_bubble_) {
-    // This is a conditional request so show a lightweight, non-modal dialog
-    // instead.
-    StartLocationBarBubbleRequest();
+  if (use_conditional_mediation_) {
+    // This is a conditional mediation request.
+    StartConditionalMediationRequest();
   } else {
     StartGuidedFlowForMostLikelyTransportOrShowMechanismSelection();
   }
@@ -193,17 +197,31 @@ void AuthenticatorRequestDialogModel::StartOver() {
   for (auto& observer : observers_)
     observer.OnStartOver();
 
-  if (use_location_bar_bubble_) {
-    StartLocationBarBubbleRequest();
+  if (use_conditional_mediation_) {
+    StartConditionalMediationRequest();
     return;
   }
   current_mechanism_.reset();
   SetCurrentStep(Step::kMechanismSelection);
 }
 
+void AuthenticatorRequestDialogModel::TransitionToModalWebAuthnRequest() {
+  DCHECK_EQ(current_step(), Step::kConditionalMediation);
+
+  // Dispatch requests to any plugged in authenticators.
+  for (auto& authenticator :
+       ephemeral_state_.saved_authenticators_.authenticator_list()) {
+    if (authenticator.transport != device::FidoTransportProtocol::kInternal) {
+      DispatchRequestAsync(&authenticator);
+    }
+  }
+  StartGuidedFlowForMostLikelyTransportOrShowMechanismSelection();
+}
+
 void AuthenticatorRequestDialogModel::
     StartGuidedFlowForMostLikelyTransportOrShowMechanismSelection() {
-  DCHECK(current_step() == Step::kNotStarted);
+  DCHECK(current_step() == Step::kNotStarted ||
+         current_step() == Step::kConditionalMediation);
 
   const auto priority_mechanism_it =
       std::find_if(mechanisms_.begin(), mechanisms_.end(),
@@ -263,6 +281,21 @@ void AuthenticatorRequestDialogModel::
          current_step() == Step::kOffTheRecordInterstitial ||
          current_step() == Step::kNotStarted);
 
+#if BUILDFLAG(IS_MAC)
+  // The BLE permission screen is only shown on macOS <= 12 because:
+  //    * System Preferences has been renamed to System Settings, so the
+  //      string on the button would need to be changed.
+  //    * Opening Preferences/Settings at the BLE permissions page is broken.
+  if (transport_availability()->ble_access_denied &&
+      base::mac::IsAtMostOS12()) {
+    // |step| is not saved because macOS asks the user to restart Chrome
+    // after permission has been granted. So the user will end up retrying
+    // the whole WebAuthn request in the new process.
+    SetCurrentStep(Step::kBlePermissionMac);
+    return;
+  }
+#endif
+
   if (ble_adapter_is_powered()) {
     base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents",
                                   BleEvent::kAlreadyPowered);
@@ -303,6 +336,19 @@ void AuthenticatorRequestDialogModel::PowerOnBleAdapter() {
 
   bluetooth_adapter_power_on_callback_.Run();
 }
+
+#if BUILDFLAG(IS_MAC)
+void AuthenticatorRequestDialogModel::OpenBlePreferences() {
+  DCHECK_EQ(current_step(), Step::kBlePermissionMac);
+
+  base::LaunchOptions opts;
+  opts.disclaim_responsibility = true;
+  base::LaunchProcess({"open",
+                       "x-apple.systempreferences:com.apple.preference."
+                       "security?Privacy_Bluetooth"},
+                      opts);
+}
+#endif  // IS_MAC
 
 void AuthenticatorRequestDialogModel::TryUsbDevice() {
   DCHECK_EQ(current_step(), Step::kUsbInsertAndActivate);
@@ -364,17 +410,19 @@ void AuthenticatorRequestDialogModel::ShowCable() {
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {
+  if (use_conditional_mediation_) {
+    // Conditional UI requests are never cancelled, they restart silently.
+    StartOver();
+    return;
+  }
+
   if (is_request_complete()) {
-    if (use_location_bar_bubble_) {
-      // Conditional UI requests are never cancelled, they restart silently.
-      StartOver();
-      return;
-    }
     SetCurrentStep(Step::kClosed);
   }
 
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnCancelRequest();
+  }
 }
 
 void AuthenticatorRequestDialogModel::ManageDevices() {
@@ -450,7 +498,7 @@ void AuthenticatorRequestDialogModel::OnAuthenticatorStorageFull() {
 }
 
 void AuthenticatorRequestDialogModel::OnUserConsentDenied() {
-  if (use_location_bar_bubble_) {
+  if (use_conditional_mediation_) {
     // Do not show a page-modal retry error sheet if the user cancelled out of
     // their platform authenticator during a conditional UI request.
     // Instead, retry silently.
@@ -462,7 +510,7 @@ void AuthenticatorRequestDialogModel::OnUserConsentDenied() {
 
 bool AuthenticatorRequestDialogModel::OnWinUserCancelled() {
 #if BUILDFLAG(IS_WIN)
-  if (use_location_bar_bubble_) {
+  if (use_conditional_mediation_) {
     // Do not show a page-modal retry error sheet if the user cancelled out of
     // their platform authenticator during a conditional UI request.
     // Instead, retry silently.
@@ -581,8 +629,8 @@ void AuthenticatorRequestDialogModel::SelectAccount(
   ephemeral_state_.responses_ = std::move(responses);
   ephemeral_state_.creds_ = {};
   for (const auto& response : ephemeral_state_.responses_) {
-    ephemeral_state_.creds_.emplace_back(device::DiscoverableCredentialMetadata(
-        response.credential->id, *response.user_entity));
+    ephemeral_state_.creds_.emplace_back(
+        relying_party_id_, response.credential->id, *response.user_entity);
   }
   selection_callback_ = std::move(callback);
   SetCurrentStep(Step::kSelectAccount);
@@ -729,7 +777,7 @@ void AuthenticatorRequestDialogModel::RequestAttestationPermission(
 void AuthenticatorRequestDialogModel::GetCredentialListForConditionalUi(
     base::OnceCallback<void(
         const std::vector<device::DiscoverableCredentialMetadata>&)> callback) {
-  if (current_step() == Step::kLocationBarBubble) {
+  if (current_step() == Step::kConditionalMediation) {
     std::move(callback).Run(ephemeral_state_.creds_);
     return;
   }
@@ -815,6 +863,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
          current_step() == Step::kUsbInsertAndActivate ||
          current_step() == Step::kCableActivate ||
          current_step() == Step::kAndroidAccessory ||
+         current_step() == Step::kConditionalMediation ||
          current_step() == Step::kNotStarted);
   switch (transport) {
     case AuthenticatorTransport::kUsbHumanInterfaceDevice:
@@ -902,7 +951,7 @@ void AuthenticatorRequestDialogModel::ContactPhoneAfterBleIsPowered(
   SetCurrentStep(Step::kCableActivate);
 }
 
-void AuthenticatorRequestDialogModel::StartLocationBarBubbleRequest() {
+void AuthenticatorRequestDialogModel::StartConditionalMediationRequest() {
   ephemeral_state_.creds_ = {};
   for (const auto& cred :
        transport_availability_.recognized_platform_authenticator_credentials) {
@@ -913,7 +962,7 @@ void AuthenticatorRequestDialogModel::StartLocationBarBubbleRequest() {
     std::move(conditional_ui_user_list_callback_).Run(ephemeral_state_.creds_);
   }
 
-  SetCurrentStep(Step::kLocationBarBubble);
+  SetCurrentStep(Step::kConditionalMediation);
 }
 
 void AuthenticatorRequestDialogModel::DispatchRequestAsync(

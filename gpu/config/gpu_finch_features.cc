@@ -146,6 +146,10 @@ const base::Feature kDefaultEnableGpuRasterization{
 const base::Feature kCanvasOopRasterization{"CanvasOopRasterization",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the use of MSAA in skia on Ice Lake and later intel architectures.
+const base::Feature kEnableMSAAOnNewIntelGPUs{
+    "EnableMSAAOnNewIntelGPUs", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the use of ANGLE validation for non-WebGL contexts.
 const base::Feature kDefaultEnableANGLEValidation{
     "DefaultEnableANGLEValidation", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -159,17 +163,12 @@ const base::Feature kCanvasContextLostInBackground{
 // Use a high priority for GPU process on Windows.
 const base::Feature kGpuProcessHighPriorityWin{
     "GpuProcessHighPriorityWin", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
-// Use ThreadPriority::DISPLAY for GPU main, viz compositor and IO threads.
-const base::Feature kGpuUseDisplayThreadPriority{
-  "GpuUseDisplayThreadPriority",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
+// Disable overlay promotion for clear video quads when their MPO quad would
+// move.
+const base::Feature kDisableVideoOverlayIfMoving{
+    "DisableVideoOverlayIfMoving", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
-};
 
 #if BUILDFLAG(IS_MAC)
 // Enable use of Metal for OOP rasterization.
@@ -258,9 +257,33 @@ const base::FeatureParam<std::string> kVulkanBlockListByBoard{
 const base::FeatureParam<std::string> kVulkanBlockListByAndroidBuildFP{
     &kVulkan, "BlockListByAndroidBuildFP", ""};
 
+// Blocklists meant for DrDc.
 // crbug.com/1294648
 const base::FeatureParam<std::string> kDrDcBlockListByDevice{
     &kEnableDrDc, "BlockListByDevice", "LF9810_2GB"};
+
+// crbug.com/1340059, crbug.com/1340064
+const base::FeatureParam<std::string> kDrDcBlockListByModel{
+    &kEnableDrDc, "BlockListByModel",
+    "SM-J400M|SM-J415F|ONEPLUS A3003|OCTAStream*"};
+
+const base::FeatureParam<std::string> kDrDcBlockListByHardware{
+    &kEnableDrDc, "BlockListByHardware", ""};
+
+const base::FeatureParam<std::string> kDrDcBlockListByBrand{
+    &kEnableDrDc, "BlockListByBrand", "HONOR"};
+
+const base::FeatureParam<std::string> kDrDcBlockListByAndroidBuildId{
+    &kEnableDrDc, "BlockListByAndroidBuildId", ""};
+
+const base::FeatureParam<std::string> kDrDcBlockListByManufacturer{
+    &kEnableDrDc, "BlockListByManufacturer", ""};
+
+const base::FeatureParam<std::string> kDrDcBlockListByBoard{
+    &kEnableDrDc, "BlockListByBoard", ""};
+
+const base::FeatureParam<std::string> kDrDcBlockListByAndroidBuildFP{
+    &kEnableDrDc, "BlockListByAndroidBuildFP", ""};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Enable SkiaRenderer Dawn graphics backend. On Windows this will use D3D12,
@@ -368,10 +391,26 @@ bool IsDrDcEnabled() {
   const auto* build_info = base::android::BuildInfo::GetInstance();
   if (IsDeviceBlocked(build_info->device(), kDrDcBlockListByDevice.Get()))
     return false;
+  if (IsDeviceBlocked(build_info->model(), kDrDcBlockListByModel.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->hardware(), kDrDcBlockListByHardware.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->brand(), kDrDcBlockListByBrand.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->android_build_id(),
+                      kDrDcBlockListByAndroidBuildId.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->manufacturer(),
+                      kDrDcBlockListByManufacturer.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->board(), kDrDcBlockListByBoard.Get()))
+    return false;
+  if (IsDeviceBlocked(build_info->android_build_fp(),
+                      kDrDcBlockListByAndroidBuildFP.Get()))
+    return false;
 
   if (!base::FeatureList::IsEnabled(kEnableDrDc))
     return false;
-
   return IsUsingVulkan() ? base::FeatureList::IsEnabled(kEnableDrDcVulkan)
                          : true;
 #else

@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Хангул ромаџа</translation>
 <translation id="112387589102719461">енглески (САД) са тастатуром Programmer Dvorak</translation>
 <translation id="1134697384939541955">енглески (САД) са проширеном тастатуром</translation>
+<translation id="1138691154716715755">Раније овог месеца</translation>
 <translation id="1148097584170732637">Пронађене су датотеке (<ph name="FILE_COUNT" />).
     <ph name="LINE_BREAK1" />
     Немате довољно простора у локалној меморији. Потребно је још <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, блокирао администратор, детаљи</translation>
 <translation id="2142680004883808240">руски са фонетском тастатуром YaZHert</translation>
 <translation id="2143778271340628265">Ручна конфигурација проксија</translation>
+<translation id="2148716181193084225">Данас</translation>
 <translation id="2163152940313951844">Неважећи знак: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">португалски са америчком интернационалном тастатуром за рачунар</translation>
 <translation id="2198315389084035571">кинески (поједностављени)</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Пређи на приказ листе</translation>
 <translation id="2377590462528165447">Директоријуми (<ph name="NUMBER_OF_ITEMS" />) се деле са Linux-ом</translation>
 <translation id="2378075407703503998">Изабраних датотека: <ph name="SELCTED_FILE_COUNT" /></translation>
+<translation id="2387120140441437063">Фајлови у отпаду не могу да се отворе. Вратите фајлове пре отварања.</translation>
 <translation id="2387458720915042159">Тип везе са проксијем</translation>
 <translation id="2389832672041313158">бурмански (Мијанмар)</translation>
 <translation id="2392369802118427583">Активирај</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Садржај овог фолдера је само за читање. Неке активности нису подржане.</translation>
 <translation id="2542049655219295786">Google табела</translation>
 <translation id="2544853746127077729">Мрежа је одбила сертификат за потврду аутентичности</translation>
-<translation id="2547921442987553570">Додај у <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">међународна америчка</translation>
 <translation id="2563185590376525700">Жаба</translation>
 <translation id="2578394532502990878">фонетски тамилски</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">кинески даји</translation>
 <translation id="3057861065630527966">Направите резервне копије слика и видео снимака</translation>
 <translation id="3067790092342515856">Windows датотеке</translation>
-<translation id="3078461028045006476">Дели помоћу додатка <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit-ови</translation>
 <translation id="3085752524577180175">SOCKS хост</translation>
 <translation id="3104793765551262433"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, блокирао администратор, детаљи</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="3855472144336161447">немачка Neo 2</translation>
 <translation id="3858860766373142691">Назив</translation>
-<translation id="386548886866354912">Спакуј помоћу додатка <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Опис</translation>
 <translation id="3899991606604168269">француски (Канада) са вишејезичном тастатуром</translation>
 <translation id="3901991538546252627">Повезивање са мрежом <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Преузмите профил за мобилне уређаје, <ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">енглески (УК)</translation>
 <translation id="3975895378829046965">фонетски бенгалски</translation>
+<translation id="3991446849494482687">Тиме ћете онемогућити и подешавање закључавања SIM картице на уређају.</translation>
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="4017788180641807848">енглески (САД) са тастатуром Workman</translation>
 <translation id="4040753847560036377">Нетачан PUK</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, управља администратор, детаљи</translation>
 <translation id="4387004326333427325">Сертификат за потврду аутентичности је одбијен даљински</translation>
 <translation id="4394214039309501350">Спољни линк</translation>
+<translation id="4394980935660306080">Раније ове недеље</translation>
 <translation id="4401287888955153199">Издвоји све</translation>
 <translation id="4410695710508688828">Операција издвајања није успела. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Направите пречицу за фајлове</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">Отвара се „<ph name="PATH" />“</translation>
 <translation id="4720185134442950733">Мобилна мрежа за пренос података</translation>
 <translation id="4724850507808590449">Направљена је резервна копија слика (<ph name="FILE_COUNT" />)</translation>
+<translation id="4725096204469550614">Раније ове године</translation>
 <translation id="4725511304875193254">Корги</translation>
 <translation id="4737050008115666127">Слетање</translation>
 <translation id="4747271164117300400">македонски</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">Ставке (<ph name="NUMBER_OF_ITEMS" />) се премештају у директоријум <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Дошло је до грешке.</translation>
 <translation id="5098629044894065541">хебрејски</translation>
+<translation id="5102922915594634436">Управљајте синхронизованим фолдерима</translation>
 <translation id="5109254780565519649">Дошло је до грешке. Неке ставке можда нису враћене.</translation>
 <translation id="5110329002213341433">енглески (Канада)</translation>
 <translation id="5123433949759960244">Кошаркашка лопта</translation>
@@ -603,7 +607,6 @@
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6170470584681422115">Сендвич</translation>
 <translation id="6187719147498869044">мађарски</translation>
-<translation id="6189412234224385711">Отвори помоћу додатка <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Промени PIN</translation>
 <translation id="6199801702437275229">Чекају се информације о простору...</translation>
 <translation id="6205710420833115353">Неке радње трају дуже од очекиваног. Желите ли да их прекинете?</translation>
@@ -707,6 +710,7 @@
 <translation id="7075931588889865715">тајски са тастатуром TIS 820-2531</translation>
 <translation id="708278670402572152">Прекините везу да бисте омогућили скенирање</translation>
 <translation id="7086590977277044826">тамилски са индијском тастатуром</translation>
+<translation id="7088615885725309056">Старије</translation>
 <translation id="7103992300314999525">македонски</translation>
 <translation id="7106346894903675391">Купи још меморијског простора...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ – &lt;em&gt;претражи Диск&lt;/em&gt;</translation>
@@ -771,6 +775,7 @@
 <translation id="7663224033570512922">хинди</translation>
 <translation id="7693909743393669729">Ако форматирате диск, избрисаћете све податке који се на њему чувају и уклонити све постојеће партиције, укључујући и оне које можда нису видљиве. Ова радња не може да се опозове.</translation>
 <translation id="7695430100978772476">Форматирање меморијског уређаја <ph name="DRIVE_NAME" /> није успело</translation>
+<translation id="76959938259365003">Пражњење отпада није успело.</translation>
 <translation id="770015031906360009">грчки</translation>
 <translation id="7705251383879779343">Копираних ставки: <ph name="FILE_NAME" />.</translation>
 <translation id="7711920809702896782">Информације о датотеци слике</translation>
@@ -781,6 +786,7 @@
 <translation id="7760449188139285140">кинески вуби</translation>
 <translation id="7765158879357617694">Премести</translation>
 <translation id="7774365994322694683">Птица</translation>
+<translation id="7781829728241885113">Јуче</translation>
 <translation id="7788080748068240085">Да бисте сачували „<ph name="FILE_NAME" />“ офлајн, морате да ослободите још <ph name="TOTAL_FILE_SIZE" /> простора:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />откачите датотеке којима више не морате да приступате офлајн<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />избришите датотеке из директоријума Преузимања<ph name="MARKUP_5" /></translation>

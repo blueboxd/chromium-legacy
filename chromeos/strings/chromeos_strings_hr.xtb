@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Korisnik</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Otvoren je prozor za ažuriranje opreme za vanjske uređaje. Dostupna ažuriranja: <ph name="NUM_UPDATES" />.</translation>
+<translation id="1145516343487477149">Pronađite članke pomoći i odgovore na česta pitanja o Chromebooku</translation>
 <translation id="1165039591588034296">Pogreška</translation>
 <translation id="1175697296044146566">Ovim uređajem <ph name="DEVICE_TYPE" /> upravlja <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Prosječan (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Isključivanje tamne teme</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Isključivanje tamnog načina</translation>
+<translation id="1881188606372070653">Idite na <ph name="BEGIN_LINK1" />stranicu za pravnu pomoć<ph name="END_LINK1" /> da biste zatražili izmjenu sadržaja zbog pravnih razloga. Neki podaci o računu i sustavu možda će se poslati Googleu. Podatke koje nam dostavite upotrijebit ćemo za rješavanje tehničkih problema i poboljšanje naših usluga, u skladu s našim <ph name="BEGIN_LINK2" />pravilima o privatnosti<ph name="END_LINK2" /> i <ph name="BEGIN_LINK3" />uvjetima pružanja usluge<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Hardverska revizija</translation>
+<translation id="1904932688895783618">Evo još nekih korisnih resursa:</translation>
 <translation id="1905710495812624430">Premašen je maksimalan dopušteni broj pokušaja.</translation>
 <translation id="1908234395526491708">Neuspješni UDP zahtjevi</translation>
 <translation id="1932611479324127242">Isključi bateriju</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Isprobajte upute za rješavanje problema</translation>
 <translation id="2016848882344942759">--bez bijele oznake--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Povežite se s mrežom i ponovo učitajte stranicu da biste pregledali čuvar zaslona.</translation>
 <translation id="2080070583977670716">Više postavki</translation>
 <translation id="2085089206770112532">Smanjivanje svjetline zaslona</translation>
 <translation id="2105810540595158374">Uređaj je kontroler za videoigre.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Uključivanje tamnog načina</translation>
 <translation id="2177831236093724629">Pronađene su <ph name="LINK_BEGIN" />nekvalificirane komponente<ph name="LINK_END" />. Kako bi se identificirale sve kvalificirane komponente, ažurirajte OS Chrome na najnoviju verziju.</translation>
 <translation id="2180197493692062006">Nešto nije u redu. Pokušajte ponovo otvoriti aplikaciju.</translation>
+<translation id="2182088270354640012">Hvala na povratnim informacijama. Vaše povratne informacije pomažu poboljšati OS Chrome i pregledat će ih tim za OS Chrome. Zbog broja poslanih izvješća nećete dobiti izravan odgovor.</translation>
 <translation id="2209788852729124853">Poništi brojače prometa</translation>
 <translation id="2212733584906323460">Razlučivost naziva</translation>
 <translation id="2217935453350629363">Trenutačna brzina</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Traženje skenera</translation>
 <translation id="3246869037381808805">Uklonit će se zadaci ispisa stariji od jednog dana</translation>
 <translation id="3268178239013324452">Nije uspjelo – vratašca su otvorena</translation>
+<translation id="3275729367986477355">Slika avatara</translation>
 <translation id="3283504360622356314">{0,plural, =1{Uredi datoteku}one{Uredi datoteke}few{Uredi datoteke}other{Uredi datoteke}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Glavna smjernica</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Za dodatnu pomoć posjetite <ph name="BEGIN_LINK" />centar za pomoć<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algoritam kompresije</translation>
 <translation id="4794140124556169553">Testiranje procesora može utjecati na rad vašeg sustava</translation>
+<translation id="4800589996161293643">Chromebookova zajednica</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
 <translation id="4808449224298348341">Otkazan zadatak ispisa dokumenta <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Svijetla tema</translation>
@@ -486,6 +493,7 @@
 Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Odjava</translation>
+<translation id="522307662484862935">Bez navođenja e-adrese</translation>
 <translation id="5227902338748591677">Raspored tamne teme</translation>
 <translation id="5234764350956374838">Odbaci</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -612,6 +620,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="6284632978374966585">Uključivanje tamne teme</translation>
 <translation id="6295178529664209245">Želite li nastaviti s popravkom?</translation>
 <translation id="6302401976930124515">Otkazan je test <ph name="TEST_NAME" /></translation>
+<translation id="631063167932043783">Aplikacija Istražite</translation>
 <translation id="6319207335391420837">Ažurirajte opremu na uređaju <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Uključivanje čuvara zaslona</translation>
 <translation id="6325525973963619867">Nije uspjelo</translation>
@@ -623,6 +632,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="6379086450106841622">Dodirni zaslon</translation>
 <translation id="6381741036071372448">Testirajte tipkovnicu</translation>
 <translation id="6388847657025262518">Ulagač dokumenata u skener je zaglavljen. Provjerite ulagač i pokušajte ponovo.</translation>
+<translation id="6394634179843537518">Dodaj datoteku</translation>
 <translation id="6410257289063177456">Slikovne datoteke</translation>
 <translation id="641081527798843608">Podudaranje predmeta</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="6516990319416533844">Da biste testirali brzinu punjenja baterije, pustite da se baterija kratko prazni</translation>
 <translation id="6517239166834772319">Istražite</translation>
 <translation id="6527081081771465939">Nepoznat sigurnosni protokol za Wi-Fi</translation>
+<translation id="6535178685492749208">Niste povezani s internetom. Povratne informacije poslat će se kasnije.</translation>
 <translation id="65587193855025101">Plošni skener</translation>
 <translation id="6564646048574748301">Nije uspjelo – pisač nije dostupan</translation>
 <translation id="6566314079205407217">Skeniranje više stranica</translation>
@@ -717,6 +728,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="7297226631177386107">Povezivanje s HTTPS web-lokacijama putem vatrozida nije uspjelo</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Pitajte stručnjake na Chromebookovom forumu za pomoć</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Pritisnite Pretraži i razmaknicu da biste vidjeli rezultate u Google pretraživanju.</translation>
 <translation id="7343649194310845056">Mrežni uređaji</translation>
@@ -759,9 +771,11 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="773153675489693198">Broj ciklusa</translation>
 <translation id="7747039790905080783">Unaprijed podijeljen ključ</translation>
 <translation id="7762130827864645708">Promjena zaporke je uspjela. Od sad upotrebljavajte novu zaporku.</translation>
+<translation id="7762839321248874531">Pošalji <ph name="BEGIN_LINK1" />podatke o sustavu i aplikacijama<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />mjerne podatke<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Podudaranje domenskog nastavka</translation>
 <translation id="7769672763586021400">ID modela</translation>
 <translation id="7784116172884276937">Nije postavljen nijedan DNS poslužitelj</translation>
+<translation id="779591286616261875">Pošalji novo izvješće</translation>
 <translation id="7799817062559422778">Svijetli način</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -828,6 +842,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="8382302752385457774">Bijela oznaka</translation>
 <translation id="8395584934117017006">Uređajem <ph name="DEVICE_TYPE" /> upravlja poduzeće</translation>
 <translation id="8398927464629426868">Brzina punjenja ili pražnjenja uređaja</translation>
+<translation id="8420955526972171689">Izvođenje testova i rješavanje problema s hardverom</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Interna tipkovnica</translation>
 <translation id="8431300646573772016">Novo u Chrome OS-u</translation>
@@ -913,6 +928,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="9082718469794970195">Upotrijebi ovaj videozapis</translation>
 <translation id="9087578468327036362">Prijavite ovaj upit</translation>
 <translation id="9088306295921699330">Trenutačna upotreba</translation>
+<translation id="9092255287806472980">Vaše povratne informacije pomažu poboljšati OS Chrome i pregledat će ih naš tim. Zbog velikog broja izvješća nećemo moći poslati odgovor.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Trebat ćete rastaviti uređaj</translation>
 <translation id="9098156406873149060">Zadrži korisničke podatke</translation>

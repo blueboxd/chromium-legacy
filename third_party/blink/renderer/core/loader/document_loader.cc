@@ -34,10 +34,12 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "build/chromeos_buildflags.h"
@@ -184,7 +186,7 @@ Vector<String> CopyForceEnabledOriginTrials(
     const WebVector<WebString>& force_enabled_origin_trials) {
   Vector<String> result;
   result.ReserveInitialCapacity(
-      SafeCast<wtf_size_t>(force_enabled_origin_trials.size()));
+      base::checked_cast<wtf_size_t>(force_enabled_origin_trials.size()));
   for (const auto& trial : force_enabled_origin_trials)
     result.push_back(trial);
   return result;
@@ -203,52 +205,6 @@ bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
          WebTestSupport::IsRunningWebTest();
 }
 
-// TODO(https://crbug.com/1041379): This should be moved out of blink.
-void ApplyOriginPolicy(ContentSecurityPolicy* csp,
-                       const KURL& response_url,
-                       const WebOriginPolicy& origin_policy,
-                       PolicyContainer& policy_container) {
-  // When this function is called. The following lines of code happen
-  // consecutively:
-  // 1) A new empty set of CSP is created.
-  // 2) CSP(s) from the HTTP response are appended.
-  // 3) CSP(s) from the OriginPolicy are appended. [HERE]
-  //
-  // As a result, at the beginning of this function, the set of CSP must not
-  // contain any OriginPolicy's CSP yet.
-  //
-  // TODO(arthursonzogni): HasPolicyFromSource(...) is used only in this DCHECK,
-  // consider removing this function.
-  DCHECK(!csp->HasPolicyFromSource(
-      network::mojom::ContentSecurityPolicySource::kOriginPolicy));
-
-  DCHECK(response_url.ProtocolIsInHTTPFamily());
-
-  scoped_refptr<SecurityOrigin> self_origin =
-      SecurityOrigin::Create(response_url);
-
-  for (const auto& policy : origin_policy.content_security_policies) {
-    Vector<network::mojom::blink::ContentSecurityPolicyPtr> parsed_policies =
-        ParseContentSecurityPolicies(
-            policy, network::mojom::ContentSecurityPolicyType::kEnforce,
-            network::mojom::ContentSecurityPolicySource::kOriginPolicy,
-            *self_origin);
-    policy_container.AddContentSecurityPolicies(mojo::Clone(parsed_policies));
-    csp->AddPolicies(std::move(parsed_policies));
-  }
-
-  for (const auto& policy :
-       origin_policy.content_security_policies_report_only) {
-    Vector<network::mojom::blink::ContentSecurityPolicyPtr> parsed_policies =
-        ParseContentSecurityPolicies(
-            policy, network::mojom::ContentSecurityPolicyType::kReport,
-            network::mojom::ContentSecurityPolicySource::kOriginPolicy,
-            *self_origin);
-    policy_container.AddContentSecurityPolicies(mojo::Clone(parsed_policies));
-    csp->AddPolicies(std::move(parsed_policies));
-  }
-}
-
 struct SameSizeAsDocumentLoader
     : public GarbageCollected<SameSizeAsDocumentLoader>,
       public WebDocumentLoader,
@@ -263,7 +219,6 @@ struct SameSizeAsDocumentLoader
   AtomicString referrer;
   scoped_refptr<EncodedFormData> http_body;
   AtomicString http_content_type;
-  absl::optional<WebOriginPolicy> origin_policy;
   scoped_refptr<const SecurityOrigin> requestor_origin;
   KURL unreachable_url;
   KURL pre_redirect_url_for_failed_navigations;
@@ -285,8 +240,8 @@ struct SameSizeAsDocumentLoader
   bool is_error_page_for_failed_navigation;
   mojo::Remote<mojom::blink::ContentSecurityNotifier> content_security_notifier;
   scoped_refptr<SecurityOrigin> origin_to_commit;
+  AtomicString origin_calculation_debug_info;
   BlinkStorageKey storage_key;
-  network::mojom::WebSandboxFlags sandbox_flags;
   WebNavigationType navigation_type;
   DocumentLoadTiming document_load_timing;
   base::TimeTicks time_of_last_data_received;
@@ -367,7 +322,6 @@ DocumentLoader::DocumentLoader(
       referrer_(static_cast<String>(params_->referrer)),
       http_body_(params_->http_body),
       http_content_type_(static_cast<String>(params_->http_content_type)),
-      origin_policy_(params_->origin_policy),
       requestor_origin_(params_->requestor_origin),
       unreachable_url_(params_->unreachable_url),
       pre_redirect_url_for_failed_navigations_(
@@ -407,7 +361,6 @@ DocumentLoader::DocumentLoader(
                             ? nullptr
                             : params_->origin_to_commit.Get()->IsolatedCopy()),
       storage_key_(std::move(params_->storage_key)),
-      sandbox_flags_(params_->sandbox_flags),
       navigation_type_(navigation_type),
       document_load_timing_(*this),
       service_worker_network_provider_(
@@ -558,7 +511,6 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   // the origin to no longer be aliased).
   params->origin_to_commit = window->GetSecurityOrigin();
   params->storage_key = window->GetStorageKey();
-  params->sandbox_flags = sandbox_flags_;
   params->origin_agent_cluster = origin_agent_cluster_;
   params->origin_agent_cluster_left_as_default =
       origin_agent_cluster_left_as_default_;
@@ -1179,8 +1131,6 @@ void DocumentLoader::HandleRedirect(
 
   referrer_ = redirect.new_referrer;
 
-  // TODO(dgozman): check whether clearing origin policy is intended behavior.
-  origin_policy_ = absl::nullopt;
   probe::WillSendNavigationRequest(
       probe::ToCoreProbeSink(GetFrame()), main_resource_identifier_, this,
       url_after_redirect, http_method_, http_body_.get());
@@ -1967,15 +1917,17 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
   if (origin_to_commit_) {
     // Origin to commit is specified by the browser process, it must be taken
     // and used directly. It is currently supplied only for session history
-    // navigations, where the origin was already calcuated previously and
+    // navigations, where the origin was already calculated previously and
     // stored on the session history entry.
     origin = origin_to_commit_;
+    origin_calculation_debug_info_ = "use_origin_to_commit";
   } else if (IsPagePopupRunningInWebTest(frame_)) {
     // If we are a page popup in LayoutTests ensure we use the popup
     // owner's security origin so the tests can possibly access the
     // document via internals API.
     auto* owner_context = frame_->PagePopupOwner()->GetExecutionContext();
     origin = owner_context->GetSecurityOrigin()->IsolatedCopy();
+    origin_calculation_debug_info_ = "use_popup_owner_origin";
   } else if (owner_document && owner_document->domWindow()) {
     // Prefer taking `origin` from `owner_document` if one is available - this
     // will correctly inherit/alias `SecurityOrigin::domain_` from the
@@ -1994,7 +1946,9 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     // But origin_to_commit_ is currently cloned with IsolatedCopy() which
     // breaks aliasing...
     origin = owner_document->domWindow()->GetMutableSecurityOrigin();
+    origin_calculation_debug_info_ = "use_owner_document_origin";
   } else {
+    origin_calculation_debug_info_ = "use_url_with_precursor";
     // Otherwise, create an origin that propagates precursor information
     // as needed. For non-opaque origins, this creates a standard tuple
     // origin, but for opaque origins, it creates an origin with the
@@ -2003,13 +1957,19 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     // For uuid-in-package: resources served from WebBundles, use the Bundle's
     // origin as the precursor.
     if (url_.ProtocolIs("uuid-in-package") &&
-        response_.WebBundleURL().IsValid())
+        response_.WebBundleURL().IsValid()) {
       precursor = SecurityOrigin::Create(response_.WebBundleURL());
+      origin_calculation_debug_info_ =
+          origin_calculation_debug_info_ + "_web_bundle";
+    }
     origin = SecurityOrigin::CreateWithReferenceOrigin(url_, precursor.get());
   }
 
-  if ((sandbox_flags_ & network::mojom::blink::WebSandboxFlags::kOrigin) !=
+  if ((policy_container_->GetPolicies().sandbox_flags &
+       network::mojom::blink::WebSandboxFlags::kOrigin) !=
       network::mojom::blink::WebSandboxFlags::kNone) {
+    origin_calculation_debug_info_ =
+        origin_calculation_debug_info_ + ", add_sandbox";
     auto sandbox_origin = origin->DeriveNewOpaqueOrigin();
 
     // If we're supposed to inherit our security origin from our
@@ -2022,10 +1982,16 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     // Note: Sandboxed about:srcdoc iframe without "allow-same-origin" aren't
     // allowed to load user's file, even if its parent can.
     if (owner_document) {
-      if (origin->IsPotentiallyTrustworthy())
+      if (origin->IsPotentiallyTrustworthy()) {
         sandbox_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
-      if (origin->CanLoadLocalResources() && !loading_srcdoc_)
+        origin_calculation_debug_info_ =
+            origin_calculation_debug_info_ + "_potentially_trustworthy";
+      }
+      if (origin->CanLoadLocalResources() && !loading_srcdoc_) {
         sandbox_origin->GrantLoadLocalResources();
+        origin_calculation_debug_info_ =
+            origin_calculation_debug_info_ + "_load_local";
+      }
     }
     origin = sandbox_origin;
   }
@@ -2039,31 +2005,46 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     // navigated.
     CHECK(origin->IsOpaque());
     origin->GrantUniversalAccess();
+    origin_calculation_debug_info_ =
+        origin_calculation_debug_info_ + ", universal_access_webview";
   } else if (!frame_->GetSettings()->GetWebSecurityEnabled()) {
     // Web security is turned off. We should let this document access
     // every other document. This is used primary by testing harnesses for
     // web sites.
     origin->GrantUniversalAccess();
+    origin_calculation_debug_info_ =
+        origin_calculation_debug_info_ + ", universal_access_no_web_security";
   } else if (origin->IsLocal()) {
     if (frame_->GetSettings()->GetAllowUniversalAccessFromFileURLs()) {
       // Some clients want local URLs to have universal access, but that
       // setting is dangerous for other clients.
       origin->GrantUniversalAccess();
+      origin_calculation_debug_info_ =
+          origin_calculation_debug_info_ + ", universal_access_allow_file";
     } else if (!frame_->GetSettings()->GetAllowFileAccessFromFileURLs()) {
       // Some clients do not want local URLs to have access to other local
       // URLs.
       origin->BlockLocalAccessFromLocalOrigin();
+      origin_calculation_debug_info_ =
+          origin_calculation_debug_info_ + ", universal_access_block_file";
     }
   }
 
-  if (grant_load_local_resources_)
+  if (grant_load_local_resources_) {
     origin->GrantLoadLocalResources();
+    origin_calculation_debug_info_ =
+        origin_calculation_debug_info_ + ", grant_load_local_resources";
+  }
 
   if (origin->IsOpaque()) {
     KURL url = url_.IsEmpty() ? BlankURL() : url_;
-    if (SecurityOrigin::Create(url)->IsPotentiallyTrustworthy())
+    if (SecurityOrigin::Create(url)->IsPotentiallyTrustworthy()) {
       origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+      origin_calculation_debug_info_ =
+          origin_calculation_debug_info_ + ", is_potentially_trustworthy";
+    }
   }
+
   return origin;
 }
 
@@ -2214,16 +2195,6 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
         origin_agent_cluster_left_as_default_);
     frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_, agent));
 
-    if (origin_policy_.has_value()) {
-      // Convert from WebVector<WebString> to WTF::Vector<WTF::String>
-      Vector<String> ids;
-      for (const auto& id : origin_policy_->ids) {
-        ids.push_back(id);
-      }
-
-      frame_->DomWindow()->SetOriginPolicyIds(ids);
-    }
-
     // TODO(https://crbug.com/1111897): This call is likely to happen happen
     // multiple times per agent, since navigations can happen multiple times per
     // agent. This is subpar.
@@ -2268,9 +2239,6 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   security_origin = security_origin->GetOriginForAgentCluster(
       frame_->DomWindow()->GetAgent()->cluster_id());
 
-  SecurityContext& security_context = frame_->DomWindow()->GetSecurityContext();
-  security_context.SetSandboxFlags(sandbox_flags_);
-
   // TODO(https://crbug.com/888079): Just use the storage key sent by the
   // browser once the browser will be able to compute the origin in all cases.
   // TODO(https://crbug.com/1271402): Make sure we have the intended behavior
@@ -2282,6 +2250,7 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   // Conceptually, SecurityOrigin doesn't have to be initialized after sandbox
   // flags are applied, but there's a UseCounter in SetSecurityOrigin() that
   // wants to inspect sandbox flags.
+  SecurityContext& security_context = frame_->DomWindow()->GetSecurityContext();
   security_context.SetSecurityOrigin(std::move(security_origin));
   // Requires SecurityOrigin to be initialized.
   OriginTrialContext::AddTokensFromHeader(
@@ -2369,7 +2338,7 @@ void DocumentLoader::CommitNavigation() {
     // trials to be initialized.
     // TODO(iclelland): Add Permissions-Policy-Report-Only to Origin Policy.
     security_init.ApplyPermissionsPolicy(
-        *frame_.Get(), response_, origin_policy_, frame_policy_,
+        *frame_.Get(), response_, frame_policy_,
         Agent::IsDirectSocketEnabled() ? initial_permissions_policy_
                                        : absl::nullopt);
 
@@ -2650,6 +2619,9 @@ void DocumentLoader::CreateParserPostCommit() {
   document->MaybeHandleHttpRefresh(
       response_.HttpHeaderField(http_names::kRefresh),
       Document::kHttpRefreshFromHeader);
+
+  // The parser may have collected preloads in the background, flush them now.
+  parser_->FlushPendingPreloads();
 }
 
 const AtomicString& DocumentLoader::MimeType() const {
@@ -2946,12 +2918,6 @@ ContentSecurityPolicy* DocumentLoader::CreateCSP() {
     policy_container_->AddContentSecurityPolicies(
         mojo::Clone(parsed_embedder_policies));
     csp->AddPolicies(std::move(parsed_embedder_policies));
-  }
-
-  // Retrieve CSP stored in the OriginPolicy and add them to the policy
-  // container.
-  if (origin_policy_) {
-    ApplyOriginPolicy(csp, Url(), origin_policy_.value(), *policy_container_);
   }
 
   return csp;

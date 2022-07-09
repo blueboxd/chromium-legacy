@@ -137,6 +137,7 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -1826,17 +1827,14 @@ void LocalDOMWindow::cancelAnimationFrame(int id) {
 }
 
 void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {
+  ScriptState* script_state = callback->CallbackRelevantScriptState();
+  auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+  if (tracker && script_state->World().IsMainWorld()) {
+    callback->SetParentTaskId(tracker->RunningTaskId(script_state));
+  }
   Microtask::EnqueueMicrotask(
       WTF::Bind(&V8VoidFunction::InvokeAndReportException,
                 WrapPersistent(callback), nullptr));
-}
-
-const Vector<String>& LocalDOMWindow::originPolicyIds() const {
-  return origin_policy_ids_;
-}
-
-void LocalDOMWindow::SetOriginPolicyIds(const Vector<String>& ids) {
-  origin_policy_ids_ = ids;
 }
 
 bool LocalDOMWindow::originAgentCluster() const {
@@ -1961,22 +1959,23 @@ void LocalDOMWindow::DispatchLoadEvent() {
     DispatchEvent(load_event, document());
   }
 
-  if (GetFrame()) {
+  if (LocalFrame* frame = GetFrame()) {
     WindowPerformance* performance = DOMWindowPerformance::performance(*this);
     DCHECK(performance);
     performance->NotifyNavigationTimingToObservers();
+
+    // For load events, send a separate load event to the enclosing frame only.
+    // This is a DOM extension and is independent of bubbling/capturing rules of
+    // the DOM.
+    if (FrameOwner* owner = frame->Owner())
+      owner->DispatchLoad();
+
+    if (frame->IsAttached()) {
+      DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
+          "MarkLoad", inspector_mark_load_event::Data, frame);
+      probe::LoadEventFired(frame);
+    }
   }
-
-  // For load events, send a separate load event to the enclosing frame only.
-  // This is a DOM extension and is independent of bubbling/capturing rules of
-  // the DOM.
-  FrameOwner* owner = GetFrame() ? GetFrame()->Owner() : nullptr;
-  if (owner)
-    owner->DispatchLoad();
-
-  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
-      "MarkLoad", inspector_mark_load_event::Data, GetFrame());
-  probe::LoadEventFired(GetFrame());
 }
 
 DispatchEventResult LocalDOMWindow::DispatchEvent(Event& event,

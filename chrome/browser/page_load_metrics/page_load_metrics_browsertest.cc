@@ -1569,8 +1569,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::FIRST_MEANINGFUL_PAINT_RECORDED, 1);
   histogram_tester_->ExpectTotalCount(internal::kHistogramFirstMeaningfulPaint,
                                       1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramParseStartToFirstMeaningfulPaint, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -1595,8 +1593,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE, 1);
   histogram_tester_->ExpectTotalCount(internal::kHistogramFirstMeaningfulPaint,
                                       0);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSize) {
@@ -2638,7 +2634,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   ASSERT_TRUE(tab_strip);
   ASSERT_EQ(2, tab_strip->count());
   ASSERT_EQ(0, tab_strip->active_index());
-  tab_strip->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+  tab_strip->ActivateTabAt(
+      1, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
 
   session_restore_paint_waiter.WaitForForegroundTabs(1);
 
@@ -2719,7 +2717,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
 }
 
 // TODO(crbug.com/1242284): Flaky on Linux.
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1338490): Flaky on lacros.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_RestoreForeignSession DISABLED_RestoreForeignSession
 #else
 #define MAYBE_RestoreForeignSession RestoreForeignSession

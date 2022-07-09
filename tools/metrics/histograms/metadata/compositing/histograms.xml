@@ -123,6 +123,30 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Compositing.DecodeLCPCandidateImage.{DecodeMethod}"
+    enum="Boolean" expires_after="2023-01-31">
+  <owner>schenney@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Reports whether an image decode was for an image that might be used as the
+    Largest Contentful Image, and then whether a missing tile at raster time
+    includes such an image. The goal is to get an approximate idea of how many
+    LCP candidate images miss their frame deadline, and hence how often we may
+    report LCP too soon.
+
+    Recorded on every {DecodeMethod}
+  </summary>
+  <token key="DecodeMethod">
+    <variant name="Hardware" summary="hardware image decode task completion."/>
+    <variant name="MissedDeadline"
+        summary="call to PrepareTiles() in which there was a missing tile.
+                 True if any missing tile contains an LCP candidate decode
+                 that has not completed."/>
+    <variant name="Software" summary="software image decode task completion."/>
+  </token>
+</histogram>
+
 <histogram name="Compositing.DidMainThreadBlockDuringCommit" enum="Boolean"
     expires_after="2022-11-09">
   <owner>szager@chromium.org</owner>
@@ -176,7 +200,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.PartialSwap.RootDamage" units="%"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>vasilyt@chromium.org</owner>
   <owner>backer@chromium.org</owner>
   <summary>
@@ -188,7 +212,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.PartialSwap.TotalDamage" units="%"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>vasilyt@chromium.org</owner>
   <owner>backer@chromium.org</owner>
   <summary>
@@ -461,6 +485,37 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Compositing.Renderer.CALayer.ChangedIOSurfacesPercentagePerFrame"
+    units="%" expires_after="2023-02-20">
+  <owner>magchen@chromium.org</owner>
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    The percentage of changed IOSurface number in all IOSurface per frame.
+    Recorded during the CALayer Tree commit to CoreAnimation on Mac.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.CALayer.ChangedIOSurfacesPerFrame"
+    units="surfaces" expires_after="2023-02-20">
+  <owner>magchen@chromium.org</owner>
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    The number of IOSurfaces changed per frame. Recorded during the CALayer Tree
+    commit to CoreAnimation on Mac.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.CALayer.ChangedIOSurfacesSizePerFrame"
+    units="bytes" expires_after="2023-02-20">
+  <owner>magchen@chromium.org</owner>
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    Total IOSurfaces area size updated per frame. Recorded during the CALayer
+    Tree commit to CoreAnimation on Mac.
+  </summary>
+</histogram>
+
 <histogram name="Compositing.Renderer.CALayer.OddOffsetVideo" enum="OddOffset"
     expires_after="2022-11-20">
   <owner>magchen@chromium.org</owner>
@@ -533,7 +588,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.Renderer.LayerSkippedForDrawPropertiesDueToBackface"
-    units="boolean" expires_after="2022-08-01">
+    units="boolean" expires_after="2023-01-31">
   <owner>chrishtr@chromium.org</owner>
   <owner>dbaron@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -561,7 +616,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.LayerUpdateSkippedDueToBackface"
-    units="boolean" expires_after="2022-08-01">
+    units="boolean" expires_after="2023-01-31">
   <owner>chrishtr@chromium.org</owner>
   <owner>dbaron@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -617,7 +672,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.NumRenderSurfaces" units="surfaces"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -645,7 +700,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.AggregateUs"
-    units="microseconds" expires_after="2022-10-23">
+    units="microseconds" expires_after="2022-12-25">
   <owner>kylechar@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -671,7 +726,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.CopyUs" units="microseconds"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -887,7 +942,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.95pctPercentDroppedFrames_1sWindow"
-    units="%" expires_after="2022-10-23">
+    units="%" expires_after="2022-12-25">
   <owner>behdadb@chromium.org</owner>
   <owner>sadrul@chromium.org</owner>
   <summary>
@@ -1351,21 +1406,6 @@ chromium-metrics-reviews@google.com.
     not displayed on screen out of the total number of frames expected to be
     produced and displayed. In other words, the lower this number is, the
     smoother experience.
-  </summary>
-</histogram>
-
-<histogram name="Graphics.Smoothness.PerSession.AveragePercentDroppedFrames"
-    units="%" expires_after="2022-06-05">
-  <owner>sadrul@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the percent of dropped frames. The metric is reported once per
-    page-load when the page closes.
-
-    AveragePercentDroppedFrames is measured by tracking the number of frames
-    which were not displayed on screen out of the total number of frames
-    expected to be produced and displayed. In other words, the lower this number
-    is, the smoother experience.
   </summary>
 </histogram>
 

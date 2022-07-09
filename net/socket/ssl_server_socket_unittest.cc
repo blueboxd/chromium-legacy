@@ -349,13 +349,14 @@ TEST(FakeSocketTest, DataTransfer) {
 class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
  public:
   SSLServerSocketTest()
-      : ssl_config_service_(new TestSSLConfigService(SSLContextConfig())),
-        cert_verifier_(new MockCertVerifier()),
-        client_cert_verifier_(new MockClientCertVerifier()),
-        transport_security_state_(new TransportSecurityState),
-        ct_policy_enforcer_(new MockCTPolicyEnforcer),
-        ssl_client_session_cache_(
-            new SSLClientSessionCache(SSLClientSessionCache::Config())) {}
+      : ssl_config_service_(
+            std::make_unique<TestSSLConfigService>(SSLContextConfig())),
+        cert_verifier_(std::make_unique<MockCertVerifier>()),
+        client_cert_verifier_(std::make_unique<MockClientCertVerifier>()),
+        transport_security_state_(std::make_unique<TransportSecurityState>()),
+        ct_policy_enforcer_(std::make_unique<MockCTPolicyEnforcer>()),
+        ssl_client_session_cache_(std::make_unique<SSLClientSessionCache>(
+            SSLClientSessionCache::Config())) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -448,8 +449,8 @@ class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
     static const uint8_t kClientCertCAName[] = {
         0x30, 0x0f, 0x31, 0x0d, 0x30, 0x0b, 0x06, 0x03, 0x55,
         0x04, 0x03, 0x0c, 0x04, 0x42, 0x20, 0x43, 0x41};
-    server_ssl_config_.cert_authorities.push_back(std::string(
-        std::begin(kClientCertCAName), std::end(kClientCertCAName)));
+    server_ssl_config_.cert_authorities.emplace_back(
+        std::begin(kClientCertCAName), std::end(kClientCertCAName));
 
     scoped_refptr<X509Certificate> expected_client_cert(
         ImportCertFromFile(GetTestCertsDirectory(), kClientCertFileName));

@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
@@ -142,8 +141,7 @@ class DownloadUIModel {
   };
 #endif
 
-  using DownloadUIModelPtr =
-      std::unique_ptr<DownloadUIModel, base::OnTaskRunnerDeleter>;
+  using DownloadUIModelPtr = std::unique_ptr<DownloadUIModel>;
 
   DownloadUIModel();
 
@@ -155,18 +153,17 @@ class DownloadUIModel {
 
   virtual ~DownloadUIModel();
 
-  // Observer for a single DownloadUIModel.
-  class Observer {
+  // Delegate for a single DownloadUIModel.
+  class Delegate {
    public:
     virtual void OnDownloadUpdated() {}
     virtual void OnDownloadOpened() {}
-    virtual void OnDownloadDestroyed() {}
+    virtual void OnDownloadDestroyed(const ContentId& id) {}
 
-    virtual ~Observer() {}
+    virtual ~Delegate() = default;
   };
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void SetDelegate(Delegate* delegate);
 
   base::WeakPtr<DownloadUIModel> GetWeakPtr();
 
@@ -485,7 +482,7 @@ class DownloadUIModel {
   // Returns the message, if any, to be displayed for file rerouted.
   virtual std::u16string GetWebDriveMessage(bool verbose) const;
 
-  base::ObserverList<Observer>::Unchecked observers_;
+  raw_ptr<Delegate> delegate_ = nullptr;
 
  private:
   friend class DownloadItemModelTest;
@@ -494,8 +491,21 @@ class DownloadUIModel {
 
   void set_status_text_builder_for_testing(bool for_bubble);
 
+#if !BUILDFLAG(IS_ANDROID)
+  // The following two methods exist for simpler unit testing.
+  // Setting an override for whether the DownloadBubbleV2 functionality is
+  // enabled.
+  void set_is_bubble_v2_enabled_for_testing(bool is_enabled);
+  // Returns whether the DownloadBubbleV2 functionality is enabled.
+  bool IsBubbleV2Enabled() const;
+#endif
+
   // Unowned Clock to override the time of "Now".
   raw_ptr<base::Clock> clock_ = base::DefaultClock::GetInstance();
+
+#if !BUILDFLAG(IS_ANDROID)
+  absl::optional<bool> is_bubble_V2_enabled_for_testing_;
+#endif
 
   std::unique_ptr<StatusTextBuilderBase> status_text_builder_;
 

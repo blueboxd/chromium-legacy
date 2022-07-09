@@ -11,11 +11,13 @@ import {EventSourceType} from '/chromevox/common/event_source_type.js';
 import {GestureCommandData} from '/chromevox/common/gesture_command_data.js';
 import {KeyMap} from '/chromevox/common/key_map.js';
 import {KeyUtil} from '/chromevox/common/key_util.js';
+import {LocaleOutputHelper} from '/chromevox/common/locale_output_helper.js';
 import {PanelCommand, PanelCommandType} from '/chromevox/common/panel_command.js';
 import {ISearchUI} from '/chromevox/panel/i_search_ui.js';
 import {PanelInterface} from '/chromevox/panel/panel_interface.js';
 import {PanelMenu, PanelNodeMenu, PanelSearchMenu} from '/chromevox/panel/panel_menu.js';
 import {PanelMode, PanelModeInfo} from '/chromevox/panel/panel_mode.js';
+import {CursorRange} from '/common/cursors/range.js';
 import {EventGenerator} from '/common/event_generator.js';
 
 /**
@@ -466,7 +468,7 @@ export class Panel extends PanelInterface {
           const menu = Panel.menus_[i];
           for (let j = 0; j < menu.items.length; ++j) {
             const item = menu.items[j];
-            if (CommandStore.denyOOBE(item.element.id)) {
+            if (CommandStore.denySignedOut(item.element.id)) {
               item.disable();
             }
           }
@@ -1215,7 +1217,8 @@ export class Panel extends PanelInterface {
 
   static onCurrentRangeChanged() {
     if (Panel.mode_ === PanelMode.FULLSCREEN_TUTORIAL) {
-      if (Panel.tutorial && Panel.tutorial.restartNudges) {
+      if (Panel.tutorial && Panel.tutorial.restartNudges &&
+          !Panel.disableRestartTutorialNudgesForTesting) {
         Panel.tutorial.restartNudges();
       }
     }

@@ -128,12 +128,14 @@
   E_CPONLY(kColorOverlayScrollbarStrokeHoveredDark) \
   E_CPONLY(kColorOverlayScrollbarStrokeHoveredLight) \
   E_CPONLY(kColorProgressBar) \
+  E_CPONLY(kColorProgressBarPaused) \
   E_CPONLY(kColorSeparator) \
   E_CPONLY(kColorShadowBase) \
   E_CPONLY(kColorShadowValueAmbientShadowElevationSixteen) \
   E_CPONLY(kColorShadowValueAmbientShadowElevationThree) \
   E_CPONLY(kColorShadowValueKeyShadowElevationSixteen) \
   E_CPONLY(kColorShadowValueKeyShadowElevationThree) \
+  E_CPONLY(kColorSidePanelComboboxBorder) \
   E_CPONLY(kColorSliderThumb) \
   E_CPONLY(kColorSliderThumbMinimal) \
   E_CPONLY(kColorSliderTrack) \
@@ -190,7 +192,8 @@
   E_CPONLY(kColorAshActionLabelFocusRingError) \
   E_CPONLY(kColorAshActionLabelFocusRingHover) \
   \
-  E_CPONLY(kColorAshAppListFocusRing) \
+  /* TODO(skau): Remove Compat value when dark/light mode launches. */ \
+  E_CPONLY(kColorAshAppListFocusRingCompat) \
   E_CPONLY(kColorAshAppListFocusRingNoKeyboard) \
   E_CPONLY(kColorAshAppListSeparator) \
   E_CPONLY(kColorAshAppListSeparatorLight) \
@@ -208,8 +211,10 @@
   \
   E_CPONLY(kColorAshSystemUIBorderColor1) \
   E_CPONLY(kColorAshSystemUIBorderColor2) \
+  E_CPONLY(kColorAshSystemUIBorderColor3) \
   E_CPONLY(kColorAshSystemUIHighlightColor1) \
   E_CPONLY(kColorAshSystemUIHighlightColor2) \
+  E_CPONLY(kColorAshSystemUIHighlightColor3) \
   \
   /* TODO(crbug/1319917): Remove these when dark light mode is launched. */ \
   E_CPONLY(kColorAshSystemUILightBorderColor1) \

@@ -5,6 +5,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_manager_buildflags.h"
 #include "components/password_manager/core/browser/login_database.h"
@@ -24,8 +25,8 @@ namespace password_manager {
 
 std::unique_ptr<PasswordStoreBackend> PasswordStoreBackend::Create(
     const base::FilePath& login_db_path,
-    PrefService* prefs,
-    std::unique_ptr<SyncDelegate> sync_delegate) {
+    PrefService* prefs) {
+  TRACE_EVENT0("passwords", "PasswordStoreBackendCreation");
 #if !BUILDFLAG(IS_ANDROID) || BUILDFLAG(USE_LEGACY_PASSWORD_STORE_BACKEND)
   return std::make_unique<PasswordStoreBuiltInBackend>(
       CreateLoginDatabaseForProfileStorage(login_db_path));
@@ -37,13 +38,10 @@ std::unique_ptr<PasswordStoreBackend> PasswordStoreBackend::Create(
         "PasswordManager.PasswordStore.WasEnrolledInUPMWhenBackendWasCreated",
         !prefs->GetBoolean(password_manager::prefs::
                                kUnenrolledFromGoogleMobileServicesDueToErrors));
-    raw_ptr<SyncDelegate> raw_sync_delegate = sync_delegate.get();
     return std::make_unique<PasswordStoreBackendMigrationDecorator>(
         std::make_unique<PasswordStoreBuiltInBackend>(
             CreateLoginDatabaseForProfileStorage(login_db_path)),
-        std::make_unique<PasswordStoreAndroidBackend>(std::move(sync_delegate),
-                                                      prefs),
-        prefs, raw_sync_delegate.get());
+        std::make_unique<PasswordStoreAndroidBackend>(prefs), prefs);
   }
   return std::make_unique<PasswordStoreBuiltInBackend>(
       CreateLoginDatabaseForProfileStorage(login_db_path));

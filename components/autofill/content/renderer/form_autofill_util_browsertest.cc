@@ -16,7 +16,6 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -208,11 +207,11 @@ TEST_F(FormAutofillUtilsTest, InferLabelForElementTest) {
       {"DIV table test 6", R"(
        <div>
          label
-         <div>-</div>
+         <div>*</div>
          <div><input id='target'></div>
        </div>)",
-       // TODO(crbug.com/796918): Should be "label" or "label-". This happens
-       // because "-" is inferred, but discarded because `!IsLabelValid()`.
+       // TODO(crbug.com/796918): Should be "label" or "label*". This happens
+       // because "*" is inferred, but discarded because `!IsLabelValid()`.
        u""},
       {"Infer from next sibling",
        "<input id='target' type='checkbox'>hello <b>world</b>", u"hello world"},

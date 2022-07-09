@@ -50,13 +50,16 @@ class TargetDeviceConnectionBroker {
   //
   // If the caller paused a connection previously, the connection to the
   // source device will resume via OnConnectionAccepted().
+  // Clients should check  GetFeatureSupportStatus()  before calling
+  // StartAdvertising().
   virtual void StartAdvertising(
       ConnectionLifecycleListener* listener,
       ResultCallback on_start_advertising_callback) = 0;
 
   // Clients are responsible for calling this once they have accepted their
   // desired connection, or in error/edge cases, e.g., the user exits the UI.
-  virtual void StopAdvertising(ResultCallback on_stop_advertising_callback) = 0;
+  virtual void StopAdvertising(
+      base::OnceClosure on_stop_advertising_callback) = 0;
 };
 
 }  // namespace ash::quick_start

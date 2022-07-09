@@ -29,6 +29,8 @@
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <libxml/xmlversion.h>
+
+#include "base/numerics/safe_conversions.h"
 #if defined(LIBXML_CATALOG_ENABLED)
 #include <libxml/catalog.h>
 #endif
@@ -502,9 +504,10 @@ static int MatchFunc(const char*) {
          CurrentThread() == g_libxml_loader_thread;
 }
 
-static inline void SetAttributes(Element* element,
-                                 Vector<Attribute>& attribute_vector,
-                                 ParserContentPolicy parser_content_policy) {
+static inline void SetAttributes(
+    Element* element,
+    Vector<Attribute, kAttributePrealloc>& attribute_vector,
+    ParserContentPolicy parser_content_policy) {
   if (!ScriptingContentIsAllowed(parser_content_policy))
     element->StripScriptingAttributes(attribute_vector);
   element->ParserSetAttributes(attribute_vector);
@@ -547,7 +550,7 @@ static void FinishParsing(xmlParserCtxtPtr ctxt) {
 }
 
 #define xmlParseChunk \
-  #error "Use parseChunk instead to select the correct encoding."
+#error "Use parseChunk instead to select the correct encoding."
 
 static bool IsLibxmlDefaultCatalogFile(const String& url_string) {
   // On non-Windows platforms libxml with catalogs enabled asks for
@@ -885,7 +888,7 @@ struct xmlSAX2Namespace {
 };
 
 static inline void HandleNamespaceAttributes(
-    Vector<Attribute>& prefixed_attributes,
+    Vector<Attribute, kAttributePrealloc>& prefixed_attributes,
     const xmlChar** libxml_namespaces,
     int nb_namespaces,
     ExceptionState& exception_state) {
@@ -916,7 +919,7 @@ struct xmlSAX2Attributes {
 };
 
 static inline void HandleElementAttributes(
-    Vector<Attribute>& prefixed_attributes,
+    Vector<Attribute, kAttributePrealloc>& prefixed_attributes,
     const xmlChar** libxml_attributes,
     int nb_attributes,
     const HashMap<AtomicString, AtomicString>& initial_prefix_to_namespace_map,
@@ -998,7 +1001,7 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
   bool is_first_element = !saw_first_element_;
   saw_first_element_ = true;
 
-  Vector<Attribute> prefixed_attributes;
+  Vector<Attribute, kAttributePrealloc> prefixed_attributes;
   DummyExceptionStateForTesting exception_state;
   HandleNamespaceAttributes(prefixed_attributes, libxml_namespaces,
                             nb_namespaces, exception_state);
@@ -1453,7 +1456,7 @@ static xmlEntityPtr GetXHTMLEntity(const xmlChar* name) {
   DCHECK_LE(entity_length_in_utf8, kSharedXhtmlEntityResultLength);
 
   xmlEntityPtr entity = SharedXHTMLEntity();
-  entity->length = SafeCast<int>(entity_length_in_utf8);
+  entity->length = base::checked_cast<int>(entity_length_in_utf8);
   entity->name = name;
   return entity;
 }

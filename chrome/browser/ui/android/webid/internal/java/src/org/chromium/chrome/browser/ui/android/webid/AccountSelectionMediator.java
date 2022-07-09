@@ -33,6 +33,7 @@ import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.GURL;
 
 import java.util.Arrays;
 import java.util.List;
@@ -94,8 +95,6 @@ class AccountSelectionMediator {
         mBottomSheetController = bottomSheetController;
         mBottomSheetContent = bottomSheetContent;
 
-        mBottomSheetContent.setBackPressHandler(() -> { return handleBackPress(); });
-
         mBottomSheetObserver = new EmptyBottomSheetObserver() {
             // TODO(majidvp): We should override #onSheetStateChanged() and react to HIDDEN state
             // since closed is a legacy fixture that can get out of sync with the state is some
@@ -115,14 +114,17 @@ class AccountSelectionMediator {
         };
     }
 
-    private boolean handleBackPress() {
-        if (!mWasDismissed && mSelectedAccount != null && mAccounts.size() != 1) {
-            mSelectedAccount = null;
-            showAccountsInternal(mRpForDisplay, mIdpForDisplay, mAccounts, mIdpMetadata,
-                    mClientMetadata, /*isAutoSignIn=*/false, /*focusItem=*/ItemProperties.HEADER);
-            return true;
-        }
-        return false;
+    private void updateBackPressBehavior() {
+        mBottomSheetContent.setCustomBackPressBehavior(
+                !mWasDismissed && mSelectedAccount != null && mAccounts.size() != 1
+                        ? this::handleBackPress
+                        : null);
+    }
+
+    private void handleBackPress() {
+        mSelectedAccount = null;
+        showAccountsInternal(mRpForDisplay, mIdpForDisplay, mAccounts, mIdpMetadata,
+                mClientMetadata, /*isAutoSignIn=*/false, /*focusItem=*/ItemProperties.HEADER);
     }
 
     private PropertyModel createHeaderItem(HeaderType headerType, String rpForDisplay,
@@ -182,9 +184,10 @@ class AccountSelectionMediator {
 
         if (!TextUtils.isEmpty(idpMetadata.getBrandIconUrl())) {
             int brandIconIdealSize = AccountSelectionBridge.getBrandIconIdealSize();
-            ImageFetcher.Params params = ImageFetcher.Params.create(idpMetadata.getBrandIconUrl(),
-                    ImageFetcher.WEB_ID_ACCOUNT_SELECTION_UMA_CLIENT_NAME, brandIconIdealSize,
-                    brandIconIdealSize);
+            ImageFetcher.Params params =
+                    ImageFetcher.Params.createNoResizing(new GURL(idpMetadata.getBrandIconUrl()),
+                            ImageFetcher.WEB_ID_ACCOUNT_SELECTION_UMA_CLIENT_NAME,
+                            brandIconIdealSize, brandIconIdealSize);
 
             mImageFetcher.fetchImage(params, bitmap -> {
                 if (bitmap != null && bitmap.getWidth() == bitmap.getHeight()
@@ -211,6 +214,7 @@ class AccountSelectionMediator {
 
         mHeaderType = isAutoSignIn ? HeaderType.AUTO_SIGN_IN : HeaderType.SIGN_IN;
         updateSheet(accounts, /*areAccountsClickable=*/mSelectedAccount == null, focusItem);
+        updateBackPressBehavior();
     }
 
     private void updateSheet(
@@ -281,6 +285,7 @@ class AccountSelectionMediator {
         KeyboardVisibilityDelegate.getInstance().removeKeyboardVisibilityListener(
                 mKeyboardVisibilityListener);
         mBottomSheetController.hideContent(mBottomSheetContent, true);
+        updateBackPressBehavior();
     }
 
     private void requestAvatarImage(PropertyModel accountModel) {
@@ -321,6 +326,7 @@ class AccountSelectionMediator {
 
         mDelegate.onAccountSelected(selectedAccount);
         showVerifySheet(selectedAccount);
+        updateBackPressBehavior();
     }
 
     void onDismissed(boolean shouldEmbargo) {

@@ -165,6 +165,10 @@ class ChromeAutofillClient
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
+  bool IsTouchToFillCreditCardSupported() override;
+  bool ShowTouchToFillCreditCard(
+      base::WeakPtr<TouchToFillDelegate> delegate) override;
+  void HideTouchToFillCreditCard() override;
   void ShowAutofillPopup(
       const PopupOpenArgs& open_args,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
@@ -186,7 +190,9 @@ class ChromeAutofillClient
       const std::u16string& cvc,
       const gfx::Image& card_image) override;
   void ShowVirtualCardErrorDialog(bool is_permanent_error) override;
-  void ShowAutofillProgressDialog(base::OnceClosure cancel_callback) override;
+  void ShowAutofillProgressDialog(
+      AutofillProgressDialogType autofill_progress_dialog_type,
+      base::OnceClosure cancel_callback) override;
   void CloseAutofillProgressDialog(
       bool show_confirmation_before_closing) override;
   bool IsAutofillAssistantShowing() override;

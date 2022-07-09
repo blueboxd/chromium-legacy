@@ -291,12 +291,15 @@ AccountSelectionBubbleView::AccountSelectionBubbleView(
   SetShowTitle(false);
   SetShowCloseButton(false);
   set_close_on_deactivate(false);
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      kTopBottomPadding));
+
   std::u16string title = l10n_util::GetStringFUTF16(
       IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT,
       base::UTF8ToUTF16(rp_for_display), idp_for_display_);
+  SetAccessibleTitle(title);
+
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      kTopBottomPadding));
   bool has_icon = idp_metadata.brand_icon_url.is_valid();
   header_view_ = AddChildView(CreateHeaderView(title, has_icon));
   AddChildView(std::make_unique<views::Separator>());
@@ -372,10 +375,20 @@ std::unique_ptr<views::View> AccountSelectionBubbleView::CreateHeaderView(
           vector_icons::kArrowBackIcon));
   views::InstallCircleHighlightPathGenerator(back_button_.get());
   back_button_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
-  back_button_->SetProperty(views::kMarginsKey,
-                            gfx::Insets().set_right(kLeftRightPadding));
-
   back_button_->SetVisible(false);
+
+  int back_button_right_margin = kLeftRightPadding;
+  if (header_icon_view_) {
+    // Set the right margin of the back button so that the back button and
+    // the IDP brand icon have the same width. This ensures that the header
+    // title does not shift when the user navigates to the consent screen.
+    back_button_right_margin =
+        std::max(0, back_button_right_margin +
+                        header_icon_view_->GetPreferredSize().width() -
+                        back_button_->GetPreferredSize().width());
+  }
+  back_button_->SetProperty(views::kMarginsKey,
+                            gfx::Insets().set_right(back_button_right_margin));
 
   // Add the title.
   title_label_ = header->AddChildView(std::make_unique<views::Label>(

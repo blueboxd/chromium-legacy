@@ -11,10 +11,13 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/quick_start_screen_handler.h"
+#include "chromeos/ash/components/oobe_quick_start/target_device_bootstrap_controller.h"
 
 namespace ash {
 
-class QuickStartScreen : public BaseScreen {
+class QuickStartScreen
+    : public BaseScreen,
+      public quick_start::TargetDeviceBootstrapController::Observer {
  public:
   using TView = QuickStartView;
 
@@ -39,10 +42,18 @@ class QuickStartScreen : public BaseScreen {
   void HideImpl() override;
   void OnUserAction(const base::Value::List& args) override;
 
+  // quick_start::TargetDeviceBootstrapController::Observer:
+  void OnStatusChanged(
+      const quick_start::TargetDeviceBootstrapController::Status& status) final;
+
+  void UnbindFromBootstrapController();
   void SendRandomFiguresForTesting() const;
 
   base::WeakPtr<TView> view_;
   ScreenExitCallback exit_callback_;
+
+  base::WeakPtr<ash::quick_start::TargetDeviceBootstrapController>
+      bootstrap_controller_;
 };
 
 }  // namespace ash

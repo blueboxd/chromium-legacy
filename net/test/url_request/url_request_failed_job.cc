@@ -135,12 +135,10 @@ void URLRequestFailedJob::AddUrlHandlerForHostname(
     const std::string& hostname) {
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
   // Add |hostname| to URLRequestFilter for HTTP and HTTPS.
-  filter->AddHostnameInterceptor(
-      "http", hostname,
-      std::unique_ptr<URLRequestInterceptor>(new MockJobInterceptor()));
-  filter->AddHostnameInterceptor(
-      "https", hostname,
-      std::unique_ptr<URLRequestInterceptor>(new MockJobInterceptor()));
+  filter->AddHostnameInterceptor("http", hostname,
+                                 std::make_unique<MockJobInterceptor>());
+  filter->AddHostnameInterceptor("https", hostname,
+                                 std::make_unique<MockJobInterceptor>());
 }
 
 // static
@@ -182,7 +180,8 @@ void URLRequestFailedJob::StartAsync() {
     return;
   }
   const std::string headers = "HTTP/1.1 200 OK";
-  response_info_.headers = new net::HttpResponseHeaders(headers);
+  response_info_.headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>(headers);
   total_received_bytes_ = headers.size();
   NotifyHeadersComplete();
 }

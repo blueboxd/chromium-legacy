@@ -35,7 +35,6 @@ namespace {
 using ShowVirtualKeyboard =
     password_manager::PasswordManagerDriver::ShowVirtualKeyboard;
 using autofill::mojom::SubmissionReadinessState;
-using device_reauth::BiometricsAvailability;
 using password_manager::PasswordManagerDriver;
 using password_manager::UiCredential;
 
@@ -186,7 +185,8 @@ void TouchToFillController::OnCredentialSelected(
   authenticator_->Authenticate(
       device_reauth::BiometricAuthRequester::kTouchToFill,
       base::BindOnce(&TouchToFillController::OnReauthCompleted,
-                     base::Unretained(this), credential));
+                     base::Unretained(this), credential),
+      /*use_last_valid_auth=*/true);
 }
 
 void TouchToFillController::OnWebAuthnCredentialSelected(

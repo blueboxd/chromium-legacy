@@ -74,7 +74,7 @@ void BluetoothHidDetectorImpl::SetInputDevicesStatus(
   //    same type has been detected as connected. Clear the current pairing
   //    state, which will cause the current pairing to cancel, and process the
   //    next device in the queue.
-  HID_LOG(EVENT) << "Device type of << "
+  HID_LOG(EVENT) << "Device type of "
                  << current_pairing_device_.value()->device_type << " for "
                  << current_pairing_device_.value()->id
                  << " is no longer missing";
@@ -122,13 +122,16 @@ void BluetoothHidDetectorImpl::PerformStartBluetoothHidDetection(
       system_properties_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
-void BluetoothHidDetectorImpl::PerformStopBluetoothHidDetection() {
+void BluetoothHidDetectorImpl::PerformStopBluetoothHidDetection(
+    bool is_using_bluetooth) {
   DCHECK_NE(kNotStarted, state_)
       << " Call to StopBluetoothHidDetection() while "
       << "HID detection is inactive.";
-  HID_LOG(EVENT) << "Stopping Bluetooth HID detection";
+  HID_LOG(EVENT) << "Stopping Bluetooth HID detection, |is_using_bluetooth|: "
+                 << is_using_bluetooth;
   state_ = kNotStarted;
-  cros_bluetooth_config_remote_->SetBluetoothHidDetectionActive(false);
+  cros_bluetooth_config_remote_->SetBluetoothHidDetectionInactive(
+      is_using_bluetooth);
   cros_bluetooth_config_remote_.reset();
   system_properties_observer_receiver_.reset();
   ResetDiscoveryState();
@@ -154,7 +157,7 @@ void BluetoothHidDetectorImpl::OnPropertiesUpdated(
         HID_LOG(EVENT) << "Bluetooth adapter is disabled or disabling, "
                        << "enabling adapter";
         state_ = kEnablingAdapter;
-        cros_bluetooth_config_remote_->SetBluetoothHidDetectionActive(true);
+        cros_bluetooth_config_remote_->SetBluetoothHidDetectionActive();
       } else {
         HID_LOG(EVENT)
             << "Bluetooth adapter is unavailable or enabling, waiting "
@@ -290,8 +293,8 @@ void BluetoothHidDetectorImpl::HandleKeyEntered(uint8_t num_keys_entered) {
   DCHECK(current_pairing_state_)
       << "HandleKeyEntered() called with no |current_pairing_state_|";
 
-  HID_LOG(EVENT) << "HandleKeyEntered called with " << num_keys_entered
-                 << " keys entered";
+  HID_LOG(EVENT) << "HandleKeyEntered called with "
+                 << static_cast<unsigned>(num_keys_entered) << " keys entered";
   current_pairing_state_->num_keys_entered = num_keys_entered;
   NotifyBluetoothHidDetectionStatusChanged();
 }

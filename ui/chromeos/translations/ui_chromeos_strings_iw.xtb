@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul Romaja</translation>
 <translation id="112387589102719461">‏מקלדת Programmer Dvorak באנגלית (ארה"ב)</translation>
 <translation id="1134697384939541955">מקלדת מורחבת באנגלית (ארה"ב)</translation>
+<translation id="1138691154716715755">מוקדם יותר החודש</translation>
 <translation id="1148097584170732637">נמצאו <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     אין מספיק מקום באחסון המקומי. יש צורך ב-<ph name="FILE_SIZE" /> נוספים.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />,‏ <ph name="NETWORK_NAME" />,‏ עוצמת האות <ph name="SIGNAL_STRENGTH" />%, נחסמה על ידי מנהל המערכת, פרטים</translation>
 <translation id="2142680004883808240">‏רוסית עם מקלדת פונטית YaZHert</translation>
 <translation id="2143778271340628265">‏תצורת שרת proxy ידנית</translation>
+<translation id="2148716181193084225">היום</translation>
 <translation id="2163152940313951844">תו לא חוקי: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">‏פורטוגזית עם מקלדת בינלאומית של ארה"ב ל-PC</translation>
 <translation id="2198315389084035571">סינית פשוטה</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">מעבר לתצוגת רשימה</translation>
 <translation id="2377590462528165447">‏<ph name="NUMBER_OF_ITEMS" /> תיקיות שותפו עם Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> קבצים נבחרו</translation>
+<translation id="2387120140441437063">לא ניתן לפתוח את הקבצים שנמצאים באשפה. יש לשחזר את הקבצים לפני הפתיחה.</translation>
 <translation id="2387458720915042159">‏סוג חיבור לשרת proxy</translation>
 <translation id="2389832672041313158">בורמזית/מיאנמר</translation>
 <translation id="2392369802118427583">הפעלה</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">התכנים בתיקייה הזו הם לקריאה בלבד. לא ניתן לבצע פעולות מסוימות.</translation>
 <translation id="2542049655219295786">‏טבלה של Google</translation>
 <translation id="2544853746127077729">אישור האימות נדחה על ידי הרשת</translation>
-<translation id="2547921442987553570">הוספה אל <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">ארה"ב - בינלאומית</translation>
 <translation id="2563185590376525700">צפרדע</translation>
 <translation id="2578394532502990878">טמילית פונטית</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">‏סינית Dayi</translation>
 <translation id="3057861065630527966">גיבוי התמונות והסרטונים</translation>
 <translation id="3067790092342515856">‏קובצי Windows</translation>
-<translation id="3078461028045006476">שיתוף באמצעות <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">‏מכשירי Chromebit</translation>
 <translation id="3085752524577180175">‏מארח SOCKS</translation>
 <translation id="3104793765551262433">רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />,‏ <ph name="NETWORK_NAME" />,‏ <ph name="SECURITY_STATUS" />,‏ <ph name="CONNECTION_STATUS" />, עוצמת האות <ph name="SIGNAL_STRENGTH" />%, נחסמה על ידי האדמין, פרטים</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3855472144336161447">‏גרמנית - Neo 2</translation>
 <translation id="3858860766373142691">שם</translation>
-<translation id="386548886866354912">הוספה לחבילה יחד עם <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">תיאור</translation>
 <translation id="3899991606604168269">צרפתית (קנדה) עם מקלדת רב-לשונית</translation>
 <translation id="3901991538546252627">מתבצעת התחברות אל: <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">הורדה של פרופיל נייד, רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">אנגלית (בריטניה)</translation>
 <translation id="3975895378829046965">בנגלית פונטית</translation>
+<translation id="3991446849494482687">‏הפעולה הזו תשבית גם את ההגדרה של נעילת ה-SIM במכשיר.</translation>
 <translation id="4002066346123236978">כותרת</translation>
 <translation id="4017788180641807848">‏מקלדת Workman באנגלית (ארה"ב)</translation>
 <translation id="4040753847560036377">‏ה-PUK שגוי</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">‏רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />,‏ <ph name="NETWORK_NAME" />,‏ <ph name="NETWORK_PROVIDER_NAME" />,‏ <ph name="CONNECTION_STATUS" />, עוצמת האות: ‎<ph name="SIGNAL_STRENGTH" />%‎, הרשת מנוהלת על ידי מנהל המערכת שלך, פרטים</translation>
 <translation id="4387004326333427325">אישור האימות נדחה מרחוק</translation>
 <translation id="4394214039309501350">קישור חיצוני</translation>
+<translation id="4394980935660306080">מוקדם יותר השבוע</translation>
 <translation id="4401287888955153199">חילוץ הכול</translation>
 <translation id="4410695710508688828">פעולת החילוץ נכשלה. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">יצירת קיצור דרך לקבצים</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">הפתיחה של "<ph name="PATH" />" מתבצעת</translation>
 <translation id="4720185134442950733">חבילת הגלישה</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> תמונות גובו</translation>
+<translation id="4725096204469550614">מוקדם יותר השנה</translation>
 <translation id="4725511304875193254">קורגי</translation>
 <translation id="4737050008115666127">נחיתה</translation>
 <translation id="4747271164117300400">מקדונית</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">מתבצעת העברה של <ph name="NUMBER_OF_ITEMS" /> פריטים אל <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">אירעה שגיאה.</translation>
 <translation id="5098629044894065541">עברית</translation>
+<translation id="5102922915594634436">ניהול תיקיות מסונכרנות</translation>
 <translation id="5109254780565519649">אירעה שגיאה. ייתכן שפריטים מסוימים לא שוחזרו.</translation>
 <translation id="5110329002213341433">אנגלית (קנדה)</translation>
 <translation id="5123433949759960244">כדורסל</translation>
@@ -604,7 +608,6 @@
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6170470584681422115">כריך</translation>
 <translation id="6187719147498869044">הונגרית</translation>
-<translation id="6189412234224385711">פתיחה באמצעות <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">שינוי קוד אימות</translation>
 <translation id="6199801702437275229">בהמתנה למידע על נפח האחסון...</translation>
 <translation id="6205710420833115353">פעולות מסוימות נמשכות זמן רב מהצפוי. האם ברצונך לבטל אותן?</translation>
@@ -708,6 +711,7 @@
 <translation id="7075931588889865715">‏תאילנדית עם מקלדת TIS 820-2531</translation>
 <translation id="708278670402572152">עליך להתנתק כדי לאפשר סריקה</translation>
 <translation id="7086590977277044826">‏טמילית עם מקלדת InScript</translation>
+<translation id="7088615885725309056">ישן יותר</translation>
 <translation id="7103992300314999525">מקדונית</translation>
 <translation id="7106346894903675391">קניית נפח אחסון נוסף...</translation>
 <translation id="7126604456862387217">‏'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' – &lt;em&gt;חיפוש ב-‏Drive‏&lt;/em‏&gt;</translation>
@@ -772,6 +776,7 @@
 <translation id="7663224033570512922">הינדית</translation>
 <translation id="7693909743393669729">פירמוט של התקן אחסון ימחק את כל הנתונים המאוחסנים בו ויסיר את כל המחיצות הקיימות, כולל מחיצות שאינן גלויות. לא ניתן לבטל פעולה זו.</translation>
 <translation id="7695430100978772476">לא ניתן לפרמט את <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">ריקון האשפה נכשל.</translation>
 <translation id="770015031906360009">יוונית</translation>
 <translation id="7705251383879779343">ההעתקה של <ph name="FILE_NAME" /> הסתיימה.</translation>
 <translation id="7711920809702896782">פרטי התמונה</translation>
@@ -782,6 +787,7 @@
 <translation id="7760449188139285140">‏סינית Wubi</translation>
 <translation id="7765158879357617694">העברה</translation>
 <translation id="7774365994322694683">ציפור</translation>
+<translation id="7781829728241885113">אתמול</translation>
 <translation id="7788080748068240085">כדי לשמור את "<ph name="FILE_NAME" />" באופן לא מקוון, יש לפנות נפח נוסף של <ph name="TOTAL_FILE_SIZE" /> :<ph name="MARKUP_1" />
         <ph name="MARKUP_2" />ניתן לבטל הצמדה של קבצים שאין צורך לגשת אליהם יותר במצב אופליין<ph name="MARKUP_3" />
         <ph name="MARKUP_4" />ניתן למחוק קבצים מהתיקייה 'הורדות'<ph name="MARKUP_5" /></translation>

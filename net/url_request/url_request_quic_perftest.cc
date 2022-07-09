@@ -83,8 +83,7 @@ perf_test::PerfResultReporter SetUpURLRequestQuicReporter(
 
 std::unique_ptr<test_server::HttpResponse> HandleRequest(
     const test_server::HttpRequest& request) {
-  std::unique_ptr<test_server::BasicHttpResponse> http_response(
-      new test_server::BasicHttpResponse());
+  auto http_response = std::make_unique<test_server::BasicHttpResponse>();
   std::string alpn =
       quic::AlpnForVersion(DefaultSupportedQuicVersions().front());
   http_response->AddCustomHeader(
@@ -105,14 +104,14 @@ class URLRequestQuicPerfTest : public ::testing::Test {
     memory_dump_manager_ =
         base::trace_event::MemoryDumpManager::CreateInstanceForTesting();
     base::trace_event::InitializeMemoryDumpManagerForInProcessTesting(
-        /*is_coordinator_process=*/false);
+        /*is_coordinator=*/false);
     memory_dump_manager_->set_dumper_registrations_ignored_for_testing(false);
     memory_dump_manager_->set_dumper_registrations_ignored_for_testing(true);
     StartTcpServer();
     StartQuicServer();
 
     // Host mapping.
-    std::unique_ptr<MockHostResolver> resolver(new MockHostResolver());
+    auto resolver = std::make_unique<MockHostResolver>();
     resolver->rules()->AddRule(kAltSvcHost, "127.0.0.1");
     auto host_resolver =
         std::make_unique<MappedHostResolver>(std::move(resolver));

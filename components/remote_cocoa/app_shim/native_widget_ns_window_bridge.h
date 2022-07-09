@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_BRIDGE_H_
 #define COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_BRIDGE_H_
 
+#include "base/memory/raw_ptr.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include <memory>
@@ -199,9 +201,10 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // NativeWidgetNSWindowFullscreenController::Client:
   void FullscreenControllerTransitionStart(bool is_target_fullscreen) override;
   void FullscreenControllerTransitionComplete(bool is_fullscreen) override;
-  void FullscreenControllerSetFrame(const gfx::Rect& frame,
-                                    bool animate,
-                                    base::TimeDelta& transition_time) override;
+  void FullscreenControllerSetFrame(
+      const gfx::Rect& frame,
+      bool animate,
+      base::OnceCallback<void()> completion_callback) override;
   void FullscreenControllerToggleFullscreen() override;
   void FullscreenControllerCloseWindow() override;
   int64_t FullscreenControllerGetDisplayId() const override;
@@ -323,10 +326,10 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   NSWindow* GetWindow() const override;
 
   const uint64_t id_;
-  NativeWidgetNSWindowHost* const host_;  // Weak. Owns this.
-  NativeWidgetNSWindowHostHelper* const
+  const raw_ptr<NativeWidgetNSWindowHost> host_;  // Weak. Owns this.
+  const raw_ptr<NativeWidgetNSWindowHostHelper>
       host_helper_;  // Weak, owned by |host_|.
-  remote_cocoa::mojom::TextInputHost* const
+  const raw_ptr<remote_cocoa::mojom::TextInputHost>
       text_input_host_;  // Weak, owned by |host_|.
 
   base::scoped_nsobject<NativeWidgetMacNSWindow> window_;
@@ -351,7 +354,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   base::scoped_nsobject<WindowControlsOverlayNSView>
       web_app_frame_toolbar_overlay_nsview_;
 
-  NativeWidgetNSWindowBridge* parent_ =
+  raw_ptr<NativeWidgetNSWindowBridge> parent_ =
       nullptr;  // Weak. If non-null, owns this.
   std::vector<NativeWidgetNSWindowBridge*> child_windows_;
 

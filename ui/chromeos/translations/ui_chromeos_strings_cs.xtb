@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul Romaja</translation>
 <translation id="112387589102719461">angličtina (USA) s klávesnicí Programmer Dvorak</translation>
 <translation id="1134697384939541955">angličtina (USA) s rozšířenou klávesnicí</translation>
+<translation id="1138691154716715755">Dříve tento měsíc</translation>
 <translation id="1148097584170732637">Nalezeno: <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     V místním úložišti není dost místa, chybí <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, blokováno administrátorem, podrobnosti</translation>
 <translation id="2142680004883808240">ruština s fonetickou klávesnicí YaZHert</translation>
 <translation id="2143778271340628265">Ruční nastavení proxy serveru</translation>
+<translation id="2148716181193084225">Dnes</translation>
 <translation id="2163152940313951844">Neplatný znak: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">portugalština s klávesnicí USA – mezinárodní (PC)</translation>
 <translation id="2198315389084035571">Zjednodušená čínština</translation>
@@ -181,7 +183,6 @@
 <translation id="2541377937973966830">Obsah této složky je pouze ke čtení. Některé aktivity nejsou podporovány.</translation>
 <translation id="2542049655219295786">Tabulka Google</translation>
 <translation id="2544853746127077729">Ověřovací certifikát byl sítí odmítnut</translation>
-<translation id="2547921442987553570">Přidat do rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Americká klávesnice (mezinárodní)</translation>
 <translation id="2563185590376525700">Žába</translation>
 <translation id="2578394532502990878">tamilština (fonetická)</translation>
@@ -233,7 +234,6 @@
 <translation id="3047197340186497470">čínština (Dayi)</translation>
 <translation id="3057861065630527966">Zálohovat fotky a videa</translation>
 <translation id="3067790092342515856">Soubory Windows</translation>
-<translation id="3078461028045006476">Sdílet s rozšířením <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
 <translation id="3085752524577180175">Hostitel protokolu SOCKS</translation>
 <translation id="3104793765551262433">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, blokováno administrátorem, podrobnosti</translation>
@@ -330,7 +330,6 @@
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3855472144336161447">Německá klávesnice Neo 2</translation>
 <translation id="3858860766373142691">Název</translation>
-<translation id="386548886866354912">Zabalit pomocí rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="3899991606604168269">francouzština (Kanada) s vícejazyčnou klávesnicí</translation>
 <translation id="3901991538546252627">Připojování k síti <ph name="NAME" /></translation>
@@ -343,6 +342,7 @@
 <translation id="3971140002794351170">Stáhněte si mobilní profil, síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">angličtina (Velká Británie)</translation>
 <translation id="3975895378829046965">bengálština (fonetická)</translation>
+<translation id="3991446849494482687">Tímto také v zařízení deaktivujete nastavení zámku SIM karty.</translation>
 <translation id="4002066346123236978">Název</translation>
 <translation id="4017788180641807848">angličtina (USA) s klávesnicí Workman</translation>
 <translation id="4040753847560036377">Nesprávný kód PUK</translation>
@@ -379,6 +379,7 @@
 <translation id="4380245540200674032">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" /> síla signálu: <ph name="SIGNAL_STRENGTH" /> %, spravováno administrátorem, podrobnosti</translation>
 <translation id="4387004326333427325">Ověřovací certifikát byl vzdáleně odmítnut</translation>
 <translation id="4394214039309501350">Externí odkaz</translation>
+<translation id="4394980935660306080">Dříve tento týden</translation>
 <translation id="4401287888955153199">Extrahovat vše</translation>
 <translation id="4410695710508688828">Extrakce se nezdařila. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Vytvořte zástupce svých souborů</translation>
@@ -422,6 +423,7 @@
 <translation id="4712283082407695269">Otevírání souboru „<ph name="PATH" />“</translation>
 <translation id="4720185134442950733">Mobilní datová síť</translation>
 <translation id="4724850507808590449">Počet zálohovaných fotek: <ph name="FILE_COUNT" /></translation>
+<translation id="4725096204469550614">Dříve tento rok</translation>
 <translation id="4725511304875193254">Pes corgi</translation>
 <translation id="4737050008115666127">Přistání</translation>
 <translation id="4747271164117300400">makedonština</translation>
@@ -471,6 +473,7 @@
 <translation id="508423945471810158">Přesouvání <ph name="NUMBER_OF_ITEMS" /> položek do složky <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Došlo k chybě.</translation>
 <translation id="5098629044894065541">hebrejština</translation>
+<translation id="5102922915594634436">Spravovat synchronizované složky</translation>
 <translation id="5109254780565519649">Došlo k chybě. Některé položky možná nebyly obnoveny.</translation>
 <translation id="5110329002213341433">angličtina (Kanada)</translation>
 <translation id="5123433949759960244">Basketbal</translation>
@@ -603,7 +606,6 @@
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6170470584681422115">Sendvič</translation>
 <translation id="6187719147498869044">maďarština</translation>
-<translation id="6189412234224385711">Otevřít pomocí rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Změnit kód PIN</translation>
 <translation id="6199801702437275229">Čeká se na informace o volném místě...</translation>
 <translation id="6205710420833115353">Některé operace trvají neočekávaně dlouho. Chcete je zrušit?</translation>
@@ -707,6 +709,7 @@
 <translation id="7075931588889865715">thajština s klávesnicí TIS 820-2531</translation>
 <translation id="708278670402572152">Chcete-li povolit vyhledávání, odpojte zařízení od sítě</translation>
 <translation id="7086590977277044826">tamilština s klávesnicí InScript</translation>
+<translation id="7088615885725309056">Starší</translation>
 <translation id="7103992300314999525">makedonština</translation>
 <translation id="7106346894903675391">Koupit větší úložiště...</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; – &lt;em&gt;vyhledat na Disku&lt;/em&gt;</translation>
@@ -771,6 +774,7 @@
 <translation id="7663224033570512922">hindština</translation>
 <translation id="7693909743393669729">Naformátováním jednotky smažete všechna na ní uložená data a odstraníte všechny stávající oddíly (včetně neviditelných). Tuto akci nelze vrátit zpět.</translation>
 <translation id="7695430100978772476">Disk <ph name="DRIVE_NAME" /> se nepodařilo naformátovat</translation>
+<translation id="76959938259365003">Koš se nepodařilo vysypat.</translation>
 <translation id="770015031906360009">řečtina</translation>
 <translation id="7705251383879779343">Položka <ph name="FILE_NAME" /> byla zkopírována.</translation>
 <translation id="7711920809702896782">Informace o obrázku</translation>
@@ -781,6 +785,7 @@
 <translation id="7760449188139285140">čínština (Wubi)</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7774365994322694683">Pták</translation>
+<translation id="7781829728241885113">Včera</translation>
 <translation id="7788080748068240085">Chcete-li soubor <ph name="FILE_NAME" /> uložit offline, je třeba uvolnit <ph name="TOTAL_FILE_SIZE" /> dalšího místa:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />Zrušte připnutí souborů, ke kterým již nepotřebujete přístup v režimu offline.<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />Smažte soubory ze složky Stažené soubory.<ph name="MARKUP_5" /></translation>

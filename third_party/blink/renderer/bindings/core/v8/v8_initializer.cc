@@ -638,10 +638,18 @@ void HostGetImportMetaProperties(v8::Local<v8::Context> context,
 
   ModuleImportMeta host_meta = modulator->HostGetImportMetaProperties(module);
 
-  // 3. Return <<Record { [[Key]]: "url", [[Value]]: urlString }>>. [spec text]
+  // 6. Return « Record { [[Key]]: "url", [[Value]]: urlString }, Record {
+  // [[Key]]: "resolve", [[Value]]: resolveFunction } ». [spec text]
   v8::Local<v8::String> url_key = V8String(isolate, "url");
   v8::Local<v8::String> url_value = V8String(isolate, host_meta.Url());
+
+  v8::Local<v8::String> resolve_key = V8String(isolate, "resolve");
+  v8::Local<v8::Function> resolve_value =
+      host_meta.MakeResolveV8Function(modulator);
+  resolve_value->SetName(resolve_key);
+
   meta->CreateDataProperty(context, url_key, url_value).ToChecked();
+  meta->CreateDataProperty(context, resolve_key, resolve_value).ToChecked();
 }
 
 void InitializeV8Common(v8::Isolate* isolate) {
@@ -721,10 +729,8 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   ArrayBufferAllocator() : total_allocation_(0) {
     // size_t may be equivalent to uint32_t or uint64_t, cast all values to
     // uint64_t to compare.
-    uint64_t virtual_size =
-        static_cast<uint64_t>(base::SysInfo::AmountOfVirtualMemory());
-    uint64_t size_t_max =
-        static_cast<uint64_t>(std::numeric_limits<std::size_t>::max());
+    uint64_t virtual_size = base::SysInfo::AmountOfVirtualMemory();
+    uint64_t size_t_max = std::numeric_limits<std::size_t>::max();
     DCHECK(virtual_size < size_t_max);
     // If AmountOfVirtualMemory() returns 0, there is no limit on virtual
     // memory, do not limit the total allocation. Otherwise, Limit the total

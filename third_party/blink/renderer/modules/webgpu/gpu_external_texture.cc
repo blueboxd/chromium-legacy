@@ -94,6 +94,21 @@ ColorSpaceConversionConstants GetColorSpaceConversionConstants(
   return colorSpaceConversionConstants;
 }
 
+bool IsSameGamutAndGamma(gfx::ColorSpace srcColorSpace,
+                         gfx::ColorSpace dstColorSpace) {
+  if (srcColorSpace.GetPrimaryID() == dstColorSpace.GetPrimaryID()) {
+    skcms_TransferFunction src;
+    skcms_TransferFunction dst;
+    if (srcColorSpace.GetTransferFunction(&src) &&
+        dstColorSpace.GetTransferFunction(&dst)) {
+      return (src.a == dst.a && src.b == dst.b && src.c == dst.c &&
+              src.d == dst.d && src.e == dst.e && src.f == dst.f &&
+              src.g == dst.g);
+    }
+  }
+  return false;
+}
+
 struct ExternalTextureSource {
   scoped_refptr<media::VideoFrame> media_video_frame = nullptr;
   media::PaintCanvasVideoRenderer* video_renderer = nullptr;
@@ -250,6 +265,9 @@ GPUExternalTexture* GPUExternalTexture::CreateImpl(
     external_texture_desc.plane0 = plane0;
     external_texture_desc.plane1 = plane1;
 
+    external_texture_desc.doYuvToRgbConversionOnly =
+        IsSameGamutAndGamma(srcColorSpace, dstColorSpace);
+
     std::array<float, 12> yuvToRgbMatrix =
         GetYUVToRGBMatrix(srcColorSpace, media_video_frame->BitDepth());
     external_texture_desc.yuvToRgbConversionMatrix = yuvToRgbMatrix.data();
@@ -390,7 +408,10 @@ GPUExternalTexture* GPUExternalTexture::CreateExpired(
   // Bypass importing video frame into Dawn.
   GPUExternalTexture* external_texture =
       MakeGarbageCollected<GPUExternalTexture>(
-          device, nullptr /*external_texture*/, nullptr /*mailbox_texture*/,
+          device,
+          device->GetProcs().deviceCreateErrorExternalTexture(
+              device->GetHandle()),
+          nullptr /*mailbox_texture*/,
           absl::nullopt /*media_video_frame_unique_id*/);
   external_texture->Destroy();
   return external_texture;

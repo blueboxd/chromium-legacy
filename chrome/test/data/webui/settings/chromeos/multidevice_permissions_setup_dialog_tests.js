@@ -931,9 +931,11 @@ suite('Multidevice', () => {
         // PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
         assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 3);
 
-        assertTrue(permissionsSetupDialog.$$('#dialog').open);
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
         buttonContainer.querySelector('#doneButton').click();
-        assertFalse(permissionsSetupDialog.$$('#dialog').open);
+        assertFalse(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
       });
 
 
@@ -1023,9 +1025,11 @@ suite('Multidevice', () => {
         // Should not enabled phone hub apps feature
         assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 0);
 
-        assertTrue(permissionsSetupDialog.$$('#dialog').open);
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
         buttonContainer.querySelector('#doneButton').click();
-        assertFalse(permissionsSetupDialog.$$('#dialog').open);
+        assertFalse(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
       });
 
   test(
@@ -1114,9 +1118,11 @@ suite('Multidevice', () => {
         // PermissionsSetupStatus.COMPLETED_SUCCESSFULLY.
         assertEquals(browserProxy.getCallCount('setFeatureEnabledState'), 1);
 
-        assertTrue(permissionsSetupDialog.$$('#dialog').open);
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
         buttonContainer.querySelector('#doneButton').click();
-        assertFalse(permissionsSetupDialog.$$('#dialog').open);
+        assertFalse(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
       });
 
   test('Test all setup flow, operation failed or cancelled', async () => {
@@ -1176,8 +1182,61 @@ suite('Multidevice', () => {
     // Should not continue setup apps
     assertEquals(browserProxy.getCallCount('attemptAppsSetup'), 0);
 
-    assertTrue(permissionsSetupDialog.$$('#dialog').open);
+    assertTrue(permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
     buttonContainer.querySelector('#doneButton').click();
-    assertFalse(permissionsSetupDialog.$$('#dialog').open);
+    assertFalse(
+        permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
   });
+
+  test(
+      'Test dailog is closed when all permissions are graned on phone.',
+      async () => {
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: true,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertTrue(!!dialogBody.querySelector('#start-setup-description'));
+        assertTrue(!!buttonContainer.querySelector('#learnMore'));
+        assertTrue(!!buttonContainer.querySelector('#cancelButton'));
+        assertTrue(!!buttonContainer.querySelector('#getStartedButton'));
+        assertFalse(!!buttonContainer.querySelector('#doneButton'));
+        assertFalse(!!buttonContainer.querySelector('#tryAgainButton'));
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: false,
+          showNotifications: true,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: false,
+          showNotifications: false,
+          showAppStreaming: true,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertTrue(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+
+        permissionsSetupDialog.setProperties({
+          showCameraRoll: false,
+          showNotifications: false,
+          showAppStreaming: false,
+          combinedSetupSupported: true
+        });
+        flush();
+
+        assertFalse(
+            permissionsSetupDialog.shadowRoot.querySelector('#dialog').open);
+      });
 });

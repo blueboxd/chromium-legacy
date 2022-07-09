@@ -11,7 +11,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -151,13 +151,13 @@ FileResult::FileResult(const std::string& schema,
 
   UpdateIcon();
 
-  if (ash::ColorProvider::Get())
-    ash::ColorProvider::Get()->AddObserver(this);
+  if (auto* dark_light_mode_controller = ash::DarkLightModeController::Get())
+    dark_light_mode_controller->AddObserver(this);
 }
 
 FileResult::~FileResult() {
-  if (ash::ColorProvider::Get())
-    ash::ColorProvider::Get()->RemoveObserver(this);
+  if (auto* dark_light_mode_controller = ash::DarkLightModeController::Get())
+    dark_light_mode_controller->RemoveObserver(this);
 }
 
 void FileResult::Open(int event_flags) {
@@ -197,9 +197,9 @@ double FileResult::CalculateRelevance(
     return kDefaultRelevance;
 
   TokenizedStringMatch match;
-  match.Calculate(query.value(), title);
+  const double relevance = match.Calculate(query.value(), title);
   if (!last_accessed)
-    return match.relevance();
+    return relevance;
 
   // Apply a gaussian penalty based on the time delta. `time_delta` is converted
   // into millisecond fractions of a day for numerical stability.
@@ -211,7 +211,7 @@ double FileResult::CalculateRelevance(
       kMaxPenalty +
       (1.0 - kMaxPenalty) * std::exp(-kPenaltyCoeff * time_delta * time_delta);
   DCHECK(penalty > 0.0 && penalty <= 1.0);
-  return match.relevance() * penalty;
+  return relevance * penalty;
 }
 
 void FileResult::RequestThumbnail(ash::ThumbnailLoader* thumbnail_loader) {
@@ -261,11 +261,12 @@ void FileResult::UpdateIcon() {
   // has dark background by default, so use icons for dark background in that
   // case.
   const bool is_dark_light_enabled = ash::features::IsDarkLightModeEnabled();
-  // ColorProvider might be nullptr in tests.
-  auto* color_provider = ash::ColorProvider::Get();
+  // DarkLightModeController might be nullptr in tests.
+  auto* dark_light_mode_controller = ash::DarkLightModeController::Get();
   const bool dark_background =
       is_dark_light_enabled
-          ? color_provider && color_provider->IsDarkModeEnabled()
+          ? dark_light_mode_controller &&
+                dark_light_mode_controller->IsDarkModeEnabled()
           : ash::features::IsProductivityLauncherEnabled();
   if (display_type() == DisplayType::kChip) {
     SetChipIcon(chromeos::GetChipIconForPath(filepath_, dark_background));

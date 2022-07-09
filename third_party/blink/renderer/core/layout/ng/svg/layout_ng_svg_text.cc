@@ -225,8 +225,10 @@ void LayoutNGSVGText::UpdateBlockLayout(bool relayout_children) {
   // If our bounds changed, notify the parents.
   if (UpdateTransformAfterLayout(bounds_changed) || bounds_changed)
     SetNeedsBoundariesUpdate();
-  if (bounds_changed)
-    SetSize(LayoutSize(boundaries.right(), boundaries.bottom()));
+  if (bounds_changed) {
+    SetSize(LayoutSize(LayoutUnit(boundaries.right()),
+                       LayoutUnit(boundaries.bottom())));
+  }
 
   UpdateTransformAffectsVectorEffect();
 }
@@ -293,12 +295,12 @@ gfx::RectF LayoutNGSVGText::LocalBoundingBoxRectForAccessibility() const {
 bool LayoutNGSVGText::NodeAtPoint(HitTestResult& result,
                                   const HitTestLocation& hit_test_location,
                                   const PhysicalOffset& accumulated_offset,
-                                  HitTestAction action) {
+                                  HitTestPhase phase) {
   TransformedHitTestLocation local_location(hit_test_location,
                                             LocalToSVGParentTransform());
   return local_location &&
          LayoutNGBlockFlowMixin<LayoutSVGBlock>::NodeAtPoint(
-             result, *local_location, accumulated_offset, action);
+             result, *local_location, accumulated_offset, phase);
 }
 
 PositionWithAffinity LayoutNGSVGText::PositionForPoint(

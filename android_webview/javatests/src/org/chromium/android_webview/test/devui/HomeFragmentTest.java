@@ -36,13 +36,16 @@ import android.support.test.InstrumentationRegistry;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.android_webview.devui.HomeFragment;
 import org.chromium.android_webview.devui.MainActivity;
 import org.chromium.android_webview.devui.R;
 import org.chromium.android_webview.devui.WebViewPackageError;
@@ -50,6 +53,7 @@ import org.chromium.android_webview.nonembedded_util.WebViewPackageHelper;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 
 import java.util.Locale;
@@ -90,6 +94,14 @@ public class HomeFragmentTest {
         // done after launching the activity.
         intending(not(IntentMatchers.isInternal()))
                 .respondWith(new ActivityResult(Activity.RESULT_OK, null));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testHasPublicNoArgsConstructor() throws Throwable {
+        HomeFragment fragment = new HomeFragment();
+        Assert.assertNotNull(fragment);
     }
 
     @Test
@@ -187,6 +199,10 @@ public class HomeFragmentTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
+    // clang-format off
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.R,
+        message = "https://crbug.com/1292197")
+    // clang-format on
     public void testLongPressCopy() throws Throwable {
         Context context = InstrumentationRegistry.getTargetContext();
         // Inject a dummy PackageInfo as the current WebView package to make sure it will always be

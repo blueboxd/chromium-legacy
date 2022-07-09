@@ -40,12 +40,14 @@
 #include "base/trace_event/typed_macros.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
+#include "cc/base/features.h"
 #include "cc/document_transition/document_transition_request.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
+#include "third_party/abseil-cpp/absl/functional/function_ref.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
@@ -342,8 +344,8 @@ void LocalFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(fullscreen_video_elements_);
 }
 
-template <typename Function>
-void LocalFrameView::ForAllChildViewsAndPlugins(const Function& function) {
+void LocalFrameView::ForAllChildViewsAndPlugins(
+    absl::FunctionRef<void(EmbeddedContentView&)> function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (child->View())
@@ -372,8 +374,8 @@ void LocalFrameView::ForAllChildViewsAndPlugins(const Function& function) {
   }
 }
 
-template <typename Function>
-void LocalFrameView::ForAllChildLocalFrameViews(const Function& function) {
+void LocalFrameView::ForAllChildLocalFrameViews(
+    absl::FunctionRef<void(LocalFrameView&)> function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
@@ -384,12 +386,11 @@ void LocalFrameView::ForAllChildLocalFrameViews(const Function& function) {
   }
 }
 
-// Call function for each non-throttled frame view in pre-order (by default) or
-// post-order. If this logic is updated, consider updating
-// |ForAllThrottledLocalFrameViews| too.
-template <typename Function>
-void LocalFrameView::ForAllNonThrottledLocalFrameViews(const Function& function,
-                                                       TraversalOrder order) {
+// Note: if this logic is updated, `ForAllThrottledLocalFrameViews()` may
+// need to be updated as well.
+void LocalFrameView::ForAllNonThrottledLocalFrameViews(
+    absl::FunctionRef<void(LocalFrameView&)> function,
+    TraversalOrder order) {
   if (ShouldThrottleRendering())
     return;
 
@@ -404,10 +405,10 @@ void LocalFrameView::ForAllNonThrottledLocalFrameViews(const Function& function,
     function(*this);
 }
 
-// Call function for each throttled frame view in pre-order. If this logic is
-// updated, consider updating |ForAllNonThrottledLocalFrameViews| too.
-template <typename Function>
-void LocalFrameView::ForAllThrottledLocalFrameViews(const Function& function) {
+// Note: if this logic is updated, `ForAllNonThrottledLocalFrameViews()` may
+// need to be updated as well.
+void LocalFrameView::ForAllThrottledLocalFrameViews(
+    absl::FunctionRef<void(LocalFrameView&)> function) {
   if (ShouldThrottleRendering())
     function(*this);
 
@@ -416,15 +417,8 @@ void LocalFrameView::ForAllThrottledLocalFrameViews(const Function& function) {
   });
 }
 
-void LocalFrameView::ForAllThrottledLocalFrameViewsForTesting(
-    base::RepeatingCallback<void(LocalFrameView&)> callback) {
-  AllowThrottlingScope allow_throttling(*this);
-  ForAllThrottledLocalFrameViews(
-      [&callback](LocalFrameView& view) { callback.Run(view); });
-}
-
-template <typename Function>
-void LocalFrameView::ForAllRemoteFrameViews(const Function& function) {
+void LocalFrameView::ForAllRemoteFrameViews(
+    absl::FunctionRef<void(RemoteFrameView&)> function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (child->IsLocalFrame()) {
@@ -863,7 +857,7 @@ void LocalFrameView::PerformLayout() {
       default_allow_deferred_shaping_ =
           default_allow_deferred_shaping_ &&
           RuntimeEnabledFeatures::DeferredShapingEnabled() &&
-          !frame_->PagePopupOwner() &&
+          !frame_->PagePopupOwner() && !auto_size_info_ &&
           !FirstMeaningfulPaintDetector::From(*frame_->GetDocument())
                .SeenFirstMeaningfulPaint();
       base::AutoReset<bool> deferred_shaping(
@@ -3056,7 +3050,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
   }
 
   Vector<const TransformPaintPropertyNode*> scroll_translation_nodes;
-  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+  if (base::FeatureList::IsEnabled(::features::kScrollUnification)) {
     ForAllNonThrottledLocalFrameViews(
         [&scroll_translation_nodes](LocalFrameView& frame_view) {
           frame_view.GetUserScrollTranslationNodes(scroll_translation_nodes);
@@ -4673,6 +4667,12 @@ void LocalFrameView::DidChangeMobileFriendliness(
 }
 
 LocalFrameUkmAggregator& LocalFrameView::EnsureUkmAggregator() {
+  if (!frame_->IsLocalRoot() &&
+      base::FeatureList::IsEnabled(
+          features::kLocalFrameRootPrePostFCPMetrics)) {
+    DCHECK(!ukm_aggregator_);
+    return frame_->LocalFrameRoot().View()->EnsureUkmAggregator();
+  }
   if (!ukm_aggregator_) {
     ukm_aggregator_ = base::MakeRefCounted<LocalFrameUkmAggregator>(
         frame_->GetDocument()->UkmSourceID(),

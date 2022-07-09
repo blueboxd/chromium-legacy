@@ -51,15 +51,15 @@ class RenderFrameHostImpl;
 //      | POST /idp_url with OIDC request |
 //      |-------------------------------->|
 //      |                                 |
-//      |      id_token or signin_url     |
+//      |       token or signin_url       |
 //      |<--------------------------------|
 //  .-------.                           .---.
 //  |Browser|                           |IDP|
 //  '-------'                           '---'
 //
-// If the IDP returns an id_token, the sequence finishes. If it returns a
-// signin_url, that URL is loaded as a rendered Document into a new window
-// for the user to interact with the IDP.
+// If the IDP returns an token, the sequence finishes. If it returns a
+// signin_url, that URL is loaded as a rendered Document into a new window for
+// the user to interact with the IDP.
 class CONTENT_EXPORT IdpNetworkRequestManager {
  public:
   enum class FetchStatus {
@@ -127,13 +127,10 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   IdpNetworkRequestManager(const IdpNetworkRequestManager&) = delete;
   IdpNetworkRequestManager& operator=(const IdpNetworkRequestManager&) = delete;
 
-  // Does provider URL fixups (add a slash to the path if missing).
-  static GURL FixupProviderUrl(const GURL& url);
-
   // Computes the manifest list URL from the identity provider URL.
   static absl::optional<GURL> ComputeManifestListUrl(const GURL& url);
 
-  // Fetch the manifest list. This is the /.well-known/fedcm.json file on
+  // Fetch the manifest list. This is the /.well-known/web-identity file on
   // the eTLD+1 calculated from the provider URL, used to check that the
   // provider URL is valid for this eTLD+1.
   virtual void FetchManifestList(FetchManifestListCallback);
@@ -168,8 +165,6 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   virtual void SendLogout(const GURL& logout_url, LogoutCallback);
 
  private:
-  void OnManifestListLoaded(std::unique_ptr<std::string> response_body);
-  void OnManifestListParsed(data_decoder::DataDecoder::ValueOrError result);
   void OnManifestLoaded(absl::optional<int> idp_brand_icon_ideal_size,
                         absl::optional<int> idp_brand_icon_minimum_size,
                         std::unique_ptr<std::string> response_body);
@@ -205,7 +200,6 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
 
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
-  FetchManifestListCallback manifest_list_callback_;
   FetchManifestCallback idp_manifest_callback_;
   FetchClientMetadataCallback client_metadata_callback_;
   TokenRequestCallback token_request_callback_;
@@ -213,12 +207,11 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   LogoutCallback logout_callback_;
 
   // url_loader_ is used for all loads except for the manifest list, which uses
-  // manifest_list_url_loader_. This is so we can fetch the manifest list in
+  // a different SimpleURLLoader. This is so we can fetch the manifest list in
   // parallel with the other requests.
   // TODO(cbiesinger): Also allow fetching the client metadata file in
   // parallel with the account list.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
-  std::unique_ptr<network::SimpleURLLoader> manifest_list_url_loader_;
   network::mojom::ClientSecurityStatePtr client_security_state_;
 
   base::WeakPtrFactory<IdpNetworkRequestManager> weak_ptr_factory_{this};

@@ -17,9 +17,9 @@
 #include "chrome/browser/ash/login/quick_unlock/fake_pin_salt_storage.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
-#include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "components/account_id/account_id.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -133,7 +133,7 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
     // Ensure that has_authorization_request() would return true.
     request.mutable_authorization_request();
     base::RunLoop run_loop;
-    chromeos::UserDataAuthClient::Get()->AddKey(
+    UserDataAuthClient::Get()->AddKey(
         request, base::BindOnce(
                      [](base::OnceClosure closure,
                         absl::optional<::user_data_auth::AddKeyReply> reply) {
@@ -161,7 +161,7 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
     // Ensure that has_authorization_request() would return true.
     request.mutable_authorization_request();
     base::RunLoop run_loop;
-    chromeos::UserDataAuthClient::Get()->AddKey(
+    UserDataAuthClient::Get()->AddKey(
         request, base::BindOnce(
                      [](base::OnceClosure closure,
                         absl::optional<::user_data_auth::AddKeyReply> reply) {

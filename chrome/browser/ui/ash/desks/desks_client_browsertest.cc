@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/ash/desks/chrome_desks_templates_delegate.h"
 #include "chrome/browser/ui/ash/desks/chrome_desks_util.h"
 #include "chrome/browser/ui/ash/desks/desks_templates_app_launch_handler.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -59,7 +60,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
@@ -78,6 +78,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/policy/policy_constants.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_visual_data.h"
@@ -232,16 +233,16 @@ web_app::AppId CreateSystemWebApp(Profile* profile,
                                   ash::SystemWebAppType app_type) {
   DCHECK(app_type == ash::SystemWebAppType::SETTINGS ||
          app_type == ash::SystemWebAppType::HELP);
-  web_app::AppId app_id = *web_app::GetAppIdForSystemWebApp(profile, app_type);
+  web_app::AppId app_id = *ash::GetAppIdForSystemWebApp(profile, app_type);
   apps::AppLaunchParams params(
-      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      app_id, apps::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW, apps::mojom::LaunchSource::kFromTest);
   params.restore_id = app_type == ash::SystemWebAppType::SETTINGS
                           ? kSettingsWindowId
                           : kHelpWindowId;
   apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithParams(
       std::move(params));
-  web_app::FlushSystemWebAppLaunchesForTesting(profile);
+  ash::FlushSystemWebAppLaunchesForTesting(profile);
   return app_id;
 }
 
@@ -659,9 +660,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   auto app_restore_data_iter2 = iter2->second.find(settings_window_id);
   ASSERT_TRUE(app_restore_data_iter2 != iter2->second.end());
   const auto& data2 = app_restore_data_iter2->second;
-  EXPECT_EQ(
-      static_cast<int>(apps::mojom::LaunchContainer::kLaunchContainerWindow),
-      data2->container.value());
+  EXPECT_EQ(static_cast<int>(apps::LaunchContainer::kLaunchContainerWindow),
+            data2->container.value());
   EXPECT_EQ(static_cast<int>(WindowOpenDisposition::NEW_WINDOW),
             data2->disposition.value());
   // Verify window info are correctly captured.
@@ -831,7 +831,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, LaunchTemplateWithChromeApp) {
   ::full_restore::SaveAppLaunchInfo(
       profile()->GetPath(),
       std::make_unique<app_restore::AppLaunchInfo>(
-          extension_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+          extension_id, apps::LaunchContainer::kLaunchContainerWindow,
           WindowOpenDisposition::NEW_WINDOW, display::kDefaultDisplayId,
           std::vector<base::FilePath>{}, nullptr));
 
@@ -1858,9 +1858,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   auto app_restore_data_iter2 = iter2->second.find(settings_window_id);
   ASSERT_NE(iter->second.end(), app_restore_data_iter2);
   const auto& data2 = app_restore_data_iter2->second;
-  EXPECT_EQ(
-      static_cast<int>(apps::mojom::LaunchContainer::kLaunchContainerWindow),
-      data2->container.value());
+  EXPECT_EQ(static_cast<int>(apps::LaunchContainer::kLaunchContainerWindow),
+            data2->container.value());
   EXPECT_EQ(static_cast<int>(WindowOpenDisposition::NEW_WINDOW),
             data2->disposition.value());
   // Verify window info are correctly captured.
@@ -1887,7 +1886,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   ::full_restore::SaveAppLaunchInfo(
       profile()->GetPath(),
       std::make_unique<app_restore::AppLaunchInfo>(
-          extension_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+          extension_id, apps::LaunchContainer::kLaunchContainerWindow,
           WindowOpenDisposition::NEW_WINDOW, display::kDefaultDisplayId,
           std::vector<base::FilePath>{}, nullptr));
 

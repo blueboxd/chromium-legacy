@@ -32,8 +32,7 @@ public class PartnerBookmarksShim {
         sIsReadingAttempted = true;
 
         PartnerBookmarksReader reader =
-                new PartnerBookmarksReader(context, PartnerBrowserCustomizations.getInstance(),
-                        new PartnerBookmarksDelegateImpl()::createIterator);
+                new PartnerBookmarksReader(context, PartnerBrowserCustomizations.getInstance());
 
         boolean systemOrPreStable =
                 (context.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) == 1

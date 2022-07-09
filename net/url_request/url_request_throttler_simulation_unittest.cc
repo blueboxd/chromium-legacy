@@ -98,12 +98,12 @@ class DiscreteTimeSimulation {
     TimeTicks start_time = TimeTicks();
     TimeTicks now = start_time;
     while ((now - start_time) <= maximum_simulated_duration) {
-      for (auto it = actors_.begin(); it != actors_.end(); ++it) {
-        (*it)->AdvanceTime(now);
+      for (auto* actor : actors_) {
+        actor->AdvanceTime(now);
       }
 
-      for (auto it = actors_.begin(); it != actors_.end(); ++it) {
-        (*it)->PerformAction();
+      for (auto* actor : actors_) {
+        actor->PerformAction();
       }
 
       now += time_between_ticks;
@@ -225,7 +225,7 @@ class Server : public DiscreteTimeSimulation::Actor {
     if (num_ticks % ticks_per_column)
       ++num_columns;
     DCHECK_LE(num_columns, terminal_width);
-    std::unique_ptr<int[]> columns(new int[num_columns]);
+    auto columns = std::make_unique<int[]>(num_columns);
     for (int tx = 0; tx < num_ticks; ++tx) {
       int cx = tx / ticks_per_column;
       if (tx % ticks_per_column == 0)
@@ -488,27 +488,26 @@ void SimulateAttack(Server* server,
   for (size_t i = 0; i < kNumAttackers; ++i) {
     // Use a tiny time_between_requests so the attackers will ping the
     // server at every tick of the simulation.
-    scoped_refptr<MockURLRequestThrottlerEntry> throttler_entry(
-        new MockURLRequestThrottlerEntry(&manager));
+    auto throttler_entry =
+        base::MakeRefCounted<MockURLRequestThrottlerEntry>(&manager);
     if (!enable_throttling)
       throttler_entry->DisableBackoffThrottling();
 
-    std::unique_ptr<Requester> attacker(
-        new Requester(throttler_entry.get(), base::Milliseconds(1), server,
-                      attacker_results));
+    auto attacker = std::make_unique<Requester>(
+        throttler_entry.get(), base::Milliseconds(1), server, attacker_results);
     attacker->SetStartupJitter(base::Seconds(120));
     simulation.AddActor(attacker.get());
     requesters.push_back(std::move(attacker));
   }
   for (size_t i = 0; i < kNumClients; ++i) {
     // Normal clients only make requests every 2 minutes, plus/minus 1 minute.
-    scoped_refptr<MockURLRequestThrottlerEntry> throttler_entry(
-        new MockURLRequestThrottlerEntry(&manager));
+    auto throttler_entry =
+        base::MakeRefCounted<MockURLRequestThrottlerEntry>(&manager);
     if (!enable_throttling)
       throttler_entry->DisableBackoffThrottling();
 
-    std::unique_ptr<Requester> client(new Requester(
-        throttler_entry.get(), base::Minutes(2), server, client_results));
+    auto client = std::make_unique<Requester>(
+        throttler_entry.get(), base::Minutes(2), server, client_results);
     client->SetStartupJitter(base::Seconds(120));
     client->SetRequestJitter(base::Minutes(1));
     simulation.AddActor(client.get());
@@ -585,8 +584,8 @@ double SimulateDowntime(const base::TimeDelta& duration,
   server.SetDowntime(start_downtime, duration);
 
   URLRequestThrottlerManager manager;
-  scoped_refptr<MockURLRequestThrottlerEntry> throttler_entry(
-      new MockURLRequestThrottlerEntry(&manager));
+  auto throttler_entry =
+      base::MakeRefCounted<MockURLRequestThrottlerEntry>(&manager);
   if (!enable_throttling)
     throttler_entry->DisableBackoffThrottling();
 
@@ -699,17 +698,17 @@ TEST(URLRequestThrottlerSimulation, PerceivedDowntimeRatio) {
   // If things don't converge by the time we've done 100K trials, then
   // clearly one or more of the expected intervals are wrong.
   while (global_stats.num_runs < 100000) {
-    for (size_t i = 0; i < std::size(trials); ++i) {
+    for (auto& trial : trials) {
       ++global_stats.num_runs;
-      ++trials[i].stats.num_runs;
+      ++trial.stats.num_runs;
       double ratio_unprotected = SimulateDowntime(
-          trials[i].duration, trials[i].average_client_interval, false);
-      double ratio_protected = SimulateDowntime(
-          trials[i].duration, trials[i].average_client_interval, true);
+          trial.duration, trial.average_client_interval, false);
+      double ratio_protected =
+          SimulateDowntime(trial.duration, trial.average_client_interval, true);
       global_stats.total_ratio_unprotected += ratio_unprotected;
       global_stats.total_ratio_protected += ratio_protected;
-      trials[i].stats.total_ratio_unprotected += ratio_unprotected;
-      trials[i].stats.total_ratio_protected += ratio_protected;
+      trial.stats.total_ratio_unprotected += ratio_unprotected;
+      trial.stats.total_ratio_protected += ratio_protected;
     }
 
     double increase_ratio;
@@ -727,12 +726,12 @@ TEST(URLRequestThrottlerSimulation, PerceivedDowntimeRatio) {
 
   // Print individual trial results for optional manual evaluation.
   double max_increase_ratio = 0.0;
-  for (size_t i = 0; i < std::size(trials); ++i) {
+  for (auto& trial : trials) {
     double increase_ratio;
-    trials[i].stats.DidConverge(&increase_ratio);
+    trial.stats.DidConverge(&increase_ratio);
     max_increase_ratio = std::max(max_increase_ratio, increase_ratio);
-    trials[i].PrintTrialDescription();
-    trials[i].stats.ReportTrialResult(increase_ratio);
+    trial.PrintTrialDescription();
+    trial.stats.ReportTrialResult(increase_ratio);
   }
 
   VerboseOut("Average increase ratio was %.4f\n", average_increase_ratio);

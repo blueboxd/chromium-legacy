@@ -42,6 +42,8 @@ const char kAbortedFromStart[] = "Aborted due to start() call";
 const char kAbortedFromScript[] = "Aborted due to abort() call";
 const char kAbortedFromCallback[] =
     "Aborted due to failure in DocumentTransitionCallback";
+const char kAbortedFromCallbackTimeout[] =
+    "Aborted due to timeout in DocumentTransitionCallback";
 const char kAbortedFromInvalidConfigAtStart[] =
     "Start failed: invalid element configuration";
 
@@ -311,10 +313,14 @@ DocumentTransition::TakePendingRequest() {
   return std::move(pending_request_);
 }
 
-bool DocumentTransition::IsTransitionParticipant(
+bool DocumentTransition::NeedsSharedElementEffectNode(
     const LayoutObject& object) const {
+  // Layout view always needs an effect node, even if root itself is not
+  // transitioning. The reason for this is that we want the root to have an
+  // effect which can be hoisted up be the sibling of the layout view. This
+  // simplifies calling code to have a consistent stacking context structure.
   if (auto* layout_view = DynamicTo<LayoutView>(object))
-    return style_tracker_ && style_tracker_->IsRootTransitioning();
+    return state_ != State::kIdle;
 
   // Otherwise check if the layout object has an active shared element.
   auto* element = DynamicTo<Element>(object.GetNode());
@@ -326,7 +332,7 @@ PaintPropertyChangeType DocumentTransition::UpdateEffect(
     const EffectPaintPropertyNodeOrAlias& current_effect,
     const ClipPaintPropertyNodeOrAlias* current_clip,
     const TransformPaintPropertyNodeOrAlias* current_transform) {
-  DCHECK(IsTransitionParticipant(object));
+  DCHECK(NeedsSharedElementEffectNode(object));
   DCHECK(current_transform);
   DCHECK(current_clip);
 
@@ -348,7 +354,8 @@ PaintPropertyChangeType DocumentTransition::UpdateEffect(
     style_tracker_->UpdateRootIndexAndSnapshotId(
         state.document_transition_shared_element_id,
         state.shared_element_resource_id);
-    DCHECK(state.document_transition_shared_element_id.valid());
+    DCHECK(state.document_transition_shared_element_id.valid() ||
+           !style_tracker_->IsRootTransitioning());
     return style_tracker_->UpdateRootEffect(std::move(state), current_effect);
   }
 
@@ -361,7 +368,7 @@ PaintPropertyChangeType DocumentTransition::UpdateEffect(
 
 EffectPaintPropertyNode* DocumentTransition::GetEffect(
     const LayoutObject& object) const {
-  DCHECK(IsTransitionParticipant(object));
+  DCHECK(NeedsSharedElementEffectNode(object));
 
   auto* element = DynamicTo<Element>(object.GetNode());
   if (!element)
@@ -444,10 +451,25 @@ void DocumentTransition::StartDeferringCommits() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       "blink", "DocumentTransition::DeferringCommits", this);
   constexpr base::TimeDelta kTimeout = base::Seconds(4);
+  auto& client = document_->GetPage()->GetChromeClient();
   deferring_commits_ =
-      document_->GetPage()->GetChromeClient().StartDeferringCommits(
-          *document_->GetFrame(), kTimeout,
-          cc::PaintHoldingReason::kDocumentTransition);
+      client.StartDeferringCommits(*document_->GetFrame(), kTimeout,
+                                   cc::PaintHoldingReason::kDocumentTransition);
+  DCHECK(deferring_commits_);
+  client.RegisterForDeferredCommitObservation(this);
+}
+
+void DocumentTransition::WillStopDeferringCommits(
+    cc::PaintHoldingCommitTrigger trigger) {
+  // We don't expect to have any other triggers here, since we only register for
+  // the time we start deferring commits.
+  DCHECK(trigger == cc::PaintHoldingCommitTrigger::kDocumentTransition ||
+         trigger == cc::PaintHoldingCommitTrigger::kTimeoutDocumentTransition);
+  if (trigger == cc::PaintHoldingCommitTrigger::kTimeoutDocumentTransition)
+    CancelPendingTransition(kAbortedFromCallbackTimeout);
+  document_->GetPage()
+      ->GetChromeClient()
+      .UnregisterFromDeferredCommitObservation(this);
 }
 
 void DocumentTransition::StopDeferringCommits() {

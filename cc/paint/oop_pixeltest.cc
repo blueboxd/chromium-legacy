@@ -200,7 +200,8 @@ class OopPixelTest : public testing::Test,
     auto* raster_implementation = raster_context_provider_->RasterInterface();
     auto* sii = raster_context_provider_->SharedImageInterface();
     uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER |
-                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
+                     gpu::SHARED_IMAGE_USAGE_GLES2;
     gpu::Mailbox mailbox = sii->CreateSharedImage(
         viz::ResourceFormat::RGBA_8888, gfx::Size(width, height),
         options.target_color_params.color_space, kTopLeft_GrSurfaceOrigin,
@@ -313,7 +314,8 @@ class OopPixelTest : public testing::Test,
                                         const RasterOptions& options,
                                         viz::ResourceFormat image_format) {
     uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER |
-                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
+                     gpu::SHARED_IMAGE_USAGE_GLES2;
     gpu::Mailbox mailbox = sii->CreateSharedImage(
         image_format, options.resource_size,
         options.target_color_params.color_space, kTopLeft_GrSurfaceOrigin,
@@ -331,10 +333,15 @@ class OopPixelTest : public testing::Test,
                     GLenum type,
                     const void* data) {
     GLuint texture = gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+    gl->BeginSharedImageAccessDirectCHROMIUM(
+        texture, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
     gl->BindTexture(GL_TEXTURE_2D, texture);
     gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, size.width(), size.height(),
                       format, type, data);
+
     gl->BindTexture(GL_TEXTURE_2D, 0);
+    gl->EndSharedImageAccessDirectCHROMIUM(texture);
+
     gl->DeleteTextures(1, &texture);
   }
 
@@ -2231,13 +2238,24 @@ TEST_F(OopPixelTest, ConvertYUVToRGB) {
   SkBitmap expected_bitmap;
   expected_bitmap.allocN32Pixels(options.resource_size.width(),
                                  options.resource_size.height());
+
+  for (auto& backend : backend_textures) {
+    GrGLTextureInfo info;
+    if (backend.getGLTextureInfo(&info)) {
+      gl->BeginSharedImageAccessDirectCHROMIUM(
+          info.fID, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+    }
+  }
+
   expected_image->readPixels(expected_bitmap.pixmap(), 0, 0);
   ExpectEquals(actual_bitmap, expected_bitmap);
 
   for (auto& backend : backend_textures) {
     GrGLTextureInfo info;
-    if (backend.getGLTextureInfo(&info))
+    if (backend.getGLTextureInfo(&info)) {
+      gl->EndSharedImageAccessDirectCHROMIUM(info.fID);
       gl->DeleteTextures(1, &info.fID);
+    }
   }
 
   gpu::SyncToken sync_token;
@@ -2351,13 +2369,24 @@ TEST_F(OopPixelTest, ConvertNV12ToRGB) {
   SkBitmap expected_bitmap;
   expected_bitmap.allocN32Pixels(options.resource_size.width(),
                                  options.resource_size.height());
+
+  for (auto& backend : backend_textures) {
+    GrGLTextureInfo info;
+    if (backend.getGLTextureInfo(&info)) {
+      gl->BeginSharedImageAccessDirectCHROMIUM(
+          info.fID, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+    }
+  }
+
   expected_image->readPixels(expected_bitmap.pixmap(), 0, 0);
   ExpectEquals(actual_bitmap, expected_bitmap);
 
   for (auto& backend : backend_textures) {
     GrGLTextureInfo info;
-    if (backend.getGLTextureInfo(&info))
+    if (backend.getGLTextureInfo(&info)) {
+      gl->EndSharedImageAccessDirectCHROMIUM(info.fID);
       gl->DeleteTextures(1, &info.fID);
+    }
   }
 
   gpu::SyncToken sync_token;

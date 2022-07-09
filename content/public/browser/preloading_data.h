@@ -58,6 +58,10 @@ class CONTENT_EXPORT PreloadingAttempt {
   virtual void SetTriggeringOutcome(
       PreloadingTriggeringOutcome triggering_outcome) = 0;
 
+  // Sets the specific failure reason specific to the PreloadingType. This also
+  // sets the PreloadingTriggeringOutcome to kFailure.
+  virtual void SetFailureReason(PreloadingFailureReason failure_reason) = 0;
+
  protected:
   virtual ~PreloadingAttempt() = default;
 };
@@ -71,7 +75,8 @@ class CONTENT_EXPORT PreloadingAttempt {
 class CONTENT_EXPORT PreloadingData {
  public:
   // This static function is implemented in PreloadingDataImpl.
-  // Please see content/browser/preloading_data_impl.cc for more details.
+  // Please see content/browser/preloading/preloading_data_impl.cc for more
+  // details.
   static PreloadingData* GetOrCreateForWebContents(WebContents* web_contents);
 
   // Creates a new PreloadingAttempt and returns a pointer associated with the

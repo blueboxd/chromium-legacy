@@ -133,6 +133,10 @@ const UserData* ScriptExecutor::GetUserData() const {
   return user_data_;
 }
 
+UserData* ScriptExecutor::GetMutableUserData() const {
+  return delegate_->GetUserData();
+}
+
 UserModel* ScriptExecutor::GetUserModel() const {
   return delegate_->GetUserModel();
 }
@@ -842,6 +846,10 @@ void ScriptExecutor::OnGetActions(
   }
 
   if (!success) {
+    roundtrip_network_stats_ = ProtocolUtils::ComputeNetworkStats(
+        response, response_info, /* actions = */ {});
+    delegate_->OnActionsResponseReceived(roundtrip_network_stats_);
+
     RunCallback(false);
     return;
   }
@@ -888,6 +896,7 @@ bool ScriptExecutor::ProcessNextActionResponse(
 
   roundtrip_network_stats_ =
       ProtocolUtils::ComputeNetworkStats(response, response_info, actions_);
+  delegate_->OnActionsResponseReceived(roundtrip_network_stats_);
   ReportPayloadsToListener();
   if (should_update_scripts) {
     ReportScriptsUpdateToListener(std::move(scripts));
@@ -1179,6 +1188,10 @@ absl::optional<std::string> ScriptExecutor::GetIntent() const {
 TriggerContext ScriptExecutor::GetMergedTriggerContext() const {
   return TriggerContext(
       {delegate_->GetTriggerContext(), additional_context_.get()});
+}
+
+const std::string ScriptExecutor::GetLocale() const {
+  return delegate_->GetLocale();
 }
 
 }  // namespace autofill_assistant

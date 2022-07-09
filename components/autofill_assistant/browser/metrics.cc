@@ -4,6 +4,9 @@
 
 #include "components/autofill_assistant/browser/metrics.h"
 
+#include <algorithm>
+#include <numeric>
+
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -11,6 +14,7 @@
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/intent_strings.h"
 #include "components/autofill_assistant/browser/startup_util.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -138,7 +142,6 @@ Metrics::AutofillAssistantStarted ToAutofillAssistantStarted(
       return Metrics::AutofillAssistantStarted::FAILED_NO_INITIAL_URL;
     case StartupMode::START_REGULAR:
       return Metrics::AutofillAssistantStarted::OK_IMMEDIATE_START;
-    case StartupMode::START_BASE64_TRIGGER_SCRIPT:
     case StartupMode::START_RPC_TRIGGER_SCRIPT:
       return Metrics::AutofillAssistantStarted::OK_DELAYED_START;
   }
@@ -334,7 +337,6 @@ void Metrics::RecordTriggerScriptStarted(ukm::UkmRecorder* ukm_recorder,
     case StartupMode::MANDATORY_PARAMETERS_MISSING:
       event = TriggerScriptStarted::MANDATORY_PARAMETER_MISSING;
       break;
-    case StartupMode::START_BASE64_TRIGGER_SCRIPT:
     case StartupMode::START_RPC_TRIGGER_SCRIPT:
       event = is_first_time_user ? TriggerScriptStarted::FIRST_TIME_USER
                                  : TriggerScriptStarted::RETURNING_USER;
@@ -534,13 +536,44 @@ void Metrics::RecordOnboardingFetcherResult(
   base::UmaHistogramEnumeration(kOnboardingFetcherResultStatus, status);
 }
 
-// static
 void Metrics::RecordServiceRequestRetryCount(int count, bool success) {
   DCHECK_GE(count, 0);
   base::UmaHistogramExactLinear(success ? kServiceRequestSuccessRetryCount
                                         : kServiceRequestFailureRetryCount,
                                 /* sample= */ count,
                                 /* exclusive_max= */ 11);
+}
+
+// static
+void Metrics::RecordFlowFinished(ukm::UkmRecorder* ukm_recorder,
+                                 ukm::SourceId source_id,
+                                 FlowFinishedState state,
+                                 RoundtripNetworkStats flow_network_stats) {
+  int num_js_flow_actions = 0;
+  size_t total_decoded_js_flow_size_in_bytes = 0;
+  for (const auto& action : flow_network_stats.action_stats()) {
+    if (action.action_info_case() !=
+        static_cast<int>(ActionProto::ActionInfoCase::kJsFlow)) {
+      continue;
+    }
+    num_js_flow_actions++;
+    total_decoded_js_flow_size_in_bytes += action.decoded_size_bytes();
+  }
+
+  ukm::builders::AutofillAssistant_FlowFinished(source_id)
+      .SetFlowFinishedState(static_cast<int64_t>(state))
+      .SetNumJsFlowActions(num_js_flow_actions)
+      .SetTotalDecodedJsFlowSizeInBytes(ukm::GetExponentialBucketMinForBytes(
+          total_decoded_js_flow_size_in_bytes))
+      .SetNumActions(flow_network_stats.action_stats().size())
+      .SetNumRoundtrips(flow_network_stats.num_roundtrips())
+      .SetTotalEncodedGetActionsSizeInBytes(
+          ukm::GetExponentialBucketMinForBytes(
+              flow_network_stats.roundtrip_encoded_body_size_bytes()))
+      .SetTotalDecodedGetActionsSizeInBytes(
+          ukm::GetExponentialBucketMinForBytes(
+              flow_network_stats.roundtrip_decoded_body_size_bytes()))
+      .Record(ukm_recorder);
 }
 
 // static
@@ -735,7 +768,7 @@ std::ostream& operator<<(std::ostream& out,
       out << "DISABLED_PROACTIVE_HELP_SETTING";
       break;
     case Metrics::TriggerScriptFinishedState::BASE64_DECODING_ERROR:
-      out << "BASE64_DECODING_ERROR";
+      out << "BASE64 DECODING ERROR";
       break;
     case Metrics::TriggerScriptFinishedState::BOTTOMSHEET_ONBOARDING_REJECTED:
       out << "BOTTOMSHEET_ONBOARDING_REJECTED";

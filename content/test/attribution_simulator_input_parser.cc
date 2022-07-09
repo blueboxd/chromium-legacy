@@ -17,6 +17,7 @@
 #include "base/strings/abseil_string_number_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -170,6 +171,10 @@ class AttributionSimulatorInputParser {
       return;
     }
 
+    // `CanonicalCookie::Create()` will DCHECK.
+    if (time.is_null())
+      return;
+
     std::unique_ptr<net::CanonicalCookie> canonical_cookie =
         net::CanonicalCookie::Create(url, *line, time,
                                      /*server_time=*/absl::nullopt,
@@ -295,6 +300,7 @@ class AttributionSimulatorInputParser {
 
     absl::optional<uint64_t> debug_key;
     AttributionFilterData filters;
+    AttributionFilterData not_filters;
     std::vector<AttributionTrigger::EventTriggerData> event_triggers;
     std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data;
     AttributionAggregatableValues aggregatable_values;
@@ -307,6 +313,9 @@ class AttributionSimulatorInputParser {
                   debug_key = ParseOptionalUint64(dict, "debug_key");
                   filters = ParseFilterData(
                       dict, "filters",
+                      &AttributionFilterData::FromTriggerFilterValues);
+                  not_filters = ParseFilterData(
+                      dict, "not_filters",
                       &AttributionFilterData::FromTriggerFilterValues);
                   event_triggers = ParseEventTriggers(dict);
 
@@ -325,8 +334,8 @@ class AttributionSimulatorInputParser {
         AttributionTriggerAndTime{
             .trigger = AttributionTrigger(
                 std::move(destination_origin), std::move(reporting_origin),
-                std::move(filters), debug_key, std::move(event_triggers),
-                std::move(aggregatable_trigger_data),
+                std::move(filters), std::move(not_filters), debug_key,
+                std::move(event_triggers), std::move(aggregatable_trigger_data),
                 std::move(aggregatable_values)),
             .time = trigger_time,
         },
@@ -404,13 +413,15 @@ class AttributionSimulatorInputParser {
     const std::string* v = dict.FindString(key);
     int64_t milliseconds;
 
-    if (!v || !base::StringToInt64(*v, &milliseconds)) {
-      *Error() << "must be an integer number of milliseconds since the Unix "
-                  "epoch formatted as a base-10 string";
-      return base::Time();
+    if (v && base::StringToInt64(*v, &milliseconds)) {
+      base::Time time = offset_time_ + base::Milliseconds(milliseconds);
+      if (!time.is_null() && !time.is_inf())
+        return time;
     }
 
-    return offset_time_ + base::Milliseconds(milliseconds);
+    *Error() << "must be an integer number of milliseconds since the Unix "
+                "epoch formatted as a base-10 string";
+    return base::Time();
   }
 
   uint64_t ParseUint64(const std::string* s, base::StringPiece key) {
@@ -575,8 +586,11 @@ class AttributionSimulatorInputParser {
     const std::string* s = key_value.GetIfString();
 
     absl::uint128 value = 0;
-    if (!s || !base::HexStringToUInt128(*s, &value))
+    if (!s ||
+        !base::StartsWith(*s, "0x", base::CompareCase::INSENSITIVE_ASCII) ||
+        !base::HexStringToUInt128(*s, &value)) {
       *Error() << "must be a uint128 formatted as a base-16 string";
+    }
 
     return value;
   }

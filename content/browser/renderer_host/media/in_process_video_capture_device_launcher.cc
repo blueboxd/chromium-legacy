@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -58,6 +59,9 @@
 #include "content/browser/gpu/chromeos/video_capture_dependencies.h"
 #include "media/capture/video/chromeos/scoped_video_capture_jpeg_decoder.h"
 #include "media/capture/video/chromeos/video_capture_jpeg_decoder_impl.h"
+#elif BUILDFLAG(IS_WIN)
+#include "media/capture/video/win/video_capture_buffer_tracker_factory_win.h"
+#include "media/capture/video/win/video_capture_device_factory_win.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace content {
@@ -201,7 +205,8 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 
     case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
     case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
-    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB: {
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET: {
       const DesktopMediaID desktop_id = DesktopMediaID::Parse(device_id);
       if (desktop_id.is_null()) {
         DLOG(ERROR) << "Desktop media ID is null";
@@ -313,9 +318,22 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
     base::WeakPtr<media::VideoFrameReceiver> receiver_on_io_thread) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+#if BUILDFLAG(IS_WIN)
+  scoped_refptr<media::DXGIDeviceManager> dxgi_device_manager;
+  if (video_capture_system_ && video_capture_system_->GetFactory()) {
+    dxgi_device_manager =
+        video_capture_system_->GetFactory()->GetDxgiDeviceManager();
+  }
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool =
-      new media::VideoCaptureBufferPoolImpl(requested_buffer_type,
-                                            buffer_pool_max_buffer_count);
+      base::MakeRefCounted<media::VideoCaptureBufferPoolImpl>(
+          requested_buffer_type, buffer_pool_max_buffer_count,
+          std::make_unique<media::VideoCaptureBufferTrackerFactoryWin>(
+              std::move(dxgi_device_manager)));
+#else
+  scoped_refptr<media::VideoCaptureBufferPool> buffer_pool =
+      base::MakeRefCounted<media::VideoCaptureBufferPoolImpl>(
+          requested_buffer_type, buffer_pool_max_buffer_count);
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return std::make_unique<media::VideoCaptureDeviceClient>(
@@ -452,26 +470,76 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread(
   DCHECK(device_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_id.is_null());
 
+  enum DesktopCaptureImplementation {
+    kNoImplementation,
+    kScreenCaptureDeviceAndroid,
+    kScreenCaptureKitDeviceMac,
+    kDesktopCaptureDeviceMac,
+    kLegacyDesktopCaptureDevice,
+    kImplementationCount,
+  };
+  auto implementation = kNoImplementation;
+
   std::unique_ptr<media::VideoCaptureDevice> video_capture_device;
 #if BUILDFLAG(IS_ANDROID)
-  video_capture_device = std::make_unique<ScreenCaptureDeviceAndroid>();
+  if ((video_capture_device = std::make_unique<ScreenCaptureDeviceAndroid>()))
+    implementation = DesktopCaptureImplementation::kScreenCaptureDeviceAndroid;
 #else
 #if BUILDFLAG(IS_MAC)
   // Prefer using ScreenCaptureKit. After that try DesktopCaptureDeviceMac, and
   // if both fail, use the generic DesktopCaptureDevice.
   if (!video_capture_device &&
       base::FeatureList::IsEnabled(kScreenCaptureKitMac)) {
-    video_capture_device = CreateScreenCaptureKitDeviceMac(desktop_id);
+    if ((video_capture_device = CreateScreenCaptureKitDeviceMac(desktop_id)))
+      implementation = kScreenCaptureKitDeviceMac;
   }
   if (!video_capture_device &&
       base::FeatureList::IsEnabled(kDesktopCaptureMacV2)) {
-    video_capture_device = CreateDesktopCaptureDeviceMac(desktop_id);
+    if ((video_capture_device = CreateDesktopCaptureDeviceMac(desktop_id)))
+      implementation = kDesktopCaptureDeviceMac;
   }
 #endif
-  if (!video_capture_device)
-    video_capture_device = DesktopCaptureDevice::Create(desktop_id);
+  if (!video_capture_device &&
+      (video_capture_device = DesktopCaptureDevice::Create(desktop_id))) {
+    implementation = kLegacyDesktopCaptureDevice;
+  }
 #endif
-
+  DVLOG(1) << __func__ << " implementation " << implementation << " type "
+           << desktop_id.type;
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum DesktopCaptureImplementationAndType {
+    kNoImplementationTypeNone = 0,
+    kNoImplementationTypeScreen = 1,
+    kNoImplementationTypeWindow = 2,
+    kNoImplementationTypeWebContents = 3,
+    kScreenCaptureDeviceAndroidTypeNone = 4,
+    kScreenCaptureDeviceAndroidTypeScreen = 5,
+    kScreenCaptureDeviceAndroidTypeWindow = 6,
+    kScreenCaptureDeviceAndroidTypeWebContents = 7,
+    kScreenCaptureKitDeviceMacTypeNone = 8,
+    kScreenCaptureKitDeviceMacTypeScreen = 9,
+    kScreenCaptureKitDeviceMacTypeWindow = 10,
+    kScreenCaptureKitDeviceMacTypeWebContents = 11,
+    kDesktopCaptureDeviceMacTypeNone = 12,
+    kDesktopCaptureDeviceMacTypeScreen = 13,
+    kDesktopCaptureDeviceMacTypeWindow = 14,
+    kDesktopCaptureDeviceMacTypeWebContents = 15,
+    kLegacyDesktopCaptureDeviceTypeNone = 16,
+    kLegacyDesktopCaptureDeviceTypeScreen = 17,
+    kLegacyDesktopCaptureDeviceTypeWindow = 18,
+    kLegacyDesktopCaptureDeviceTypeWebContents = 19,
+    kMaxValue = kLegacyDesktopCaptureDeviceTypeWebContents,
+  };
+  constexpr int kDesktopIdTypeCount = 4;
+  static_assert(kDesktopIdTypeCount * kImplementationCount ==
+                DesktopCaptureImplementationAndType::kMaxValue + 1);
+  auto implementation_and_type =
+      static_cast<DesktopCaptureImplementationAndType>(
+          implementation * kDesktopIdTypeCount + desktop_id.type);
+  base::UmaHistogramEnumeration(
+      "Media.VideoCaptureManager.DesktopCaptureImplementationAndType",
+      implementation_and_type);
   if (video_capture_device)
     video_capture_device->AllocateAndStart(params, std::move(device_client));
   std::move(result_callback).Run(std::move(video_capture_device));

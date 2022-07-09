@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">hangul romaja</translation>
 <translation id="112387589102719461">Angielski (USA) z klawiaturą programisty Dvoraka</translation>
 <translation id="1134697384939541955">Angielski (USA) z klawiaturą rozszerzoną</translation>
+<translation id="1138691154716715755">Wcześniej w tym miesiącu</translation>
 <translation id="1148097584170732637">Znaleziono <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     W pamięci lokalnej jest za mało miejsca. Potrzeba jeszcze <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />%, zablokowana przez administratora, szczegóły</translation>
 <translation id="2142680004883808240">Rosyjski z fonetyczną klawiaturą YaZHert</translation>
 <translation id="2143778271340628265">Ręczna konfiguracja serwera proxy</translation>
+<translation id="2148716181193084225">Dzisiaj</translation>
 <translation id="2163152940313951844">Nieprawidłowy znak: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portugalski z klawiaturą amerykańską międzynarodową (PC)</translation>
 <translation id="2198315389084035571">chiński uproszczony</translation>
@@ -181,7 +183,6 @@
 <translation id="2541377937973966830">Zawartość tego folderu jest tylko do odczytu. Niektóre działania nie są obsługiwane.</translation>
 <translation id="2542049655219295786">Tabela Google</translation>
 <translation id="2544853746127077729">Certyfikat uwierzytelniania został odrzucony przez sieć</translation>
-<translation id="2547921442987553570">Dodaj do rozszerzenia <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">amerykańska klawiatura międzynarodowa</translation>
 <translation id="2563185590376525700">Żaba</translation>
 <translation id="2578394532502990878">Tamilski fonetyczny</translation>
@@ -233,7 +234,6 @@
 <translation id="3047197340186497470">Chiński dayi</translation>
 <translation id="3057861065630527966">Utwórz kopię zapasową zdjęć i filmów</translation>
 <translation id="3067790092342515856">Pliki systemu Windows</translation>
-<translation id="3078461028045006476">Udostępnij w rozszerzeniu <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebity</translation>
 <translation id="3085752524577180175">Host SOCKS</translation>
 <translation id="3104793765551262433">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />%, zablokowana przez administratora, szczegóły</translation>
@@ -330,7 +330,6 @@
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3855472144336161447">niemiecka klawiatura Neo 2</translation>
 <translation id="3858860766373142691">Nazwa</translation>
-<translation id="386548886866354912">Spakuj, używając rozszerzenia <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3899991606604168269">Francuski (Kanada) z klawiaturą wielojęzyczną</translation>
 <translation id="3901991538546252627">Łączę z: <ph name="NAME" /></translation>
@@ -343,6 +342,7 @@
 <translation id="3971140002794351170">Pobierz profil mobilny: sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Angielski (Wielka Brytania)</translation>
 <translation id="3975895378829046965">Bengalski fonetyczny</translation>
+<translation id="3991446849494482687">Spowoduje to też wyłączenie ustawienia blokady SIM na urządzeniu.</translation>
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="4017788180641807848">Angielski (USA) z klawiaturą Workman</translation>
 <translation id="4040753847560036377">Nieprawidłowy kod PUK</translation>
@@ -379,6 +379,7 @@
 <translation id="4380245540200674032">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />%, zarządzana przez administratora, szczegóły</translation>
 <translation id="4387004326333427325">Certyfikat uwierzytelniania został odrzucony zdalnie</translation>
 <translation id="4394214039309501350">Link zewnętrzny</translation>
+<translation id="4394980935660306080">Wcześniej w tym tygodniu</translation>
 <translation id="4401287888955153199">Wyodrębnij wszystko</translation>
 <translation id="4410695710508688828">Operacja wyodrębnienia zakończona niepowodzeniem. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Utwórz skrót do swoich plików</translation>
@@ -422,6 +423,7 @@
 <translation id="4712283082407695269">Otwieram plik „<ph name="PATH" />”</translation>
 <translation id="4720185134442950733">Sieć mobilnej transmisji danych</translation>
 <translation id="4724850507808590449">Kopie zapasowe <ph name="FILE_COUNT" /> zdjęć zostały utworzone</translation>
+<translation id="4725096204469550614">Wcześniej w tym roku</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4737050008115666127">Lądowanie</translation>
 <translation id="4747271164117300400">Macedoński</translation>
@@ -471,6 +473,7 @@
 <translation id="508423945471810158">Przenoszę elementy (<ph name="NUMBER_OF_ITEMS" />) do folderu <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Wystąpił błąd.</translation>
 <translation id="5098629044894065541">Hebrajski</translation>
+<translation id="5102922915594634436">Zarządzaj zsynchronizowanymi folderami</translation>
 <translation id="5109254780565519649">Wystąpił błąd. Niektóre elementy mogły nie zostać przywrócone.</translation>
 <translation id="5110329002213341433">Angielski (Kanada)</translation>
 <translation id="5123433949759960244">Piłka do koszykówki</translation>
@@ -604,7 +607,6 @@
 <translation id="6165508094623778733">Dowiedz się więcej</translation>
 <translation id="6170470584681422115">Kanapka</translation>
 <translation id="6187719147498869044">Węgierski</translation>
-<translation id="6189412234224385711">Otwórz w rozszerzeniu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Zmień kod PIN</translation>
 <translation id="6199801702437275229">Oczekuję na informacje o wolnym miejscu...</translation>
 <translation id="6205710420833115353">Niektóre operacje trwają dłużej niż powinny. Chcesz je przerwać?</translation>
@@ -708,6 +710,7 @@
 <translation id="7075931588889865715">Tajski z klawiaturą TIS 820-2531</translation>
 <translation id="708278670402572152">Rozłącz, by włączyć skanowanie</translation>
 <translation id="7086590977277044826">Tamilski z klawiaturą InScript</translation>
+<translation id="7088615885725309056">Starsze</translation>
 <translation id="7103992300314999525">Macedoński</translation>
 <translation id="7106346894903675391">Kup więcej miejsca...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” – &lt;em&gt;wyszukaj na Dysku&lt;/em&gt;</translation>
@@ -772,6 +775,7 @@
 <translation id="7663224033570512922">Hindi</translation>
 <translation id="7693909743393669729">Sformatowanie dysku spowoduje usunięcie wszystkich zapisanych na nim danych i wszystkich znajdujących się na nim partycji, w tym partycji niewidocznych. Tej czynności nie będzie można cofnąć.</translation>
 <translation id="7695430100978772476">Nie udało się sformatować: <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">Nie udało się opróżnić kosza.</translation>
 <translation id="770015031906360009">Grecki</translation>
 <translation id="7705251383879779343">Plik <ph name="FILE_NAME" /> został skopiowany.</translation>
 <translation id="7711920809702896782">Informacje o pliku graficznym</translation>
@@ -782,6 +786,7 @@
 <translation id="7760449188139285140">Chiński wubi</translation>
 <translation id="7765158879357617694">Przenieś</translation>
 <translation id="7774365994322694683">Ptak</translation>
+<translation id="7781829728241885113">Wczoraj</translation>
 <translation id="7788080748068240085">Aby zapisać „<ph name="FILE_NAME" />” offline, musisz zwolnić dodatkowe <ph name="TOTAL_FILE_SIZE" /> miejsca:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />odepnij pliki, do których nie potrzebujesz już uzyskiwać dostępu offline<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />usuń pliki z folderu Pobrane pliki<ph name="MARKUP_5" /></translation>

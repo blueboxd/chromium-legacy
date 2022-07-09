@@ -14,17 +14,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -74,7 +76,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private static final float EXTRA_HEIGHT_RATIO = 0.1f;
     private static final int SCROLL_DURATION_MS = 200;
     private static final int NAVBAR_FADE_DURATION_MS = 16;
-    private static final int SPINNER_FADE_DURATION_MS = 400;
+    private static final int SPINNER_FADEIN_DURATION_MS = 100;
+    private static final int SPINNER_FADEOUT_DURATION_MS = 400;
 
     @IntDef({HeightStatus.TOP, HeightStatus.INITIAL_HEIGHT, HeightStatus.TRANSITION})
     @Retention(RetentionPolicy.SOURCE)
@@ -122,6 +125,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private CircularProgressDrawable mSpinner;
     private View mToolbarView;
     private View mToolbarCoordinator;
+    private int mToolbarColor;
     private Runnable mPositionUpdater;
 
     // Runnable finishing the activity after the exit animation. Non-null when PCCT is closing.
@@ -305,21 +309,21 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         };
 
         // On pre-R devices, We wait till the layout is complete and get the content
-        // |android.R.id.content| view height. See |getAppUsableScreenHeight|.
+        // |android.R.id.content| view height. See |getAppUsableScreenHeightFromContent|.
         mPositionUpdater =
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ? this::updatePosition : () -> {
             // Maybe invoked before layout inflation? Simply return here - postion update will be
             // executed by |onPostInflationStartUp| anyway.
             if (mContentFrame == null) return;
 
-            mContentFrame.getViewTreeObserver().addOnGlobalLayoutListener(
-                    new OnGlobalLayoutListener() {
-                        @Override
-                        public void onGlobalLayout() {
-                            mContentFrame.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                            updatePosition();
-                        }
-                    });
+            mContentFrame.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    mContentFrame.removeOnLayoutChangeListener(this);
+                    updatePosition();
+                }
+            });
         };
     }
 
@@ -354,19 +358,32 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
                     .getInsets(WindowInsets.Type.navigationBars())
                     .bottom;
         }
-        // On pre-R devices, there is no official way to get the navigation bar height. A common way
-        // was to get it from a resource definition('navigation_bar_height') but it fails on some
-        // vendor-customized devices. A workaround here is to subtract the app-usable height
-        // (client view height + status bar height) from the whole display height.
-        return mDisplayHeight - getAppUsableScreenHeight();
+        // Pre-R OS offers no official way to get the navigation bar height. A common way was
+        // to get it from a resource definition('navigation_bar_height') but it fails on some
+        // vendor-customized devices.
+        // A workaround here is to subtract the app-usable height from the whole display height.
+        // There are a couple of ways to get the app-usable height:
+        // 1) content frame + status bar height
+        // 2) |display.getSize|
+        // On some devices, only one returns the right height, the other returning a height
+        // bigger that the actual value. Heuristically we choose the smaller of the two.
+        return mDisplayHeight
+                - Math.max(getAppUsableScreenHeightFromContent(),
+                        getAppUsableScreenHeightFromDisplay());
     }
 
-    private int getAppUsableScreenHeight() {
-        // A correct way to get the client area height would be to use |decor_content_parent|,
-        // the parent of |content|, to make sure to include the top action bar dimension. But
-        // CCT (or Chrome for that matter) doesn't have the top action bar. So getting the height
-        // of |content| is enough.
+    private int getAppUsableScreenHeightFromContent() {
+        // A correct way to get the client area height would be to use the parent of |content|
+        // to make sure to include the top action bar dimension. But CCT (or Chrome for that
+        // matter) doesn't have the top action bar. So getting the height of |content| is enough.
         return mContentFrame.getHeight() + getStatusBarHeight();
+    }
+
+    private int getAppUsableScreenHeightFromDisplay() {
+        Display display = mActivity.getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return size.y;
     }
 
     @Override
@@ -374,6 +391,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             View coordinatorView, CustomTabToolbar toolbar, @Px int toolbarCornerRadius) {
         mToolbarCoordinator = coordinatorView;
         mToolbarView = toolbar;
+        mToolbarColor = toolbar.getBackground().getColor();
         roundCorners(coordinatorView, toolbar, toolbarCornerRadius);
         toolbar.setHandleStrategy(new PartialCustomTabHandleStrategy(mActivity));
     }
@@ -414,34 +432,56 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         View handleView = mActivity.findViewById(R.id.custom_tabs_handle_view);
         handleView.setElevation(
                 mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_elevation));
-        View handleBar = handleView.findViewById(R.id.handle_bar);
-        ViewGroup.MarginLayoutParams lp =
-                (ViewGroup.MarginLayoutParams) handleBar.getLayoutParams();
-        int dragBarTopMargin =
-                mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_handle_height)
-                - mActivity.getResources().getDimensionPixelSize(
-                        R.dimen.custom_tabs_drag_bar_height);
-        lp.setMargins(0, dragBarTopMargin, 0, 0);
-
-        GradientDrawable background = (GradientDrawable) handleView.getBackground();
-        background.mutate();
-        background.setCornerRadii(new float[] {toolbarCornerRadius, toolbarCornerRadius,
-                toolbarCornerRadius, toolbarCornerRadius, 0, 0, 0, 0});
         updateShadowOffset();
+
+        GradientDrawable cctBackground = (GradientDrawable) handleView.getBackground();
+        adjustCornerRadius(cctBackground, toolbarCornerRadius);
+        handleView.setBackground(cctBackground);
+
+        // Inner frame |R.id.drag_bar| is used for setting background color to match that of
+        // the toolbar. Outer frame |R.id.custom_tabs_handle_view| is not suitable since it
+        // covers the entire client area for rendering outline shadow around the CCT.
+        View dragBar = handleView.findViewById(R.id.drag_bar);
+        GradientDrawable dragBarBackground = (GradientDrawable) dragBar.getBackground();
+        adjustCornerRadius(dragBarBackground, toolbarCornerRadius);
         if (mDrawOutlineShadow) {
             int width = mActivity.getResources().getDimensionPixelSize(
                     R.dimen.custom_tabs_outline_width);
-            int color = toolbar.getBackground().getColor();
-            background.setStroke(width, toolbar.getToolbarHairlineColor(color));
+            cctBackground.setStroke(width, toolbar.getToolbarHairlineColor(mToolbarColor));
+
+            // We need an inset to make the outline shadow visible.
+            dragBar.setBackground(new InsetDrawable(dragBarBackground, width, width, width, 0));
+        } else {
+            dragBar.setBackground(dragBarBackground);
         }
 
-        handleView.setBackground(background);
-
-        // Pass the handle View to CustomTabToolbar for background color management.
-        toolbar.setHandleView(handleView);
+        // Pass the drag bar portion to CustomTabToolbar for background color management.
+        toolbar.setHandleBackground(dragBarBackground);
 
         // Having the transparent background is necessary for the shadow effect.
         mActivity.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+    }
+
+    private static void adjustCornerRadius(GradientDrawable d, int radius) {
+        d.mutate();
+        d.setCornerRadii(new float[] {radius, radius, radius, radius, 0, 0, 0, 0});
+    }
+
+    @Override
+    public void setScrimFraction(float scrimFraction) {
+        int scrimColor = mActivity.getResources().getColor(R.color.default_scrim_color);
+        float scrimColorAlpha = (scrimColor >>> 24) / 255f;
+        int scrimColorOpaque = scrimColor & 0xFF000000;
+        int color = ColorUtils.getColorWithOverlay(
+                mToolbarColor, scrimColorOpaque, scrimFraction * scrimColorAlpha, false);
+
+        // Drag handle view is not part of CoordinatorLayout. As the root UI scrim changes,
+        // the handle view color needs updating to match it. This is a better way than running
+        // PCCT's own scrim coordinator since it can apply shape-aware scrim to the handle view
+        // that has the rounded corner.
+        View dragBar = mActivity.findViewById(R.id.drag_bar);
+        GradientDrawable drawable = (GradientDrawable) dragBar.getBackground();
+        drawable.setColor(color);
     }
 
     private void initializeHeight() {
@@ -470,7 +510,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         // We do not resize Window but just translate its vertical offset, and resize Coordinator-
         // LayoutForPointer instead. This helps us work around the round-corner bug in Android S.
         // See b/223536648.
-        attributes.y = Math.max(maxExpandedY, mDisplayHeight - height - mNavbarHeight);
+        attributes.y = Math.max(maxExpandedY, mDisplayHeight - height);
         mActivity.getWindow().setAttributes(attributes);
     }
 
@@ -500,8 +540,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private void updateWindowPos(@Px int y) {
         // Do not allow the Window to go down below the initial position or above the minimum
         // threshold capped by the status bar and (optionally) the 90%-height adjustment.
-        y = MathUtils.clamp(y, getFullyExpandedYCoordinateWithAdjustment(),
-                mMaxHeight - mInitialHeight - mNavbarHeight);
+        y = MathUtils.clamp(
+                y, getFullyExpandedYCoordinateWithAdjustment(), mMaxHeight - mInitialHeight);
         WindowManager.LayoutParams attributes = mActivity.getWindow().getAttributes();
         if (attributes.y == y) return;
 
@@ -529,7 +569,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         // animation can always cover the transition artifact.
         mSpinnerView.animate()
                 .alpha(0f)
-                .setDuration(SPINNER_FADE_DURATION_MS)
+                .setDuration(SPINNER_FADEOUT_DURATION_MS)
                 .setListener(mSpinnerFadeoutAnimatorListener);
         updateNavbarVisibility(true);
     }
@@ -561,7 +601,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         mSpinnerView.clearAnimation();
         mSpinnerView.setAlpha(0.f);
         mSpinnerView.setVisibility(View.VISIBLE);
-        mSpinnerView.animate().alpha(1.f).setDuration(SPINNER_FADE_DURATION_MS).setListener(null);
+        mSpinnerView.animate().alpha(1.f).setDuration(SPINNER_FADEIN_DURATION_MS).setListener(null);
         mSpinner.start();
     }
 

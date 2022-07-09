@@ -79,10 +79,18 @@ void BluetoothPowerControllerImpl::SetBluetoothEnabledState(bool enabled) {
   SetAdapterState(enabled);
 }
 
-void BluetoothPowerControllerImpl::SetBluetoothHidDetectionActive(bool active) {
-  if (active) {
-    BLUETOOTH_LOG(EVENT) << "HID detection started, enabling adapter.";
-    SetAdapterState(true);
+void BluetoothPowerControllerImpl::SetBluetoothHidDetectionActive() {
+  BLUETOOTH_LOG(EVENT) << "HID detection started, enabling adapter.";
+  SetAdapterState(true);
+}
+
+void BluetoothPowerControllerImpl::SetBluetoothHidDetectionInactive(
+    bool is_using_bluetooth) {
+  if (is_using_bluetooth) {
+    BLUETOOTH_LOG(EVENT) << "HID detection finished and Bluetooth is being "
+                         << "used. Ensuring Bluetooth is enabled and the "
+                         << "enabled state persisted.";
+    SetBluetoothEnabledState(true);
     return;
   }
 

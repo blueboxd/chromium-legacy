@@ -123,6 +123,7 @@
 <translation id="188114911237521550">Deaktiver mørk tilstand</translation>
 <translation id="1881188606372070653">Gå til <ph name="BEGIN_LINK1" />siden Hjælp til Juridisk<ph name="END_LINK1" /> for at anmode om indholdsændringer af juridiske årsager. Visse konto- og systemoplysninger kan blive sendt til Google. Vi bruger de oplysninger, du giver os, til at løse tekniske problemer og forbedre vores tjenester. Oplysningerne håndteres i henhold til vores <ph name="BEGIN_LINK2" />privatlivspolitik<ph name="END_LINK2" /> og <ph name="BEGIN_LINK3" />servicevilkår<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Hardwarerevision</translation>
+<translation id="1904932688895783618">Her er nogle andre nyttige ressourcer:</translation>
 <translation id="1905710495812624430">Det maksimale antal forsøg er overskredet.</translation>
 <translation id="1908234395526491708">Mislykkede UDP-anmodninger</translation>
 <translation id="1932611479324127242">Deaktivering af batteri</translation>
@@ -137,6 +138,7 @@
 <translation id="2016697457005847575">Prøv fejlfindingstrinnene</translation>
 <translation id="2016848882344942759">--intet white-label--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Opret forbindelse til et netværk, og genindlæs siden for at se baggrunden.</translation>
 <translation id="2080070583977670716">Flere indstillinger</translation>
 <translation id="2085089206770112532">Reducer skærmens lysstyrke</translation>
 <translation id="2105810540595158374">Enheden er en spilcontroller.</translation>
@@ -153,6 +155,7 @@
 <translation id="2163937499206714165">Aktivér mørkt tilstand</translation>
 <translation id="2177831236093724629">Der blev fundet <ph name="LINK_BEGIN" />ukvalificerede komponenter<ph name="LINK_END" />. Opdater til den nyeste version af Chrome OS for at sikre, at alle kvalificerede komponenter identificeres.</translation>
 <translation id="2180197493692062006">Der opstod en fejl. Prøv at åbne appen igen.</translation>
+<translation id="2182088270354640012">Tak for din feedback. Din feedback er med til at forbedre Chrome OS og gennemgås af Chrome OS-teamet. Vi modtager et stort antal rapporter, så du modtager ikke et direkte svar.</translation>
 <translation id="2209788852729124853">Nulstil trafiktællere</translation>
 <translation id="2212733584906323460">Navneløsning</translation>
 <translation id="2217935453350629363">Nuværende hastighed</translation>
@@ -256,6 +259,7 @@
 <translation id="3226405216343213872">Søger efter scannere</translation>
 <translation id="3246869037381808805">Udskriftjobs, der er ældre end 1 dag, fjernes</translation>
 <translation id="3268178239013324452">Handlingen mislykkedes – Åben låge</translation>
+<translation id="3275729367986477355">Billede til avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Rediger fil}one{Rediger fil}other{Rediger filer}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Nøgleretning</translation>
@@ -429,6 +433,7 @@
 <translation id="4793710386569335688">Få yderligere hjælp ved at gå til <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algoritme til komprimering</translation>
 <translation id="4794140124556169553">Systemets ydeevne kan blive påvirket under kørsel af en CPU-test</translation>
+<translation id="4800589996161293643">Hjælpeforum for Chromebook</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4808449224298348341">Udskriftsjobbet <ph name="DOCUMENT_TITLE" /> blev annulleret</translation>
 <translation id="4809927044794281115">Lyst tema</translation>
@@ -487,6 +492,7 @@
 <translation id="5212543919916444558">Jeg kan ikke finde noget på skærmen, jeg kan hjælpe med. Prøv at trykke på mikrofonen for at spørge mig om noget.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Log ud</translation>
+<translation id="522307662484862935">Undlad at medtage mailadresse</translation>
 <translation id="5227902338748591677">Tidsplan for Mørkt tema</translation>
 <translation id="5234764350956374838">Luk</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -613,6 +619,7 @@
 <translation id="6284632978374966585">Aktivér Mørkt tema</translation>
 <translation id="6295178529664209245">Vil du fortsætte reparationen?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />-testen er annulleret</translation>
+<translation id="631063167932043783">Appen Udforsk</translation>
 <translation id="6319207335391420837">Opdater firmware på <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Aktivér Pauseskærm</translation>
 <translation id="6325525973963619867">Mislykket</translation>
@@ -641,6 +648,7 @@
 <translation id="6516990319416533844">Du kan teste, hvor hurtigt batteriet oplades, ved at aflade det i en kortere periode</translation>
 <translation id="6517239166834772319">Udforsk</translation>
 <translation id="6527081081771465939">Ukendt Wi-Fi-sikkerhedsprotokol</translation>
+<translation id="6535178685492749208">Du er offline. Din feedback sendes senere.</translation>
 <translation id="65587193855025101">Flatbed</translation>
 <translation id="6564646048574748301">Handlingen mislykkedes – Ingen forbindelse til printer</translation>
 <translation id="6566314079205407217">Scanning af flere sider</translation>
@@ -719,6 +727,7 @@
 <translation id="7297226631177386107">Der kan ikke oprettes forbindelse gennem firewallen til HTTPS-websites</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Spørg eksperterne i hjælpeforummet for Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Tryk på søgetasten og mellemrumstasten for at se resultater i Google Søgning.</translation>
 <translation id="7343649194310845056">Netværksenheder</translation>
@@ -761,9 +770,11 @@
 <translation id="773153675489693198">Antal gennemførte cyklusser</translation>
 <translation id="7747039790905080783">Forhåndsdelt nøgle</translation>
 <translation id="7762130827864645708">Din adgangskode er ændret. Brug den nye adgangskode fremover.</translation>
+<translation id="7762839321248874531">Send <ph name="BEGIN_LINK1" />system- og appoplysninger<ph name="END_LINK1" /> samt <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Match af domænesuffiks</translation>
 <translation id="7769672763586021400">Model-id</translation>
 <translation id="7784116172884276937">Der er ikke konfigureret nogen DNS-servere</translation>
+<translation id="779591286616261875">Send ny rapport</translation>
 <translation id="7799817062559422778">Lys tilstand</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -830,6 +841,7 @@
 <translation id="8382302752385457774">White-label</translation>
 <translation id="8395584934117017006">Denne <ph name="DEVICE_TYPE" /> administreres af en virksomhed</translation>
 <translation id="8398927464629426868">Den aktuelle hastighed for opladning eller afladning på enheden</translation>
+<translation id="8420955526972171689">Kør tests og fejlfinding af hardwareproblemer</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Indbygget tastatur</translation>
 <translation id="8431300646573772016">Nyt i Chrome OS</translation>
@@ -915,6 +927,7 @@
 <translation id="9082718469794970195">Brug denne video</translation>
 <translation id="9087578468327036362">Rapportér denne forespørgsel</translation>
 <translation id="9088306295921699330">Aktuelt forbrug</translation>
+<translation id="9092255287806472980">Din feedback er med til at forbedre Chrome OS og gennemgås af vores team. Vi modtager et stort antal rapporter, så vi kan ikke sende dig et svar.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Du er nødt til at skille enheden ad</translation>
 <translation id="9098156406873149060">Behold brugerdata</translation>

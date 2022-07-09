@@ -122,6 +122,12 @@ class DriveFsHost::MountState : public DriveFsSession,
     }
   }
 
+  void OnMirrorSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {
+    for (auto& observer : host_->observers_) {
+      observer.OnMirrorSyncingStatusUpdate(*status);
+    }
+  }
+
   void OnFilesChanged(std::vector<mojom::FileChangePtr> changes) override {
     std::vector<mojom::FileChange> changes_values;
     changes_values.reserve(changes.size());
@@ -197,6 +203,21 @@ class DriveFsHost::MountState : public DriveFsSession,
       return;
     }
     http_client_->ExecuteHttpRequest(std::move(request), std::move(delegate));
+  }
+
+  void GetMachineRootID(GetMachineRootIDCallback callback) override {
+    if (!chromeos::features::IsDriveFsMirroringEnabled()) {
+      std::move(callback).Run({});
+      return;
+    }
+    std::move(callback).Run(host_->delegate_->GetMachineRootID());
+  }
+
+  void PersistMachineRootID(const std::string& id) override {
+    if (!chromeos::features::IsDriveFsMirroringEnabled()) {
+      return;
+    }
+    host_->delegate_->PersistMachineRootID(std::move(id));
   }
 
   // DriveNotificationObserver overrides:

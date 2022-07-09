@@ -100,6 +100,24 @@ std::u16string StateToText(CertProvisioningProcessState state) {
   NOTREACHED();
 }
 
+// Returns the status message of the process.
+// The status message is expanded by the failure message if the process failed
+// and the error message is non-empty.
+std::u16string MakeStatusMessage(
+    bool did_fail,
+    CertProvisioningProcessState state,
+    const absl::optional<std::string>& failure_message) {
+  if (!did_fail) {
+    return StateToText(state);
+  }
+  std::u16string status_message =
+      StateToText(CertProvisioningProcessState::kFailed);
+  if (failure_message.has_value()) {
+    status_message += base::UTF8ToUTF16(": " + failure_message.value());
+  }
+  return status_message;
+}
+
 // Returns a localized representation of the last update time as a delay (e.g.
 // "5 minutes ago".
 std::u16string GetTimeSinceLastUpdate(base::Time last_update_time) {
@@ -149,15 +167,15 @@ CertificateProvisioningUiHandler::~CertificateProvisioningUiHandler() = default;
 
 void CertificateProvisioningUiHandler::RegisterMessages() {
   // Passing base::Unretained(this) to
-  // web_ui()->RegisterDeprecatedMessageCallback is fine because in chrome Web
+  // web_ui()->RegisterMessageCallback is fine because in chrome Web
   // UI, web_ui() has acquired ownership of |this| and maintains the life time
   // of |this| accordingly.
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "refreshCertificateProvisioningProcessses",
       base::BindRepeating(&CertificateProvisioningUiHandler::
                               HandleRefreshCertificateProvisioningProcesses,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "triggerCertificateProvisioningProcessUpdate",
       base::BindRepeating(&CertificateProvisioningUiHandler::
                               HandleTriggerCertificateProvisioningProcessUpdate,
@@ -181,20 +199,18 @@ CertificateProvisioningUiHandler::ReadAndResetUiRefreshCountForTesting() {
 }
 
 void CertificateProvisioningUiHandler::
-    HandleRefreshCertificateProvisioningProcesses(const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetListDeprecated().size());
+    HandleRefreshCertificateProvisioningProcesses(
+        const base::Value::List& args) {
+  CHECK_EQ(0U, args.size());
   AllowJavascript();
   RefreshCertificateProvisioningProcesses();
 }
 
 void CertificateProvisioningUiHandler::
     HandleTriggerCertificateProvisioningProcessUpdate(
-        const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetListDeprecated().size());
-  if (!args->is_list()) {
-    return;
-  }
-  const base::Value& cert_profile_id = args->GetListDeprecated()[0];
+        const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  const base::Value& cert_profile_id = args[0];
   if (!cert_profile_id.is_string()) {
     return;
   }
@@ -229,16 +245,9 @@ void CertificateProvisioningUiHandler::GotStatus(
         "lastUnsuccessfulMessage",
         GetMessageFromBackendError(process->last_backend_server_error));
     entry.SetIntKey("stateId", static_cast<int>(process->state));
-
-    if (process->did_fail) {
-      // For failed processes `state` contains the last good state. Show an
-      // error as a text and keep the detailed information in the stateId.
-      entry.SetStringKey("status",
-                         StateToText(CertProvisioningProcessState::kFailed));
-    } else {
-      entry.SetStringKey("status", StateToText(process->state));
-    }
-
+    entry.SetStringKey("status",
+                       MakeStatusMessage(process->did_fail, process->state,
+                                         process->failure_message));
     entry.SetStringKey("publicKey",
                        x509_certificate_model::ProcessRawSubjectPublicKeyInfo(
                            process->public_key));

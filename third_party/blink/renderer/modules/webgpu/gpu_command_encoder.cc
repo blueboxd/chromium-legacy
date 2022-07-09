@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_query_set.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_encoder.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_supported_features.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture_view.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -287,6 +288,16 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
     dawn_desc.occlusionQuerySet = nullptr;
   }
 
+  WGPURenderPassDescriptorMaxDrawCount max_draw_count = {};
+  if (descriptor->hasMaxDrawCount()) {
+    max_draw_count.chain.sType = WGPUSType_RenderPassDescriptorMaxDrawCount;
+    max_draw_count.maxDrawCount = descriptor->maxDrawCount();
+    dawn_desc.nextInChain =
+        reinterpret_cast<WGPUChainedStruct*>(&max_draw_count);
+  } else {
+    dawn_desc.nextInChain = nullptr;
+  }
+
   GPURenderPassEncoder* encoder = MakeGarbageCollected<GPURenderPassEncoder>(
       device_,
       GetProcs().commandEncoderBeginRenderPass(GetHandle(), &dawn_desc));
@@ -357,6 +368,20 @@ void GPUCommandEncoder::copyTextureToTexture(GPUImageCopyTexture* source,
 
   GetProcs().commandEncoderCopyTextureToTexture(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
+}
+
+void GPUCommandEncoder::writeTimestamp(DawnObject<WGPUQuerySet>* querySet,
+                                       uint32_t queryIndex,
+                                       ExceptionState& exception_state) {
+  if (!device_->features()->has("timestamp-query")) {
+    exception_state.ThrowTypeError(String::Format(
+        "Use of the writeTimestamp() method requires the 'timestamp-query' "
+        "feature to be enabled on %s.",
+        device_->formattedLabel().c_str()));
+    return;
+  }
+  GetProcs().commandEncoderWriteTimestamp(GetHandle(), querySet->GetHandle(),
+                                          queryIndex);
 }
 
 GPUCommandBuffer* GPUCommandEncoder::finish(

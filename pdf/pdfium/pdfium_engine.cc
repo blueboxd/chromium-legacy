@@ -914,8 +914,8 @@ bool PDFiumEngine::IsValidLink(const std::string& url) {
   return client_->IsValidLink(url);
 }
 
-void PDFiumEngine::ContinueFind(int32_t result) {
-  StartFind(current_find_text_, result != 0);
+void PDFiumEngine::ContinueFind(bool case_sensitive) {
+  StartFind(current_find_text_, case_sensitive);
 }
 
 bool PDFiumEngine::HandleInputEvent(const blink::WebInputEvent& event) {
@@ -1727,8 +1727,8 @@ bool PDFiumEngine::OnChar(const blink::WebKeyboardEvent& event) {
 
 void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
   // If the caller asks StartFind() to search for no text, then this is an
-  // error on the part of the caller. The PPAPI Find_Private interface
-  // guarantees it is not empty, so this should never happen.
+  // error on the part of the caller. The `blink::FindInPage` code guarantees it
+  // is not empty, so this should never happen.
   DCHECK(!text.empty());
 
   // If StartFind() gets called before we have any page information (i.e.
@@ -1757,7 +1757,6 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
       character_to_start_searching_from = old_selection[0].char_index();
       last_page_to_search_ = next_page_to_search_;
     }
-    search_in_progress_ = true;
   }
 
   int current_page = next_page_to_search_;
@@ -1798,22 +1797,20 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
        (pages_.size() > 1 && current_page == next_page_to_search_));
 
   if (end_of_search) {
-    search_in_progress_ = false;
-
     // Send the final notification.
     client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
     return;
   }
 
-  // In unit tests, PPAPI is not initialized, so just call ContinueFind()
-  // directly.
+  // In unit tests, just call ContinueFind() directly for simplicity and reduce
+  // the need to use RunLoops.
   if (doc_loader_set_for_testing_) {
-    ContinueFind(case_sensitive ? 1 : 0);
+    ContinueFind(case_sensitive);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&PDFiumEngine::ContinueFind,
-                                  find_weak_factory_.GetWeakPtr(),
-                                  case_sensitive ? 1 : 0));
+        FROM_HERE,
+        base::BindOnce(&PDFiumEngine::ContinueFind,
+                       find_weak_factory_.GetWeakPtr(), case_sensitive));
   }
 }
 
@@ -1970,7 +1967,7 @@ void PDFiumEngine::SearchUsingICU(const std::u16string& term,
 }
 
 void PDFiumEngine::AddFindResult(const PDFiumRange& result) {
-  bool first_result = find_results_.empty();
+  bool first_result = find_results_.empty() && !resume_find_index_.has_value();
   // Figure out where to insert the new location, since we could have
   // started searching midway and now we wrapped.
   size_t result_index;
@@ -1987,7 +1984,6 @@ void PDFiumEngine::AddFindResult(const PDFiumRange& result) {
   UpdateTickMarks();
   client_->NotifyNumberOfFindResultsChanged(find_results_.size(), false);
   if (first_result) {
-    DCHECK(!resume_find_index_);
     DCHECK(!current_find_index_);
     SelectFindResult(/*forward=*/true);
   }
@@ -2059,8 +2055,6 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   }
 
   client_->NotifySelectedFindResultChanged(current_find_index_.value());
-  if (!search_in_progress_)
-    client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
   return true;
 }
 
@@ -2070,7 +2064,6 @@ void PDFiumEngine::StopFind() {
   selecting_ = false;
 
   find_results_.clear();
-  search_in_progress_ = false;
   next_page_to_search_ = -1;
   last_page_to_search_ = -1;
   last_character_index_to_search_ = -1;
@@ -2168,9 +2161,6 @@ void PDFiumEngine::InvalidateAllPages() {
 }
 
 std::string PDFiumEngine::GetSelectedText() {
-  if (!HasPermission(DocumentPermission::kCopy))
-    return std::string();
-
   std::u16string result;
   for (size_t i = 0; i < selection_.size(); ++i) {
     std::u16string current_selection_text = selection_[i].GetText();

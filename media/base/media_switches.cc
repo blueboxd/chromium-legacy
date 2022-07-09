@@ -72,6 +72,12 @@ const char kTrySupportedChannelLayouts[] = "try-supported-channel-layouts";
 
 // Number of buffers to use for WaveOut.
 const char kWaveOutBuffers[] = "waveout-buffers";
+
+// Emulates audio capture timestamps instead of using timestamps from the actual
+// audio device.
+// See crbug.com/1315231 for more details.
+const char kUseFakeAudioCaptureTimestamps[] =
+    "use-fake-audio-capture-timestamps";
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -263,14 +269,8 @@ const base::Feature kEnableTabMuting{"EnableTabMuting",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Picture-in-Picture.
-const base::Feature kPictureInPicture {
-  "PictureInPicture",
-#if BUILDFLAG(IS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kPictureInPicture{"PictureInPicture",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 // Enables HEVC hardware accelerated decoding.
@@ -385,6 +385,13 @@ const base::FeatureParam<bool> kChromeWideEchoCancellationMinimizeResampling{
 const base::FeatureParam<double>
     kChromeWideEchoCancellationDynamicMixingTimeout{
         &kChromeWideEchoCancellation, "mixing_buffer_duration_percent", -1.0};
+
+// Allows all sample rates to be used for audio processing. If disabled, only
+// sample rates divisible by 100 are allowed; a request for a media stream with
+// enabled audio processing will fail otherwise. For context see
+// https://crbug.com/1332484.
+const base::FeatureParam<bool> kChromeWideEchoCancellationAllowAllSampleRates{
+    &kChromeWideEchoCancellation, "allow_all_sample_rates", true};
 #endif
 
 // Make MSE garbage collection algorithm more aggressive when we are under
@@ -445,8 +452,7 @@ const base::Feature kGav1VideoDecoder{"Gav1VideoDecoder",
 // Show toolbar button that opens dialog for controlling media sessions.
 const base::Feature kGlobalMediaControls {
   "GlobalMediaControls",
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

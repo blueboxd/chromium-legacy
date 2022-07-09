@@ -65,6 +65,8 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/version_info/version_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace arc {
 namespace {
@@ -447,6 +449,9 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   // Add hugepages.
   request.set_use_hugepages(IsArcVmUseHugePages());
 
+  // Request guest memory locking, if configured.
+  request.set_lock_guest_memory(base::FeatureList::IsEnabled(kLockGuestMemory));
+
   // Specify VM Memory.
   if (base::FeatureList::IsEnabled(kVmMemorySize)) {
     base::SystemMemoryInfoKB info;
@@ -494,6 +499,11 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     balloon_policy->set_moderate_target_cache(moderate_kib * 1024);
     balloon_policy->set_critical_target_cache(critical_kib * 1024);
     balloon_policy->set_reclaim_target_cache(reclaim_kib * 1024);
+    balloon_policy->set_responsive(kVmBalloonPolicyResponsive.Get());
+    balloon_policy->set_responsive_timeout_ms(
+        kVmBalloonPolicyResponsiveTimeoutMs.Get());
+    balloon_policy->set_responsive_max_deflate_bytes(
+        kVmBalloonPolicyResponsiveMaxDeflateBytes.Get());
     VLOG(1) << "Use LimitCacheBalloonPolicy. ModerateKiB=" << moderate_kib
             << ", CriticalKiB=" << critical_kib
             << ", ReclaimKiB=" << reclaim_kib;
@@ -503,6 +513,25 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
   request.set_enable_consumer_auto_update_toggle(base::FeatureList::IsEnabled(
       ash::features::kConsumerAutoUpdateToggleAllowed));
+
+  auto orientation = display::Display::ROTATE_0;
+  if (auto* screen = display::Screen::GetScreen())
+    orientation = screen->GetPrimaryDisplay().panel_rotation();
+  switch (orientation) {
+    using StartArcVmRequest = vm_tools::concierge::StartArcVmRequest;
+    case display::Display::ROTATE_0:
+      request.set_panel_orientation(StartArcVmRequest::ORIENTATION_0);
+      break;
+    case display::Display::ROTATE_90:
+      request.set_panel_orientation(StartArcVmRequest::ORIENTATION_90);
+      break;
+    case display::Display::ROTATE_180:
+      request.set_panel_orientation(StartArcVmRequest::ORIENTATION_180);
+      break;
+    case display::Display::ROTATE_270:
+      request.set_panel_orientation(StartArcVmRequest::ORIENTATION_270);
+      break;
+  }
 
   return request;
 }
@@ -712,7 +741,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     }
 
     VLOG(1) << "Checking adb sideload status";
-    chromeos::SessionManagerClient::Get()->QueryAdbSideload(base::BindOnce(
+    ash::SessionManagerClient::Get()->QueryAdbSideload(base::BindOnce(
         &ArcVmClientAdapter::OnQueryAdbSideload, weak_factory_.GetWeakPtr(),
         std::move(params), std::move(callback)));
   }
@@ -1058,22 +1087,21 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void OnQueryAdbSideload(
       UpgradeParams params,
       chromeos::VoidDBusMethodCallback callback,
-      chromeos::SessionManagerClient::AdbSideloadResponseCode response_code,
+      ash::SessionManagerClient::AdbSideloadResponseCode response_code,
       bool enabled) {
     VLOG(1) << "IsAdbSideloadAllowed, response_code="
             << static_cast<int>(response_code) << ", enabled=" << enabled;
 
     switch (response_code) {
-      case chromeos::SessionManagerClient::AdbSideloadResponseCode::FAILED:
+      case ash::SessionManagerClient::AdbSideloadResponseCode::FAILED:
         LOG(ERROR) << "Failed response from QueryAdbSideload";
         StopArcInstanceInternal();
         std::move(callback).Run(false);
         return;
-      case chromeos::SessionManagerClient::AdbSideloadResponseCode::
-          NEED_POWERWASH:
+      case ash::SessionManagerClient::AdbSideloadResponseCode::NEED_POWERWASH:
         params.is_adb_sideloading_enabled = false;
         break;
-      case chromeos::SessionManagerClient::AdbSideloadResponseCode::SUCCESS:
+      case ash::SessionManagerClient::AdbSideloadResponseCode::SUCCESS:
         params.is_adb_sideloading_enabled = enabled;
         break;
     }
@@ -1081,10 +1109,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     VLOG(1) << "Starting upstart jobs for UpgradeArc()";
     std::vector<std::string> environment{
         "CHROMEOS_USER=" +
-            cryptohome::CreateAccountIdentifierFromIdentification(
-                cryptohome_id_)
-                .account_id(),
-        "CHROMEOS_USER_ID_HASH=" + user_id_hash_};
+        cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_)
+            .account_id()};
     std::deque<JobDesc> jobs{
         JobDesc{kArcVmPostLoginServicesJobName, UpstartOperation::JOB_START,
                 std::move(environment)},

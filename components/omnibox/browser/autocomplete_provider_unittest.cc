@@ -229,8 +229,9 @@ class AutocompleteProviderListenerWithClosure
   }
 
   // AutocompleteProviderListener:
-  void OnProviderUpdate(bool updated_matches) override {
-    controller_->OnProviderUpdate(updated_matches);
+  void OnProviderUpdate(bool updated_matches,
+                        const AutocompleteProvider* provider) override {
+    controller_->OnProviderUpdate(updated_matches, provider);
     if (closure_)
       closure_.Run();
   }
@@ -894,10 +895,12 @@ TEST_F(AutocompleteProviderTest, Headers) {
 
     // Verify that AutocompleteResult is updated with the header information.
     EXPECT_EQ(kRecommendedForYouHeader,
-              result_.GetHeaderForGroupId(kRecommendedForYouGroupId));
+              result_.GetHeaderForSuggestionGroup(kRecommendedForYouGroupId));
     EXPECT_EQ(kRecentSearchesHeader,
-              result_.GetHeaderForGroupId(kRecentSearchesGroupId));
-    EXPECT_EQ(std::u16string(), result_.GetHeaderForGroupId(-1));
+              result_.GetHeaderForSuggestionGroup(kRecentSearchesGroupId));
+    EXPECT_EQ(std::u16string(),
+              result_.GetHeaderForSuggestionGroup(
+                  SearchSuggestionParser::kInvalidSuggestionGroupId));
   }
   {
     HeaderTestData test_data = {headers_map,

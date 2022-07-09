@@ -123,6 +123,7 @@
 <translation id="188114911237521550">Исклучи темен режим</translation>
 <translation id="1881188606372070653">Одете на <ph name="BEGIN_LINK1" />страницата „Правна помош“<ph name="END_LINK1" /> за да побарате промени во содржините поради правни причини. Одредени податоци за сметката и системот може да се испратат до Google. Ќе ги користиме податоците што ни ги давате за да помогнеме во решавањето на техничките проблеми и да ги подобриме нашите услуги, што подлежат на нашата <ph name="BEGIN_LINK2" />Политика за приватност<ph name="END_LINK2" /> и<ph name="BEGIN_LINK3" />Условите за користење<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Ревизија на хардвер</translation>
+<translation id="1904932688895783618">Еве неколку други корисни ресурси:</translation>
 <translation id="1905710495812624430">Максималниот број дозволени обиди е надминат.</translation>
 <translation id="1908234395526491708">Неуспешни UDP-барања</translation>
 <translation id="1932611479324127242">Исклучи го напојувањето на батеријата</translation>
@@ -137,6 +138,7 @@
 <translation id="2016697457005847575">Пробајте ги чекорите за решавање проблеми</translation>
 <translation id="2016848882344942759">--без бела етикета--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Поврзете се на мрежа и повторно вчитајте ја страницата за да се прикаже заштитникот на екранот.</translation>
 <translation id="2080070583977670716">Повеќе поставки</translation>
 <translation id="2085089206770112532">Осветленоста на екранот се намали</translation>
 <translation id="2105810540595158374">Уредот е контролер на игра.</translation>
@@ -153,6 +155,7 @@
 <translation id="2163937499206714165">Вклучи темен режим</translation>
 <translation id="2177831236093724629">Најдени се <ph name="LINK_BEGIN" />неквалификувани компоненти<ph name="LINK_END" />. За да се погрижите дека сите квалификувани компоненти ќе бидат идентификувани, ажурирајте го Chrome OS на најновата верзија.</translation>
 <translation id="2180197493692062006">Нешто тргна наопаку. Отворете ја апликацијата повторно.</translation>
+<translation id="2182088270354640012">Фала за повратните информации. Вашите повратни информации помагаат да се подобри Chrome OS и ќе бидат разгледани од тимот на Chrome OS. Поради бројот на испратени извештаи, нема да добиете директен одговор.</translation>
 <translation id="2209788852729124853">Ресетирај бројачи на сообраќај</translation>
 <translation id="2212733584906323460">Одредување име</translation>
 <translation id="2217935453350629363">Моментална брзина</translation>
@@ -256,6 +259,7 @@
 <translation id="3226405216343213872">Се бараат скенери</translation>
 <translation id="3246869037381808805">Задачите за печатење постари од 1 ден ќе се отстранат</translation>
 <translation id="3268178239013324452">Неуспешно - вратата е отворена</translation>
+<translation id="3275729367986477355">Слика за аватар</translation>
 <translation id="3283504360622356314">{0,plural, =1{Измени датотека}one{Измени датотеки}other{Измени датотеки}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Насока на клучот</translation>
@@ -429,6 +433,7 @@
 <translation id="4793710386569335688">За дополнителна помош, одете во <ph name="BEGIN_LINK" />Центарот за помош<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Алгоритам за компримирање</translation>
 <translation id="4794140124556169553">Извршувањето CPU-тест може да влијае врз изведбата на системот</translation>
+<translation id="4800589996161293643">Заедница на Chromebook</translation>
 <translation id="4804818685124855865">Прекини врска</translation>
 <translation id="4808449224298348341">Откажан налог за печатење: <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Светла тема</translation>
@@ -488,6 +493,7 @@
 Допрете го микрофонот за да ме прашате нешто.</translation>
 <translation id="5212593641110061691">Таблоид</translation>
 <translation id="5222676887888702881">Одјави се</translation>
+<translation id="522307662484862935">Не вклучувај адреса на е-пошта</translation>
 <translation id="5227902338748591677">Распоред за темна тема</translation>
 <translation id="5234764350956374838">Отфрли</translation>
 <translation id="5252456968953390977">Роаминг</translation>
@@ -614,6 +620,7 @@
 <translation id="6284632978374966585">Вклучи темна тема</translation>
 <translation id="6295178529664209245">Да продолжи поправката?</translation>
 <translation id="6302401976930124515">Тестот за <ph name="TEST_NAME" /> е откажан</translation>
+<translation id="631063167932043783">Апликација Explore</translation>
 <translation id="6319207335391420837">Ажурирајте го фирмверот на <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Вклучете го заштитникот на екранот</translation>
 <translation id="6325525973963619867">Неуспешно</translation>
@@ -642,6 +649,7 @@
 <translation id="6516990319416533844">За да ја тестирате брзината на полнење на батеријата, оставете ја батеријата да се празни краток период</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6527081081771465939">Непознат безбедносен протокол за Wi-Fi</translation>
+<translation id="6535178685492749208">Офлајн сте. Повратните информации ќе се испратат подоцна.</translation>
 <translation id="65587193855025101">Со рамна плоча</translation>
 <translation id="6564646048574748301">Неуспешно - печатачот е недостапен</translation>
 <translation id="6566314079205407217">Скенирање повеќе страници</translation>
@@ -720,6 +728,7 @@
 <translation id="7297226631177386107">Не може да се поврзе преку заштитен ѕид со веб-сајтови со HTTPS</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Прашајте ги експертите во „Форумот за помош“ на Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; притиснете „Пребарување“ и Space за да видите резултат во „Пребарување на Google“.</translation>
 <translation id="7343649194310845056">Мрежни уреди</translation>
@@ -762,9 +771,11 @@
 <translation id="773153675489693198">Број на циклуси</translation>
 <translation id="7747039790905080783">Претходно споделен клуч</translation>
 <translation id="7762130827864645708">Успешно ја променивте лозинката. Отсега користете ја новата лозинка.</translation>
+<translation id="7762839321248874531">Испрати <ph name="BEGIN_LINK1" />податоци за системот и апликациите<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />метрика<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Совпаѓање на суфиксот на доменот</translation>
 <translation id="7769672763586021400">ID на модел</translation>
 <translation id="7784116172884276937">Нема поставени DNS-сервери</translation>
+<translation id="779591286616261875">Испратете нова пријава</translation>
 <translation id="7799817062559422778">Светол режим</translation>
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7805768142964895445">Статус</translation>
@@ -831,6 +842,7 @@
 <translation id="8382302752385457774">Бела ознака</translation>
 <translation id="8395584934117017006">Организација управува со овој <ph name="DEVICE_TYPE" /></translation>
 <translation id="8398927464629426868">Брзината со која уредот се полни или празни во моментов</translation>
+<translation id="8420955526972171689">Извршува тестови и решава проблеми во врска со хардверот</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Вградена тастатура</translation>
 <translation id="8431300646573772016">Што е ново во Chrome OS</translation>
@@ -916,6 +928,7 @@
 <translation id="9082718469794970195">Користи го ова видео</translation>
 <translation id="9087578468327036362">Пријавете го барањево</translation>
 <translation id="9088306295921699330">Моментално користење</translation>
+<translation id="9092255287806472980">Вашите повратни информации помагаат да се подобри Chrome OS и ќе бидат разгледани од нашиот тим. Поради големиот број на извештаи, нема да можеме да испратиме одговор.</translation>
 <translation id="9095775724867566971">PluginVm</translation>
 <translation id="90977145661420967">Треба да го раздвоите уредот</translation>
 <translation id="9098156406873149060">Задржи ги податоците на корисникот</translation>

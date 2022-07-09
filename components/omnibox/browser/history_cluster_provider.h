@@ -28,11 +28,11 @@ class HistoryClusterProvider : public AutocompleteProvider,
 
   // AutocompleteProvider:
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
-  void Stop(bool clear_cached_results, bool due_to_user_inactivity) override;
 
   // AutocompleteProviderListener:
   // `HistoryClusterProvider` listens to `SearchProvider` updates.
-  void OnProviderUpdate(bool updated_matches) override;
+  void OnProviderUpdate(bool updated_matches,
+                        const AutocompleteProvider* provider) override;
 
  private:
   ~HistoryClusterProvider() override = default;
@@ -49,7 +49,6 @@ class HistoryClusterProvider : public AutocompleteProvider,
 
   // These are never null.
   const raw_ptr<AutocompleteProviderClient> client_;
-  const raw_ptr<AutocompleteProviderListener> listener_;
   const raw_ptr<SearchProvider> search_provider_;
 };
 

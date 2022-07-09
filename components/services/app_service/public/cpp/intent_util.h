@@ -27,6 +27,7 @@ extern const char kIntentActionView[];
 extern const char kIntentActionSend[];
 extern const char kIntentActionSendMultiple[];
 extern const char kIntentActionCreateNote[];
+extern const char kIntentActionStartOnLockScreen[];
 // A request to edit a file in an app. Must include an attached file.
 extern const char kIntentActionEdit[];
 extern const char kIntentActionPotentialFileHandler[];
@@ -73,7 +74,10 @@ apps::IntentPtr MakeIntentForActivity(const std::string& activity,
 apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url);
 
 // Create an intent struct for a Create Note action.
-apps::mojom::IntentPtr CreateCreateNoteIntent();
+apps::IntentPtr CreateCreateNoteIntent();
+
+// Create an intent struct for a "Start On Lock Screen" action.
+apps::IntentPtr CreateStartOnLockScreenIntent();
 
 // Create an intent struct with the list of files with action kIntentActionView.
 apps::mojom::IntentPtr CreateViewIntentFromFiles(
@@ -152,6 +156,8 @@ bool IsGenericFileHandler(const apps::mojom::IntentPtr& intent,
                           const apps::mojom::IntentFilterPtr& filter);
 
 // Return true if `intent` corresponds to a share intent.
+// TODO(crbug.com/1253250): Remove this function after migrating to non-mojo
+// AppService.
 bool IsShareIntent(const apps::mojom::IntentPtr& intent);
 
 // Return true if |value| matches |pattern| with simple glob syntax.
@@ -196,7 +202,7 @@ bool IsIntentValid(const apps::mojom::IntentPtr& intent);
 //    "share_text": "text",
 //    "share_title": "title",
 // }
-base::Value ConvertIntentToValue(const apps::mojom::IntentPtr& intent);
+base::Value ConvertIntentToValue(const apps::IntentPtr& intent);
 
 // Gets the string value from base::DictionaryValue, e.g. { "key": "value" }
 // returns "value".
@@ -204,11 +210,10 @@ absl::optional<std::string> GetStringValueFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name);
 
-// Gets the apps::mojom::OptionalBool value from base::DictionaryValue, e.g. {
+// Gets absl::optional<bool> value from base::DictionaryValue, e.g. {
 // "key": "value" } returns "value".
-apps::mojom::OptionalBool GetBoolValueFromDict(
-    const base::DictionaryValue& dict,
-    const std::string& key_name);
+absl::optional<bool> GetBoolValueFromDict(const base::DictionaryValue& dict,
+                                          const std::string& key_name);
 
 // Gets GURL from base::DictionaryValue, e.g. { "url": "abc.com" } returns
 // "abc.com".
@@ -217,13 +222,21 @@ absl::optional<GURL> GetGurlValueFromDict(const base::DictionaryValue& dict,
 
 // Gets std::vector<IntentFilePtr> from base::DictionaryValue, e.g. {
 // "file_urls": "/abc, /a" } returns
-// std::vector<apps::mojom::IntentFilePtr>{"/abc", "/a"}.
-absl::optional<std::vector<apps::mojom::IntentFilePtr>> GetFilesFromDict(
+// std::vector<apps::IntentFilePtr>{"/abc", "/a"}.
+std::vector<apps::IntentFilePtr> GetFilesFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name);
 
-// Converts base::Value to Intent.
-apps::mojom::IntentPtr ConvertValueToIntent(base::Value&& value);
+std::vector<std::string> GetCategoriesFromDict(
+    const base::DictionaryValue& dict,
+    const std::string& key_name);
+
+base::flat_map<std::string, std::string> GetExtrasFromDict(
+    const base::DictionaryValue& dict,
+    const std::string& key_name);
+
+// Converts base::Value to Intent. Returns nullptr for invalid base::Values.
+apps::IntentPtr ConvertValueToIntent(base::Value&& value);
 
 // Calculates the least general mime type that matches all of the given ones.
 // E.g., for ["image/jpeg", "image/png"] it will be "image/*". ["text/html",

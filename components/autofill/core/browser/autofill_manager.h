@@ -168,6 +168,16 @@ class AutofillManager
                                const FormData& form,
                                const FormFieldData& field) = 0;
 
+  // Profile Autofill was triggered by assistant's |intent|. This only affects
+  // metrics logging.
+  virtual void SetProfileFillViaAutofillAssistantIntent(
+      const autofill_assistant::AutofillAssistantIntent intent) = 0;
+
+  // Credit Card Autofill was triggered by assistant's |intent|. This only
+  // affects metrics logging.
+  virtual void SetCreditCardFillViaAutofillAssistantIntent(
+      const autofill_assistant::AutofillAssistantIntent intent) = 0;
+
   // Invoked when changes of the forms have been detected: the forms in
   // |updated_forms| are either new or have changed, and the forms in
   // |removed_forms| have been removed from the DOM (but may be re-added to the
@@ -221,8 +231,8 @@ class AutofillManager
       translate::TranslateDriver* translate_driver) override;
   // Invoked when the language has been detected by the Translate component.
   // As this usually happens after Autofill has parsed the forms for the first
-  // time, the heuristics need to be re-run by this function in order to run
-  // use language-specific patterns.
+  // time, the heuristics need to be re-run by this function in order to use
+  // language-specific patterns.
   void OnLanguageDetermined(
       const translate::LanguageDetectionDetails& details) override;
 
@@ -280,12 +290,6 @@ class AutofillManager
       int http_error) {
     OnServerRequestError(form_signature, request_type, http_error);
   }
-
-  // Autofill was triggered by assistant's |intent|.
-  virtual void SetFillViaAutofillAssistantIntent(
-      const FormData& form,
-      const FormFieldData& field,
-      const autofill_assistant::AutofillAssistantIntent intent) = 0;
 
 #ifdef UNIT_TEST
   // A public wrapper that calls |mutable_form_structures| for testing purposes

@@ -107,8 +107,7 @@ void MakeTestSCTAndStatus(ct::SignedCertificateTimestamp::Origin origin,
                           const base::Time& timestamp,
                           ct::SCTVerifyStatus status,
                           SignedCertificateTimestampAndStatusList* sct_list) {
-  scoped_refptr<net::ct::SignedCertificateTimestamp> sct(
-      new net::ct::SignedCertificateTimestamp());
+  auto sct = base::MakeRefCounted<net::ct::SignedCertificateTimestamp>();
   sct->version = net::ct::SignedCertificateTimestamp::V1;
   sct->log_id = log_id;
   sct->extensions = extensions;
@@ -1775,15 +1774,21 @@ class CTEmergencyDisableTest
     : public TransportSecurityStateTest,
       public testing::WithParamInterface<CTEmergencyDisableSwitchKind> {
  public:
+  CTEmergencyDisableTest() {
+    if (GetParam() ==
+        CTEmergencyDisableSwitchKind::kComponentUpdaterDrivenSwitch) {
+      scoped_feature_list_.Init();
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          TransportSecurityState::kCertificateTransparencyEnforcement);
+    }
+  }
   void SetUp() override {
     if (GetParam() ==
         CTEmergencyDisableSwitchKind::kComponentUpdaterDrivenSwitch) {
       state_.SetCTEmergencyDisabled(true);
-      scoped_feature_list_.Init();
     } else {
       ASSERT_EQ(GetParam(), CTEmergencyDisableSwitchKind::kFinchDrivenFeature);
-      scoped_feature_list_.InitAndDisableFeature(
-          TransportSecurityState::kCertificateTransparencyEnforcement);
     }
   }
 
@@ -4174,10 +4179,9 @@ TEST_F(TransportSecurityStateTest, UpdateKeyPinsListTimestamp) {
 class TransportSecurityStatePinningKillswitchTest
     : public TransportSecurityStateTest {
  public:
-  void SetUp() override {
+  TransportSecurityStatePinningKillswitchTest() {
     scoped_feature_list_.InitAndDisableFeature(
         features::kStaticKeyPinningEnforcement);
-    TransportSecurityStateTest::SetUp();
   }
 
  protected:

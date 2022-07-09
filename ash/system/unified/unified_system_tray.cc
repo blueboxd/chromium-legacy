@@ -10,7 +10,9 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/channel_indicator/channel_indicator.h"
 #include "ash/system/human_presence/snooping_protection_view.h"
 #include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/message_center_ui_controller.h"
@@ -229,6 +231,12 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
 
   AddTrayItemToContainer(network_tray_view_);
   AddTrayItemToContainer(new PowerTrayView(shelf));
+
+  if (features::IsReleaseTrackUiEnabled()) {
+    channel_indicator_view_ = new ChannelIndicatorView(
+        shelf, Shell::Get()->shell_delegate()->GetChannel());
+    AddTrayItemToContainer(channel_indicator_view_);
+  }
 
   auto vertical_clock_padding = std::make_unique<views::View>();
   vertical_clock_padding->SetPreferredSize(gfx::Size(

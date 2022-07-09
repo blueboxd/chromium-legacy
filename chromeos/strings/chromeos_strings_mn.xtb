@@ -123,6 +123,7 @@
 <translation id="188114911237521550">Бараан горимыг унтраах</translation>
 <translation id="1881188606372070653">Хууль эрх зүйн шалтгаанаар контентод өөрчлөлт хийхийг хүсвэл <ph name="BEGIN_LINK1" />Хуулийн тусламжийн хуудас<ph name="END_LINK1" /> руу очно уу. Зарим бүртгэл болон системийн мэдээллийг Google рүү илгээж болзошгүй. Бид таны өгсөн мэдээллийг өөрсдийн <ph name="BEGIN_LINK2" />Нууцлалын бодлого<ph name="END_LINK2" />, <ph name="BEGIN_LINK3" />Үйлчилгээний нөхцөлийн<ph name="END_LINK3" /> дагуу техникийн асуудлыг шийдвэрлэхэд туслах болон үйлчилгээнүүдээ сайжруулахад ашиглана.</translation>
 <translation id="1887850431809612466">Техник хангамжийн шалгалт</translation>
+<translation id="1904932688895783618">Эндээс бусад хэрэгтэй нөөцийг харна уу:</translation>
 <translation id="1905710495812624430">Оролдлогын тоо дээд хэмжээнээс хэтэрсэн.</translation>
 <translation id="1908234395526491708">UDP хүсэлтийн алдаа</translation>
 <translation id="1932611479324127242">Батарейг таслах</translation>
@@ -137,6 +138,7 @@
 <translation id="2016697457005847575">Асуудал шийдэх алхмуудыг турших</translation>
 <translation id="2016848882344942759">--цагаан-шошго байхгүй--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Дэлгэц амраагчийг үзэхийн тулд сүлжээнд холбогдож, хуудсыг дахин ачаална уу.</translation>
 <translation id="2080070583977670716">Нэмэлт тохиргоо</translation>
 <translation id="2085089206770112532">Дэлгэцийн гэрэлтүүлгийг багасгах</translation>
 <translation id="2105810540595158374">Төхөөрөмж нь тоглоомын гар байна.</translation>
@@ -153,6 +155,7 @@
 <translation id="2163937499206714165">Бараан горимыг асаах</translation>
 <translation id="2177831236093724629"><ph name="LINK_BEGIN" />Шаардлага хангаагүй бүрэлдэхүүн хэсгүүд<ph name="LINK_END" /> олдлоо. Шаардлага хангасан бүх бүрэлдэхүүн хэсгийг таньсан эсэхийг шалгахын тулд Chrome OS-оо хамгийн сүүлийн үеийн хувилбар луу шинэчилнэ үү.</translation>
 <translation id="2180197493692062006">Алдаа гарлаа. Аппыг дахин нээж үзнэ үү.</translation>
+<translation id="2182088270354640012">Санал хүсэлт ирүүлсэнд баярлалаа. Таны санал хүсэлт ChromeOS-г сайжруулахад туслах бөгөөд манай Chrome OS баг үнэлэх болно. Илгээсэн мэдээллийн тооноос болж та шууд хариу хүлээж авахгүй.</translation>
 <translation id="2209788852729124853">Ачаалал тоологчийг шинэчлэх</translation>
 <translation id="2212733584906323460">Нэр тодорхойлох</translation>
 <translation id="2217935453350629363">Одоогийн хурд</translation>
@@ -256,6 +259,7 @@
 <translation id="3226405216343213872">Сканнерыг хайж байна</translation>
 <translation id="3246869037381808805">1 хоногоос дээш хугацаагаар хадгалсан хэвлэлийн ажлуудыг хасах болно</translation>
 <translation id="3268178239013324452">Амжилтгүй болсон - Таг нээлттэй</translation>
+<translation id="3275729367986477355">Аватар зураг</translation>
 <translation id="3283504360622356314">{0,plural, =1{Файлыг засах}other{Файлуудыг засах}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />Гц</translation>
 <translation id="3291996639387199448">Түлхүүрийн чиглэл</translation>
@@ -429,6 +433,7 @@
 <translation id="4793710386569335688">Илүү их тусламж авах бол <ph name="BEGIN_LINK" />Тусламжийн төв<ph name="END_LINK" /> рүү очно уу.</translation>
 <translation id="4793756956024303490">Шахалтын алгоритм</translation>
 <translation id="4794140124556169553">Төв процессорын нэгжийн туршилтыг ажиллуулах нь таны системийн гүйцэтгэлд нөлөөлж болзошгүй</translation>
+<translation id="4800589996161293643">Chromebook-н нийгэмлэг</translation>
 <translation id="4804818685124855865">Таслах</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> хэвлэх ажлыг цуцалсан</translation>
 <translation id="4809927044794281115">Цайвар загвар</translation>
@@ -488,6 +493,7 @@
 Асуух зүйл байвал микрофоныг товшиж үзнэ үү.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Гарах</translation>
+<translation id="522307662484862935">Имэйл хаягийг бүү оруулаарай</translation>
 <translation id="5227902338748591677">Бараан загварын хуваарь</translation>
 <translation id="5234764350956374838">Хэрэгсэхгүй болго</translation>
 <translation id="5252456968953390977">Роуминг</translation>
@@ -614,6 +620,7 @@
 <translation id="6284632978374966585">Бараан загварыг асаах</translation>
 <translation id="6295178529664209245">Засварыг үргэлжлүүлэх үү?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> тестийг цуцалсан байна</translation>
+<translation id="631063167932043783">Аппыг судлах</translation>
 <translation id="6319207335391420837">Жижиг программыг <ph name="DEVICE_NAME" /> дээр шинэчлэх</translation>
 <translation id="6321407676395378991">Дэлгэц амраагчийг асаах</translation>
 <translation id="6325525973963619867">Амжилтгүй боллоо</translation>
@@ -642,6 +649,7 @@
 <translation id="6516990319416533844">Батарейн цэнэглэх хурдыг туршихын тулд батарейгаа богино хугацаанд зарцуулна уу</translation>
 <translation id="6517239166834772319">Судлах</translation>
 <translation id="6527081081771465939">WiFi-н аюулгүй байдлын үл мэдэгдэх протокол</translation>
+<translation id="6535178685492749208">Та офлайн байна. Санал хүсэлтийг дараа нь илгээнэ.</translation>
 <translation id="65587193855025101">Тавцант</translation>
 <translation id="6564646048574748301">Амжилтгүй болсон - Хэвлэгчид холбогдох боломжгүй</translation>
 <translation id="6566314079205407217">Олон хуудас скан хийх</translation>
@@ -720,6 +728,7 @@
 <translation id="7297226631177386107">HTTPS вебсайтуудад галт хана дундуур холбогдох боломжгүй</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Chromebook-н тусламжийн хэлэлцүүлгийн мэргэжилтнүүдээс асуугаарай</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Хайлтад илэрц харахын тулд Search болон Space-г дарна уу.</translation>
 <translation id="7343649194310845056">Сүлжээний төхөөрөмжүүд</translation>
@@ -762,9 +771,11 @@
 <translation id="773153675489693198">Мөчлөгийн тоо</translation>
 <translation id="7747039790905080783">Урьдчилан хуваалцсан түлхүүр</translation>
 <translation id="7762130827864645708">Таны нууц үгийг амжилттай өөрчиллөө. Одооноос шинэ нууц үгийг ашиглана уу.</translation>
+<translation id="7762839321248874531"><ph name="BEGIN_LINK1" />Систем, аппын мэдээлэл<ph name="END_LINK1" /> болон <ph name="BEGIN_LINK2" />хэмжигдэхүүн<ph name="END_LINK2" /> илгээх</translation>
 <translation id="7763470514545477072">Домэйн дагаврын тохирол</translation>
 <translation id="7769672763586021400">Загварын ID</translation>
 <translation id="7784116172884276937">Тохируулсан DNS сервер байхгүй</translation>
+<translation id="779591286616261875">Шинэ мэдээлэл илгээх</translation>
 <translation id="7799817062559422778">Гэрэлтэй горим</translation>
 <translation id="780301667611848630">Үгүй, баярлалаа</translation>
 <translation id="7805768142964895445">Байр байдал</translation>
@@ -831,6 +842,7 @@
 <translation id="8382302752385457774">Цагаан-шошго</translation>
 <translation id="8395584934117017006">Энэ <ph name="DEVICE_TYPE" />-г байгууллага удирддаг</translation>
 <translation id="8398927464629426868">Төхөөрөмжийн одоогийн цэнэглэгдэж эсвэл цэнэгээ алдаж байгаа хувь</translation>
+<translation id="8420955526972171689">Техник хангамжийн асуудлуудыг шалгах, алдааг олж засварлаарай</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Дотоод гар</translation>
 <translation id="8431300646573772016">ChromeOS-н шинэ зүйлс</translation>
@@ -916,6 +928,7 @@
 <translation id="9082718469794970195">Энэ видеог ашиглах</translation>
 <translation id="9087578468327036362">Энэ асуулгыг мэдээлэх</translation>
 <translation id="9088306295921699330">Одоогийн ашиглалт</translation>
+<translation id="9092255287806472980">Таны санал хүсэлт Chrome OS-г сайжруулахад туслах бөгөөд үүнийг манай баг шалгана. Олон тооны мэдээлэл ирдэг тул бид хариу илгээх боломжгүй.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Та төхөөрөмжийг задлах шаардлагатай болно</translation>
 <translation id="9098156406873149060">Хэрэглэгчийн өгөгдлийг хадгалах</translation>

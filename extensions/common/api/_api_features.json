@@ -431,6 +431,10 @@
       "chrome://os-settings/*"
     ]
   }],
+  "offscreen": {
+    "dependencies": ["permission:offscreen"],
+    "contexts": ["blessed_extension"]
+  },
   "power": {
     "dependencies": ["permission:power"],
     "contexts": ["blessed_extension"]
@@ -479,6 +483,7 @@
       "content_script",
       "blessed_extension",
       "lock_screen_extension",
+      "offscreen_extension",
       "unblessed_extension",
       "web_page"
     ],
@@ -499,6 +504,7 @@
     "contexts": [
       "blessed_extension",
       "lock_screen_extension",
+      "offscreen_extension",
       "unblessed_extension",
       "content_script"
     ]
@@ -507,6 +513,7 @@
     "contexts": [
       "blessed_extension",
       "lock_screen_extension",
+      "offscreen_extension",
       "unblessed_extension",
       "content_script"
     ]
@@ -520,6 +527,7 @@
     "contexts": [
       "blessed_extension",
       "lock_screen_extension",
+      "offscreen_extension",
       "unblessed_extension",
       "content_script"
     ]
@@ -532,6 +540,7 @@
     "contexts": [
       "blessed_extension",
       "lock_screen_extension",
+      "offscreen_extension",
       "unblessed_extension",
       "content_script"
     ]
@@ -543,6 +552,7 @@
       "content_script",
       "blessed_extension",
       "lock_screen_extension",
+      "offscreen_extension",
       "unblessed_extension",
       "web_page"
     ],
@@ -631,6 +641,7 @@
       "blessed_web_page",
       "content_script",
       "lock_screen_extension",
+      "offscreen_extension",
       "unblessed_extension"
     ]
   }, {

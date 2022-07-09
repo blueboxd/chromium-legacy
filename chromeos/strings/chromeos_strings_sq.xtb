@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Përdoruesi</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Përditëso firmuerin për pajisjet e jashtme kur dritarja është e hapur. Ofrohen <ph name="NUM_UPDATES" /> përditësime.</translation>
+<translation id="1145516343487477149">Gjej artikuj të ndihmës dhe përgjigje për pyetjet e zakonshme për Chromebook</translation>
 <translation id="1165039591588034296">Gabim</translation>
 <translation id="1175697296044146566">Kjo pajisje <ph name="DEVICE_TYPE" /> menaxhohet nga <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Mesatar (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Çaktivizo temën e errët</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Çaktivizo modalitetin e errët</translation>
+<translation id="1881188606372070653">Shko te <ph name="BEGIN_LINK1" />faqja e Ndihmës ligjore<ph name="END_LINK1" /> për të kërkuar ndryshime të përmbajtjes për arsye ligjore. Disa prej informacioneve të llogarisë dhe të sistemit mund të dërgohen në Google. Informacionet që na jep do t'i përdorim për zgjidhjen e problemeve teknike për përmirësimin e shërbimeve tona, sipas <ph name="BEGIN_LINK2" />Politikës së privatësisë<ph name="END_LINK2" /> dhe <ph name="BEGIN_LINK3" />Kushteve të shërbimit<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Rishikimi i harduerit</translation>
+<translation id="1904932688895783618">Këtu janë disa burime të tjera të dobishme:</translation>
 <translation id="1905710495812624430">U kaluan përpjekjet maksimale të lejuara.</translation>
 <translation id="1908234395526491708">Dështimet e kërkesave UDP</translation>
 <translation id="1932611479324127242">Fikja e baterisë së brendshme</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Provo hapat e zgjidhjes së problemeve</translation>
 <translation id="2016848882344942759">--pa etiketë të bardhë--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Lidhu në një rrjet dhe ringarko faqen për të parë mbrojtësin e ekranit.</translation>
 <translation id="2080070583977670716">Cilësime të tjera</translation>
 <translation id="2085089206770112532">Ulja e ndriçimit të ekranit</translation>
 <translation id="2105810540595158374">Pajisja është një kontrollues loje.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Aktivizo modalitetin e errët</translation>
 <translation id="2177831236093724629">U gjetën <ph name="LINK_BEGIN" />komponentë të pakualifikuar<ph name="LINK_END" />. Për t'u siguruar që të gjithë komponentët janë identifikuar, përditëso Chrome OS me versionin më të fundit.</translation>
 <translation id="2180197493692062006">Ndodhi një gabim. Provo të rihapësh aplikacionin.</translation>
+<translation id="2182088270354640012">Faleminderit për komentet. Komentet e tua ndihmojnë në përmirësimin e Chrome OS dhe do të rishikohen nga ekipi i Chrome OS. Për shkak të numrit të raportimeve të dërguara, nuk do të marrësh një përgjigje të drejtpërdrejtë.</translation>
 <translation id="2209788852729124853">Rivendos matësit e trafikut</translation>
 <translation id="2212733584906323460">Zgjidhja e emrit</translation>
 <translation id="2217935453350629363">Shpejtësia aktuale</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Po kërkon për skanerë</translation>
 <translation id="3246869037381808805">Printimet më të vjetra se 1 ditë do të hiqen</translation>
 <translation id="3268178239013324452">Dështoi - Kapaku i hapur</translation>
+<translation id="3275729367986477355">Imazhi i simbolit</translation>
 <translation id="3283504360622356314">{0,plural, =1{Modifiko skedarin}other{Modifiko skedarët}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Drejtimi i çelësit</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Për më shumë ndihmë, shko te <ph name="BEGIN_LINK" />Qendra e ndihmës<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algoritmi i ngjeshjes</translation>
 <translation id="4794140124556169553">Ekzekutimi i një testimi të CPU-së mund të ketë ndikim te cilësia e funksionimit të sistemit</translation>
+<translation id="4800589996161293643">Komuniteti i Chromebook</translation>
 <translation id="4804818685124855865">Shkëputu</translation>
 <translation id="4808449224298348341">U anulua printimi i "<ph name="DOCUMENT_TITLE" />"</translation>
 <translation id="4809927044794281115">Tema e ndriçuar</translation>
@@ -485,6 +492,7 @@
 <translation id="5212543919916444558">Nuk mund të gjej diçka në ekranin tënd me të cilën mund të të ndihmoj. Provo të trokasësh te mikrofoni për të më kërkuar diçka.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Dil</translation>
+<translation id="522307662484862935">Mos e përfshi adresën e email-it</translation>
 <translation id="5227902338748591677">Planifikimi i temës së errët</translation>
 <translation id="5234764350956374838">Hiq</translation>
 <translation id="5252456968953390977">Në roaming</translation>
@@ -611,6 +619,7 @@
 <translation id="6284632978374966585">Aktivizo temën e errët</translation>
 <translation id="6295178529664209245">Të vazhdohet riparimi?</translation>
 <translation id="6302401976930124515">Testi "<ph name="TEST_NAME" />" është anuluar</translation>
+<translation id="631063167932043783">Aplikacioni "Eksploro"</translation>
 <translation id="6319207335391420837">Përditëso firmuerin në <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Aktivizo mbrojtësin e ekranit</translation>
 <translation id="6325525973963619867">Dështoi</translation>
@@ -622,6 +631,7 @@
 <translation id="6379086450106841622">Ekrani me prekje</translation>
 <translation id="6381741036071372448">Testo tastierën tënde</translation>
 <translation id="6388847657025262518">Furnizuesi i dokumenteve i skanerit është bllokuar. Kontrollo furnizuesin dhe provo përsëri.</translation>
+<translation id="6394634179843537518">Shto një skedar</translation>
 <translation id="6410257289063177456">Skedarët e imazheve</translation>
 <translation id="641081527798843608">Përputhja e subjektit</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -638,6 +648,7 @@
 <translation id="6516990319416533844">Për të testuar shpejtësinë e karikimit të baterisë, lëre baterinë të shkarkohet për një periudhë të shkurtër</translation>
 <translation id="6517239166834772319">Eksploro</translation>
 <translation id="6527081081771465939">Protokoll i panjohur sigurie i Wi-Fi</translation>
+<translation id="6535178685492749208">Je jashtë linje. Komentet do të dërgohen më vonë.</translation>
 <translation id="65587193855025101">Shtrat i sheshtë</translation>
 <translation id="6564646048574748301">Dështoi - Printeri është i paarritshëm</translation>
 <translation id="6566314079205407217">Skanimi me shumë faqe</translation>
@@ -716,6 +727,7 @@
 <translation id="7297226631177386107">Nuk mund të lidhesh me sajtet e uebit HTTPS nëpërmjet murit mbrojtës</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Pyet ekspertët në forumin e ndihmës për Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Shtyp "Kërko" plus "Hapësirë" për ta shikuar rezultatin në "Kërko në Google".</translation>
 <translation id="7343649194310845056">Pajisjet e rrjetit</translation>
@@ -758,9 +770,11 @@
 <translation id="773153675489693198">Numri i cikleve</translation>
 <translation id="7747039790905080783">Çelës i ndarë paraprakisht</translation>
 <translation id="7762130827864645708">Ndryshimi i fjalëkalimit tënd u krye me sukses. Përdor fjalëkalimin e ri këtej e tutje.</translation>
+<translation id="7762839321248874531">Dërgo <ph name="BEGIN_LINK1" />informacionet e sistemit dhe të aplikacionit<ph name="END_LINK1" />, si dhe <ph name="BEGIN_LINK2" />metrikën<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Përputhje e prapashtesës së domenit</translation>
 <translation id="7769672763586021400">ID-ja e modelit</translation>
 <translation id="7784116172884276937">Nuk është konfiguruar asnjë server DNS</translation>
+<translation id="779591286616261875">Dërgo një raportim të ri</translation>
 <translation id="7799817062559422778">Modaliteti i ndriçuar</translation>
 <translation id="780301667611848630">Jo, faleminderit</translation>
 <translation id="7805768142964895445">Statusi</translation>
@@ -827,6 +841,7 @@
 <translation id="8382302752385457774">Etiketa e bardhë</translation>
 <translation id="8395584934117017006">Kjo pajisje <ph name="DEVICE_TYPE" /> menaxhohet nga ndërmarrja</translation>
 <translation id="8398927464629426868">Shpejtësia me të cilën pajisja aktualisht po karikohet ose po shkarkohet</translation>
+<translation id="8420955526972171689">Ekzekuto teste dhe zgjidhjen e problemeve për problemet e harduerit</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Tastierë e brendshme</translation>
 <translation id="8431300646573772016">Të rejat me ChromeOS</translation>
@@ -912,6 +927,7 @@
 <translation id="9082718469794970195">Përdor këtë video</translation>
 <translation id="9087578468327036362">Raportoje këtë kërkesë</translation>
 <translation id="9088306295921699330">Përdorimi aktual</translation>
+<translation id="9092255287806472980">Komentet e tua ndihmojnë në përmirësimin e Chrome OS dhe do të rishikohen nga ekipi ynë. Për shkak të numrit të lartë të raportimeve, nuk do të mund të dërgojmë një përgjigje.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Do të duhet ta shkëputësh pajisjen</translation>
 <translation id="9098156406873149060">Mbaji të dhënat e përdoruesit</translation>

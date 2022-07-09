@@ -74,7 +74,9 @@ bool DisplayMediaAccessHandler::SupportsStreamType(
     const extensions::Extension* extension) {
   return stream_type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
          stream_type ==
-             blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB;
+             blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB ||
+         stream_type ==
+             blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET;
   // This class handles MEDIA_DISPLAY_AUDIO_CAPTURE as well, but only if it is
   // accompanied by MEDIA_DISPLAY_VIDEO_CAPTURE request as per spec.
   // https://w3c.github.io/mediacapture-screen-share/#mediadevices-additions
@@ -153,7 +155,9 @@ void DisplayMediaAccessHandler::HandleRequest(
   if (request.video_type ==
           blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB ||
       request.video_type ==
-          blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE) {
+          blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
+      request.video_type ==
+          blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET) {
     // Repeat the permission test from the render process.
     content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
         request.render_process_id, request.render_frame_id);
@@ -332,6 +336,8 @@ void DisplayMediaAccessHandler::ProcessQueuedPickerRequest(
   picker_params.request_audio =
       pending_request.request.audio_type ==
       blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
+  picker_params.exclude_system_audio =
+      pending_request.request.exclude_system_audio;
   picker_params.restricted_by_policy =
       (capture_level != AllowedScreenCaptureLevel::kUnrestricted);
   pending_request.picker->Show(picker_params, std::move(source_lists),

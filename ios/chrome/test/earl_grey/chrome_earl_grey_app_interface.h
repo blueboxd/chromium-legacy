@@ -500,9 +500,6 @@
 // Returns YES if a variation triggering server-side behavior is enabled.
 + (BOOL)isTriggerVariationEnabled:(int)variationID;
 
-// Returns YES if |kSupportForAddPasswordsInSettings| is enabled.
-+ (BOOL)isAddCredentialsInSettingsEnabled;
-
 // Returns YES if UKM feature is enabled.
 + (BOOL)isUKMEnabled [[nodiscard]];
 
@@ -586,6 +583,9 @@
 // clearing Browsing data.
 + (void)resetBrowsingDataPrefs;
 
+// Resets data for the local state pref with |prefName|.
++ (void)resetDataForLocalStatePref:(NSString*)prefName;
+
 #pragma mark - Unified Consent utilities
 
 // Enables or disables URL-keyed anonymized data collection.
@@ -609,9 +609,9 @@
 // Clears the URLs stored in the pasteboard, from the tested app's perspective.
 + (void)clearPasteboardURLs;
 
-// Retrieves the currently stored string on the pasteboard from the tested app's
-// perspective.
-+ (NSString*)pasteboardString;
+// Retrieves the currently stored strings on the pasteboard from the tested
+// app's perspective.
++ (NSArray<NSString*>*)pasteboardStrings;
 
 // Retrieves the currently stored URL on the pasteboard from the tested app's
 // perspective.

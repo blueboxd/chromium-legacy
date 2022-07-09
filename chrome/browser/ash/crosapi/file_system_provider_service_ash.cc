@@ -241,15 +241,30 @@ void FileSystemProviderServiceAsh::Notify(
                     ProfileManager::GetPrimaryUserProfile());
 }
 
-void FileSystemProviderServiceAsh::OperationFinished(
+void FileSystemProviderServiceAsh::DeprecatedOperationFinished(
     mojom::FSPOperationResponse response,
     mojom::FileSystemIdPtr file_system_id,
     int64_t request_id,
     std::vector<base::Value> args,
     OperationFinishedCallback callback) {
-  OperationFinishedWithProfile(response, std::move(file_system_id), request_id,
-                               std::move(args), std::move(callback),
-                               ProfileManager::GetPrimaryUserProfile());
+  base::Value::List list;
+  for (auto& value : args) {
+    list.Append(std::move(value));
+  }
+  OperationFinished(response, std::move(file_system_id), request_id,
+                    std::move(list), std::move(callback));
+}
+
+void FileSystemProviderServiceAsh::OperationFinished(
+    mojom::FSPOperationResponse response,
+    mojom::FileSystemIdPtr file_system_id,
+    int64_t request_id,
+    base::Value::List args,
+    OperationFinishedCallback callback) {
+  OperationFinishedWithProfile(
+      response, std::move(file_system_id), request_id,
+      std::move(base::Value(std::move(args)).GetList()), std::move(callback),
+      ProfileManager::GetPrimaryUserProfile());
 }
 
 void FileSystemProviderServiceAsh::ExtensionLoaded(
@@ -400,7 +415,7 @@ void FileSystemProviderServiceAsh::OperationFinishedWithProfile(
     mojom::FSPOperationResponse response,
     mojom::FileSystemIdPtr file_system_id,
     int64_t request_id,
-    std::vector<base::Value> args,
+    base::Value::List args,
     OperationFinishedCallback callback,
     Profile* profile) {
   std::string error;

@@ -41,7 +41,7 @@ public class PermissionUpdater {
     }
 
     public static PermissionUpdater get() {
-        return ChromeApplicationImpl.getComponent().resolveTwaPermissionUpdater();
+        return ChromeApplicationImpl.getComponent().resolvePermissionUpdater();
     }
 
     /**
@@ -78,7 +78,7 @@ public class PermissionUpdater {
         browsableIntent.setAction(Intent.ACTION_VIEW);
         browsableIntent.addCategory(Intent.CATEGORY_BROWSABLE);
 
-        try (TimingMetric unused = TimingMetric.mediumWallTime(
+        try (TimingMetric unused = TimingMetric.mediumUptime(
                      BrowserServicesTimingMetrics.BROWSABLE_INTENT_RESOLUTION_TIME)) {
             return PackageManagerUtils.resolveActivity(browsableIntent, 0) != null;
         }

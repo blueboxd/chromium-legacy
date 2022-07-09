@@ -447,6 +447,7 @@ class IntentPickerDialogTest : public DialogBrowserTest {
 #define MAYBE_InvokeUi_default InvokeUi_default
 #endif
 IN_PROC_BROWSER_TEST_F(IntentPickerDialogTest, MAYBE_InvokeUi_default) {
+  set_baseline("3742640");
   ShowAndVerifyUi();
 }
 
@@ -454,6 +455,20 @@ class IntentPickerDialogGridViewTest : public IntentPickerDialogTest {
  public:
   IntentPickerDialogGridViewTest() {
     feature_list_.InitAndEnableFeature(apps::features::kLinkCapturingUiUpdate);
+  }
+
+  void ShowUi(const std::string& name) override {
+    IntentPickerDialogTest::ShowUi(name);
+
+    // Click the first item in the list so we can verify the selection state.
+    auto* bubble = IntentPickerBubbleView::intent_picker_bubble();
+    auto event_generator =
+        ui::test::EventGenerator(views::GetRootWindow(bubble->GetWidget()));
+    auto* button =
+        bubble->GetViewByID(IntentPickerBubbleView::ViewId::kItemContainer)
+            ->children()[0];
+    event_generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+    event_generator.ClickLeftButton();
   }
 
  private:
@@ -467,6 +482,6 @@ class IntentPickerDialogGridViewTest : public IntentPickerDialogTest {
 };
 
 IN_PROC_BROWSER_TEST_F(IntentPickerDialogGridViewTest, InvokeUi_default) {
-  set_baseline("3652664");
+  set_baseline("3742640");
   ShowAndVerifyUi();
 }

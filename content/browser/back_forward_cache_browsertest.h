@@ -147,7 +147,7 @@ class BackForwardCacheBrowserTest
   void StartRecordingEvents(RenderFrameHostImpl* rfh);
 
   void MatchEventList(RenderFrameHostImpl* rfh,
-                      base::ListValue list,
+                      base::Value list,
                       base::Location location = base::Location::Current());
 
   // Creates a minimal HTTPS server, accessible through https_server().
@@ -198,6 +198,17 @@ class BackForwardCacheBrowserTest
   EvalJsResult GetUnloadRunCount();
 
   bool IsUnloadAllowedToEnterBackForwardCache();
+
+  // Adds a blocklisted feature to the document to prevent caching. Currently
+  // this means adding a plugin. We expect that plugins will never become
+  // cacheable, so this should be stable (at least until plugins cease to
+  // exist). If you need the feature to be sticky, then
+  // `RenderFrameHostImpl::UseDummyStickyBackForwardCacheDisablingFeatureForTesting`
+  // provides that.
+  [[nodiscard]] bool AddBlocklistedFeature(RenderFrameHost* rfh);
+  // Check that the document was not restored for the reason added by
+  // `AddBlocklistedFeature`.
+  void ExpectNotRestoredDueToBlocklistedFeature(base::Location location);
 
   base::HistogramTester histogram_tester_;
 

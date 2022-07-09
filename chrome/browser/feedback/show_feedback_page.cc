@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -13,11 +14,11 @@
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/feedback/feedback_dialog.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -26,7 +27,10 @@
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/webui/os_feedback_ui/url_constants.h"
 #include "base/bind.h"
+#include "base/strings/escape.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -45,6 +49,42 @@ namespace chrome {
 namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+constexpr char kExtraDiagnosticsQueryParam[] = "extra_diagnostics";
+constexpr char kDescriptionTemplateQueryParam[] = "description_template";
+constexpr char kQueryParamSeparator[] = "&";
+constexpr char kQueryParamKeyValueSeparator[] = "=";
+
+// Concat query parameter with escaped value.
+std::string StrCatQueryParam(const std::string query_param,
+                             const std::string value) {
+  return base::StrCat({query_param, kQueryParamKeyValueSeparator,
+                       base::EscapeQueryParamValue(value, /*use_plus=*/false)});
+}
+
+// Returns URL for OS Feedback with additional data passed as query parameters.
+GURL BuildFeedbackUrl(const std::string extra_diagnostics,
+                      const std::string description_template) {
+  std::vector<std::string> query_params;
+
+  if (!extra_diagnostics.empty()) {
+    query_params.emplace_back(
+        StrCatQueryParam(kExtraDiagnosticsQueryParam, extra_diagnostics));
+  }
+
+  if (!description_template.empty()) {
+    query_params.emplace_back(
+        StrCatQueryParam(kDescriptionTemplateQueryParam, description_template));
+  }
+
+  // Use default URL if no extra parameters to be added.
+  if (query_params.empty()) {
+    return GURL(ash::kChromeUIOSFeedbackUrl);
+  }
+
+  return GURL(
+      base::StrCat({ash::kChromeUIOSFeedbackUrl, "/?",
+                    base::JoinString(query_params, kQueryParamSeparator)}));
+}
 
 // Returns whether the user has an internal Google account (e.g. @google.com).
 bool IsGoogleInternalAccount(Profile* profile) {
@@ -121,8 +161,12 @@ void RequestFeedbackFlow(const GURL& page_url,
 #endif
 
   if (use_os_feedback) {
-    web_app::LaunchSystemWebAppAsync(profile,
-                                     ash::SystemWebAppType::OS_FEEDBACK);
+    ash::SystemAppLaunchParams params{};
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    params.url = BuildFeedbackUrl(extra_diagnostics, description_template);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::OS_FEEDBACK,
+                                 std::move(params));
   } else {
     extensions::FeedbackPrivateAPI* api =
         extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);

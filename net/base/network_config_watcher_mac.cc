@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
@@ -140,7 +141,7 @@ class NetworkConfigWatcherMacThread : public base::Thread {
   bool InitNotificationsHelper();
 
   base::ScopedCFTypeRef<CFRunLoopSourceRef> run_loop_source_;
-  NetworkConfigWatcherMac::Delegate* const delegate_;
+  const raw_ptr<NetworkConfigWatcherMac::Delegate> delegate_;
 #if !BUILDFLAG(IS_IOS)
   int num_retry_ = 0;
 #endif  // !BUILDFLAG(IS_IOS)
@@ -258,7 +259,8 @@ bool NetworkConfigWatcherMacThread::InitNotificationsHelper() {
 }
 
 NetworkConfigWatcherMac::NetworkConfigWatcherMac(Delegate* delegate)
-    : notifier_thread_(new NetworkConfigWatcherMacThread(delegate)) {
+    : notifier_thread_(
+          std::make_unique<NetworkConfigWatcherMacThread>(delegate)) {
   // We create this notifier thread because the notification implementation
   // needs a thread with a CFRunLoop, and there's no guarantee that
   // CurrentThread::Get() meets that criterion.

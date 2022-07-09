@@ -59,7 +59,7 @@ try_.builder(
     name = "mac-inverse-fieldtrials-fyi-rel",
     mirrors = [
         "ci/Mac Builder",
-        "ci/Mac11 Tests",
+        "ci/Mac12 Tests",
         "ci/GPU Mac Builder",
         "ci/Mac Release (Intel)",
         "ci/Mac Retina Release (AMD)",
@@ -86,7 +86,7 @@ try_.orchestrator_builder(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     mirrors = [
         "ci/Mac Builder",
-        "ci/Mac11 Tests",
+        "ci/Mac12 Tests",
         "ci/GPU Mac Builder",
         "ci/Mac Release (Intel)",
         "ci/Mac Retina Release (AMD)",
@@ -102,6 +102,7 @@ try_.orchestrator_builder(
     experiments = {
         "remove_src_checkout_experiment": 100,
     },
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
@@ -124,7 +125,6 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "mac12-arm64-rel",
-    builderless = True,
     check_for_flakiness = True,
     compilator = "mac12-arm64-rel-compilator",
     mirrors = [
@@ -132,11 +132,13 @@ try_.orchestrator_builder(
         "ci/mac12-arm64-rel-tests",
     ],
     main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 100,
+    ),
 )
 
 try_.compilator_builder(
     name = "mac12-arm64-rel-compilator",
-    builderless = True,
     check_for_flakiness = True,
     main_list_view = "try",
     os = os.MAC_12,
@@ -194,6 +196,14 @@ try_.builder(
         "ci/Mac11 Tests",
     ],
     builderless = False,
+)
+
+try_.builder(
+    name = "mac12-tests",
+    mirrors = [
+        "ci/Mac Builder",
+        "ci/Mac12 Tests",
+    ],
 )
 
 try_.builder(

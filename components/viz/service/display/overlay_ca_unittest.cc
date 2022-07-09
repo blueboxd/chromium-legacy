@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -135,7 +136,7 @@ TextureDrawQuad* CreateCandidateQuadAt(
   auto* overlay_quad = render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   overlay_quad->SetNew(shared_quad_state, rect, rect, needs_blending,
                        resource_id, premultiplied_alpha, kUVTopLeft,
-                       kUVBottomRight, SK_ColorTRANSPARENT, vertex_opacity,
+                       kUVBottomRight, SkColors::kTransparent, vertex_opacity,
                        flipped, nearest_neighbor, /*secure_output_only=*/false,
                        protected_video_type);
   overlay_quad->set_resource_size_in_pixels(resource_size_in_pixels);
@@ -517,8 +518,8 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
         &damage_rect_, &content_bounds_);
   }
   AggregatedRenderPassList pass_list_;
-  AggregatedRenderPass* pass_;
-  AggregatedRenderPassDrawQuad* quad_;
+  raw_ptr<AggregatedRenderPass> pass_;
+  raw_ptr<AggregatedRenderPassDrawQuad> quad_;
   AggregatedRenderPassId render_pass_id_;
   cc::FilterOperations filters_;
   cc::FilterOperations backdrop_filters_;

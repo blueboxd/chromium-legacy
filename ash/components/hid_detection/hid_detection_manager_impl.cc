@@ -4,7 +4,9 @@
 
 #include "ash/components/hid_detection/hid_detection_manager_impl.h"
 
+#include "ash/components/hid_detection/bluetooth_hid_detector_impl.h"
 #include "ash/components/hid_detection/hid_detection_utils.h"
+#include "base/containers/contains.h"
 #include "base/no_destructor.h"
 #include "components/device_event_log/device_event_log.h"
 
@@ -25,10 +27,9 @@ void HidDetectionManagerImpl::SetInputDeviceManagerBinderForTest(
 }
 
 HidDetectionManagerImpl::HidDetectionManagerImpl(
-    device::mojom::DeviceService* device_service,
-    BluetoothHidDetector* bluetooth_hid_detector)
+    device::mojom::DeviceService* device_service)
     : device_service_{device_service},
-      bluetooth_hid_detector_{bluetooth_hid_detector} {}
+      bluetooth_hid_detector_{std::make_unique<BluetoothHidDetectorImpl>()} {}
 
 HidDetectionManagerImpl::~HidDetectionManagerImpl() = default;
 
@@ -55,7 +56,16 @@ void HidDetectionManagerImpl::PerformStartHidDetection() {
 void HidDetectionManagerImpl::PerformStopHidDetection() {
   HID_LOG(EVENT) << "Stopping HID detection.";
   input_device_manager_receiver_.reset();
-  bluetooth_hid_detector_->StopBluetoothHidDetection();
+
+  // Check if any of the connected input devices are connected via Bluetooth.
+  bool is_using_bluetooth = false;
+  for (const auto& [device_id, device] : device_id_to_device_map_) {
+    if (device->type == device::mojom::InputDeviceType::TYPE_BLUETOOTH) {
+      is_using_bluetooth = true;
+      break;
+    }
+  }
+  bluetooth_hid_detector_->StopBluetoothHidDetection(is_using_bluetooth);
 }
 
 HidDetectionManager::HidDetectionStatus
@@ -84,9 +94,15 @@ void HidDetectionManagerImpl::InputDeviceAdded(
 }
 
 void HidDetectionManagerImpl::InputDeviceRemoved(const std::string& id) {
-  DCHECK(device_id_to_device_map_[id])
-      << " Input device removed was not found in "
-         "|device_id_to_device_map_|.";
+  if (!base::Contains(device_id_to_device_map_, id)) {
+    // Some devices may be removed that were not registered in
+    // InputDeviceAdded() or OnGetDevicesAndSetClient().
+    HID_LOG(EVENT)
+        << "Input device with id: " << id
+        << " was removed that was not in |device_id_to_device_map_|.";
+    return;
+  }
+
   HID_LOG(EVENT) << "Input device removed, id: " << id
                  << ", name: " << device_id_to_device_map_[id]->name;
   device_id_to_device_map_.erase(id);
@@ -250,6 +266,11 @@ void HidDetectionManagerImpl::SetInputDevicesStatus() {
   bluetooth_hid_detector_->SetInputDevicesStatus(
       {.pointer_is_missing = !connected_pointer_id_.has_value(),
        .keyboard_is_missing = !connected_keyboard_id_.has_value()});
+}
+
+void HidDetectionManagerImpl::SetBluetoothHidDetectorForTest(
+    std::unique_ptr<BluetoothHidDetector> bluetooth_hid_detector) {
+  bluetooth_hid_detector_ = std::move(bluetooth_hid_detector);
 }
 
 }  // namespace ash::hid_detection

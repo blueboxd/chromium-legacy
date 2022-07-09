@@ -11,7 +11,6 @@
 
 #include "base/barrier_callback.h"
 #include "base/callback.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_bridge_impl.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
-#include "components/crash/core/common/crash_key.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
@@ -59,6 +57,7 @@ using base::UTF8ToUTF16;
 using password_manager::GetExpressionForFederatedMatching;
 using password_manager::GetRegexForPSLFederatedMatching;
 using password_manager::GetRegexForPSLMatching;
+using sync_util::GetSyncingAccount;
 
 using JobId = PasswordStoreAndroidBackendBridge::JobId;
 using SuccessStatus = PasswordStoreBackendMetricsRecorder::SuccessStatus;
@@ -252,44 +251,6 @@ PasswordStoreBackendError BackendErrorFromAndroidBackendError(
              : PasswordStoreBackendError::kRecoverable;
 }
 
-// TODO(crbug.com/1324588): Remove once the dumps are replaced by DCHECK.
-void SendDumpWithInfo(absl::optional<std::string> signon_realm,
-                      absl::optional<std::string> origin,
-                      absl::optional<bool> is_username_empty,
-                      absl::optional<bool> is_blocklisted,
-                      absl::optional<PasswordForm::Scheme> scheme) {
-  static crash_reporter::CrashKeyString<1024> signon_realm_key(
-      "PwdMgr.BackendError.signon_realm");
-  static crash_reporter::CrashKeyString<1024> origin_key(
-      "PwdMgr.BackendError.origin");
-  static crash_reporter::CrashKeyString<6> is_username_empty_key(
-      "PwdMgr.BackendError.is_username_empty");
-  static crash_reporter::CrashKeyString<6> is_blocklisted_key(
-      "PwdMgr.BackendError.is_blocklisted");
-  static crash_reporter::CrashKeyString<6> scheme_key(
-      "PwdMgr.BackendError.scheme");
-
-  if (signon_realm.has_value()) {
-    signon_realm_key.Set(signon_realm->substr(0, 1020));
-  }
-  if (origin.has_value()) {
-    origin_key.Set(origin->substr(0, 1020));
-  }
-  if (is_username_empty.has_value()) {
-    is_username_empty_key.Set(is_username_empty.value() ? "true" : "false");
-  }
-  if (is_blocklisted.has_value()) {
-    is_blocklisted_key.Set(is_blocklisted.value() ? "true" : "false");
-  }
-  if (scheme.has_value()) {
-    scheme_key.Set(base::NumberToString(static_cast<int>(scheme.value())));
-  }
-
-  base::debug::DumpWithoutCrashing();
-  signon_realm_key.Clear();
-  origin_key.Clear();
-}
-
 }  // namespace
 
 class PasswordStoreAndroidBackend::ClearAllLocalPasswordsMetricRecorder {
@@ -335,19 +296,15 @@ PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler() = default;
 
 PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler(
     LoginsOrErrorReply callback,
-    PasswordStoreBackendMetricsRecorder metrics_recorder,
-    base::OnceClosure crash_dump_callback)
+    PasswordStoreBackendMetricsRecorder metrics_recorder)
     : success_callback_(std::move(callback)),
-      metrics_recorder_(std::move(metrics_recorder)),
-      crash_dump_callback_(std::move(crash_dump_callback)) {}
+      metrics_recorder_(std::move(metrics_recorder)) {}
 
 PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler(
     PasswordChangesOrErrorReply callback,
-    PasswordStoreBackendMetricsRecorder metrics_recorder,
-    base::OnceClosure crash_dump_callback)
+    PasswordStoreBackendMetricsRecorder metrics_recorder)
     : success_callback_(std::move(callback)),
-      metrics_recorder_(std::move(metrics_recorder)),
-      crash_dump_callback_(std::move(crash_dump_callback)) {}
+      metrics_recorder_(std::move(metrics_recorder)) {}
 
 PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler(
     JobReturnHandler&&) = default;
@@ -364,10 +321,6 @@ void PasswordStoreAndroidBackend::JobReturnHandler::RecordMetrics(
                                   std::move(error));
 }
 
-void PasswordStoreAndroidBackend::JobReturnHandler::SendCrashDump() {
-  std::move(crash_dump_callback_).Run();
-}
-
 base::TimeDelta
 PasswordStoreAndroidBackend::JobReturnHandler::GetElapsedTimeSinceStart()
     const {
@@ -375,12 +328,9 @@ PasswordStoreAndroidBackend::JobReturnHandler::GetElapsedTimeSinceStart()
   return metrics_recorder_.GetElapsedTimeSinceCreation();
 }
 
-PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
-    std::unique_ptr<SyncDelegate> sync_delegate,
-    PrefService* prefs)
+PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(PrefService* prefs)
     : lifecycle_helper_(std::make_unique<PasswordManagerLifecycleHelperImpl>()),
-      bridge_(PasswordStoreAndroidBackendBridge::Create()),
-      sync_delegate_(std::move(sync_delegate)) {
+      bridge_(PasswordStoreAndroidBackendBridge::Create()) {
   DCHECK(base::FeatureList::IsEnabled(
       password_manager::features::kUnifiedPasswordManagerAndroid));
   DCHECK(bridge_);
@@ -389,21 +339,18 @@ PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
   bridge_->SetConsumer(weak_ptr_factory_.GetWeakPtr());
   sync_controller_delegate_ =
       std::make_unique<PasswordSyncControllerDelegateAndroid>(
-          std::make_unique<PasswordSyncControllerDelegateBridgeImpl>(),
-          sync_delegate_.get());
+          std::make_unique<PasswordSyncControllerDelegateBridgeImpl>());
 }
 
 PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
     base::PassKey<class PasswordStoreAndroidBackendTest>,
     std::unique_ptr<PasswordStoreAndroidBackendBridge> bridge,
     std::unique_ptr<PasswordManagerLifecycleHelper> lifecycle_helper,
-    std::unique_ptr<SyncDelegate> sync_delegate,
     std::unique_ptr<PasswordSyncControllerDelegateAndroid>
         sync_controller_delegate,
     PrefService* prefs)
     : lifecycle_helper_(std::move(lifecycle_helper)),
       bridge_(std::move(bridge)),
-      sync_delegate_(std::move(sync_delegate)),
       sync_controller_delegate_(std::move(sync_controller_delegate)) {
   DCHECK(bridge_);
   prefs_ = prefs;
@@ -414,16 +361,19 @@ PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
 PasswordStoreAndroidBackend::~PasswordStoreAndroidBackend() = default;
 
 void PasswordStoreAndroidBackend::InitBackend(
-    RemoteChangesReceived stored_passwords_changed,
+    RemoteChangesReceived remote_form_changes_received,
     base::RepeatingClosure sync_enabled_or_disabled_cb,
     base::OnceCallback<void(bool)> completion) {
   main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
-  stored_passwords_changed_ = std::move(stored_passwords_changed);
+  stored_passwords_changed_ = std::move(remote_form_changes_received);
   lifecycle_helper_->RegisterObserver(base::BindRepeating(
       &PasswordStoreAndroidBackend::OnForegroundSessionStart,
       base::Unretained(this)));
-  // TODO(https://crbug.com/1229650): Create subscription before completion.
-  std::move(completion).Run(/*success=*/true);
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PasswordStoreAndroidBackend::Subscribe,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(completion)));
 }
 
 void PasswordStoreAndroidBackend::Shutdown(
@@ -435,14 +385,14 @@ void PasswordStoreAndroidBackend::Shutdown(
 
 void PasswordStoreAndroidBackend::GetAllLoginsAsync(
     LoginsOrErrorReply callback) {
-  GetAllLoginsForAccount(GetAccount(sync_delegate_->GetSyncingAccount()),
+  GetAllLoginsForAccount(GetAccount(GetSyncingAccount(sync_service_)),
                          std::move(callback));
 }
 
 void PasswordStoreAndroidBackend::GetAutofillableLoginsAsync(
     LoginsOrErrorReply callback) {
   JobId job_id = bridge_->GetAutofillableLogins(
-      GetAccount(sync_delegate_->GetSyncingAccount()));
+      GetAccount(GetSyncingAccount(sync_service_)));
   QueueNewJob(job_id, std::move(callback),
               MetricInfix("GetAutofillableLoginsAsync"));
 }
@@ -489,27 +439,27 @@ void PasswordStoreAndroidBackend::FillMatchingLoginsAsync(
 void PasswordStoreAndroidBackend::AddLoginAsync(
     const PasswordForm& form,
     PasswordChangesOrErrorReply callback) {
+  DCHECK(!form.blocked_by_user ||
+         (form.username_value.empty() && form.password_value.empty()));
   JobId job_id =
-      bridge_->AddLogin(form, GetAccount(sync_delegate_->GetSyncingAccount()));
-  QueueNewJob(job_id, std::move(callback), MetricInfix("AddLoginAsync"),
-              form.signon_realm, form.url.spec(), form.username_value.empty(),
-              form.blocked_by_user, form.scheme);
+      bridge_->AddLogin(form, GetAccount(GetSyncingAccount(sync_service_)));
+  QueueNewJob(job_id, std::move(callback), MetricInfix("AddLoginAsync"));
 }
 
 void PasswordStoreAndroidBackend::UpdateLoginAsync(
     const PasswordForm& form,
     PasswordChangesOrErrorReply callback) {
-  JobId job_id = bridge_->UpdateLogin(
-      form, GetAccount(sync_delegate_->GetSyncingAccount()));
-  QueueNewJob(job_id, std::move(callback), MetricInfix("UpdateLoginAsync"),
-              form.signon_realm, form.url.spec(), form.username_value.empty(),
-              form.blocked_by_user, form.scheme);
+  DCHECK(!form.blocked_by_user ||
+         (form.username_value.empty() && form.password_value.empty()));
+  JobId job_id =
+      bridge_->UpdateLogin(form, GetAccount(GetSyncingAccount(sync_service_)));
+  QueueNewJob(job_id, std::move(callback), MetricInfix("UpdateLoginAsync"));
 }
 
 void PasswordStoreAndroidBackend::RemoveLoginAsync(
     const PasswordForm& form,
     PasswordChangesOrErrorReply callback) {
-  RemoveLoginForAccount(form, GetAccount(sync_delegate_->GetSyncingAccount()),
+  RemoveLoginForAccount(form, GetAccount(GetSyncingAccount(sync_service_)),
                         std::move(callback));
 }
 
@@ -683,7 +633,7 @@ void PasswordStoreAndroidBackend::OnSyncServiceInitialized(
     LogUPMActiveStatus(sync_service, prefs_);
   }
   sync_service_ = sync_service;
-  sync_service->AddObserver(sync_controller_delegate_.get());
+  sync_controller_delegate_->OnSyncServiceInitialized(sync_service);
 }
 
 void PasswordStoreAndroidBackend::OnCompleteWithLogins(
@@ -726,17 +676,12 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
     // TODO(crbug.com/1324588): DCHECK_EQ(api_error_code,
     // AndroidBackendAPIErrorCode::kDeveloperError) to catch dev errors.
     DCHECK_EQ(AndroidBackendErrorType::kExternalError, error.type);
-    if (error.api_error_code ==
-        static_cast<int>(AndroidBackendAPIErrorCode::kDeveloperError)) {
-      reply->SendCrashDump();
-    }
     RecordApiErrorInCombinationWithSyncStatus(error.api_error_code.value(),
                                               sync_service_->GetAuthError());
 
     // If the user is experiencing an error unresolvable by Chrome or by the
     // user, unenroll the user from the UPM experience.
     int api_error = error.api_error_code.value();
-
     if (IsUnrecoverableError(
             static_cast<AndroidBackendAPIErrorCode>(api_error))) {
       if (!prefs_->GetBoolean(
@@ -745,6 +690,8 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
             "PasswordManager.UnenrolledFromUPMDueToErrors", true);
         prefs_->SetBoolean(
             prefs::kUnenrolledFromGoogleMobileServicesDueToErrors, true);
+        LOG(ERROR) << "Unenrolled from UPM due to error with code: "
+                   << api_error;
       }
 
       // Reset migration prefs so when the user can join the experiment again,
@@ -773,26 +720,51 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
   }
 }
 
+void PasswordStoreAndroidBackend::OnSubscribed(
+    PasswordStoreAndroidBackendBridge::JobId job_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
+  absl::optional<JobReturnHandler> reply = GetAndEraseJob(job_id);
+  if (!reply.has_value())
+    return;  // Task was cleaned up after returning from backgrounding.
+
+  reply->RecordMetrics(absl::nullopt);
+  // Without error, report a success back. The result can be omitted.
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(*reply).Get<LoginsOrErrorReply>(),
+                                LoginsResult()));
+}
+
+void PasswordStoreAndroidBackend::OnSubscribeFailed(
+    PasswordStoreAndroidBackendBridge::JobId job_id,
+    AndroidBackendError error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
+  absl::optional<JobReturnHandler> reply = GetAndEraseJob(job_id);
+  if (!reply.has_value())
+    return;  // Task was cleaned up after returning from backgrounding.
+
+  if (error.api_error_code.has_value() && sync_service_) {
+    DCHECK_EQ(AndroidBackendErrorType::kExternalError, error.type);
+    RecordApiErrorInCombinationWithSyncStatus(error.api_error_code.value(),
+                                              sync_service_->GetAuthError());
+  }
+  PasswordStoreBackendError reported_error =
+      BackendErrorFromAndroidBackendError(error);
+  reply->RecordMetrics(std::move(error));
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(*reply).Get<LoginsOrErrorReply>(),
+                                reported_error));
+}
+
 template <typename Callback>
-void PasswordStoreAndroidBackend::QueueNewJob(
-    JobId job_id,
-    Callback callback,
-    MetricInfix metric_infix,
-    absl::optional<std::string> signon_realm,
-    absl::optional<std::string> origin,
-    absl::optional<bool> is_username_empty,
-    absl::optional<bool> is_blocklisted,
-    absl::optional<PasswordForm::Scheme> scheme) {
+void PasswordStoreAndroidBackend::QueueNewJob(JobId job_id,
+                                              Callback callback,
+                                              MetricInfix metric_infix) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   request_for_job_.emplace(
       job_id,
-      JobReturnHandler(
-          std::move(callback),
-          PasswordStoreBackendMetricsRecorder(BackendInfix("AndroidBackend"),
-                                              std::move(metric_infix)),
-          base::BindOnce(SendDumpWithInfo, std::move(signon_realm),
-                         std::move(origin), std::move(is_username_empty),
-                         std::move(is_blocklisted), std::move(scheme))));
+      JobReturnHandler(std::move(callback), PasswordStoreBackendMetricsRecorder(
+                                                BackendInfix("AndroidBackend"),
+                                                std::move(metric_infix))));
 }
 
 absl::optional<PasswordStoreAndroidBackend::JobReturnHandler>
@@ -806,17 +778,30 @@ PasswordStoreAndroidBackend::GetAndEraseJob(JobId job_id) {
   return reply;
 }
 
+void PasswordStoreAndroidBackend::Subscribe(
+    base::OnceCallback<void(bool)> completion) {
+  // TODO(https://crbug.com/1229650): Once subscribe API exists, ensure this
+  // call repeats for sync changes.
+  JobId job_id =
+      bridge_->Subscribe(GetAccount(GetSyncingAccount(sync_service_)));
+  auto is_success = [](LoginsResultOrError logins_or_error) -> bool {
+    // Fake subscribe are successful if they have any result and no error.
+    return absl::holds_alternative<LoginsResult>(logins_or_error);
+  };
+  QueueNewJob(job_id, base::BindOnce(is_success).Then(std::move(completion)),
+              MetricInfix("InitialListAsync"));
+}
+
 void PasswordStoreAndroidBackend::GetLoginsAsync(const PasswordFormDigest& form,
                                                  bool include_psl,
                                                  LoginsOrErrorReply callback) {
   JobId job_id = bridge_->GetLoginsForSignonRealm(
       FormToSignonRealmQuery(form, include_psl),
-      GetAccount(sync_delegate_->GetSyncingAccount()));
+      GetAccount(GetSyncingAccount(sync_service_)));
   QueueNewJob(job_id,
-              base::BindOnce(&ValidateSignonRealm, form, include_psl,
+              base::BindOnce(&ValidateSignonRealm, std::move(form), include_psl,
                              std::move(callback)),
-              MetricInfix("GetLoginsAsync"), form.signon_realm,
-              form.url.spec());
+              MetricInfix("GetLoginsAsync"));
 }
 
 void PasswordStoreAndroidBackend::FilterAndDisableAutoSignIn(

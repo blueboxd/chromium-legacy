@@ -214,7 +214,6 @@ crbug.com/891953 [ linux display-server-wayland ] WebglExtension_OVR_multiview2 
 crbug.com/1131224 conformance2/rendering/framebuffer-mismatched-attachment-targets.html [ Failure ]
 crbug.com/1108086 [ no-passthrough ] conformance2/renderbuffers/framebuffer-object-attachment.html [ Failure ]
 crbug.com/angleproject/4807 [ win angle-d3d11 passthrough ] conformance2/glsl3/switch-case.html [ Failure ]
-crbug.com/angleproject/5038 conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
 crbug.com/1276153 conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
 crbug.com/1206763 [ win intel ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
 
@@ -371,6 +370,7 @@ crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/tr
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 crbug.com/angleproject/7397 [ mac passthrough angle-metal intel ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
+crbug.com/1340101 [ mac passthrough angle-metal intel ] conformance2/uniforms/dependent-buffer-change.html [ Failure ]
 
 # Metal M1
 # TODO(crbug.com/1276153) uncomment after fix for updated part of test applies
@@ -476,6 +476,9 @@ crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/mult
 crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/multisample/fbo_max_samples.html [ RetryOnFailure ]
 crbug.com/1199098 [ mac nvidia-0xfe9 no-passthrough ] deqp/functional/gles3/negativevertexarrayapi.html [ Failure ]
 crbug.com/1276186 [ mac nvidia-0xfe9 no-passthrough ] conformance/textures/misc/format-filterable-renderable.html [ Failure ]
+
+crbug.com/1338004 [ mac nvidia-0xfe9 passthrough ] deqp/functional/gles3/multisample/fbo_4_samples.html [ RetryOnFailure ]
+
 
 # Mac AMD
 # AMD Radeon HD 8870M (1002:6821)
@@ -699,6 +702,12 @@ crbug.com/angleproject/4417 [ android ] conformance2/rendering/framebuffer-rende
 # Video uploads to some texture formats new in WebGL 2.0 are
 # failing.
 crbug.com/951628 [ android no-passthrough ] conformance/rendering/blending.html [ Failure ]
+
+# Need to investigate failure on basically all devices with passthrough on Android.
+crbug.com/angleproject/5038 [ android passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
+
+# Failure on validating command decoder only; won't fix.
+crbug.com/angleproject/5038 [ android no-passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
 
 # Qualcomm (Pixel 2) failures
 

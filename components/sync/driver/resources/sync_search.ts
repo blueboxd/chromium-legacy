@@ -4,14 +4,14 @@
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
-import {getAllNodes, SyncNodeList, SyncNodeMap, Timer} from './chrome_sync.js';
+import {getAllNodes, SyncNode, SyncNodeMap, Timer} from './chrome_sync.js';
 
 const ERROR_ATTR: string = 'error';
 const SELECTED_ATTR: string = 'selected';
 
 export class SyncSearchManager {
   private currSearchId_: number = 0;
-  private resultsData_: Array<object> = [];
+  private resultsData_: object[] = [];
   private selected_: HTMLElement|null = null;
   private selectedIndex_: number = -1;
   private resultsControl_: HTMLElement;
@@ -131,7 +131,7 @@ export class SyncSearchManager {
       const regex = new RegExp(query);
       getAllNodes((nodeMap: SyncNodeMap) => {
         // Put all nodes into one big list that ignores the type.
-        const nodes: SyncNodeList =
+        const nodes: SyncNode[] =
             nodeMap.map(x => x.nodes).reduce((a, b) => a.concat(b));
         if (this.currSearchId_ !== searchId) {
           return;
@@ -171,7 +171,7 @@ export class SyncSearchManager {
     }
   }
 
-  setDataForTest(data: Array<object>) {
+  setDataForTest(data: object[]) {
     this.resultsData_ = data;
     this.drawResultsList_();
   }

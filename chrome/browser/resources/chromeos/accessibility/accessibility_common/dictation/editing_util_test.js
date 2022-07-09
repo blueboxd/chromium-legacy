@@ -14,7 +14,7 @@ DictationEditingUtilTest = class extends DictationE2ETestBase {
   }
 };
 
-SYNC_TEST_F('DictationEditingUtilTest', 'ReplacePhrase', function() {
+AX_TEST_F('DictationEditingUtilTest', 'ReplacePhrase', function() {
   let value;
   let caretIndex;
   let deletePhrase;
@@ -23,25 +23,28 @@ SYNC_TEST_F('DictationEditingUtilTest', 'ReplacePhrase', function() {
       EditingUtil.replacePhrase(value, caretIndex, deletePhrase, insertPhrase);
 
   // Simple delete.
-  value = 'This is a test';
+  value = 'This is a difficult test';
   caretIndex = value.length;
   deletePhrase = 'difficult';
   insertPhrase = '';
-  assertEquals('This is a test', f());
+  assertEquals('This is a test', f().value);
+  assertEquals(9, f().index);
 
   // Case-insensitive delete.
   value = 'This is a DIFFICULT test';
   caretIndex = value.length;
   deletePhrase = 'difficult';
   insertPhrase = '';
-  assertEquals('This is a test', f());
+  assertEquals('This is a test', f().value);
+  assertEquals(9, f().index);
 
   // Delete when there are multiple instances of `deletePhrase`.
   value = 'The cow jumped over the moon';
   caretIndex = value.length;
   deletePhrase = 'the';
   insertPhrase = '';
-  assertEquals('The cow jumped over moon', f());
+  assertEquals('The cow jumped over moon', f().value);
+  assertEquals(19, f().index);
 
   // Delete only content to the left of the caret.
   // "The cow| jumped over the moon"
@@ -49,35 +52,40 @@ SYNC_TEST_F('DictationEditingUtilTest', 'ReplacePhrase', function() {
   caretIndex = 7;
   deletePhrase = 'the';
   insertPhrase = '';
-  assertEquals('cow jumped over the moon', f());
+  assertEquals('cow jumped over the moon', f().value);
+  assertEquals(0, f().index);
 
   // Delete last word.
   value = 'The cow jumped over the moon.';
   caretIndex = value.length;
   deletePhrase = 'moon';
   insertPhrase = '';
-  assertEquals('The cow jumped over the.', f());
+  assertEquals('The cow jumped over the.', f().value);
+  assertEquals(23, f().index);
 
   // Delete only at word boundaries.
   value = 'A square is also a rectangle';
   caretIndex = value.length;
   deletePhrase = 'a';
   insertPhrase = '';
-  assertEquals('A square is also rectangle', f());
+  assertEquals('A square is also rectangle', f().value);
+  assertEquals(16, f().index);
 
   // Nothing is deleted if we can't find `deletePhrase`.
   value = 'This is a test';
   caretIndex = value.length;
   deletePhrase = 'coconut';
   insertPhrase = '';
-  assertEquals('This is a test', f());
+  assertEquals('This is a test', f().value);
+  assertEquals(caretIndex, f().index);
 
   // Nothing is deleted if the caret is at index 0.
   value = 'This is a test';
   caretIndex = 0;
   deletePhrase = 'test';
   insertPhrase = '';
-  assertEquals('This is a test', f());
+  assertEquals('This is a test', f().value);
+  assertEquals(caretIndex, f().index);
 
   // Nothing is deleted if the caret is in the middle of the matched phrase.
   // "A squ|are is also a rectangle".
@@ -85,42 +93,48 @@ SYNC_TEST_F('DictationEditingUtilTest', 'ReplacePhrase', function() {
   caretIndex = 5;
   deletePhrase = 'square';
   insertPhrase = '';
-  assertEquals('A square is also a rectangle', f());
+  assertEquals('A square is also a rectangle', f().value);
+  assertEquals(caretIndex, f().index);
 
   // Nothing is deleted if `deletePhrase` includes punctuation.
   value = 'Hello world.';
   caretIndex = value.length;
   deletePhrase = 'world.';
   insertPhrase = '';
-  assertEquals('Hello world.', f());
+  assertEquals('Hello world.', f().value);
+  assertEquals(caretIndex, f().index);
 
   // Simple replacement.
   value = 'This is a difficult test';
   caretIndex = value.length;
   deletePhrase = 'difficult';
   insertPhrase = 'simple';
-  assertEquals('This is a simple test', f());
+  assertEquals('This is a simple test', f().value);
+  assertEquals(16, f().index);
 
   // Replace multiple words.
   value = 'The cow jumped over the moon';
   caretIndex = value.length;
   deletePhrase = 'jumped over the moon';
   insertPhrase = 'went to bed early';
-  assertEquals('The cow went to bed early', f());
+  assertEquals('The cow went to bed early', f().value);
+  assertEquals(25, f().index);
 
   // Edge case: value is empty.
   value = '';
   caretIndex = 0;
   deletePhrase = 'coconut';
   insertPhrase = '';
-  assertEquals('', f());
+  assertEquals('', f().value);
+  assertEquals(caretIndex, f().index);
 
   // Edge case: caretIndex is negative.
   value = 'This is a test';
   caretIndex = -1;
   deletePhrase = 'test';
   insertPhrase = '';
-  assertEquals('This is a test', f());
+  assertEquals('This is a test', f().value);
+  assertEquals(caretIndex, f().index);
 
   // Edge case: caretIndex is larger than `value.length`. We treat this as
   // if the text caret is at the end of value.
@@ -128,10 +142,11 @@ SYNC_TEST_F('DictationEditingUtilTest', 'ReplacePhrase', function() {
   caretIndex = 5000;
   deletePhrase = 'Hello';
   insertPhrase = '';
-  assertEquals('', f());
+  assertEquals('', f().value);
+  assertEquals(0, f().index);
 });
 
-SYNC_TEST_F('DictationEditingUtilTest', 'InsertBefore', function() {
+AX_TEST_F('DictationEditingUtilTest', 'InsertBefore', function() {
   let value;
   let caretIndex;
   let insertPhrase;
@@ -144,24 +159,27 @@ SYNC_TEST_F('DictationEditingUtilTest', 'InsertBefore', function() {
   caretIndex = value.length;
   insertPhrase = 'simple';
   beforePhrase = 'test';
-  assertEquals('This is a simple test.', f());
+  assertEquals('This is a simple test.', f().value);
+  assertEquals(16, f().index);
 
   // Insert and match multiple words.
   value = 'This is a test';
   caretIndex = value.length;
   insertPhrase = 'This is a drill';
   beforePhrase = 'This is a test';
-  assertEquals('This is a drill This is a test', f());
+  assertEquals('This is a drill This is a test', f().value);
+  assertEquals(insertPhrase.length, f().index);
 
   // Nothing is inserted if `beforePhrase` isn't present.
   value = 'This is a test';
   caretIndex = value.length;
   insertPhrase = 'pineapple';
   beforePhrase = 'coconut';
-  assertEquals('This is a test', f());
+  assertEquals('This is a test', f().value);
+  assertEquals(caretIndex, f().index);
 });
 
-SYNC_TEST_F('DictationEditingUtilTest', 'SelectBetween', function() {
+AX_TEST_F('DictationEditingUtilTest', 'SelectBetween', function() {
   let value;
   let caretIndex;
   let startPhrase;
@@ -242,7 +260,7 @@ SYNC_TEST_F('DictationEditingUtilTest', 'SelectBetween', function() {
   assertEquals(9, selection.end);
 });
 
-SYNC_TEST_F('DictationEditingUtilTest', 'NavNextSent', function() {
+AX_TEST_F('DictationEditingUtilTest', 'NavNextSent', function() {
   let value;
   let caretIndex;
   const f = () => EditingUtil.navNextSent(value, caretIndex);
@@ -276,7 +294,7 @@ SYNC_TEST_F('DictationEditingUtilTest', 'NavNextSent', function() {
   assertEquals(0, f());
 });
 
-SYNC_TEST_F('DictationEditingUtilTest', 'NavPrevSent', function() {
+AX_TEST_F('DictationEditingUtilTest', 'NavPrevSent', function() {
   let value;
   let caretIndex;
   const f = () => EditingUtil.navPrevSent(value, caretIndex);
@@ -310,11 +328,11 @@ SYNC_TEST_F('DictationEditingUtilTest', 'NavPrevSent', function() {
   assertEquals(0, f());
 });
 
-SYNC_TEST_F('DictationEditingUtilTest', 'AdjustCommitText', function() {
+AX_TEST_F('DictationEditingUtilTest', 'SmartSpacing', function() {
   let value;
   let caretIndex;
   let commitText;
-  const f = () => EditingUtil.adjustCommitText(value, caretIndex, commitText);
+  const f = () => EditingUtil.smartSpacing(value, caretIndex, commitText);
 
   // Add an extra space.
   value = 'This is a test.';
@@ -342,4 +360,80 @@ SYNC_TEST_F('DictationEditingUtilTest', 'AdjustCommitText', function() {
   caretIndex = value.length;
   commitText = '!';
   assertEquals('!', f());
+
+  // Test the behavior when inserting text in the middle of value.
+  // A space should be prepended to `commitText`;
+  // "This is a| test"
+  value = 'This is a test';
+  caretIndex = 9;
+  commitText = 'simple';
+  assertEquals(' simple', f());
+
+  // A space should be appended to `commitText`;
+  // "This is a |test"
+  value = 'This is a test';
+  caretIndex = 10;
+  commitText = 'simple';
+  assertEquals('simple ', f());
+
+  // "This is|. a test"
+  value = 'This is. a test';
+  caretIndex = 7;
+  commitText = 'simple';
+  assertEquals(' simple ', f());
+
+  // "hello|\nworld"; caret is right before the \n character.
+  value = 'hello\nworld';
+  caretIndex = 5;
+  commitText = 'there';
+  assertEquals(' there', f());
+
+  // "hello\n|world"; caret is right after the \n character.
+  value = 'hello\nworld';
+  caretIndex = 6;
+  commitText = 'there';
+  assertEquals('there ', f());
+});
+
+AX_TEST_F('DictationEditingUtilTest', 'SmartCapitalization', function() {
+  let value;
+  let caretIndex;
+  let commitText;
+  const f = () =>
+      EditingUtil.smartCapitalization(value, caretIndex, commitText);
+
+  value = 'Some text.';
+  caretIndex = value.length;
+  commitText = 'more text';
+  assertEquals('More text', f());
+
+  value = 'Some text';
+  caretIndex = value.length;
+  commitText = 'more text';
+  assertEquals('more text', f());
+
+  value = 'Some text   ';
+  caretIndex = value.length;
+  commitText = 'More text';
+  assertEquals('more text', f());
+
+  value = 'Some text.';
+  caretIndex = value.length;
+  commitText = 'More text';
+  assertEquals('More text', f());
+
+  value = 'Some text.\n';
+  caretIndex = value.length;
+  commitText = 'more text';
+  assertEquals('More text', f());
+
+  value = '';
+  caretIndex = 0;
+  commitText = 'more text';
+  assertEquals('More text', f());
+
+  value = 'This is a test';
+  caretIndex = 9;
+  commitText = 'biology';
+  assertEquals('biology', f());
 });

@@ -35,11 +35,11 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
-#include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -121,7 +121,7 @@ bool CreateOwnerKeyInSlot(PK11SlotInfo* slot) {
 }
 
 // Fake UserDataAuthClient implementation for this test.
-class TestUserDataAuthClient : public ::chromeos::FakeUserDataAuthClient {
+class TestUserDataAuthClient : public FakeUserDataAuthClient {
  public:
   TestUserDataAuthClient() = default;
 

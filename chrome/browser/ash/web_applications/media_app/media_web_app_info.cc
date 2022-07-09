@@ -18,7 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -116,10 +116,10 @@ std::vector<apps::FileHandler::AcceptEntry> MakeFileHandlerAccept(
 const apps::AppLaunchParams PickFileFromParams(
     const apps::AppLaunchParams& params,
     size_t index) {
-  return apps::AppLaunchParams(params.app_id, params.container,
-                               params.disposition, params.launch_source,
-                               params.display_id, {params.launch_files[index]},
-                               params.intent ? params.intent.Clone() : nullptr);
+  return apps::AppLaunchParams(
+      params.app_id, params.container, params.disposition, params.launch_source,
+      params.display_id, {params.launch_files[index]},
+      params.intent ? params.intent->Clone() : nullptr);
 }
 
 }  // namespace
@@ -282,8 +282,8 @@ Browser* MediaSystemAppDelegate::LaunchAndNavigateSystemWebApp(
 
   // For PDFs, launch all but the last file from scratch. Windows will cascade.
   for (size_t i = 0; i < params.launch_files.size() - 1; ++i) {
-    web_app::LaunchSystemWebAppImpl(profile, ash::SystemWebAppType::MEDIA, url,
-                                    PickFileFromParams(params, i));
+    ash::LaunchSystemWebAppImpl(profile, ash::SystemWebAppType::MEDIA, url,
+                                PickFileFromParams(params, i));
   }
   return SystemWebAppDelegate::LaunchAndNavigateSystemWebApp(
       profile, provider, url,

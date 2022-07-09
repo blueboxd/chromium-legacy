@@ -5,10 +5,15 @@
 package org.chromium.chrome.browser.share.share_sheet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ResolveInfo;
+import android.view.View;
 
 import androidx.test.filters.SmallTest;
 
@@ -139,5 +144,56 @@ public class ShareSheetUsageRankingHelperTest {
         assertEquals("Second property model isn't More.",
                 mActivity.getResources().getString(R.string.sharing_more_icon_label),
                 propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
+    }
+
+    @Test
+    @SmallTest
+    public void testClickMoreRemovesCallback() throws TimeoutException {
+        List<String> targets = new ArrayList<String>();
+        targets.add("$more");
+        final AtomicReference<List<PropertyModel>> resultPropertyModels = new AtomicReference<>();
+        CallbackHelper helper = new CallbackHelper();
+
+        mShareSheetUsageRankingHelper.setTargetsForTesting(targets);
+        mShareSheetUsageRankingHelper.createThirdPartyPropertyModelsFromUsageRanking(
+                mActivity, mParams, mContentTypes, /*saveLastUsed=*/false, models -> {
+                    resultPropertyModels.set(models);
+                    helper.notifyCalled();
+                });
+        helper.waitForFirst();
+        List<PropertyModel> propertyModels = resultPropertyModels.get();
+
+        View.OnClickListener onClickListener =
+                propertyModels.get(0).get(ShareSheetItemViewProperties.CLICK_LISTENER);
+
+        assertNotNull("Callback should not be null before pressing More", mParams.getCallback());
+        onClickListener.onClick(null);
+        assertNull("Callback should be null after pressing More", mParams.getCallback());
+    }
+
+    ResolveInfo resolveInfoForPackage(String name) {
+        ResolveInfo info = new ResolveInfo();
+        info.activityInfo = new ActivityInfo();
+        info.activityInfo.packageName = name;
+        info.activityInfo.name = "foo";
+        return info;
+    }
+
+    @Test
+    @SmallTest
+    public void testFilteringRemovesCtsShims() {
+        List<ResolveInfo> infos = List.of(resolveInfoForPackage("org.chromium.a"),
+                resolveInfoForPackage("com.android.cts.ctsshim"),
+                resolveInfoForPackage("org.chromium.b"),
+                resolveInfoForPackage("com.android.cts.priv.ctsshim"),
+                resolveInfoForPackage("org.chromium.c"));
+
+        List<ResolveInfo> result =
+                ShareSheetUsageRankingHelper.filterOutBlocklistedResolveInfos(infos);
+
+        assertEquals(3, result.size());
+        assertEquals("org.chromium.a", result.get(0).activityInfo.packageName);
+        assertEquals("org.chromium.b", result.get(1).activityInfo.packageName);
+        assertEquals("org.chromium.c", result.get(2).activityInfo.packageName);
     }
 }

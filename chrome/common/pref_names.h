@@ -601,7 +601,6 @@ extern const char kOpenPdfDownloadInSystemReader[];
 #endif
 #if BUILDFLAG(IS_ANDROID)
 extern const char kPromptForDownloadAndroid[];
-extern const char kDownloadLaterPromptStatus[];
 extern const char kShowMissingSdCardErrorAndroid[];
 extern const char kIncognitoReauthenticationForAndroid[];
 #endif
@@ -759,7 +758,8 @@ extern const char kSameOriginTabCaptureAllowedByOrigins[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kDemoModeConfig[];
 extern const char kDemoModeCountry[];
-extern const char kDemoModeRetailerAndStoreIdInput[];
+extern const char kDemoModeRetailerId[];
+extern const char kDemoModeStoreId[];
 extern const char kDemoModeDefaultLocale[];
 extern const char kDeviceSettingsCache[];
 extern const char kHardwareKeyboardLayout[];
@@ -1135,6 +1135,10 @@ extern const char kCACertificateManagementAllowed[];
 extern const char kBuiltinCertificateVerifierEnabled[];
 #endif
 
+#if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
+extern const char kChromeRootStoreEnabled[];
+#endif
+
 extern const char kSharingVapidKey[];
 extern const char kSharingFCMRegistration[];
 extern const char kSharingLocalSharingInfo[];
@@ -1236,6 +1240,7 @@ extern const char kLastWhatsNewVersion[];
 
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kLensRegionSearchEnabled[];
+extern const char kSidePanelHorizontalAlignment[];
 #endif
 
 extern const char kPrivacyGuideViewed[];
@@ -1251,6 +1256,11 @@ extern const char kSCTAuditingHashdanceReportCount[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kConsumerAutoUpdateToggle[];
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+extern const char kKioskMetrics[];
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

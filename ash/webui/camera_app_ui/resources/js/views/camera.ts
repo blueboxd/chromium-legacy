@@ -7,6 +7,7 @@ import {
   assert,
   assertInstanceof,
 } from '../assert.js';
+import * as customToast from '../custom_toast.js';
 import {
   CameraConfig,
   CameraManager,
@@ -31,7 +32,6 @@ import {VideoSaver} from '../models/video_saver.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
 import * as nav from '../nav.js';
-import * as newFeatureToast from '../new_feature_toast.js';
 import {PerfLogger} from '../perf.js';
 import * as sound from '../sound.js';
 import {speak} from '../spoken_msg.js';
@@ -276,7 +276,7 @@ export class Camera extends View implements CameraViewUI {
         () => this.cameraManager.reconfigure());
 
     this.initVideoEncoderOptions();
-    await this.initScanMode();
+    this.initScanMode();
   }
 
   /**
@@ -321,11 +321,27 @@ export class Camera extends View implements CameraViewUI {
   }
 
   private async initScanMode() {
-    const isPlatformSupport =
-        await ChromeHelper.getInstance().isDocumentModeSupported();
-    state.set(state.State.SHOW_SCAN_MODE, isPlatformSupport);
-    if (!isPlatformSupport) {
+    const {supported, ready} =
+        await ChromeHelper.getInstance().getDocumentScannerReadyState();
+    if (!supported) {
       return;
+    }
+
+    const scanModeBtn = dom.get('input[data-mode="scan"]', HTMLInputElement);
+    const scanModeItem =
+        assertInstanceof(scanModeBtn.parentElement, HTMLDivElement);
+    if (!ready) {
+      customToast.showIndicatorToast(
+          scanModeItem, customToast.IndicatorType.DOWNLOAD_DOCUMENT_SCANNER);
+      scanModeBtn.addEventListener('click', () => {
+        customToast.hide();
+      });
+      const isLoaded = await this.scanOptions.waitUntilDocumentModeReady();
+      if (!isLoaded) {
+        return;
+      }
+    } else {
+      this.scanOptions.onDocumentModeReady();
     }
 
     // Check show toast.
@@ -335,12 +351,9 @@ export class Camera extends View implements CameraViewUI {
       localStorage.set(LocalStorageKey.DOC_MODE_TOAST_SHOWN, true);
       // aria-owns don't work on HTMLInputElement, show toast on parent div
       // instead.
-      const scanModeBtn = dom.get('input[data-mode="scan"]', HTMLInputElement);
-      const scanModeItem =
-          assertInstanceof(scanModeBtn.parentElement, HTMLDivElement);
-      newFeatureToast.show(scanModeItem);
+      customToast.showNewFeatureToast(scanModeItem);
       scanModeBtn.addEventListener('click', () => {
-        newFeatureToast.hide();
+        customToast.hide();
       });
     }
 
@@ -396,8 +409,8 @@ export class Camera extends View implements CameraViewUI {
       return;
     }
 
-    if (newFeatureToast.isShowing()) {
-      newFeatureToast.focus();
+    if (customToast.isShowing()) {
+      customToast.focus();
       return;
     }
 

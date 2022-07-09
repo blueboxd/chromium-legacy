@@ -16,13 +16,16 @@ class MockBiometricAuthenticator : public BiometricAuthenticator {
  public:
   MockBiometricAuthenticator();
 
-  MOCK_METHOD(BiometricsAvailability,
-              CanAuthenticate,
-              (BiometricAuthRequester),
-              (override));
+  MOCK_METHOD(bool, CanAuthenticate, (BiometricAuthRequester), (override));
   MOCK_METHOD(void,
               Authenticate,
-              (BiometricAuthRequester, AuthenticateCallback),
+              (BiometricAuthRequester, AuthenticateCallback, bool),
+              (override));
+  MOCK_METHOD(void,
+              AuthenticateWithMessage,
+              (BiometricAuthRequester,
+               const std::u16string,
+               AuthenticateCallback),
               (override));
   MOCK_METHOD(void, Cancel, (BiometricAuthRequester), (override));
 

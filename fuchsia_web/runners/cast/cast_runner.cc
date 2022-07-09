@@ -4,6 +4,7 @@
 
 #include "fuchsia_web/runners/cast/cast_runner.h"
 
+#include <fuchsia/legacymetrics/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fit/function.h>
@@ -27,7 +28,6 @@
 #include "base/values.h"
 #include "components/cast/common/constants.h"
 #include "components/fuchsia_component_support/config_reader.h"
-#include "fuchsia/base/agent_manager.h"
 #include "fuchsia_web/runners/cast/cast_streaming.h"
 #include "fuchsia_web/runners/cast/pending_cast_component.h"
 #include "fuchsia_web/runners/common/web_content_runner.h"
@@ -299,8 +299,7 @@ class DataResetComponent final : public fuchsia::sys::ComponentController {
 
 }  // namespace
 
-CastRunner::CastRunner(cr_fuchsia::WebInstanceHost* web_instance_host,
-                       bool is_headless)
+CastRunner::CastRunner(WebInstanceHost* web_instance_host, bool is_headless)
     : web_instance_host_(web_instance_host),
       is_headless_(is_headless),
       main_services_(std::make_unique<base::FilteredServiceDirectory>(

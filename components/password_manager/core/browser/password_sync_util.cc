@@ -100,10 +100,17 @@ bool ShouldSaveEnterprisePasswordHash(const PasswordForm& form,
   return false;
 }
 
-bool IsPasswordSyncEnabled(syncer::SyncService* sync_service) {
+bool IsPasswordSyncEnabled(const syncer::SyncService* sync_service) {
   return sync_service && sync_service->IsSyncFeatureEnabled() &&
          sync_service->GetUserSettings()->GetSelectedTypes().Has(
              syncer::UserSelectableType::kPasswords);
+}
+
+absl::optional<std::string> GetSyncingAccount(
+    const syncer::SyncService* sync_service) {
+  if (!sync_service || !IsPasswordSyncEnabled(sync_service))
+    return absl::nullopt;
+  return sync_service->GetAccountInfo().email;
 }
 
 }  // namespace sync_util

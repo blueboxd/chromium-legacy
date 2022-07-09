@@ -944,8 +944,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
                    .empty());
 }
 
-// TODO(crbug.com/1326284): Re-enable this test
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_AccountListChange) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
@@ -1552,14 +1551,12 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   run_loop_ = std::make_unique<base::RunLoop>();
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->FlushMojoCallsForTesting();
-  proxy->Launch(
-      app->id(),
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          false /* preferred_containner */),
-      apps::mojom::LaunchSource::kFromChromeInternal,
-      apps::MakeWindowInfo(
-          display::Screen::GetScreen()->GetPrimaryDisplay().id()));
+  proxy->Launch(app->id(),
+                apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                    false /* preferred_containner */),
+                apps::mojom::LaunchSource::kFromChromeInternal,
+                apps::MakeWindowInfo(
+                    display::Screen::GetScreen()->GetPrimaryDisplay().id()));
   proxy->FlushMojoCallsForTesting();
   run_loop_->Run();
   EXPECT_EQ(1U, app_window_registry->app_windows().size());

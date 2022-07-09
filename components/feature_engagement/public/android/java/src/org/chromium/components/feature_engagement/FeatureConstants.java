@@ -17,7 +17,6 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_SHARE_FEATURE,
         FeatureConstants.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_VOICE_SEARCH_FEATURE,
         FeatureConstants.ADD_TO_HOMESCREEN_MESSAGE_FEATURE,
-        FeatureConstants.ADD_TO_HOMESCREEN_TEXT_BUBBLE_FEATURE,
         FeatureConstants.AUTO_DARK_OPT_OUT_FEATURE,
         FeatureConstants.AUTO_DARK_USER_EDUCATION_MESSAGE_FEATURE,
         FeatureConstants.AUTO_DARK_USER_EDUCATION_MESSAGE_OPT_IN_FEATURE,
@@ -84,7 +83,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.VIDEO_TUTORIAL_NTP_SEARCH_FEATURE,
         FeatureConstants.VIDEO_TUTORIAL_NTP_SUMMARY_FEATURE,
         FeatureConstants.VIDEO_TUTORIAL_NTP_VOICE_SEARCH_FEATURE,
-        FeatureConstants.VIDEO_TUTORIAL_TRY_NOW_FEATURE})
+        FeatureConstants.VIDEO_TUTORIAL_TRY_NOW_FEATURE, FeatureConstants.PRICE_DROP_NTP_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_NEW_TAB_FEATURE =
@@ -94,7 +93,6 @@ public @interface FeatureConstants {
     String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_VOICE_SEARCH_FEATURE =
             "IPH_AdaptiveButtonInTopToolbarCustomization_VoiceSearch";
     String ADD_TO_HOMESCREEN_MESSAGE_FEATURE = "IPH_AddToHomescreenMessage";
-    String ADD_TO_HOMESCREEN_TEXT_BUBBLE_FEATURE = "IPH_AddToHomescreenTextBubble";
     String AUTO_DARK_OPT_OUT_FEATURE = "IPH_AutoDarkOptOut";
     String AUTO_DARK_USER_EDUCATION_MESSAGE_FEATURE = "IPH_AutoDarkUserEducationMessage";
     String AUTO_DARK_USER_EDUCATION_MESSAGE_OPT_IN_FEATURE =
@@ -388,4 +386,9 @@ public @interface FeatureConstants {
      * An IPH feature to inform users about the Webnotes Stylize feature in Sharing Hub.
      */
     String SHARING_HUB_WEBNOTES_STYLIZE_FEATURE = "IPH_SharingHubWebnotesStylize";
+
+    /**
+     * An IPH feature to inform users that a price drop has occurred in any of their open tabs
+     */
+    String PRICE_DROP_NTP_FEATURE = "IPH_PriceDropNTP";
 }

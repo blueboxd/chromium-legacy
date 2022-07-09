@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Käyttäjä</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Ulkoisten laitteiden laiteohjelmistojen päivityksiä koskeva ikkuna on auki. <ph name="NUM_UPDATES" /> päivitystä saatavilla.</translation>
+<translation id="1145516343487477149">Etsi ohjeartikkeleita ja vastauksia yleisiin Chromebook-kysymyksiin</translation>
 <translation id="1165039591588034296">Virhe</translation>
 <translation id="1175697296044146566">Laitetta (<ph name="DEVICE_TYPE" />) ylläpitää <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Keskitasoa (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Laita tumma teema pois päältä</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Laita tumma tila pois päältä</translation>
+<translation id="1881188606372070653">Voit pyytää juridisiin syihin perustuvia sisältömuutoksia <ph name="BEGIN_LINK1" />Oikeudellinen apu ‑sivulla<ph name="END_LINK1" />. Joitakin tili- ja järjestelmätietoja voidaan lähettää Googlelle. Käytämme ilmoittamiasi tietoja teknisten ongelmien ratkaisemiseen ja palvelujemme kehittämiseen <ph name="BEGIN_LINK2" />tietosuojakäytäntömme<ph name="END_LINK2" /> ja <ph name="BEGIN_LINK3" />käyttöehtojemme<ph name="END_LINK3" /> mukaisesti.</translation>
 <translation id="1887850431809612466">Laitteistoversio</translation>
+<translation id="1904932688895783618">Hyödyllistä lisätietoa:</translation>
 <translation id="1905710495812624430">Yritysten enimmäismäärä ylitettiin.</translation>
 <translation id="1908234395526491708">Epäonnistuneita UDP-pyyntöjä</translation>
 <translation id="1932611479324127242">Akun sammutus</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Kokeile ongelmanratkaisuohjeita</translation>
 <translation id="2016848882344942759">--ei tuotemerkitön--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Muodosta verkkoyhteys ja päivitä sivu nähdäksesi näytönsäästäjän.</translation>
 <translation id="2080070583977670716">Lisää asetuksia</translation>
 <translation id="2085089206770112532">Vähennä näytön kirkkautta</translation>
 <translation id="2105810540595158374">Laite on peliohjain.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Ota tumma tila käyttöön</translation>
 <translation id="2177831236093724629"><ph name="LINK_BEGIN" />Sopimattomia osia<ph name="LINK_END" /> löytyi. Päivitä Chrome-käyttöjärjestelmä uusimpaan versioon niin varmistat, että sopivat osat tunnistetaan.</translation>
 <translation id="2180197493692062006">Jotain meni pieleen. Kokeile avata sovellus uudelleen.</translation>
+<translation id="2182088270354640012">Kiitos palautteesta. Palautteesi auttaa parantamaan Chrome-käyttöjärjestelmää, ja Chrome-käyttöjärjestelmätiimi tarkistaa sen. Lähetettyjen ilmoitusten määrän vuoksi et saa vastausta suoraan.</translation>
 <translation id="2209788852729124853">Nollaa liikennelaskurit</translation>
 <translation id="2212733584906323460">Verkkotunnuksen muuntaminen</translation>
 <translation id="2217935453350629363">Nykyinen nopeus</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Haetaan skannereita</translation>
 <translation id="3246869037381808805">Yli päivän vanhat tulostustyöt poistetaan</translation>
 <translation id="3268178239013324452">Epäonnistui – Luukku auki</translation>
+<translation id="3275729367986477355">Avatar-kuva</translation>
 <translation id="3283504360622356314">{0,plural, =1{Muokkaa tiedostoa}other{Muokkaa tiedostoja}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Avaimen suunta</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Saat lisää ohjeita <ph name="BEGIN_LINK" />ohjekeskuksesta<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Pakkausalgoritmi</translation>
 <translation id="4794140124556169553">CPU-testin suorittaminen voi vaikuttaa järjestelmän suorituskykyyn</translation>
+<translation id="4800589996161293643">Chromebook-yhteisö</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="4808449224298348341">Peruutettu tulostustyö: <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Vaalea teema</translation>
@@ -486,6 +493,7 @@
 Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
+<translation id="522307662484862935">Älä lisää sähköpostiosoitetta</translation>
 <translation id="5227902338748591677">Tumman teeman aikataulu</translation>
 <translation id="5234764350956374838">Hylkää</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -612,6 +620,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="6284632978374966585">Laita tumma teema päälle</translation>
 <translation id="6295178529664209245">Jatketaanko korjausta?</translation>
 <translation id="6302401976930124515">Testi on peruttu: <ph name="TEST_NAME" /></translation>
+<translation id="631063167932043783">Tutustu sovellukseen</translation>
 <translation id="6319207335391420837">Päivitä laiteohjelmisto: <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Laita näytönsäästäjä päälle</translation>
 <translation id="6325525973963619867">Epäonnistui</translation>
@@ -623,6 +632,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="6379086450106841622">Kosketusnäyttö</translation>
 <translation id="6381741036071372448">Testaa näppäimistöä</translation>
 <translation id="6388847657025262518">Skannerin syöttölaite on tukossa. Tarkista syöttölaite ja yritä uudelleen.</translation>
+<translation id="6394634179843537518">Lisää tiedosto</translation>
 <translation id="6410257289063177456">Kuvatiedostot </translation>
 <translation id="641081527798843608">Aiheen vastaavuus</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="6516990319416533844">Anna akun tyhjentyä hetken aikaa, jotta voit testata sen latautumisnopeutta</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6527081081771465939">Tuntematon Wi-Fi-suojausprotokolla</translation>
+<translation id="6535178685492749208">Et ole yhteydessä verkkoon. Palaute lähetetään myöhemmin.</translation>
 <translation id="65587193855025101">Tasoskanneri</translation>
 <translation id="6564646048574748301">Epäonnistui – Ei yhteyttä tulostimeen</translation>
 <translation id="6566314079205407217">Usean sivun skannaus</translation>
@@ -717,6 +728,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="7297226631177386107">HTTPS-sivustoihin ei voi yhdistää palomuurin läpi</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Kysy asiantuntijoilta neuvoa Chromebookin ohjefoorumilla</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; katso tulos Google Haussa painamalla Haku ja Välilyönti.</translation>
 <translation id="7343649194310845056">Verkkolaitteet</translation>
@@ -759,9 +771,11 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="773153675489693198">Syklien määrä</translation>
 <translation id="7747039790905080783">Esijaettu avain</translation>
 <translation id="7762130827864645708">Salasanasi vaihtaminen onnistui. Käytä jatkossa uutta salasanaa.</translation>
+<translation id="7762839321248874531">Lähetä <ph name="BEGIN_LINK1" />järjestelmä‐ ja sovellustietoja<ph name="END_LINK1" /> sekä <ph name="BEGIN_LINK2" />mittareita<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Verkkotunnuksen päätteen vastaavuus</translation>
 <translation id="7769672763586021400">Mallitunnus</translation>
 <translation id="7784116172884276937">DNS-palvelimia ei ole määritetty</translation>
+<translation id="779591286616261875">Lähetä uusi raportti</translation>
 <translation id="7799817062559422778">Vaalea tila</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7805768142964895445">Tila</translation>
@@ -828,6 +842,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="8382302752385457774">Tuotemerkitön</translation>
 <translation id="8395584934117017006">Tämä <ph name="DEVICE_TYPE" /> on yrityksen ylläpitämä</translation>
 <translation id="8398927464629426868">Laitteen tämänhetkinen latausnopeus tai latauksen purkunopeus</translation>
+<translation id="8420955526972171689">Testaa ja korjaa laitteisto-ongelmia</translation>
 <translation id="8422748173858722634">IMEI-koodi</translation>
 <translation id="8428073762635678092">Sisäinen näppäimistö</translation>
 <translation id="8431300646573772016">Chrome OS: uutta</translation>
@@ -913,6 +928,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="9082718469794970195">Käytä tätä videota</translation>
 <translation id="9087578468327036362">Ilmoita tästä kyselystä</translation>
 <translation id="9088306295921699330">Nykyinen käyttö</translation>
+<translation id="9092255287806472980">Palautteesi auttaa meitä parantamaan Chrome-käyttöjärjestelmää, ja tiimimme tarkistaa sen. Ilmoitusten suuren määrän vuoksi emme voi lähettää vastausta.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Sinun pitää purkaa laite</translation>
 <translation id="9098156406873149060">Säilytä käyttäjädata</translation>

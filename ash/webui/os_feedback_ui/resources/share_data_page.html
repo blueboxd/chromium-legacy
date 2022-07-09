@@ -1,4 +1,9 @@
 <style include="os-feedback-shared">
+  #legalHelpPageUrl,
+  #privacyPolicyUrl,
+  #termsOfServiceUrl {
+    text-decoration: none;
+  }
 
   #privacyNote {
     font-size: 12px;
@@ -35,19 +40,41 @@
     width: 50%;
   }
 
+  #screenshotCheckLabel {
+    flex: 1;
+  }
+
+  #screenshotContainer > button {
+    cursor: pointer;
+  }
+
   #screenshotImage {
     display: block;
     height: auto;
-    margin: 0 0 0 auto;
     transition: all 250ms ease;
     width: 68px;
   }
 
   #screenshotImage:hover {
-    margin: 170px 0 0 150px;
-    max-width: 600px;
-    transform: scale(8);
-    z-index: 1;
+    opacity: 0.7;
+  }
+
+  dialog {
+    bottom: auto;
+    top: auto;
+  }
+
+  cr-dialog::part(dialog) {
+    --cr-dialog-body-padding-horizontal: 0px;
+    --cr-dialog-title-slot-padding-start: 0px;
+    --cr-icon-button-margin-end: 20px;
+    width: 590px;
+  }
+
+  .image-preview {
+    height: auto;
+    max-height: 600px;
+    width: 580px;
   }
 
   #addFileContainer {
@@ -67,13 +94,23 @@
     margin-bottom: 24px;
   }
 
+  #pageUrl {
+    display: flex;
+    white-space: nowrap;
+  }
+
+  #tooltipContent {
+    white-space: normal;
+    word-wrap: break-word
+  }
+
   .disabled-input-text {
     color: var(--cros-text-color-disabled);
   }
 </style>
 <div id="container">
   <div id="header">
-    <h1 class="page-title">Send feedback</h1>
+    <h1 class="page-title">[[i18n('pageTitle')]]</h1>
   </div>
   <div id="content">
     <!-- Attach files -->
@@ -86,8 +123,10 @@
               aria-labelledby="screenshotCheckLabel"
               disabled="[[!hasScreenshot_(screenshotUrl)]]">
           <label id="screenshotCheckLabel">[[i18n('attachScreenshotLabel')]]</label>
-          <img id="screenshotImage" aria-label="$i18n{screenshotA11y}"
+          <button id="imageButton" on-click="handleScreenshotClick_">
+            <img id="screenshotImage" aria-label="$i18n{screenshotA11y}"
               src="[[screenshotUrl]]">
+           </button>
         </div>
         <!-- Attach a file -->
         <div id="addFileContainer" class="card-frame">
@@ -101,7 +140,7 @@
       <h2 id="userEmailLabel">[[i18n('userEmailLabel')]]</h2>
       <select id="userEmailDropDown" aria-labelledby="userEmailLabel">
         <option value$="[[feedbackContext.email]]">[[feedbackContext.email]]</option>
-        <option value="">Don't include email address</option>
+        <option value="" id="anonymousUser">[[i18n('anonymousUser')]]</option>
       </select>
     </div>
     <!-- User consent -->
@@ -117,9 +156,13 @@
       <div id="pageUrl" class="checkbox-field-container">
         <input id="pageUrlCheckbox" type="checkbox" aria-labelledby="pageUrlLabel"
             checked>
-        <label id="pageUrlLabel">share url:</label>
-        <input id="pageUrlText" aria-labelledby="pageUrlLabel" type="text"
-            value$="[[feedbackContext.pageUrl.url]]" dir="ltr">
+        <label id="pageUrlLabel">[[i18n('sharePageUrlLabel')]]&nbsp;</label>
+        <a href="[[feedbackContext.pageUrl.url]]" class="overflow-text" id="pageUrlText" target="_blank">
+          [[feedbackContext.pageUrl.url]]
+        </a>
+        <paper-tooltip for="pageUrlText" fitToVisibleBounds>
+          <div id="tooltipContent">[[feedbackContext.pageUrl.url]]</div>
+        </paper-tooltip>
       </div>
       <!-- System Information -->
       <div id="sysInfoContainer" class="checkbox-field-container">
@@ -142,3 +185,15 @@
     </cr-button>
   </div>
 </div>
+<cr-dialog id="screenshotDialog">
+  <div id="modalDialogTitle" slot="title">
+    <cr-icon-button id="closeDialogButton" class="icon-arrow-back"
+        on-click="handleScreenshotDialogCloseClick_"
+        title="[[i18n('attachScreenshotLabel')]]">
+    </cr-icon-button>
+    <span>[[i18n('attachScreenshotLabel')]]</span>
+  </div>
+  <div slot="body">
+    <img src="[[screenshotUrl]]" class="image-preview">
+  </div>
+</cr-dialog>

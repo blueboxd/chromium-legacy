@@ -248,6 +248,10 @@ class DriveFsSessionForTest : public DriveFsSession {
   void ExecuteHttpRequest(
       mojom::HttpRequestPtr request,
       mojo::PendingRemote<mojom::HttpDelegate> delegate) override {}
+  void GetMachineRootID(
+      mojom::DriveFsDelegate::GetMachineRootIDCallback callback) override {}
+  void PersistMachineRootID(const std::string& id) override {}
+  void OnMirrorSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {}
 };
 
 class DriveFsSessionTest : public ::testing::Test,

@@ -123,6 +123,7 @@
 <translation id="188114911237521550">Desativar modo escuro</translation>
 <translation id="1881188606372070653">Aceda à <ph name="BEGIN_LINK1" />página de Ajuda legal<ph name="END_LINK1" /> para pedir alterações de conteúdo por motivos legais. Algumas informações da conta e do sistema podem ser enviadas para a Google. Usamos as informações fornecidas por si na resolução de problemas técnicos e melhoria dos nossos serviços, sujeitas à <ph name="BEGIN_LINK2" />Política de Privacidade<ph name="END_LINK2" /> e aos <ph name="BEGIN_LINK3" />Termos de Utilização<ph name="END_LINK3" /> da Google.</translation>
 <translation id="1887850431809612466">Revisão de hardware</translation>
+<translation id="1904932688895783618">Seguem-se outros recursos úteis:</translation>
 <translation id="1905710495812624430">Foi excedido o número máximo de tentativas permitidas.</translation>
 <translation id="1908234395526491708">Falhas de pedidos de UDP.</translation>
 <translation id="1932611479324127242">Corte da bateria</translation>
@@ -137,6 +138,7 @@
 <translation id="2016697457005847575">Experimente passos de resolução de problemas</translation>
 <translation id="2016848882344942759">--sem etiqueta de autorizações--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Estabeleça ligação a uma rede e atualize a página para ver a proteção de ecrã.</translation>
 <translation id="2080070583977670716">Mais definições</translation>
 <translation id="2085089206770112532">Diminuir o brilho do ecrã</translation>
 <translation id="2105810540595158374">O dispositivo é um comando de jogos.</translation>
@@ -153,6 +155,7 @@
 <translation id="2163937499206714165">Ativar modo escuro</translation>
 <translation id="2177831236093724629">Foram encontrados <ph name="LINK_BEGIN" />componentes não qualificados<ph name="LINK_END" />. Para se certificar de que todos os componentes qualificados são identificados, atualize o Chrome OS para a versão mais recente.</translation>
 <translation id="2180197493692062006">Algo correu mal. Experimente reabrir a app.</translation>
+<translation id="2182088270354640012">Agradecemos o feedback. O seu feedback ajuda a melhorar o Chrome OS e o mesmo vai ser analisado pela equipa do Chrome OS. Devido ao número de relatórios enviados, não irá receber uma resposta direta.</translation>
 <translation id="2209788852729124853">Repor contadores de tráfego</translation>
 <translation id="2212733584906323460">Resolução de nomes</translation>
 <translation id="2217935453350629363">Velocidade atual</translation>
@@ -256,6 +259,7 @@
 <translation id="3226405216343213872">A procurar leitores…</translation>
 <translation id="3246869037381808805">As tarefas de impressão com mais de um 1 dia serão removidas.</translation>
 <translation id="3268178239013324452">Falha – Porta aberta</translation>
+<translation id="3275729367986477355">Imagem do avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Editar ficheiro}other{Editar ficheiros}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Direção da chave</translation>
@@ -429,6 +433,7 @@
 <translation id="4793710386569335688">Para mais ajuda, aceda ao <ph name="BEGIN_LINK" />Centro de Ajuda<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algoritmo de compressão</translation>
 <translation id="4794140124556169553">A execução de um teste da CPU pode afetar o desempenho do sistema</translation>
+<translation id="4800589996161293643">Comunidade do Chromebook</translation>
 <translation id="4804818685124855865">Desligar</translation>
 <translation id="4808449224298348341">Foi cancelada a tarefa de impressão de <ph name="DOCUMENT_TITLE" />.</translation>
 <translation id="4809927044794281115">Tema claro</translation>
@@ -488,6 +493,7 @@
 Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
+<translation id="522307662484862935">Não incluir endereço de email</translation>
 <translation id="5227902338748591677">Horário do tema escuro</translation>
 <translation id="5234764350956374838">Ignorar</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -614,6 +620,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="6284632978374966585">Ativar tema escuro</translation>
 <translation id="6295178529664209245">Continuar a reparação?</translation>
 <translation id="6302401976930124515">O teste <ph name="TEST_NAME" /> foi cancelado.</translation>
+<translation id="631063167932043783">Explorar app</translation>
 <translation id="6319207335391420837">Atualizar firmware no <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Ativar proteção de ecrã</translation>
 <translation id="6325525973963619867">Falhou</translation>
@@ -642,6 +649,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="6516990319416533844">Para testar a velocidade de carregamento da bateria, descarregue a bateria durante um curto período.</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6527081081771465939">Protocolo de segurança de Wi-Fi desconhecido.</translation>
+<translation id="6535178685492749208">Está offline. O feedback vai ser enviado mais tarde.</translation>
 <translation id="65587193855025101">Plano</translation>
 <translation id="6564646048574748301">Falha – Impressora inacessível</translation>
 <translation id="6566314079205407217">Digitalização de várias páginas</translation>
@@ -720,6 +728,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="7297226631177386107">Não é possível estabelecer ligação através da firewall a Websites HTTPS</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Pergunte aos especialistas no Fórum de Ajuda do Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; prima Pesquisar e a tecla de espaço para ver o resultado na Pesquisa Google.</translation>
 <translation id="7343649194310845056">Dispositivos de rede</translation>
@@ -762,9 +771,11 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="773153675489693198">Número de ciclos</translation>
 <translation id="7747039790905080783">Chave pré-partilhada</translation>
 <translation id="7762130827864645708">A alteração da sua palavra-passe foi efetuada com êxito. A partir de agora, utilize a nova palavra-passe.</translation>
+<translation id="7762839321248874531">Enviar <ph name="BEGIN_LINK1" />informações<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /> do sistema e da app</translation>
 <translation id="7763470514545477072">Correspondência do sufixo do domínio</translation>
 <translation id="7769672763586021400">ID do modelo</translation>
 <translation id="7784116172884276937">Não foram configurados servidores DNS</translation>
+<translation id="779591286616261875">Enviar novo relatório</translation>
 <translation id="7799817062559422778">Modo claro</translation>
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7805768142964895445">Estado</translation>
@@ -831,6 +842,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="8382302752385457774">Etiqueta de autorizações</translation>
 <translation id="8395584934117017006">Este <ph name="DEVICE_TYPE" /> é gerido pela empresa.</translation>
 <translation id="8398927464629426868">A velocidade de carregamento ou descarregamento atual do dispositivo.</translation>
+<translation id="8420955526972171689">Execute testes e a resolução de problemas de hardware</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Teclado interno</translation>
 <translation id="8431300646573772016">Novidades no ChromeOS</translation>
@@ -916,6 +928,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="9082718469794970195">Utilizar este vídeo</translation>
 <translation id="9087578468327036362">Denunciar esta consulta</translation>
 <translation id="9088306295921699330">Utilização atual</translation>
+<translation id="9092255287806472980">O seu feedback ajuda a melhorar o Chrome OS e vai ser analisado pela nossa equipa. Devido ao elevado número de relatórios, não é possível enviar uma resposta.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Vai ter de desmontar o dispositivo</translation>
 <translation id="9098156406873149060">Manter dados do utilizador</translation>

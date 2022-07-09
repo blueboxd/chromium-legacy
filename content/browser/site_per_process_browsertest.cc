@@ -499,6 +499,21 @@ class SitePerProcessNotIsolatedSandboxedIframeTest
   base::test::ScopedFeatureList feature_list_;
 };
 
+// A test class to allow testing isolated sandboxed iframes using the per-origin
+// process model.
+class SitePerProcessPerOriginIsolatedSandboxedIframeTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessPerOriginIsolatedSandboxedIframeTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kIsolateSandboxedIframes, {{"grouping", "per-origin"}}}},
+        {/* disabled_features */});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // SitePerProcessIgnoreCertErrorsBrowserTest
 
 void SitePerProcessIgnoreCertErrorsBrowserTest::SetUpOnMainThread() {
@@ -2477,6 +2492,175 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
                    ->GetSiteInstance()
                    ->GetSiteInfo()
                    .is_sandboxed());
+}
+
+// Test that sandboxed iframes that are same-site with their parent but
+// cross-origin from each other are put in different processes from each other,
+// when the 'per-origin' isolation grouping is active for
+// kIsolateSandboxedIframes. (In 'per-site' isolation mode they would be in the
+// same process.)
+IN_PROC_BROWSER_TEST_P(SitePerProcessPerOriginIsolatedSandboxedIframeTest,
+                       CrossOriginIsolatedSandboxedIframes) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  // The children need to have the same origin as the parent, but be cross
+  // origin from each other.
+  GURL same_origin_child_url(main_url);
+  GURL cross_origin_child_url(
+      embedded_test_server()->GetURL("sub.a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create sandboxed child frames, both same-origin and cross-origin.
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame1 = document.createElement('iframe'); "
+        "frame1.sandbox = ''; "
+        "frame1.src = '%s'; "
+        "document.body.appendChild(frame1); "
+        "var frame2 = document.createElement('iframe'); "
+        "frame2.sandbox = ''; "
+        "frame2.src = '%s'; "
+        "document.body.appendChild(frame2);",
+        same_origin_child_url.spec().c_str(),
+        cross_origin_child_url.spec().c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  // Check frame-tree.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(2U, root->child_count());
+
+  FrameTreeNode* child1 = root->child_at(0);  // a.com
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            child1->effective_frame_policy().sandbox_flags);
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child1->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child1->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetSiteInstance()
+                   ->GetSiteInfo()
+                   .is_sandboxed());
+
+  FrameTreeNode* child2 = root->child_at(1);  // sub.a.com
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            child2->effective_frame_policy().sandbox_flags);
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child2->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child2->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+  // This is the key result for this test: the sandboxed iframes for 'a.com' and
+  // 'sub.a.com' should be in different SiteInstances.
+  auto* child1_site_instance1 = child1->current_frame_host()->GetSiteInstance();
+  auto* child2_site_instance1 = child2->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(child1_site_instance1, child2_site_instance1);
+  EXPECT_NE(child1_site_instance1->GetProcess(),
+            child2_site_instance1->GetProcess());
+}
+
+// Test that, while using 'per-origin' isolation grouping, navigating a
+// sandboxed iframe from 'a.foo.com' to 'b.foo.com' results in the sandbox using
+// two different SiteInstances.
+IN_PROC_BROWSER_TEST_P(SitePerProcessPerOriginIsolatedSandboxedIframeTest,
+                       CrossOriginNavigationSwitchesSiteInstances) {
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  GURL cross_origin_child_url(
+      embedded_test_server()->GetURL("a.foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create sandboxed cross-origin child frame.
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.id = 'test_frame'; "
+        "frame.sandbox = ''; "
+        "frame.src = '%s'; "
+        "document.body.appendChild(frame);",
+        cross_origin_child_url.spec().c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  // Check frame-tree.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child = root->child_at(0);  // a.foo.com
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            child->effective_frame_policy().sandbox_flags);
+  scoped_refptr<SiteInstanceImpl> site_instance_root =
+      root->current_frame_host()->GetSiteInstance();
+  scoped_refptr<SiteInstanceImpl> site_instance1 =
+      child->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(site_instance_root, site_instance1);
+  EXPECT_TRUE(site_instance1->GetSiteInfo().is_sandboxed());
+  EXPECT_FALSE(site_instance_root->GetSiteInfo().is_sandboxed());
+
+  // Navigate sandboxed frame cross-origin to b.foo.com.
+  EXPECT_TRUE(NavigateIframeToURL(
+      shell()->web_contents(), "test_frame",
+      GURL(embedded_test_server()->GetURL("b.foo.com", "/title1.html"))));
+
+  scoped_refptr<SiteInstanceImpl> site_instance2 =
+      child->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(site_instance_root, site_instance2);
+  EXPECT_NE(site_instance1, site_instance2);
+  EXPECT_NE(site_instance1->GetProcess(), site_instance2->GetProcess());
+}
+
+// Test that navigating cross-origin from a non-sandboxed iframe to a CSP
+// sandboxed iframe results in switching to a new SiteInstance in a different
+// process.
+IN_PROC_BROWSER_TEST_P(SitePerProcessPerOriginIsolatedSandboxedIframeTest,
+                       CrossOriginNavigationToCSPSwitchesSiteInstances) {
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  GURL cross_origin_child_url(
+      embedded_test_server()->GetURL("a.foo.com", "/title1.html"));
+  GURL cross_origin_csp_child_url(
+      embedded_test_server()->GetURL("b.foo.com",
+                                     "/set-header?"
+                                     "Content-Security-Policy: sandbox "));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create non-sandboxed cross-origin child frame.
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.id = 'test_frame'; "
+        "frame.src = '%s'; "
+        "document.body.appendChild(frame);",
+        cross_origin_child_url.spec().c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  // Check frame-tree.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child = root->child_at(0);  // a.foo.com
+  scoped_refptr<SiteInstanceImpl> site_instance_root =
+      root->current_frame_host()->GetSiteInstance();
+  scoped_refptr<SiteInstanceImpl> site_instance1 =
+      child->current_frame_host()->GetSiteInstance();
+  EXPECT_EQ(site_instance_root, site_instance1);
+  EXPECT_FALSE(site_instance1->GetSiteInfo().is_sandboxed());
+
+  // Navigate child frame cross-origin to CSP-isolated b.foo.com.
+  EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test_frame",
+                                  cross_origin_csp_child_url));
+
+  // The child frame should now have a different SiteInstance and process than
+  // it did before the navigation.
+  scoped_refptr<SiteInstanceImpl> site_instance2 =
+      child->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(site_instance1, site_instance2);
+  EXPECT_NE(site_instance1->GetProcess(), site_instance2->GetProcess());
+  EXPECT_TRUE(site_instance2->GetSiteInfo().is_sandboxed());
 }
 
 // Check that two same-site sandboxed iframes in unrelated windows share the
@@ -4929,8 +5113,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   int view_routing_id = root->frame_tree()
                             ->GetRenderViewHost(site_instance_group_a)
                             ->GetRoutingID();
-  int parent_routing_id =
-      root->child_at(0)->render_manager()->GetProxyToParent()->GetRoutingID();
+  blink::RemoteFrameToken parent_frame_token =
+      root->child_at(0)->render_manager()->GetProxyToParent()->GetFrameToken();
 
   // Tell main frame A to delete its subframe B.
   FrameDeletedObserver observer(root->child_at(0)->current_frame_host());
@@ -4947,11 +5131,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   remote_main_frame_interfaces->main_frame_host = main_frame_host.Unbind();
 
   // Send the message to create a proxy for B's new child frame in A.  This
-  // used to crash, as parent_routing_id refers to a proxy that doesn't exist
+  // used to crash, as `parent_frame_token` refers to a proxy that doesn't exist
   // anymore.
   agent_scheduling_group_a->CreateFrameProxy(
       blink::RemoteFrameToken(), new_routing_id, absl::nullopt, view_routing_id,
-      parent_routing_id, blink::mojom::TreeScopeType::kDocument,
+      parent_frame_token, blink::mojom::TreeScopeType::kDocument,
       blink::mojom::FrameReplicationState::New(),
       base::UnguessableToken::Create(),
       std::move(remote_main_frame_interfaces));
@@ -5009,8 +5193,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       node->render_manager()->speculative_frame_host()->GetRoutingID();
   blink::LocalFrameToken frame_token =
       node->render_manager()->speculative_frame_host()->GetFrameToken();
-  int previous_routing_id =
-      node->render_manager()->GetProxyToParent()->GetRoutingID();
+  blink::RemoteFrameToken previous_frame_token =
+      node->render_manager()->GetProxyToParent()->GetFrameToken();
 
   // Now go to c.com so the navigation to a.com is cancelled and send an IPC
   // to create a new RenderFrame with the routing id of the previously pending
@@ -5024,11 +5208,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
     params->routing_id = frame_routing_id;
     params->frame = pending_frame.InitWithNewEndpointAndPassReceiver();
     std::ignore = params->interface_broker.InitWithNewPipeAndPassReceiver();
-    params->previous_routing_id = previous_routing_id;
+    params->previous_frame_token = previous_frame_token;
     params->opener_frame_token = absl::nullopt;
-    params->parent_routing_id =
-        shell()->web_contents()->GetPrimaryMainFrame()->GetRoutingID();
-    params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
+    params->parent_frame_token =
+        shell()->web_contents()->GetPrimaryMainFrame()->GetFrameToken();
     params->frame_owner_properties = blink::mojom::FrameOwnerProperties::New();
     params->token = frame_token;
     params->devtools_frame_token = base::UnguessableToken::Create();
@@ -5084,11 +5267,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
       node->current_frame_host()->GetFrameToken();
   int widget_routing_id =
       node->current_frame_host()->GetRenderWidgetHost()->GetRoutingID();
-  int parent_routing_id =
+  absl::optional<blink::FrameToken> parent_frame_token =
       node->parent()
           ->frame_tree_node()
           ->render_manager()
-          ->GetRoutingIdForSiteInstanceGroup(
+          ->GetFrameTokenForSiteInstanceGroup(
               node->current_frame_host()->GetSiteInstance()->group());
 
   // Have the parent frame remove the child frame from its DOM. This should
@@ -5107,10 +5290,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
     params->routing_id = frame_routing_id;
     params->frame = pending_frame.InitWithNewEndpointAndPassReceiver();
     std::ignore = params->interface_broker.InitWithNewPipeAndPassReceiver();
-    params->previous_routing_id = IPC::mojom::kRoutingIdNone;
+    params->previous_frame_token = absl::nullopt;
     params->opener_frame_token = absl::nullopt;
-    params->parent_routing_id = parent_routing_id;
-    params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
+    params->parent_frame_token = parent_frame_token;
+    params->previous_sibling_frame_token = absl::nullopt;
     params->frame_owner_properties = blink::mojom::FrameOwnerProperties::New();
     params->widget_params = mojom::CreateFrameWidgetParams::New();
     params->widget_params->routing_id = widget_routing_id;
@@ -12769,10 +12952,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   std::string double_tap_actions_json =
       base::StringPrintf(actions_template.c_str(), tap_position.x(),
                          tap_position.y(), tap_position.x(), tap_position.y());
-  base::JSONReader::ValueWithError parsed_json =
+  auto parsed_json =
       base::JSONReader::ReadAndReturnValueWithError(double_tap_actions_json);
-  ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
-  ActionsParser actions_parser(std::move(*parsed_json.value));
+  ASSERT_TRUE(parsed_json.has_value()) << parsed_json.error().message;
+  ActionsParser actions_parser(std::move(*parsed_json));
 
   ASSERT_TRUE(actions_parser.Parse());
   auto synthetic_gesture_doubletap =
@@ -13635,6 +13818,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          SitePerProcessNotIsolatedSandboxedIframeTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessPerOriginIsolatedSandboxedIframeTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          SitePerProcessIgnoreCertErrorsBrowserTest,

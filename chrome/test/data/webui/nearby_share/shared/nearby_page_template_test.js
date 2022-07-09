@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-import 'chrome://nearby/shared/nearby_page_template.js';
 
 import {NearbyPageTemplateElement} from 'chrome://nearby/shared/nearby_page_template.js';
 
@@ -71,8 +70,11 @@ suite('nearby-page-template', function() {
 
     /** @type {boolean} */
     let cancelTriggered = false;
-    element.addEventListener(
-        element.cancelButtonEventName, () => cancelTriggered = true);
+    // Nearby Share app always expects |event.detail| to be defined
+    element.addEventListener(element.cancelButtonEventName, event => {
+      cancelTriggered = true;
+      assertTrue(!!event.detail);
+    });
     element.shadowRoot.querySelector('#cancelButton').click();
     assertTrue(cancelTriggered);
 

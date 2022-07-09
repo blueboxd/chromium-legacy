@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/components/settings/timezone_settings.h"
+#include "ash/public/cpp/locale_update_controller.h"
 #include "base/memory/singleton.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
@@ -20,20 +21,13 @@
 
 namespace ash {
 
-namespace {
-// Default week title for a few special languages that cannot find the start of
-// a week. So far the known languages that cannot return their day of week are:
-// 'bn', 'fa', 'mr', 'pa-PK'.
-std::vector<std::u16string> kDefaultWeekTitle = {u"S", u"M", u"T", u"W",
-                                                 u"T", u"F", u"S"};
-}  // namespace
-
 // A singleton class used to create and cache `GregorianCalendar`,
 // `icu::SimpleDateFormat` and `icu::DateIntervalFormat` objects, so that they
 // don't have to be recreated each time when querying the time difference or
 // formatting a time. This improves performance since creating
 // `icu::SimpleDateFormat` and `icu::DateIntervalFormat` objects is expensive.
-class DateHelper : public system::TimezoneSettings::Observer {
+class DateHelper : public LocaleChangeObserver,
+                   public system::TimezoneSettings::Observer {
  public:
   // Returns the singleton instance.
   ASH_EXPORT static DateHelper* GetInstance();
@@ -64,7 +58,7 @@ class DateHelper : public system::TimezoneSettings::Observer {
 
   // Get the time difference to UTC time based on the time passed in and the
   // system timezone. Daylight saving is considered.
-  base::TimeDelta GetTimeDifference(base::Time date) const;
+  ASH_EXPORT base::TimeDelta GetTimeDifference(base::Time date) const;
 
   // Gets the local midnight in UTC time of the `date`.
   // e.g. If the `date` is Apr 1st 1:00 (which is Mar 31st 18:00 PST), the
@@ -124,6 +118,9 @@ class DateHelper : public system::TimezoneSettings::Observer {
 
   std::vector<std::u16string> week_titles() { return week_titles_; }
 
+  // Reset after a locale change in the test.
+  ASH_EXPORT void ResetForTesting();
+
  private:
   friend base::DefaultSingletonTraits<DateHelper>;
   friend class DateHelperUnittest;
@@ -142,6 +139,14 @@ class DateHelper : public system::TimezoneSettings::Observer {
 
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;
+
+  // LocaleChangeObserver:
+  // Although the device will restart whenever there's locale change and this
+  // instance will be re-constructed, however this dose not cover all the cases.
+  // The locale between the login screen and the user's screen can be different.
+  // (For example: different languages are set in different accounts, and the
+  // login screen will use the owener's locale setting.)
+  void OnLocaleChanged() override;
 
   // Formatter for getting the day of month.
   icu::SimpleDateFormat day_of_month_formatter_;

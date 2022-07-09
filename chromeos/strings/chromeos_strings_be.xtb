@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Карыстальнік</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Акно абнаўлення ўбудаванага праграмнага забеспячэння для знешніх прылад адкрыта. Даступных абнаўленняў: <ph name="NUM_UPDATES" />.</translation>
+<translation id="1145516343487477149">Даведачныя артыкулы і адказы на распаўсюджаныя пытанні пра Chromebook</translation>
 <translation id="1165039591588034296">Памылка</translation>
 <translation id="1175697296044146566">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе <ph name="MANAGER" /></translation>
 <translation id="1175951029573070619">Сярэдні (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Выключыць цёмную тэму</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Выключыць цёмны рэжым</translation>
+<translation id="1881188606372070653">Каб адправіць запыт на змяненне змесціва з юрыдычных прычын, перайдзіце на <ph name="BEGIN_LINK1" />старонку юрыдычнай даведкі<ph name="END_LINK1" />. Некаторыя звесткі аб вашым уліковым запісе і сістэме могуць быць адпраўлены ў Google. Мы будзем выкарыстоўваць вашу інфармацыю, каб у адпаведнасці з <ph name="BEGIN_LINK2" />Палітыкай прыватнасці<ph name="END_LINK2" /> і <ph name="BEGIN_LINK3" />Умовамі выкарыстання<ph name="END_LINK3" /> вызначаць тэхнічныя праблемы і ўдасканальваць нашы сэрвісы.</translation>
 <translation id="1887850431809612466">Версія апаратнага забеспячэння</translation>
+<translation id="1904932688895783618">Вось яшчэ некалькі карысных рэсурсаў:</translation>
 <translation id="1905710495812624430">Перавышана максімальная колькасць спроб.</translation>
 <translation id="1908234395526491708">Збоі запытаў UDP</translation>
 <translation id="1932611479324127242">Выключыць акумулятар</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Паспрабуйце знайсці і выправіць непаладку</translation>
 <translation id="2016848882344942759">--без рэбрэндынгу--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Каб праглядзець застаўку, падключыце прыладу да інтэрнэту і перазагрузіце старонку.</translation>
 <translation id="2080070583977670716">Іншыя налады</translation>
 <translation id="2085089206770112532">Паменшыць яркасць дысплэя</translation>
 <translation id="2105810540595158374">Гэта гульнявы кантролер.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Уключыць цёмны рэжым</translation>
 <translation id="2177831236093724629">Выяўлены <ph name="LINK_BEGIN" />кампаненты, якія не адпавядаюць патрабаванням<ph name="LINK_END" />. Каб усе кампаненты, якія адпавядаюць патрабаванням, былі ідэнтыфікаваны, абнавіце Chrome OS да апошняй версіі.</translation>
 <translation id="2180197493692062006">Нешта пайшло не так. Паспрабуйце адкрыць праграму паўторна.</translation>
+<translation id="2182088270354640012">Дзякуй за водгук. Ваш водгук дапаможа нам палепшыць Chrome OS і будзе разгледжаны нашай камандай. Да нас звяртаецца вялікая колькасць людзей, і таму вы не атрымаеце непасрэднага адказу.</translation>
 <translation id="2209788852729124853">Скінуць лічыльнікі трафіка</translation>
 <translation id="2212733584906323460">Пераўтварэнне імён</translation>
 <translation id="2217935453350629363">Бягучая хуткасць</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Ідзе пошук сканераў</translation>
 <translation id="3246869037381808805">Заданні друку, старэйшыя за 1 дзень, будуць выдалены</translation>
 <translation id="3268178239013324452">Збой: дзверцы прынтара адкрыты</translation>
+<translation id="3275729367986477355">Відарыс аватара</translation>
 <translation id="3283504360622356314">{0,plural, =1{Змяніць файл}one{Змяніць файлы}few{Змяніць файлы}many{Змяніць файлы}other{Змяніць файлы}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> ГГц</translation>
 <translation id="3291996639387199448">Кірунак ключа</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Каб атрымаць дадатковую інфармацыю, наведайце <ph name="BEGIN_LINK" />Даведачны цэнтр<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Алгарытм сціскання</translation>
 <translation id="4794140124556169553">Выкананне праверкі ЦП можа паўплываць на прадукцыйнасць сістэмы</translation>
+<translation id="4800589996161293643">Супольнасць Chromebook</translation>
 <translation id="4804818685124855865">Адключыцца</translation>
 <translation id="4808449224298348341">Заданне друку "<ph name="DOCUMENT_TITLE" />" скасавана</translation>
 <translation id="4809927044794281115">Светлая тэма</translation>
@@ -486,6 +493,7 @@
 Каб спытаць мяне аб чым-небудзь, паспрабуйце дакрануцца да мікрафона.</translation>
 <translation id="5212593641110061691">Таблоід</translation>
 <translation id="5222676887888702881">Выйсці</translation>
+<translation id="522307662484862935">Не дадаваць адрас электроннай пошты</translation>
 <translation id="5227902338748591677">Расклад уключэння цёмнай тэмы</translation>
 <translation id="5234764350956374838">Адхіліць</translation>
 <translation id="5252456968953390977">Роўмінг</translation>
@@ -612,6 +620,7 @@
 <translation id="6284632978374966585">Уключыць цёмную тэму</translation>
 <translation id="6295178529664209245">Працягнуць рамонт?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />: тэст скасаваны</translation>
+<translation id="631063167932043783">Праграма "Агляд"</translation>
 <translation id="6319207335391420837">Абнаўленне ўбудаванага ПЗ прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="6321407676395378991">Уключыць застаўку</translation>
 <translation id="6325525973963619867">Збой</translation>
@@ -623,6 +632,7 @@
 <translation id="6379086450106841622">Сэнсарны экран</translation>
 <translation id="6381741036071372448">Праверце клавіятуру</translation>
 <translation id="6388847657025262518">Заела прыстасаванне сканера для падачы дакументаў. Праверце прыстасаванне і паўтарыце спробу.</translation>
+<translation id="6394634179843537518">Дадайце файл</translation>
 <translation id="6410257289063177456">Файлы відарысаў</translation>
 <translation id="641081527798843608">Супадзенне суб'екта</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@
 <translation id="6516990319416533844">Каб праверыць хуткасць зарадкі, пачакайце крыху, пакуль акумулятар дастаткова не разрадзіцца</translation>
 <translation id="6517239166834772319">Агляд</translation>
 <translation id="6527081081771465939">Невядомы пратакол сістэмы бяспекі Wi-Fi</translation>
+<translation id="6535178685492749208">Вы па-за сеткай. Водгук будзе адпраўлены пазней.</translation>
 <translation id="65587193855025101">Планшэтны сканер</translation>
 <translation id="6564646048574748301">Збой: прынтар недаступны</translation>
 <translation id="6566314079205407217">Шматстаронкавае сканіраванне</translation>
@@ -717,6 +728,7 @@
 <translation id="7297226631177386107">Не ўдалося падключыцца праз брандмаўар да вэб-сайтаў HTTPS</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Пытанні экспертам і адказы на іх на даведачным форуме Chromebook</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />. Каб пабачыць вынік у Google Пошуку, націсніце "Пошук" і клавішу прабелу.</translation>
 <translation id="7343649194310845056">Сеткавыя прылады</translation>
@@ -759,9 +771,11 @@
 <translation id="773153675489693198">Колькасць цыклаў</translation>
 <translation id="7747039790905080783">Папярэдне абагулены ключ</translation>
 <translation id="7762130827864645708">Пароль зменены. У далейшым выкарыстоўвайце яго.</translation>
+<translation id="7762839321248874531">Адправіць <ph name="BEGIN_LINK1" />звесткі пра сістэму і праграмы<ph name="END_LINK1" />, а таксама <ph name="BEGIN_LINK2" />паказчыкі<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Супадзенне па суфіксе дамена</translation>
 <translation id="7769672763586021400">Ідэнтыфікатар мадэлі</translation>
 <translation id="7784116172884276937">DNS-серверы не наладжаны</translation>
+<translation id="779591286616261875">Адправіць яшчэ адну справаздачу</translation>
 <translation id="7799817062559422778">Светлы рэжым</translation>
 <translation id="780301667611848630">Не, дзякуй</translation>
 <translation id="7805768142964895445">Стан</translation>
@@ -828,6 +842,7 @@
 <translation id="8382302752385457774">Рэбрэндынг</translation>
 <translation id="8395584934117017006">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе арганізацыя</translation>
 <translation id="8398927464629426868">Цяперашняя хуткасць зарадкі або разрадкі прылады</translation>
+<translation id="8420955526972171689">Запуск праверак, а таксама пошук і выпраўленне непаладак, звязаных з апаратным забеспячэннем</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Убудаваная клавіятура</translation>
 <translation id="8431300646573772016">Што новага ў Chrome OS</translation>
@@ -913,6 +928,7 @@
 <translation id="9082718469794970195">Выкарыстоўваць гэта відэа</translation>
 <translation id="9087578468327036362">Паскардзіцца на гэты запыт</translation>
 <translation id="9088306295921699330">Бягучае выкарыстанне</translation>
+<translation id="9092255287806472980">Ваш водгук дапаможа нам палепшыць Chrome OS і будзе разгледжаны нашай камандай. Да нас звяртаецца вялікая колькасць людзей, і таму мы не зможам адправіць вам адказ.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Вам трэба будзе разабраць прыладу</translation>
 <translation id="9098156406873149060">Захаваць карыстальніцкія даныя</translation>

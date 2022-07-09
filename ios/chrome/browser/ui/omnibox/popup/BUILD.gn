@@ -24,6 +24,7 @@ swift_source_set("popup_swift") {
     "shared/popup_ui_configuration.swift",
     "shared/popup_ui_variation.swift",
     "shared/popup_view.swift",
+    "shared/popup_visible_suggestion_count.swift",
     "shared/pressed_preference_key_button_style.swift",
     "shared/self_sizing_list.swift",
   ]
@@ -89,6 +90,7 @@ source_set("popup") {
     "//ios/chrome/browser/ui/main:default_browser_scene_agent",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/ntp:util",
+    "//ios/chrome/browser/ui/omnibox:features",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/omnibox/resources:pedal_clear_browsing_data",
     "//ios/chrome/browser/ui/omnibox/resources:pedal_default_browser",
@@ -188,6 +190,7 @@ source_set("popup_internal") {
     "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/omnibox:features",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",

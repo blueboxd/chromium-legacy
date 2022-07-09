@@ -41,7 +41,7 @@
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/can_commit_status.h"
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
-#include "content/browser/prerender/prerender_host.h"
+#include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/browsing_context_state.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
@@ -239,7 +239,6 @@ class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
-class SensorProviderProxyImpl;
 class ServiceWorkerContainerHost;
 class SiteInfo;
 class SpeechSynthesisImpl;
@@ -496,6 +495,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       BackForwardCacheCanStoreDocumentResultWithTree& can_store);
 
   // Only for testing sticky WebBackForwardCacheDisablingFeature.
+  // This is implemented solely in the browser and should only be used when
+  // stickiness is required, otherwise
+  // BackForwardCacheBrowserTest::AddBlocklistedFeature should be used.
   void UseDummyStickyBackForwardCacheDisablingFeatureForTesting();
 
   // Returns the current WebPreferences for the WebContents associated with this
@@ -531,6 +533,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int opt_request_id,
       base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
                               int hit_node_id)> opt_callback) override;
+  // Return true if this is the root -- there are no parent frames of any kind.
   bool AccessibilityIsMainFrame() override;
   WebContentsAccessibility* AccessibilityGetWebContentsAccessibility() override;
 
@@ -544,10 +547,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Creates a RenderFrame in the renderer process.
   bool CreateRenderFrame(
-      int previous_routing_id,
+      const absl::optional<blink::FrameToken>& previous_frame_token,
       const absl::optional<blink::FrameToken>& opener_frame_token,
-      int parent_routing_id,
-      int previous_sibling_routing_id);
+      const absl::optional<blink::FrameToken>& parent_frame_token,
+      const absl::optional<blink::FrameToken>& previous_sibling_frame_token);
 
   // Deletes the RenderFrame in the renderer process.
   // Postcondition: |IsPendingDeletion()| is true.
@@ -1260,6 +1263,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool CreateWebUI(const GURL& dest_url, int entry_bindings);
 
   // Destroys WebUI instance and resets related data.
+  // This indirectly calls content's embedders and may have arbitrary side
+  // effect, like deleting `this`.
   void ClearWebUI();
 
   // Returns the Mojo ImageDownloader service.
@@ -1869,7 +1874,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return required_csp_.get();
   }
 
-  bool IsAnonymous() const;
+  bool IsAnonymous() const override;
 
   bool is_fenced_frame_opaque_url() const {
     return is_fenced_frame_opaque_url_;
@@ -3651,9 +3656,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // IdleManager which provides Idle status.
   std::unique_ptr<IdleManagerImpl> idle_manager_;
 
-  // SensorProvider proxy which acts as a gatekeeper to the real SensorProvider.
-  std::unique_ptr<SensorProviderProxyImpl> sensor_provider_proxy_;
-
   std::unique_ptr<blink::AssociatedInterfaceRegistry> associated_registry_;
 
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
@@ -4235,8 +4237,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::OnceClosure did_stop_loading_callback_;
 
   // Used when testing to retrieve that last created Web Bluetooth service.
-  raw_ptr<WebBluetoothServiceImpl, DanglingUntriaged>
-      last_web_bluetooth_service_for_testing_ = nullptr;
+  raw_ptr<WebBluetoothServiceImpl> last_web_bluetooth_service_for_testing_ =
+      nullptr;
 
   BackForwardCacheDisablingFeaturesCallback
       back_forward_cache_disabling_features_callback_for_testing_;

@@ -19,18 +19,17 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
+#include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/fake_stub_cellular_networks_provider.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/device_state.h"
-#include "chromeos/network/fake_stub_cellular_networks_provider.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -2469,8 +2468,6 @@ TEST_F(NetworkStateHandlerTest, BlockedCellularByPolicyOnlyManaged) {
 
 TEST_F(NetworkStateHandlerTest,
        UpdateBlockedCellularNetworkAfterUpdateManagedList) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kESimPolicy);
   const char kTestCellularServicePath2[] = "test_cellular_service_path2";
   const char kTestCellularServiceGuid2[] = "test_cellular_guid2";
   const char kTestCellularServiceName2[] = "test_cellular2";

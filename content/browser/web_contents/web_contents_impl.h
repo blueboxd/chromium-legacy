@@ -28,7 +28,7 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
-#include "content/browser/prerender/prerender_handle_impl.h"
+#include "content/browser/preloading/prerender/prerender_handle_impl.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_controller_delegate.h"
@@ -555,6 +555,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool HasActiveEffectivelyFullscreenVideo() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
   const base::Location& GetCreatorLocation() override;
+  float GetPictureInPictureInitialAspectRatio() override;
+  bool GetPictureInPictureLockAspectRatio() override;
   void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
                                   cc::BrowserControlsState current,
                                   bool animate) override;
@@ -659,7 +661,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const GURL& url) override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
   void DidCallFocus() override;
-  RenderFrameHostImpl* GetFocusedFrameIncludingInnerWebContents() override;
+  RenderFrameHostImpl* GetFocusedFrameIncludingInnerFrameTrees() override;
   void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
       const gfx::Rect& bounds_in_root_view,
@@ -2295,6 +2297,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Stores WebContents::CreateParams::creator_location_.
   base::Location creator_location_;
+
+  // The initial aspect ratio (only used for WebContents associated with a
+  // PictureInPicture window). This value is either the parameter given in
+  // WebContents::CreateParams::initial_picture_in_picture_aspect_ratio, or a
+  // default value if the given value is unset or invalid.
+  float pip_initial_aspect_ratio_ = 1.0f;
+
+  // Stores WebContents::CreateParams::lock_picture_in_picture_aspect_ratio.
+  bool pip_lock_aspect_ratio_ = false;
 
   VisibleTimeRequestTrigger visible_time_request_trigger_;
 

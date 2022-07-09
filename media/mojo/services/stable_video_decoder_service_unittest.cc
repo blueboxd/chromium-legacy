@@ -56,7 +56,7 @@ class MockVideoFrameHandleReleaser : public mojom::VideoFrameHandleReleaser {
   // mojom::VideoFrameHandleReleaser implementation.
   MOCK_METHOD2(ReleaseVideoFrame,
                void(const base::UnguessableToken& release_token,
-                    const gpu::SyncToken& release_sync_token));
+                    const absl::optional<gpu::SyncToken>& release_sync_token));
 
  private:
   mojo::Receiver<mojom::VideoFrameHandleReleaser>
@@ -384,6 +384,58 @@ TEST_F(StableVideoDecoderServiceTest,
                                           /*expect_construct_call=*/false));
 }
 
+// Tests that a call to stable::mojom::VideoDecoder::GetSupportedConfigs() gets
+// routed correctly to the underlying mojom::VideoDecoder. Also tests that the
+// underlying mojom::VideoDecoder's reply gets routed correctly back to the
+// client.
+TEST_F(StableVideoDecoderServiceTest,
+       StableVideoDecoderCanGetSupportedConfigs) {
+  auto mock_video_decoder = std::make_unique<StrictMock<MockVideoDecoder>>();
+  auto* mock_video_decoder_raw = mock_video_decoder.get();
+  auto stable_video_decoder_remote =
+      CreateStableVideoDecoder(std::move(mock_video_decoder));
+  ASSERT_TRUE(stable_video_decoder_remote.is_bound());
+  ASSERT_TRUE(stable_video_decoder_remote.is_connected());
+
+  StrictMock<base::MockOnceCallback<void(
+      const std::vector<SupportedVideoDecoderConfig>& supported_configs,
+      VideoDecoderType decoder_type)>>
+      get_supported_configs_cb_to_send;
+  mojom::VideoDecoder::GetSupportedConfigsCallback
+      received_get_supported_configs_cb;
+  constexpr VideoDecoderType kDecoderTypeToReplyWith = VideoDecoderType::kVaapi;
+  const std::vector<SupportedVideoDecoderConfig>
+      supported_configs_to_reply_with({
+          {/*profile_min=*/H264PROFILE_MIN, /*profile_max=*/H264PROFILE_MAX,
+           /*coded_size_min=*/gfx::Size(320, 180),
+           /*coded_size_max=*/gfx::Size(1280, 720), /*allow_encrypted=*/false,
+           /*require_encrypted=*/false},
+          {/*profile_min=*/VP9PROFILE_MIN, /*profile_max=*/VP9PROFILE_MAX,
+           /*coded_size_min=*/gfx::Size(8, 8),
+           /*coded_size_max=*/gfx::Size(640, 360), /*allow_encrypted=*/true,
+           /*require_encrypted=*/true},
+      });
+  std::vector<SupportedVideoDecoderConfig> received_supported_configs;
+
+  EXPECT_CALL(*mock_video_decoder_raw, GetSupportedConfigs(/*callback=*/_))
+      .WillOnce([&](mojom::VideoDecoder::GetSupportedConfigsCallback callback) {
+        received_get_supported_configs_cb = std::move(callback);
+      });
+  EXPECT_CALL(get_supported_configs_cb_to_send, Run(_, kDecoderTypeToReplyWith))
+      .WillOnce(SaveArg<0>(&received_supported_configs));
+
+  stable_video_decoder_remote->GetSupportedConfigs(
+      get_supported_configs_cb_to_send.Get());
+  stable_video_decoder_remote.FlushForTesting();
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(mock_video_decoder_raw));
+
+  std::move(received_get_supported_configs_cb)
+      .Run(supported_configs_to_reply_with, kDecoderTypeToReplyWith);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(received_supported_configs, supported_configs_to_reply_with);
+}
+
 // Tests that a call to stable::mojom::VideoDecoder::Initialize() gets routed
 // correctly to the underlying mojom::VideoDecoder. Also tests that when the
 // underlying mojom::VideoDecoder calls the initialization callback, the call
@@ -608,6 +660,37 @@ TEST_F(StableVideoDecoderServiceTest,
   stable_video_decoder_remote.FlushForTesting();
 }
 
+// Tests that a call to
+// stable::mojom::VideoFrameHandleReleaser::ReleaseVideoFrame() gets routed
+// correctly to the underlying mojom::VideoFrameHandleReleaser.
+TEST_F(StableVideoDecoderServiceTest, VideoFramesCanBeReleased) {
+  auto mock_video_decoder = std::make_unique<StrictMock<MockVideoDecoder>>();
+  auto* mock_video_decoder_raw = mock_video_decoder.get();
+  auto stable_video_decoder_remote =
+      CreateStableVideoDecoder(std::move(mock_video_decoder));
+  ASSERT_TRUE(stable_video_decoder_remote.is_bound());
+  ASSERT_TRUE(stable_video_decoder_remote.is_connected());
+  auto auxiliary_endpoints = ConstructStableVideoDecoder(
+      stable_video_decoder_remote, *mock_video_decoder_raw,
+      /*expect_construct_call=*/true);
+  ASSERT_TRUE(auxiliary_endpoints);
+  ASSERT_TRUE(auxiliary_endpoints->stable_video_frame_handle_releaser_remote);
+  ASSERT_TRUE(auxiliary_endpoints->mock_video_frame_handle_releaser);
+
+  const base::UnguessableToken release_token_to_send =
+      base::UnguessableToken::Create();
+  const absl::optional<gpu::SyncToken> expected_release_sync_token =
+      absl::nullopt;
+
+  EXPECT_CALL(
+      *auxiliary_endpoints->mock_video_frame_handle_releaser,
+      ReleaseVideoFrame(release_token_to_send, expected_release_sync_token));
+  auxiliary_endpoints->stable_video_frame_handle_releaser_remote
+      ->ReleaseVideoFrame(release_token_to_send);
+  auxiliary_endpoints->stable_video_frame_handle_releaser_remote
+      .FlushForTesting();
+}
+
 TEST_F(StableVideoDecoderServiceTest,
        StableVideoDecoderClientReceivesOnVideoFrameDecodedEvent) {
   auto mock_video_decoder = std::make_unique<StrictMock<MockVideoDecoder>>();
@@ -636,6 +719,61 @@ TEST_F(StableVideoDecoderServiceTest,
   auxiliary_endpoints->video_decoder_client_remote.FlushForTesting();
   ASSERT_TRUE(video_frame_received);
   EXPECT_TRUE(video_frame_received->metadata().end_of_stream);
+}
+
+// Tests that a mojom::VideoDecoderClient::OnWaiting() call originating from the
+// underlying mojom::VideoDecoder gets forwarded to the
+// stable::mojom::VideoDecoderClient correctly.
+TEST_F(StableVideoDecoderServiceTest,
+       StableVideoDecoderClientReceivesOnWaitingEvent) {
+  auto mock_video_decoder = std::make_unique<StrictMock<MockVideoDecoder>>();
+  auto* mock_video_decoder_raw = mock_video_decoder.get();
+  auto stable_video_decoder_remote =
+      CreateStableVideoDecoder(std::move(mock_video_decoder));
+  ASSERT_TRUE(stable_video_decoder_remote.is_bound());
+  ASSERT_TRUE(stable_video_decoder_remote.is_connected());
+  auto auxiliary_endpoints = ConstructStableVideoDecoder(
+      stable_video_decoder_remote, *mock_video_decoder_raw,
+      /*expect_construct_call=*/true);
+  ASSERT_TRUE(auxiliary_endpoints);
+  ASSERT_TRUE(auxiliary_endpoints->video_decoder_client_remote);
+  ASSERT_TRUE(auxiliary_endpoints->mock_stable_video_decoder_client);
+
+  constexpr WaitingReason kWaitingReason = WaitingReason::kNoDecryptionKey;
+  EXPECT_CALL(*auxiliary_endpoints->mock_stable_video_decoder_client,
+              OnWaiting(kWaitingReason));
+  auxiliary_endpoints->video_decoder_client_remote->OnWaiting(kWaitingReason);
+  auxiliary_endpoints->video_decoder_client_remote.FlushForTesting();
+}
+
+// Tests that a mojom::MediaLog::AddLogRecord() call originating from the
+// underlying mojom::VideoDecoder gets forwarded to the stable::mojom::MediaLog
+// correctly.
+TEST_F(StableVideoDecoderServiceTest,
+       StableVideoDecoderClientReceivesAddLogRecordEvent) {
+  auto mock_video_decoder = std::make_unique<StrictMock<MockVideoDecoder>>();
+  auto* mock_video_decoder_raw = mock_video_decoder.get();
+  auto stable_video_decoder_remote =
+      CreateStableVideoDecoder(std::move(mock_video_decoder));
+  ASSERT_TRUE(stable_video_decoder_remote.is_bound());
+  ASSERT_TRUE(stable_video_decoder_remote.is_connected());
+  auto auxiliary_endpoints = ConstructStableVideoDecoder(
+      stable_video_decoder_remote, *mock_video_decoder_raw,
+      /*expect_construct_call=*/true);
+  ASSERT_TRUE(auxiliary_endpoints);
+  ASSERT_TRUE(auxiliary_endpoints->media_log_remote);
+  ASSERT_TRUE(auxiliary_endpoints->mock_stable_media_log);
+
+  MediaLogRecord media_log_record_to_send;
+  media_log_record_to_send.id = 2;
+  media_log_record_to_send.type = MediaLogRecord::Type::kMediaStatus;
+  media_log_record_to_send.params.SetStringKey("Test", "Value");
+  media_log_record_to_send.time = base::TimeTicks::Now();
+
+  EXPECT_CALL(*auxiliary_endpoints->mock_stable_media_log,
+              AddLogRecord(media_log_record_to_send));
+  auxiliary_endpoints->media_log_remote->AddLogRecord(media_log_record_to_send);
+  auxiliary_endpoints->media_log_remote.FlushForTesting();
 }
 
 }  // namespace

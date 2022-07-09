@@ -32,6 +32,7 @@
 <translation id="1197088940767939838">Laranja</translation>
 <translation id="1198865190323699001">Gestos de toque</translation>
 <translation id="1201402288615127009">Seguinte</translation>
+<translation id="1202112913213080585">cancelar</translation>
 <translation id="1206619573307042055">painel rolante</translation>
 <translation id="1207086294218137981">Não existe nenhum cabeçalho de nível 4 seguinte.</translation>
 <translation id="1212770441379271564">Os próximos atalhos não são comandos do ChromeVox, mas continuam a ser úteis para tirar o máximo partido do Chrome.
@@ -43,6 +44,7 @@
     Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox - A dar voz ao Chrome</translation>
 <translation id="1225969361094801578">Cinzento-ardósia escuro</translation>
+<translation id="122928249241119550">mover para a frase anterior</translation>
 <translation id="1230503547248836149">Início da seleção</translation>
 <translation id="1236794971743289975">Nota final</translation>
 <translation id="1237797094773582699">Da mesma forma, pode deslizar rapidamente da direita para a esquerda com quatro dedos para se deslocar para a secção anterior. Experimente agora!</translation>
@@ -51,7 +53,7 @@
 <translation id="1246424317317450637">Negrito</translation>
 <translation id="1251750620252348585">Título de nível 6 seguinte</translation>
 <translation id="1268366246392928616">Não existe nenhuma expressão matemática anterior.</translation>
-<translation id="1273314450961659276">Definições da síntese de voz</translation>
+<translation id="1273314450961659276">Definições da conversão de texto em voz</translation>
 <translation id="1275718070701477396">Linha selecionada</translation>
 <translation id="1284576163386164372">Pode sempre ver tutoriais ao abrir os menus com um toque de quatro dedos. Em seguida, ative o tutorial na secção "ChromeVox".</translation>
 <translation id="1291286136605998134">Botão ativar/desativar</translation>
@@ -198,7 +200,7 @@
 <translation id="2329324941084714723">Painel de separadores</translation>
 <translation id="2347456970887948350">Um link</translation>
 <translation id="2365384324219615024">Também pode premir Enter para ativar itens. Por exemplo, pode utilizar a tecla Enter para enviar texto num formulário. Para continuar, prima Enter.</translation>
-<translation id="2381733276052567791">Ativar ou desativar a síntese de voz</translation>
+<translation id="2381733276052567791">Ativar ou desativar a conversão de texto em voz</translation>
 <translation id="2390264819538553347">Para avançar, prima Enter. Para retroceder, prima a tecla de retrocesso.</translation>
 <translation id="2398579267367951220">Escreva para pesquisar a página. Prima Enter para avançar para o resultado, as setas para cima ou para baixo para procurar resultados, continue a escrever para alterar a sua pesquisa ou prima Escape para cancelar.</translation>
 <translation id="240709722712693803">Azul-violeta</translation>
@@ -213,13 +215,14 @@
 <translation id="2435422727584637732">Azul-claro</translation>
 <translation id="2438712309510062123">Sugerir</translation>
 <translation id="2450814015951372393">Caixa de verificação</translation>
+<translation id="2450992626945324272">mover para a frase seguinte</translation>
 <translation id="2461822463642141190">Atual</translation>
 <translation id="2462626033734746142">Grupo de botões de opção</translation>
 <translation id="2467741090055146971">desmarcar</translation>
 <translation id="2471138580042810658">Título 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisco}other{# asteriscos}}</translation>
 <translation id="2490721194269245365">Castanho rosado</translation>
-<translation id="249330843868392562">Abrir definições da síntese de voz</translation>
+<translation id="249330843868392562">Abrir definições da conversão de texto em voz</translation>
 <translation id="2497706219848005458">Amarelo-esverdeado</translation>
 <translation id="2523609930580546572">Tutorial do ChromeVox</translation>
 <translation id="2525706221823668172">Atalhos de teclado do Chromebook</translation>
@@ -489,6 +492,7 @@
 <translation id="42164919740161077">Azul-cadete</translation>
 <translation id="4217571870635786043">Ditado</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{traço}other{# traços}}</translation>
+<translation id="4220024144662591089">selecionar entre <ph name="START_PHRASE" /> e <ph name="END_PHRASE" /></translation>
 <translation id="4221012616705981690">Não existe nenhuma lista anterior.</translation>
 <translation id="4225355998815256469">Controlos de formulário</translation>
 <translation id="4230834257931120629">Cinzento-ardósia claro</translation>
@@ -657,7 +661,7 @@
 <translation id="5452267669091857717">Não existe nenhum cabeçalho de nível 1 seguinte.</translation>
 <translation id="5455441614648621694">Complementar</translation>
 <translation id="5462510922370980473">Lista de páginas</translation>
-<translation id="5471768120198416576">Olá! Sou a sua voz para a síntese de voz.</translation>
+<translation id="5471768120198416576">Olá! Sou a sua voz para a conversão de texto em voz.</translation>
 <translation id="5495517933067991341">Teclas essenciais: Shift</translation>
 <translation id="549602578321198708">Palavra</translation>
 <translation id="5513242761114685513">Menu de contexto</translation>
@@ -706,7 +710,7 @@
 <translation id="5748623122140342504">Título de nível 5 anterior</translation>
 <translation id="5760594853119905566">Apêndice</translation>
 <translation id="5761219715606611783">Muito bem! Aprendeu as noções básicas acerca do toque do ChromeVox. Pode voltar a assistir ao tutorial ou sair do mesmo com os botões abaixo.</translation>
-<translation id="5776001898637896684">Extensão de síntese de voz Google Enhanced Network</translation>
+<translation id="5776001898637896684">Extensão de conversão de texto em voz Google Enhanced Network</translation>
 <translation id="5805940204952508776">Tocar com dois dedos</translation>
 <translation id="5819072574982403430">Item de árvore</translation>
 <translation id="5822819874379903994">Azul-turquesa escuro</translation>
@@ -724,7 +728,7 @@
 <translation id="5876817486144482042">Diminuir volume de voz</translation>
 <translation id="5878206664863390311">Prima a tecla de pesquisa + seta para a direita ou tecla de pesquisa + seta para a esquerda para procurar tópicos</translation>
 <translation id="5878908838135392163">Azul-pólvora</translation>
-<translation id="588108970619830498">Reponha as definições da síntese de voz para os valores predefinidos.</translation>
+<translation id="588108970619830498">Reponha as definições da conversão de texto em voz para os valores predefinidos.</translation>
 <translation id="5891934789323004067">Tabela</translation>
 <translation id="5899860758576822363">Reproduzir num volume mais baixo quando o ChromeVox estiver a falar</translation>
 <translation id="5901630391730855834">Amarelo</translation>
@@ -759,6 +763,7 @@
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Uma caixa de lista ou uma caixa de combinação</translation>
+<translation id="613344593214611552">eliminar a frase anterior</translation>
 <translation id="6142308968191113180">Titulo 4</translation>
 <translation id="6150023170003443621">Verde-amarelado</translation>
 <translation id="6158882249329863701">linha <ph name="TABLECELLROWINDEX" />, coluna <ph name="TABLECELLCOLUMNINDEX" /></translation>
@@ -768,6 +773,7 @@
 <translation id="6186305613600865047">Ir para o fundo da página</translation>
 <translation id="6187190722927752226">Verde-azulado</translation>
 <translation id="6197361807490522975">Azul-escuro</translation>
+<translation id="6218813441317556731">substituir <ph name="DELETE_PHRASE" /> por <ph name="INSERT_PHRASE" /></translation>
 <translation id="6236061028292614533">Título seguinte</translation>
 <translation id="6254901459154107917">Área de texto editável seguinte</translation>
 <translation id="6259464875943891919">Saiu de <ph name="TYPE" />.</translation>
@@ -854,7 +860,6 @@
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6910969481785184048">Ativar, desativar e parar</translation>
 <translation id="6919104639734799681">Mostrar lista de tabelas</translation>
-<translation id="692135145298539227">eliminar, delete</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6949846980769640811">Verde-azulado médio</translation>
 <translation id="6951482098621102657">Não existe nenhum cabeçalho de nível 5 seguinte.</translation>
@@ -903,7 +908,7 @@
 <translation id="7244947685630430863">Não existe nenhum gráfico anterior.</translation>
 <translation id="7248671827512403053">Aplicação</translation>
 <translation id="725969808843520477">Botão de opção seguinte</translation>
-<translation id="7261612856573623172">Voz da síntese de voz do sistema</translation>
+<translation id="7261612856573623172">Voz da conversão de texto em voz do sistema</translation>
 <translation id="7269119382257320590">Sem pontuação</translation>
 <translation id="7271278495464744706">Ativar descrições detalhadas</translation>
 <translation id="7273174640290488576">Em branco</translation>
@@ -922,6 +927,7 @@
 <translation id="7356610683936413584">Detalhe da lista de descrições</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{e comercial}other{# e comerciais}}</translation>
 <translation id="737396357417333429">clk</translation>
+<translation id="7388656272362719103">eliminar o caráter anterior</translation>
 <translation id="738899727977260036">Azul-ardósia</translation>
 <translation id="7393979322571982935">Sons e definições</translation>
 <translation id="739763518212184081">Linha anterior</translation>
@@ -942,6 +948,7 @@
 <translation id="7533226154149229506">Amarelo-ouro claro</translation>
 <translation id="7543255924852002459">Ignorar etiqueta</translation>
 <translation id="7552432549459840808">Atalhos úteis do Chrome</translation>
+<translation id="7553679324939294712">inserir <ph name="INSERT_PHRASE" /> antes de <ph name="BEFORE_PHRASE" /></translation>
 <translation id="7569983096843329377">Preto</translation>
 <translation id="7579911500627256166">ponto <ph name="DOT" /></translation>
 <translation id="7592060599656252486">Alguma</translation>
@@ -961,10 +968,11 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{hora}other{horas}}</translation>
 <translation id="7674576868851035240">Link seguinte</translation>
 <translation id="7674768236845044097">mark</translation>
-<translation id="7676847077928500578">Repor definições da síntese de voz</translation>
+<translation id="7676847077928500578">Repor definições da conversão de texto em voz</translation>
 <translation id="7684431668231950609">Editar texto, entrada de URL</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Botão de opção anterior</translation>
+<translation id="7696631298608145306">mover para a palavra seguinte</translation>
 <translation id="7701040980221191251">Nenhuma</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Voz natural</translation>
@@ -1058,7 +1066,7 @@
 <translation id="831207808878314375">Definição</translation>
 <translation id="8313653172105209786">dir</translation>
 <translation id="8316881042119029234">Renda antiga</translation>
-<translation id="8324974933005349667">Personalizar as definições da síntese de voz</translation>
+<translation id="8324974933005349667">Personalizar as definições da conversão de texto em voz</translation>
 <translation id="8326783648485765113">Verde-relva</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{libra}other{# sinais de libra}}</translation>
 <translation id="8378855320830505539">Região</translation>
@@ -1072,6 +1080,7 @@
 <translation id="8455868257606149352">Máx.: <ph name="X" /></translation>
 <translation id="84575901236241018">tem chave de acesso, <ph name="KEY" /></translation>
 <translation id="8463645336674919227">A sair do erro gramatical…</translation>
+<translation id="8465573210279050749">eliminar a palavra anterior</translation>
 <translation id="847040613207937740">Não existe nenhuma caixa de verificação seguinte.</translation>
 <translation id="8473540203671727883">Pronunciar o texto sob o rato</translation>
 <translation id="8476408756881832830">Colocar reprodução em pausa quando o ChromeVox estiver a falar</translation>
@@ -1108,6 +1117,7 @@
 <translation id="8697111817566059991">{COUNT,plural, =1{traço vertical}other{# traços verticais}}</translation>
 <translation id="8741370088760768424">Sugestão: prima a tecla de pesquisa + barra de espaço para ativar o item atual.</translation>
 <translation id="8743786158317878347">inserir o conteúdo estruturado, por exemplo, tabelas</translation>
+<translation id="8746846427395705317">mover para a palavra anterior</translation>
 <translation id="8747966237988593539">Lista ordenada</translation>
 <translation id="8749988712346667988">Prateado</translation>
 <translation id="875769700429317857">A transferência de <ph name="FILE_NAME" /> foi concluída</translation>
@@ -1135,6 +1145,7 @@
 <translation id="8970172509886453271">Não existe nenhuma secção anterior.</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="898089897833732740">eliminar <ph name="PHRASE" /></translation>
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="8989104346085848538">Para parar qualquer voz do ChromeVox atual, prima a tecla Control.</translation>
 <translation id="8993737615451556423">Fornece controlos para acelerar, abrandar e pausar a voz de leitura.</translation>

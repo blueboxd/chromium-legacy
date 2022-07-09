@@ -62,6 +62,12 @@ const base::Feature
         "AutofillEnableGetDetailsForEnrollParsingInUploadCardResponse",
         base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, a progress dialog will display while authenticating with FIDO.
+// TODO(crbug.com/1337380): Clean up kAutofillEnableFIDOProgressDialog when it's
+// fully rolled out.
+const base::Feature kAutofillEnableFIDOProgressDialog{
+    "AutofillEnableFIDOProgressDialog", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, enable manual falling component for virtual cards on Android.
 const base::Feature kAutofillEnableManualFallbackForVirtualCards{
     "AutofillEnableManualFallbackForVirtualCards",
@@ -149,6 +155,11 @@ const base::Feature kAutofillEnforceDelaysInStrikeDatabase{
 // fields when data is available.
 const base::Feature kAutofillFillMerchantPromoCodeFields{
     "AutofillFillMerchantPromoCodeFields", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, Autofill will attempt to find International Bank Account Number
+// (IBAN) fields when parsing forms.
+const base::Feature kAutofillParseIbanFields{"AutofillParseIbanFields",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, Autofill will attempt to find merchant promo/coupon/gift code
 // fields when parsing forms.

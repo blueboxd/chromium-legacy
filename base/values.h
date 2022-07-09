@@ -349,6 +349,11 @@ class BASE_EXPORT GSL_OWNER Value {
   // Returns a value for both `Value::Type::DOUBLE` and `Value::Type::INT`,
   // converting the latter to a double.
   double GetDouble() const;
+  // Callers that want to transfer ownership can use std::move() in conjunction
+  // with one of the mutable variants below, e.g.:
+  //   std::string taken_string = std::move(value.GetString());
+  //   base::Value::Dict taken_dict = std::move(value.GetDict());
+  //   base::Value::List taken_list = std::move(value.GetList());
   const std::string& GetString() const;
   std::string& GetString();
   const BlobStorage& GetBlob() const;
@@ -436,7 +441,7 @@ class BASE_EXPORT GSL_OWNER Value {
     // - if both entries are dictionaries, they will be recursively merged
     // - otherwise, the already-existing entry in this dictionary will be
     //   overwritten with the entry from `dict`.
-    void Merge(const Dict& dict);
+    void Merge(Dict dict);
 
     // Finds the entry corresponding to `key` in this dictionary. Returns
     // nullptr if there is no such entry.
@@ -686,21 +691,12 @@ class BASE_EXPORT GSL_OWNER Value {
 
   // Returns the Values in a list as a view. The mutable overload allows for
   // modification of the underlying values, but does not allow changing the
-  // structure of the list. If this is desired, use `TakeListDeprecated()`,
-  // perform the operations, and return the list back to the Value via move
-  // assignment.
+  // structure of the list.
   //
   // DEPRECATED: prefer direct use `base::Value::List` where possible, or
   // `GetList()` otherwise.
   DeprecatedListView GetListDeprecated();
   DeprecatedConstListView GetListDeprecated() const;
-
-  // Transfers ownership of the underlying list to the caller. Subsequent
-  // calls to `GetListDeprecated()` will return an empty list.
-  //
-  // DEPRECATED: prefer direct use of `base::Value::List` where possible, or
-  // `std::move(value.GetList())` otherwise.
-  DeprecatedListStorage TakeListDeprecated() &&;
 
   // Appends `value` to the end of the list.
   //
@@ -720,8 +716,6 @@ class BASE_EXPORT GSL_OWNER Value {
   void Append(StringPiece16 value);
   // DEPRECATED: prefer `Value::List::Append()`.
   void Append(const char* value);
-  // DEPRECATED: prefer `Value::List::Append()`.
-  void Append(const char16_t* value);
   // DEPRECATED: prefer `Value::List::Append()`.
   void Append(std::string&& value);
 
@@ -1431,8 +1425,6 @@ class BASE_EXPORT ListValue : public Value {
   static std::unique_ptr<ListValue> From(std::unique_ptr<Value> value);
 
   ListValue();
-  explicit ListValue(span<const Value> in_list);
-  explicit ListValue(ListStorage&& in_list) noexcept;
 
   // Convenience forms of `Get()`.  Modifies `out_value` (and returns true)
   // only if the index is valid and the Value at that index can be returned

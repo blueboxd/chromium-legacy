@@ -681,6 +681,11 @@ void InputMethodEngine::SetCompositionBounds(
   observer_->OnCompositionBoundsChanged(bounds);
 }
 
+void InputMethodEngine::SetCaretBounds(const gfx::Rect& caret_bounds)
+{
+  observer_->OnCaretBoundsChanged(caret_bounds);
+}
+
 void InputMethodEngine::PropertyActivate(const std::string& property_name) {
   observer_->OnMenuItemActivated(active_component_id_, property_name);
 }
@@ -723,6 +728,12 @@ ui::VirtualKeyboardController* InputMethodEngine::GetVirtualKeyboardController()
     return nullptr;
   }
   return keyboard::KeyboardUIController::Get()->virtual_keyboard_controller();
+}
+
+bool InputMethodEngine::IsReadyForTesting() {
+  // For extension-based IMEs, we cannot tell if they are ready or not, so just
+  // return false.
+  return false;
 }
 
 void InputMethodEngine::OnSuggestionsChanged(

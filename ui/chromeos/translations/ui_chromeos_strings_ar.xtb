@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">الهانغولية روماجا</translation>
 <translation id="112387589102719461">‏الإنجليزية (الولايات المتحدة) باستخدام لوحة مفاتيح المطوّر الأمريكية Dvorak</translation>
 <translation id="1134697384939541955">الإنجليزية (الولايات المتحدة) باستخدام لوحة المفاتيح الموسَّعة</translation>
+<translation id="1138691154716715755">في وقت سابق من هذا الشهر</translation>
 <translation id="1148097584170732637">تم العثور على <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     لا توجد مساحة كافية في مساحة التخزين المحلية. ويتطلب وجود <ph name="FILE_SIZE" /> إضافي.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />%، حجب المشرف هذه الشبكة، التفاصيل</translation>
 <translation id="2142680004883808240">‏الروسية باستخدام لوحة مفاتيح YaZHert الصوتية</translation>
 <translation id="2143778271340628265">إعداد الخادم الوكيل يدويًّا</translation>
+<translation id="2148716181193084225">اليوم</translation>
 <translation id="2163152940313951844">حرف غير صالح: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">البرتغالية باستخدام لوحة مفاتيح الكمبيوتر الشخصي الأمريكية الدولية</translation>
 <translation id="2198315389084035571">الصينية المبسطة</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">تبديل إلى عرض القائمة</translation>
 <translation id="2377590462528165447">‏<ph name="NUMBER_OF_ITEMS" /> من المجلَّدات المشتركة مع نظام التشغيل Linux.</translation>
 <translation id="2378075407703503998">تم اختيار <ph name="SELCTED_FILE_COUNT" /> من الملفات</translation>
+<translation id="2387120140441437063">لا يمكن فتح الملفات التي تم نقلها إلى المهملات. يُرجى استعادة الملفات قبل فتحها.</translation>
 <translation id="2387458720915042159">نوع الاتصال بالخادم الوكيل</translation>
 <translation id="2389832672041313158">البورمية/ميانمار</translation>
 <translation id="2392369802118427583">تفعيل</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">محتوى هذا الملف للقراءة فقط. وبعض النشاطات غير متاحة فيه.</translation>
 <translation id="2542049655219295786">‏جدول من Google</translation>
 <translation id="2544853746127077729">تمّ رفض شهادة المصادقة بواسطة الشبكة</translation>
-<translation id="2547921442987553570">إضافة إلى <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">الأمريكية الدولية</translation>
 <translation id="2563185590376525700">ضفدع</translation>
 <translation id="2578394532502990878">التاميلية الصوتية</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">‏الصينية باستخدام نظام Dayi</translation>
 <translation id="3057861065630527966">نسخ الصور والفيديوهات احتياطيًا</translation>
 <translation id="3067790092342515856">‏ملفات نظام التشغيل Windows</translation>
-<translation id="3078461028045006476">مشاركة مع <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">‏أجهزة Chromebit</translation>
 <translation id="3085752524577180175">‏مضيف SOCKS</translation>
 <translation id="3104793765551262433">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، حالة الأمان <ph name="SECURITY_STATUS" />، حالة الاتصال <ph name="CONNECTION_STATUS" />، قوة الإشارة %<ph name="SIGNAL_STRENGTH" />، تم حظر هذه الشبكة من قِبَل المشرف، التفاصيل</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">رجوع</translation>
 <translation id="3855472144336161447">‏الألمانية Neo 2</translation>
 <translation id="3858860766373142691">الاسم</translation>
-<translation id="386548886866354912">تجميع مع <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">الوصف</translation>
 <translation id="3899991606604168269">الفرنسية (كندا) باستخدام لوحة مفاتيح متعددة اللغات</translation>
 <translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">‏تنزيل الملف الشخصي لشريحة eSIM على الجهاز الجوّال، الشبكة رقم <ph name="NETWORK_INDEX" /> من أصل <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">الإنجليزية (المملكة المتحدة)</translation>
 <translation id="3975895378829046965">البنغالية الصوتية</translation>
+<translation id="3991446849494482687">‏سيؤدي هذا الإجراء أيضًا إلى إيقاف إعداد "قفل شريحة SIM" على الجهاز.</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4017788180641807848">‏الإنجليزية (الولايات المتحدة) باستخدام لوحة مفاتيح Workman</translation>
 <translation id="4040753847560036377">‏رمز PUK غير صحيح.</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" />، <ph name="CONNECTION_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />%، يدير المشرف هذه الشبكة، التفاصيل</translation>
 <translation id="4387004326333427325">تم رفض شهادة المصادقة عن بُعد</translation>
 <translation id="4394214039309501350">رابط خارجي</translation>
+<translation id="4394980935660306080">في وقت سابق من هذا الأسبوع</translation>
 <translation id="4401287888955153199">استخراج الكل</translation>
 <translation id="4410695710508688828">تعذّرت عملية استخراج الملفات. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">إنشاء اختصار للملفات</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">جارٍ فتح "<ph name="PATH" />"</translation>
 <translation id="4720185134442950733">شبكة بيانات الجوّال</translation>
 <translation id="4724850507808590449">تم نسخ <ph name="FILE_COUNT" /> من الصور احتياطيًا</translation>
+<translation id="4725096204469550614">في وقت سابق من هذا العام</translation>
 <translation id="4725511304875193254">كورجي</translation>
 <translation id="4737050008115666127">هبوط</translation>
 <translation id="4747271164117300400">المقدونية</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">جارٍ نقل <ph name="NUMBER_OF_ITEMS" /> عنصر إلى <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">حدث خطأ.</translation>
 <translation id="5098629044894065541">العبرية</translation>
+<translation id="5102922915594634436">إدارة المجلدات التي تمت مزامنتها</translation>
 <translation id="5109254780565519649">حدث خطأ. وقد لا تتم استعادة بعض الملفات.</translation>
 <translation id="5110329002213341433">الإنجليزية (كندا)</translation>
 <translation id="5123433949759960244">كرة السلة</translation>
@@ -604,7 +608,6 @@
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6170470584681422115">ساندويتش</translation>
 <translation id="6187719147498869044">المجرية</translation>
-<translation id="6189412234224385711">فتح باستخدام <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">تغيير رقم التعريف الشخصي</translation>
 <translation id="6199801702437275229">في انتظار معلومات المساحة...</translation>
 <translation id="6205710420833115353">تستغرق بعض العمليات وقتًا أطول من المتوقع. هل تريد إيقافها؟</translation>
@@ -708,6 +711,7 @@
 <translation id="7075931588889865715">‏التايلاندية باستخدام لوحة مفاتيح TIS 820-2531</translation>
 <translation id="708278670402572152">قطع الاتصال لتفعيل الفحص</translation>
 <translation id="7086590977277044826">‏التاميلية باستخدام لوحة مفاتيح InScript</translation>
+<translation id="7088615885725309056">أقدم</translation>
 <translation id="7103992300314999525">المقدونية</translation>
 <translation id="7106346894903675391">شراء المزيد من مساحة التخزين...</translation>
 <translation id="7126604456862387217">‏'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;البحث في Drive&lt;/em&gt;</translation>
@@ -772,6 +776,7 @@
 <translation id="7663224033570512922">الهندية</translation>
 <translation id="7693909743393669729">ستؤدي تهيئة محرك أقراص إلى محو جميع البيانات المخزَّنة عليه وإزالة جميع الأقسام الحالية، بما فيها الأقسام التي قد تكون غير مرئية. ولا يمكن التراجع عن هذا الإجراء.</translation>
 <translation id="7695430100978772476">تعذّر ضبط <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">تعذّر إفراغ المهملات.</translation>
 <translation id="770015031906360009">اليونانية</translation>
 <translation id="7705251383879779343">تم نسخ <ph name="FILE_NAME" />.</translation>
 <translation id="7711920809702896782">معلومات الصورة</translation>
@@ -782,6 +787,7 @@
 <translation id="7760449188139285140">‏الصينية باستخدام لوحة مفاتيح Wubi</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7774365994322694683">طائر</translation>
+<translation id="7781829728241885113">أمس</translation>
 <translation id="7788080748068240085">لحفظ "<ph name="FILE_NAME" />" بلا إنترنت، يجب توفير مساحة إضافية تبلغ <ph name="TOTAL_FILE_SIZE" />:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />احرص على إزالة الملفات التي لم تعد بحاجة إلى الدخول إليها بلا إنترنت<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />احذف الملفات من مجلد "المحتوى الذي تم تنزيله"<ph name="MARKUP_5" /></translation>

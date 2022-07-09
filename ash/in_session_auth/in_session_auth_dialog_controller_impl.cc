@@ -8,7 +8,7 @@
 #include "ash/in_session_auth/authentication_dialog.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "chromeos/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 
 namespace ash {
 
@@ -17,6 +17,7 @@ void InSessionAuthDialogControllerImpl::ShowAuthDialog(
     OnAuthComplete on_auth_complete) {
   auto account_id = Shell::Get()->session_controller()->GetActiveAccountId();
   DCHECK(account_id.is_valid());
+  DCHECK_NE(auth_token_provider_, nullptr);
 
   // We don't manage the lifetime of `AuthenticationDialog` here.
   // `AuthenticatonDialog` is-a View and it is instead owned by it's widget,

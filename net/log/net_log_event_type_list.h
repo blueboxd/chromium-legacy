@@ -1118,8 +1118,11 @@ EVENT_TYPE(HTTP_STREAM_REQUEST)
 //      "original_url": <The URL to create a stream for>,
 //      "url": <The URL actually being used, possibly different from
 //              original_url if using an alternate service>,
-//      "alternate_service": <The alternate service being used>,
+//      "expect_spdy": <Boolean indicating whether the Job will use SPDY>,
+//      "using_quic": <Boolean indicating whether the Job will use QUIC>,
 //      "priority": <The priority of the Job>,
+//      "type": <The type of this Job ("main", "alternative", "dns_alpn_h3",
+//               "preconnect")>,
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB)
 
@@ -3518,6 +3521,28 @@ EVENT_TYPE(UPLOAD_DATA_STREAM_READ)
 //   "trigger": <Trigger for evaluation that caused request start>
 // }
 EVENT_TYPE(RESOURCE_SCHEDULER_REQUEST_STARTED)
+
+// -----------------------------------------------------------------------------
+// Auxiliary network service in-memory HTTP cache related events
+// -----------------------------------------------------------------------------
+
+// These event are emitted when HTTP response headers are served from the
+// in-memory cache.
+// The following parameters are attached:
+//   {
+//     "headers": <The list of header:value pairs>,
+//   }
+EVENT_TYPE(IN_MEMORY_CACHE_READ_REQUEST_HEADERS)
+EVENT_TYPE(IN_MEMORY_CACHE_READ_RESPONSE_HEADERS)
+
+// This event is emitted when response content are read from the in-memory
+// cache.
+// The following parameters are attached:
+//   {
+//     "byte_count": <Number of bytes that were just sent>,
+//     "bytes": <The exact bytes sent, Base64 encoded>,
+//   }
+EVENT_TYPE(IN_MEMORY_CACHE_BYTES_READ)
 
 // -----------------------------------------------------------------------------
 // Network Quality Estimator related events

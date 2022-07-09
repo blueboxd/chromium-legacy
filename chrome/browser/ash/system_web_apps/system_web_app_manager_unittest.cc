@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +20,8 @@
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_background_task.h"
+#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
+#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate_map.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
@@ -26,8 +29,6 @@
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager_impl.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
-#include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
-#include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_data_retriever.h"
 #include "chrome/browser/web_applications/test/fake_externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
@@ -198,7 +199,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     fake_externally_managed_app_manager_impl_ =
         std::make_unique<web_app::FakeExternallyManagedAppManager>(profile());
     test_system_web_app_manager_ =
-        std::make_unique<web_app::TestSystemWebAppManager>(profile());
+        std::make_unique<TestSystemWebAppManager>(profile());
     test_ui_manager_ = std::make_unique<web_app::FakeWebAppUiManager>();
     command_manager_ =
         std::make_unique<web_app::WebAppCommandManager>(profile());
@@ -207,11 +208,12 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
         &install_manager(), &controller().registrar(), &ui_manager(),
         &controller().sync_bridge(), &controller().os_integration_manager(),
         &icon_manager(), web_app_policy_manager_.get(),
-        &controller().translation_manager());
+        &controller().translation_manager(), &command_manager());
 
     install_manager().SetSubsystems(
         &controller().registrar(), &controller().os_integration_manager(),
-        &controller().command_manager(), &install_finalizer());
+        &controller().command_manager(), &install_finalizer(), &icon_manager(),
+        &controller().sync_bridge(), &controller().translation_manager());
 
     icon_manager().SetSubsystems(&controller().registrar(), &install_manager());
 
@@ -275,7 +277,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     return *fake_externally_managed_app_manager_impl_;
   }
 
-  web_app::TestSystemWebAppManager& system_web_app_manager() {
+  TestSystemWebAppManager& system_web_app_manager() {
     return *test_system_web_app_manager_;
   }
 
@@ -341,34 +343,38 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<web_app::WebAppInstallManager> install_manager_;
   std::unique_ptr<web_app::FakeExternallyManagedAppManager>
       fake_externally_managed_app_manager_impl_;
-  std::unique_ptr<web_app::TestSystemWebAppManager>
-      test_system_web_app_manager_;
+  std::unique_ptr<TestSystemWebAppManager> test_system_web_app_manager_;
   std::unique_ptr<web_app::FakeWebAppUiManager> test_ui_manager_;
   std::unique_ptr<web_app::WebAppCommandManager> command_manager_;
 };
 
-// Test that System Apps do install with the feature enabled.
-TEST_F(SystemWebAppManagerTest, Enabled) {
-  InitEmptyRegistrar();
+class SystemWebAppManagerTest_PrefMigrationEnabled
+    : public SystemWebAppManagerTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SystemWebAppManagerTest_PrefMigrationEnabled() {
+    bool enable_migration = GetParam();
+    if (enable_migration) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kUseWebAppDBInsteadOfExternalPrefs}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kUseWebAppDBInsteadOfExternalPrefs});
+    }
+  }
 
-  SystemWebAppDelegateMap system_apps;
-  system_apps.emplace(SystemWebAppType::SETTINGS,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
-                          SystemWebAppType::SETTINGS, kSettingsAppInternalName,
-                          AppUrl1(), GetApp1WebAppInfoFactory()));
-  system_apps.emplace(SystemWebAppType::CAMERA,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
-                          SystemWebAppType::CAMERA, kCameraAppInternalName,
-                          AppUrl2(), GetApp2WebAppInfoFactory()));
+  bool IsExternalDataReadFromDBEnabled() {
+    return base::FeatureList::IsEnabled(
+        features::kUseWebAppDBInsteadOfExternalPrefs);
+  }
 
-  system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
-  StartAndWaitForAppsToSynchronize();
-
-  EXPECT_EQ(2u, externally_managed_app_manager().install_requests().size());
-}
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 // Test that changing the set of System Apps uninstalls apps.
-TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
+TEST_P(SystemWebAppManagerTest_PrefMigrationEnabled,
+       UninstallAppInstalledInPreviousSession) {
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
   InitRegistrarWithSystemApps(
@@ -382,7 +388,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
 
   SystemWebAppDelegateMap system_apps;
   system_apps.emplace(SystemWebAppType::SETTINGS,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::SETTINGS, kSettingsAppInternalName,
                           AppUrl1(), GetApp1WebAppInfoFactory()));
 
@@ -410,10 +416,40 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   EXPECT_EQ(externally_managed_app_manager().install_requests(),
             expected_install_options_list);
 
-  // We should try to uninstall the app that is no longer in the System App
-  // list.
-  EXPECT_EQ(std::vector<GURL>({AppUrl2()}),
-            externally_managed_app_manager().uninstall_requests());
+  // If read from DB is enabled, then the 2nd app is already uninstalled after
+  // synchronize, hence the uninstall_request list is empty. but if the data
+  // is read from prefs, the url still persists, so it can be read.
+  if (IsExternalDataReadFromDBEnabled()) {
+    EXPECT_EQ(std::vector<GURL>({}),
+              externally_managed_app_manager().uninstall_requests());
+  } else {
+    EXPECT_EQ(std::vector<GURL>({AppUrl2()}),
+              externally_managed_app_manager().uninstall_requests());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerTest_PrefMigrationEnabled,
+                         ::testing::Bool());
+
+// Test that System Apps do install with the pref migration enabled.
+TEST_F(SystemWebAppManagerTest, Enabled) {
+  InitEmptyRegistrar();
+
+  SystemWebAppDelegateMap system_apps;
+  system_apps.emplace(SystemWebAppType::SETTINGS,
+                      std::make_unique<UnittestingSystemAppDelegate>(
+                          SystemWebAppType::SETTINGS, kSettingsAppInternalName,
+                          AppUrl1(), GetApp1WebAppInfoFactory()));
+  system_apps.emplace(SystemWebAppType::CAMERA,
+                      std::make_unique<UnittestingSystemAppDelegate>(
+                          SystemWebAppType::CAMERA, kCameraAppInternalName,
+                          AppUrl2(), GetApp2WebAppInfoFactory()));
+
+  system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
+  StartAndWaitForAppsToSynchronize();
+
+  EXPECT_EQ(2u, externally_managed_app_manager().install_requests().size());
 }
 
 TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
@@ -425,7 +461,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
     SystemWebAppDelegateMap system_apps;
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
             GetApp1WebAppInfoFactory()));
     system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -442,11 +478,11 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
 
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
             GetApp1WebAppInfoFactory()));
     system_apps.emplace(SystemWebAppType::CAMERA,
-                        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                        std::make_unique<UnittestingSystemAppDelegate>(
                             SystemWebAppType::CAMERA, kCameraAppInternalName,
                             AppUrl2(), GetApp2WebAppInfoFactory()));
     system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -469,7 +505,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
     SystemWebAppDelegateMap system_apps;
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
             GetApp1WebAppInfoFactory()));
     system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -485,14 +521,14 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
     SystemWebAppDelegateMap system_apps;
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
             GetApp1WebAppInfoFactory()));
     // Create another app. The version hasn't changed, but we should immediately
     // install anyway, as if a user flipped a chrome://flag. The first app won't
     // force reinstall.
     system_apps.emplace(SystemWebAppType::CAMERA,
-                        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                        std::make_unique<UnittestingSystemAppDelegate>(
                             SystemWebAppType::CAMERA, kCameraAppInternalName,
                             AppUrl2(), GetApp2WebAppInfoFactory()));
 
@@ -525,12 +561,12 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
     SystemWebAppDelegateMap system_apps;
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, kAppUrl3,
             base::BindRepeating(&GetWebAppInstallInfo, kAppUrl3)));
 
     system_apps.emplace(SystemWebAppType::CAMERA,
-                        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                        std::make_unique<UnittestingSystemAppDelegate>(
                             SystemWebAppType::CAMERA, kCameraAppInternalName,
                             AppUrl2(), GetApp2WebAppInfoFactory()));
 
@@ -557,7 +593,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
 
   SystemWebAppDelegateMap system_apps;
   system_apps.emplace(SystemWebAppType::SETTINGS,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::SETTINGS, kSettingsAppInternalName,
                           AppUrl1(), GetApp1WebAppInfoFactory()));
   system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -605,7 +641,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
     SystemWebAppDelegateMap system_apps;
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
             GetApp1WebAppInfoFactory()));
     system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -648,11 +684,11 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
     SystemWebAppDelegateMap system_apps;
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
             GetApp1WebAppInfoFactory()));
     system_apps.emplace(SystemWebAppType::CAMERA,
-                        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                        std::make_unique<UnittestingSystemAppDelegate>(
                             SystemWebAppType::CAMERA, kCameraAppInternalName,
                             AppUrl2(), GetApp2WebAppInfoFactory()));
     system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -677,7 +713,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
     SystemWebAppDelegateMap system_apps;
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
             GetApp1WebAppInfoFactory()));
     system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -734,11 +770,11 @@ TEST_F(SystemWebAppManagerTest,
   InitEmptyRegistrar();
   SystemWebAppDelegateMap system_apps;
   system_apps.emplace(SystemWebAppType::SETTINGS,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::SETTINGS, kSettingsAppInternalName,
                           AppUrl1(), GetApp1WebAppInfoFactory()));
   system_apps.emplace(SystemWebAppType::CAMERA,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::CAMERA, kCameraAppInternalName,
                           AppUrl2(), GetApp2WebAppInfoFactory()));
   system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -771,11 +807,11 @@ TEST_F(SystemWebAppManagerTest,
   InitEmptyRegistrar();
   SystemWebAppDelegateMap system_apps;
   system_apps.emplace(SystemWebAppType::SETTINGS,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::SETTINGS, kSettingsAppInternalName,
                           AppUrl1(), GetApp1WebAppInfoFactory()));
   system_apps.emplace(SystemWebAppType::CAMERA,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::CAMERA, kCameraAppInternalName,
                           AppUrl2(), GetApp2WebAppInfoFactory()));
   system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -833,7 +869,7 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {
 
   SystemWebAppDelegateMap system_apps;
   system_apps.emplace(SystemWebAppType::SETTINGS,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::SETTINGS, kSettingsAppInternalName,
                           AppUrl1(), GetApp1WebAppInfoFactory()));
   system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -905,7 +941,7 @@ TEST_F(SystemWebAppManagerTest, AbandonFailedInstallsLocaleChange) {
 
   SystemWebAppDelegateMap system_apps;
   system_apps.emplace(SystemWebAppType::SETTINGS,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::SETTINGS, kSettingsAppInternalName,
                           AppUrl1(), GetApp1WebAppInfoFactory()));
 
@@ -976,7 +1012,7 @@ TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
   // Set up and install a baseline
   SystemWebAppDelegateMap system_apps;
   system_apps.emplace(SystemWebAppType::SETTINGS,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::SETTINGS, kSettingsAppInternalName,
                           AppUrl1(), GetApp1WebAppInfoFactory()));
 
@@ -1048,7 +1084,7 @@ TEST_F(SystemWebAppManagerTest, ForceReinstallFeature) {
   // Register a test system app.
   SystemWebAppDelegateMap system_apps;
   system_apps.emplace(SystemWebAppType::SETTINGS,
-                      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+                      std::make_unique<UnittestingSystemAppDelegate>(
                           SystemWebAppType::SETTINGS, kSettingsAppInternalName,
                           AppUrl1(), GetApp1WebAppInfoFactory()));
 
@@ -1087,7 +1123,7 @@ TEST_F(SystemWebAppManagerTest, IsSWABeforeSync) {
     SystemWebAppDelegateMap system_apps;
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
             GetApp1WebAppInfoFactory()));
     system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -1098,7 +1134,7 @@ TEST_F(SystemWebAppManagerTest, IsSWABeforeSync) {
       web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, AppUrl1())));
 
   auto unsynced_system_web_app_manager =
-      std::make_unique<web_app::TestSystemWebAppManager>(profile());
+      std::make_unique<TestSystemWebAppManager>(profile());
 
   unsynced_system_web_app_manager->SetSubsystems(
       &externally_managed_app_manager(), &controller().registrar(),
@@ -1107,7 +1143,7 @@ TEST_F(SystemWebAppManagerTest, IsSWABeforeSync) {
     SystemWebAppDelegateMap system_apps;
     system_apps.emplace(
         SystemWebAppType::SETTINGS,
-        std::make_unique<web_app::UnittestingSystemAppDelegate>(
+        std::make_unique<UnittestingSystemAppDelegate>(
             SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
             GetApp1WebAppInfoFactory()));
     unsynced_system_web_app_manager->SetSystemAppsForTesting(
@@ -1118,7 +1154,7 @@ TEST_F(SystemWebAppManagerTest, IsSWABeforeSync) {
       web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, AppUrl1())));
 }
 
-class TimerSystemAppDelegate : public web_app::UnittestingSystemAppDelegate {
+class TimerSystemAppDelegate : public UnittestingSystemAppDelegate {
  public:
   TimerSystemAppDelegate(SystemWebAppType type,
                          const std::string& name,
@@ -1126,10 +1162,7 @@ class TimerSystemAppDelegate : public web_app::UnittestingSystemAppDelegate {
                          web_app::WebAppInstallInfoFactory info_factory,
                          absl::optional<base::TimeDelta> period,
                          bool open_immediately)
-      : web_app::UnittestingSystemAppDelegate(type,
-                                              name,
-                                              url,
-                                              std::move(info_factory)),
+      : UnittestingSystemAppDelegate(type, name, url, std::move(info_factory)),
         period_(period),
         open_immediately_(open_immediately) {}
   absl::optional<SystemWebAppBackgroundTaskInfo> GetTimerInfo() const override;
@@ -1498,7 +1531,7 @@ TEST_F(SystemWebAppManagerTest,
   SystemWebAppDelegateMap system_apps;
   system_apps.emplace(
       SystemWebAppType::SETTINGS,
-      std::make_unique<web_app::UnittestingSystemAppDelegate>(
+      std::make_unique<UnittestingSystemAppDelegate>(
           SystemWebAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
           base::BindRepeating(&GetWebAppInstallInfo, AppUrl1())));
   system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
@@ -1520,7 +1553,7 @@ TEST_F(SystemWebAppManagerTest,
 
   // Creates a new SystemWebAppManager without the previously installed App.
   auto unsynced_system_web_app_manager =
-      std::make_unique<web_app::TestSystemWebAppManager>(profile());
+      std::make_unique<TestSystemWebAppManager>(profile());
 
   unsynced_system_web_app_manager->SetSubsystems(
       &externally_managed_app_manager(), &controller().registrar(),

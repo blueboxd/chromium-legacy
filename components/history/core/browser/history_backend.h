@@ -23,7 +23,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/observer_list.h"
-#include "base/supports_user_data.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -35,6 +34,7 @@
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
+#include "components/history/core/browser/sync/history_backend_for_sync.h"
 #include "components/history/core/browser/visit_tracker.h"
 #include "sql/init_status.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -115,6 +115,7 @@ class QueuedHistoryDBTask {
 // functions in the history service. These functions are not documented
 // here, see the history service for behavior.
 class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
+                       public HistoryBackendForSync,
                        public HistoryBackendNotifier,
                        public favicon::FaviconBackendDelegate {
  public:
@@ -484,18 +485,25 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Get a `Cluster`.
   Cluster GetCluster(int64_t cluster_id);
 
-  // Finds the 1st visit in the redirect chain containing `visit`. Similar to
-  // `GetRedirectsToSpecificVisit()`, except 1) only returns the 1st visit of
-  // the redirect chain instead of the entire chain, and 2) ignores referrals.
+  // Finds the 1st visit in the redirect chain containing `visit`.
+  // Unlike `GetRedirectsToSpecificVisit()`, this only considers actual
+  // redirects, not referrals.
   // May return an invalid `VisitRow` if there's something wrong with the DB.
   // The caller is responsible for identifying, by looking at `visit_id`, and
   // handling this case.
   VisitRow GetRedirectChainStart(VisitRow visit);
 
+  // Returns the redirect chain ending in `visit`. (If `visit` is in the middle
+  // of a redirect chain, returns the start of the chain until `visit`.)
+  // Unlike `GetRedirectsToSpecificVisit()`, this only considers actual
+  // redirects, not referrals.
+  // May return an empty vector if there's something wrong with the DB.
+  VisitVector GetRedirectChain(VisitRow visit) override;
+
   // Observers -----------------------------------------------------------------
 
-  void AddObserver(HistoryBackendObserver* observer);
-  void RemoveObserver(HistoryBackendObserver* observer);
+  void AddObserver(HistoryBackendObserver* observer) override;
+  void RemoveObserver(HistoryBackendObserver* observer) override;
 
   // Generic operations --------------------------------------------------------
 
@@ -509,7 +517,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool GetVisitsForURL(URLID id, VisitVector* visits);
 
   // Fetches up to `max_visits` most recent visits for the passed URL.
-  bool GetMostRecentVisitsForURL(URLID id, int max_visits, VisitVector* visits);
+  bool GetMostRecentVisitsForURL(URLID id,
+                                 int max_visits,
+                                 VisitVector* visits) override;
 
   // For each element in `urls`, updates the pre-existing URLRow in the database
   // with the same ID; or ignores the element if no such row exists. Returns the
@@ -520,6 +530,21 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool AddVisits(const GURL& url,
                  const std::vector<VisitInfo>& visits,
                  VisitSource visit_source);
+
+  // Adds a visit coming from another device. The visit's ID must be 0 (unset),
+  // and its originator_cache_guid must be populated.
+  VisitID AddSyncedVisit(const GURL& url,
+                         const std::u16string& title,
+                         bool hidden,
+                         const VisitRow& visit) override;
+
+  // Updates a visit coming from another device (typically to update its
+  // duration). The visit must be the end of a redirect chain (only chain ends
+  // have the visit duration populated), and the visit's ID must be 0 (unset),
+  // because for incoming remote visits, the local visit ID isn't know. The
+  // visit will be identified via its timestamp and originator_cache_guid
+  // instead.
+  bool UpdateSyncedVisit(const VisitRow& visit) override;
 
   bool RemoveVisits(const VisitVector& visits);
 
@@ -533,7 +558,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   bool GetURL(const GURL& url, URLRow* url_row);
 
-  bool GetURLByID(URLID url_id, URLRow* url_row);
+  bool GetURLByID(URLID url_id, URLRow* url_row) override;
+
+  // Returns the visit matching a given timestamp. In case of redirects (where
+  // multiple visits can have the same timestamp), returns the last visit in the
+  // redirect chain.
+  bool GetLastVisitByTime(base::Time visit_time, VisitRow* visit_row) override;
 
   // Returns the sync controller delegate for syncing typed urls. The returned
   // delegate is owned by `this` object.
@@ -623,7 +653,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Returns true if the passed visit time is already expired (used by the sync
   // code to avoid syncing visits that would immediately be expired).
-  virtual bool IsExpiredVisitTime(const base::Time& time) const;
+  bool IsExpiredVisitTime(const base::Time& time) const override;
 
   base::Time GetFirstRecordedTimeForTest() { return first_recorded_time_; }
 
@@ -670,9 +700,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       VisitSource visit_source,
       bool should_increment_typed_count,
       VisitID opener_visit,
-      absl::optional<std::u16string> title = absl::nullopt);
+      absl::optional<std::u16string> title = absl::nullopt,
+      absl::optional<base::TimeDelta> visit_duration = absl::nullopt,
+      absl::optional<std::string> originator_cache_guid = absl::nullopt,
+      absl::optional<VisitID> originator_visit_id = absl::nullopt,
+      absl::optional<VisitID> originator_referring_visit = absl::nullopt,
+      absl::optional<VisitID> originator_opener_visit = absl::nullopt);
 
-  // Returns a redirect chain in `redirects` for the VisitID
+  // Returns a redirect-or-referral chain in `redirects` for the VisitID
   // `cur_visit`. `cur_visit` is assumed to be valid. Assumes that
   // this HistoryBackend object has been Init()ed successfully.
   void GetRedirectsFromSpecificVisit(VisitID cur_visit,
@@ -771,6 +806,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void NotifyURLsModified(const URLRows& changed_urls,
                           bool is_from_expiration) override;
   void NotifyURLsDeleted(DeletionInfo deletion_info) override;
+  void NotifyVisitUpdated(const VisitRow& visit) override;
   void NotifyVisitDeleted(const VisitRow& visit) override;
 
   // Deleting all history ------------------------------------------------------

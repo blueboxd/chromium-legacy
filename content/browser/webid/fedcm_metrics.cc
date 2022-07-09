@@ -6,73 +6,97 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/types/pass_key.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
+#include "url/gurl.h"
 
 namespace content {
 
-void RecordShowAccountsDialogTime(base::TimeDelta duration,
-                                  ukm::SourceId source_id) {
-  ukm::builders::Blink_FedCm builder(source_id);
-  builder.SetTiming_ShowAccountsDialog(
-      ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
-  builder.Record(ukm::UkmRecorder::Get());
+FedCmMetrics::FedCmMetrics(const GURL& provider, ukm::SourceId page_source_id)
+    : page_source_id_(page_source_id),
+      provider_source_id_(ukm::UkmRecorder::GetSourceIdForWebIdentityFromScope(
+          base::PassKey<FedCmMetrics>(),
+          provider)) {}
+
+void FedCmMetrics::RecordShowAccountsDialogTime(base::TimeDelta duration) {
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetTiming_ShowAccountsDialog(
+        ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Blink.FedCm.Timing.ShowAccountsDialog", duration);
 }
 
-void RecordContinueOnDialogTime(base::TimeDelta duration,
-                                ukm::SourceId source_id) {
-  ukm::builders::Blink_FedCm builder(source_id);
-  builder.SetTiming_ContinueOnDialog(
-      ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
-  builder.Record(ukm::UkmRecorder::Get());
+void FedCmMetrics::RecordContinueOnDialogTime(base::TimeDelta duration) {
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetTiming_ContinueOnDialog(
+        ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Blink.FedCm.Timing.ContinueOnDialog", duration);
 }
 
-void RecordCancelOnDialogTime(base::TimeDelta duration,
-                              ukm::SourceId source_id) {
-  ukm::builders::Blink_FedCm builder(source_id);
-  builder.SetTiming_CancelOnDialog(
-      ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
-  builder.Record(ukm::UkmRecorder::Get());
+void FedCmMetrics::RecordCancelOnDialogTime(base::TimeDelta duration) {
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetTiming_CancelOnDialog(
+        ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Blink.FedCm.Timing.CancelOnDialog", duration);
 }
 
-void RecordIdTokenResponseAndTurnaroundTime(
-    base::TimeDelta id_token_response_time,
-    base::TimeDelta turnaround_time,
-    ukm::SourceId source_id) {
-  ukm::builders::Blink_FedCm builder(source_id);
-  builder
-      .SetTiming_IdTokenResponse(ukm::GetExponentialBucketMinForUserTiming(
-          id_token_response_time.InMilliseconds()))
-      .SetTiming_TurnaroundTime(ukm::GetExponentialBucketMinForUserTiming(
-          turnaround_time.InMilliseconds()));
-  builder.Record(ukm::UkmRecorder::Get());
+void FedCmMetrics::RecordTokenResponseAndTurnaroundTime(
+    base::TimeDelta token_response_time,
+    base::TimeDelta turnaround_time) {
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder
+        .SetTiming_IdTokenResponse(ukm::GetExponentialBucketMinForUserTiming(
+            token_response_time.InMilliseconds()))
+        .SetTiming_TurnaroundTime(ukm::GetExponentialBucketMinForUserTiming(
+            turnaround_time.InMilliseconds()));
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
 
   UMA_HISTOGRAM_MEDIUM_TIMES("Blink.FedCm.Timing.IdTokenResponse",
-                             id_token_response_time);
+                             token_response_time);
   UMA_HISTOGRAM_MEDIUM_TIMES("Blink.FedCm.Timing.TurnaroundTime",
                              turnaround_time);
 }
 
-void RecordRequestIdTokenStatus(FedCmRequestIdTokenStatus status,
-                                ukm::SourceId source_id) {
-  ukm::builders::Blink_FedCm builder(source_id);
-  builder.SetStatus_RequestIdToken(static_cast<int>(status));
-  builder.Record(ukm::UkmRecorder::Get());
+void FedCmMetrics::RecordRequestTokenStatus(FedCmRequestIdTokenStatus status) {
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetStatus_RequestIdToken(static_cast<int>(status));
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
 
   UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.RequestIdToken", status);
-}
-
-void RecordRevokeStatus(FedCmRevokeStatus status, ukm::SourceId source_id) {
-  ukm::builders::Blink_FedCm builder(source_id);
-  builder.SetStatus_Revoke(static_cast<int>(status));
-  builder.Record(ukm::UkmRecorder::Get());
-
-  UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.Revoke", status);
 }
 
 void RecordIsSignInUser(bool is_sign_in) {

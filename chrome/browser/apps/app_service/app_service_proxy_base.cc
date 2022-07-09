@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
@@ -288,9 +289,8 @@ void AppServiceProxyBase::Launch(const std::string& app_id,
           }
 
           RecordAppLaunch(update.AppId(), launch_source);
-          RecordAppPlatformMetrics(
-              profile_, update, launch_source,
-              apps::mojom::LaunchContainer::kLaunchContainerNone);
+          RecordAppPlatformMetrics(profile_, update, launch_source,
+                                   apps::LaunchContainer::kLaunchContainerNone);
 
           app_service_->Launch(ConvertAppTypeToMojomAppType(update.AppType()),
                                update.AppId(), event_flags, launch_source,
@@ -314,9 +314,8 @@ void AppServiceProxyBase::LaunchAppWithFiles(
             return;
           }
 
-          RecordAppPlatformMetrics(
-              profile_, update, launch_source,
-              apps::mojom::LaunchContainer::kLaunchContainerNone);
+          RecordAppPlatformMetrics(profile_, update, launch_source,
+                                   apps::LaunchContainer::kLaunchContainerNone);
 
           // TODO(crbug/1117655): File manager records metrics for apps it
           // launched. So we only record launches from other places. We should
@@ -361,9 +360,8 @@ void AppServiceProxyBase::LaunchAppWithIntent(
           if (launch_source != apps::mojom::LaunchSource::kFromFileManager) {
             RecordAppLaunch(update.AppId(), launch_source);
           }
-          RecordAppPlatformMetrics(
-              profile_, update, launch_source,
-              apps::mojom::LaunchContainer::kLaunchContainerNone);
+          RecordAppPlatformMetrics(profile_, update, launch_source,
+                                   apps::LaunchContainer::kLaunchContainerNone);
 
           app_service_->LaunchAppWithIntent(
               ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
@@ -878,7 +876,7 @@ void AppServiceProxyBase::RecordAppPlatformMetrics(
     Profile* profile,
     const apps::AppUpdate& update,
     apps::mojom::LaunchSource launch_source,
-    apps::mojom::LaunchContainer container) {}
+    apps::LaunchContainer container) {}
 
 void AppServiceProxyBase::PerformPostUninstallTasks(
     apps::AppType app_type,

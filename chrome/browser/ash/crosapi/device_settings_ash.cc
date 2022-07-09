@@ -12,8 +12,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
+#include "chrome/browser/policy/status_provider/device_cloud_policy_status_provider_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/policy/status_provider/device_cloud_policy_status_provider_chromeos.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace crosapi {
@@ -48,6 +48,23 @@ void DeviceSettingsAsh::GetDevicePolicy(GetDevicePolicyCallback callback) {
   const policy::BrowserPolicyConnectorAsh* connector =
       g_browser_process->platform_part()->browser_policy_connector_ash();
   if (!connector->IsDeviceEnterpriseManaged()) {
+    std::move(callback).Run(base::Value::Dict(), base::Value::Dict());
+    return;
+  }
+
+  auto client = std::make_unique<policy::ChromePolicyConversionsClient>(
+      ProfileManager::GetActiveUserProfile());
+  client->EnableUserPolicies(false);
+  DeviceCloudPolicyStatusProviderChromeOS provider(connector);
+  base::Value::Dict status = provider.GetStatus();
+  std::move(callback).Run(client->GetChromePolicies(), std::move(status));
+}
+
+void DeviceSettingsAsh::GetDevicePolicyDeprecated(
+    GetDevicePolicyDeprecatedCallback callback) {
+  const policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  if (!connector->IsDeviceEnterpriseManaged()) {
     std::move(callback).Run(base::Value(), base::Value());
     return;
   }
@@ -56,10 +73,9 @@ void DeviceSettingsAsh::GetDevicePolicy(GetDevicePolicyCallback callback) {
       ProfileManager::GetActiveUserProfile());
   client->EnableUserPolicies(false);
   DeviceCloudPolicyStatusProviderChromeOS provider(connector);
-  base::DictionaryValue status;
-  provider.GetStatus(&status);
+  base::Value::Dict status = provider.GetStatus();
   std::move(callback).Run(base::Value(client->GetChromePolicies()),
-                          std::move(status));
+                          base::Value(std::move(status)));
 }
 
 }  // namespace crosapi

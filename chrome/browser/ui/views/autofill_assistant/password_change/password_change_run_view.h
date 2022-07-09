@@ -11,8 +11,8 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/autofill_assistant/password_change/proto/extensions.pb.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_display.h"
+#include "components/autofill_assistant/browser/public/password_change/proto/actions.pb.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
@@ -62,7 +62,7 @@ class PasswordChangeRunView : public views::View,
   void SetProgressBarStep(
       autofill_assistant::password_change::ProgressStep progress_step) override;
   void ShowBasePrompt(const std::vector<PromptChoice>& options) override;
-  void ShowGeneratedPasswordPrompt(
+  void ShowUseGeneratedPasswordPrompt(
       const std::u16string& title,
       const std::u16string& generated_password,
       const std::u16string& description,

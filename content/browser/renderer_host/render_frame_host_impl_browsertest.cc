@@ -3809,8 +3809,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                 .party_context());
 }
 
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       ComputeIsolationInfoForNavigationSiteForCookies) {
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTest,
+    DISABLED_ComputeIsolationInfoForNavigationSiteForCookies) {
   // Start second server for HTTPS.
   https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
   ASSERT_TRUE(https_server()->Start());
@@ -4489,8 +4490,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* pending_rfh =
       root->render_manager()->speculative_frame_host();
   NavigationRequest* navigation_request = root->navigation_request();
-  EXPECT_EQ(navigation_request->associated_site_instance_type(),
-            NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
+  EXPECT_EQ(navigation_request->associated_rfh_type(),
+            NavigationRequest::AssociatedRenderFrameHostType::SPECULATIVE);
   EXPECT_TRUE(pending_rfh);
 
   // 4) Check the LifecycleStateImpl of both rfh_a and pending_rfh before
@@ -4603,8 +4604,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* speculative_rfh =
       root->render_manager()->speculative_frame_host();
   NavigationRequest* navigation_request = root->navigation_request();
-  EXPECT_EQ(navigation_request->associated_site_instance_type(),
-            NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
+  EXPECT_EQ(navigation_request->associated_rfh_type(),
+            NavigationRequest::AssociatedRenderFrameHostType::SPECULATIVE);
   EXPECT_TRUE(speculative_rfh);
 
   // 3) Check the LifecycleStateImpl of both rfh_a and speculative_rfh before
@@ -4680,11 +4681,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       root->render_manager()->current_frame_host();
   NavigationRequest* navigation_request = root->navigation_request();
   if (ShouldSkipEarlyCommitPendingForCrashedFrame()) {
-    EXPECT_EQ(navigation_request->associated_site_instance_type(),
-              NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
+    EXPECT_EQ(navigation_request->associated_rfh_type(),
+              NavigationRequest::AssociatedRenderFrameHostType::SPECULATIVE);
   } else {
-    EXPECT_EQ(navigation_request->associated_site_instance_type(),
-              NavigationRequest::AssociatedSiteInstanceType::CURRENT);
+    EXPECT_EQ(navigation_request->associated_rfh_type(),
+              NavigationRequest::AssociatedRenderFrameHostType::CURRENT);
   }
 
   // 4) Check the LifecycleStateImpl of B's RFH.
@@ -4912,7 +4913,9 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
   EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInPrimaryMainFrame());
 }
 
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, GetUkmSourceIds) {
+// Flaky on all platforms. crbug/1336851
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       DISABLED_GetUkmSourceIds) {
   ukm::TestAutoSetUkmRecorder recorder;
   // This test site has one cross-site iframe.
   GURL main_frame_url(
@@ -6111,7 +6114,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, GetSiblings) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   // Use actual FrameTreeNode id values in URL.
   GURL main_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?1(2,3(5),4)"));
+      "1.com", "/cross_site_iframe_factory.html?1(2,3(5),4)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* ftn1 = web_contents()->GetPrimaryFrameTree().root();
@@ -6148,12 +6151,12 @@ class DestructorLifetimeDocumentService
     : public DocumentService<blink::mojom::BrowserInterfaceBroker> {
  public:
   DestructorLifetimeDocumentService(
-      RenderFrameHostImpl* render_frame_host,
+      RenderFrameHostImpl& render_frame_host,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver,
       bool& was_destroyed)
       : DocumentService(render_frame_host, std::move(receiver)),
-        render_frame_host_(render_frame_host->GetWeakPtr()),
-        page_(render_frame_host->GetPage().GetWeakPtr()),
+        render_frame_host_(render_frame_host.GetWeakPtr()),
+        page_(render_frame_host.GetPage().GetWeakPtr()),
         was_destroyed_(was_destroyed) {}
 
   ~DestructorLifetimeDocumentService() override {
@@ -6222,7 +6225,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   bool document_service_was_destroyed = false;
   mojo::Remote<blink::mojom::BrowserInterfaceBroker> remote;
   // This is self-owned so the bare new is OK.
-  new DestructorLifetimeDocumentService(main_frame,
+  new DestructorLifetimeDocumentService(*main_frame,
                                         remote.BindNewPipeAndPassReceiver(),
                                         document_service_was_destroyed);
 
@@ -6266,7 +6269,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   bool document_service_was_destroyed = false;
   mojo::Remote<blink::mojom::BrowserInterfaceBroker> remote;
   // This is self-owned so the bare new is OK.
-  new DestructorLifetimeDocumentService(main_frame,
+  new DestructorLifetimeDocumentService(*main_frame,
                                         remote.BindNewPipeAndPassReceiver(),
                                         document_service_was_destroyed);
 
@@ -6304,7 +6307,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   bool document_service_was_destroyed = false;
   mojo::Remote<blink::mojom::BrowserInterfaceBroker> remote;
   // This is self-owned so the bare new is OK.
-  new DestructorLifetimeDocumentService(child_frame,
+  new DestructorLifetimeDocumentService(*child_frame,
                                         remote.BindNewPipeAndPassReceiver(),
                                         document_service_was_destroyed);
 
@@ -6346,7 +6349,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   bool document_service_was_destroyed = false;
   mojo::Remote<blink::mojom::BrowserInterfaceBroker> remote;
   // This is self-owned so the bare new is OK.
-  new DestructorLifetimeDocumentService(child_frame,
+  new DestructorLifetimeDocumentService(*child_frame,
                                         remote.BindNewPipeAndPassReceiver(),
                                         document_service_was_destroyed);
 
@@ -6384,7 +6387,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   bool document_service_was_destroyed = false;
   mojo::Remote<blink::mojom::BrowserInterfaceBroker> remote;
   // This is self-owned so the bare new is OK.
-  new DestructorLifetimeDocumentService(child_frame,
+  new DestructorLifetimeDocumentService(*child_frame,
                                         remote.BindNewPipeAndPassReceiver(),
                                         document_service_was_destroyed);
 
@@ -7007,8 +7010,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowsingContextStateNameTest,
 // name update is blocked if kDisableFrameNameUpdateOnNonCurrentRenderFrameHost
 // is enabled
 //
-// TODO(https://crbug.com/1326944): Flaky on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(https://crbug.com/1326944): Flaky on Mac and Android.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
 #define MAYBE_BlockNameUpdateForPendingDelete \
   DISABLED_BlockNameUpdateForPendingDelete
 #else

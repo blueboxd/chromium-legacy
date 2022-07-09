@@ -47,6 +47,7 @@ import androidx.annotation.IntDef;
 import androidx.test.espresso.DataInteraction;
 import androidx.test.espresso.Espresso;
 import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -69,7 +70,9 @@ import org.chromium.android_webview.services.DeveloperUiService;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseActivityTestRule;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -78,11 +81,13 @@ import java.util.Map;
 
 /**
  * UI tests for {@link FlagsFragment}.
- * <p>
- * These tests should not be batched to make sure that the DeveloperUiService is killed
- * after each test, leaving a clean state.
+ *
+ * <p>These tests should not be batched to make sure that the DeveloperUiService is killed after
+ * each test, leaving a clean state.
  */
 @RunWith(AwJUnit4ClassRunner.class)
+@Batch(Batch.PER_CLASS)
+@DisabledTest(message = "Flaky test: https://crbug.com/1312662")
 public class FlagsFragmentTest {
     @Rule
     public BaseActivityTestRule mRule = new BaseActivityTestRule<MainActivity>(MainActivity.class);
@@ -233,6 +238,14 @@ public class FlagsFragmentTest {
             view.dispatchTouchEvent(MotionEvent.obtain(
                     downTime, eventTime, MotionEvent.ACTION_UP, x, y, metaState));
         });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testHasPublicNoArgsConstructor() throws Throwable {
+        FlagsFragment fragment = new FlagsFragment();
+        Assert.assertNotNull(fragment);
     }
 
     @Test

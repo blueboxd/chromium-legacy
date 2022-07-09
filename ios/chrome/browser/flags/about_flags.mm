@@ -64,11 +64,12 @@
 #include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/ntp/features.h"
-#include "ios/chrome/browser/policy/cloud/user_policy_switch.h"
+#import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #include "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/sessions/session_features.h"
 #include "ios/chrome/browser/system_flags.h"
+#include "ios/chrome/browser/ui/autofill/features.h"
 #include "ios/chrome/browser/ui/bubble/bubble_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -180,6 +181,22 @@ const FeatureEntry::FeatureVariation kOmniboxMaxZPSMatchesVariations[] = {
     {"15 matches", kOmniboxMaxZPSMatches15, std::size(kOmniboxMaxZPSMatches15),
      nullptr},
     {"20 matches", kOmniboxMaxZPSMatches20, std::size(kOmniboxMaxZPSMatches20),
+     nullptr},
+};
+
+const FeatureEntry::FeatureParam kOmniboxMaxURLMatches5[] = {
+    {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "5"}};
+const FeatureEntry::FeatureParam kOmniboxMaxURLMatches6[] = {
+    {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "6"}};
+const FeatureEntry::FeatureParam kOmniboxMaxURLMatches7[] = {
+    {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "7"}};
+
+const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
+    {"5 matches", kOmniboxMaxURLMatches5, std::size(kOmniboxMaxURLMatches5),
+     nullptr},
+    {"6 matches", kOmniboxMaxURLMatches6, std::size(kOmniboxMaxURLMatches6),
+     nullptr},
+    {"7 matches", kOmniboxMaxURLMatches7, std::size(kOmniboxMaxURLMatches7),
      nullptr},
 };
 
@@ -374,6 +391,19 @@ const FeatureEntry::FeatureVariation kBubbleRichIPHVariations[] = {
      std::size(kBubbleRichIPHRichWithSnooze), nullptr},
 };
 
+const FeatureEntry::FeatureParam kOmniboxPasteButtonBlueIconCapsule[] = {
+    {kOmniboxPasteButtonParameterName,
+     kOmniboxPasteButtonParameterBlueIconCapsule}};
+const FeatureEntry::FeatureParam kOmniboxPasteButtonBlueFullCapsule[] = {
+    {kOmniboxPasteButtonParameterName,
+     kOmniboxPasteButtonParameterBlueFullCapsule}};
+const FeatureEntry::FeatureVariation kOmniboxPasteButtonVariations[] = {
+    {"Icon only", kOmniboxPasteButtonBlueIconCapsule,
+     std::size(kOmniboxPasteButtonBlueIconCapsule), nullptr},
+    {"Icon and text", kOmniboxPasteButtonBlueFullCapsule,
+     std::size(kOmniboxPasteButtonBlueFullCapsule), nullptr},
+};
+
 const FeatureEntry::FeatureParam kPopupMenuBookmarkStringAddABookmark[] = {
     {kPopupMenuBookmarkStringParamName,
      kPopupMenuBookmarkStringParamAddABookmark}};
@@ -490,10 +520,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kMaxZeroSuggestMatches,
                                     kOmniboxMaxZPSMatchesVariations,
                                     "OmniboxMaxZPSVariations")},
-    {"omnibox-local-history-zero-suggest",
-     flag_descriptions::kOmniboxLocalHistoryZeroSuggestName,
-     flag_descriptions::kOmniboxLocalHistoryZeroSuggestDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kLocalHistoryZeroSuggest)},
 #if defined(DCHECK_IS_CONFIGURABLE)
     {"dcheck-is-fatal", flag_descriptions::kDcheckIsFatalName,
      flag_descriptions::kDcheckIsFatalDescription, flags_ui::kOsIos,
@@ -567,11 +593,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieDescription,
      flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kDelayThresholdMinutesToUpdateGaiaCookieChoices)},
-    {"add-passwords-in-settings",
-     flag_descriptions::kAddPasswordsInSettingsName,
-     flag_descriptions::kAddPasswordsInSettingsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kSupportForAddPasswordsInSettings)},
     {"record-snapshot-size", flag_descriptions::kRecordSnapshotSizeName,
      flag_descriptions::kRecordSnapshotSizeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kRecordSnapshotSize)},
@@ -933,6 +954,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSmartSortingNewOverflowMenuName,
      flag_descriptions::kSmartSortingNewOverflowMenuDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSmartSortingNewOverflowMenu)},
+    {"new-overflow-menu-share-chrome-action",
+     flag_descriptions::kNewOverflowMenuShareChromeActionName,
+     flag_descriptions::kNewOverflowMenuShareChromeActionDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kNewOverflowMenuShareChromeAction)},
     {"autofill-enable-ranking-formula",
      flag_descriptions::kAutofillEnableRankingFormulaName,
      flag_descriptions::kAutofillEnableRankingFormulaDescription,
@@ -980,6 +1005,39 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAdaptiveSuggestionsCountName,
      flag_descriptions::kAdaptiveSuggestionsCountDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kAdaptiveSuggestionsCount)},
+    {"trending-queries-module", flag_descriptions::kTrendingQueriesModuleName,
+     flag_descriptions::kTrendingQueriesModuleDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTrendingQueriesModule)},
+    {"autofill-parse-iban-fields",
+     flag_descriptions::kAutofillParseIbanFieldsName,
+     flag_descriptions::kAutofillParseIbanFieldsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillParseIbanFields)},
+    {"autofill-enable-new-card-unmask-prompt-view",
+     flag_descriptions::kAutofillEnableNewCardUnmaskPromptViewName,
+     flag_descriptions::kAutofillEnableNewCardUnmaskPromptViewDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kAutofillEnableNewCardUnmaskPromptView)},
+    {"omnibox-paste-button", flag_descriptions::kOmniboxPasteButtonName,
+     flag_descriptions::kOmniboxPasteButtonDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kOmniboxPasteButton,
+                                    kOmniboxPasteButtonVariations,
+                                    "OmniboxPasteButton")},
+    {"enable-user-policy", flag_descriptions::kEnableUserPolicyName,
+     flag_descriptions::kEnableUserPolicyDescription, flags_ui::kOsIos,
+     SINGLE_VALUE_TYPE(policy::kEnableUserPolicy)},
+    {"enable-sync-history-datatype",
+     flag_descriptions::kSyncEnableHistoryDataTypeName,
+     flag_descriptions::kSyncEnableHistoryDataTypeDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(syncer::kSyncEnableHistoryDataType)},
+    {"omnibox-max-url-matches", flag_descriptions::kOmniboxMaxURLMatchesName,
+     flag_descriptions::kOmniboxMaxURLMatchesDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxMaxURLMatches,
+                                    kOmniboxMaxURLMatchesVariations,
+                                    "OmniboxMaxURLMatches")},
+    {"metrickit-non-crash-reports",
+     flag_descriptions::kMetrickitNonCrashReportName,
+     flag_descriptions::kMetrickitNonCrashReportDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kMetrickitNonCrashReport)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

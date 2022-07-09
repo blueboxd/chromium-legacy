@@ -637,6 +637,18 @@ apps::mojom::IntentFilterPtr CreateNoteTakingFilterMojom() {
   return apps::ConvertIntentFilterToMojomIntentFilter(CreateNoteTakingFilter());
 }
 
+apps::IntentFilterPtr CreateLockScreenFilter() {
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kAction,
+                                         kIntentActionStartOnLockScreen,
+                                         apps::PatternMatchType::kNone);
+  return intent_filter;
+}
+
+apps::mojom::IntentFilterPtr CreateLockScreenFilterMojom() {
+  return apps::ConvertIntentFilterToMojomIntentFilter(CreateLockScreenFilter());
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // TODO(crbug.com/1253219): Use FilePaths in intents to avoid dependency on
 // File Manager.
@@ -932,6 +944,7 @@ apps::IntentFilterPtr CreateIntentFilterForArc(
   auto intent_filter = std::make_unique<apps::IntentFilter>();
 
   bool has_view_action = false;
+  bool is_file_filter = arc_intent_filter.mime_types().size() > 0;
 
   apps::ConditionValues action_condition_values;
   for (auto& arc_action : arc_intent_filter.actions()) {
@@ -951,15 +964,19 @@ apps::IntentFilterPtr CreateIntentFilterForArc(
     intent_filter->conditions.push_back(std::move(action_condition));
   }
 
-  apps::ConditionValues scheme_condition_values;
-  for (auto& scheme : arc_intent_filter.schemes()) {
-    scheme_condition_values.push_back(std::make_unique<apps::ConditionValue>(
-        scheme, apps::PatternMatchType::kNone));
-  }
-  if (!scheme_condition_values.empty()) {
-    auto scheme_condition = std::make_unique<apps::Condition>(
-        apps::ConditionType::kScheme, std::move(scheme_condition_values));
-    intent_filter->conditions.push_back(std::move(scheme_condition));
+  // Some ARC file filters will have schemes, but we don't want them visible in
+  // App Service filters since they are irrelevant.
+  if (!is_file_filter) {
+    apps::ConditionValues scheme_condition_values;
+    for (auto& scheme : arc_intent_filter.schemes()) {
+      scheme_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+          scheme, apps::PatternMatchType::kNone));
+    }
+    if (!scheme_condition_values.empty()) {
+      auto scheme_condition = std::make_unique<apps::Condition>(
+          apps::ConditionType::kScheme, std::move(scheme_condition_values));
+      intent_filter->conditions.push_back(std::move(scheme_condition));
+    }
   }
 
   apps::ConditionValues host_condition_values;
@@ -1020,9 +1037,19 @@ apps::IntentFilterPtr CreateIntentFilterForArc(
         mime_type, apps::PatternMatchType::kMimeType));
   }
   if (!mime_type_condition_values.empty()) {
-    auto mime_type_condition = std::make_unique<apps::Condition>(
-        apps::ConditionType::kMimeType, std::move(mime_type_condition_values));
-    intent_filter->conditions.push_back(std::move(mime_type_condition));
+    // For ARC view file intents, save the mime type conditions under kFile
+    // instead of kMimeType to maintain consistency with view file intents of
+    // other app types.
+    if (has_view_action) {
+      auto file_type_condition = std::make_unique<apps::Condition>(
+          apps::ConditionType::kFile, std::move(mime_type_condition_values));
+      intent_filter->conditions.push_back(std::move(file_type_condition));
+    } else {
+      auto mime_type_condition = std::make_unique<apps::Condition>(
+          apps::ConditionType::kMimeType,
+          std::move(mime_type_condition_values));
+      intent_filter->conditions.push_back(std::move(mime_type_condition));
+    }
   }
   if (!arc_intent_filter.activity_name().empty()) {
     intent_filter->activity_name = arc_intent_filter.activity_name();
@@ -1039,6 +1066,7 @@ apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
   auto intent_filter = apps::mojom::IntentFilter::New();
 
   bool has_view_action = false;
+  bool is_file_filter = arc_intent_filter.mime_types().size() > 0;
 
   std::vector<apps::mojom::ConditionValuePtr> action_condition_values;
   for (auto& arc_action : arc_intent_filter.actions()) {
@@ -1058,15 +1086,19 @@ apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
     intent_filter->conditions.push_back(std::move(action_condition));
   }
 
-  std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
-  for (auto& scheme : arc_intent_filter.schemes()) {
-    scheme_condition_values.push_back(
-        MakeConditionValue(scheme, apps::mojom::PatternMatchType::kNone));
-  }
-  if (!scheme_condition_values.empty()) {
-    auto scheme_condition = MakeCondition(apps::mojom::ConditionType::kScheme,
-                                          std::move(scheme_condition_values));
-    intent_filter->conditions.push_back(std::move(scheme_condition));
+  // Some ARC file filters will have schemes, but we don't want them visible in
+  // App Service filters since they are irrelevant.
+  if (!is_file_filter) {
+    std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
+    for (auto& scheme : arc_intent_filter.schemes()) {
+      scheme_condition_values.push_back(
+          MakeConditionValue(scheme, apps::mojom::PatternMatchType::kNone));
+    }
+    if (!scheme_condition_values.empty()) {
+      auto scheme_condition = MakeCondition(apps::mojom::ConditionType::kScheme,
+                                            std::move(scheme_condition_values));
+      intent_filter->conditions.push_back(std::move(scheme_condition));
+    }
   }
 
   std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
@@ -1116,10 +1148,20 @@ apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
         mime_type, apps::mojom::PatternMatchType::kMimeType));
   }
   if (!mime_type_condition_values.empty()) {
-    auto mime_type_condition =
-        MakeCondition(apps::mojom::ConditionType::kMimeType,
-                      std::move(mime_type_condition_values));
-    intent_filter->conditions.push_back(std::move(mime_type_condition));
+    // For ARC view file intents, save the mime type conditions under kFile
+    // instead of kMimeType to maintain consistency with view file intents of
+    // other app types.
+    if (has_view_action) {
+      auto file_type_condition =
+          MakeCondition(apps::mojom::ConditionType::kFile,
+                        std::move(mime_type_condition_values));
+      intent_filter->conditions.push_back(std::move(file_type_condition));
+    } else {
+      auto mime_type_condition =
+          MakeCondition(apps::mojom::ConditionType::kMimeType,
+                        std::move(mime_type_condition_values));
+      intent_filter->conditions.push_back(std::move(mime_type_condition));
+    }
   }
   if (!arc_intent_filter.activity_name().empty()) {
     intent_filter->activity_name = arc_intent_filter.activity_name();

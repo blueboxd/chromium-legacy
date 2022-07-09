@@ -788,9 +788,8 @@ void SimpleEntryImpl::OpenEntryInternal(
   DCHECK(!synchronous_entry_);
   state_ = STATE_IO_PENDING;
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  std::unique_ptr<SimpleEntryCreationResults> results(
-      new SimpleEntryCreationResults(SimpleEntryStat(
-          last_used_, last_modified_, data_size_, sparse_data_size_)));
+  auto results = std::make_unique<SimpleEntryCreationResults>(SimpleEntryStat(
+      last_used_, last_modified_, data_size_, sparse_data_size_));
 
   int32_t trailer_prefetch_size = -1;
   base::Time last_used_time;
@@ -846,9 +845,8 @@ void SimpleEntryImpl::CreateEntryInternal(
   last_used_ = last_modified_ = base::Time::Now();
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  std::unique_ptr<SimpleEntryCreationResults> results(
-      new SimpleEntryCreationResults(SimpleEntryStat(
-          last_used_, last_modified_, data_size_, sparse_data_size_)));
+  auto results = std::make_unique<SimpleEntryCreationResults>(SimpleEntryStat(
+      last_used_, last_modified_, data_size_, sparse_data_size_));
 
   OnceClosure task =
       base::BindOnce(&SimpleSynchronousEntry::CreateEntry, cache_type_, path_,
@@ -897,9 +895,8 @@ void SimpleEntryImpl::OpenOrCreateEntryInternal(
   DCHECK(!synchronous_entry_);
   state_ = STATE_IO_PENDING;
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  std::unique_ptr<SimpleEntryCreationResults> results(
-      new SimpleEntryCreationResults(SimpleEntryStat(
-          last_used_, last_modified_, data_size_, sparse_data_size_)));
+  auto results = std::make_unique<SimpleEntryCreationResults>(SimpleEntryStat(
+      last_used_, last_modified_, data_size_, sparse_data_size_));
 
   int32_t trailer_prefetch_size = -1;
   base::Time last_used_time;
@@ -937,8 +934,7 @@ void SimpleEntryImpl::CloseInternal() {
   }
 
   typedef SimpleSynchronousEntry::CRCRecord CRCRecord;
-  std::unique_ptr<std::vector<CRCRecord>> crc32s_to_write(
-      new std::vector<CRCRecord>());
+  auto crc32s_to_write = std::make_unique<std::vector<CRCRecord>>();
 
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_CLOSE_BEGIN);
 
@@ -959,8 +955,7 @@ void SimpleEntryImpl::CloseInternal() {
     DCHECK(STATE_UNINITIALIZED == state_ || STATE_FAILURE == state_);
   }
 
-  std::unique_ptr<SimpleEntryCloseResults> results =
-      std::make_unique<SimpleEntryCloseResults>();
+  auto results = std::make_unique<SimpleEntryCloseResults>();
   if (synchronous_entry_) {
     OnceClosure task = base::BindOnce(
         &SimpleSynchronousEntry::Close, base::Unretained(synchronous_entry_),
@@ -1049,10 +1044,9 @@ int SimpleEntryImpl::ReadDataInternal(bool sync_possible,
     read_req.request_verify_crc = !have_written_[stream_index];
   }
 
-  std::unique_ptr<SimpleSynchronousEntry::ReadResult> result =
-      std::make_unique<SimpleSynchronousEntry::ReadResult>();
-  std::unique_ptr<SimpleEntryStat> entry_stat(new SimpleEntryStat(
-      last_used_, last_modified_, data_size_, sparse_data_size_));
+  auto result = std::make_unique<SimpleSynchronousEntry::ReadResult>();
+  auto entry_stat = std::make_unique<SimpleEntryStat>(
+      last_used_, last_modified_, data_size_, sparse_data_size_);
   OnceClosure task = base::BindOnce(
       &SimpleSynchronousEntry::ReadData, base::Unretained(synchronous_entry_),
       read_req, entry_stat.get(), base::RetainedRef(buf), result.get());
@@ -1139,8 +1133,8 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   }
 
   // |entry_stat| needs to be initialized before modifying |data_size_|.
-  std::unique_ptr<SimpleEntryStat> entry_stat(new SimpleEntryStat(
-      last_used_, last_modified_, data_size_, sparse_data_size_));
+  auto entry_stat = std::make_unique<SimpleEntryStat>(
+      last_used_, last_modified_, data_size_, sparse_data_size_);
   if (truncate) {
     data_size_[stream_index] = offset + buf_len;
   } else {
@@ -1148,8 +1142,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                                         GetDataSize(stream_index));
   }
 
-  std::unique_ptr<SimpleSynchronousEntry::WriteResult> write_result =
-      std::make_unique<SimpleSynchronousEntry::WriteResult>();
+  auto write_result = std::make_unique<SimpleSynchronousEntry::WriteResult>();
 
   // Since we don't know the correct values for |last_used_| and
   // |last_modified_| yet, we make this approximation.
@@ -1212,8 +1205,8 @@ void SimpleEntryImpl::ReadSparseDataInternal(
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
 
-  std::unique_ptr<int> result(new int());
-  std::unique_ptr<base::Time> last_used(new base::Time());
+  auto result = std::make_unique<int>();
+  auto last_used = std::make_unique<base::Time>();
   OnceClosure task = base::BindOnce(
       &SimpleSynchronousEntry::ReadSparseData,
       base::Unretained(synchronous_entry_),
@@ -1263,12 +1256,12 @@ void SimpleEntryImpl::WriteSparseDataInternal(
     max_sparse_data_size = max_cache_size / kMaxSparseDataSizeDivisor;
   }
 
-  std::unique_ptr<SimpleEntryStat> entry_stat(new SimpleEntryStat(
-      last_used_, last_modified_, data_size_, sparse_data_size_));
+  auto entry_stat = std::make_unique<SimpleEntryStat>(
+      last_used_, last_modified_, data_size_, sparse_data_size_);
 
   last_used_ = last_modified_ = base::Time::Now();
 
-  std::unique_ptr<int> result(new int());
+  auto result = std::make_unique<int>();
   OnceClosure task = base::BindOnce(
       &SimpleSynchronousEntry::WriteSparseData,
       base::Unretained(synchronous_entry_),
@@ -1405,8 +1398,8 @@ void SimpleEntryImpl::CreationOperationComplete(
   // If this is a successful creation (rather than open), mark all streams to be
   // saved on close.
   if (in_results->created) {
-    for (int i = 0; i < kSimpleEntryStreamCount; ++i)
-      have_written_[i] = true;
+    for (bool& have_written : have_written_)
+      have_written = true;
   }
 
   // Make sure to keep the index up-to-date. We likely already did this when
@@ -1657,9 +1650,8 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
 
 int64_t SimpleEntryImpl::GetDiskUsage() const {
   int64_t file_size = 0;
-  for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
-    file_size +=
-        simple_util::GetFileSizeFromDataSize(key_.size(), data_size_[i]);
+  for (int data_size : data_size_) {
+    file_size += simple_util::GetFileSizeFromDataSize(key_.size(), data_size);
   }
   file_size += sparse_data_size_;
   return file_size;

@@ -76,8 +76,6 @@ blink_modules_sources("webgpu") {
     "gpu_supported_features.h",
     "gpu_supported_limits.cc",
     "gpu_supported_limits.h",
-    "gpu_swap_chain.cc",
-    "gpu_swap_chain.h",
     "gpu_texture.cc",
     "gpu_texture.h",
     "gpu_texture_usage.h",
@@ -87,6 +85,8 @@ blink_modules_sources("webgpu") {
     "gpu_uncaptured_error_event.h",
     "gpu_validation_error.cc",
     "gpu_validation_error.h",
+    "string_utils.cc",
+    "string_utils.h",
     "texture_utils.cc",
     "texture_utils.h",
   ]
@@ -97,5 +97,19 @@ blink_modules_sources("webgpu") {
     "//skia:skcms",
     "//third_party/blink/renderer/modules/webcodecs:webcodecs",
     "//third_party/dawn/include/dawn:headers",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "gpu_context_lost_test.cc" ]
+
+  deps = [
+    "//base/test:test_support",
+    "//third_party/blink/renderer/controller:blink_bindings_test_sources",
+    "//third_party/blink/renderer/core",
+    "//third_party/blink/renderer/core:testing",
+    "//third_party/blink/renderer/modules",
+    "//third_party/blink/renderer/platform:test_support",
   ]
 }

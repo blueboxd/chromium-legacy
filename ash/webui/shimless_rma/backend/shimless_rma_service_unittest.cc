@@ -10,23 +10,25 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/webui/shimless_rma/backend/shimless_rma_delegate.h"
 #include "ash/webui/shimless_rma/mojom/shimless_rma.mojom.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/dbus/rmad/fake_rmad_client.h"
 #include "chromeos/ash/components/dbus/rmad/rmad_client.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine.pb.h"
+#include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/network/managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/update_engine/update_engine.pb.h"
-#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -106,6 +108,7 @@ class FakeShimlessRmaDelegate : public ShimlessRmaDelegate {
 
   void ExitRmaThenRestartChrome() override {}
   void ShowDiagnosticsDialog() override {}
+  void RefreshAccessibilityManagerProfile() override {}
 };
 
 }  // namespace
@@ -117,9 +120,11 @@ class ShimlessRmaServiceTest : public testing::Test {
   ~ShimlessRmaServiceTest() override {}
 
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kShimlessRMAOsUpdate}, {});
     chromeos::DBusThreadManager::Initialize();
     // VersionUpdater depends on UpdateEngineClient.
-    chromeos::UpdateEngineClient::InitializeFake();
+    UpdateEngineClient::InitializeFake();
 
     SetupFakeNetwork();
     FakeRmadClientForTest::Initialize();
@@ -144,7 +149,7 @@ class ShimlessRmaServiceTest : public testing::Test {
     NetworkHandler::Shutdown();
     cros_network_config_test_helper_.reset();
     chromeos::LoginState::Shutdown();
-    chromeos::UpdateEngineClient::Shutdown();
+    UpdateEngineClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -278,6 +283,8 @@ class ShimlessRmaServiceTest : public testing::Test {
         /*visible_only=*/true, /*no_limit=*/0, list);
   }
 
+  void ResetFeatures() { scoped_feature_list_.Reset(); }
+
  protected:
   network_config::CrosNetworkConfigTestHelper&
   cros_network_config_test_helper() {
@@ -303,6 +310,7 @@ class ShimlessRmaServiceTest : public testing::Test {
       managed_network_configuration_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   base::test::TaskEnvironment task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(ShimlessRmaServiceTest, AbortAndGoBackStatePassedCorrectly) {
@@ -366,10 +374,42 @@ TEST_F(ShimlessRmaServiceTest, WelcomeHasNetworkConnection) {
       }));
   run_loop.RunUntilIdle();
 
-  // With a WiFi network it should redirect to kUpdateOs
+  // With a WiFi network it should redirect to kUpdateOs if the update flag is
+  // on.
   shimless_rma_provider_->BeginFinalization(
       base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
         EXPECT_EQ(state_result_ptr->state, mojom::State::kUpdateOs);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, WelcomePageSkipsOsUpdateIfFlagIsOff) {
+  ResetFeatures();
+
+  SetupWiFiNetwork(kDefaultWifiGuid);
+  const std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kWelcome, rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kComponentsRepair,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+
+  base::RunLoop run_loop;
+
+  // Initialize current state
+  shimless_rma_provider_->GetCurrentState(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kWelcomeScreen);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  // With a WiFi network it should redirect to kComponentsRepair if the Os
+  // Update flag is off.
+  shimless_rma_provider_->BeginFinalization(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kSelectComponents);
         EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
         run_loop.Quit();
       }));
@@ -436,6 +476,45 @@ TEST_F(ShimlessRmaServiceTest, ChooseNetworkHasNetworkConnection) {
   shimless_rma_provider_->NetworkSelectionComplete(
       base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
         EXPECT_EQ(state_result_ptr->state, mojom::State::kUpdateOs);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, ChooseNetworkPageSkipsOsUpdateIfFlagIsOff) {
+  ResetFeatures();
+
+  const std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kWelcome, rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kComponentsRepair,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+
+  base::RunLoop run_loop;
+
+  // Initialize current state
+  shimless_rma_provider_->GetCurrentState(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kWelcomeScreen);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  // No network should prompt select network page
+  shimless_rma_provider_->BeginFinalization(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kConfigureNetwork);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+  SetupWiFiNetwork(kDefaultWifiGuid);
+
+  // With a WiFi network it should redirect to kSelectComponents because the OS
+  // Update flag is off.
+  shimless_rma_provider_->NetworkSelectionComplete(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kSelectComponents);
         EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
         run_loop.Quit();
       }));

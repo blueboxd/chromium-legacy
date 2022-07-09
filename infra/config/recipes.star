@@ -115,6 +115,10 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:build_perf",
+)
+
+build_recipe(
     name = "recipe:celab",
 )
 
@@ -193,6 +197,11 @@ build_recipe(
 
 build_recipe(
     name = "recipe:findit/chromium/single_revision",
+    bootstrappable = POLYMORPHIC,
+)
+
+build_recipe(
+    name = "recipe:gofindit/chromium/single_revision",
     bootstrappable = POLYMORPHIC,
 )
 

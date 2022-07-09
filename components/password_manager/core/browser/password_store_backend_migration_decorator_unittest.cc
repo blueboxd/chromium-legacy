@@ -53,8 +53,7 @@ class PasswordStoreBackendMigrationDecoratorTest : public testing::Test {
 
     backend_migration_decorator_ =
         std::make_unique<PasswordStoreBackendMigrationDecorator>(
-            CreateBuiltInBackend(), CreateAndroidBackend(), &prefs_,
-            &sync_delegate_);
+            CreateBuiltInBackend(), CreateAndroidBackend(), &prefs_);
   }
 
   ~PasswordStoreBackendMigrationDecoratorTest() override {
@@ -86,7 +85,6 @@ class PasswordStoreBackendMigrationDecoratorTest : public testing::Test {
     RunUntilIdle();
   }
 
-  MockPasswordBackendSyncDelegate& sync_delegate() { return sync_delegate_; }
   PasswordStoreBackend* backend_migration_decorator() {
     return backend_migration_decorator_.get();
   }
@@ -120,7 +118,6 @@ class PasswordStoreBackendMigrationDecoratorTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::test::ScopedFeatureList feature_list_;
   TestingPrefServiceSimple prefs_;
-  MockPasswordBackendSyncDelegate sync_delegate_;
   raw_ptr<MockPasswordStoreBackend> built_in_backend_;
   raw_ptr<MockPasswordStoreBackend> android_backend_;
   syncer::TestSyncService sync_service_;
@@ -221,10 +218,11 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
       /*sync_enabled_or_disabled_cb=*/base::DoNothing(),
       /*completion=*/mock_completion_callback.Get());
 
-  // Invoke sync callback to simulate a change in sync status. Set expectation
-  // for sync to be turned off.
-  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
-      .WillOnce(Return(true));
+  InitSyncService(/*is_password_sync_enabled=*/true);
+
+  // Disable password sync in settings.
+  ChangeSyncSetting(/*is_password_sync_enabled=*/false);
+  // Invoke sync callback to simulate a change in sync status.
   EXPECT_CALL(*android_backend(), ClearAllLocalPasswords);
   sync_status_changed_closure.Run();
 
@@ -264,15 +262,15 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
 
   InitSyncService(/*is_password_sync_enabled=*/false);
 
-  // Invoke sync callback to simulate a change in sync status. Set expectation
-  // for sync to be turned on.
-  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
-      .WillRepeatedly(Return(true));
+  // Enable password sync in settings.
+  ChangeSyncSetting(/*is_password_sync_enabled=*/true);
+
   // Migration of non-syncable data to the android backend will trigger
   // login retrieval from the built-in backend first.
   EXPECT_CALL(*built_in_backend(), GetAllLoginsAsync);
   EXPECT_CALL(*android_backend(), GetAllLoginsAsync).Times(0);
 
+  // Invoke sync callback to simulate a change in sync status.
   sync_status_changed_closure.Run();
   RunUntilIdle();
 
@@ -312,8 +310,6 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
 
   // Invoke sync callback to simulate appliying new setting. Set expectation
   // for sync to be turned off.
-  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
-      .WillRepeatedly(Return(false));
   // Migration of non-syncable data to the built-in backend will trigger
   // retrieval of logins for the last sync account from the android backend
   // first.
@@ -334,9 +330,6 @@ TEST_F(
     PasswordStoreBackendMigrationDecoratorTest,
     ResetAutoSignInWhenInitBackendAfterSyncWasDisabledButSettingWasNotApplied) {
   prefs().SetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange, true);
-  // Set expectation for sync to be turned off.
-  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
-      .WillRepeatedly(Return(false));
 
   // Init backend.
   base::MockCallback<base::OnceCallback<void(bool)>> mock_completion_callback;
@@ -359,6 +352,9 @@ TEST_F(
       /*remote_form_changes_received=*/base::DoNothing(),
       /*sync_enabled_or_disabled_cb=*/base::DoNothing(),
       /*completion=*/mock_completion_callback.Get());
+
+  // Set expectation for sync to be turned off.
+  InitSyncService(/*is_password_sync_enabled=*/false);
 
   // Expect that autosignin will be disabled for logins in the buil-in backend.
   EXPECT_CALL(*built_in_backend(), DisableAutoSignInForOriginsAsync);
@@ -397,8 +393,6 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
   ChangeSyncSetting(/*is_password_sync_enabled=*/false);
   // Invoke sync callback to simulate appliying new setting. Set expectation
   // for sync to be turned off.
-  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
-      .WillRepeatedly(Return(false));
   // Migration of non-syncable data to the built-in backend will trigger
   // retrieval of logins for the last sync account from the android backend
   // first.
@@ -428,9 +422,6 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
   ChangeSyncSetting(/*is_password_sync_enabled=*/true);
   // Invoke sync callback to simulate appliying new setting. Set expectation
   // for sync to be turned on.
-  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
-      .WillRepeatedly(Return(true));
-
   // Migration of non-syncable data should not start, as the previous
   // migration attempt is still running.
   EXPECT_CALL(*built_in_backend(), GetAllLoginsAsync).Times(0);
@@ -468,15 +459,15 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
 
   InitSyncService(/*is_password_sync_enabled=*/false);
 
-  // Invoke sync callback to simulate a change in sync status. Set expectation
-  // for sync to be turned on.
-  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
-      .WillRepeatedly(Return(true));
+  // Enable password sync in settings.
+  ChangeSyncSetting(/*is_password_sync_enabled=*/true);
+
   // Migration of non-syncable data to the android backend will not start and
   // therefore will not trigger any logins retrieval.
   EXPECT_CALL(*built_in_backend(), GetAllLoginsAsync).Times(0);
   EXPECT_CALL(*android_backend(), GetAllLoginsAsync).Times(0);
 
+  // Invoke sync callback to simulate a change in sync status.
   sync_status_changed_closure.Run();
   RunUntilIdle();
 

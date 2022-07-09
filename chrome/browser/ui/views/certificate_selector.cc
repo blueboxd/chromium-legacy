@@ -53,8 +53,8 @@ class CertificateSelector::CertificateTableModel : public ui::TableModel {
   CertificateTableModel& operator=(const CertificateTableModel&) = delete;
 
   // ui::TableModel:
-  int RowCount() override;
-  std::u16string GetText(int index, int column_id) override;
+  size_t RowCount() override;
+  std::u16string GetText(size_t index, int column_id) override;
   void SetObserver(ui::TableModelObserver* observer) override;
 
  private:
@@ -85,15 +85,14 @@ CertificateSelector::CertificateTableModel::CertificateTableModel(
   }
 }
 
-int CertificateSelector::CertificateTableModel::RowCount() {
+size_t CertificateSelector::CertificateTableModel::RowCount() {
   return rows_.size();
 }
 
 std::u16string CertificateSelector::CertificateTableModel::GetText(
-    int index,
+    size_t index,
     int column_id) {
-  DCHECK_GE(index, 0);
-  DCHECK_LT(static_cast<size_t>(index), rows_.size());
+  DCHECK_LT(index, rows_.size());
 
   const Row& row = rows_[index];
   switch (column_id) {
@@ -244,20 +243,20 @@ ui::TableModel* CertificateSelector::table_model_for_testing() const {
 }
 
 net::ClientCertIdentity* CertificateSelector::GetSelectedCert() const {
-  const int selected = table_->GetFirstSelectedRow();
-  if (selected < 0)  // Nothing is selected in |table_|.
+  const absl::optional<size_t> selected = table_->GetFirstSelectedRow();
+  if (!selected.has_value())
     return nullptr;
-  DCHECK_LT(static_cast<size_t>(selected), identities_.size());
-  return identities_[selected].get();
+  DCHECK_LT(selected.value(), identities_.size());
+  return identities_[selected.value()].get();
 }
 
 bool CertificateSelector::Accept() {
-  const int selected = table_->GetFirstSelectedRow();
-  if (selected < 0)  // Nothing is selected in |table_|.
+  const absl::optional<size_t> selected = table_->GetFirstSelectedRow();
+  if (!selected.has_value())
     return false;
 
-  DCHECK_LT(static_cast<size_t>(selected), identities_.size());
-  AcceptCertificate(std::move(identities_[selected]));
+  DCHECK_LT(selected.value(), identities_.size());
+  AcceptCertificate(std::move(identities_[selected.value()]));
   return true;
 }
 
@@ -278,8 +277,9 @@ void CertificateSelector::ViewCertButtonPressed() {
   net::ClientCertIdentity* const cert = GetSelectedCert();
   if (!cert)
     return;
-  ShowCertificateViewer(web_contents_, web_contents_->GetTopLevelNativeWindow(),
-                        cert->certificate());
+  ShowCertificateViewerForClientAuth(web_contents_,
+                                     web_contents_->GetTopLevelNativeWindow(),
+                                     cert->certificate());
 }
 
 void CertificateSelector::OnSelectionChanged() {

@@ -69,7 +69,6 @@
 #include "third_party/blink/renderer/core/html/html_dimension.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
-#include "third_party/blink/renderer/core/html/html_quote_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -85,6 +84,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -179,6 +179,42 @@ HTMLElement* GetParentForDirectionality(const HTMLElement& element,
   return DynamicTo<HTMLElement>(FlatTreeTraversal::ParentElement(element));
 }
 
+bool IsDescendentOfMainElement(const Node* node) {
+  DCHECK(node);
+  do {
+    if (IsA<HTMLMainElement>(node)) {
+      return true;
+    }
+    node = node->parentNode();
+  } while (node);
+  return false;
+}
+
+void CheckSoftNavigationHeuristicsTracking(const Document& document,
+                                           const Node* insertion_point) {
+  DCHECK(insertion_point);
+  if (document.IsTrackingSoftNavigationHeuristics() &&
+      IsDescendentOfMainElement(insertion_point)) {
+    LocalDOMWindow* window = document.domWindow();
+    if (!window) {
+      return;
+    }
+    LocalFrame* frame = window->GetFrame();
+    if (!frame || !frame->IsMainFrame()) {
+      return;
+    }
+    ScriptState* script_state = ToScriptStateForMainWorld(frame);
+    if (!script_state) {
+      return;
+    }
+
+    SoftNavigationHeuristics* heuristics =
+        SoftNavigationHeuristics::From(*window);
+    DCHECK(heuristics);
+    heuristics->ModifiedMain(script_state);
+  }
+}
+
 }  // anonymous namespace
 
 String HTMLElement::DebugNodeName() const {
@@ -254,12 +290,6 @@ void HTMLElement::ApplyBorderAttributeToStyle(
 void HTMLElement::MapLanguageAttributeToLocale(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  // HTMLQuoteElement should ignore own lang attribute and use lang of parent.
-  // This is handled in CollectExtraStyleForPresentationAttribute().
-  // https://github.com/w3c/csswg-drafts/issues/5478
-  if (IsA<HTMLQuoteElement>(this)) {
-    return;
-  }
   if (!value.IsEmpty()) {
     // Have to quote so the locale id is treated as a string instead of as a CSS
     // keyword.
@@ -1301,6 +1331,10 @@ void HTMLElement::ChildrenChanged(const ChildrenChange& change) {
           !ElementAffectsDirectionality(element))
         element->UpdateDirectionalityAndDescendant(CachedDirectionality());
     }
+  }
+  if (change.IsChildInsertion()) {
+    CheckSoftNavigationHeuristicsTracking(GetDocument(),
+                                          change.sibling_changed);
   }
 }
 

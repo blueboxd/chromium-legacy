@@ -23,6 +23,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/online_wallpaper_variant_info_fetcher.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
@@ -40,6 +41,7 @@
 #include "base/timer/wall_clock_timer.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/user_manager/user_type.h"
 #include "ui/compositor/compositor_lock.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/native_theme.h"
@@ -130,6 +132,9 @@ class ASH_EXPORT WallpaperControllerImpl
   // Returns the prominent color based on |color_profile|.
   SkColor GetProminentColor(color_utils::ColorProfile color_profile) const;
 
+  // Returns the k mean color of the current wallpaper.
+  SkColor GetKMeanColor() const;
+
   // Returns current image on the wallpaper, or an empty image if there's no
   // wallpaper.
   gfx::ImageSkia GetWallpaper() const;
@@ -157,10 +162,8 @@ class ASH_EXPORT WallpaperControllerImpl
   // always return true thereafter.
   bool HasShownAnyWallpaper() const;
 
-  // Ash cannot close the chrome side of the wallpaper preview so this function
-  // tells the chrome side to do so. Also Ash cannot tell whether or not the
-  // wallpaper picker is currently open so this will close the wallpaper preview
-  // if it is open and do nothing if it is not open.
+  // Exit wallpaper preview state if it is open and do nothing if it is not
+  // open.
   void MaybeClosePreviewWallpaper();
 
   // Shows the wallpaper and alerts observers of changes.
@@ -258,7 +261,8 @@ class ASH_EXPORT WallpaperControllerImpl
   void SetDefaultWallpaper(const AccountId& account_id,
                            bool show_wallpaper,
                            SetWallpaperCallback callback) override;
-  base::FilePath GetDefaultWallpaperPath(const AccountId& account_id) override;
+  base::FilePath GetDefaultWallpaperPath(
+      user_manager::UserType user_type) override;
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
       const base::FilePath& customized_default_large_path) override;
@@ -275,6 +279,8 @@ class ASH_EXPORT WallpaperControllerImpl
   void UpdateCurrentWallpaperLayout(const AccountId& account_id,
                                     WallpaperLayout layout) override;
   void ShowUserWallpaper(const AccountId& account_id) override;
+  void ShowUserWallpaper(const AccountId& account_id,
+                         user_manager::UserType user_type) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
@@ -371,7 +377,7 @@ class ASH_EXPORT WallpaperControllerImpl
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest,
                            WallpaperMovementDuringUnlock);
-  friend class WallpaperControllerTestBase;
+  friend class WallpaperControllerTest;
   friend class WallpaperControllerTestApi;
 
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
@@ -409,7 +415,7 @@ class ASH_EXPORT WallpaperControllerImpl
   // Implementation of |SetDefaultWallpaper|. Sets wallpaper to default if
   // |show_wallpaper| is true. Otherwise just save the defaut wallpaper to
   // cache.
-  void SetDefaultWallpaperImpl(const AccountId& account_id,
+  void SetDefaultWallpaperImpl(user_manager::UserType user_type,
                                bool show_wallpaper,
                                SetWallpaperCallback callback);
 
@@ -593,12 +599,14 @@ class ASH_EXPORT WallpaperControllerImpl
   // cache should be cleared.
   void ReloadWallpaper(bool clear_cache);
 
-  // Sets |prominent_colors_| and notifies the observers if there is a change.
-  void SetProminentColors(const std::vector<SkColor>& prominent_colors);
+  // Sets |calculated_colors_| and notifies the observers if
+  // there is a change.
+  void SetCalculatedColors(const WallpaperCalculatedColors& calculated_colors);
 
-  // Sets all elements of |prominent_colors| to |kInvalidWallpaperColor| via
-  // SetProminentColors().
-  void ResetProminentColors();
+  // Sets all elements of |calculated_colors_.prominent_colors| and
+  // |calculated_colors_.k_mean_color| to |kInvalidWallpaperColor| via
+  // SetCalculatedColors().
+  void ResetCalculatedColors();
 
   // Calculates prominent colors based on the wallpaper image and notifies
   // |observers_| of the value, either synchronously or asynchronously. In some
@@ -610,10 +618,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // Returns false when the color extraction algorithm shouldn't be run based on
   // system state (e.g. wallpaper image, SessionState, etc.).
   bool ShouldCalculateColors() const;
-
-  // Caches color calculation results in the local state pref service.
-  void CacheProminentColors(const std::vector<SkColor>& colors,
-                            const std::string& current_location);
 
   // Gets prominent color cache from the local state pref service. Returns an
   // empty value if the cache is not available.
@@ -761,9 +765,9 @@ class ASH_EXPORT WallpaperControllerImpl
   // Delegate to resolve online wallpaper variants.
   std::unique_ptr<OnlineWallpaperVariantInfoFetcher> variant_info_fetcher_;
 
-  // The prominent colors extracted from the current wallpaper.
+  // The calculated colors extracted from the current wallpaper.
   // kInvalidWallpaperColor is used by default or if extracting colors fails.
-  std::vector<SkColor> prominent_colors_;
+  WallpaperCalculatedColors calculated_colors_;
 
   // Caches the color profiles that need to do wallpaper color extracting.
   const std::vector<color_utils::ColorProfile> color_profiles_;

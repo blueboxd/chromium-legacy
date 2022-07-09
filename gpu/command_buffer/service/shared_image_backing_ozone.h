@@ -58,6 +58,7 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
   ~SharedImageBackingOzone() override;
 
   // gpu::SharedImageBacking:
+  SharedImageBackingType GetType() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
@@ -125,6 +126,8 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
 
   scoped_refptr<gfx::NativePixmap> pixmap_;
   scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs_;
+  // Write fence that is external and does not do Begin/EndAccess (eg. exo)
+  gfx::GpuFenceHandle external_write_fence_;
   gfx::GpuFenceHandle write_fence_;
   base::flat_map<AccessStream, gfx::GpuFenceHandle> read_fences_;
   AccessStream last_write_stream_;

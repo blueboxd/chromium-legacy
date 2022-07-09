@@ -325,10 +325,6 @@ void WebRuntimeFeatures::EnableTouchEventFeatureDetection(bool enable) {
   RuntimeEnabledFeatures::SetTouchEventFeatureDetectionEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableScrollUnification(bool enable) {
-  RuntimeEnabledFeatures::SetScrollUnificationEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWebGLDeveloperExtensions(bool enable) {
   RuntimeEnabledFeatures::SetWebGLDeveloperExtensionsEnabled(enable);
 }
@@ -571,6 +567,12 @@ void WebRuntimeFeatures::EnableSubresourceWebBundles(bool enable) {
   RuntimeEnabledFeatures::SetSubresourceWebBundlesEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableIdentityInCanMakePaymentEventFeature(
+    bool enable) {
+  RuntimeEnabledFeatures::SetIdentityInCanMakePaymentEventFeatureEnabled(
+      enable);
+}
+
 void WebRuntimeFeatures::EnableIdleDetection(bool enable) {
   RuntimeEnabledFeatures::SetIdleDetectionEnabled(enable);
 }
@@ -669,6 +671,10 @@ void WebRuntimeFeatures::EnableSpeculationRulesPrefetchProxy(bool enable) {
 
 void WebRuntimeFeatures::EnableEventPath(bool enable) {
   RuntimeEnabledFeatures::SetEventPathEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableWebHIDOnServiceWorkers(bool enable) {
+  RuntimeEnabledFeatures::SetWebHIDOnServiceWorkersEnabled(enable);
 }
 
 }  // namespace blink

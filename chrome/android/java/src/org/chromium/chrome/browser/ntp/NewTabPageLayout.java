@@ -485,6 +485,12 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
 
         mSearchProviderLogoView.showSearchProviderInitialView();
 
+        // If pull up Feed position is enabled and search provider is Google, we should show
+        // standard Google logo, which is already done in showSearchProviderInitialView() above.
+        // Since standard Google logo should be shown and doodle is not supported, we don't need to
+        // fetch logo image.
+        if (FeedPositionUtils.isFeedPullUpEnabled() && mSearchProviderIsGoogle) return;
+
         mLogoDelegate.getSearchProviderLogo(new LogoObserver() {
             @Override
             public void onLogoAvailable(Logo logo, boolean fromCache) {
@@ -937,8 +943,12 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
 
     // TODO(crbug.com/1329288): Remove this method when the Feed position experiment is cleaned up.
     private int getGridMvtTopMargin() {
-        int resourcesId = !shouldShowLogo() ? R.dimen.tile_grid_layout_no_logo_top_margin
-                                            : R.dimen.tile_grid_layout_top_margin;
+        if (!shouldShowLogo()) {
+            return getResources().getDimensionPixelOffset(
+                    R.dimen.tile_grid_layout_no_logo_top_margin);
+        }
+
+        int resourcesId = R.dimen.tile_grid_layout_top_margin;
 
         if (FeedPositionUtils.isFeedPushDownLargeEnabled()) {
             resourcesId = R.dimen.tile_grid_layout_top_margin_push_down_large;
@@ -954,6 +964,8 @@ public class NewTabPageLayout extends LinearLayout implements VrModeObserver {
     // TODO(crbug.com/1329288): Remove this method when the Feed position experiment is cleaned up.
     private int getGridMvtBottomMargin() {
         int resourcesId = R.dimen.tile_grid_layout_bottom_margin;
+
+        if (!shouldShowLogo()) return getResources().getDimensionPixelOffset(resourcesId);
 
         if (FeedPositionUtils.isFeedPushDownLargeEnabled()) {
             resourcesId = R.dimen.tile_grid_layout_bottom_margin_push_down_large;

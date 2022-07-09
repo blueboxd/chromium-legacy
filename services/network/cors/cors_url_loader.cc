@@ -12,12 +12,14 @@
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/cors/cors_util.h"
 #include "services/network/cors/preflight_controller.h"
+#include "services/network/network_service_memory_cache.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
@@ -233,7 +235,15 @@ absl::optional<CorsErrorStatus> CheckRedirectLocation(
   return absl::nullopt;
 }
 
+void RecordNetworkLoaderCompletionTime(const char* suffix,
+                                       base::TimeDelta elapsed) {
+  base::UmaHistogramTimes(
+      base::StrCat({"NetworkService.NetworkLoaderCompletionTime.", suffix}),
+      elapsed);
+}
+
 constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
+
 }  // namespace
 
 CorsURLLoader::CorsURLLoader(
@@ -256,7 +266,9 @@ CorsURLLoader::CorsURLLoader(
     NonWildcardRequestHeadersSupport non_wildcard_request_headers_support,
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
-    const mojom::ClientSecurityState* factory_client_security_state)
+    const mojom::ClientSecurityState* factory_client_security_state,
+    NetworkServiceMemoryCache* memory_cache,
+    const CrossOriginEmbedderPolicy& cross_origin_embedder_policy)
     : receiver_(this, std::move(loader_receiver)),
       process_id_(process_id),
       request_id_(request_id),
@@ -276,6 +288,8 @@ CorsURLLoader::CorsURLLoader(
           non_wildcard_request_headers_support),
       isolation_info_(isolation_info),
       factory_client_security_state_(factory_client_security_state),
+      memory_cache_(memory_cache),
+      cross_origin_embedder_policy_(cross_origin_embedder_policy),
       devtools_observer_(std::move(devtools_observer)),
       // CORS preflight related events are logged in a series of URL_REQUEST
       // logs.
@@ -838,8 +852,25 @@ void CorsURLLoader::StartNetworkRequest() {
   // Binding |this| as an unretained pointer is safe because
   // |network_client_receiver_| shares this object's lifetime.
   network_loader_.reset();
-  if (sync_network_loader_factory_ &&
-      base::FeatureList::IsEnabled(features::kURLLoaderSyncClient)) {
+
+  network_loader_start_time_ = base::TimeTicks::Now();
+
+  // Check whether a fresh entry exists in the in-memory cache.
+  absl::optional<std::string> cache_key;
+  if (memory_cache_) {
+    cache_key = memory_cache_->CanServe(request_,
+                                        isolation_info_.network_isolation_key(),
+                                        cross_origin_embedder_policy_);
+  }
+
+  if (cache_key.has_value()) {
+    memory_cache_->CreateLoaderAndStart(
+        network_loader_.BindNewPipeAndPassReceiver(), request_id_, options_,
+        *cache_key, request_, net_log_,
+        network_client_receiver_.BindNewPipeAndPassRemote());
+    memory_cache_was_used_ = true;
+  } else if (sync_network_loader_factory_ &&
+             base::FeatureList::IsEnabled(features::kURLLoaderSyncClient)) {
     sync_network_loader_factory_->CreateLoaderAndStartWithSyncClient(
         network_loader_.BindNewPipeAndPassReceiver(), request_id_, options_,
         request_, network_client_receiver_.BindNewPipeAndPassRemote(),
@@ -861,6 +892,19 @@ void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
     HistogramTrustTokenOperationNetError(request_.trust_token_params->type,
                                          status.trust_token_operation_status,
                                          status.error_code);
+  }
+
+  if (status.error_code == net::OK) {
+    DCHECK_GT(status.completion_time, network_loader_start_time_);
+    base::TimeDelta elapsed =
+        status.completion_time - network_loader_start_time_;
+    if (memory_cache_was_used_) {
+      RecordNetworkLoaderCompletionTime("MemoryCache", elapsed);
+    } else if (status.exists_in_cache) {
+      RecordNetworkLoaderCompletionTime("DiskCache", elapsed);
+    } else {
+      RecordNetworkLoaderCompletionTime("Network", elapsed);
+    }
   }
 
   if (devtools_observer_ && status.cors_error_status) {

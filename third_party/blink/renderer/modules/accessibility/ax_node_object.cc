@@ -35,6 +35,7 @@
 #include <queue>
 
 #include "base/auto_reset.h"
+#include "base/numerics/safe_conversions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -1257,6 +1258,13 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsFrame(GetNode()))
     return ax::mojom::blink::Role::kIframe;
 
+  if (IsA<HTMLFencedFrameElement>(GetNode())) {
+    // Shadow DOM <fencedframe>s are marked as a group, as they are not the
+    // child tree owner. The child tree owner is their <iframe> child.
+    DCHECK(blink::features::IsFencedFramesShadowDOMBased());
+    return ax::mojom::blink::Role::kGroup;
+  }
+
   // There should only be one banner/contentInfo per page. If header/footer are
   // being used within an article or section then it should not be exposed as
   // whole page's banner/contentInfo but as a generic container role.
@@ -2470,7 +2478,7 @@ String AXNodeObject::ImageDataUrl(const gfx::Size& max_size) const {
                                        kUnpremul_SkAlphaType);
   size_t row_bytes = info.minRowBytes();
   Vector<char> pixel_storage(
-      SafeCast<wtf_size_t>(info.computeByteSize(row_bytes)));
+      base::checked_cast<wtf_size_t>(info.computeByteSize(row_bytes)));
   SkPixmap pixmap(info, pixel_storage.data(), row_bytes);
   if (!SkImage::MakeFromBitmap(bitmap)->readPixels(pixmap, 0, 0))
     return String();
@@ -4592,6 +4600,19 @@ bool AXNodeObject::OnNativeFocusAction() {
   if (!element) {
     document->ClearFocusedElement();
     return true;
+  }
+
+  // If this node is already the currently focused node, then calling
+  // focus() won't do anything.  That is a problem when focus is removed
+  // from the webpage to chrome, and then returns.  In these cases, we need
+  // to do what keyboard and mouse focus do, which is reset focus first.
+  if (document->FocusedElement() == element) {
+    document->ClearFocusedElement();
+
+    // Calling ClearFocusedElement could result in changes to the document,
+    // like this AXObject becoming detached.
+    if (IsDetached())
+      return false;
   }
 
   if (base::FeatureList::IsEnabled(blink::features::kSimulateClickOnAXFocus)) {

@@ -1042,7 +1042,7 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
     // the entry was marked unusable and the transaction was restarted in
     //  DoCacheReadResponseComplete(), so it will no longer match the value in
     //  `request_`. So we pass it through explicitly.
-    cache_key_ = cache_->GenerateCacheKey(
+    cache_key_ = cache_->GenerateCacheKeyForRequest(
         request_, effective_load_flags_ & LOAD_USE_SINGLE_KEYED_CACHE);
 
     // Requested cache access mode.
@@ -2033,15 +2033,11 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
   if (mark_single_keyed_cache_entry_unusable_) {
     response_.single_keyed_cache_entry_unusable = true;
   }
-  if (new_response_->vary_data.is_valid()) {
-    response_.vary_data = new_response_->vary_data;
-  } else if (response_.vary_data.is_valid()) {
-    // There is a vary header in the stored response but not in the current one.
-    // Update the data with the new request headers.
-    HttpVaryData new_vary_data;
-    new_vary_data.Init(*request_, *response_.headers.get());
-    response_.vary_data = new_vary_data;
-  }
+
+  // If the new response didn't have a vary header, we continue to use the
+  // header from the stored response per the effect of headers->Update().
+  // Update the data with the new/updated request headers.
+  response_.vary_data.Init(*request_, *response_.headers);
 
   if (ShouldDisableCaching(*response_.headers)) {
     if (!entry_->doomed) {
@@ -2581,9 +2577,9 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
   if (request_->extra_headers.HasHeader(HttpRequestHeaders::kRange))
     range_found = true;
 
-  for (size_t i = 0; i < std::size(kSpecialHeaders); ++i) {
-    if (HeaderMatches(request_->extra_headers, kSpecialHeaders[i].search)) {
-      effective_load_flags_ |= kSpecialHeaders[i].load_flag;
+  for (const auto& special_header : kSpecialHeaders) {
+    if (HeaderMatches(request_->extra_headers, special_header.search)) {
+      effective_load_flags_ |= special_header.load_flag;
       special_headers = true;
       break;
     }
@@ -3656,6 +3652,12 @@ bool HttpCache::Transaction::CanResume(bool has_data) {
 
 void HttpCache::Transaction::SetResponse(const HttpResponseInfo& response) {
   response_ = response;
+
+  if (response_.headers) {
+    DCHECK(request_);
+    response_.vary_data.Init(*request_, *response_.headers);
+  }
+
   SyncCacheEntryStatusToResponse();
 }
 

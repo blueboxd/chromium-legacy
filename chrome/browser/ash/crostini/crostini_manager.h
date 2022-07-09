@@ -23,15 +23,16 @@
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/crostini/termina_installer.h"
 #include "chrome/browser/ash/guest_os/guest_id.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_mount_provider_registry.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_terminal_provider_registry.h"
 #include "chrome/browser/ash/vm_shutdown_observer.h"
 #include "chrome/browser/ash/vm_starting_observer.h"
+#include "chromeos/ash/components/dbus/anomaly_detector/anomaly_detector.pb.h"
+#include "chromeos/ash/components/dbus/anomaly_detector/anomaly_detector_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/anomaly_detector/anomaly_detector.pb.h"
-#include "chromeos/dbus/anomaly_detector/anomaly_detector_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -140,13 +141,6 @@ class ContainerShutdownObserver : public base::CheckedObserver {
   virtual void OnContainerShutdown(const guest_os::GuestId& container_id) = 0;
 };
 
-class CrostiniFileChangeObserver : public base::CheckedObserver {
- public:
-  // Called when a path registered via AddFileWatch() is changed.
-  virtual void OnCrostiniFileChanged(const guest_os::GuestId& container_id,
-                                     const base::FilePath& path) = 0;
-};
-
 // CrostiniManager is a singleton which is used to check arguments for
 // ConciergeClient and CiceroneClient. ConciergeClient is dedicated to
 // communication with the Concierge service, CiceroneClient is dedicated to
@@ -154,9 +148,8 @@ class CrostiniFileChangeObserver : public base::CheckedObserver {
 // possible. The existence of Cicerone is abstracted behind this class and
 // only the Concierge name is exposed outside of here.
 class CrostiniManager : public KeyedService,
-                        public chromeos::AnomalyDetectorClient::Observer,
+                        public ash::AnomalyDetectorClient::Observer,
                         public ash::ConciergeClient::VmObserver,
-                        public ash::ConciergeClient::ContainerObserver,
                         public ash::CiceroneClient::Observer,
                         public chromeos::NetworkStateHandlerObserver,
                         public chromeos::PowerManagerClient::Observer {
@@ -233,8 +226,7 @@ class CrostiniManager : public KeyedService,
   void InstallTermina(CrostiniResultCallback callback, bool is_initial_install);
 
   // Try to cancel a previous InstallTermina call. This is done on a best-effort
-  // basis, and we cannot signal if/when it succeeds, but once called the
-  // callback passed to InstallTermina will never be run.
+  // basis. The callback passed to InstallTermina is still run upon completion.
   void CancelInstallTermina();
 
   // Unloads and removes termina.
@@ -429,26 +421,6 @@ class CrostiniManager : public KeyedService,
   void GetContainerSshKeys(const guest_os::GuestId& container_id,
                            GetContainerSshKeysCallback callback);
 
-  // Add a relative path to watch within the container homedir. Register as a
-  // CrostiniFileChangeObserver to be notified when changes occur. Used by
-  // FilesApp.
-  void AddFileWatch(const guest_os::GuestId& container_id,
-                    const base::FilePath& path,
-                    BoolCallback callback);
-  void RemoveFileWatch(const guest_os::GuestId& container_id,
-                       const base::FilePath& path);
-  void AddFileChangeObserver(CrostiniFileChangeObserver* observer);
-  void RemoveFileChangeObserver(CrostiniFileChangeObserver* observer);
-
-  // Lookup vsh session from pid. Used by terminal to open new tabs in cwd.
-  using VshSessionCallback =
-      base::OnceCallback<void(bool success,
-                              const std::string& failure_reason,
-                              int32_t container_shell_pid)>;
-  void GetVshSession(const guest_os::GuestId& container_id,
-                     int32_t host_vsh_pid,
-                     VshSessionCallback callback);
-
   // Runs all the steps required to restart the given crostini vm and container.
   // The optional |observer| tracks progress. If provided, it must be alive
   // until the restart completes (i.e. when |callback| is called) or the request
@@ -524,10 +496,6 @@ class CrostiniManager : public KeyedService,
   void OnVmStarted(const vm_tools::concierge::VmStartedSignal& signal) override;
   void OnVmStopped(const vm_tools::concierge::VmStoppedSignal& signal) override;
 
-  // ConciergeClient::ContainerObserver:
-  void OnContainerStartupFailed(
-      const vm_tools::concierge::ContainerStartedSignal& signal) override;
-
   // CiceroneClient::Observer:
   void OnContainerStarted(
       const vm_tools::cicerone::ContainerStartedSignal& signal) override;
@@ -567,8 +535,6 @@ class CrostiniManager : public KeyedService,
       override;
   void OnStartLxdProgress(
       const vm_tools::cicerone::StartLxdProgressSignal& signal) override;
-  void OnFileWatchTriggered(
-      const vm_tools::cicerone::FileWatchTriggeredSignal& signal) override;
 
   // chromeos::NetworkStateHandlerObserver overrides:
   void ActiveNetworksChanged(const std::vector<const chromeos::NetworkState*>&
@@ -612,10 +578,6 @@ class CrostiniManager : public KeyedService,
   // Can be called for testing to skip restart.
   void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; }
   bool skip_restart_for_testing() { return skip_restart_for_testing_; }
-  void set_component_manager_load_error_for_testing(
-      component_updater::CrOSComponentManager::Error error) {
-    component_manager_load_error_for_testing_ = error;
-  }
 
   void SetCrostiniDialogStatus(DialogType dialog_type, bool open);
   // Returns true if the dialog is open.
@@ -864,9 +826,6 @@ class CrostiniManager : public KeyedService,
   std::string owner_id_;
 
   bool skip_restart_for_testing_ = false;
-  component_updater::CrOSComponentManager::Error
-      component_manager_load_error_for_testing_ =
-          component_updater::CrOSComponentManager::Error::NONE;
 
   static bool is_dev_kvm_present_;
 
@@ -944,8 +903,6 @@ class CrostiniManager : public KeyedService,
   base::ObserverList<ContainerStartedObserver> container_started_observers_;
   base::ObserverList<ContainerShutdownObserver> container_shutdown_observers_;
 
-  base::ObserverList<CrostiniFileChangeObserver> file_change_observers_;
-
   // Contains the types of crostini dialogs currently open. It is generally
   // invalid to show more than one. e.g. uninstalling and installing are
   // mutually exclusive.
@@ -976,6 +933,9 @@ class CrostiniManager : public KeyedService,
   base::ScopedObservation<chromeos::NetworkStateHandler,
                           chromeos::NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
+
+  base::flat_map<guest_os::GuestId, guest_os::GuestOsMountProviderRegistry::Id>
+      mount_provider_ids_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -13,6 +13,7 @@
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/views/app_list_keyboard_controller.h"
 #include "ash/app_list/views/app_list_nudge_controller.h"
 #include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/app_list_toast_view.h"
@@ -21,7 +22,6 @@
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
-#include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/bubble/bubble_utils.h"
 #include "ash/constants/ash_features.h"
 #include "ash/controls/rounded_scroll_bar.h"
@@ -44,6 +44,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/animation/animation_builder.h"
@@ -90,10 +91,6 @@ constexpr auto kContinueSectionInsets = gfx::Insets::VH(0, 4);
 // Insets for the separator between the continue section and apps.
 constexpr auto kSeparatorInsets = gfx::Insets::VH(0, 16);
 
-// A slide animation's tween type.
-constexpr gfx::Tween::Type kSlideAnimationTweenType =
-    gfx::Tween::LINEAR_OUT_SLOW_IN;
-
 // Delay for the show page transform and opacity animations.
 constexpr base::TimeDelta kShowPageAnimationDelay = base::Milliseconds(50);
 
@@ -117,13 +114,11 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
     ApplicationDragAndDropHost* drag_and_drop_host,
     AppListConfig* app_list_config,
     AppListA11yAnnouncer* a11y_announcer,
-    SearchResultPageDialogController* dialog_controller,
     AppListFolderController* folder_controller,
     SearchBoxView* search_box)
     : view_delegate_(view_delegate),
       search_box_(search_box),
-      app_list_nudge_controller_(std::make_unique<AppListNudgeController>()),
-      dialog_controller_(dialog_controller) {
+      app_list_nudge_controller_(std::make_unique<AppListNudgeController>()) {
   DCHECK(view_delegate);
   DCHECK(drag_and_drop_host);
   DCHECK(a11y_announcer);
@@ -171,10 +166,9 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
     InitContinueLabelContainer(scroll_contents.get());
 
   // Continue section row.
-  continue_section_ =
-      scroll_contents->AddChildView(std::make_unique<ContinueSectionView>(
-          view_delegate, dialog_controller_, kContinueColumnCount,
-          /*tablet_mode=*/false));
+  continue_section_ = scroll_contents->AddChildView(
+      std::make_unique<ContinueSectionView>(view_delegate, kContinueColumnCount,
+                                            /*tablet_mode=*/false));
   continue_section_->SetBorder(
       views::CreateEmptyBorder(kContinueSectionInsets));
   continue_section_->SetNudgeController(app_list_nudge_controller_.get());
@@ -234,6 +228,9 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
 
   scroll_view_->SetContents(std::move(scroll_contents));
 
+  app_list_keyboard_controller_ = std::make_unique<AppListKeyboardController>(
+      this, recent_apps_, toast_container_, scrollable_apps_grid_view_);
+
   UpdateSuggestions();
   UpdateContinueSectionVisibility();
 }
@@ -276,6 +273,7 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
   // Side-shelf uses faster animations.
   const base::TimeDelta slide_duration =
       is_side_shelf ? base::Milliseconds(150) : base::Milliseconds(250);
+  const gfx::Tween::Type tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
 
   // Animate the views. Each section is initially offset down, then slides up
   // into its final position. For side shelf, each section is initially offset
@@ -290,7 +288,7 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
   if (animate_continue_label_container) {
     vertical_offset += section_offset;
     SlideViewIntoPosition(continue_label_container_, vertical_offset,
-                          slide_duration);
+                          slide_duration, tween_type);
   }
   if (continue_section_->GetVisible() &&
       continue_section_->GetTasksSuggestionsCount() > 0) {
@@ -298,19 +296,23 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
     // continue label container above.
     if (!animate_continue_label_container)
       vertical_offset += section_offset;
-    SlideViewIntoPosition(continue_section_, vertical_offset, slide_duration);
+    SlideViewIntoPosition(continue_section_, vertical_offset, slide_duration,
+                          tween_type);
   }
   if (recent_apps_->GetVisible() && recent_apps_->GetItemViewCount() > 0) {
     vertical_offset += section_offset;
-    SlideViewIntoPosition(recent_apps_, vertical_offset, slide_duration);
+    SlideViewIntoPosition(recent_apps_, vertical_offset, slide_duration,
+                          tween_type);
   }
   if (separator_->GetVisible()) {
     // The separator is not offset; it animates next to the view above it.
-    SlideViewIntoPosition(separator_, vertical_offset, slide_duration);
+    SlideViewIntoPosition(separator_, vertical_offset, slide_duration,
+                          tween_type);
   }
   if (toast_container_ && toast_container_->IsToastVisible()) {
     vertical_offset += section_offset;
-    SlideViewIntoPosition(toast_container_, vertical_offset, slide_duration);
+    SlideViewIntoPosition(toast_container_, vertical_offset, slide_duration,
+                          tween_type);
   }
 
   // The apps grid is always visible.
@@ -319,8 +321,7 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
   // animation. No need to use SlideViewIntoPosition() because this view always
   // has a layer.
   StartSlideInAnimation(
-      scrollable_apps_grid_view_, vertical_offset, slide_duration,
-      kSlideAnimationTweenType,
+      scrollable_apps_grid_view_, vertical_offset, slide_duration, tween_type,
       base::BindRepeating(&AppListBubbleAppsPage::OnAppsGridViewAnimationEnded,
                           weak_factory_.GetWeakPtr()));
 }
@@ -476,7 +477,7 @@ void AppListBubbleAppsPage::UpdateForNewSortingOrder(
 
   // Abort the old reorder animation if any before closure update to avoid data
   // races on closures.
-  scrollable_apps_grid_view_->MaybeAbortReorderAnimation();
+  scrollable_apps_grid_view_->MaybeAbortWholeGridAnimation();
   DCHECK(!update_position_closure_);
   update_position_closure_ = std::move(update_position_closure);
   DCHECK(!reorder_animation_done_closure_);
@@ -550,6 +551,14 @@ void AppListBubbleAppsPage::VisibilityChanged(views::View* starting_from,
   }
 }
 
+void AppListBubbleAppsPage::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  if (continue_label_) {
+    bubble_utils::ApplyStyle(continue_label_,
+                             bubble_utils::LabelStyle::kSubtitle);
+  }
+}
+
 void AppListBubbleAppsPage::OnActiveAppListModelsChanged(
     AppListModel* model,
     SearchModel* search_model) {
@@ -567,29 +576,19 @@ void AppListBubbleAppsPage::OnViewVisibilityChanged(
 }
 
 void AppListBubbleAppsPage::MoveFocusUpFromRecents() {
-  DCHECK_GT(recent_apps_->GetItemViewCount(), 0);
-  AppListItemView* first_recent = recent_apps_->GetItemViewAt(0);
-  // Find the view one step in reverse from the first recent app.
-  views::View* previous_view = GetFocusManager()->GetNextFocusableView(
-      first_recent, GetWidget(), /*reverse=*/true, /*dont_loop=*/false);
-  DCHECK(previous_view);
-  previous_view->RequestFocus();
+  app_list_keyboard_controller_->MoveFocusUpFromRecents();
 }
 
 void AppListBubbleAppsPage::MoveFocusDownFromRecents(int column) {
-  // Check if the `toast_container_` can handle the focus.
-  if (toast_container_ && toast_container_->HandleFocus(column))
-    return;
-
-  HandleMovingFocusToAppsGrid(column);
+  app_list_keyboard_controller_->MoveFocusDownFromRecents(column);
 }
 
 bool AppListBubbleAppsPage::MoveFocusUpFromToast(int column) {
-  return HandleMovingFocusToRecents(column);
+  return app_list_keyboard_controller_->MoveFocusUpFromToast(column);
 }
 
 bool AppListBubbleAppsPage::MoveFocusDownFromToast(int column) {
-  return HandleMovingFocusToAppsGrid(column);
+  return app_list_keyboard_controller_->MoveFocusDownFromToast(column);
 }
 
 void AppListBubbleAppsPage::OnNudgeRemoved() {
@@ -608,44 +607,7 @@ void AppListBubbleAppsPage::OnNudgeRemoved() {
 }
 
 bool AppListBubbleAppsPage::MoveFocusUpFromAppsGrid(int column) {
-  DVLOG(1) << __FUNCTION__;
-  // Check if the `toast_container_` can handle the focus.
-  if (toast_container_ && toast_container_->HandleFocus(column))
-    return true;
-
-  return HandleMovingFocusToRecents(column);
-}
-
-bool AppListBubbleAppsPage::HandleMovingFocusToRecents(int column) {
-  const int recent_app_count = recent_apps_->GetItemViewCount();
-  // If there aren't any recent apps, don't change focus here. Fall back to the
-  // app grid's default behavior.
-  if (!recent_apps_->GetVisible() || recent_app_count <= 0)
-    return false;
-
-  // Attempt to focus the item at `column`, or the last item if there aren't
-  // enough items.
-  int index = std::min(column, recent_app_count - 1);
-  AppListItemView* item = recent_apps_->GetItemViewAt(index);
-  DCHECK(item);
-  item->RequestFocus();
-  return true;
-}
-
-bool AppListBubbleAppsPage::HandleMovingFocusToAppsGrid(int column) {
-  int top_level_item_count =
-      scrollable_apps_grid_view_->view_model()->view_size();
-  if (top_level_item_count <= 0)
-    return false;
-
-  // Attempt to focus the item at `column` in the first row, or the last item if
-  // there aren't enough items. This could happen if the user's apps are in a
-  // small number of folders.
-  int index = std::min(column, top_level_item_count - 1);
-  AppListItemView* item = scrollable_apps_grid_view_->GetItemViewAt(index);
-  DCHECK(item);
-  item->RequestFocus();
-  return true;
+  return app_list_keyboard_controller_->MoveFocusUpFromAppsGrid(column);
 }
 
 ui::Layer* AppListBubbleAppsPage::GetPageAnimationLayerForTest() {
@@ -685,6 +647,7 @@ void AppListBubbleAppsPage::InitContinueLabelContainer(
           /*has_border=*/false));
   // The icon is scaled down since the button is tiny.
   toggle_continue_section_button_->SetIconSize(16);
+  // See ButtonFocusSkipper in app_list_bubble_view.cc for focus handling.
 }
 
 void AppListBubbleAppsPage::UpdateContinueSectionVisibility() {
@@ -861,7 +824,8 @@ void AppListBubbleAppsPage::OnReorderAnimationEnded() {
 
 void AppListBubbleAppsPage::SlideViewIntoPosition(views::View* view,
                                                   int vertical_offset,
-                                                  base::TimeDelta duration) {
+                                                  base::TimeDelta duration,
+                                                  gfx::Tween::Type tween_type) {
   // Animation spec:
   //
   // Y Position: Down (offset) → End position
@@ -876,14 +840,74 @@ void AppListBubbleAppsPage::SlideViewIntoPosition(views::View* view,
                                     &AppListBubbleAppsPage::DestroyLayerForView,
                                     weak_factory_.GetWeakPtr(), view)
                               : base::DoNothing();
-  StartSlideInAnimation(view, vertical_offset, duration,
-                        kSlideAnimationTweenType, cleanup);
+  StartSlideInAnimation(view, vertical_offset, duration, tween_type, cleanup);
+}
+
+void AppListBubbleAppsPage::FadeInContinueSectionView(views::View* view) {
+  const bool create_layer = PrepareForLayerAnimation(view);
+
+  // If we created a layer for the view, undo that when the animation ends.
+  // The underlying views don't expose weak pointers directly, so use a weak
+  // pointer to this view, which owns its children.
+  auto cleanup = create_layer ? base::BindRepeating(
+                                    &AppListBubbleAppsPage::DestroyLayerForView,
+                                    weak_factory_.GetWeakPtr(), view)
+                              : base::DoNothing();
+
+  view->layer()->SetOpacity(0.0f);
+
+  // The animation has a delay to give the separator and apps grid time to
+  // partially slide out of the way.
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(ui::LayerAnimator::PreemptionStrategy::
+                                 IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(cleanup)
+      .OnAborted(cleanup)
+      .Once()
+      .At(base::Milliseconds(100))
+      .SetOpacity(view->layer(), 1.0f)
+      .SetDuration(base::Milliseconds(200));
 }
 
 void AppListBubbleAppsPage::OnToggleContinueSection() {
+  const int separator_initial_y = separator_->y();
+
+  // Toggle the section visibility.
   bool should_hide = !view_delegate_->ShouldHideContinueSection();
   view_delegate_->SetHideContinueSection(should_hide);
   // AppListControllerImpl will trigger UpdateContinueSectionVisibility().
+
+  // Layout() will change the position of the separator and apps grid based on
+  // the visibility of the continue section view and recent apps.
+  if (needs_layout())
+    Layout();
+
+  // The vertical offset for slide animations is the difference in separator
+  // position from before the Layout() versus its position now.
+  const int vertical_offset = separator_initial_y - separator_->y();
+  const base::TimeDelta duration = base::Milliseconds(300);
+  const gfx::Tween::Type tween_type = gfx::Tween::ACCEL_LIN_DECEL_100_3;
+
+  if (should_hide) {
+    // Don't try to fade out the continue section and recent apps because the
+    // view is already invisible. UX is OK with these sections not animating.
+
+    // The separator and apps grid slide up.
+    DCHECK_GE(vertical_offset, 0);
+    SlideViewIntoPosition(separator_, vertical_offset, duration, tween_type);
+    SlideViewIntoPosition(scrollable_apps_grid_view_, vertical_offset, duration,
+                          tween_type);
+  } else {
+    // The continue section and recent apps fade in.
+    FadeInContinueSectionView(continue_section_);
+    FadeInContinueSectionView(recent_apps_);
+
+    // The separator and apps grid slide down.
+    DCHECK_LE(vertical_offset, 0);
+    SlideViewIntoPosition(separator_, vertical_offset, duration, tween_type);
+    SlideViewIntoPosition(scrollable_apps_grid_view_, vertical_offset, duration,
+                          tween_type);
+  }
 }
 
 BEGIN_METADATA(AppListBubbleAppsPage, views::View)

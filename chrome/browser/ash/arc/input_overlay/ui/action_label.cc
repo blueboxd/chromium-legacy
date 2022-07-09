@@ -241,8 +241,12 @@ bool ActionLabel::OnKeyPressed(const ui::KeyEvent& event) {
   DCHECK(parent());
   auto code = event.code();
   auto* parent_view = static_cast<ActionView*>(parent());
-  if (base::UTF8ToUTF16(GetDisplayText(code)) != GetText())
-    parent_view->OnKeyBindingChange(this, code);
+  if (base::UTF8ToUTF16(GetDisplayText(code)) == GetText() ||
+      parent_view->ShouldShowErrorMsg(code)) {
+    return true;
+  }
+
+  parent_view->OnKeyBindingChange(this, code);
   return true;
 }
 
@@ -263,8 +267,8 @@ void ActionLabel::OnFocus() {
     static_cast<ActionView*>(parent())->ShowErrorMsg(
         l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_MISSING_BINDING), this);
   } else {
-    static_cast<ActionView*>(parent())->ShowInfoMsg(
-        l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_FOCUSED_KEY), this);
+    static_cast<ActionView*>(parent())->ShowLabelFocusInfoMsg(
+        l10n_util::GetStringUTF8(IDS_INPUT_OVERLAY_EDIT_FOCUSED_KEY));
   }
 }
 

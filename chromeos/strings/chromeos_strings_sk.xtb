@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Používateľ</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Okno aktualizácie firmvéru externých zariadení je otvorené. K dispozícii je tento počet aktualizácií: <ph name="NUM_UPDATES" />.</translation>
+<translation id="1145516343487477149">Vyhľadajte články pomocníka a odpovede na bežné otázky o Chromebooku</translation>
 <translation id="1165039591588034296">Chyba</translation>
 <translation id="1175697296044146566">Toto zariadenie <ph name="DEVICE_TYPE" /> spravuje <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Priemerné (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Vypnúť tmavý motív</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Vypnúť tmavý režim</translation>
+<translation id="1881188606372070653">Ak chcete požiadať o zmenu obsahu z právnych dôvodov, prejdite na stránku <ph name="BEGIN_LINK1" />právnej pomoci<ph name="END_LINK1" />. Niektoré informácie o účte a systéme môžu byť odoslané Googlu. Pomocou informácií, ktoré nám poskytnete, odstránime technické problémy a zlepšíme svoje služby v súlade s <ph name="BEGIN_LINK2" />pravidlami ochrany súkromia<ph name="END_LINK2" /> a <ph name="BEGIN_LINK3" />zmluvnými podmienkami<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Revízia hardvéru</translation>
+<translation id="1904932688895783618">Tu je niekoľko ďalších užitočných zdrojov:</translation>
 <translation id="1905710495812624430">Maximálny počet povolených pokusov bol prekročený.</translation>
 <translation id="1908234395526491708">Neúspešné žiadosti UDP</translation>
 <translation id="1932611479324127242">Odpojenie batérie</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Vyskúšať kroky na riešenie problémov</translation>
 <translation id="2016848882344942759">--žiadny štítok White--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Ak chcete zobraziť šetrič obrazovky, pripojte sa k sieti a znova načítajte stránku.</translation>
 <translation id="2080070583977670716">Ďalšie nastavenia</translation>
 <translation id="2085089206770112532">Zníženie jasu obrazovky</translation>
 <translation id="2105810540595158374">Zariadenie je herný ovládač.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Zapnúť tmavý režim</translation>
 <translation id="2177831236093724629">Boli nájdené <ph name="LINK_BEGIN" />nevhodné komponenty<ph name="LINK_END" />. Ak chcete mať istotu, že všetky vhodné komponenty budú identifikované, aktualizujte Chrome OS na najnovšiu verziu.</translation>
 <translation id="2180197493692062006">Vyskytol sa problém. Skúste aplikáciu znova otvoriť.</translation>
+<translation id="2182088270354640012">Ďakujeme za spätnú väzbu. Vaša spätná väzba pomáha zlepšovať Chrome OS a skontroluje ju tím systému Chrome OS. Vzhľadom na veľký počet odoslaných hlásení vám priamo neodpovieme.</translation>
 <translation id="2209788852729124853">Resetovať počítadlá návštevnosti</translation>
 <translation id="2212733584906323460">Preklad názvu</translation>
 <translation id="2217935453350629363">Aktuálna rýchlosť</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Hľadajú sa skenery</translation>
 <translation id="3246869037381808805">Tlačové úlohy staršie ako deň budú odstránené</translation>
 <translation id="3268178239013324452">Nepodarilo sa – dvierka sú otvorené</translation>
+<translation id="3275729367986477355">Obrázok avatara</translation>
 <translation id="3283504360622356314">{0,plural, =1{Upraviť súbor}few{Upraviť súbory}many{Upraviť súbory}other{Upraviť súbory}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Smer kľúča</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Ďalšiu pomoc získate v <ph name="BEGIN_LINK" />centre pomoci<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algoritmus kompresie</translation>
 <translation id="4794140124556169553">Spustenie testu procesora môže ovplyvniť výkon systému</translation>
+<translation id="4800589996161293643">Komunita pre Chromebooky</translation>
 <translation id="4804818685124855865">Odpojiť</translation>
 <translation id="4808449224298348341">Bola zrušená tlačová úloha <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Svetlý motív</translation>
@@ -486,6 +493,7 @@
 Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
+<translation id="522307662484862935">Nezahŕňať e‑mailovú adresu</translation>
 <translation id="5227902338748591677">Plán tmavého motívu</translation>
 <translation id="5234764350956374838">Ignorovať</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -612,6 +620,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6284632978374966585">Zapnúť tmavý motív</translation>
 <translation id="6295178529664209245">Chcete pokračovať v oprave?</translation>
 <translation id="6302401976930124515">Test <ph name="TEST_NAME" /> bol zrušený</translation>
+<translation id="631063167932043783">Preskúmať aplikáciu</translation>
 <translation id="6319207335391420837">Aktualizácia firmvéru zariadenia <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Zapnúť šetrič obrazovky</translation>
 <translation id="6325525973963619867">Zlyhanie</translation>
@@ -623,6 +632,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6379086450106841622">Dotyková obrazovka</translation>
 <translation id="6381741036071372448">Test klávesnice</translation>
 <translation id="6388847657025262518">Podávač dokumentov skenera je zaseknutý. Skontrolujte ho a skúste to znova.</translation>
+<translation id="6394634179843537518">Pridajte súbor</translation>
 <translation id="6410257289063177456">Súbory obrázkov</translation>
 <translation id="641081527798843608">Zhoda predmetu</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6516990319416533844">Ak chcete otestovať rýchlosť nabíjania batérie, nechajte batériu chvíľu vybíjať.</translation>
 <translation id="6517239166834772319">Preskúmať</translation>
 <translation id="6527081081771465939">Neznámy protokol zabezpečenia siete Wi‑Fi</translation>
+<translation id="6535178685492749208">Ste offline. Spätná väzba bude odoslaná neskôr.</translation>
 <translation id="65587193855025101">Reflektívny skener</translation>
 <translation id="6564646048574748301">Nepodarilo sa – nedostupné</translation>
 <translation id="6566314079205407217">Viacstránkový sken</translation>
@@ -717,6 +728,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="7297226631177386107">Prostredníctvom brány firewall sa nedá pripojiť k webom HTTPS</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Spýtajte sa odborníkov vo fóre pomoci pre Chromebooky</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; stlačením klávesa vyhľadávania a medzerníka zobrazíte výsledok vo Vyhľadávaní Google.</translation>
 <translation id="7343649194310845056">Sieťové zariadenia</translation>
@@ -759,9 +771,11 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="773153675489693198">Počet cyklov</translation>
 <translation id="7747039790905080783">Predzdieľaný kľúč</translation>
 <translation id="7762130827864645708">Zmena hesla bola úspešná. Odteraz používajte nové heslo.</translation>
+<translation id="7762839321248874531">Odoslať <ph name="BEGIN_LINK1" />informácie o systéme a aplikáciách<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Zhoda prípony domény</translation>
 <translation id="7769672763586021400">ID modelu</translation>
 <translation id="7784116172884276937">Nie sú nastavené žiadne servery DNS</translation>
+<translation id="779591286616261875">Odoslať nové hlásenie</translation>
 <translation id="7799817062559422778">Svetlý režim</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7805768142964895445">Stav</translation>
@@ -828,6 +842,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="8382302752385457774">Štítok White</translation>
 <translation id="8395584934117017006">Toto zariadenie <ph name="DEVICE_TYPE" /> spravuje podnik</translation>
 <translation id="8398927464629426868">Rýchlosť, akou sa zariadenie momentálne nabíja či vybíja</translation>
+<translation id="8420955526972171689">Testujte a riešte problémy s hardvérom</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Interná klávesnica</translation>
 <translation id="8431300646573772016">Chrome OS – novinky</translation>
@@ -913,6 +928,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="9082718469794970195">Použiť toto video</translation>
 <translation id="9087578468327036362">Nahlásiť tento dopyt</translation>
 <translation id="9088306295921699330">Aktuálne využitie</translation>
+<translation id="9092255287806472980">Vaša spätná väzba pomáha zlepšovať ChromeOS a náš tím ju skontroluje. Vzhľadom na veľký počet hlásení vám nebudeme môcť odpovedať.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Zariadenie budete musieť rozobrať</translation>
 <translation id="9098156406873149060">Ponechať údaje používateľa</translation>

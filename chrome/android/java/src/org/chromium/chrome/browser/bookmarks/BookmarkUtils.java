@@ -34,6 +34,9 @@ import org.chromium.chrome.browser.ActivityUtils;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.IncognitoCCTCallerId;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.app.bookmarks.BookmarkActivity;
+import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
+import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
@@ -272,7 +275,7 @@ public class BookmarkUtils {
         }
 
         bookmarkId = bookmarkModel.addBookmark(
-                null, parent, bookmarkModel.getChildCount(parent), title, url);
+                webContents, parent, bookmarkModel.getChildCount(parent), title, url);
         // TODO(lazzzis): remove log after bookmark sync is fixed, crbug.com/986978
         if (bookmarkId == null) {
             Log.e(TAG,
@@ -387,7 +390,7 @@ public class BookmarkUtils {
      * Fetches url representing the user's state last time they close the bookmark manager.
      */
     @VisibleForTesting
-    static String getLastUsedUrl(Context context) {
+    public static String getLastUsedUrl(Context context) {
         return SharedPreferencesManager.getInstance().readString(
                 ChromePreferenceKeys.BOOKMARKS_LAST_USED_URL, UrlConstants.BOOKMARKS_URL);
     }
@@ -395,7 +398,7 @@ public class BookmarkUtils {
     /**
      * Save the last used {@link BookmarkId} as a folder to put new bookmarks to.
      */
-    static void setLastUsedParent(Context context, BookmarkId bookmarkId) {
+    public static void setLastUsedParent(Context context, BookmarkId bookmarkId) {
         SharedPreferencesManager.getInstance().writeString(
                 ChromePreferenceKeys.BOOKMARKS_LAST_USED_PARENT, bookmarkId.toString());
     }

@@ -106,8 +106,11 @@ class VariationsFieldTrialCreator {
   // Sets up field trials based on stored variations seed data. Returns whether
   // setup completed successfully.
   //
-  // |variation_ids| allows for forcing ids selected in chrome://flags and/or
-  // specified using the command-line flag.
+  // |variation_ids| allows for forcing ids selected in chrome://flags.
+  // |command_line_variation_ids| allows for forcing ids through the
+  // "--force-variation-ids" command line flag. It should be a comma-separated
+  // list of variation ids. Ids prefixed with the character "t" will be treated
+  // as Trigger Variation Ids.
   // |extra_overrides| gives a list of feature overrides that should be applied
   // after the features explicitly disabled/enabled from the command line via
   // --disable-features and --enable-features, but before field trials.
@@ -130,6 +133,7 @@ class VariationsFieldTrialCreator {
   // field trials.
   bool SetUpFieldTrials(
       const std::vector<std::string>& variation_ids,
+      const std::string& command_line_variation_ids,
       const std::vector<base::FeatureList::FeatureOverrideInfo>&
           extra_overrides,
       std::unique_ptr<const base::FieldTrial::EntropyProvider>
@@ -176,13 +180,6 @@ class VariationsFieldTrialCreator {
   const std::string& application_locale() const { return application_locale_; }
 
  protected:
-  // If the client is in an Extended Variations Safe Mode experiment group,
-  // applies group-specific behavior. Does nothing if the client is not in the
-  // experiment. See CleanExitBeacon::Initialize() for group assignment details.
-  // Protected and virtual for testing.
-  virtual void MaybeExtendVariationsSafeMode(
-      metrics::MetricsStateManager* metrics_state_manager);
-
   // Get the platform we're running on, respecting OverrideVariationsPlatform().
   // Protected for testing.
   Study::Platform GetPlatform();
@@ -226,6 +223,13 @@ class VariationsFieldTrialCreator {
       const base::FieldTrial::EntropyProvider* low_entropy_provider,
       base::FeatureList* feature_list,
       SafeSeedManager* safe_seed_manager);
+
+  // Reads a seed's data and signature from the file at |seed_path| and writes
+  // them to Local State. Exits Chrome (A) if the file's contents can't be
+  // loaded or (B) if the contents do not contain |kVariationsCompressedSeed| or
+  // |kVariationsSeedSignature|. Also forces Chrome to not run in variations
+  // safe mode. Used for variations seed testing.
+  void LoadSeedFromFile(const base::FilePath& seed_path);
 
   // Returns the seed store. Virtual for testing.
   virtual VariationsSeedStore* GetSeedStore();

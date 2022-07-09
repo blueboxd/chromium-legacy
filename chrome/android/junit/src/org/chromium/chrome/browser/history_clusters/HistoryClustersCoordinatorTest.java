@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.history_clusters;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -16,13 +17,16 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.view.MenuItem;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.core.app.ActivityScenario;
 
 import com.google.android.material.tabs.TabLayout;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,8 +37,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Promise;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
@@ -45,6 +52,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.favicon.LargeIconBridgeJni;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -53,16 +61,88 @@ import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 /** Unit tests for HistoryClustersCoordinator. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
+@SuppressWarnings("DoNotMock") // Mocks GURL.
 public class HistoryClustersCoordinatorTest {
     private static final String INCOGNITO_EXTRA = "IN_INCOGNITO";
     private static final String NEW_TAB_EXTRA = "IN_NEW_TAB";
+
+    class TestHistoryClustersDelegate implements HistoryClustersDelegate {
+        private final ObservableSupplierImpl<Boolean> mShouldShowPrivacyDisclaimerSupplier =
+                new ObservableSupplierImpl<>();
+        private final ObservableSupplierImpl<Boolean> mShouldShowClearBrowsingDataSupplier =
+                new ObservableSupplierImpl<>();
+
+        public TestHistoryClustersDelegate() {
+            mShouldShowPrivacyDisclaimerSupplier.set(true);
+            mShouldShowClearBrowsingDataSupplier.set(true);
+        }
+
+        @Override
+        public boolean isSeparateActivity() {
+            return true;
+        }
+
+        @Override
+        public Tab getTab() {
+            return mTab;
+        }
+
+        @Override
+        public Intent getHistoryActivityIntent() {
+            return mHistoryActivityIntent;
+        }
+
+        @Nullable
+        @Override
+        public Intent getOpenUrlIntent(GURL gurl, boolean inIncognito, boolean createNewTab) {
+            mOpenUrlIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mOpenUrlIntent.putExtra(INCOGNITO_EXTRA, inIncognito);
+            mOpenUrlIntent.putExtra(NEW_TAB_EXTRA, createNewTab);
+            return mOpenUrlIntent;
+        }
+
+        @Override
+        public ViewGroup getToggleView(ViewGroup parent) {
+            return mToggleView;
+        }
+
+        @Nullable
+        @Override
+        public TabCreator getTabCreator(boolean isIncognito) {
+            return mTabCreator;
+        }
+
+        @Override
+        public void toggleInfoHeaderVisibility() {
+            mShouldShowPrivacyDisclaimerSupplier.set(!mShouldShowPrivacyDisclaimerSupplier.get());
+        }
+
+        @Nullable
+        @Override
+        public ObservableSupplier<Boolean> shouldShowPrivacyDisclaimerSupplier() {
+            return mShouldShowPrivacyDisclaimerSupplier;
+        }
+
+        @Nullable
+        @Override
+        public ObservableSupplier<Boolean> shouldShowClearBrowsingDataSupplier() {
+            return mShouldShowClearBrowsingDataSupplier;
+        }
+
+        @Override
+        public void markVisitForRemoval(ClusterVisit clusterVisit) {
+            mVisitsForRemoval.add(clusterVisit);
+        }
+    }
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -89,15 +169,23 @@ public class HistoryClustersCoordinatorTest {
     private GURL mGurl1;
     @Mock
     private GURL mGurl2;
+    @Mock
+    private HistoryClustersMetricsLogger mMetricsLogger;
 
     private ActivityScenario<ChromeTabbedActivity> mActivityScenario;
     private HistoryClustersCoordinator mHistoryClustersCoordinator;
     private Intent mHistoryActivityIntent = new Intent();
     private Intent mOpenUrlIntent = new Intent();
     private Activity mActivity;
-    private Promise mPromise = new Promise();
+    private Promise<HistoryClustersResult> mPromise = new Promise();
     private ClusterVisit mVisit1;
     private ClusterVisit mVisit2;
+    private HistoryCluster mCluster;
+    private HistoryClustersResult mClusterResult;
+    private TestHistoryClustersDelegate mHistoryClustersDelegate =
+            new TestHistoryClustersDelegate();
+    private List<ClusterVisit> mVisitsForRemoval = new ArrayList<>();
+    private SelectionDelegate<ClusterVisit> mSelectionDelegate = new SelectionDelegate<>();
 
     @Before
     public void setUp() {
@@ -107,53 +195,20 @@ public class HistoryClustersCoordinatorTest {
         HistoryClustersBridge.setInstanceForTesting(mHistoryClustersBridge);
         doReturn(mPromise).when(mHistoryClustersBridge).queryClusters(anyString());
 
-        mVisit1 = new ClusterVisit(
-                1.0F, mGurl1, "Title 1", "foo.com", new ArrayList<>(), new ArrayList<>());
-        mVisit2 = new ClusterVisit(
-                1.0F, mGurl2, "Title 2", "bar.com", new ArrayList<>(), new ArrayList<>());
-
-        HistoryClustersDelegate historyClustersDelegate = new HistoryClustersDelegate() {
-            @Override
-            public boolean isSeparateActivity() {
-                return true;
-            }
-
-            @Override
-            public Tab getTab() {
-                return mTab;
-            }
-
-            @Override
-            public Intent getHistoryActivityIntent() {
-                return mHistoryActivityIntent;
-            }
-
-            @Nullable
-            @Override
-            public Intent getOpenUrlIntent(GURL gurl, boolean inIncognito, boolean createNewTab) {
-                mOpenUrlIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                mOpenUrlIntent.putExtra(INCOGNITO_EXTRA, inIncognito);
-                mOpenUrlIntent.putExtra(NEW_TAB_EXTRA, createNewTab);
-                return mOpenUrlIntent;
-            }
-
-            @Override
-            public ViewGroup getToggleView(ViewGroup parent) {
-                return mToggleView;
-            }
-
-            @Nullable
-            @Override
-            public TabCreator getTabCreator(boolean isIncognito) {
-                return mTabCreator;
-            }
-        };
+        mVisit1 = new ClusterVisit(1.0F, mGurl1, "Title 1", "foo.com", new ArrayList<>(),
+                new ArrayList<>(), mGurl1, 123L, new ArrayList<>());
+        mVisit2 = new ClusterVisit(1.0F, mGurl2, "Title 2", "bar.com", new ArrayList<>(),
+                new ArrayList<>(), mGurl2, 123L, new ArrayList<>());
+        mCluster = new HistoryCluster(Arrays.asList(mVisit1, mVisit2), "\"label\"", "label",
+                Collections.emptyList(), 123L, Arrays.asList("pugs", "terriers"));
+        mClusterResult = new HistoryClustersResult(Arrays.asList(mCluster), "dogs", false, false);
 
         mActivityScenario =
                 ActivityScenario.launch(ChromeTabbedActivity.class).onActivity(activity -> {
                     mActivity = activity;
-                    mHistoryClustersCoordinator = new HistoryClustersCoordinator(
-                            mProfile, activity, mTemplateUrlService, historyClustersDelegate);
+                    mHistoryClustersCoordinator =
+                            new HistoryClustersCoordinator(mProfile, activity, mTemplateUrlService,
+                                    mHistoryClustersDelegate, mMetricsLogger, mSelectionDelegate);
                 });
     }
 
@@ -228,11 +283,14 @@ public class HistoryClustersCoordinatorTest {
                                                  .findViewById(R.id.action_bar);
         assertNotNull(toolbar);
 
-        mHistoryClustersCoordinator.getSelectionDelegateForTesting().setSelectedItems(
-                new HashSet<>(Arrays.asList(mVisit1, mVisit2)));
+        mSelectionDelegate.setSelectedItems(new HashSet<>(Arrays.asList(mVisit1, mVisit2)));
         mHistoryClustersCoordinator.onMenuItemClick(
                 toolbar.getMenu().findItem(R.id.selection_mode_open_in_new_tab));
 
+        verify(mMetricsLogger)
+                .recordVisitAction(HistoryClustersMetricsLogger.VisitAction.CLICKED, mVisit1);
+        verify(mMetricsLogger)
+                .recordVisitAction(HistoryClustersMetricsLogger.VisitAction.CLICKED, mVisit2);
         assertTrue(mOpenUrlIntent.hasExtra(NEW_TAB_EXTRA));
         assertTrue(mOpenUrlIntent.hasExtra(INCOGNITO_EXTRA));
         assertTrue(mOpenUrlIntent.getBooleanExtra(NEW_TAB_EXTRA, false));
@@ -246,15 +304,92 @@ public class HistoryClustersCoordinatorTest {
                                                  .findViewById(R.id.action_bar);
         assertNotNull(toolbar);
 
-        mHistoryClustersCoordinator.getSelectionDelegateForTesting().setSelectedItems(
-                new HashSet<>(Arrays.asList(mVisit1, mVisit2)));
+        mSelectionDelegate.setSelectedItems(new HashSet<>(Arrays.asList(mVisit1, mVisit2)));
         mHistoryClustersCoordinator.onMenuItemClick(
                 toolbar.getMenu().findItem(R.id.selection_mode_open_in_incognito));
 
+        verify(mMetricsLogger)
+                .recordVisitAction(HistoryClustersMetricsLogger.VisitAction.CLICKED, mVisit1);
+        verify(mMetricsLogger)
+                .recordVisitAction(HistoryClustersMetricsLogger.VisitAction.CLICKED, mVisit2);
         assertTrue(mOpenUrlIntent.hasExtra(NEW_TAB_EXTRA));
         assertTrue(mOpenUrlIntent.hasExtra(INCOGNITO_EXTRA));
         assertTrue(mOpenUrlIntent.getBooleanExtra(NEW_TAB_EXTRA, false));
         assertTrue(mOpenUrlIntent.getBooleanExtra(INCOGNITO_EXTRA, false));
+    }
+
+    @Test
+    public void testToggleInfoMenuItem() {
+        HistoryClustersToolbar toolbar = mHistoryClustersCoordinator.getActivityContentView()
+                                                 .findViewById(R.id.selectable_list)
+                                                 .findViewById(R.id.action_bar);
+        ShadowLooper.idleMainLooper();
+        assertNotNull(toolbar);
+        assertTrue(mHistoryClustersDelegate.shouldShowPrivacyDisclaimerSupplier().get());
+        MenuItem menuItem = toolbar.getMenu().findItem(R.id.info_menu_id);
+        assertEquals(menuItem.getTitle(), mActivity.getResources().getString(R.string.hide_info));
+
+        mHistoryClustersCoordinator.onMenuItemClick(menuItem);
+        assertFalse(mHistoryClustersDelegate.shouldShowPrivacyDisclaimerSupplier().get());
+
+        assertEquals(menuItem.getTitle(), mActivity.getResources().getString(R.string.show_info));
+
+        mHistoryClustersCoordinator.onMenuItemClick(menuItem);
+        assertTrue(mHistoryClustersDelegate.shouldShowPrivacyDisclaimerSupplier().get());
+        assertEquals(menuItem.getTitle(), mActivity.getResources().getString(R.string.hide_info));
+    }
+
+    @Test
+    public void testDeleteMenuItem() {
+        HistoryClustersToolbar toolbar = mHistoryClustersCoordinator.getActivityContentView()
+                                                 .findViewById(R.id.selectable_list)
+                                                 .findViewById(R.id.action_bar);
+
+        mSelectionDelegate.setSelectedItems(new HashSet<>(Arrays.asList(mVisit1, mVisit2)));
+        mHistoryClustersCoordinator.onMenuItemClick(
+                toolbar.getMenu().findItem(R.id.selection_mode_delete_menu_id));
+
+        assertThat(mVisitsForRemoval, Matchers.containsInAnyOrder(mVisit1, mVisit2));
+    }
+
+    @Test
+    public void testSetQueryState() {
+        mHistoryClustersCoordinator.inflateActivityView();
+        mHistoryClustersCoordinator.setQueryState(QueryState.forQuery("dogs"));
+        fulfillPromise(mPromise, mClusterResult);
+
+        RecyclerView recyclerView = mHistoryClustersCoordinator.getRecyclerViewFortesting();
+        recyclerView.measure(0, 0);
+        recyclerView.layout(0, 0, 600, 1000);
+
+        assertHasViewWithClass(recyclerView, HistoryClustersRelatedSearchesChipLayout.class);
+        assertHasViewWithClass(recyclerView, HistoryClustersItemView.class);
+        assertHasViewWithClass(recyclerView, HistoryClusterView.class);
+    }
+
+    @Test
+    public void testDestroy() {
+        mHistoryClustersCoordinator.inflateActivityView();
+        mHistoryClustersCoordinator.setQueryState(QueryState.forQuery("dogs"));
+        mHistoryClustersCoordinator.destroy();
+
+        // Fulfilling the promise post-destroy shouldn't crash or do anything else for that matter.
+        fulfillPromise(mPromise, mClusterResult);
+    }
+
+    private <T> void fulfillPromise(Promise<T> promise, T result) {
+        promise.fulfill(result);
+        ShadowLooper.idleMainLooper();
+    }
+
+    private void assertHasViewWithClass(RecyclerView recyclerView, Class clazz) {
+        for (int i = 0; i < recyclerView.getAdapter().getItemCount(); i++) {
+            RecyclerView.ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(i);
+            if (clazz.equals(viewHolder.itemView.getClass())) {
+                return;
+            }
+        }
+        assertFalse(true);
     }
 
     private static void resetStaticState() {

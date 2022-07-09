@@ -35,6 +35,7 @@ message CloudPolicySettings {
   optional BooleanPolicyProto ExampleBoolPrecedenceMetapolicy = 6;
   optional BooleanPolicyProto CloudOnlyPolicy = 7;
   optional StringPolicyProto CloudManagementEnrollmentToken = 8;
+  optional StringPolicyProto DeprecatedButGenerated = 9;
   optional BooleanPolicyProto ChunkZeroLastFieldBooleanPolicy = 1017;
   optional CloudPolicySubProto1 subProto1 = 1018;
   optional CloudPolicySubProto2 subProto2 = 1019;
@@ -59,7 +60,7 @@ import "policy_common_definitions%(full_runtime_suffix)s.proto";
 //
 // ExampleStringPolicy desc
 //
-// Supported on: chrome_os
+// Supported on: chrome_os, fuchsia, linux, mac, win
 message ExampleStringPolicyProto {
   optional PolicyOptions policy_options = 1;
   optional string ExampleStringPolicy = 2;
@@ -69,7 +70,7 @@ message ExampleStringPolicyProto {
 //
 // ExampleBoolPolicy desc
 //
-// Supported on: chrome_os
+// Supported on: chrome_os, fuchsia, linux, mac, win
 message ExampleBoolPolicyProto {
   optional PolicyOptions policy_options = 1;
   optional bool ExampleBoolPolicy = 2;
@@ -79,7 +80,7 @@ message ExampleBoolPolicyProto {
 //
 // ExampleBoolMergeMetapolicy desc
 //
-// Supported on: chrome_os
+// Supported on: android, chrome_os, fuchsia, ios, linux, mac, win
 message ExampleBoolMergeMetapolicyProto {
   optional PolicyOptions policy_options = 1;
   optional bool ExampleBoolMergeMetapolicy = 2;
@@ -89,7 +90,7 @@ message ExampleBoolMergeMetapolicyProto {
 //
 // ExampleBoolPrecedenceMetapolicy desc
 //
-// Supported on: chrome_os
+// Supported on: android, chrome_os, fuchsia, ios, linux, mac, win
 message ExampleBoolPrecedenceMetapolicyProto {
   optional PolicyOptions policy_options = 1;
   optional bool ExampleBoolPrecedenceMetapolicy = 2;
@@ -99,7 +100,7 @@ message ExampleBoolPrecedenceMetapolicyProto {
 //
 // CloudOnlyPolicy desc
 //
-// Supported on: android, chrome_os
+// Supported on: android, chrome_os, fuchsia, linux, mac, win
 message CloudOnlyPolicyProto {
   optional PolicyOptions policy_options = 1;
   optional bool CloudOnlyPolicy = 2;
@@ -109,17 +110,47 @@ message CloudOnlyPolicyProto {
 //
 // CloudManagementEnrollmentToken desc
 //
-// Supported on: android, chrome_os
+// Supported on: android, chrome_os, fuchsia, linux, mac, win
 message CloudManagementEnrollmentTokenProto {
   optional PolicyOptions policy_options = 1;
   optional string CloudManagementEnrollmentToken = 2;
+}
+
+// DeprecatedButGenerated caption
+//
+// DeprecatedButGenerated desc
+//
+// Supported on: android, chrome_os, fuchsia, linux, mac, win
+message DeprecatedButGeneratedProto {
+  optional PolicyOptions policy_options = 1;
+  optional string DeprecatedButGenerated = 2;
+}
+
+// DeprecatedNotGenerated caption
+//
+// DeprecatedNotGenerated desc
+//
+// Supported on:
+message DeprecatedNotGeneratedProto {
+  optional PolicyOptions policy_options = 1;
+  optional string DeprecatedNotGenerated = 2;
+}
+
+// UnsupportedPolicy caption
+//
+// UnsupportedPolicy desc
+//
+// Supported on:
+message UnsupportedPolicyProto {
+  optional PolicyOptions policy_options = 1;
+  optional string UnsupportedPolicy = 2;
 }
 
 // ChunkZeroLastFieldBooleanPolicy caption
 //
 // ChunkZeroLastFieldBooleanPolicy desc.
 //
-// Supported on: chrome_os
+// Supported on: chrome_os, fuchsia, linux, mac, win
 message ChunkZeroLastFieldBooleanPolicyProto {
   optional PolicyOptions policy_options = 1;
   optional bool ChunkZeroLastFieldBooleanPolicy = 2;
@@ -129,7 +160,7 @@ message ChunkZeroLastFieldBooleanPolicyProto {
 //
 // ChunkOneFirstFieldBooleanPolicy desc.
 //
-// Supported on: chrome_os
+// Supported on: chrome_os, fuchsia, linux, mac, win
 message ChunkOneFirstFieldBooleanPolicyProto {
   optional PolicyOptions policy_options = 1;
   optional bool ChunkOneFirstFieldBooleanPolicy = 2;
@@ -139,7 +170,7 @@ message ChunkOneFirstFieldBooleanPolicyProto {
 //
 // ChunkOneLastFieldBooleanPolicy desc.
 //
-// Supported on: chrome_os
+// Supported on: chrome_os, fuchsia, linux, mac, win
 message ChunkOneLastFieldBooleanPolicyProto {
   optional PolicyOptions policy_options = 1;
   optional bool ChunkOneLastFieldBooleanPolicy = 2;
@@ -149,7 +180,7 @@ message ChunkOneLastFieldBooleanPolicyProto {
 //
 // ChunkTwoFirstFieldStringPolicy desc
 //
-// Supported on: chrome_os
+// Supported on: chrome_os, fuchsia, linux, mac, win
 message ChunkTwoFirstFieldStringPolicyProto {
   optional PolicyOptions policy_options = 1;
   optional string ChunkTwoFirstFieldStringPolicy = 2;
@@ -159,7 +190,7 @@ message ChunkTwoFirstFieldStringPolicyProto {
 //
 // ChunkTwoLastFieldStringPolicy desc
 //
-// Supported on: chrome_os
+// Supported on: chrome_os, fuchsia, linux, mac, win
 message ChunkTwoLastFieldStringPolicyProto {
   optional PolicyOptions policy_options = 1;
   optional string ChunkTwoLastFieldStringPolicy = 2;
@@ -188,6 +219,9 @@ message ChromeSettingsProto {
   optional ExampleBoolPrecedenceMetapolicyProto ExampleBoolPrecedenceMetapolicy = 6;
   optional CloudOnlyPolicyProto CloudOnlyPolicy = 7;
   optional CloudManagementEnrollmentTokenProto CloudManagementEnrollmentToken = 8;
+  optional DeprecatedButGeneratedProto DeprecatedButGenerated = 9;
+  optional DeprecatedNotGeneratedProto DeprecatedNotGenerated = 10;
+  optional UnsupportedPolicyProto UnsupportedPolicy = 11;
   optional ChunkZeroLastFieldBooleanPolicyProto ChunkZeroLastFieldBooleanPolicy = 1017;
   optional ChromeSettingsSubProto1 subProto1 = 1018;
   optional ChromeSettingsSubProto2 subProto2 = 1019;
@@ -199,7 +233,7 @@ EXPECTED_POLICY_PROTO = '''\
 //
 // ExampleStringPolicy desc
 //
-// Supported on: chrome_os
+// Supported on: chrome_os, fuchsia, linux, mac, win
 message ExampleStringPolicyProto {
   optional PolicyOptions policy_options = 1;
   optional string ExampleStringPolicy = 2;
@@ -258,6 +292,7 @@ extern const char kExampleBoolMergeMetapolicy[];
 extern const char kExampleBoolPrecedenceMetapolicy[];
 extern const char kCloudOnlyPolicy[];
 extern const char kCloudManagementEnrollmentToken[];
+extern const char kDeprecatedButGenerated[];
 extern const char kChunkZeroLastFieldBooleanPolicy[];
 extern const char kChunkOneFirstFieldBooleanPolicy[];
 extern const char kChunkOneLastFieldBooleanPolicy[];
@@ -325,7 +360,7 @@ struct StringPolicyAccess {
       const em::CloudPolicySettings& policy);
   const StringPolicyType type;
 };
-extern const std::array<StringPolicyAccess, 4> kStringPolicyAccess;
+extern const std::array<StringPolicyAccess, 5> kStringPolicyAccess;
 
 // Read access to the protobufs of all supported stringlist user policies.
 struct StringListPolicyAccess {
@@ -380,6 +415,8 @@ namespace policy {
   { false,        false,    false,              5,                     0, {  } },
   // CloudManagementEnrollmentToken
   { false,        false,    false,              6,                     0, {  } },
+  // DeprecatedButGenerated
+  { false,        false,    false,              7,                     0, {  } },
   // ChunkZeroLastFieldBooleanPolicy
   { false,        false,    false,           1015,                     0, {  } },
   // ChunkOneFirstFieldBooleanPolicy
@@ -408,6 +445,7 @@ const internal::PropertyNode kPropertyNodes[] = {
   { key::kChunkZeroLastFieldBooleanPolicy,                                1 },
   { key::kCloudManagementEnrollmentToken,                                 2 },
   { key::kCloudOnlyPolicy,                                                1 },
+  { key::kDeprecatedButGenerated,                                         2 },
   { key::kExampleBoolMergeMetapolicy,                                     1 },
   { key::kExampleBoolPolicy,                                              1 },
   { key::kExampleBoolPrecedenceMetapolicy,                                1 },
@@ -416,7 +454,7 @@ const internal::PropertyNode kPropertyNodes[] = {
 
 const internal::PropertiesNode kProperties[] = {
 //  Begin    End  PatternEnd  RequiredBegin  RequiredEnd  Additional Properties
-  {     0,    11,    11,     0,          0,    -1 },  // root node
+  {     0,    12,    12,     0,          0,    -1 },  // root node
 };
 
 const internal::SchemaData* GetChromeSchemaData() {
@@ -462,7 +500,7 @@ const PolicyDetails* GetChromePolicyDetails(const std::string& policy) {
   // First index in kPropertyNodes of the Chrome policies.
   static const int begin_index = 0;
   // One-past-the-end of the Chrome policies in kPropertyNodes.
-  static const int end_index = 11;
+  static const int end_index = 12;
   const internal::PropertyNode* begin =
      kPropertyNodes + begin_index;
   const internal::PropertyNode* end = kPropertyNodes + end_index;
@@ -493,6 +531,7 @@ const char kExampleBoolMergeMetapolicy[] = "ExampleBoolMergeMetapolicy";
 const char kExampleBoolPrecedenceMetapolicy[] = "ExampleBoolPrecedenceMetapolicy";
 const char kCloudOnlyPolicy[] = "CloudOnlyPolicy";
 const char kCloudManagementEnrollmentToken[] = "CloudManagementEnrollmentToken";
+const char kDeprecatedButGenerated[] = "DeprecatedButGenerated";
 const char kChunkZeroLastFieldBooleanPolicy[] = "ChunkZeroLastFieldBooleanPolicy";
 const char kChunkOneFirstFieldBooleanPolicy[] = "ChunkOneFirstFieldBooleanPolicy";
 const char kChunkOneLastFieldBooleanPolicy[] = "ChunkOneLastFieldBooleanPolicy";
@@ -606,7 +645,7 @@ const std::array<BooleanPolicyAccess, 7> kBooleanPolicyAccess {{
 const std::array<IntegerPolicyAccess, 0> kIntegerPolicyAccess {{
 }};
 
-const std::array<StringPolicyAccess, 4> kStringPolicyAccess {{
+const std::array<StringPolicyAccess, 5> kStringPolicyAccess {{
   {key::kExampleStringPolicy,
    false,
    [](const em::CloudPolicySettings& policy) {
@@ -626,6 +665,17 @@ const std::array<StringPolicyAccess, 4> kStringPolicyAccess {{
    [](const em::CloudPolicySettings& policy)
        -> const em::StringPolicyProto& {
      return policy.cloudmanagementenrollmenttoken();
+   },
+   StringPolicyType::STRING
+  },
+  {key::kDeprecatedButGenerated,
+   false,
+   [](const em::CloudPolicySettings& policy) {
+     return policy.has_deprecatedbutgenerated();
+   },
+   [](const em::CloudPolicySettings& policy)
+       -> const em::StringPolicyProto& {
+     return policy.deprecatedbutgenerated();
    },
    StringPolicyType::STRING
   },
@@ -695,6 +745,7 @@ extern const char kExampleBoolMergeMetapolicy[];
 extern const char kExampleBoolPrecedenceMetapolicy[];
 extern const char kCloudOnlyPolicy[];
 extern const char kCloudManagementEnrollmentToken[];
+extern const char kDeprecatedButGenerated[];
 extern const char kChunkZeroLastFieldBooleanPolicy[];
 extern const char kChunkOneFirstFieldBooleanPolicy[];
 extern const char kChunkOneLastFieldBooleanPolicy[];
@@ -734,7 +785,7 @@ struct StringPolicyAccess {
   enterprise_management::StringPolicyProto* (*mutable_proto_ptr)(
       enterprise_management::CloudPolicySettings* policy);
 };
-extern const std::array<StringPolicyAccess, 4> kStringPolicyAccess;
+extern const std::array<StringPolicyAccess, 5> kStringPolicyAccess;
 
 // Access to the mutable protobuf function of all supported stringlist user
 // policies.
@@ -767,6 +818,7 @@ const char kExampleBoolMergeMetapolicy[] = "ExampleBoolMergeMetapolicy";
 const char kExampleBoolPrecedenceMetapolicy[] = "ExampleBoolPrecedenceMetapolicy";
 const char kCloudOnlyPolicy[] = "CloudOnlyPolicy";
 const char kCloudManagementEnrollmentToken[] = "CloudManagementEnrollmentToken";
+const char kDeprecatedButGenerated[] = "DeprecatedButGenerated";
 const char kChunkZeroLastFieldBooleanPolicy[] = "ChunkZeroLastFieldBooleanPolicy";
 const char kChunkOneFirstFieldBooleanPolicy[] = "ChunkOneFirstFieldBooleanPolicy";
 const char kChunkOneLastFieldBooleanPolicy[] = "ChunkOneLastFieldBooleanPolicy";
@@ -834,7 +886,7 @@ const std::array<BooleanPolicyAccess, 7> kBooleanPolicyAccess {{
 const std::array<IntegerPolicyAccess, 0> kIntegerPolicyAccess {{
 }};
 
-const std::array<StringPolicyAccess, 4> kStringPolicyAccess {{
+const std::array<StringPolicyAccess, 5> kStringPolicyAccess {{
   {key::kExampleStringPolicy,
    false,
    [](em::CloudPolicySettings* policy)
@@ -847,6 +899,13 @@ const std::array<StringPolicyAccess, 4> kStringPolicyAccess {{
    [](em::CloudPolicySettings* policy)
        -> em::StringPolicyProto* {
      return policy->mutable_cloudmanagementenrollmenttoken();
+   }
+  },
+  {key::kDeprecatedButGenerated,
+   false,
+   [](em::CloudPolicySettings* policy)
+       -> em::StringPolicyProto* {
+     return policy->mutable_deprecatedbutgenerated();
    }
   },
   {key::kChunkTwoFirstFieldStringPolicy,
@@ -909,6 +968,12 @@ EXPECTED_APP_RESTRICTIONS_XML = '''
         android:title="@string/ChunkZeroLastFieldBooleanPolicyTitle"
         android:description="@string/ChunkZeroLastFieldBooleanPolicyDesc"
         android:restrictionType="bool"/>
+
+    <restriction
+        android:key="DeprecatedButGenerated"
+        android:title="@string/DeprecatedButGeneratedTitle"
+        android:description="@string/DeprecatedButGeneratedDesc"
+        android:restrictionType="string"/>
 
     <restriction
         android:key="ExampleBoolMergeMetapolicy"

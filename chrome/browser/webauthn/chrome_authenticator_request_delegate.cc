@@ -86,10 +86,9 @@ bool IsWebAuthnRPIDListedInSecurityKeyPermitAttestationPolicy(
     const std::string& relying_party_id) {
   const Profile* profile = Profile::FromBrowserContext(browser_context);
   const PrefService* prefs = profile->GetPrefs();
-  const base::Value* permit_attestation =
-      prefs->GetList(prefs::kSecurityKeyPermitAttestation);
-  return std::any_of(permit_attestation->GetListDeprecated().begin(),
-                     permit_attestation->GetListDeprecated().end(),
+  const base::Value::List& permit_attestation =
+      prefs->GetValueList(prefs::kSecurityKeyPermitAttestation);
+  return std::any_of(permit_attestation.begin(), permit_attestation.end(),
                      [&relying_party_id](const base::Value& v) {
                        return v.GetString() == relying_party_id;
                      });
@@ -851,10 +850,23 @@ bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
   // request to an authenticator immediately after it has been
   // discovered, or whether the embedder/UI takes charge of that by
   // invoking its RequestCallback.
+  if (!IsWebAuthnUIEnabled()) {
+    // There is no UI to handle request dispatch.
+    return false;
+  }
+  if (is_conditional_ &&
+      (dialog_model_->current_step() ==
+           AuthenticatorRequestDialogModel::Step::kConditionalMediation ||
+       dialog_model_->current_step() ==
+           AuthenticatorRequestDialogModel::Step::kNotStarted)) {
+    // There is an active conditional request that is not showing any UI. The UI
+    // will dispatch to any plugged in authenticators after the user selects an
+    // option.
+    return true;
+  }
   auto transport = authenticator.AuthenticatorTransport();
-  return (is_conditional_ || IsWebAuthnUIEnabled()) &&
-         (!transport ||  // Windows
-          *transport == device::FidoTransportProtocol::kInternal);
+  return !transport ||  // Windows
+         *transport == device::FidoTransportProtocol::kInternal;
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(

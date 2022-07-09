@@ -49,6 +49,7 @@
 <translation id="2182457891543959921">Կայքերի համար թույլտվություն խնդրել՝ ստեղծելու շրջակայքի եռաչափ քարտեզն ու հետագծելու ձեր տեսախցիկի դիրքը (խորհուրդ է տրվում)</translation>
 <translation id="2212565012507486665">Թույլատրել քուքիները</translation>
 <translation id="2228071138934252756">Որպեսզի տեսախցիկը հասանելի դառնա <ph name="APP_NAME" />-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
+<translation id="2238944249568001759">Առաջարկվող որոնման հարցումներ ձեր վերջին ներդիրի հիման վրա</translation>
 <translation id="2241634353105152135">Միայն այս անգամ</translation>
 <translation id="2253414712144136228">Հեռացնել «<ph name="NAME_OF_LIST_ITEM" />» կետը</translation>
 <translation id="2289270750774289114">Հարցնել, երբ որևէ կայք ուզում է հայտնաբերել մոտակա Bluetooth սարքերը (խորհուրդ է տրվում)</translation>
@@ -116,6 +117,7 @@
 <translation id="3744111561329211289">Ֆոնային համաժամացում</translation>
 <translation id="3763247130972274048">10 վ առաջ/հետ անցնելու համար կրկնակի հպեք տեսանյութի աջ/ձախ մասում</translation>
 <translation id="3797520601150691162">Չկիրառել մուգ թեման որոշակի կայքում</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />։ <ph name="TYPE_2" />։</translation>
 <translation id="381841723434055211">Հեռախոսահամարներ</translation>
 <translation id="3826050100957962900">Մուտք երրորդ կողմի ծառայությունների միջոցով</translation>
 <translation id="3835233591525155343">Սարքի օգտագործում</translation>

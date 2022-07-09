@@ -70,9 +70,10 @@ export class ProjectorBrowserProxy {
    * @param {string=} requestBody the request body data.
    * @param {boolean=} useCredentials authorize the request with end user
    *     credentials. Used for getting streaming URL.
+   * @param {Object=} headers additional headers.
    * @return {!Promise<!projectorApp.XhrResponse>}
    */
-  sendXhr(url, method, requestBody, useCredentials) {}
+  sendXhr(url, method, requestBody, useCredentials, headers) {}
 
   /**
    * Returns true if the "install speech recognition" button should be shown to
@@ -122,6 +123,13 @@ export class ProjectorBrowserProxy {
    * @return {!Promise}
    */
   openFeedbackDialog() {}
+
+  /**
+   * Gets information about the specified screencast from DriveFS.
+   * @param {string} screencastId The Drive item id of container folder.
+   * @return {!Promise<projectorApp.Screencast>}
+   */
+  getScreencast(screencastId) {}
 }
 
 /**
@@ -165,9 +173,9 @@ export class ProjectorBrowserProxyImpl {
   }
 
   /** @override */
-  sendXhr(url, method, requestBody, useCredentials) {
+  sendXhr(url, method, requestBody, useCredentials, headers) {
     return sendWithPromise(
-        'sendXhr', [url, method, requestBody, useCredentials]);
+        'sendXhr', [url, method, requestBody, useCredentials, headers]);
   }
 
   /** @override */
@@ -198,6 +206,11 @@ export class ProjectorBrowserProxyImpl {
   /** @override */
   openFeedbackDialog() {
     return sendWithPromise('openFeedbackDialog');
+  }
+
+  /** @override */
+  getScreencast(screencastId) {
+    return sendWithPromise('getScreencast', [screencastId]);
   }
 }
 

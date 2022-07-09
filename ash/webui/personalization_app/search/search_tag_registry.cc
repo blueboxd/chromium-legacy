@@ -21,8 +21,8 @@
 #include "base/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy.h"
-#include "chromeos/components/local_search_service/shared_structs.h"
+#include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy.h"
+#include "chromeos/ash/components/local_search_service/shared_structs.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -112,6 +112,7 @@ const SearchConcept& GetUserImageSearchConcept() {
               IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT2,
               IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT3,
               IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT4,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT5,
           },
       .relative_url = kUserSubpageRelativeUrl,
   });

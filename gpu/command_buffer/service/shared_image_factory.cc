@@ -31,6 +31,8 @@
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
 #include "gpu/config/gpu_preferences.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
@@ -44,10 +46,9 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/buildflags.h"
+#include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
-#if BUILDFLAG(OZONE_PLATFORM_X11)
-#include "ui/gl/gl_image_glx_native_pixmap.h"
-#endif
+#include "ui/ozone/public/surface_factory_ozone.h"
 #endif
 
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_WIN)) && \
@@ -108,6 +109,21 @@ bool ShouldUseOzoneFactory() {
 #else
   return false;
 #endif
+}
+
+const char* GmbTypeToString(gfx::GpuMemoryBufferType type) {
+  switch (type) {
+    case gfx::EMPTY_BUFFER:
+      return "empty";
+    case gfx::SHARED_MEMORY_BUFFER:
+      return "shared_memory";
+    case gfx::IO_SURFACE_BUFFER:
+    case gfx::NATIVE_PIXMAP:
+    case gfx::DXGI_SHARED_HANDLE:
+    case gfx::ANDROID_HARDWARE_BUFFER:
+      return "platform";
+  }
+  NOTREACHED();
 }
 
 enum DmaBufSupportedType {
@@ -215,7 +231,6 @@ SharedImageFactory::SharedImageFactory(
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
     MemoryTracker* memory_tracker,
-    bool enable_wrapped_sk_image,
     bool is_for_display_compositor)
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
@@ -268,7 +283,11 @@ SharedImageFactory::SharedImageFactory(
     bool glx_ext_supported = false;
 #if defined(USE_OZONE)
 #if BUILDFLAG(OZONE_PLATFORM_X11)
-    glx_ext_supported = gl::GLImageGLXNativePixmap::CanImportNativePixmap();
+    ui::GLOzone* gl_ozone = ui::OzonePlatform::GetInstance()
+                                ->GetSurfaceFactoryOzone()
+                                ->GetCurrentGLOzone();
+    // This checks for extension support on both GLOzoneEGLX11 and GLOzoneGLX.
+    glx_ext_supported = gl_ozone && gl_ozone->CanImportNativePixmap();
 #endif  // BUILDFLAG(OZONE_PLATFORM_X11)
 #endif  // defined(USE_OZONE)
     if (egl_ext_supported) {
@@ -286,7 +305,7 @@ SharedImageFactory::SharedImageFactory(
       std::make_unique<SharedImageBackingFactorySharedMemory>();
   factories_.push_back(std::move(shared_memory_backing_factory));
 
-  if (enable_wrapped_sk_image && context_state) {
+  if (context_state) {
     auto wrapped_sk_image_factory =
         std::make_unique<raster::WrappedSkImageFactory>(context_state);
     factories_.push_back(std::move(wrapped_sk_image_factory));
@@ -411,7 +430,7 @@ SharedImageFactory::SharedImageFactory(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // defined(USE_OZONE)
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_MAC)
   // TODO(hitawala): Temporary factory that will be replaced with Ozone and
   // other backings
   if (use_gl) {
@@ -443,9 +462,14 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                     /*is_pixel_used=*/false);
   if (!factory)
     return false;
+
   auto backing = factory->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
       alpha_type, usage, IsSharedBetweenThreads(usage));
+  DVLOG(1) << "CreateSharedImage[" << backing->GetName()
+           << "] size=" << size.ToString()
+           << " usage=" << CreateLabelForSharedImageUsage(usage)
+           << " resource_format=" << viz::ResourceFormatToString(format);
   return RegisterBacking(std::move(backing), allow_legacy_mailbox);
 }
 
@@ -478,11 +502,18 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   }
   if (!factory)
     return false;
+
   auto backing =
       factory->CreateSharedImage(mailbox, format, size, color_space,
                                  surface_origin, alpha_type, usage, data);
-  if (backing)
+  if (backing) {
+    DVLOG(1) << "CreateSharedImagePixels[" << backing->GetName()
+             << "] with pixels size=" << size.ToString()
+             << " usage=" << CreateLabelForSharedImageUsage(usage)
+             << " resource_format=" << viz::ResourceFormatToString(format);
+
     backing->OnWriteSucceeded();
+  }
   return RegisterBacking(std::move(backing), allow_legacy_mailbox);
 }
 
@@ -506,11 +537,20 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                         /*is_pixel_used=*/false, handle.type);
   if (!factory)
     return false;
+
+  gfx::GpuMemoryBufferType gmb_type = handle.type;
   auto backing = factory->CreateSharedImage(
       mailbox, client_id, std::move(handle), format, plane, surface_handle,
       size, color_space, surface_origin, alpha_type, usage);
-  if (backing)
+  if (backing) {
+    DVLOG(1) << "CreateSharedImage[" << backing->GetName()
+             << "] from handle size=" << size.ToString()
+             << " usage=" << CreateLabelForSharedImageUsage(usage)
+             << " buffer_format=" << gfx::BufferFormatToString(format)
+             << " gmb_type=" << GmbTypeToString(gmb_type);
+
     backing->OnWriteSucceeded();
+  }
   return RegisterBacking(std::move(backing), allow_legacy_mailbox);
 }
 
@@ -725,9 +765,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
   }
 
   LOG(ERROR) << "Could not find SharedImageBackingFactory with params: usage: "
-             << usage << ", format: " << format
+             << CreateLabelForSharedImageUsage(usage) << ", format: " << format
              << ", share_between_threads: " << share_between_threads
-             << ", gmb_type: " << gmb_type;
+             << ", gmb_type: " << GmbTypeToString(gmb_type);
   return nullptr;
 }
 

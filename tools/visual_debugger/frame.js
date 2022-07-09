@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // Enum class to identify horizontal or vertical flips
+//
 class FlipEnum {
   static HorizontalFlip = new FlipEnum(1);
   static VerticalFlip = new FlipEnum(2);
@@ -11,19 +12,40 @@ class FlipEnum {
     this.id = id;
   }
 }
+// Circular buffer to store the past X amount of frames.
+//
+class CircularBuffer {
+  constructor(size) {
+    this.instances = Array(size);
+    this.maxSize = size;
+    this.numFrames = 0;
+  }
+
+  get(index) {
+    if (index < 0 || index < this.numFrames - this.maxSize ||
+        index >= this.numFrames) {
+      return undefined;
+    }
+    return this.instances[index % this.maxSize];
+  }
+
+  push(frame) {
+    // Push frames into buffer
+    this.instances[this.numFrames % this.maxSize] = frame;
+    this.numFrames++;
+  }
+}
 
 // Represents a single frame, and contains all associated data.
 //
 class DrawFrame {
-  static instances = [];
+  static maxBufferNumFrames = 10000;
+  static frameBuffer = new CircularBuffer(DrawFrame.maxBufferNumFrames);
 
-  static count() { return DrawFrame.instances.length; }
+  static count() { return DrawFrame.frameBuffer.instances.length; }
 
   static get(index) {
-    const ins = DrawFrame.instances;
-    if (index < 0) return ins[index];
-    if (index >= ins.length) return ins[ins.length - 1];
-    return ins[index];
+    return DrawFrame.frameBuffer.get(index);
   }
 
   constructor(json) {
@@ -47,7 +69,31 @@ class DrawFrame {
     // |new_sources| requires some work. So for now, do the easy thing.
     this.json_ = json;
 
-    DrawFrame.instances.push(this);
+    DrawFrame.frameBuffer.push(this);
+
+    // Update scrubber as new frames come in
+    const scrubberFrame = document.querySelector('#scrubberframe');
+
+    scrubberFrame.max = DrawFrame.frameBuffer.numFrames - 1;
+
+    // Handle scrubber when # of frames reached cap of circular buffer.
+    if (DrawFrame.frameBuffer.numFrames > DrawFrame.frameBuffer.maxSize) {
+      const oldestFrameId = DrawFrame.frameBuffer.numFrames
+                            - DrawFrame.frameBuffer.maxSize;
+
+      scrubberFrame.min = oldestFrameId;
+      // Once the scrubber reaches the left very (oldest frame),
+      // update scrubber value to match scrubber min value and
+      // update drawing on canvas to match correspondingly.
+      if (scrubberFrame.value <= scrubberFrame.min) {
+        scrubberFrame.value = oldestFrameId;
+        Player.instance.forward();
+      }
+    }
+    // Handle scrubber when # of frames haven't yet reached buffer cap.
+    else {
+      scrubberFrame.min = 0;
+    }
   }
 
   submissionCount() {
@@ -59,17 +105,22 @@ class DrawFrame {
       (this.submissionCount() - 1);
   }
 
-  updateCanvasOrientationAndSize(canvas, orientationDeg, scale) {
+  updateCanvasOrientation(canvas, orientationDeg) {
     // Swap canvas width/height for 90 or 270 deg rotations
     if (orientationDeg === 90 || orientationDeg === 270) {
-      canvas.width = this.size_.height * scale;
-      canvas.height = this.size_.width * scale;
+      canvas.width = this.size_.height;
+      canvas.height = this.size_.width;
     }
     // Restore original canvas width/height for 0 or 180 deg rotations
     else {
-      canvas.width = this.size_.width * scale;
-      canvas.height = this.size_.height * scale;
+      canvas.width = this.size_.width;
+      canvas.height = this.size_.height;
     }
+  }
+
+  updateCanvasSize(canvas, scale) {
+    canvas.width *= scale;
+    canvas.height *= scale;
   }
 
   getFilter(source_index) {
@@ -217,12 +268,14 @@ class Viewer {
   constructor(canvas, log) {
     this.canvas_ = canvas;
     this.logContainer_ = log;
-    this.drawContext_ = this.canvas_.getContext('2d');
+    this.drawContext_ = this.canvas_.getContext("2d");
 
     this.currentFrameIndex_ = -1;
     this.viewScale = 1.0;
     this.viewOrientation = 0;
     this.transformMatrix = [[1,0],[0,1]]; // Identity matrix
+    this.translationX = 0;
+    this.translationY = 0;
   }
 
   updateCurrentFrame() {
@@ -264,9 +317,10 @@ class Viewer {
   redrawCurrentFrame_() {
     const frame = this.getCurrentFrame();
     if (!frame) return;
-    frame.updateCanvasOrientationAndSize(this.canvas_,
-                this.viewOrientation, this.viewScale);
+    frame.updateCanvasOrientation(this.canvas_, this.viewOrientation);
+    frame.updateCanvasSize(this.canvas_, this.viewScale);
     this.updateTransformMatrix(this.viewOrientation);
+    // this.drawContext_.translate(this.translationX, this.translationY);
     frame.draw(this.canvas_, this.drawContext_,
                 this.viewScale, this.viewOrientation,
                 this.transformMatrix);
@@ -304,6 +358,21 @@ class Viewer {
   unfreeze() {
     const frame = this.getCurrentFrame();
     if (frame) frame.unfreeze();
+  }
+
+  zoomToMouse(currentMouseX, currentMouseY, delta) {
+    var factor = 1.1;
+    if (delta > 0) {
+      factor = 0.9;
+    }
+    // this.translationX = currentMouseX;
+    // this.translationY = currentMouseY;
+    // this.updateCurrentFrame();
+    this.viewScale *= factor;
+    this.updateCurrentFrame();
+    // this.translationX = -currentMouseX;
+    // this.translationY = -currentMouseY;
+    // this.updateCurrentFrame();
   }
 };
 

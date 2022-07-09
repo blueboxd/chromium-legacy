@@ -28,6 +28,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -38,8 +39,8 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/url_constants.h"
 #include "components/captive_portal/core/buildflags.h"
@@ -57,6 +58,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "extensions/buildflags/buildflags.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/gfx/geometry/resize_utils.h"
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -157,6 +161,36 @@ bool AdjustNavigateParamsForURL(NavigateParams* params) {
 
   return true;
 }
+
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+gfx::Rect CalculateInitialPictureInPictureWindowBounds(
+    float initial_aspect_ratio) {
+  DCHECK(initial_aspect_ratio > 0);
+
+  // TODO(https://crbug.com/1327797): This copies a bunch of logic from
+  // OverlayWindowViews. The sizing logic should be delegated to a PiP-specific
+  // controller.
+  gfx::Rect work_area =
+      display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
+  gfx::Rect window_bounds(work_area.width() / 5, work_area.height() / 5);
+  gfx::SizeRectToAspectRatio(gfx::ResizeEdge::kTopLeft, initial_aspect_ratio,
+                             gfx::Size(0, 0), work_area.size(), &window_bounds);
+
+  int window_diff_width = work_area.right() - window_bounds.width();
+  int window_diff_height = work_area.bottom() - window_bounds.height();
+
+  // Keep a margin distance of 2% the average of the two window size
+  // differences, keeping the margins consistent.
+  int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
+
+  gfx::Point default_origin =
+      gfx::Point(window_diff_width - buffer, window_diff_height - buffer);
+  default_origin += work_area.OffsetFromOrigin();
+  window_bounds.set_origin(default_origin);
+
+  return window_bounds;
+}
+#endif  // !IS_CHROMEOS_LACROS
 
 // Returns a Browser and tab index. The browser can host the navigation or
 // tab addition specified in |params|.  This might just return the same
@@ -272,9 +306,20 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         Browser::CreateParams browser_params(Browser::TYPE_PICTURE_IN_PICTURE,
                                              profile, params.user_gesture);
         browser_params.trusted_source = params.trusted_source;
-        browser_params.initial_bounds = params.window_bounds;
         browser_params.picture_in_picture_window_title =
             params.source_contents->GetLastCommittedURL().GetContent();
+        if (params.contents_to_insert) {
+          browser_params.initial_bounds =
+              CalculateInitialPictureInPictureWindowBounds(
+                  params.contents_to_insert
+                      ->GetPictureInPictureInitialAspectRatio());
+          browser_params.initial_aspect_ratio =
+              params.contents_to_insert
+                  ->GetPictureInPictureInitialAspectRatio();
+          browser_params.lock_aspect_ratio =
+              params.contents_to_insert->GetPictureInPictureLockAspectRatio();
+        }
+
         return {Browser::Create(browser_params), -1};
       }
 #else   // !IS_CHROMEOS_LACROS
@@ -562,17 +607,15 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
   // TODO(crbug.com/1096345): Remove this code after we integrate with intent
   // handling.
   const absl::optional<ash::SystemWebAppType> capturing_system_app_type =
-      web_app::GetCapturingSystemAppForURL(params->initiating_profile,
-                                           params->url);
+      ash::GetCapturingSystemAppForURL(params->initiating_profile, params->url);
   if (capturing_system_app_type &&
       (!params->browser ||
-       !web_app::IsBrowserForSystemWebApp(params->browser,
-                                          capturing_system_app_type.value()))) {
-    web_app::SystemAppLaunchParams swa_params;
+       !ash::IsBrowserForSystemWebApp(params->browser,
+                                      capturing_system_app_type.value()))) {
+    ash::SystemAppLaunchParams swa_params;
     swa_params.url = params->url;
-    web_app::LaunchSystemWebAppAsync(params->initiating_profile,
-                                     capturing_system_app_type.value(),
-                                     swa_params);
+    ash::LaunchSystemWebAppAsync(params->initiating_profile,
+                                 capturing_system_app_type.value(), swa_params);
 
     // It's okay to early return here, because LaunchSystemWebAppAsync uses a
     // different logic to choose (and create if necessary) a browser window for
@@ -810,8 +853,9 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
     if (params->source_contents != contents_to_navigate_or_insert) {
       // Use the index before the potential close below, because it could
       // make the index refer to a different tab.
-      auto gesture_type = user_initiated ? TabStripModel::GestureType::kOther
-                                         : TabStripModel::GestureType::kNone;
+      auto gesture_type = user_initiated
+                              ? TabStripUserGestureDetails::GestureType::kOther
+                              : TabStripUserGestureDetails::GestureType::kNone;
       bool should_close_this_tab = false;
       if (params->disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
         // Close orphaned NTP (and the like) with no history when the user
@@ -829,8 +873,8 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
           }
         }
       }
-      params->browser->tab_strip_model()->ActivateTabAt(singleton_index,
-                                                        {gesture_type});
+      params->browser->tab_strip_model()->ActivateTabAt(
+          singleton_index, TabStripUserGestureDetails(gesture_type));
       // Close tab after switch so index remains correct.
       if (should_close_this_tab)
         params->source_contents->Close();

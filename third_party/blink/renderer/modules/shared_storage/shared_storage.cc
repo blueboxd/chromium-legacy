@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -71,7 +72,7 @@ bool Serialize(ScriptState* script_state,
 
   std::pair<uint8_t*, size_t> buffer = serializer.Release();
 
-  output.ReserveInitialCapacity(SafeCast<wtf_size_t>(buffer.second));
+  output.ReserveInitialCapacity(base::checked_cast<wtf_size_t>(buffer.second));
   output.Append(buffer.first, static_cast<wtf_size_t>(buffer.second));
   DCHECK_EQ(output.size(), buffer.second);
 
@@ -361,7 +362,7 @@ ScriptPromise SharedStorage::selectURL(
       if (!maybe_fields.ToLocal(&fields) || fields->Length() == 0) {
         resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
             script_state->GetIsolate(), DOMExceptionCode::kDataError,
-            "selectURL could not get reporting_metadata object attributes"));
+            "selectURL could not get reportingMetadata object attributes"));
         return promise;
       }
 
@@ -375,7 +376,7 @@ ScriptPromise SharedStorage::selectURL(
                           &report_event_string)) {
           resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
               script_state->GetIsolate(), DOMExceptionCode::kDataError,
-              "selectURL reporting_metadata object attributes must be "
+              "selectURL reportingMetadata object attributes must be "
               "strings"));
           return promise;
         }
@@ -387,7 +388,7 @@ ScriptPromise SharedStorage::selectURL(
                           &report_url_string)) {
           resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
               script_state->GetIsolate(), DOMExceptionCode::kDataError,
-              "selectURL reporting_metadata object attributes must be "
+              "selectURL reportingMetadata object attributes must be "
               "strings"));
           return promise;
         }

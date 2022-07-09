@@ -1477,6 +1477,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   NavigationEntryImpl* active_entry = GetLastCommittedEntry();
   active_entry->SetTimestamp(timestamp);
   active_entry->SetHttpStatusCode(params.http_status_code);
+
   // TODO(altimin, crbug.com/933147): Remove this logic after we are done with
   // implementing back-forward cache.
   if (back_forward_cache_metrics &&
@@ -1488,6 +1489,13 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // `back_forward_cache_metrics()` may return null as we do not record
   // back-forward cache metrics for navigations in non-primary frame trees.
   if (active_entry->back_forward_cache_metrics()) {
+    // TODO(https://crbug.com/1338089): Remove this.
+    // These are both only available from details at this point, so we capture
+    // them here.
+    SCOPED_CRASH_KEY_NUMBER("BFCacheMismatch", "navigation_type",
+                            details->type);
+    SCOPED_CRASH_KEY_BOOL("BFCacheMismatch", "did_replace",
+                          details->did_replace_entry);
     active_entry->back_forward_cache_metrics()->DidCommitNavigation(
         navigation_request,
         back_forward_cache_.IsAllowed(navigation_request->GetURL()));
@@ -3761,8 +3769,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           frame_entry->committed_origin(),
           // The correct storage key will be computed before committing the
           // navigation.
-          blink::StorageKey(), network::mojom::WebSandboxFlags(),
-          override_user_agent, params.redirect_chain,
+          blink::StorageKey(), override_user_agent, params.redirect_chain,
           std::vector<network::mojom::URLResponseHeadPtr>(),
           std::vector<net::RedirectInfo>(), params.post_content_type,
           common_params->url, common_params->method,
@@ -4326,7 +4333,7 @@ void NavigationControllerImpl::DidAccessInitialMainDocument() {
   // We may have left a failed browser-initiated navigation in the address bar
   // to let the user edit it and try again.  Clear it now that content might
   // show up underneath it.
-  if (!frame_tree_.IsLoading() && GetPendingEntry())
+  if (!frame_tree_.IsLoadingIncludingInnerFrameTrees() && GetPendingEntry())
     DiscardPendingEntry(false);
 
   // Update the URL display.

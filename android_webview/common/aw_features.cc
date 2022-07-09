@@ -46,6 +46,9 @@ const base::Feature kWebViewConnectionlessSafeBrowsing{
 const base::Feature kWebViewForceDarkModeMatchTheme{
     "WebViewForceDarkModeMatchTheme", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kWebViewHitTestInBlinkOnTouchStart{
+    "WebViewHitTestInBlinkOnTouchStart", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable display cutout support for Android P and above.
 const base::Feature kWebViewDisplayCutout{"WebViewDisplayCutout",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -93,10 +96,6 @@ const base::Feature kWebViewOriginTrials{"WebViewOriginTrials",
 // histogram Android.WebView.AppDataDirectorySize.
 const base::Feature kWebViewRecordAppDataDirectorySize{
     "WebViewRecordAppDataDirectorySize", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Whether WebView will send variations headers on URLs where applicable.
-const base::Feature kWebViewSendVariationsHeaders{
-    "WebViewSendVariationsHeaders", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Disallows window.{alert, prompt, confirm} if triggered inside a subframe that
 // is not same origin with the main frame.

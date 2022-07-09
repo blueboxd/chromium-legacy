@@ -139,12 +139,8 @@ String FindMagicComment(const String& content, const String& name) {
 }
 
 void GetClassNamesFromRule(CSSStyleRule* rule, HashSet<String>& unique_names) {
-  const CSSSelectorList& selector_list = rule->GetStyleRule()->SelectorList();
-  if (!selector_list.IsValid())
-    return;
-
-  for (const CSSSelector* sub_selector = selector_list.First(); sub_selector;
-       sub_selector = CSSSelectorList::Next(*sub_selector)) {
+  for (const CSSSelector* sub_selector = rule->GetStyleRule()->FirstSelector();
+       sub_selector; sub_selector = CSSSelectorList::Next(*sub_selector)) {
     const CSSSelector* simple_selector = sub_selector;
     while (simple_selector) {
       if (simple_selector->Match() == CSSSelector::kClass)
@@ -547,6 +543,43 @@ bool VerifySupportsText(Document* document, const String& supports_text) {
     return false;
 
   // Supports rule should have exactly one style rule child.
+  CSSRuleSourceDataList& child_source_data = source_data->at(0)->child_rules;
+  rule_count = child_source_data.size();
+  if (rule_count != 1 || !child_source_data.at(0)->HasProperties())
+    return false;
+
+  // Exactly one property should be in style rule.
+  Vector<CSSPropertySourceData>& property_data =
+      child_source_data.at(0)->property_data;
+  unsigned property_count = property_data.size();
+  if (property_count != 1)
+    return false;
+
+  // Check for the property name.
+  if (property_data.at(0).name != bogus_property_name)
+    return false;
+
+  return true;
+}
+
+bool VerifyScopeText(Document* document, const String& scope_text) {
+  DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(
+      ParserContextForDocument(document));
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
+  String text = "@scope " + scope_text + " { div { " + bogus_property_name +
+                ": none; } }";
+  StyleSheetHandler handler(text, document, source_data);
+  CSSParser::ParseSheetForInspector(ParserContextForDocument(document),
+                                    style_sheet, text, handler);
+
+  // Exactly one scope rule should be parsed.
+  unsigned rule_count = source_data->size();
+  if (rule_count != 1 || source_data->at(0)->type != StyleRule::kScope)
+    return false;
+
+  // Scope rule should have exactly one style rule child.
   CSSRuleSourceDataList& child_source_data = source_data->at(0)->child_rules;
   rule_count = child_source_data.size();
   if (rule_count != 1 || !child_source_data.at(0)->HasProperties())
@@ -1338,6 +1371,46 @@ CSSSupportsRule* InspectorStyleSheet::SetSupportsRuleText(
   return supports_rule;
 }
 
+CSSScopeRule* InspectorStyleSheet::SetScopeRuleText(
+    const SourceRange& range,
+    const String& text,
+    SourceRange* new_range,
+    String* old_text,
+    ExceptionState& exception_state) {
+  if (!VerifyScopeText(page_style_sheet_->OwnerDocument(), text)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kSyntaxError,
+        "Selector or scope rule text is not valid.");
+    return nullptr;
+  }
+
+  CSSRuleSourceData* source_data = FindRuleByHeaderRange(range);
+  if (!source_data || !source_data->HasScope()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotFoundError,
+        "Source range didn't match existing source range");
+    return nullptr;
+  }
+
+  CSSRule* rule = RuleForSourceData(source_data);
+  if (!rule || !rule->parentStyleSheet() ||
+      rule->GetType() != CSSRule::kScopeRule) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotFoundError,
+        "Scope source range didn't match existing source range");
+    return nullptr;
+  }
+
+  CSSScopeRule* scope_rule = InspectorCSSAgent::AsCSSScopeRule(rule);
+  scope_rule->SetPreludeText(
+      page_style_sheet_->OwnerDocument()->GetExecutionContext(), text);
+
+  ReplaceText(source_data->rule_header_range, text, new_range, old_text);
+  OnStyleSheetTextChanged();
+
+  return scope_rule;
+}
+
 CSSRuleSourceData* InspectorStyleSheet::RuleSourceDataAfterSourceRange(
     const SourceRange& source_range) {
   DCHECK(source_data_);
@@ -1794,9 +1867,8 @@ InspectorStyleSheet::BuildObjectForSelectorList(CSSStyleRule* rule) {
     selectors = SelectorsFromSource(source_data, text_);
   } else {
     selectors = std::make_unique<protocol::Array<protocol::CSS::Value>>();
-    const CSSSelectorList& selector_list = rule->GetStyleRule()->SelectorList();
-    for (const CSSSelector* selector = selector_list.First(); selector;
-         selector = CSSSelectorList::Next(*selector)) {
+    for (const CSSSelector* selector = rule->GetStyleRule()->FirstSelector();
+         selector; selector = CSSSelectorList::Next(*selector)) {
       selectors->emplace_back(protocol::CSS::Value::create()
                                   .setText(selector->SelectorText())
                                   .build());

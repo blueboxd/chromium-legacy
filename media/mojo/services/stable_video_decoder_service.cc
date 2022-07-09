@@ -28,7 +28,7 @@ StableVideoDecoderService::~StableVideoDecoderService() {
 void StableVideoDecoderService::GetSupportedConfigs(
     GetSupportedConfigsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  dst_video_decoder_remote_->GetSupportedConfigs(std::move(callback));
 }
 
 void StableVideoDecoderService::Construct(
@@ -128,7 +128,13 @@ void StableVideoDecoderService::Reset(ResetCallback callback) {
 void StableVideoDecoderService::ReleaseVideoFrame(
     const base::UnguessableToken& release_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK(video_frame_handle_releaser_remote_.is_bound());
+  // Note: we don't pass a gpu::SyncToken because it's assumed that the client
+  // (the GPU process) has already waited on the SyncToken that comes from the
+  // ultimate client (the renderer process) before calling ReleaseVideoFrame()
+  // on the out-of-process video decoder.
+  video_frame_handle_releaser_remote_->ReleaseVideoFrame(
+      release_token, /*release_sync_token=*/absl::nullopt);
 }
 
 void StableVideoDecoderService::OnVideoFrameDecoded(
@@ -144,7 +150,8 @@ void StableVideoDecoderService::OnVideoFrameDecoded(
 
 void StableVideoDecoderService::OnWaiting(WaitingReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK(stable_video_decoder_client_remote_.is_bound());
+  stable_video_decoder_client_remote_->OnWaiting(reason);
 }
 
 void StableVideoDecoderService::RequestOverlayInfo(
@@ -155,7 +162,8 @@ void StableVideoDecoderService::RequestOverlayInfo(
 
 void StableVideoDecoderService::AddLogRecord(const MediaLogRecord& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK(stable_media_log_remote_.is_bound());
+  stable_media_log_remote_->AddLogRecord(event);
 }
 
 }  // namespace media

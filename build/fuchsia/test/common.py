@@ -14,7 +14,7 @@ from typing import Iterable, List, Optional
 
 DIR_SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
-REPO_ALIAS = 'chromium-test-package-server'
+REPO_ALIAS = 'fuchsia.com'
 SDK_ROOT = os.path.join(DIR_SRC_ROOT, 'third_party', 'fuchsia-sdk', 'sdk')
 
 
@@ -141,6 +141,15 @@ def register_device_args(parser: ArgumentParser) -> None:
                                    '(e.g. [fe80::e1c4:fd22:5ee5:878e]:22222, '
                                    '1.2.3.4, 1.2.3.4:33333). If unspecified, '
                                    'the default target in ffx will be used.'))
+
+
+def register_log_args(parser: ArgumentParser) -> None:
+    """Register commonly used arguments."""
+
+    log_args = parser.add_argument_group('logging', 'logging arguments')
+    log_args.add_argument('--logs-dir',
+                          type=os.path.realpath,
+                          help=('Directory to write logs to.'))
 
 
 def get_component_uri(package: str) -> str:

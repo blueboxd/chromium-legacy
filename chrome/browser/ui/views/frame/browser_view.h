@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
 #include "chrome/browser/ui/user_education/browser_feature_promo_snooze_service.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
@@ -313,6 +314,14 @@ class BrowserView : public BrowserWindow,
   // a Picture in Picture window.
   bool GetIsPictureInPictureType() const;
 
+  // Returns the initial_aspect_ratio parameter from |browser_|'s CreateParams.
+  // Valid only for PictureInPicture browsers.
+  float GetInitialAspectRatio() const;
+
+  // Returns the lock_aspect_ratio parameter from |browser_|'s CreateParams.
+  // Valid only for PictureInPicture browsers.
+  bool GetLockAspectRatio() const;
+
   // Returns true if the top browser controls (a.k.a. top-chrome UIs) are
   // allowed to slide up and down with the gesture scrolls on the current tab's
   // page.
@@ -514,6 +523,12 @@ class BrowserView : public BrowserWindow,
       const std::string& target_language,
       translate::TranslateErrors::Type error_type,
       bool is_user_gesture) override;
+  void ShowPartialTranslateBubble(
+      PartialTranslateBubbleModel::ViewState view_state,
+      const std::string& source_language,
+      const std::string& target_language,
+      const std::u16string& text_selection,
+      translate::TranslateErrors::Type error_type) override;
   void ShowOneClickSigninConfirmation(
       const std::u16string& email,
       base::OnceCallback<void(bool)> confirmed_callback) override;
@@ -726,10 +741,6 @@ class BrowserView : public BrowserWindow,
   // users. This is used to implement improved clobbering logic for the right
   // aligned side panels.
   void RightAlignedSidePanelWasClosed();
-
-  bool IsSideSearchPanelVisible() const override;
-  void MaybeRestoreSideSearchStatePerWindow(
-      const std::map<std::string, std::string>& extra_data) override;
 
  private:
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate

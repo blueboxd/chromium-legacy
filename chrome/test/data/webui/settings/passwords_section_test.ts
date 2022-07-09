@@ -222,6 +222,7 @@ async function openPasswordEditDialogHelper(
   // Close the dialog, verify that the list item password remains hidden.
   // Note that the password only gets hidden in the on-close handler, thus we
   // need to await this event first.
+  passwordManager.setChangeSavedPasswordResponse({deviceId: 1});
   passwordEditDialog.$.actionButton.click();
   await eventToPromise('close', passwordEditDialog);
 
@@ -273,6 +274,7 @@ suite('PasswordsSection', function() {
     PasswordManagerImpl.setInstance(passwordManager);
     elementFactory = new PasswordSectionElementFactory(document);
     loadTimeData.overrideValues({
+      enableAutomaticPasswordChangeInSettings: false,
       enablePasswordViewPage: false,
       unifiedPasswordManagerEnabled: false,
     });
@@ -649,7 +651,7 @@ suite('PasswordsSection', function() {
     firstNode.$.moreActionsButton.click();
     passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
 
-    const id = await passwordManager.whenCalled('removeSavedPassword');
+    const {id} = await passwordManager.whenCalled('removeSavedPassword');
     // Verify that the expected value was passed to the proxy.
     assertEquals(firstPassword.id, id);
     assertEquals(
@@ -973,12 +975,12 @@ suite('PasswordsSection', function() {
     // called on |passwordManager| and continues recursively until no more items
     // exist.
     function removeNextRecursive(): Promise<void> {
-      passwordManager.resetResolver('removeExceptions');
+      passwordManager.resetResolver('removeException');
       clickRemoveButton();
-      return passwordManager.whenCalled('removeExceptions').then(ids => {
+      return passwordManager.whenCalled('removeException').then(id => {
         // Verify that the event matches the expected value.
         assertTrue(item < exceptionList.length);
-        assertDeepEquals(ids, [exceptionList[item]!.id]);
+        assertEquals(id, exceptionList[item]!.id);
 
         if (++item < exceptionList.length) {
           return removeNextRecursive();
@@ -998,7 +1000,7 @@ suite('PasswordsSection', function() {
     const deviceCopy =
         createPasswordEntry({frontendId: 42, id: 0, fromAccountStore: false});
     const accountCopy =
-        createPasswordEntry({frontendId: 42, id: 1, fromAccountStore: true});
+        createPasswordEntry({frontendId: 42, id: 0, fromAccountStore: true});
 
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, [], [deviceCopy, accountCopy]);
@@ -1007,10 +1009,9 @@ suite('PasswordsSection', function() {
         getDomRepeatChildren(passwordsSection.$.passwordExceptionsList);
     mergedEntry!.querySelector<HTMLElement>('#removeExceptionButton')!.click();
 
-    // Verify both ids get passed to the proxy.
-    const ids = await passwordManager.whenCalled('removeExceptions');
-    assertTrue(ids.includes(deviceCopy.id));
-    assertTrue(ids.includes(accountCopy.id));
+    // Verify id is passed to the proxy.
+    const id = await passwordManager.whenCalled('removeException');
+    assertEquals(deviceCopy.id, id);
   });
 
   test('showSavedPasswordListItem', async function() {
@@ -1436,7 +1437,7 @@ suite('PasswordsSection', function() {
       const accountCopy =
           createPasswordEntry({frontendId: 42, id: 0, fromAccountStore: true});
       const deviceCopy =
-          createPasswordEntry({frontendId: 42, id: 1, fromAccountStore: false});
+          createPasswordEntry({frontendId: 42, id: 0, fromAccountStore: false});
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, [accountCopy, deviceCopy], []);
 
@@ -1462,10 +1463,12 @@ suite('PasswordsSection', function() {
           removeDialog.$.removeFromAccountCheckbox.checked &&
           removeDialog.$.removeFromDeviceCheckbox.checked);
       removeDialog.$.removeButton.click();
-      const removedIds =
-          await passwordManager.whenCalled('removeSavedPasswords');
-      assertTrue(removedIds.includes(accountCopy.id));
-      assertTrue(removedIds.includes(deviceCopy.id));
+      const {id, fromStores} =
+          await passwordManager.whenCalled('removeSavedPassword');
+      assertEquals(accountCopy.id, id);
+      assertEquals(
+          chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT,
+          fromStores);
     });
 
     // Test verifies that if the user attempts to remove a password stored
@@ -1475,7 +1478,7 @@ suite('PasswordsSection', function() {
       const accountCopy =
           createPasswordEntry({frontendId: 42, id: 0, fromAccountStore: true});
       const deviceCopy =
-          createPasswordEntry({frontendId: 42, id: 1, fromAccountStore: false});
+          createPasswordEntry({frontendId: 42, id: 0, fromAccountStore: false});
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, [accountCopy, deviceCopy], []);
 
@@ -1503,9 +1506,10 @@ suite('PasswordsSection', function() {
           !removeDialog.$.removeFromAccountCheckbox.checked &&
           removeDialog.$.removeFromDeviceCheckbox.checked);
       removeDialog.$.removeButton.click();
-      const removedIds =
-          await passwordManager.whenCalled('removeSavedPasswords');
-      assertTrue(removedIds.includes(deviceCopy.id));
+      const {id, fromStores} =
+          await passwordManager.whenCalled('removeSavedPassword');
+      assertEquals(deviceCopy.id, id);
+      assertEquals(chrome.passwordsPrivate.PasswordStoreSet.DEVICE, fromStores);
     });
   }
 
@@ -1800,28 +1804,17 @@ suite('PasswordsSection', function() {
     assertEquals(TrustSafetyInteraction.OPENED_PASSWORD_MANAGER, interaction);
   });
 
-  test(
-      'addPasswordButtonShownOnlyWhenAddingPasswordsFeatureEnabled',
-      function() {
-        loadTimeData.overrideValues({addPasswordsInSettingsEnabled: false});
-        const passwordsSectionAddPasswordsDisabled =
-            elementFactory.createPasswordsSection(passwordManager, [], []);
-        assertFalse(
-            !!passwordsSectionAddPasswordsDisabled.shadowRoot!.querySelector(
-                '#addPasswordButton'));
-
-        loadTimeData.overrideValues({addPasswordsInSettingsEnabled: true});
-        const passwordsSectionAddPasswordsEnabled =
-            elementFactory.createPasswordsSection(passwordManager, [], []);
-        assertTrue(
-            !!passwordsSectionAddPasswordsEnabled.shadowRoot!.querySelector(
-                '#addPasswordButton'));
-      });
+  test('passwordScriptsRefreshedOnOpen', async function() {
+    loadTimeData.overrideValues(
+        {enableAutomaticPasswordChangeInSettings: true});
+    elementFactory.createPasswordsSection(passwordManager, [], []);
+    Router.getInstance().navigateTo(routes.PASSWORDS);
+    await passwordManager.whenCalled('refreshScriptsIfNecessary');
+  });
 
   test(
       'addPasswordButtonShownOnlyWhenPasswordManagerNotDisabledByPolicy',
       function() {
-        loadTimeData.overrideValues({addPasswordsInSettingsEnabled: true});
         const passwordsSection =
             elementFactory.createPasswordsSection(passwordManager, [], []);
         const addButton =
@@ -1841,7 +1834,6 @@ suite('PasswordsSection', function() {
       });
 
   test('addPasswordButtonOpensAddPasswordDialog', function() {
-    loadTimeData.overrideValues({addPasswordsInSettingsEnabled: true});
     const passwordsSection =
         elementFactory.createPasswordsSection(passwordManager, [], []);
     assertFalse(!!passwordsSection.shadowRoot!.querySelector<HTMLElement>(

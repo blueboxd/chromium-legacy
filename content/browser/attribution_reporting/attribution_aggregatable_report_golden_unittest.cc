@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/base_paths.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -31,6 +33,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
@@ -58,7 +61,8 @@ base::Value ParseJsonFromFile(const base::FilePath& file) {
 
 // See
 // //content/test/data/attribution_reporting/aggregatable_report_goldens/README.md.
-class AttributionAggregatableReportGoldenTest : public testing::Test {
+class AttributionAggregatableReportGoldenLatestVersionTest
+    : public testing::Test {
  public:
   void SetUp() override {
     base::PathService::Get(content::DIR_TEST_DATA, &input_dir_);
@@ -298,7 +302,8 @@ class AttributionAggregatableReportGoldenTest : public testing::Test {
   bssl::ScopedEVP_HPKE_KEY full_hpke_key_;
 };
 
-TEST_F(AttributionAggregatableReportGoldenTest, VerifyGoldenReport) {
+TEST_F(AttributionAggregatableReportGoldenLatestVersionTest,
+       VerifyGoldenReport) {
   struct {
     AttributionReport report;
     base::StringPiece report_file;
@@ -318,6 +323,72 @@ TEST_F(AttributionAggregatableReportGoldenTest, VerifyGoldenReport) {
                .BuildAggregatableAttribution(),
        .report_file = "report_1.json",
        .cleartext_payloads_file = "report_1_cleartext_payloads.json"},
+      {.report =
+           ReportBuilder(
+               AttributionInfoBuilder(
+                   SourceBuilder(base::Time::FromJavaTime(1234483200000))
+                       .BuildStored())
+                   .Build())
+               .SetAggregatableHistogramContributions(
+                   {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
+               .SetReportTime(base::Time::FromJavaTime(1234486400000))
+               .BuildAggregatableAttribution(),
+       .report_file = "report_2.json",
+       .cleartext_payloads_file = "report_2_cleartext_payloads.json"},
+      {.report =
+           ReportBuilder(
+               AttributionInfoBuilder(
+                   SourceBuilder(base::Time::FromJavaTime(1234483300000))
+                       .SetDebugKey(123)
+                       .BuildStored())
+                   .SetDebugKey(456)
+                   .Build())
+               .SetAggregatableHistogramContributions(
+                   {AggregatableHistogramContribution(/*key=*/1, /*value=*/2),
+                    AggregatableHistogramContribution(/*key=*/3, /*value=*/4)})
+               .SetReportTime(base::Time::FromJavaTime(1234486500000))
+               .BuildAggregatableAttribution(),
+       .report_file = "report_3.json",
+       .cleartext_payloads_file = "report_3_cleartext_payloads.json"},
+      {.report =
+           ReportBuilder(
+               AttributionInfoBuilder(
+                   SourceBuilder(base::Time::FromJavaTime(1234483300000))
+                       .BuildStored())
+                   .Build())
+               .SetAggregatableHistogramContributions(
+                   {AggregatableHistogramContribution(/*key=*/1, /*value=*/2),
+                    AggregatableHistogramContribution(/*key=*/3, /*value=*/4)})
+               .SetReportTime(base::Time::FromJavaTime(1234486500000))
+               .BuildAggregatableAttribution(),
+       .report_file = "report_4.json",
+       .cleartext_payloads_file = "report_4_cleartext_payloads.json"},
+      {.report = ReportBuilder(
+                     AttributionInfoBuilder(
+                         SourceBuilder(base::Time::FromJavaTime(1234483400000))
+                             .SetDebugKey(123)
+                             .BuildStored())
+                         .SetDebugKey(456)
+                         .Build())
+                     .SetAggregatableHistogramContributions(
+                         {AggregatableHistogramContribution(
+                             /*key=*/absl::Uint128Max(), /*value=*/1000)})
+                     .SetReportTime(base::Time::FromJavaTime(1234486600000))
+                     .BuildAggregatableAttribution(),
+       .report_file = "report_5.json",
+       .cleartext_payloads_file = "report_5_cleartext_payloads.json"},
+      {.report = ReportBuilder(
+                     AttributionInfoBuilder(
+                         SourceBuilder(base::Time::FromJavaTime(1234483400000))
+                             .BuildStored())
+                         .Build())
+                     .SetAggregatableHistogramContributions(
+                         {AggregatableHistogramContribution(
+                             /*key=*/absl::Uint128Max(), /*value=*/1000)})
+                     .SetReportTime(base::Time::FromJavaTime(1234486600000))
+                     .BuildAggregatableAttribution(),
+       .report_file = "report_6.json",
+       .cleartext_payloads_file = "report_6_cleartext_payloads.json"},
   };
 
   for (auto& test_case : kTestCases) {
@@ -326,9 +397,73 @@ TEST_F(AttributionAggregatableReportGoldenTest, VerifyGoldenReport) {
   }
 }
 
-// TODO(crbug.com/1320712): Consider adding tests which old versions are
-// properly labeled/stored, for example ensuring the directory name matches the
-// report version.
+std::vector<base::FilePath> GetLegacyVersions() {
+  base::FilePath input_dir;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &input_dir);
+  input_dir = input_dir.AppendASCII(
+      "content/test/data/attribution_reporting/aggregatable_report_goldens");
+
+  std::vector<base::FilePath> input_paths;
+
+  base::FileEnumerator e(input_dir, /*recursive=*/false,
+                         base::FileEnumerator::DIRECTORIES);
+
+  for (base::FilePath name = e.Next(); !name.empty(); name = e.Next()) {
+    if (name.BaseName() == base::FilePath(FILE_PATH_LITERAL("latest")))
+      continue;
+
+    input_paths.push_back(std::move(name));
+  }
+
+  return input_paths;
+}
+
+// Verifies that legacy versions are properly labeled/stored. Note that there
+// is an implicit requirement that "version" is located in the "shared_info"
+// field in the report.
+class AttributionAggregatableReportGoldenLegacyVersionTest
+    : public ::testing::TestWithParam<base::FilePath> {};
+
+TEST_P(AttributionAggregatableReportGoldenLegacyVersionTest,
+       HasExpectedVersion) {
+  static constexpr base::StringPiece prefix = "version_";
+
+  base::FilePath dir = GetParam();
+
+  std::string base_name = dir.BaseName().MaybeAsASCII();
+  ASSERT_TRUE(base::StartsWith(base_name, prefix));
+
+  std::string expected_version = base_name.substr(prefix.size());
+
+  base::FileEnumerator e(dir, /*recursive=*/false, base::FileEnumerator::FILES,
+                         FILE_PATH_LITERAL("*.json"));
+
+  for (base::FilePath name = e.Next(); !name.empty(); name = e.Next()) {
+    base::Value value = ParseJsonFromFile(name);
+    if (!value.is_dict())
+      continue;
+
+    const base::Value::Dict& dict = value.GetDict();
+    if (const std::string* shared_info = dict.FindString("shared_info")) {
+      base::Value shared_info_value = base::test::ParseJson(*shared_info);
+      EXPECT_TRUE(shared_info_value.is_dict()) << name;
+      if (!shared_info_value.is_dict())
+        continue;
+
+      const std::string* version =
+          shared_info_value.GetDict().FindString("version");
+      EXPECT_TRUE(version) << name;
+      if (!version)
+        continue;
+
+      EXPECT_EQ(*version, expected_version) << name;
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         AttributionAggregatableReportGoldenLegacyVersionTest,
+                         ::testing::ValuesIn(GetLegacyVersions()));
 
 }  // namespace
 }  // namespace content

@@ -74,6 +74,31 @@ if (is_android) {
     proto_path = "."
     sources = [ "proto/price_tracking.proto" ]
   }
+
+  proto_library("merchant_signal_db_proto") {
+    proto_in_dir = "//"
+    sources = [ "proto/merchant_signal_db_content.proto" ]
+  }
+
+  proto_library("commerce_subscription_db_content_proto") {
+    proto_in_dir = "//"
+    sources = [ "proto/commerce_subscription_db_content.proto" ]
+  }
+} else {
+  proto_library("cart_db_content_proto") {
+    proto_in_dir = "//"
+    sources = [ "proto/cart_db_content.proto" ]
+  }
+
+  proto_library("coupon_db_content_proto") {
+    proto_in_dir = "//"
+    sources = [ "proto/coupon_db_content.proto" ]
+  }
+}
+
+proto_library("persisted_state_db_content_proto") {
+  proto_in_dir = "//"
+  sources = [ "proto/persisted_state_db_content.proto" ]
 }
 
 source_set("commerce_heuristics_data") {
@@ -135,6 +160,7 @@ static_library("shopping_service") {
     ":feature_list",
     ":metrics",
     ":proto",
+    ":subscriptions",
     "//base",
     "//components/bookmarks/browser",
     "//components/keyed_service/core",
@@ -163,21 +189,17 @@ if (is_android) {
   }
 }
 
-source_set("shopping_service_unit_tests") {
+source_set("shopping_service_test_support") {
   testonly = true
 
   sources = [
-    "pdp_metrics_unittest.cc",
     "shopping_service_test_base.cc",
     "shopping_service_test_base.h",
-    "shopping_service_unittest.cc",
   ]
 
   deps = [
     ":feature_list",
-    ":metrics",
     ":shopping_service",
-    "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/commerce/core:proto",
@@ -186,5 +208,41 @@ source_set("shopping_service_unit_tests") {
     "//components/prefs:test_support",
     "//testing/gtest",
     "//url:url",
+  ]
+}
+
+source_set("shopping_service_unit_tests") {
+  testonly = true
+
+  sources = [
+    "pdp_metrics_unittest.cc",
+    "shopping_service_unittest.cc",
+  ]
+
+  deps = [
+    ":feature_list",
+    ":metrics",
+    ":shopping_service",
+    ":shopping_service_test_support",
+    "//base/test:test_support",
+    "//components/commerce/core:proto",
+    "//components/optimization_guide/core",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+    "//testing/gtest",
+    "//url:url",
+  ]
+}
+
+source_set("subscriptions") {
+  sources = [
+    "subscriptions/commerce_subscription.cc",
+    "subscriptions/commerce_subscription.h",
+    "subscriptions/subscriptions_manager.cc",
+    "subscriptions/subscriptions_manager.h",
+  ]
+
+  deps = [
+    ":feature_list",
+    "//base",
   ]
 }

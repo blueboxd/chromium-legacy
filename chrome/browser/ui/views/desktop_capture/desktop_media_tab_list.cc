@@ -55,9 +55,9 @@ class TabListModel : public ui::TableModel,
       base::RepeatingCallback<void(size_t)> preview_updated_callback);
 
   // ui::TableModel:
-  int RowCount() override;
-  std::u16string GetText(int row, int column) override;
-  ui::ImageModel GetIcon(int row) override;
+  size_t RowCount() override;
+  std::u16string GetText(size_t row, int column) override;
+  ui::ImageModel GetIcon(size_t row) override;
   void SetObserver(ui::TableModelObserver* observer) override;
 
   // DesktopMediaListController::SourceListListener:
@@ -85,17 +85,17 @@ TabListModel::TabListModel(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-int TabListModel::RowCount() {
+size_t TabListModel::RowCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return base::checked_cast<int>(controller_->GetSourceCount());
+  return controller_->GetSourceCount();
 }
 
-std::u16string TabListModel::GetText(int row, int column) {
+std::u16string TabListModel::GetText(size_t row, int column) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return controller_->GetSource(row).name;
 }
 
-ui::ImageModel TabListModel::GetIcon(int row) {
+ui::ImageModel TabListModel::GetIcon(size_t row) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return ui::ImageModel::FromImageSkia(controller_->GetSource(row).thumbnail);
 }
@@ -305,10 +305,10 @@ void DesktopMediaTabList::OnThemeChanged() {
 
 absl::optional<content::DesktopMediaID> DesktopMediaTabList::GetSelection() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  int row = list_->GetFirstSelectedRow();
-  if (row == -1)
+  absl::optional<size_t> row = list_->GetFirstSelectedRow();
+  if (!row.has_value())
     return absl::nullopt;
-  return controller_->GetSource(row).id;
+  return controller_->GetSource(row.value()).id;
 }
 
 DesktopMediaListController::SourceListListener*
@@ -328,13 +328,13 @@ void DesktopMediaTabList::ClearPreview() {
 void DesktopMediaTabList::OnSelectionChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const int row = list_->GetFirstSelectedRow();
-  if (row == -1) {
+  absl::optional<size_t> row = list_->GetFirstSelectedRow();
+  if (!row.has_value()) {
     ClearPreview();
     controller_->SetPreviewedSource(absl::nullopt);
     return;
   }
-  const DesktopMediaList::Source& source = controller_->GetSource(row);
+  const DesktopMediaList::Source& source = controller_->GetSource(row.value());
 
   const std::u16string truncated_title =
       source.name.substr(0, kMaxPreviewTitleLength);
@@ -342,7 +342,7 @@ void DesktopMediaTabList::OnSelectionChanged() {
 
   // Trigger a preview update to either show a previous snapshot for this source
   // if we have one, or clear it if we don't.
-  OnPreviewUpdated(base::checked_cast<size_t>(row));
+  OnPreviewUpdated(row.value());
 
   // Update the source for which previews are generated.
   controller_->SetPreviewedSource(source.id);
@@ -364,7 +364,7 @@ void DesktopMediaTabList::ClearPreviewImageIfUnchanged(
 
 void DesktopMediaTabList::OnPreviewUpdated(size_t index) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (base::checked_cast<int>(index) != list_->GetFirstSelectedRow()) {
+  if (index != list_->GetFirstSelectedRow()) {
     return;
   }
 

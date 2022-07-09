@@ -938,6 +938,23 @@ void LocalFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
           style_change_reason::kInheritedStyleChangeFromParentFrame));
 }
 
+bool LocalFrame::BubbleLogicalScrollInParentFrame(
+    mojom::blink::ScrollDirection direction,
+    ui::ScrollGranularity granularity) {
+  bool is_embedded_main_frame = IsMainFrame() && !IsOutermostMainFrame();
+  if (is_embedded_main_frame || IsA<RemoteFrame>(Parent())) {
+    GetLocalFrameHostRemote().BubbleLogicalScrollInParentFrame(direction,
+                                                               granularity);
+    return false;
+  } else if (auto* local_parent = DynamicTo<LocalFrame>(Parent())) {
+    return local_parent->BubbleLogicalScrollFromChildFrame(direction,
+                                                           granularity, this);
+  }
+
+  DCHECK(IsOutermostMainFrame());
+  return false;
+}
+
 bool LocalFrame::BubbleLogicalScrollFromChildFrame(
     mojom::blink::ScrollDirection direction,
     ui::ScrollGranularity granularity,
@@ -1284,18 +1301,6 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
       StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
   if (View())
     View()->SetNeedsLayout();
-}
-
-void LocalFrame::DeviceScaleFactorChanged() {
-  GetDocument()->MediaQueryAffectingValueChanged(MediaValueChange::kOther);
-  GetDocument()->GetStyleEngine().MarkViewportStyleDirty();
-  GetDocument()->GetStyleEngine().MarkAllElementsForStyleRecalc(
-      StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
-  for (Frame* child = Tree().FirstChild(); child;
-       child = child->Tree().NextSibling()) {
-    if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
-      child_local_frame->DeviceScaleFactorChanged();
-  }
 }
 
 void LocalFrame::MediaQueryAffectingValueChangedForLocalSubtree(

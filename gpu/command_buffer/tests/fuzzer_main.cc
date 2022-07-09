@@ -27,7 +27,6 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
@@ -408,9 +407,8 @@ class CommandBufferSetup {
     shared_image_factory_ = std::make_unique<SharedImageFactory>(
         gpu_preferences_, config_.workarounds, gpu_feature_info,
         context_state_.get(), &mailbox_manager_, shared_image_manager_.get(),
-        nullptr /* image_factory */, nullptr /* memory_tracker */,
-        false /* enable_wrapped_sk_image */,
-        false /* is_for_display_compositor */);
+        /*image_factory=*/nullptr, /*memory_tracker=*/nullptr,
+        /*is_for_display_compositor=*/false);
     for (uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
          usage <= SHARED_IMAGE_USAGE_RGB_EMULATION; usage <<= 1) {
       Mailbox::Name name;
@@ -447,7 +445,7 @@ class CommandBufferSetup {
     scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
         gpu_preferences_, true, &mailbox_manager_, nullptr /* memory_tracker */,
         &translator_cache_, &completeness_cache_, decoder_feature_info,
-        config_.attrib_helper.bind_generates_resource, &image_manager_,
+        config_.attrib_helper.bind_generates_resource,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
         gpu_feature_info, discardable_manager_.get(),
         passthrough_discardable_manager_.get(), shared_image_manager_.get());
@@ -631,7 +629,6 @@ class CommandBufferSetup {
   gles2::MailboxManagerImpl mailbox_manager_;
   gles2::TraceOutputter outputter_;
   scoped_refptr<gl::GLShareGroup> share_group_;
-  gles2::ImageManager image_manager_;
   std::unique_ptr<ServiceDiscardableManager> discardable_manager_;
   std::unique_ptr<PassthroughDiscardableManager>
       passthrough_discardable_manager_;

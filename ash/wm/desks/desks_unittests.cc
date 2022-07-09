@@ -2138,13 +2138,12 @@ PrefService* GetPrimaryUserPrefService() {
 // given list of |desks_names|.
 void VerifyDesksRestoreData(PrefService* user_prefs,
                             const std::vector<std::string>& desks_names) {
-  const base::Value* desks_restore_names =
-      user_prefs->GetList(prefs::kDesksNamesList);
-  ASSERT_EQ(desks_names.size(),
-            desks_restore_names->GetListDeprecated().size());
+  const base::Value::List& desks_restore_names =
+      user_prefs->GetValueList(prefs::kDesksNamesList);
+  ASSERT_EQ(desks_names.size(), desks_restore_names.size());
 
   size_t index = 0;
-  for (const auto& value : desks_restore_names->GetListDeprecated())
+  for (const auto& value : desks_restore_names)
     EXPECT_EQ(desks_names[index++], value.GetString());
 }
 
@@ -4271,8 +4270,7 @@ class PerDeskShelfTest : public AshTestBase,
   // given |window| is equal to the given |expected_visibility|.
   void VerifyViewVisibility(aura::Window* window,
                             bool expected_visibility) const {
-    const int index = GetShelfItemIndexForWindow(window);
-    EXPECT_GE(index, 0);
+    const size_t index = GetShelfItemIndexForWindow(window);
     auto* shelf_view = GetShelfView();
     auto* view_model = shelf_view->view_model();
 
@@ -4894,7 +4892,7 @@ TEST_F(DesksTest, FocusedMiniViewIsVisible) {
   ASSERT_EQ(mini_views.size(), desks_util::kMaxNumberOfDesks);
   // Traverse all the desks mini views from left to right.
   for (size_t i = 0; i < desks_util::kMaxNumberOfDesks; i++) {
-    // Move the focus to mini view.
+    // Move the focus to the mini view's associated preview view.
     SendKey(ui::VKEY_TAB);
     EXPECT_TRUE(
         DesksTestApi::GetDesksBarScrollView()->GetVisibleRect().Contains(
@@ -4905,7 +4903,7 @@ TEST_F(DesksTest, FocusedMiniViewIsVisible) {
 
   // Traverse from all the desk mini views from right to left.
   for (size_t i = desks_util::kMaxNumberOfDesks - 1; i > 0; i--) {
-    // Move the focus from desk name view to the associated mini view.
+    // Move the focus from desk name view to the associated preview view.
     SendKey(ui::VKEY_LEFT);
     // Move the focus to previous mini view's name view.
     SendKey(ui::VKEY_LEFT);
@@ -5524,7 +5522,7 @@ TEST_F(DesksTest, ReorderDesksByKeyboard) {
   // Highlight the second desk.
   overview_controller->overview_session()
       ->highlight_controller()
-      ->MoveHighlightToView(mini_view_1);
+      ->MoveHighlightToView(mini_view_1->desk_preview());
 
   // Swap the positions of the second desk and the third desk by pressing Ctrl +
   // ->.
@@ -5641,7 +5639,7 @@ TEST_F(DesksTest, ReorderDesksInRTLMode) {
   // Highlight the |desk_0|.
   overview_controller->overview_session()
       ->highlight_controller()
-      ->MoveHighlightToView(mini_view_0);
+      ->MoveHighlightToView(mini_view_0->desk_preview());
 
   // Swap the positions of the |desk_0| and the |desk_2| by pressing Ctrl + <-.
   event_generator->PressKey(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
@@ -7502,7 +7500,7 @@ TEST_F(DesksCloseAllTest, ShortcutCloseAll) {
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
-  ASSERT_EQ(mini_view,
+  ASSERT_EQ(mini_view->desk_preview(),
             overview_session->highlight_controller()->highlighted_view());
 
   // Tests that after hitting Ctrl + Shift + W, the desk is destroyed along with
@@ -7923,7 +7921,7 @@ TEST_F(DesksCloseAllTest, CanUndoDeskClosureThroughKeyboardNavigation) {
 
   // Tab to the first mini view and perform close-all on it.
   SendKey(ui::VKEY_TAB);
-  ASSERT_EQ(GetPrimaryRootDesksBarView()->mini_views()[0],
+  ASSERT_EQ(GetPrimaryRootDesksBarView()->mini_views()[0]->desk_preview(),
             Shell::Get()
                 ->overview_controller()
                 ->overview_session()

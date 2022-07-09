@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "net/base/net_errors.h"
@@ -180,7 +181,7 @@ class ProxyConfigServiceMac::Helper
   friend class base::RefCountedThreadSafe<Helper>;
   ~Helper() = default;
 
-  ProxyConfigServiceMac* parent_;
+  raw_ptr<ProxyConfigServiceMac> parent_;
 };
 
 void ProxyConfigServiceMac::Forwarder::SetDynamicStoreNotificationKeys(
@@ -197,7 +198,7 @@ ProxyConfigServiceMac::ProxyConfigServiceMac(
     const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : forwarder_(this),
-      helper_(new Helper(this)),
+      helper_(base::MakeRefCounted<Helper>(this)),
       sequenced_task_runner_(sequenced_task_runner),
       traffic_annotation_(traffic_annotation) {
   DCHECK(sequenced_task_runner_.get());

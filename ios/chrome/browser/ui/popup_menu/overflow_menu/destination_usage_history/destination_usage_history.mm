@@ -30,6 +30,10 @@ constexpr int kRecencyWindow = 7;  // days (inclusive)
 // places.
 constexpr double kDampening = 1.1;
 
+// kInitialBufferNumClicks represents the minimum number of clicks a destination
+// must have before the user notices a visible change in the carousel sort.
+constexpr int kInitialBufferNumClicks = 3;  // clicks
+
 // The dictionary key used for storing rankings.
 const std::string kRankingKey = "ranking";
 
@@ -52,8 +56,8 @@ int TodaysDay() {
   return (base::Time::Now() - base::Time::UnixEpoch()).InDays();
 }
 
-// Returns whether |day| is within a valid window of the present day and
-// |window| days ago, inclusive.
+// Returns whether `day` is within a valid window of the present day and
+// `window` days ago, inclusive.
 bool ValidDay(int day, int window) {
   int windowEnd = TodaysDay();
   int windowStart = (windowEnd - window) + 1;
@@ -71,15 +75,15 @@ bool ValidDay(const std::string day, int window) {
   return false;
 }
 
-// Returns the number of clicks stored in |history| for a given |destination|.
+// Returns the number of clicks stored in `history` for a given `destination`.
 int NumClicks(overflow_menu::Destination destination,
               base::Value::Dict& history) {
   return history.FindInt(overflow_menu::StringNameForDestination(destination))
       .value_or(0);
 }
 
-// Destructively sort |ranking| in ascending or descending (indicated by
-// |ascending|) and corresponding number of clicks stored in |flatHistory|.
+// Destructively sort `ranking` in ascending or descending (indicated by
+// `ascending`) and corresponding number of clicks stored in `flatHistory`.
 std::vector<overflow_menu::Destination> SortByUsage(
     const std::vector<overflow_menu::Destination>& ranking,
     base::Value::Dict& flatHistory,
@@ -96,27 +100,27 @@ std::vector<overflow_menu::Destination> SortByUsage(
   return ordered_ranking;
 }
 
-// Returns above-the-fold destination with the lowest usage in |flatHistory|.
+// Returns above-the-fold destination with the lowest usage in `flatHistory`.
 overflow_menu::Destination LowestShown(
     const std::vector<overflow_menu::Destination>& ranking,
     int numVisibleDestinations,
     base::Value::Dict& flatHistory) {
   std::vector<overflow_menu::Destination> shown(
-      ranking.begin(), ranking.begin() + numVisibleDestinations);
+      ranking.begin(), ranking.begin() + (numVisibleDestinations - 1));
   return SortByUsage(shown, flatHistory, true).front();
 }
 
-// Returns below-the-fold destination with the highest usage in |flatHistory|
+// Returns below-the-fold destination with the highest usage in `flatHistory`
 overflow_menu::Destination HighestUnshown(
     const std::vector<overflow_menu::Destination>& ranking,
     int numVisibleDestinations,
     base::Value::Dict& flatHistory) {
   std::vector<overflow_menu::Destination> unshown(
-      ranking.begin() + numVisibleDestinations, ranking.end());
+      ranking.begin() + (numVisibleDestinations - 1), ranking.end());
   return SortByUsage(unshown, flatHistory, false).front();
 }
 
-// Swaps |from| and |to| in |ranking|.
+// Swaps `from` and `to` in `ranking`.
 void Swap(std::vector<overflow_menu::Destination>& ranking,
           overflow_menu::Destination from,
           overflow_menu::Destination to) {
@@ -190,7 +194,7 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
     updatedRankWithCurrentRanking:
         (std::vector<overflow_menu::Destination>&)ranking
          numAboveFoldDestinations:(int)numAboveFoldDestinations {
-  // Delete expired usage data older than |kDataExpirationWindow| days before
+  // Delete expired usage data older than `kDataExpirationWindow` days before
   // running the ranking algorithm.
   [self deleteExpiredData];
 
@@ -225,7 +229,7 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
   return newRanking;
 }
 
-// Track click for |destination| and associate it with TodaysDay().
+// Track click for `destination` and associate it with TodaysDay().
 - (void)trackDestinationClick:(overflow_menu::Destination)destination
      numAboveFoldDestinations:(int)numAboveFoldDestinations {
   DCHECK(self.prefService);
@@ -233,9 +237,10 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
   if (!self.prefService)
     return;
 
-  const base::Value* pref = self.prefService->GetDictionary(
-      prefs::kOverflowMenuDestinationUsageHistory);
-  const base::Value::Dict* history = pref->GetIfDict();
+  const base::Value::Dict* history =
+      self.prefService
+          ->GetDictionary(prefs::kOverflowMenuDestinationUsageHistory)
+          ->GetIfDict();
   const std::string path = base::NumberToString(TodaysDay()) + "." +
                            overflow_menu::StringNameForDestination(destination);
 
@@ -244,6 +249,10 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
   DictionaryPrefUpdate update(self.prefService,
                               prefs::kOverflowMenuDestinationUsageHistory);
   update->SetIntPath(path, numClicks);
+
+  // User's very first time using Smart Sorting.
+  if (history->size() == 0)
+    [self injectDefaultNumClicksForAllDestinations];
 
   // Calculate new ranking and store to prefs; Calculate the new ranking
   // ahead of time so overflow menu presentation needn't run ranking algorithm
@@ -257,7 +266,31 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 
 #pragma mark - Private
 
-// Delete expired usage data (data older than |kDataExpirationWindow| days) and
+// Injects a default number of clicks for all destinations in the history
+// dictonary.
+- (void)injectDefaultNumClicksForAllDestinations {
+  DCHECK_GT(kDampening, 1.0);
+  DCHECK_GT(kInitialBufferNumClicks, 1);
+
+  int defaultNumClicks =
+      (kInitialBufferNumClicks - 1) * (kDampening - 1.0) * 100.0;
+  std::string today = base::NumberToString(TodaysDay());
+  DictionaryPrefUpdate update(self.prefService,
+                              prefs::kOverflowMenuDestinationUsageHistory);
+  const base::Value::Dict* history =
+      self.prefService
+          ->GetDictionary(prefs::kOverflowMenuDestinationUsageHistory)
+          ->GetIfDict();
+
+  for (overflow_menu::Destination destination : kDefaultRanking) {
+    const std::string path =
+        today + "." + overflow_menu::StringNameForDestination(destination);
+    update->SetIntPath(path, history->FindIntByDottedPath(path).value_or(0) +
+                                 defaultNumClicks);
+  }
+}
+
+// Delete expired usage data (data older than `kDataExpirationWindow` days) and
 // saves back to prefs. Returns true if expired usage data was found/removed,
 // false otherwise.
 - (void)deleteExpiredData {
@@ -303,7 +336,7 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
                        options:unrankedDestinations];
 }
 
-// Runs the ranking algorithm given a |previousRanking|. If |previousRanking| is
+// Runs the ranking algorithm given a `previousRanking`. If `previousRanking` is
 // invalid or doesn't exist, use the default ranking, based on statistical usage
 // of the old overflow menu.
 - (const base::Value::List)calculateNewRanking:
@@ -326,7 +359,7 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 
 // Returns the flattened destination usage history as a dictionary of the
 // following shape: destinationName (std::string) -> total number of clicks
-// (int). Only usage data within previous |window| days will be included in the
+// (int). Only usage data within previous `window` days will be included in the
 // returned result.
 - (base::Value::Dict)flattenedHistoryWithinWindow:(int)window {
   const base::Value* pref = self.prefService->GetDictionary(
@@ -384,7 +417,7 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 }
 
 // Converts base::Value::List* ranking to
-// NSArray<OverflowMenuDestination*>* ranking given a list, |options|, of
+// NSArray<OverflowMenuDestination*>* ranking given a list, `options`, of
 // OverflowMenuDestination* options.
 - (NSArray<OverflowMenuDestination*>*)
     destinationList:(const base::Value::List*)ranking

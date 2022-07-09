@@ -86,7 +86,8 @@ var availableTests = [
 
   function changeSavedPasswordSucceeds() {
     chrome.passwordsPrivate.changeSavedPassword(
-        [0], {username: 'new_user', password: 'new_pass'}, () => {
+        [0], {username: 'new_user', password: 'new_pass'}, (credentialIds) => {
+          chrome.test.assertEq({deviceId: 0}, credentialIds);
           chrome.test.assertNoLastError();
           chrome.test.succeed();
         });
@@ -94,7 +95,8 @@ var availableTests = [
 
   function changeSavedPasswordWithIncorrectIdFails() {
     chrome.passwordsPrivate.changeSavedPassword(
-        [-1], {username: 'new_user', password: 'new_pass'}, () => {
+        [-1], {username: 'new_user', password: 'new_pass'}, (credentialIds) => {
+          chrome.test.assertEq(undefined, credentialIds);
           chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
           chrome.test.succeed();
         });
@@ -102,7 +104,9 @@ var availableTests = [
 
   function changeSavedPasswordWithOneIncorrectIdFromArrayFails() {
     chrome.passwordsPrivate.changeSavedPassword(
-        [0, -1], {username: 'new_user', password: 'new_pass'}, () => {
+        [0, -1], {username: 'new_user', password: 'new_pass'},
+        (credentialIds) => {
+          chrome.test.assertEq(undefined, credentialIds);
           chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
           chrome.test.succeed();
         });
@@ -110,7 +114,8 @@ var availableTests = [
 
   function changeSavedPasswordWithEmptyPasswordFails() {
     chrome.passwordsPrivate.changeSavedPassword(
-        [0], {username: 'new_user', password: ''}, () => {
+        [0], {username: 'new_user', password: ''}, (credentialIds) => {
+          chrome.test.assertEq(undefined, credentialIds);
           chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
           chrome.test.succeed();
         });
@@ -118,7 +123,8 @@ var availableTests = [
 
   function changeSavedPasswordWithEmptyArrayIdFails() {
     chrome.passwordsPrivate.changeSavedPassword(
-        [], {username: 'new_user', password: ''}, () => {
+        [], {username: 'new_user', password: ''}, (credentialIds) => {
+          chrome.test.assertEq(undefined, credentialIds);
           chrome.test.assertLastError(ERROR_MESSAGE_FOR_CHANGE_PASSWORD);
           chrome.test.succeed();
         });
@@ -127,7 +133,8 @@ var availableTests = [
   function changeSavedPasswordWithNoteSucceeds() {
     chrome.passwordsPrivate.changeSavedPassword(
         [0], {username: 'new_user', password: 'new_pass', note: 'some note'},
-        () => {
+        (credentialIds) => {
+          chrome.test.assertEq({deviceId: 0}, credentialIds);
           chrome.test.assertNoLastError();
           chrome.test.succeed();
         });
@@ -141,37 +148,10 @@ var availableTests = [
 
       if (numCalls == 1) {
         numSavedPasswords = savedPasswordsList.length;
-        chrome.passwordsPrivate.removeSavedPassword(savedPasswordsList[0].id);
+        chrome.passwordsPrivate.removeSavedPassword(savedPasswordsList[0].id,
+            chrome.passwordsPrivate.PasswordStoreSet.DEVICE);
       } else if (numCalls == 2) {
         chrome.test.assertEq(savedPasswordsList.length, numSavedPasswords - 1);
-        chrome.passwordsPrivate.undoRemoveSavedPasswordOrException();
-      } else if (numCalls == 3) {
-        chrome.test.assertEq(savedPasswordsList.length, numSavedPasswords);
-        chrome.test.succeed();
-      } else {
-        chrome.test.fail();
-      }
-    };
-
-    chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(callback);
-    chrome.passwordsPrivate.getSavedPasswordList(callback);
-  },
-
-  function removeAndUndoRemoveSavedPasswordsBatch() {
-    var numCalls = 0;
-    var numSavedPasswords;
-
-    var callback = function(savedPasswordsList) {
-      numCalls++;
-
-      if (numCalls == 1) {
-        numSavedPasswords = savedPasswordsList.length;
-        // There should be at least two passwords for this test to make sense.
-        chrome.test.assertTrue(numSavedPasswords >= 2);
-        chrome.passwordsPrivate.removeSavedPasswords(
-            Array(savedPasswordsList[0].id, savedPasswordsList[1].id));
-      } else if (numCalls == 2) {
-        chrome.test.assertEq(savedPasswordsList.length, numSavedPasswords - 2);
         chrome.passwordsPrivate.undoRemoveSavedPasswordOrException();
       } else if (numCalls == 3) {
         chrome.test.assertEq(savedPasswordsList.length, numSavedPasswords);
@@ -198,36 +178,6 @@ var availableTests = [
       } else if (numCalls == 2) {
         chrome.test.assertEq(
             passwordExceptionsList.length, numPasswordExceptions - 1);
-        chrome.passwordsPrivate.undoRemoveSavedPasswordOrException();
-      } else if (numCalls == 3) {
-        chrome.test.assertEq(
-            passwordExceptionsList.length, numPasswordExceptions);
-        chrome.test.succeed();
-      } else {
-        chrome.test.fail();
-      }
-    };
-
-    chrome.passwordsPrivate.onPasswordExceptionsListChanged.addListener(
-        callback);
-    chrome.passwordsPrivate.getPasswordExceptionList(callback);
-  },
-
-  function removeAndUndoRemovePasswordExceptionsBatch() {
-    var numCalls = 0;
-    var numPasswordExceptions;
-    var callback = function(passwordExceptionsList) {
-      numCalls++;
-
-      if (numCalls == 1) {
-        numPasswordExceptions = passwordExceptionsList.length;
-        // There should be at least two exceptions for this test to make sense.
-        chrome.test.assertTrue(numPasswordExceptions >= 2);
-        chrome.passwordsPrivate.removePasswordExceptions(
-            Array(passwordExceptionsList[0].id, passwordExceptionsList[1].id));
-      } else if (numCalls == 2) {
-        chrome.test.assertEq(
-            passwordExceptionsList.length, numPasswordExceptions - 2);
         chrome.passwordsPrivate.undoRemoveSavedPasswordOrException();
       } else if (numCalls == 3) {
         chrome.test.assertEq(
@@ -432,6 +382,7 @@ var availableTests = [
       formattedOrigin: 'example.com',
       detailedOrigin: 'https://example.com',
       isAndroidCredential: false,
+      hasStartableScript: false,
       signonRealm: 'https://example.com',
       username: 'alice',
       compromisedInfo: {
@@ -456,6 +407,7 @@ var availableTests = [
       formattedOrigin: 'example.com',
       detailedOrigin: 'https://example.com',
       isAndroidCredential: false,
+      hasStartableScript: false,
       signonRealm: 'https://example.com',
       username: 'alice',
       compromisedInfo: {
@@ -483,6 +435,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromisedInfo: {
@@ -507,6 +460,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromisedInfo: {
@@ -531,6 +485,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromisedInfo: {
@@ -553,6 +508,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromisedInfo: {
@@ -578,6 +534,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromisedInfo: {
@@ -601,6 +558,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromisedInfo: {
@@ -624,6 +582,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromisedInfo: {
@@ -649,6 +608,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromisedInfo: {
@@ -672,6 +632,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           compromisedInfo: {
@@ -697,6 +658,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           changePasswordUrl: 'https://example.com/.well-known/change-password',
@@ -720,6 +682,7 @@ var availableTests = [
           formattedOrigin: 'example.com',
           detailedOrigin: 'https://example.com',
           isAndroidCredential: false,
+          hasStartableScript: false,
           signonRealm: 'https://example.com',
           username: 'alice',
           changePasswordUrl: 'https://example.com/.well-known/change-password',
@@ -743,6 +706,7 @@ var availableTests = [
           formattedOrigin: 'App (com.example.app)',
           detailedOrigin: 'com.example.app',
           isAndroidCredential: true,
+          hasStartableScript: false,
           signonRealm: '',
           username: 'alice',
           compromisedInfo: {
@@ -756,6 +720,13 @@ var availableTests = [
           chrome.test.assertNoLastError();
           chrome.test.succeed();
         });
+  },
+
+  function refreshScriptsIfNecessary() {
+    chrome.passwordsPrivate.refreshScriptsIfNecessary(() => {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
   },
 
   function startPasswordCheck() {
@@ -787,6 +758,55 @@ var availableTests = [
       chrome.test.assertEq('5 mins ago', status.elapsedTimeSinceLastCheck);
       chrome.test.succeed();
     });
+  },
+
+  function startAutomatedPasswordChange() {
+    chrome.passwordsPrivate.startAutomatedPasswordChange(
+      {
+        id: 0,
+        formattedOrigin: 'example.com',
+        detailedOrigin: 'https://example.com',
+        isAndroidCredential: false,
+        hasStartableScript: true,
+        signonRealm: 'https://example.com',
+        username: 'alice',
+        changePasswordUrl: 'https://example.com/.well-known/change-password',
+        compromisedInfo: {
+          compromiseTime: COMPROMISE_TIME,
+          elapsedTimeSinceCompromise: '3 days ago',
+          compromiseType: 'LEAKED',
+          isMuted: false,
+        },
+      },
+      (status) => {
+        chrome.test.assertNoLastError();
+        chrome.test.assertEq(true, status);
+        chrome.test.succeed();
+      });
+  },
+
+  function startAutomatedPasswordChangeWithEmptyUrl() {
+    chrome.passwordsPrivate.startAutomatedPasswordChange(
+      {
+        id: 0,
+        formattedOrigin: 'example.com',
+        detailedOrigin: 'https://example.com',
+        isAndroidCredential: false,
+        hasStartableScript: true,
+        signonRealm: 'https://example.com',
+        username: 'alice',
+        compromisedInfo: {
+          compromiseTime: COMPROMISE_TIME,
+          elapsedTimeSinceCompromise: '3 days ago',
+          compromiseType: 'LEAKED',
+          isMuted: false,
+        },
+      },
+      (status) => {
+        chrome.test.assertNoLastError();
+        chrome.test.assertEq(false, status);
+        chrome.test.succeed();
+      });
   },
 
   function movePasswordsToAccount() {

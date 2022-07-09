@@ -91,7 +91,7 @@ class SharedImageBackingOzone::SharedImageRepresentationOverlayOzone
   ~SharedImageRepresentationOverlayOzone() override = default;
 
  private:
-  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences) override {
+  bool BeginReadAccess(gfx::GpuFenceHandle& acquire_fence) override {
     auto* ozone_backing = static_cast<SharedImageBackingOzone*>(backing());
     std::vector<gfx::GpuFenceHandle> fences;
     bool need_end_fence;
@@ -99,8 +99,9 @@ class SharedImageBackingOzone::SharedImageRepresentationOverlayOzone
                                &fences, need_end_fence);
     // Always need an end fence when finish reading from overlays.
     DCHECK(need_end_fence);
-    for (auto& fence : fences) {
-      acquire_fences->emplace_back(std::move(fence));
+    if (!fences.empty()) {
+      DCHECK(fences.size() == 1);
+      acquire_fence = std::move(fences.front());
     }
     return true;
   }
@@ -130,6 +131,10 @@ class SharedImageBackingOzone::SharedImageRepresentationOverlayOzone
 
 SharedImageBackingOzone::~SharedImageBackingOzone() = default;
 
+SharedImageBackingType SharedImageBackingOzone::GetType() const {
+  return SharedImageBackingType::kOzone;
+}
+
 void SharedImageBackingOzone::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   if (shared_memory_wrapper_.IsValid()) {
     DCHECK(!in_fence);
@@ -141,6 +146,8 @@ void SharedImageBackingOzone::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
                      context_state_.get(), format(), size(), alpha_type())) {
       DLOG(ERROR) << "Failed to write pixels.";
     }
+  } else if (in_fence) {
+    external_write_fence_ = in_fence->GetGpuFenceHandle().Clone();
   }
 }
 
@@ -390,22 +397,25 @@ bool SharedImageBackingOzone::BeginAccess(
     AccessStream access_stream,
     std::vector<gfx::GpuFenceHandle>* fences,
     bool& need_end_fence) {
-  if (is_write_in_progress_) {
-    DLOG(ERROR) << "Unable to begin read or write access because another write "
-                   "access is in progress";
-    return false;
-  }
+  // Track reads and writes if not being used for concurrent read/writes.
+  if (!(usage() & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
+    if (is_write_in_progress_) {
+      DLOG(ERROR) << "Unable to begin read or write access because another "
+                     "write access is in progress";
+      return false;
+    }
 
-  if (reads_in_progress_ && !readonly) {
-    DLOG(ERROR)
-        << "Unable to begin write access because a read access is in progress";
-    return false;
-  }
+    if (reads_in_progress_ && !readonly) {
+      DLOG(ERROR) << "Unable to begin write access because a read access is in "
+                     "progress ";
+      return false;
+    }
 
-  if (readonly) {
-    ++reads_in_progress_;
-  } else {
-    is_write_in_progress_ = true;
+    if (readonly) {
+      ++reads_in_progress_;
+    } else {
+      is_write_in_progress_ = true;
+    }
   }
 
   // We don't wait for read-after-read.
@@ -421,12 +431,25 @@ bool SharedImageBackingOzone::BeginAccess(
     read_fences_.clear();
   }
 
-  // If current stream is different than last_write_stream_ then wait on that
-  // stream's write_fence_ (except on ARM Mali boards for ChromeOS).
+  // Always wait on an `external_write_fence_` if present.
+  if (!external_write_fence_.is_null()) {
+    DCHECK(write_fence_.is_null());  // `write_fence_` should be null.
+    // For write access we expect new `write_fence_` so we can move the
+    // old fence here.
+    if (!readonly)
+      fences->emplace_back(std::move(external_write_fence_));
+    else
+      fences->emplace_back(external_write_fence_.Clone());
+  }
+
+  // If current stream is different than `last_write_stream_` then wait on that
+  // stream's `write_fence_` (except on ARM Mali boards for ChromeOS).
   if (!write_fence_.is_null() && (workarounds_.add_fence_for_same_gl_context ||
                                   last_write_stream_ != access_stream)) {
-    // For write access we expect new write_fence_ so we can move the old fence
-    // here.
+    DCHECK(external_write_fence_
+               .is_null());  // `external_write_fence_` should be null.
+    // For write access we expect new `write_fence_` so we can move the old
+    // fence here.
     if (!readonly)
       fences->emplace_back(std::move(write_fence_));
     else
@@ -470,12 +493,15 @@ bool SharedImageBackingOzone::BeginAccess(
 void SharedImageBackingOzone::EndAccess(bool readonly,
                                         AccessStream access_stream,
                                         gfx::GpuFenceHandle fence) {
-  if (readonly) {
-    DCHECK_GT(reads_in_progress_, 0u);
-    --reads_in_progress_;
-  } else {
-    DCHECK(is_write_in_progress_);
-    is_write_in_progress_ = false;
+  // Track reads and writes if not being used for concurrent read/writes.
+  if (!(usage() & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
+    if (readonly) {
+      DCHECK_GT(reads_in_progress_, 0u);
+      --reads_in_progress_;
+    } else {
+      DCHECK(is_write_in_progress_);
+      is_write_in_progress_ = false;
+    }
   }
 
   if (readonly) {

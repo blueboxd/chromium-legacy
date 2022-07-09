@@ -94,7 +94,6 @@
 #include "services/network/public/mojom/ip_address_space.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
@@ -768,7 +767,8 @@ class URLLoaderTest : public testing::Test {
   // the response body before URLLoader is complete, so URLLoader completion
   // won't block on trying to write the body buffer.
   [[nodiscard]] int LoadRequest(const ResourceRequest& request,
-                                std::string* body = nullptr) {
+                                std::string* body = nullptr,
+                                bool is_trusted = true) {
     uint32_t options = mojom::kURLLoadOptionNone;
     if (send_ssl_with_response_)
       options |= mojom::kURLLoadOptionSendSSLInfoWithResponse;
@@ -803,7 +803,7 @@ class URLLoaderTest : public testing::Test {
     context().mutable_factory_params().isolation_info =
         net::IsolationInfo::CreateForInternalRequest(
             url::Origin::Create(request.url));
-    context().mutable_factory_params().is_trusted = true;
+    context().mutable_factory_params().is_trusted = is_trusted;
 
     url_loader = std::make_unique<URLLoader>(
         context(), DeleteLoaderCallback(&delete_run_loop, &url_loader),
@@ -5959,244 +5959,6 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
   }
 }
 
-class MockOriginPolicyManager : public mojom::OriginPolicyManager {
- public:
-  void RetrieveOriginPolicy(const url::Origin& origin,
-                            const net::IsolationInfo& isolation_info,
-                            const absl::optional<std::string>& header,
-                            RetrieveOriginPolicyCallback callback) override {
-    retrieve_origin_policy_called_ = true;
-    isolation_info_ = isolation_info;
-    header_ = header;
-    OriginPolicy result;
-    result.state = OriginPolicyState::kLoaded;
-    result.policy_url = origin.GetURL();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
-  }
-
-  void AddExceptionFor(const url::Origin& origin) override {}
-
-  const net::IsolationInfo& isolation_info() const { return isolation_info_; }
-  const absl::optional<std::string>& header() const { return header_; }
-  bool retrieve_origin_policy_called() const {
-    return retrieve_origin_policy_called_;
-  }
-
- private:
-  net::IsolationInfo isolation_info_;
-  absl::optional<std::string> header_ = absl::nullopt;
-  bool retrieve_origin_policy_called_ = false;
-};
-
-TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
-  net::EmbeddedTestServer server;
-  server.RegisterRequestHandler(base::BindRepeating(
-      [](const net::test_server::HttpRequest& request)
-          -> std::unique_ptr<net::test_server::HttpResponse> {
-        std::unique_ptr<net::test_server::BasicHttpResponse> response =
-            std::make_unique<net::test_server::BasicHttpResponse>();
-        if (request.relative_url == "/with_policy")
-          response->AddCustomHeader("Origin-Policy", "allowed=(\"policy-1\")");
-        return response;
-      }));
-  ASSERT_TRUE(server.Start());
-
-  url::Origin test_server_origin = url::Origin::Create(server.base_url());
-
-  // A request that has "obey_origin_policy" set will call the origin policy
-  // manager with the correct value of the "Sec-Origin-Policy" header from the
-  // response.
-  {
-    MockOriginPolicyManager mock_origin_policy_manager;
-    context().set_origin_policy_manager(&mock_origin_policy_manager);
-    ResourceRequest request =
-        CreateResourceRequest("GET", server.GetURL("/with_policy"));
-    // This is what the IsolationInfo for a main frame will normally look like.
-    request.trusted_params->isolation_info = net::IsolationInfo::Create(
-        net::IsolationInfo::RequestType::kMainFrame,
-        test_server_origin /* top_frame_origin */,
-        test_server_origin /* frame_origin */,
-        net::SiteForCookies::FromOrigin(test_server_origin));
-    request.site_for_cookies =
-        request.trusted_params->isolation_info.site_for_cookies();
-    request.obey_origin_policy = true;
-
-    base::RunLoop delete_run_loop;
-    mojo::PendingRemote<mojom::URLLoader> loader;
-    std::unique_ptr<URLLoader> url_loader;
-    TestURLLoaderClient loader_client;
-    context().mutable_factory_params().process_id = mojom::kBrowserProcessId;
-
-    url_loader = std::make_unique<URLLoader>(
-        context(), DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        loader.InitWithNewPipeAndPassReceiver(), 0, request,
-        loader_client.CreateRemote(), nullptr /* sync_url_loader_client */,
-        TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* request_id */,
-        0 /* keepalive_request_size */, nullptr,
-        nullptr /* trust_token_helper */,
-        mojo::NullRemote() /* cookie_observer */,
-        mojo::NullRemote() /* url_loader_network_observer */,
-        /*devtools_observer=*/mojo::NullRemote(),
-        /*accept_ch_frame_observer=*/mojo::NullRemote(),
-        /*third_party_cookies_enabled=*/true);
-
-    loader_client.RunUntilComplete();
-    delete_run_loop.Run();
-
-    EXPECT_TRUE(mock_origin_policy_manager.header().has_value());
-    EXPECT_EQ("allowed=(\"policy-1\")",
-              mock_origin_policy_manager.header().value());
-    EXPECT_TRUE(mock_origin_policy_manager.retrieve_origin_policy_called());
-    EXPECT_TRUE(loader_client.response_head()->origin_policy.has_value());
-    EXPECT_EQ(OriginPolicyState::kLoaded,
-              loader_client.response_head()->origin_policy.value().state);
-    EXPECT_EQ(server.base_url(),
-              loader_client.response_head()->origin_policy.value().policy_url);
-
-    // Check IsolationInfo sent to the OriginPolicyManager. Both origins should
-    // be the same as the |isolation_info| field of
-    // ResourceRequest::trusted_params, but the RequestType should be
-    // kOther, and the SiteForCookies should be null.
-    EXPECT_TRUE(
-        net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
-                                   test_server_origin /* top_frame_origin */,
-                                   test_server_origin /* frame_origin */,
-                                   net::SiteForCookies())
-            .IsEqualForTesting(mock_origin_policy_manager.isolation_info()));
-  }
-
-  // If the "Sec-Origin-Policy" header is not present in the response, still
-  // call the origin policy manager with an empty header value.
-  {
-    MockOriginPolicyManager mock_origin_policy_manager;
-    context().set_origin_policy_manager(&mock_origin_policy_manager);
-    ResourceRequest request =
-        CreateResourceRequest("GET", server.GetURL("/without_policy"));
-    request.obey_origin_policy = true;
-
-    base::RunLoop delete_run_loop;
-    mojo::PendingRemote<mojom::URLLoader> loader;
-    std::unique_ptr<URLLoader> url_loader;
-    TestURLLoaderClient loader_client;
-    context().mutable_factory_params().process_id = mojom::kBrowserProcessId;
-
-    url_loader = std::make_unique<URLLoader>(
-        context(), DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        loader.InitWithNewPipeAndPassReceiver(), 0, request,
-        loader_client.CreateRemote(), nullptr /* sync_url_loader_client */,
-        TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* request_id */,
-        0 /* keepalive_request_size */, nullptr,
-        nullptr /* trust_token_helper */,
-        mojo::NullRemote() /* cookie_observer */,
-        mojo::NullRemote() /* url_loader_network_observer */,
-        /*devtools_observer=*/mojo::NullRemote(),
-        /*accept_ch_frame_observer=*/mojo::NullRemote(),
-        /*third_party_cookies_enabled=*/true);
-
-    loader_client.RunUntilComplete();
-    delete_run_loop.Run();
-
-    EXPECT_FALSE(mock_origin_policy_manager.header().has_value());
-    EXPECT_TRUE(mock_origin_policy_manager.retrieve_origin_policy_called());
-    EXPECT_TRUE(loader_client.response_head()->origin_policy.has_value());
-    EXPECT_EQ(OriginPolicyState::kLoaded,
-              loader_client.response_head()->origin_policy.value().state);
-    EXPECT_EQ(server.base_url(),
-              loader_client.response_head()->origin_policy.value().policy_url);
-  }
-
-  // If "obey_origin_policy" is not set, don't call the origin policy manager
-  // regardless of the presence of the "Sec-Origin-Policy" header.
-  {
-    MockOriginPolicyManager mock_origin_policy_manager;
-    context().set_origin_policy_manager(&mock_origin_policy_manager);
-    ResourceRequest request =
-        CreateResourceRequest("GET", server.GetURL("/with_policy"));
-    request.obey_origin_policy = false;
-
-    base::RunLoop delete_run_loop;
-    mojo::PendingRemote<mojom::URLLoader> loader;
-    std::unique_ptr<URLLoader> url_loader;
-    TestURLLoaderClient loader_client;
-    context().mutable_factory_params().process_id = mojom::kBrowserProcessId;
-
-    url_loader = std::make_unique<URLLoader>(
-        context(), DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        loader.InitWithNewPipeAndPassReceiver(), 0, request,
-        loader_client.CreateRemote(), nullptr /* sync_url_loader_client */,
-        TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* request_id */,
-        0 /* keepalive_request_size */, nullptr,
-        nullptr /* trust_token_helper */,
-        mojo::NullRemote() /* cookie_observer */,
-        mojo::NullRemote() /* url_loader_network_observer */,
-        /*devtools_observer=*/mojo::NullRemote(),
-        /*accept_ch_frame_observer=*/mojo::NullRemote(),
-        /*third_party_cookies_enabled=*/true);
-
-    loader_client.RunUntilResponseBodyArrived();
-    delete_run_loop.Run();
-
-    EXPECT_FALSE(mock_origin_policy_manager.retrieve_origin_policy_called());
-    EXPECT_FALSE(loader_client.response_head()->origin_policy.has_value());
-  }
-
-  // Check the case where OriginPolicy is fetched for a cross-site subframe -
-  // only difference is the IsolationInfo passed in has two different origins
-  // and a null SiteForCookies..
-  {
-    url::Origin top_frame_origin =
-        url::Origin::Create(GURL("http://top-frame.test/"));
-
-    MockOriginPolicyManager mock_origin_policy_manager;
-    context().set_origin_policy_manager(&mock_origin_policy_manager);
-    ResourceRequest request =
-        CreateResourceRequest("GET", server.GetURL("/with_policy"));
-    // IsolationInfo used for the ResourceRequest. This is what the
-    // IsolationInfo for a cross-origin subframe will normally look like.
-    request.trusted_params->isolation_info = net::IsolationInfo::Create(
-        net::IsolationInfo::RequestType::kSubFrame, top_frame_origin,
-        test_server_origin /* frame_origin */, net::SiteForCookies());
-    request.site_for_cookies =
-        request.trusted_params->isolation_info.site_for_cookies();
-    request.obey_origin_policy = true;
-
-    base::RunLoop delete_run_loop;
-    mojo::PendingRemote<mojom::URLLoader> loader;
-    std::unique_ptr<URLLoader> url_loader;
-    TestURLLoaderClient loader_client;
-    context().mutable_factory_params().process_id = mojom::kBrowserProcessId;
-
-    url_loader = std::make_unique<URLLoader>(
-        context(), DeleteLoaderCallback(&delete_run_loop, &url_loader),
-        loader.InitWithNewPipeAndPassReceiver(), 0, request,
-        loader_client.CreateRemote(), nullptr /* sync_url_loader_client */,
-        TRAFFIC_ANNOTATION_FOR_TESTS, 0 /* request_id */,
-        0 /* keepalive_request_size */, nullptr,
-        nullptr /* trust_token_helper */,
-        mojo::NullRemote() /* cookie_observer */,
-        mojo::NullRemote() /* url_loader_network_observer */,
-        /*devtools_observer=*/mojo::NullRemote(),
-        /*accept_ch_frame_observer=*/mojo::NullRemote(),
-        /*third_party_cookies_enabled=*/true);
-
-    loader_client.RunUntilComplete();
-    delete_run_loop.Run();
-
-    EXPECT_TRUE(mock_origin_policy_manager.retrieve_origin_policy_called());
-
-    // Check IsolationInfo sent to the OriginPolicyManager. Both origins should
-    // be the same as the |isolation_info| field of
-    // ResourceRequest::trusted_params, but the RequestType should be
-    // kOther, and the SiteForCookies should be null.
-    EXPECT_TRUE(
-        net::IsolationInfo::Create(
-            net::IsolationInfo::RequestType::kOther, top_frame_origin,
-            test_server_origin /* frame_origin */, net::SiteForCookies())
-            .IsEqualForTesting(mock_origin_policy_manager.isolation_info()));
-  }
-}
-
 namespace {
 
 enum class SyncOrAsync { kSync, kAsync };
@@ -7014,6 +6776,87 @@ TEST_F(URLLoaderMockSocketTest, CorpClosesSocket) {
 
   // Socket should have been destroyed, so it will not be reused.
   EXPECT_FALSE(socket_data.socket());
+}
+
+TEST_F(URLLoaderMockSocketTest,
+       FetchAuctionOnlySignalsFromRendererClosesSocket) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kAllow;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  const net::MockWrite kWrites[] = {
+      net::MockWrite(net::SYNCHRONOUS, 0,
+                     "GET / HTTP/1.1\r\n"
+                     "Host: origin.test\r\n"
+                     "Connection: keep-alive\r\n"
+                     "User-Agent: \r\n"
+                     "Accept-Encoding: gzip, deflate\r\n\r\n"),
+  };
+  net::MockRead kReads[] = {
+      net::MockRead(net::SYNCHRONOUS, 1,
+                    "HTTP/1.1 200 OK\r\n"
+                    "Connection: keep-alive\r\n"
+                    "X-FLEDGE-Auction-Only: true\r\n"
+                    "Content-Type: text/plain\r\n"
+                    "Content-Length: 23\r\n\r\n"),
+      net::MockRead(net::SYNCHRONOUS, 2, "This should not be read"),
+  };
+
+  net::SequencedSocketData socket_data(kReads, kWrites);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  GURL url("http://origin.test/");
+  url::Origin initiator = url::Origin::Create(url);
+
+  ResourceRequest request = CreateResourceRequest("GET", url);
+  request.mode = mojom::RequestMode::kNoCors;
+  request.request_initiator = initiator;
+
+  EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE, LoadRequest(request, /*body=*/nullptr,
+                                                      /*is_trusted=*/false));
+
+  // Socket should have been destroyed, so it will not be reused.
+  EXPECT_FALSE(socket_data.socket());
+}
+
+TEST_F(URLLoaderMockSocketTest,
+       FetchAuctionOnlySignalsFromBrowserProcessSucceeds) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kAllow;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  const net::MockWrite kWrites[] = {
+      net::MockWrite(net::SYNCHRONOUS, 0,
+                     "GET / HTTP/1.1\r\n"
+                     "Host: origin.test\r\n"
+                     "Connection: keep-alive\r\n"
+                     "User-Agent: \r\n"
+                     "Accept-Encoding: gzip, deflate\r\n\r\n"),
+  };
+  net::MockRead kReads[] = {
+      net::MockRead(net::SYNCHRONOUS, 1,
+                    "HTTP/1.1 200 OK\r\n"
+                    "Connection: keep-alive\r\n"
+                    "X-FLEDGE-Auction-Only: true\r\n"
+                    "Content-Type: text/plain\r\n"
+                    "Content-Length: 23\r\n\r\n"),
+      net::MockRead(net::SYNCHRONOUS, 2, "This should not be read"),
+  };
+
+  net::SequencedSocketData socket_data(kReads, kWrites);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  GURL url("http://origin.test/");
+  url::Origin initiator = url::Origin::Create(url);
+
+  ResourceRequest request = CreateResourceRequest("GET", url);
+  request.mode = mojom::RequestMode::kNoCors;
+  request.request_initiator = initiator;
+  EXPECT_EQ(net::OK,
+            LoadRequest(request, /*body=*/nullptr, /*is_trusted=*/true));
+  EXPECT_TRUE(socket_data.socket());
 }
 
 TEST_F(URLLoaderMockSocketTest, PrivateNetworkRequestPolicyDoesNotCloseSocket) {

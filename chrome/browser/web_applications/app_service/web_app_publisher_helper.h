@@ -36,7 +36,6 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/permission.h"
-#include "components/services/app_service/public/cpp/run_on_os_login_types.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
@@ -246,8 +245,8 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       blink::mojom::DisplayMode display_mode);
 
   // Converts RunOnOsLoginMode from apps::mojom::RunOnOsLoginMode to
-  // web_app::RunOnOsLoginMode.
-  web_app::RunOnOsLoginMode ConvertOsLoginModeToWebAppConstants(
+  // RunOnOsLoginMode.
+  RunOnOsLoginMode ConvertOsLoginModeToWebAppConstants(
       apps::mojom::RunOnOsLoginMode login_mode);
 
   void PublishWindowModeUpdate(const std::string& app_id,
@@ -447,7 +446,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   apps::AppNotifications app_notifications_;
 
-  badging::BadgeManager* badge_manager_ = nullptr;
+  raw_ptr<badging::BadgeManager> badge_manager_ = nullptr;
 
   base::ScopedObservation<MediaCaptureDevicesDispatcher,
                           MediaCaptureDevicesDispatcher::Observer>

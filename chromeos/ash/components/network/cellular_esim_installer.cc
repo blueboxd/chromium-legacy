@@ -9,11 +9,11 @@
 #include "base/time/time.h"
 #include "chromeos/ash/components/network/cellular_connection_handler.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
+#include "chromeos/ash/components/network/hermes_metrics_util.h"
+#include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/dbus/hermes/hermes_profile_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/network/hermes_metrics_util.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -201,8 +201,7 @@ void CellularESimInstaller::OnProfileInstallResult(
 
   bool is_managed = IsManagedNetwork(new_shill_properties);
   if (status != HermesResponseStatus::kSuccess) {
-    NET_LOG(ERROR) << "Error Installing profile status="
-                   << static_cast<int>(status);
+    NET_LOG(ERROR) << "Error Installing profile status=" << status;
     RecordInstallESimProfileResult(
         InstallESimProfileResult::kHermesInstallFailed, is_managed,
         is_initial_install, is_install_via_qr_code);

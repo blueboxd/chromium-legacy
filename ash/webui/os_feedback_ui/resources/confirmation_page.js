@@ -70,9 +70,8 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
    * @protected
    */
   getTitle_() {
-    // TODO(xiangdongkong): Localize the strings.
     if (this.isOffline_()) {
-      return 'You are offline now. Feedback will be sent later.';
+      return this.i18n('confirmationTitleOffline');
     }
     return this.i18n('confirmationTitleOnline');
   }
@@ -84,13 +83,9 @@ export class ConfirmationPageElement extends ConfirmationPageElementBase {
   getMessage_() {
     // TODO(xiangdongkong): Localize the strings.
     if (this.isOffline_()) {
-      return 'Thanks for the feedback. Your feedback helps improve Chrome OS ' +
-          'and will be reviewed by the Chrome OS team. Because of the number ' +
-          ' of reports submitted, you won’t receive a direct reply. ';
+      return this.i18n('thankYouNoteOffline');
     }
-    return 'Your feedback helps improve ChromeOS and will be reviewed by ' +
-        'our team. Because of the large number of reports, we won\’t be able ' +
-        ' to send a reply.';
+    return this.i18n('thankYouNoteOnline');
   }
 
   /**

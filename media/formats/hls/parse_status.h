@@ -21,6 +21,8 @@ enum class ParseStatusCode : StatusCodeType {
   kFailedToParseDecimalResolution,
   kFailedToParseQuotedString,
   kFailedToParseByteRange,
+  kFailedToParseStableId,
+  kFailedToParseInstreamId,
   kInvalidPlaylistVersion,
   kUnknownPlaylistType,
   kMalformedAttributeList,

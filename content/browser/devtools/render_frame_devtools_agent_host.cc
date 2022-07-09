@@ -155,7 +155,7 @@ bool RenderFrameDevToolsAgentHost::ShouldCreateDevToolsForHost(
 }
 
 // static
-scoped_refptr<DevToolsAgentHost>
+scoped_refptr<RenderFrameDevToolsAgentHost>
 RenderFrameDevToolsAgentHost::CreateForLocalRootOrEmbeddedPageNavigation(
     NavigationRequest* request) {
   // Note that this method does not use FrameTreeNode::current_frame_host(),
@@ -170,8 +170,8 @@ RenderFrameDevToolsAgentHost::CreateForLocalRootOrEmbeddedPageNavigation(
 }
 
 // static
-scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::FindForDangling(
-    FrameTreeNode* frame_tree_node) {
+scoped_refptr<RenderFrameDevToolsAgentHost>
+RenderFrameDevToolsAgentHost::FindForDangling(FrameTreeNode* frame_tree_node) {
   return FindAgentHost(frame_tree_node);
 }
 
@@ -351,7 +351,8 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
       emulation_handler, browser_handler,
       session->GetClient()->AllowUnsafeOperations(),
       session->GetClient()->IsTrusted(),
-      session->GetClient()->GetNavigationInitiatorOrigin());
+      session->GetClient()->GetNavigationInitiatorOrigin(),
+      session->GetClient()->MayReadLocalFiles());
   session->CreateAndAddHandler<protocol::SecurityHandler>();
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
     session->CreateAndAddHandler<protocol::TracingHandler>(GetIOContext());
@@ -717,7 +718,7 @@ std::string RenderFrameDevToolsAgentHost::GetType() {
   if (IsChildFrame())
     return kTypeFrame;
   if (frame_tree_node_ && frame_tree_node_->IsFencedFrameRoot())
-    return kTypePage;
+    return kTypeFrame;
   if (web_contents() &&
       static_cast<WebContentsImpl*>(web_contents())->IsPortal()) {
     return kTypePage;

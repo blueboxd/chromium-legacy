@@ -27,18 +27,6 @@ class MockReadAnythingCoordinatorObserver
   MOCK_METHOD(void, OnCoordinatorDestroyed, (), (override));
 };
 
-class MockReadAnythingModelObserver : public ReadAnythingModel::Observer {
- public:
-  MOCK_METHOD(void,
-              OnFontNameUpdated,
-              (const std::string& new_font_name),
-              (override));
-  MOCK_METHOD(void,
-              OnContentUpdated,
-              (const std::vector<ContentNodePtr>& content),
-              (override));
-};
-
 class ReadAnythingCoordinatorTest : public TestWithBrowserView {
  public:
   void SetUp() override {
@@ -80,7 +68,6 @@ class ReadAnythingCoordinatorTest : public TestWithBrowserView {
   raw_ptr<ReadAnythingCoordinator> read_anything_coordinator_ = nullptr;
 
   MockReadAnythingCoordinatorObserver coordinator_observer_;
-  MockReadAnythingModelObserver model_observer_;
 };
 
 TEST_F(ReadAnythingCoordinatorTest, ModelAndControllerPersist) {
@@ -108,18 +95,6 @@ TEST_F(ReadAnythingCoordinatorTest, ContainerViewsAreUnique) {
 TEST_F(ReadAnythingCoordinatorTest, OnCoordinatorDestroyedCalled) {
   AddObserver(&coordinator_observer_);
   EXPECT_CALL(coordinator_observer_, OnCoordinatorDestroyed()).Times(1);
-}
-
-TEST_F(ReadAnythingCoordinatorTest, ModelObserversReceiveNotifications) {
-  GetModel()->AddObserver(&model_observer_);
-
-  EXPECT_CALL(model_observer_, OnFontNameUpdated(_)).Times(1);
-  EXPECT_CALL(model_observer_, OnContentUpdated(_)).Times(1);
-
-  GetModel()->SetSelectedFontIndex(3);
-  GetModel()->SetContent(std::vector<ContentNodePtr>());
-
-  GetModel()->RemoveObserver(&model_observer_);
 }
 
 TEST_F(ReadAnythingCoordinatorTest, ActivatesAndDeactivatesController) {

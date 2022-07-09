@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangûl romaja</translation>
 <translation id="112387589102719461">Anglais (É.-U.) avec clavier Dvorak pour développeurs</translation>
 <translation id="1134697384939541955">Anglais (É.-U.) avec clavier étendu</translation>
+<translation id="1138691154716715755">Plus tôt ce mois-ci</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> trouvées.
     <ph name="LINE_BREAK1" />
     Espace de stockage local disponible insuffisant. <ph name="FILE_SIZE" /> supplémentaires sont nécessaires.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, puissance du signal <ph name="SIGNAL_STRENGTH" /> %, bloqué par votre administrateur, détails</translation>
 <translation id="2142680004883808240">Russe avec clavier phonétique YaZHert</translation>
 <translation id="2143778271340628265">Configuration manuelle du mandataire</translation>
+<translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2163152940313951844">Caractère incorrect : <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portugais avec clavier international américain (PC)</translation>
 <translation id="2198315389084035571">Chinois simplifié</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Passer à l'affichage sous forme de liste</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> dossiers partagés avec Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fichiers sélectionnés</translation>
+<translation id="2387120140441437063">Impossible d'ouvrir les fichiers dans la corbeille. Veuillez restaurer les fichiers avant de les ouvrir.</translation>
 <translation id="2387458720915042159">Type de connexion de mandataire</translation>
 <translation id="2389832672041313158">Birman (Myanmar)</translation>
 <translation id="2392369802118427583">Activer</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Le contenu de ce dossier est en lecture seule. Certaines activités ne sont pas prises en charge.</translation>
 <translation id="2542049655219295786">Tableau Google</translation>
 <translation id="2544853746127077729">Certificat d'authentification rejeté par le réseau</translation>
-<translation id="2547921442987553570">Ajouter à <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">États-Unis international</translation>
 <translation id="2563185590376525700">Grenouille</translation>
 <translation id="2578394532502990878">Tamoul (phonétique)</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">Chinois (Dayi)</translation>
 <translation id="3057861065630527966">Sauvegarder vos photos et vidéos</translation>
 <translation id="3067790092342515856">Fichiers Windows</translation>
-<translation id="3078461028045006476">Partager avec <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
 <translation id="3085752524577180175">Hôte SOCKS</translation>
 <translation id="3104793765551262433">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, puissance du signal <ph name="SIGNAL_STRENGTH" /> %, bloqué par votre administrateur, détails</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Retour</translation>
 <translation id="3855472144336161447">Allemand (Neo 2)</translation>
 <translation id="3858860766373142691">Nom</translation>
-<translation id="386548886866354912">Archiver avec <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3899991606604168269">Français (Canada) avec clavier multilingue</translation>
 <translation id="3901991538546252627">Connexion à <ph name="NAME" /> en cours...</translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Télécharger le profil cellulaire, réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Anglais (R.-U.)</translation>
 <translation id="3975895378829046965">Bangla (phonétique)</translation>
+<translation id="3991446849494482687">Cela désactivera également le paramètre de verrouillage SIM sur l'appareil.</translation>
 <translation id="4002066346123236978">Titre</translation>
 <translation id="4017788180641807848">Anglais (É.-U.) avec clavier Workman</translation>
 <translation id="4040753847560036377">Clé personnelle de déblocage incorrecte</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, puissance du signal : <ph name="SIGNAL_STRENGTH" /> %, géré par votre administrateur, renseignements</translation>
 <translation id="4387004326333427325">Certificat d'authentification rejeté à distance.</translation>
 <translation id="4394214039309501350">Lien externe</translation>
+<translation id="4394980935660306080">Plus tôt cette semaine</translation>
 <translation id="4401287888955153199">Tout extraire</translation>
 <translation id="4410695710508688828">Échec de l'opération d'extraction. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Créer un raccourci vers vos fichiers</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">Ouverture de « <ph name="PATH" /> » en cours…</translation>
 <translation id="4720185134442950733">Réseau de données mobiles</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> photos sauvegardées</translation>
+<translation id="4725096204469550614">Plus tôt cette année</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4737050008115666127">Piste d'atterrissage</translation>
 <translation id="4747271164117300400">Macédonien</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">Déplacement de <ph name="NUMBER_OF_ITEMS" /> éléments vers le dossier <ph name="FOLDER_NAME" /> en cours…</translation>
 <translation id="509429900233858213">Une erreur s'est produite.</translation>
 <translation id="5098629044894065541">Hébreu</translation>
+<translation id="5102922915594634436">Gérer les dossiers synchronisés</translation>
 <translation id="5109254780565519649">Une erreur s'est produite. Il est possible que certains éléments n'aient pas été restaurés.</translation>
 <translation id="5110329002213341433">Anglais (Canada)</translation>
 <translation id="5123433949759960244">Basketball</translation>
@@ -604,7 +608,6 @@
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6170470584681422115">Sandwich</translation>
 <translation id="6187719147498869044">Hongrois</translation>
-<translation id="6189412234224385711">Ouvrir avec <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Modifier le NIP</translation>
 <translation id="6199801702437275229">En attente d'information sur l'espace disponible…</translation>
 <translation id="6205710420833115353">Certaines opérations prennent plus longtemps que prévu. Voulez-vous les annuler?</translation>
@@ -708,6 +711,7 @@
 <translation id="7075931588889865715">Thaï avec clavier TIS 820-2531</translation>
 <translation id="708278670402572152">Déconnecter pour activer la numérisation</translation>
 <translation id="7086590977277044826">Tamoul avec clavier InScript</translation>
+<translation id="7088615885725309056">Plus ancien</translation>
 <translation id="7103992300314999525">Macédonien</translation>
 <translation id="7106346894903675391">Acheter de l'espace de stockage supplémentaire…</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; - &lt;em&gt;rechercher dans Google Disque&lt;/em&gt;</translation>
@@ -772,6 +776,7 @@
 <translation id="7663224033570512922">Hindi</translation>
 <translation id="7693909743393669729">Le formatage d'un disque entraîne la suppression de toutes les données qu'il contient et de toutes ses partitions, y compris les partitions invisibles. Cette action est irréversible.</translation>
 <translation id="7695430100978772476">Impossible de formater <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">Impossible de vider la corbeille.</translation>
 <translation id="770015031906360009">Grec</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> copié.</translation>
 <translation id="7711920809702896782">Renseignements sur le fichier image</translation>
@@ -782,6 +787,7 @@
 <translation id="7760449188139285140">Chinois (Wubi)</translation>
 <translation id="7765158879357617694">Déplacer</translation>
 <translation id="7774365994322694683">Oiseau</translation>
+<translation id="7781829728241885113">Hier</translation>
 <translation id="7788080748068240085">Pour enregistrer le fichier <ph name="FILE_NAME" /> hors connexion, vous devez libérer <ph name="TOTAL_FILE_SIZE" /> d'espace supplémentaire :<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />Annulez l'épinglage des fichiers auxquels vous n'avez plus besoin d'accéder hors connexion.<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />Supprimez les fichiers du dossier « Téléchargements ».<ph name="MARKUP_5" /></translation>

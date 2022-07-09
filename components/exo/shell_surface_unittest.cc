@@ -2371,4 +2371,69 @@ TEST_F(ShellSurfaceTest, PipInitialPosition) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen());
 }
 
+TEST_F(ShellSurfaceTest, PostWindowChangeCallback) {
+  chromeos::WindowStateType state_type = chromeos::WindowStateType::kDefault;
+  auto test_callback = base::BindRepeating(
+      [](chromeos::WindowStateType* state_type, const gfx::Rect&,
+         chromeos::WindowStateType new_type, bool, bool,
+         const gfx::Vector2d&) -> uint32_t {
+        *state_type = new_type;
+        return 0;
+      },
+      &state_type);
+
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({256, 256}).BuildShellSurface();
+
+  shell_surface->set_configure_callback(test_callback);
+
+  auto* state = ash::WindowState::Get(
+      shell_surface->GetWidget()->GetNativeWindow()->GetToplevelWindow());
+
+  // Make sure we are in a non-snapped state before testing state change.
+  ASSERT_FALSE(state->IsSnapped());
+
+  auto snap_event = std::make_unique<ash::WMEvent>(ash::WM_EVENT_SNAP_PRIMARY);
+
+  // Trigger a snap event, this should cause a configure event.
+  state->OnWMEvent(snap_event.get());
+
+  EXPECT_EQ(state_type, chromeos::WindowStateType::kPrimarySnapped);
+}
+
+// A single configuration event should be sent when both the bounds and the
+// window state change.
+TEST_F(ShellSurfaceTest, ConfigureOnlySentOnceForBoundsAndWindowStateChange) {
+  int times_configured = 0;
+  auto test_callback = base::BindRepeating(
+      [](int* times_configured, const gfx::Rect&,
+         chromeos::WindowStateType new_type, bool, bool,
+         const gfx::Vector2d&) -> uint32_t {
+        ++(*times_configured);
+        return 0;
+      },
+      &times_configured);
+
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({1, 1}).BuildShellSurface();
+
+  shell_surface->set_configure_callback(test_callback);
+
+  auto* state = ash::WindowState::Get(
+      shell_surface->GetWidget()->GetNativeWindow()->GetToplevelWindow());
+
+  // Make sure we are in normal mode. Maximizing from this state should result
+  // in BOTH the bounds and state changing.
+  ASSERT_TRUE(state->IsNormalStateType());
+
+  auto maximize_event = std::make_unique<ash::WMEvent>(ash::WM_EVENT_MAXIMIZE);
+
+  // Trigger a snap event, this should cause a configure event.
+  state->OnWMEvent(maximize_event.get());
+
+  // The bounds change event should have been suppressed because the window
+  // state is changing.
+  EXPECT_EQ(times_configured, 1);
+}
+
 }  // namespace exo

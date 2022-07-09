@@ -1306,7 +1306,17 @@ util.isRecentsFilterEnabled = () => {
  * @return {boolean}
  */
 util.isRecentsFilterV2Enabled = () => {
-  return loadTimeData.getBoolean('FILTERS_IN_RECENTS_V2_ENABLED');
+  return loadTimeData.valueExists('FILTERS_IN_RECENTS_V2_ENABLED') &&
+      loadTimeData.getBoolean('FILTERS_IN_RECENTS_V2_ENABLED');
+};
+
+/**
+ * Returns true if FilesTrash feature flag is enabled.
+ * @returns {boolean}
+ */
+util.isTrashEnabled = () => {
+  return loadTimeData.valueExists('FILES_TRASH_ENABLED') &&
+      loadTimeData.getBoolean('FILES_TRASH_ENABLED');
 };
 
 /**
@@ -1367,6 +1377,16 @@ util.isFuseBoxDebugEnabled = () => {
  */
 util.isGuestOsEnabled = () => {
   return loadTimeData.getBoolean('GUEST_OS');
+};
+
+/**
+ * Returns true if DriveFsMirroring flag is enabled.
+ * @return {boolean}
+ */
+util.isMirrorSyncEnabled = () => {
+  return loadTimeData.isInitialized() &&
+      loadTimeData.valueExists('DRIVEFS_MIRRORING') &&
+      loadTimeData.getBoolean('DRIVEFS_MIRRORING');
 };
 
 /**
@@ -1699,11 +1719,27 @@ util.isInGuestMode = async () => {
 };
 
 /**
+ * Get the locale based week start from the load time data.
+ * @returns {number}
+ */
+util.getLocaleBasedWeekStart = () => {
+  return loadTimeData.valueExists('WEEK_START_FROM') ?
+      loadTimeData.getInteger('WEEK_START_FROM') :
+      0;
+};
+
+/**
  * A kind of error that represents user electing to cancel an operation. We use
  * this specialization to differentiate between system errors and errors
  * generated through legitimate user actions.
  */
 class UserCanceledError extends Error {}
 
+/**
+ * Returns whether the given value is null or undefined.
+ * @param {*} value
+ * @returns {boolean}
+ */
+util.isNullOrUndefined = (value) => value === null || value === undefined;
 
 export {util, UserCanceledError};

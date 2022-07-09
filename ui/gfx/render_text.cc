@@ -784,7 +784,7 @@ void RenderText::MoveCursor(BreakType break_type,
 
 bool RenderText::SetSelection(const SelectionModel& model) {
   // Enforce valid selection model components.
-  uint32_t text_length = static_cast<uint32_t>(text().length());
+  size_t text_length = text().length();
   std::vector<Range> ranges = model.GetAllSelections();
   for (auto& range : ranges) {
     range = {std::min(range.start(), text_length),
@@ -810,7 +810,7 @@ bool RenderText::MoveCursorToPoint(const Point& point,
 }
 
 bool RenderText::SelectRange(const Range& range, bool primary) {
-  uint32_t text_length = static_cast<uint32_t>(text().length());
+  size_t text_length = text().length();
   Range sel(std::min(range.start(), text_length),
             std::min(range.end(), text_length));
   // Allow selection bounds at valid indices amid multi-character graphemes.
@@ -1686,7 +1686,6 @@ void RenderText::UpdateDisplayText(float text_width) {
                                static_cast<float>(display_rect_.width()),
                                elide_behavior_));
   } else {
-    bool was_elided = text_elided_;
     text_elided_ = false;
     display_text_.clear();
 
@@ -1711,12 +1710,7 @@ void RenderText::UpdateDisplayText(float text_width) {
                            Elide(text_to_elide, 0,
                                  static_cast<float>(display_rect_.width()),
                                  ELIDE_TAIL));
-      // Have GetLineBreaks() re-calculate.
-      line_breaks_.SetMax(0);
     } else {
-      // If elision changed, re-calculate.
-      if (was_elided)
-        line_breaks_.SetMax(0);
       // Initial state above is fine.
       return;
     }
@@ -1724,26 +1718,6 @@ void RenderText::UpdateDisplayText(float text_width) {
   text_elided_ = display_text_ != layout_text_;
   if (!text_elided_)
     display_text_.clear();
-}
-
-const BreakList<size_t>& RenderText::GetLineBreaks() {
-  if (line_breaks_.max() != 0)
-    return line_breaks_;
-
-  const std::u16string& layout_text = GetDisplayText();
-  const size_t text_length = layout_text.length();
-  line_breaks_.SetValue(0);
-  line_breaks_.SetMax(text_length);
-  base::i18n::BreakIterator iter(layout_text,
-                                 base::i18n::BreakIterator::BREAK_LINE);
-  const bool success = iter.Init();
-  DCHECK(success);
-  if (success) {
-    do {
-      line_breaks_.ApplyValue(iter.pos(), Range(iter.pos(), text_length));
-    } while (iter.Advance());
-  }
-  return line_breaks_;
 }
 
 Point RenderText::ToViewPoint(const PointF& point, size_t line) {
@@ -1945,7 +1919,8 @@ int RenderText::GetLineContainingYCoord(float text_y) {
 bool RenderText::RangeContainsCaret(const Range& range,
                                     size_t caret_pos,
                                     LogicalCursorDirection caret_affinity) {
-  // NB: exploits unsigned wraparound (WG14/N1124 section 6.2.5 paragraph 9).
+  if (caret_pos == 0 && caret_affinity == CURSOR_BACKWARD)
+    return false;
   size_t adjacent = (caret_affinity == CURSOR_BACKWARD) ?
       caret_pos - 1 : caret_pos + 1;
   return range.Contains(Range(caret_pos, adjacent));
@@ -2017,7 +1992,6 @@ void RenderText::OnTextAttributeChanged() {
   layout_text_.clear();
   display_text_.clear();
   text_elided_ = false;
-  line_breaks_.SetMax(0);
 
   layout_text_up_to_date_ = false;
 

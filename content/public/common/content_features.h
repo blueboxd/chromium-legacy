@@ -47,7 +47,6 @@ CONTENT_EXPORT extern const base::Feature
     kBlockInsecurePrivateNetworkRequestsForNavigations;
 CONTENT_EXPORT extern const base::Feature
     kBrokerFileOperationsOnDiskCacheInNetworkService;
-CONTENT_EXPORT extern const base::Feature kBrowserUseDisplayThreadPriority;
 CONTENT_EXPORT extern const base::Feature
     kBrowserVerifiedUserActivationKeyboard;
 CONTENT_EXPORT extern const base::Feature kBrowserVerifiedUserActivationMouse;
@@ -106,6 +105,7 @@ CONTENT_EXPORT extern const base::FeatureParam<int>
     kFledgeLimitNumAuctionsParam;
 CONTENT_EXPORT extern const base::Feature kFractionalScrollOffsets;
 CONTENT_EXPORT extern const base::Feature kGreaseUACH;
+CONTENT_EXPORT extern const base::Feature kIdentityInCanMakePaymentEventFeature;
 CONTENT_EXPORT extern const base::Feature kIdleDetection;
 CONTENT_EXPORT extern const base::Feature kIncludeIpcOverheadInNavigationStart;
 CONTENT_EXPORT extern const base::Feature kInstalledApp;
@@ -115,6 +115,17 @@ CONTENT_EXPORT extern const base::Feature kIsolatedWebApps;
 CONTENT_EXPORT extern const base::Feature kIsolateOrigins;
 CONTENT_EXPORT extern const char kIsolateOriginsFieldTrialParamName[];
 CONTENT_EXPORT extern const base::Feature kIsolateSandboxedIframes;
+enum class IsolateSandboxedIframesGrouping {
+  // In this grouping, all isolated sandboxed iframes whose URLs share the same
+  // site in a given BrowsingInstance will share a process.
+  kPerSite,
+  // In this grouping, all isolated sandboxed iframes from a given
+  // BrowsingInstance whose URLs share the same origin will be isolated in an
+  // origin-keyed process.
+  kPerOrigin,
+};
+CONTENT_EXPORT extern const base::FeatureParam<IsolateSandboxedIframesGrouping>
+    kIsolateSandboxedIframesGroupingParam;
 CONTENT_EXPORT extern const base::Feature kLazyFrameLoading;
 CONTENT_EXPORT extern const base::Feature kLazyFrameVisibleLoadTimeMetrics;
 CONTENT_EXPORT extern const base::Feature kLazyImageLoading;
@@ -159,7 +170,6 @@ CONTENT_EXPORT extern const base::Feature kNeverSlowMode;
 CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kNotificationTriggers;
 CONTENT_EXPORT extern const base::Feature kOriginIsolationHeader;
-CONTENT_EXPORT extern const base::Feature kOriginPolicy;
 CONTENT_EXPORT extern const base::Feature kOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kPaymentRequestBasicCard;
 CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
@@ -174,6 +184,7 @@ CONTENT_EXPORT extern const base::Feature kPrivateNetworkAccessForWorkers;
 CONTENT_EXPORT extern const base::Feature
     kPrivateNetworkAccessRespectPreflightResults;
 CONTENT_EXPORT extern const base::Feature kPrivateNetworkAccessSendPreflights;
+CONTENT_EXPORT extern const base::Feature kPrivateNetworkAccessPermissionPrompt;
 CONTENT_EXPORT extern const base::Feature kProactivelySwapBrowsingInstance;
 CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithDefaultSiteInstances;
@@ -214,9 +225,7 @@ CONTENT_EXPORT extern const base::Feature kDisableProcessReuse;
 CONTENT_EXPORT extern const base::Feature
     kSkipEarlyCommitPendingForCrashedFrame;
 CONTENT_EXPORT extern const base::Feature kUserMediaCaptureOnFocus;
-#if BUILDFLAG(IS_CHROMEOS)
 CONTENT_EXPORT extern const base::Feature kWebLockScreenApi;
-#endif  // BUILDFLAG(IS_CHROMEOS)
 CONTENT_EXPORT extern const base::Feature kWebOTP;
 CONTENT_EXPORT extern const base::Feature kWebOTPAssertionFeaturePolicy;
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
@@ -296,6 +305,7 @@ CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
 CONTENT_EXPORT extern const base::Feature kCoalesceIndependentBeginFrame;
 CONTENT_EXPORT extern const base::Feature kOnDemandAccessibilityEvents;
+CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteAdditions;
 CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteExceptions;
 CONTENT_EXPORT extern const base::Feature kUserMediaScreenCapturing;
 CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;

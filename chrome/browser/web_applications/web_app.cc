@@ -341,10 +341,6 @@ void WebApp::SetCaptureLinks(blink::mojom::CaptureLinks capture_links) {
   capture_links_ = capture_links;
 }
 
-void WebApp::SetHandleLinks(blink::mojom::HandleLinks handle_links) {
-  handle_links_ = handle_links;
-}
-
 void WebApp::SetLaunchQueryParams(
     absl::optional<std::string> launch_query_params) {
   launch_query_params_ = std::move(launch_query_params);
@@ -393,10 +389,13 @@ void WebApp::SetDataSizeInBytes(absl::optional<int64_t> data_size_in_bytes) {
 }
 
 void WebApp::SetWebAppManagementExternalConfigMap(
-    base::flat_map<WebAppManagement::Type, ExternalManagementConfig>
-        management_to_external_config_map) {
+    ExternalConfigMap management_to_external_config_map) {
   management_to_external_config_map_ =
       std::move(management_to_external_config_map);
+}
+
+void WebApp::SetTabStrip(absl::optional<blink::Manifest::TabStrip> tab_strip) {
+  tab_strip_ = std::move(tab_strip);
 }
 
 void WebApp::AddPlaceholderInfoToManagementExternalConfigMap(
@@ -544,7 +543,6 @@ bool WebApp::operator==(const WebApp& other) const {
         app.run_on_os_login_os_integration_state_,
         app.sync_fallback_data_,
         app.capture_links_,
-        app.handle_links_,
         app.manifest_url_,
         app.manifest_id_,
         app.client_data_.system_web_app_data,
@@ -558,7 +556,8 @@ bool WebApp::operator==(const WebApp& other) const {
         app.install_source_for_metrics_,
         app.app_size_in_bytes_,
         app.data_size_in_bytes_,
-        app.management_to_external_config_map_
+        app.management_to_external_config_map_,
+        app.tab_strip_
         // clang-format on
     );
   };
@@ -653,8 +652,6 @@ base::Value WebApp::AsDebugValue() const {
                     ColorToString(dark_mode_background_color_));
 
   root.SetStringKey("capture_links", ConvertToString(capture_links_));
-
-  root.SetStringKey("handle_links", ConvertToString(handle_links_));
 
   root.SetKey("chromeos_data",
               chromeos_data_ ? chromeos_data_->AsDebugValue() : base::Value());
@@ -839,6 +836,37 @@ base::Value WebApp::AsDebugValue() const {
 
   root.SetBoolKey("window_controls_overlay_enabled",
                   window_controls_overlay_enabled_);
+
+  if (tab_strip_.has_value()) {
+    base::Value& tab_strip_json =
+        *root.SetKey("tab_strip", base::Value(base::Value::Type::DICTIONARY));
+    if (absl::holds_alternative<TabStrip::Visibility>(
+            tab_strip_.value().new_tab_button)) {
+      tab_strip_json.SetStringKey(
+          "new_tab_button", ConvertToString(absl::get<TabStrip::Visibility>(
+                                tab_strip_.value().new_tab_button)));
+    } else {
+      base::Value& new_tab_button_json = *tab_strip_json.SetKey(
+          "new_tab_button", base::Value(base::Value::Type::DICTIONARY));
+      new_tab_button_json.SetStringKey(
+          "url", ConvertToString(absl::get<blink::Manifest::NewTabButtonParams>(
+                                     tab_strip_.value().new_tab_button)
+                                     .url.value_or(GURL(""))));
+    }
+
+    if (absl::holds_alternative<TabStrip::Visibility>(
+            tab_strip_.value().home_tab)) {
+      tab_strip_json.SetStringKey(
+          "home_tab", ConvertToString(absl::get<TabStrip::Visibility>(
+                          tab_strip_.value().home_tab)));
+    } else {
+      tab_strip_json.SetKey("home_tab",
+                            base::Value(base::Value::Type::DICTIONARY));
+      // TODO(crbug.com/897314): Add debug info for home tab icons.
+    }
+  } else {
+    root.SetKey("tab_strip", base::Value());
+  }
 
   return root;
 }

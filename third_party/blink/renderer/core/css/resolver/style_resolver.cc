@@ -1215,7 +1215,8 @@ void StyleResolver::ApplyBaseStyleNoCache(
   }
 
   // TODO(obrufau): support styling nested pseudo-elements
-  if (style_request.IsPseudoStyleRequest() && element->IsPseudoElement()) {
+  if (style_request.rules_to_include == StyleRequest::kUAOnly ||
+      (style_request.IsPseudoStyleRequest() && element->IsPseudoElement())) {
     MatchUARules(*element, collector);
   } else {
     MatchAllRules(
@@ -1242,10 +1243,12 @@ void StyleResolver::ApplyBaseStyleNoCache(
 
   CascadeAndApplyMatchedProperties(state, cascade);
 
-  if (collector.MatchedResult().DependsOnContainerQueries())
-    state.Style()->SetDependsOnContainerQueries(true);
-  if (collector.MatchedResult().DependsOnViewportContainerQueries())
+  if (collector.MatchedResult().DependsOnSizeContainerQueries())
+    state.Style()->SetDependsOnSizeContainerQueries(true);
+  if (collector.MatchedResult().DependsOnStaticViewportUnits())
     state.Style()->SetHasStaticViewportUnits();
+  if (collector.MatchedResult().DependsOnDynamicViewportUnits())
+    state.Style()->SetHasDynamicViewportUnits();
   if (collector.MatchedResult().DependsOnRemContainerQueries())
     state.Style()->SetHasRemUnits();
   if (collector.MatchedResult().ConditionallyAffectsAnimations())
@@ -1568,7 +1571,8 @@ Element* StyleResolver::FindContainerForElement(
     Element* element,
     const ContainerSelector& container_selector) {
   auto context = StyleRecalcContext::FromAncestors(*element);
-  return ContainerQueryEvaluator::FindContainer(context, container_selector);
+  return ContainerQueryEvaluator::FindContainer(context.container,
+                                                container_selector);
 }
 
 RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
@@ -2100,7 +2104,7 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   if (!rules)
     return;
   for (auto rule : *rules)
-    state.Style()->AddCallbackSelector(rule->SelectorList().SelectorsText());
+    state.Style()->AddCallbackSelector(rule->SelectorsText());
 }
 
 // Font properties are also handled by FontStyleResolver outside the main

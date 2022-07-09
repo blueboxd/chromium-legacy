@@ -214,7 +214,6 @@ std::unique_ptr<gpu::SharedImageFactory> CreateSharedImageFactory(
       deps->GetGpuFeatureInfo(), deps->GetSharedContextState().get(),
       deps->GetMailboxManager(), deps->GetSharedImageManager(),
       deps->GetGpuImageFactory(), memory_tracker,
-      /*enable_wrapped_sk_image=*/true,
       /*is_for_display_compositor=*/true);
 }
 
@@ -410,6 +409,24 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
   }
 }
 
+void SkiaOutputSurfaceImplOnGpu::DrawOverdraw(
+    sk_sp<SkDeferredDisplayList> overdraw_ddl,
+    SkCanvas& canvas) {
+  DCHECK(overdraw_ddl);
+
+  sk_sp<SkSurface> overdraw_surface = SkSurface::MakeRenderTarget(
+      gr_context(), overdraw_ddl->characterization(), SkBudgeted::kNo);
+  overdraw_surface->draw(overdraw_ddl);
+  destroy_after_swap_.push_back(std::move(overdraw_ddl));
+
+  SkPaint paint;
+  sk_sp<SkImage> overdraw_image = overdraw_surface->makeImageSnapshot();
+
+  paint.setColorFilter(SkiaHelper::MakeOverdrawColorFilter());
+  // TODO(xing.xu): move below to the thread where skia record happens.
+  canvas.drawImage(overdraw_image.get(), 0, 0, SkSamplingOptions(), &paint);
+}
+
 void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     sk_sp<SkDeferredDisplayList> ddl,
     sk_sp<SkDeferredDisplayList> overdraw_ddl,
@@ -479,19 +496,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     destroy_after_swap_.emplace_back(std::move(ddl));
 
     if (overdraw_ddl) {
-      sk_sp<SkSurface> overdraw_surface = SkSurface::MakeRenderTarget(
-          gr_context(), overdraw_ddl->characterization(), SkBudgeted::kNo);
-      overdraw_surface->draw(overdraw_ddl);
-      destroy_after_swap_.emplace_back(std::move(overdraw_ddl));
-
-      SkPaint paint;
-      sk_sp<SkImage> overdraw_image = overdraw_surface->makeImageSnapshot();
-
-      sk_sp<SkColorFilter> colorFilter = SkiaHelper::MakeOverdrawColorFilter();
-      paint.setColorFilter(colorFilter);
-      // TODO(xing.xu): move below to the thread where skia record happens.
-      scoped_output_device_paint_->GetCanvas()->drawImage(
-          overdraw_image.get(), 0, 0, SkSamplingOptions(), &paint);
+      DrawOverdraw(std::move(overdraw_ddl),
+                   *scoped_output_device_paint_->GetCanvas());
     }
 
     auto end_paint_semaphores =
@@ -523,6 +529,10 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 
     if (result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores_empty)) {
+      if (!return_release_fence_cb.is_null()) {
+        PostTaskToClientThread(base::BindOnce(
+            std::move(return_release_fence_cb), gfx::GpuFenceHandle()));
+      }
       // TODO(penghuang): handle vulkan device lost.
       FailedSkiaFlush("output_sk_surface()->flush() failed.");
       return;
@@ -585,6 +595,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped() {
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     const gpu::Mailbox& mailbox,
     sk_sp<SkDeferredDisplayList> ddl,
+    sk_sp<SkDeferredDisplayList> overdraw_ddl,
     std::vector<ImageContextImpl*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     base::OnceClosure on_finished,
@@ -639,6 +650,10 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     backing_representation->SetCleared();
     destroy_after_swap_.emplace_back(std::move(ddl));
 
+    if (overdraw_ddl) {
+      DrawOverdraw(std::move(overdraw_ddl), *surface->getCanvas());
+    }
+
 #if BUILDFLAG(ENABLE_VULKAN)
     // Semaphores for release fences for vulkan should be created before flush.
     if (!return_release_fence_cb.is_null() && is_using_vulkan()) {
@@ -667,6 +682,10 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     auto result = surface->flush(flush_info);
     if (result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores.empty())) {
+      if (!return_release_fence_cb.is_null()) {
+        PostTaskToClientThread(base::BindOnce(
+            std::move(return_release_fence_cb), gfx::GpuFenceHandle()));
+      }
       // TODO(penghuang): handle vulkan device lost.
       FailedSkiaFlush("offscreen.surface()->flush() failed.");
       return;

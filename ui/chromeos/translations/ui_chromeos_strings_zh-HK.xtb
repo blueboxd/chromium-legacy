@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">韓文 (羅馬拼音)</translation>
 <translation id="112387589102719461">英文 (美國)，Programmer Dvorak 鍵盤</translation>
 <translation id="1134697384939541955">英文 (美國)，擴充鍵盤</translation>
+<translation id="1138691154716715755">本月稍早</translation>
 <translation id="1148097584170732637">已找到 <ph name="FILE_COUNT" />。
     <ph name="LINE_BREAK1" />
     可用的本機儲存空間不足。需要額外 <ph name="FILE_SIZE" />。
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />%，管理員封鎖咗呢個網絡，詳情</translation>
 <translation id="2142680004883808240">俄文注音 (YaZHert) 鍵盤</translation>
 <translation id="2143778271340628265">手動 Proxy 設定</translation>
+<translation id="2148716181193084225">今天</translation>
 <translation id="2163152940313951844">無效的字元：<ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">葡萄牙文，美國國際 (PC) 鍵盤</translation>
 <translation id="2198315389084035571">簡體中文</translation>
@@ -181,7 +183,6 @@
 <translation id="2541377937973966830">此資料夾中的內容是唯讀格式，因此不支援部份活動。</translation>
 <translation id="2542049655219295786">Google 表格</translation>
 <translation id="2544853746127077729">網絡已拒絕驗證憑證</translation>
-<translation id="2547921442987553570">新增至「<ph name="EXTENSION_NAME" />」</translation>
 <translation id="255937426064304553">美國國際鍵盤</translation>
 <translation id="2563185590376525700">青蛙</translation>
 <translation id="2578394532502990878">泰米爾文 (拼音)</translation>
@@ -233,7 +234,6 @@
 <translation id="3047197340186497470">中文 (大易)</translation>
 <translation id="3057861065630527966">備份相片和影片</translation>
 <translation id="3067790092342515856">Windows 檔案</translation>
-<translation id="3078461028045006476">與「<ph name="EXTENSION_NAME" />」共用</translation>
 <translation id="3083975830683400843">Chromebit</translation>
 <translation id="3085752524577180175">SOCKS 主機</translation>
 <translation id="3104793765551262433">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，<ph name="CONNECTION_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />%，管理員封鎖咗呢個網絡，詳情</translation>
@@ -330,7 +330,6 @@
 <translation id="385051799172605136">返回</translation>
 <translation id="3855472144336161447">德文 Neo 2 鍵盤</translation>
 <translation id="3858860766373142691">名稱</translation>
-<translation id="386548886866354912">使用「<ph name="EXTENSION_NAME" />」壓縮</translation>
 <translation id="3866249974567520381">描述</translation>
 <translation id="3899991606604168269">法文 (加拿大)，多語言鍵盤</translation>
 <translation id="3901991538546252627">正在連線至 <ph name="NAME" /></translation>
@@ -343,6 +342,7 @@
 <translation id="3971140002794351170">下載流動裝置設定檔，<ph name="NETWORK_COUNT" /> 個網絡之中嘅第 <ph name="NETWORK_INDEX" /> 個，<ph name="NETWORK_NAME" />，<ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">英文 (英國)</translation>
 <translation id="3975895378829046965">孟加拉文 (拼音)</translation>
+<translation id="3991446849494482687">此操作亦會停用裝置上的「SIM 卡鎖定」設定。</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4017788180641807848">英文 (美國)，Workman 鍵盤</translation>
 <translation id="4040753847560036377">PUK 不正確</translation>
@@ -379,6 +379,7 @@
 <translation id="4380245540200674032">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，<ph name="NETWORK_PROVIDER_NAME" />，<ph name="CONNECTION_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />%，由管理員管理，詳情</translation>
 <translation id="4387004326333427325">遠端已拒絕驗證憑證</translation>
 <translation id="4394214039309501350">外部連結</translation>
+<translation id="4394980935660306080">本週稍早</translation>
 <translation id="4401287888955153199">解壓縮全部</translation>
 <translation id="4410695710508688828">擷取操作失敗：<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">為檔案建立捷徑</translation>
@@ -422,6 +423,7 @@
 <translation id="4712283082407695269">正在開啟「<ph name="PATH" />」</translation>
 <translation id="4720185134442950733">流動數據網絡</translation>
 <translation id="4724850507808590449">已備份 <ph name="FILE_COUNT" /> 張相片</translation>
+<translation id="4725096204469550614">今年稍早</translation>
 <translation id="4725511304875193254">哥基</translation>
 <translation id="4737050008115666127">降落跑道</translation>
 <translation id="4747271164117300400">馬其頓文</translation>
@@ -471,6 +473,7 @@
 <translation id="508423945471810158">正在將 <ph name="NUMBER_OF_ITEMS" /> 個項目移動到「<ph name="FOLDER_NAME" />」</translation>
 <translation id="509429900233858213">發生錯誤。</translation>
 <translation id="5098629044894065541">希伯來文</translation>
+<translation id="5102922915594634436">管理已同步處理的資料夾</translation>
 <translation id="5109254780565519649">發生錯誤。部分項目可能未還原。</translation>
 <translation id="5110329002213341433">英文 (加拿大)</translation>
 <translation id="5123433949759960244">籃球</translation>
@@ -604,7 +607,6 @@
 <translation id="6165508094623778733">瞭解更多資料</translation>
 <translation id="6170470584681422115">三文治</translation>
 <translation id="6187719147498869044">匈牙利文</translation>
-<translation id="6189412234224385711">使用「<ph name="EXTENSION_NAME" />」開啟</translation>
 <translation id="6198252989419008588">變更 PIN</translation>
 <translation id="6199801702437275229">正在等待空間資料…</translation>
 <translation id="6205710420833115353">部分操作所需時間超出預期。您要中斷這些操作嗎？</translation>
@@ -708,6 +710,7 @@
 <translation id="7075931588889865715">泰文 (TIS 820-2531 鍵盤)</translation>
 <translation id="708278670402572152">中斷連線即可啟用掃瞄功能</translation>
 <translation id="7086590977277044826">泰米爾文 (InScript 鍵盤)</translation>
+<translation id="7088615885725309056">舊的</translation>
 <translation id="7103992300314999525">馬其頓文</translation>
 <translation id="7106346894903675391">購買更多儲存空間…</translation>
 <translation id="7126604456862387217">「&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;」- 搜尋雲端硬碟</translation>
@@ -772,6 +775,7 @@
 <translation id="7663224033570512922">印度文</translation>
 <translation id="7693909743393669729">將硬碟格式化會清除其中儲存的所有資料，並移除所有的現有分割區，包括隱藏的分割區。此操作無法復原。</translation>
 <translation id="7695430100978772476">無法格式化「<ph name="DRIVE_NAME" />」</translation>
+<translation id="76959938259365003">無法清空垃圾桶。</translation>
 <translation id="770015031906360009">希臘文</translation>
 <translation id="7705251383879779343">已複製 <ph name="FILE_NAME" />。</translation>
 <translation id="7711920809702896782">圖片資料</translation>
@@ -782,6 +786,7 @@
 <translation id="7760449188139285140">中文 (五筆)</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7774365994322694683">鳥</translation>
+<translation id="7781829728241885113">昨天</translation>
 <translation id="7788080748068240085">如要離線儲存「<ph name="FILE_NAME" />」，您必須釋放 <ph name="TOTAL_FILE_SIZE" /> 的空間：<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />取消固定不會再離線存取的檔案<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />從下載資料夾中刪除檔案<ph name="MARKUP_5" /></translation>

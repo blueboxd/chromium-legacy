@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/document_transition/document_transition_style_tracker.h"
 
+#include <limits>
+
 #include "components/viz/common/shared_element_resource_id.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -120,15 +122,10 @@ class DocumentTransitionStyleTracker::ImageWrapperPseudoElement
                             const DocumentTransitionStyleTracker* style_tracker)
       : DocumentTransitionPseudoElementBase(parent,
                                             pseudo_id,
-                                            document_transition_tag),
-        style_tracker_(style_tracker) {}
+                                            document_transition_tag,
+                                            style_tracker) {}
 
   ~ImageWrapperPseudoElement() override = default;
-
-  void Trace(Visitor* visitor) const override {
-    PseudoElement::Trace(visitor);
-    visitor->Trace(style_tracker_);
-  }
 
  private:
   bool CanGeneratePseudoElement(PseudoId pseudo_id) const override {
@@ -176,8 +173,6 @@ class DocumentTransitionStyleTracker::ImageWrapperPseudoElement
     }
     return snapshot_id.IsValid();
   }
-
-  Member<const DocumentTransitionStyleTracker> style_tracker_;
 };
 
 DocumentTransitionStyleTracker::DocumentTransitionStyleTracker(
@@ -416,7 +411,6 @@ void DocumentTransitionStyleTracker::CaptureResolved() {
     element_data->cached_border_box_size_in_css_space =
         element_data->border_box_size_in_css_space;
     element_data->cached_viewport_matrix = element_data->viewport_matrix;
-    element_data->cached_device_pixel_ratio = element_data->device_pixel_ratio;
     element_data->cached_visual_overflow_rect_in_layout_space =
         element_data->visual_overflow_rect_in_layout_space;
     element_data->effect_node = nullptr;
@@ -447,7 +441,7 @@ bool DocumentTransitionStyleTracker::Start() {
     const auto& element = elements[i];
 
     // Insert a new tag data if there is no data for this tag yet.
-    if (element_data_map_.find(tag) == element_data_map_.end()) {
+    if (!element_data_map_.Contains(tag)) {
       found_new_tags = true;
       auto* data = MakeGarbageCollected<ElementData>();
       data->element_index = next_index++;
@@ -477,7 +471,7 @@ bool DocumentTransitionStyleTracker::Start() {
       // If the new root tag is not also an old root tag and it isn't a shared
       // element tag, then we have a new tag.
       if (!old_root_data_->tags.Contains(new_tag) &&
-          element_data_map_.find(new_tag) == element_data_map_.end()) {
+          !element_data_map_.Contains(new_tag)) {
         found_new_tags = true;
         break;
       }
@@ -572,6 +566,9 @@ auto DocumentTransitionStyleTracker::GetCurrentRootData() const
 void DocumentTransitionStyleTracker::UpdateRootIndexAndSnapshotId(
     DocumentTransitionSharedElementId& index,
     viz::SharedElementResourceId& resource_id) const {
+  if (!IsRootTransitioning())
+    return;
+
   index.AddIndex(0);
   const auto& root_data = GetCurrentRootData();
   DCHECK(root_data);
@@ -590,7 +587,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
     case kPseudoIdPageTransition:
     case kPseudoIdPageTransitionContainer:
       return MakeGarbageCollected<DocumentTransitionPseudoElementBase>(
-          parent, pseudo_id, document_transition_tag);
+          parent, pseudo_id, document_transition_tag, this);
     case kPseudoIdPageTransitionImageWrapper:
       return MakeGarbageCollected<ImageWrapperPseudoElement>(
           parent, pseudo_id, document_transition_tag, this);
@@ -625,7 +622,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
       auto* pseudo_element =
           MakeGarbageCollected<DocumentTransitionContentElement>(
               parent, pseudo_id, document_transition_tag, snapshot_id,
-              /*is_live_content_element=*/false);
+              /*is_live_content_element=*/false, this);
       pseudo_element->SetIntrinsicSize(size);
       return pseudo_element;
     }
@@ -646,7 +643,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
       auto* pseudo_element =
           MakeGarbageCollected<DocumentTransitionContentElement>(
               parent, pseudo_id, document_transition_tag, snapshot_id,
-              /*is_live_content_element=*/true);
+              /*is_live_content_element=*/true, this);
       pseudo_element->SetIntrinsicSize(size);
       return pseudo_element;
     }
@@ -682,7 +679,7 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
       continue;
     }
 
-    float device_pixel_ratio = document_->DevicePixelRatio();
+    const float device_pixel_ratio = document_->DevicePixelRatio();
     TransformationMatrix viewport_matrix =
         layout_object->LocalToAbsoluteTransform();
     viewport_matrix.Zoom(1.0 / device_pixel_ratio);
@@ -698,6 +695,11 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
                          LayoutUnit(entry_size->blockSize()))
             : LayoutSize(LayoutUnit(entry_size->blockSize()),
                          LayoutUnit(entry_size->inlineSize()));
+    if (float effective_zoom = layout_object->StyleRef().EffectiveZoom();
+        std::abs(effective_zoom - device_pixel_ratio) >=
+        std::numeric_limits<float>::epsilon()) {
+      border_box_size_in_css_space.Scale(effective_zoom / device_pixel_ratio);
+    }
 
     PhysicalRect visual_overflow_rect_in_layout_space;
     if (auto* box = DynamicTo<LayoutBox>(layout_object))
@@ -708,7 +710,6 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
     if (viewport_matrix == element_data->viewport_matrix &&
         border_box_size_in_css_space ==
             element_data->border_box_size_in_css_space &&
-        device_pixel_ratio == element_data->device_pixel_ratio &&
         visual_overflow_rect_in_layout_space ==
             element_data->visual_overflow_rect_in_layout_space &&
         writing_mode == element_data->container_writing_mode) {
@@ -717,7 +718,6 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
 
     element_data->viewport_matrix = viewport_matrix;
     element_data->border_box_size_in_css_space = border_box_size_in_css_space;
-    element_data->device_pixel_ratio = device_pixel_ratio;
     element_data->visual_overflow_rect_in_layout_space =
         visual_overflow_rect_in_layout_space;
     element_data->container_writing_mode = writing_mode;
@@ -876,6 +876,22 @@ bool DocumentTransitionStyleTracker::IsRootTransitioning() const {
   return false;
 }
 
+StyleRequest::RulesToInclude
+DocumentTransitionStyleTracker::StyleRulesToInclude() const {
+  switch (state_) {
+    case State::kIdle:
+    case State::kCapturing:
+    case State::kCaptured:
+      return StyleRequest::kUAOnly;
+    case State::kStarted:
+    case State::kFinished:
+      return StyleRequest::kAll;
+  }
+
+  NOTREACHED();
+  return StyleRequest::kAll;
+}
+
 void DocumentTransitionStyleTracker::InvalidateStyle() {
   ua_style_sheet_.reset();
   document_->GetStyleEngine().InvalidateUADocumentTransitionStyle();
@@ -950,7 +966,74 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
     builder.Append(")");
   };
 
+  auto add_animation = [&builder, &append_selector](
+                           const String& tag,
+                           const TransformationMatrix& source_matrix,
+                           const LayoutSize& source_size) {
+    builder.Append("@keyframes page-transition-container-anim-");
+    builder.Append(tag);
+    builder.AppendFormat(
+        R"CSS({
+          from {
+           transform: %s;
+           width: %dpx;
+           height: %dpx;
+          }
+        })CSS",
+        ComputedStyleUtils::ValueForTransformationMatrix(source_matrix, 1,
+                                                         false)
+            ->CssText()
+            .Utf8()
+            .c_str(),
+        source_size.Width().ToInt(), source_size.Height().ToInt());
+
+    append_selector("html::page-transition-container", tag);
+    builder.Append("{ animation: page-transition-container-anim-");
+    builder.Append(tag);
+    builder.Append(" 0.25s both }");
+  };
+
+  // SUBTLETY AHEAD!
+  // There are several situations to consider when creating the styles and
+  // animation styles below:
+  //
+  // 1. A tag is both an old and new root. We will only visit the AllRootTags
+  // loop and correctly append styles (modulo TODO in that loop). Note that this
+  // tag will not be in the `element_data_map_` (DCHECKed in that loop).
+  //
+  // 2. A tag is an old root only (exit animation for root). The style is set up
+  // in the AllrootTags loop and fades out through AnimationUAStyles.
+  //
+  // 3. A tag is an old root and a new shared element. The AllRootTags loop
+  // skips this tag. The element map loop updates the container for the new
+  // shared element size and transform. The animation code of that loop adds an
+  // animation from old root size and identity matrix.
+  //
+  // 4. A tag is a new root only (entry animation for root). Its only visited in
+  // AllRootTags and its a default fade-in.
+  //
+  // 5. A tag is a new root and old shared element. We visit it in AllRootTags
+  // to set up the destination state. We skip setting its styles in the
+  // `element_data_map_` loop since latest value comes from AllRootTags. We do
+  // set the animation in that loop since we need the "from" state.
+  //
+  // 6. A tag is a new and old shared element (or maybe exit/enter for shared
+  // element only -- no roots involved. Everything is done in the
+  // `element_data_map_` loop.
+
   for (auto& root_tag : AllRootTags()) {
+    // This is case 3 above.
+    if (old_root_data_ && old_root_data_->tags.Contains(root_tag) &&
+        element_data_map_.Contains(root_tag)) {
+      DCHECK(
+          element_data_map_.find(root_tag)->value->new_snapshot_id.IsValid());
+      continue;
+    }
+
+    // TODO(vmpstr): For animations, we need to re-target the layout size if it
+    // changes, but right now we only use the latest layout view size.
+    // Note that we don't set the writing-mode since it would inherit from the
+    // :root anyway, so there is no reason to put it on the pseudo elements.
     append_selector("html::page-transition-container", root_tag);
     builder.Append(
         R"CSS({
@@ -959,100 +1042,112 @@ const String& DocumentTransitionStyleTracker::UAStyleSheet() {
         })CSS");
   }
 
+  float device_pixel_ratio = document_->DevicePixelRatio();
   for (auto& entry : element_data_map_) {
     const auto& document_transition_tag = entry.key.GetString();
     auto& element_data = entry.value;
 
+    const bool tag_is_old_root =
+        old_root_data_ &&
+        old_root_data_->tags.Contains(document_transition_tag);
+    const bool tag_is_new_root =
+        new_root_data_ &&
+        new_root_data_->tags.Contains(document_transition_tag);
+    // The tag can't be both old and new root, since it shouldn't be in the
+    // `element_data_map_`. This is case 1 above.
+    DCHECK(!tag_is_old_root || !tag_is_new_root);
+
     gfx::Rect border_box_in_css_space = gfx::Rect(
         gfx::Size(element_data->border_box_size_in_css_space.Width().ToInt(),
                   element_data->border_box_size_in_css_space.Height().ToInt()));
-    gfx::Rect cached_border_box_in_css_space = gfx::Rect(gfx::Size(
-        element_data->cached_border_box_size_in_css_space.Width().ToInt(),
-        element_data->cached_border_box_size_in_css_space.Height().ToInt()));
-
     std::ostringstream writing_mode_stream;
     writing_mode_stream << element_data->container_writing_mode;
 
-    // ::page-transition-container styles using computed properties for each
-    // element.
-    append_selector("html::page-transition-container", document_transition_tag);
-    builder.AppendFormat(
-        R"CSS({
-          width: %dpx;
-          height: %dpx;
-          transform: %s;
-          writing-mode: %s;
-        }
-        )CSS",
-        border_box_in_css_space.width(), border_box_in_css_space.height(),
-        ComputedStyleUtils::ValueForTransformationMatrix(
-            element_data->viewport_matrix, 1, false)
-            ->CssText()
-            .Utf8()
-            .c_str(),
-        writing_mode_stream.str().c_str());
-
-    float device_pixel_ratio = document_->DevicePixelRatio();
-    absl::optional<String> incoming_inset = ComputeInsetDifference(
-        element_data->visual_overflow_rect_in_layout_space,
-        border_box_in_css_space, device_pixel_ratio);
-    if (incoming_inset) {
-      append_selector("html::page-transition-incoming-image",
+    // Skipping this if a tag is a new root. This is case 5 above.
+    if (!tag_is_new_root) {
+      // ::page-transition-container styles using computed properties for each
+      // element.
+      append_selector("html::page-transition-container",
                       document_transition_tag);
       builder.AppendFormat(
           R"CSS({
-            object-view-box: %s;
-          }
-          )CSS",
-          incoming_inset->Utf8().c_str());
+            width: %dpx;
+            height: %dpx;
+            transform: %s;
+            writing-mode: %s;
+          })CSS",
+          border_box_in_css_space.width(), border_box_in_css_space.height(),
+          ComputedStyleUtils::ValueForTransformationMatrix(
+              element_data->viewport_matrix, 1, false)
+              ->CssText()
+              .Utf8()
+              .c_str(),
+          writing_mode_stream.str().c_str());
+
+      // Incoming inset also only makes sense if the tag is a new shared element
+      // (not a new root).
+      absl::optional<String> incoming_inset = ComputeInsetDifference(
+          element_data->visual_overflow_rect_in_layout_space,
+          border_box_in_css_space, device_pixel_ratio);
+      if (incoming_inset) {
+        append_selector("html::page-transition-incoming-image",
+                        document_transition_tag);
+        builder.AppendFormat(
+            R"CSS({
+              object-view-box: %s;
+            })CSS",
+            incoming_inset->Utf8().c_str());
+      }
     }
 
-    absl::optional<String> outgoing_inset = ComputeInsetDifference(
-        element_data->cached_visual_overflow_rect_in_layout_space,
-        cached_border_box_in_css_space, device_pixel_ratio);
-    if (outgoing_inset) {
-      append_selector("html::page-transition-outgoing-image",
-                      document_transition_tag);
-      builder.AppendFormat(
-          R"CSS({
-            object-view-box: %s;
-          }
-          )CSS",
-          outgoing_inset->Utf8().c_str());
+    // Outgoing inset only makes sense if the tag is an old shared element (not
+    // an old root).
+    if (!tag_is_old_root) {
+      gfx::Rect cached_border_box_in_css_space = gfx::Rect(gfx::Size(
+          element_data->cached_border_box_size_in_css_space.Width().ToInt(),
+          element_data->cached_border_box_size_in_css_space.Height().ToInt()));
+
+      absl::optional<String> outgoing_inset = ComputeInsetDifference(
+          element_data->cached_visual_overflow_rect_in_layout_space,
+          cached_border_box_in_css_space, device_pixel_ratio);
+      if (outgoing_inset) {
+        append_selector("html::page-transition-outgoing-image",
+                        document_transition_tag);
+        builder.AppendFormat(
+            R"CSS({
+              object-view-box: %s;
+            })CSS",
+            outgoing_inset->Utf8().c_str());
+      }
     }
 
     // TODO(khushalsagar) : We'll need to retarget the animation if the final
     // value changes during the start phase.
-    // TODO(vmpstr): We need to add an animation if an element has a root tag as
-    // the source/destination.
-    if (add_animations && element_data->old_snapshot_id.IsValid() &&
-        element_data->new_snapshot_id.IsValid()) {
-      builder.Append("@keyframes page-transition-container-anim-");
-      builder.Append(document_transition_tag);
-      builder.AppendFormat(
-          R"CSS({
-            from {
-             transform: %s;
-             width: %dpx;
-             height: %dpx;
-            }
-           }
-           )CSS",
-          ComputedStyleUtils::ValueForTransformationMatrix(
-              element_data->cached_viewport_matrix, 1, false)
-              ->CssText()
-              .Utf8()
-              .c_str(),
-          element_data->cached_border_box_size_in_css_space.Width().ToInt(),
-          element_data->cached_border_box_size_in_css_space.Height().ToInt());
-
-      // TODO(khushalsagar) : The duration/delay in the UA stylesheet will need
-      // to be the duration from TransitionConfig. See crbug.com/1275727.
-      append_selector("html::page-transition-container",
-                      document_transition_tag);
-      builder.Append("{ animation: page-transition-container-anim-");
-      builder.Append(document_transition_tag);
-      builder.Append(" 0.25s both }");
+    if (add_animations) {
+      // If the old snapshot is valid, then we add a transition if we have
+      // either the new snapshot (case 6 above) or the tag is a new root (case 5
+      // above).
+      //
+      // The else-if case is case 3 above: if we have the new snapshot and the
+      // tag is an old root, in which case we also add an animation but sourced
+      // from the old root, rather than from the cached element data.
+      if (element_data->old_snapshot_id.IsValid() &&
+          (element_data->new_snapshot_id.IsValid() || tag_is_new_root)) {
+        add_animation(document_transition_tag,
+                      element_data->cached_viewport_matrix,
+                      element_data->cached_border_box_size_in_css_space);
+      } else if (element_data->new_snapshot_id.IsValid() && tag_is_old_root) {
+        // TODO(vmpstr): Update the size to be the cached one, here and when
+        // constructing outgoing pseudos.
+        auto layout_view_size = LayoutSize(
+            document_->GetLayoutView()->GetLayoutSize(kIncludeScrollbars));
+        // Note that we want the size in css space, which means we need to undo
+        // the effective zoom.
+        layout_view_size.Scale(
+            1 / document_->GetLayoutView()->StyleRef().EffectiveZoom());
+        add_animation(document_transition_tag, TransformationMatrix(),
+                      layout_view_size);
+      }
     }
   }
 

@@ -1523,6 +1523,12 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES" desc="In the settings tab, the title of a link that opens a screen allowing the user to change accessibility features.">
     Manage accessibility features
   </message>
+  <message name="IDS_SETTINGS_ACCESSIBILITY_TEXT_TO_SPEECH_LINK_TITLE" desc="In the settings tab, the title of a link that opens a screen allowing the user to change text-to-speech accessibility features.">
+    Text-to-Speech
+  </message>
+  <message name="IDS_SETTINGS_ACCESSIBILITY_TEXT_TO_SPEECH_LINK_DESCRIPTION" desc="In the settings tab, the description of a link that opens a screen allowing the user to change text-to-speech accessibility features.">
+    ChromeVox screen reader and select-to-speak
+  </message>
 
   <!-- Account Manager (OS settings) -->
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION_V2" desc="Description of the Account Manager Settings page for child users. Shown just below the title of the page.">
@@ -1843,7 +1849,7 @@ Press an assigned switch or key to remove assignment.
     Add playbook
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PRECONFIGURED_CONTAINERS_ATTACH_PLAYBOOK_BUTTON_LABEL" desc="Label for button to attach an Ansible Playbook to preconfigure a Linux container.">
-    Apply playbook
+    Select playbook
   </message>
   <message name="IDS_SETTINGS_CROSTINI_ANSIBLE_PLAYBOOK_SELECT_DIALOG_TITLE" desc="The text used as the title for Ansible Playbook selection">
     Select an Ansible Playbook to add
@@ -2172,6 +2178,9 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_BLUETOOTH_DEVICE_DETAILS" desc="Name of the settings page which displays Bluetooth device details.">
     Bluetooth device details
   </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_SAVED_DEVICES" desc="Name of the settings page which displays Bluetooth saved devices.">
+   Devices saved to your account
+  </message>
   <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE" desc="Title of the settings dialog for adding or pairing Bluetooth a device.">
     Connect to Bluetooth device
   </message>
@@ -2219,6 +2228,11 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_ROLE" desc="Role description of the button which launches page which enables ChromeOS's parental controls. Spoken aloud by screen readers when the Set Up button is focused">
     Set up button
+  </message>
+
+  <!-- Device audio page (OS settings) -->
+  <message name="IDS_SETTINGS_AUDIO_TITLE" desc="In Device Settings, the title of the audio settings subpage.">
+    Audio
   </message>
 
   <!-- Device pointer page (OS settings) -->
@@ -4285,6 +4299,12 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_OS_SETTINGS_CAMERA_TOGGLE_TITLE" desc="The title of the toggle to enable/disable camera from the privacy hub.">
     Camera
+  </message>
+  <message name="IDS_OS_SETTINGS_MICROPHONE_TOGGLE_TITLE" desc="The title of the toggle to enable/disable microphone from the privacy hub.">
+    Microphone
+  </message>
+  <message name="IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_HARDWARE_TOGGLE_ACTIVE_SUBTEXT" desc="Sub-label on the privacy page that indicates that the hardware microphone toggle is active.">
+    All microphones disabled by devices hardware switch
   </message>
   <message name="IDS_OS_SETTINGS_HW_DATA_USAGE_TOGGLE_TITLE" desc="The label of the checkbox to enable/disable device hardware data collection and usage in ChromeOS Flex.">
     <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> hardware support and stability

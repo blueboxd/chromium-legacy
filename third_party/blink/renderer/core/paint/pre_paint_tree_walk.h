@@ -36,10 +36,15 @@ class CORE_EXPORT PrePaintTreeWalk final {
   static bool ObjectRequiresPrePaint(const LayoutObject&);
   static bool ObjectRequiresTreeBuilderContext(const LayoutObject&);
 
+  // Keeps information about the parent fragment that we need to search inside
+  // to find out-of-flow positioned descendants, and also which fragmentainer
+  // we're inside (which will serve as a fragment ID in FragmentData).
   struct ContainingFragment {
     STACK_ALLOCATED();
 
    public:
+    bool IsInFragmentationContext() const;
+
     const NGPhysicalBoxFragment* fragment = nullptr;
     wtf_size_t fragmentainer_idx = WTF::kNotFound;
     int fragmentation_nesting_level = 0;
@@ -59,7 +64,7 @@ class CORE_EXPORT PrePaintTreeWalk final {
     // Reset fragmentation when entering something that shouldn't be affected by
     // the current fragmentation context(s).
     void ResetFragmentation() {
-      current_fragmentainer = {};
+      current_container = {};
       absolute_positioned_container = {};
       fixed_positioned_container = {};
     }
@@ -89,7 +94,7 @@ class CORE_EXPORT PrePaintTreeWalk final {
     // fragmented at all).
     bool is_parent_first_for_node = true;
 
-    ContainingFragment current_fragmentainer;
+    ContainingFragment current_container;
     ContainingFragment absolute_positioned_container;
     ContainingFragment fixed_positioned_container;
   };
@@ -99,27 +104,30 @@ class CORE_EXPORT PrePaintTreeWalk final {
     PrePaintTreeWalkContext(const PrePaintTreeWalkContext& parent_context,
                             bool needs_tree_builder_context)
         : PrePaintTreeWalkContextBase(parent_context) {
-      if (needs_tree_builder_context || DCHECK_IS_ON()) {
+      if (needs_tree_builder_context
+#if DCHECK_IS_ON()
+          || RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()
+#endif
+      ) {
         DCHECK(parent_context.tree_builder_context);
         tree_builder_context.emplace(*parent_context.tree_builder_context);
-      }
 #if DCHECK_IS_ON()
-      if (needs_tree_builder_context)
-        DCHECK(parent_context.tree_builder_context->is_actually_needed);
-      tree_builder_context->is_actually_needed = needs_tree_builder_context;
+        DCHECK(!needs_tree_builder_context ||
+               parent_context.tree_builder_context->is_actually_needed);
+        tree_builder_context->is_actually_needed = needs_tree_builder_context;
 #endif
+      }
     }
 
     PrePaintTreeWalkContext(const PrePaintTreeWalkContext&) = delete;
     PrePaintTreeWalkContext& operator=(const PrePaintTreeWalkContext&) = delete;
 
     bool NeedsTreeBuilderContext() const {
+      return tree_builder_context.has_value()
 #if DCHECK_IS_ON()
-      DCHECK(tree_builder_context);
-      return tree_builder_context->is_actually_needed;
-#else
-      return tree_builder_context.has_value();
+             && tree_builder_context->is_actually_needed
 #endif
+          ;
     }
 
     absl::optional<PaintPropertyTreeBuilderContext> tree_builder_context;
@@ -148,7 +156,8 @@ class CORE_EXPORT PrePaintTreeWalk final {
                                         const NGPrePaintInfo&);
 
   void UpdateContextForOOFContainer(const LayoutObject&,
-                                    PrePaintTreeWalkContext&);
+                                    PrePaintTreeWalkContext&,
+                                    const NGPhysicalBoxFragment*);
 
   void Walk(LocalFrameView&, const PrePaintTreeWalkContext& parent_context);
 

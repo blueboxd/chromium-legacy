@@ -2128,7 +2128,16 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
           clip_rect = To<LayoutBox>(object_).OverflowClipRect(
               context_.current.paint_offset);
         }
-        state.SetClipRect(gfx::RectF(clip_rect), ToSnappedClipRect(clip_rect));
+
+        if (object_.IsLayoutReplaced()) {
+          // TODO(crbug.com/1248598): Should we use non-snapped clip rect for
+          // the first parameter?
+          auto snapped_rect = ToSnappedClipRect(clip_rect);
+          state.SetClipRect(snapped_rect.Rect(), snapped_rect);
+        } else {
+          state.SetClipRect(gfx::RectF(clip_rect),
+                            ToSnappedClipRect(clip_rect));
+        }
 
         state.layout_clip_rect_excluding_overlay_scrollbars =
             FloatClipRect(gfx::RectF(To<LayoutBox>(object_).OverflowClipRect(
@@ -2790,7 +2799,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
       // Determine whether we're inside block fragmentation or not. OOF
       // descendants need special treatment inside block fragmentation.
       context_.current.is_in_block_fragmentation =
-          pre_paint_info_->fragmentainer_idx != WTF::kNotFound &&
+          pre_paint_info_->fragmentainer_is_oof_containing_block &&
           box->GetNGPaginationBreakability() != LayoutBox::kForbidBreaks;
     } else {
       // TODO(pdr): Several calls in this function walk back up the tree to

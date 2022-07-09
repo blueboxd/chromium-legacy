@@ -20,10 +20,10 @@ namespace {
 const float kContentHorizontalInset = 16.0f;
 
 // The vertical spacing between the title and the content of the module.
-const float kContentTitleVerticalSpacing = 10.0f;
+const float kContentTitleVerticalSpacing = 12.0f;
 
 // The top inset of the title label to this container.
-const float kTitleTopInset = 11.0f;
+const float kTitleTopInset = 14.0f;
 
 // The minimum width of the title label.
 const float kTitleMinimumWidth = 99.0f;
@@ -35,7 +35,7 @@ const float kTitleMinimumHeight = 11.0f;
 const float kPlaceholderTitleCornerRadius = 2.0f;
 
 // The corner radius of this container.
-const float kCornerRadius = 10;
+const float kCornerRadius = 16;
 
 // The shadow radius of this container.
 const float kShadowRadius = 60;
@@ -55,6 +55,9 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
 // Title of the Module.
 @property(nonatomic, strong) UILabel* title;
 
+// The height constraint of this container view.
+@property(nonatomic, strong) NSLayoutConstraint* heightConstraint;
+
 @end
 
 @implementation ContentSuggestionsModuleContainer
@@ -66,7 +69,8 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
     _type = type;
 
     self.layer.cornerRadius = kCornerRadius;
-    self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+    self.backgroundColor =
+        [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
     self.layer.shadowColor = [UIColor blackColor].CGColor;
     self.layer.shadowOffset = kShadowOffset;
     self.layer.shadowRadius = kShadowRadius;
@@ -82,6 +86,7 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
       self.title.font =
           [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
       self.title.textColor = [UIColor colorNamed:kTextSecondaryColor];
+      self.title.accessibilityTraits |= UIAccessibilityTraitHeader;
       self.title.translatesAutoresizingMaskIntoConstraints = NO;
       [self addSubview:self.title];
       [NSLayoutConstraint activateConstraints:@[
@@ -117,6 +122,9 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
         [contentView.topAnchor constraintEqualToAnchor:self.topAnchor],
       ]];
     }
+    self.heightConstraint = [self.heightAnchor
+        constraintEqualToConstant:[self calculateIntrinsicHeight]];
+    self.heightConstraint.active = YES;
   }
   return self;
 }
@@ -159,6 +167,7 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
       self.traitCollection.preferredContentSizeCategory) {
     self.title.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    self.heightConstraint.constant = [self calculateIntrinsicHeight];
   }
 }
 
@@ -174,7 +183,7 @@ const CGSize kShadowOffset = CGSizeMake(0, 20);
     case ContentSuggestionsModuleTypeReturnToRecentTab:
       return kReturnToRecentTabSize.height;
   }
-  return kContentTitleVerticalSpacing + self.title.font.lineHeight +
+  return kContentTitleVerticalSpacing + ceilf(self.title.font.lineHeight) +
          kTitleTopInset + contentHeight;
 }
 

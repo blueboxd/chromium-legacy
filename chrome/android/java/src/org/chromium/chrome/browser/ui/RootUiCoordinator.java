@@ -806,8 +806,22 @@ public class RootUiCoordinator
                         showTabSwitcherRunnable);
         mIncognitoReauthController = new IncognitoReauthController(tabModelSelector,
                 mActivityLifecycleDispatcher, mLayoutStateProviderOneShotSupplier, mProfileSupplier,
-                incognitoReauthCoordinatorFactory);
+                incognitoReauthCoordinatorFactory, getBackPressRunnableForFullScreenReauth());
         mIncognitoReauthControllerOneshotSupplier.set(mIncognitoReauthController);
+    }
+
+    private Runnable getBackPressRunnableForFullScreenReauth() {
+        if (mActivityType == ActivityType.TABBED) {
+            return () -> {
+                // Show the regular overview mode.
+                mTabModelSelectorSupplier.get().selectModel(/*incognito=*/false);
+                mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, /*animate=*/false);
+            };
+        } else {
+            // TODO(crbug.com/1227656): Here we need to create an intent and
+            // launch the ChromeTabbedActivity and close the iCCT.
+            return () -> {};
+        }
     }
 
     private void initHistoryClustersCoordinator(Profile profile) {
@@ -1163,7 +1177,7 @@ public class RootUiCoordinator
                 new ScrimCoordinator.SystemUiScrimDelegate() {
                     @Override
                     public void setStatusBarScrimFraction(float scrimFraction) {
-                        mStatusBarColorController.setStatusBarScrimFraction(scrimFraction);
+                        RootUiCoordinator.this.setStatusBarScrimFraction(scrimFraction);
                     }
 
                     @Override
@@ -1171,6 +1185,10 @@ public class RootUiCoordinator
                 };
         return new ScrimCoordinator(mActivity, delegate, coordinator,
                 coordinator.getContext().getColor(R.color.omnibox_focused_fading_background_color));
+    }
+
+    protected void setStatusBarScrimFraction(float scrimFraction) {
+        mStatusBarColorController.setStatusBarScrimFraction(scrimFraction);
     }
 
     protected void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
@@ -1235,7 +1253,8 @@ public class RootUiCoordinator
             mAppMenuCoordinator = AppMenuCoordinatorFactory.createAppMenuCoordinator(mActivity,
                     mActivityLifecycleDispatcher, mToolbarManager, mAppMenuDelegate,
                     mActivity.getWindow().getDecorView(),
-                    mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub));
+                    mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub),
+                    () -> mActivity.getWindow().getAttributes().y);
             AppMenuCoordinatorFactory.setExceptionReporter(
                     (throwable)
                             -> ChromePureJavaExceptionReporter.reportJavaException(

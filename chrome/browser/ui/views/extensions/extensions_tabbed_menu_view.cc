@@ -796,8 +796,9 @@ void ExtensionsTabbedMenuView::UpdateSiteAccessSectionsVisibility(
   // setting is set to "grant all extensions", since site settings are not
   // granted yet. After finishing implementation of user permissions, check no
   // request access items is visible if `show_combobox` is true.
-  for (SiteAccessMenuItemView* item : GetVisibleMenuItemsOf(has_access_))
-    item->SetSiteAccessComboboxVisible(show_combobox);
+  for (views::View* item : has_access_.items->children()) {
+    GetAsSiteAccessMenuItem(item)->SetSiteAccessComboboxVisible(show_combobox);
+  }
 
   // Display a message when no extensions have or request access.
   if (!has_access_.container->GetVisible() &&
@@ -823,7 +824,7 @@ ExtensionsTabbedMenuView::GetSectionForAction(
       // Extensions with no interaction with the current site don't belong to a
       // site access section.
       return nullptr;
-    case extensions::SitePermissionsHelper::SiteInteraction::kPending:
+    case extensions::SitePermissionsHelper::SiteInteraction::kWithheld:
       return &requests_access_;
     case extensions::SitePermissionsHelper::SiteInteraction::kActiveTab:
       // When all extensions have access, activeTab extensions are labeled as
@@ -839,7 +840,7 @@ ExtensionsTabbedMenuView::GetSectionForAction(
       if (site_setting == UserSiteSetting::kGrantAllExtensions)
         return &has_access_;
       return &requests_access_;
-    case extensions::SitePermissionsHelper::SiteInteraction::kActive:
+    case extensions::SitePermissionsHelper::SiteInteraction::kGranted:
       return &has_access_;
   }
 }

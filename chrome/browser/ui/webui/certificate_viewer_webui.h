@@ -27,12 +27,10 @@ class WebContents;
 
 class ConstrainedWebDialogDelegate;
 
-// TODO(https://crbug.com/953425): Update comment when this is used by other
-// platforms.
-// Dialog for displaying detailed certificate information. This is used in linux
-// and chromeos builds to display detailed information in a floating dialog when
-// the user clicks on "Certificate Information" from the lock icon of a web site
-// or "View" from the Certificate Manager.
+// Dialog for displaying detailed certificate information. This is used on
+// desktop builds to display detailed information in a floating dialog when the
+// user clicks on "Certificate Information" from the lock icon of a web site or
+// "View" from the Certificate Manager.
 class CertificateViewerDialog : public ui::WebDialogDelegate {
  public:
 #if BUILDFLAG(USE_NSS_CERTS)
@@ -110,14 +108,14 @@ class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
   // chain.
   //
   // The input is an integer index to the certificate in the chain to export.
-  void HandleExportCertificate(const base::ListValue* args);
+  void HandleExportCertificate(const base::Value::List& args);
 
   // Gets the details for a specific certificate in the certificate chain.
   // Responds with a tree structure containing the fields and values for certain
   // nodes.
   //
   // The input is an integer index to the certificate in the chain to view.
-  void HandleRequestCertificateFields(const base::ListValue* args);
+  void HandleRequestCertificateFields(const base::Value::List& args);
 
   // Helper function to get the certificate index. Returns -1 if the index is
   // out of range.

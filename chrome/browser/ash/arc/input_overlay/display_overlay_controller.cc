@@ -8,9 +8,8 @@
 
 #include "ash/components/arc/compat_mode/style/arc_color_provider.h"
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
-#include "ash/style/ash_color_provider.h"
+#include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
 #include "base/bind.h"
@@ -60,9 +59,17 @@ DisplayOverlayController::DisplayOverlayController(
   AddOverlay(first_launch ? DisplayMode::kEducation : DisplayMode::kView);
   touch_injector_->set_display_overlay_controller(this);
   ash::Shell::Get()->AddPreTargetHandler(this);
+  if (auto* dark_light_mode_controller =
+          ash::DarkLightModeControllerImpl::Get()) {
+    dark_light_mode_controller->AddObserver(this);
+  }
 }
 
 DisplayOverlayController::~DisplayOverlayController() {
+  if (auto* dark_light_mode_controller =
+          ash::DarkLightModeControllerImpl::Get()) {
+    dark_light_mode_controller->RemoveObserver(this);
+  }
   ash::Shell::Get()->RemovePreTargetHandler(this);
   touch_injector_->set_display_overlay_controller(nullptr);
   RemoveOverlayIfAny();
@@ -149,8 +156,17 @@ void DisplayOverlayController::OnNudgeDismissed() {
 
 gfx::Point DisplayOverlayController::CalculateNudgePosition(int nudge_width) {
   gfx::Point nudge_position = CalculateMenuEntryPosition();
-  return gfx::Point(nudge_position.x() - nudge_width - kMenuEntrySideMargin,
-                    nudge_position.y() + kNudgeVerticalAlign);
+  int x = nudge_position.x() - nudge_width - kMenuEntrySideMargin;
+  int y = nudge_position.y() + kNudgeVerticalAlign;
+  // If the nudge view shows at the outside of the window, move the nudge view
+  // down below the menu button and move it to left to make sure it shows inside
+  // of the window.
+  if (x < 0) {
+    x = std::max(0, x + menu_entry_->width() + kMenuEntrySideMargin);
+    y += menu_entry_->height();
+  }
+
+  return gfx::Point(x, y);
 }
 
 void DisplayOverlayController::AddMenuEntryView(views::Widget* overlay_widget) {
@@ -346,8 +362,10 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
 
   switch (mode) {
     case DisplayMode::kNone:
+      RemoveEditMessage();
       RemoveMenuEntryView();
       RemoveInputMappingView();
+      RemoveEducationalView();
       RemoveEditFinishView();
       RemoveNudgeView();
       break;
@@ -359,6 +377,7 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
           aura::EventTargetingPolicy::kTargetAndDescendants);
       break;
     case DisplayMode::kView:
+      RemoveEditMessage();
       RemoveInputMenuView();
       RemoveEditFinishView();
       RemoveEducationalView();
@@ -488,13 +507,33 @@ void DisplayOverlayController::OnApplyMenuState() {
 }
 
 void DisplayOverlayController::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    ProcessPressedEvent(*event);
+  if (display_mode_ == DisplayMode::kView ||
+      event->type() != ui::ET_MOUSE_PRESSED) {
+    return;
+  }
+
+  ProcessPressedEvent(*event);
 }
 
 void DisplayOverlayController::OnTouchEvent(ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED)
-    ProcessPressedEvent(*event);
+  if (display_mode_ == DisplayMode::kView ||
+      event->type() != ui::ET_TOUCH_PRESSED) {
+    return;
+  }
+  ProcessPressedEvent(*event);
+}
+
+void DisplayOverlayController::OnColorModeChanged(bool dark_mode_enabled) {
+  // Only make the color mode change responsive when in
+  // |DisplayMode::kEducation| because:
+  // 1. Other modes like |DisplayMode::kEdit| and |DisplayMode::kView| only have
+  // one color mode.
+  // 2. When in |DisplayMode::kMenu| and changing the color mode, the menu is
+  // closed and it becomes |DisplayMode::kView| so no need to update color mode.
+  if (display_mode_ != DisplayMode::kEducation)
+    return;
+  SetDisplayMode(DisplayMode::kNone);
+  SetDisplayMode(DisplayMode::kEducation);
 }
 
 bool DisplayOverlayController::HasMenuView() const {
@@ -538,6 +577,12 @@ void DisplayOverlayController::ProcessPressedEvent(
     return;
 
   auto root_location = event.root_location();
+  // Convert the LocatedEvent root location to screen location.
+  auto origin = touch_injector_->target_window()
+                    ->GetRootWindow()
+                    ->GetBoundsInScreen()
+                    .origin();
+  root_location.Offset(origin.x(), origin.y());
 
   if (action_edit_menu_) {
     auto bounds = action_edit_menu_->GetBoundsInScreen();

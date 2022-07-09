@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
+
 #import "base/message_loop/message_pump_mac.h"
 
 #import <Foundation/Foundation.h>
@@ -152,7 +154,7 @@ class MessagePumpCFRunLoopBase::ScopedModeEnabler {
   }
 
  private:
-  MessagePumpCFRunLoopBase* const owner_;  // Weak. Owns this.
+  const raw_ptr<MessagePumpCFRunLoopBase> owner_;  // Weak. Owns this.
   const int mode_index_;
 };
 
@@ -244,7 +246,7 @@ void MessagePumpCFRunLoopBase::Detach() {}
 
 // Must be called on the run loop thread.
 MessagePumpCFRunLoopBase::MessagePumpCFRunLoopBase(int initial_mode_mask)
-    : delegate_(NULL),
+    : delegate_(nullptr),
       timer_slack_(base::TIMER_SLACK_NONE),
       nesting_level_(0),
       run_nesting_level_(0),
@@ -433,12 +435,12 @@ void MessagePumpCFRunLoopBase::RunDelayedWorkTimer(CFRunLoopTimerRef timer,
   // The timer fired, assume we have work and let RunWork() figure out what to
   // do and what to schedule after.
   base::mac::CallWithEHFrame(^{
-#if !BUILDFLAG(IS_IOS)
-    // TODO(crbug.com/1338267): Attempt to re-enable this DCHECK on iOS after
-    // migrating base::TimeTicks::Now() to
-    // clock_gettime_nsec_np(CLOCK_UPTIME_RAW).
-    DCHECK_GE(base::TimeTicks::Now(), self->delayed_work_scheduled_at_);
-#endif
+    // It would be incorrect to expect that `self->delayed_work_scheduled_at_`
+    // is smaller than or equal to `TimeTicks::Now()` because the fire date of a
+    // CFRunLoopTimer can be adjusted slightly.
+    // https://developer.apple.com/documentation/corefoundation/1543570-cfrunlooptimercreate?language=objc
+    DCHECK(!self->delayed_work_scheduled_at_.is_max());
+
     self->delayed_work_scheduled_at_ = base::TimeTicks::Max();
     self->RunWork();
   });

@@ -41,7 +41,6 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -1380,7 +1379,9 @@ void PasswordAutofillAgent::OnFrameDetached() {
   // If a sub frame has been destroyed while the user was entering information
   // into a password form, try to save the data. See https://crbug.com/450806
   // for examples of sites that perform login using this technique.
-  if (render_frame()->GetWebFrame()->Parent() && browser_has_form_to_process_) {
+  // We are treating primary main frame and the root of embedded frames the same
+  // on purpose.
+  if (browser_has_form_to_process_ && render_frame()->GetWebFrame()->Parent()) {
     DCHECK(FrameCanAccessPasswordManager());
     GetPasswordManagerDriver().DynamicFormSubmission(
         SubmissionIndicatorEvent::FRAME_DETACHED);
@@ -1408,12 +1409,12 @@ void PasswordAutofillAgent::ReadyToCommitNavigation(
   }
 
   WebLocalFrame* navigated_frame = render_frame()->GetWebFrame();
-  if (navigated_frame->Parent()) {
-    LogMessage(logger.get(), Logger::STRING_FRAME_NOT_MAIN_FRAME);
-  } else {
+  if (navigated_frame->IsOutermostMainFrame()) {
     // This is a new navigation, so require a new user gesture before filling in
     // passwords.
     gatekeeper_.Reset();
+  } else {
+    LogMessage(logger.get(), Logger::STRING_FRAME_NOT_MAIN_FRAME);
   }
 
   CleanupOnDocumentShutdown();

@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#import <LocalAuthentication/LocalAuthentication.h>
-
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -94,9 +92,8 @@ void TouchIdAuthenticator::GetCredentialInformationForRequest(
         FIDO_LOG(ERROR) << "Could not unseal metadata from resident credential";
         continue;
       }
-      result.emplace_back(DiscoverableCredentialMetadata(
-          credential.credential_id,
-          metadata->ToPublicKeyCredentialUserEntity()));
+      result.emplace_back(request.rp_id, credential.credential_id,
+                          metadata->ToPublicKeyCredentialUserEntity());
     }
     std::move(callback).Run(std::move(result), !resident_credentials->empty());
     return;

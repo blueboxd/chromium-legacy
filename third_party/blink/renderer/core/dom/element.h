@@ -102,7 +102,7 @@ class ResizeObservation;
 class ResizeObserver;
 class ResizeObserverSize;
 class ScrollIntoViewOptions;
-class IsVisibleOptions;
+class CheckVisibilityOptions;
 class ScrollToOptions;
 class ShadowRoot;
 class ShadowRootInit;
@@ -163,11 +163,11 @@ enum class PopupValueType {
   kNone,
   kAuto,
   kHint,
-  kAsync,
+  kManual,
 };
 constexpr const char* kPopupTypeValueAuto = "auto";
 constexpr const char* kPopupTypeValueHint = "hint";
-constexpr const char* kPopupTypeValueAsync = "async";
+constexpr const char* kPopupTypeValueManual = "manual";
 
 enum class PopupTriggerAction {
   kNone,
@@ -184,6 +184,11 @@ enum class HidePopupFocusBehavior {
 enum class HidePopupForcingLevel {
   kHideAfterAnimations,
   kHideImmediately,
+};
+
+enum class HidePopupIndependence {
+  kLeaveUnrelated,
+  kHideUnrelated,
 };
 
 typedef HeapVector<Member<Attr>> AttrNodeList;
@@ -569,12 +574,16 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   PopupData* GetPopupData() const;
   PopupValueType PopupType() const;
   bool popupOpen() const;
-  void showPopup(ExceptionState& exception_state);
-  void hidePopup(ExceptionState& exception_state);
-  void hidePopupInternal(HidePopupFocusBehavior focus_behavior,
+  void showPopUp(ExceptionState& exception_state);
+  void hidePopUp(ExceptionState& exception_state);
+  void HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
                          HidePopupForcingLevel forcing_level);
-  void FinishPopupHideIfNeeded(HidePopupForcingLevel);
-  static const Element* NearestOpenAncestralPopup(Node* start_node);
+  void PopupHideFinishIfNeeded();
+  static const Element* NearestOpenAncestralPopup(const Node* node,
+                                                  bool inclusive = false);
+  // Retrieves the element pointed to by this element's 'anchor' content
+  // attribute, if that element exists, and if this element is a pop-up.
+  Element* anchorElement() const;
   static void HandlePopupLightDismiss(const Event& event);
   void InvokePopup(Element* invoker);
   void SetPopupFocusOnShow();
@@ -583,7 +592,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   static void HideAllPopupsUntil(const Element*,
                                  Document&,
                                  HidePopupFocusBehavior,
-                                 HidePopupForcingLevel);
+                                 HidePopupForcingLevel,
+                                 HidePopupIndependence);
 
   // TODO(crbug.com/1197720): The popup position should be provided by the new
   // anchored positioning scheme.
@@ -595,11 +605,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual const QualifiedName& SubResourceAttributeName() const;
 
   // Only called by the parser immediately after element construction.
-  void ParserSetAttributes(const Vector<Attribute>&);
+  void ParserSetAttributes(const Vector<Attribute, kAttributePrealloc>&);
 
   // Remove attributes that might introduce scripting from the vector leaving
   // the element unchanged.
-  void StripScriptingAttributes(Vector<Attribute>&) const;
+  void StripScriptingAttributes(Vector<Attribute, kAttributePrealloc>&) const;
 
   bool SharesSameElementData(const Element& other) const {
     return GetElementData() == other.GetElementData();
@@ -1170,7 +1180,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   FocusgroupFlags GetFocusgroupFlags() const;
 
-  bool isVisible(IsVisibleOptions* options) const;
+  bool checkVisibility(CheckVisibilityOptions* options) const;
 
   bool IsDocumentElement() const;
 
@@ -1350,10 +1360,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     kRebuildLayoutTree,
     kAttachLayoutTree,
   };
-
-  // Retrieves the element pointed to by this element's 'anchor' content
-  // attribute, if that element exists.
-  Element* anchorElement() const;
 
   // Special focus handling for popups.
   Element* GetPopupFocusableArea(bool autofocus_only) const;

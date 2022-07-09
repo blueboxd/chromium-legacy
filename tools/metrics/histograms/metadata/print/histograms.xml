@@ -24,6 +24,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PrintPreview.DestinationAction"
     enum="PrintPreviewPrintDestinationBuckets" expires_after="2022-07-01">
+  <obsolete>
+    Data no longer needed 2022-06.
+  </obsolete>
   <owner>rbpotter@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>
@@ -63,7 +66,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.NumberOfPrinters" units="units"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>thestig@chromium.org</owner>
   <owner>dhoss@chromium.org</owner>
   <summary>
@@ -72,7 +75,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.PrintDocumentType"
-    enum="PrintPreviewPrintDocumentTypeBuckets" expires_after="2022-10-23">
+    enum="PrintPreviewPrintDocumentTypeBuckets" expires_after="2022-12-25">
   <owner>rbpotter@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -131,7 +134,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.PrintSettingsUi"
-    enum="PrintPreviewPrintSettingsUiBuckets" expires_after="2022-07-01">
+    enum="PrintPreviewPrintSettingsUiBuckets" expires_after="2023-07-01">
   <owner>rbpotter@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>
@@ -217,7 +220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.UserAction" enum="PrintPreviewUserActionType"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>

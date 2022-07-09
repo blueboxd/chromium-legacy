@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
 #include "third_party/blink/renderer/modules/mediasource/cross_thread_media_source_attachment.h"
+#include "third_party/blink/renderer/modules/mediasource/handle_attachment_provider.h"
 #include "third_party/blink/renderer/modules/mediasource/media_source_handle_impl.h"
 #include "third_party/blink/renderer/modules/mediasource/same_thread_media_source_attachment.h"
 #include "third_party/blink/renderer/modules/mediasource/same_thread_media_source_tracer.h"
@@ -517,7 +518,7 @@ void MediaSource::OnReadyStateChange(const ReadyState old_state,
   source_buffers_->Clear();
 
   {
-    MutexLocker lock(attachment_link_lock_);
+    base::AutoLock lock(attachment_link_lock_);
     media_source_attachment_.reset();
     attachment_tracer_ = nullptr;
   }
@@ -681,7 +682,7 @@ bool MediaSource::RunUnlessElementGoneOrClosingUs(
 
 void MediaSource::AssertAttachmentsMutexHeldIfCrossThreadForDebugging() const {
 #if DCHECK_IS_ON()
-  MutexLocker lock(attachment_link_lock_);
+  base::AutoLock lock(attachment_link_lock_);
   DCHECK(media_source_attachment_);
   if (!IsMainThread()) {
     DCHECK(!attachment_tracer_);  // Cross-thread attachments use no tracer;
@@ -717,7 +718,7 @@ void MediaSource::CompleteAttachingToMediaElement(
   AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
 
   {
-    MutexLocker lock(attachment_link_lock_);
+    base::AutoLock lock(attachment_link_lock_);
 
     DCHECK_EQ(!attachment_tracer_, !IsMainThread());
 
@@ -814,7 +815,7 @@ WebTimeRanges MediaSource::SeekableInternal(
     MediaSourceAttachmentSupplement::ExclusiveKey pass_key) const {
   AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
   {
-    MutexLocker lock(attachment_link_lock_);
+    base::AutoLock lock(attachment_link_lock_);
     DCHECK(media_source_attachment_)
         << "Seekable should only be used when attached to HTMLMediaElement";
   }
@@ -1200,7 +1201,7 @@ void MediaSource::ClearLiveSeekableRange_Locked(
 }
 
 MediaSourceHandleImpl* MediaSource::getHandle(ExceptionState& exception_state) {
-  MutexLocker lock(attachment_link_lock_);
+  base::AutoLock lock(attachment_link_lock_);
 
   DVLOG(3) << __func__;
 
@@ -1258,6 +1259,8 @@ MediaSourceHandleImpl* MediaSource::getHandle(ExceptionState& exception_state) {
   scoped_refptr<CrossThreadMediaSourceAttachment> attachment =
       base::MakeRefCounted<CrossThreadMediaSourceAttachment>(
           this, AttachmentCreationPassKeyProvider::GetPassKey());
+  scoped_refptr<HandleAttachmentProvider> attachment_provider =
+      base::MakeRefCounted<HandleAttachmentProvider>(std::move(attachment));
   handle_already_retrieved_ = true;
 
   // Create, but don't "register" an internal blob URL with the security origin
@@ -1268,7 +1271,7 @@ MediaSourceHandleImpl* MediaSource::getHandle(ExceptionState& exception_state) {
   String internal_blob_url = BlobURL::CreatePublicURL(origin).GetString();
   DCHECK(!internal_blob_url.IsEmpty());
   return MakeGarbageCollected<MediaSourceHandleImpl>(
-      std::move(attachment), std::move(internal_blob_url));
+      std::move(attachment_provider), std::move(internal_blob_url));
 }
 
 bool MediaSource::IsOpen() const {
@@ -1307,7 +1310,7 @@ void MediaSource::SetSourceBufferActive(SourceBuffer* source_buffer,
 
 std::pair<scoped_refptr<MediaSourceAttachmentSupplement>, MediaSourceTracer*>
 MediaSource::AttachmentAndTracer() const {
-  MutexLocker lock(attachment_link_lock_);
+  base::AutoLock lock(attachment_link_lock_);
   return std::make_pair(media_source_attachment_, attachment_tracer_);
 }
 
@@ -1366,7 +1369,7 @@ void MediaSource::Close() {
 MediaSourceTracer* MediaSource::StartAttachingToMediaElement(
     scoped_refptr<SameThreadMediaSourceAttachment> attachment,
     HTMLMediaElement* element) {
-  MutexLocker lock(attachment_link_lock_);
+  base::AutoLock lock(attachment_link_lock_);
 
   DCHECK(IsMainThread());
 
@@ -1388,7 +1391,7 @@ MediaSourceTracer* MediaSource::StartAttachingToMediaElement(
 
 bool MediaSource::StartWorkerAttachingToMainThreadMediaElement(
     scoped_refptr<CrossThreadMediaSourceAttachment> attachment) {
-  MutexLocker lock(attachment_link_lock_);
+  base::AutoLock lock(attachment_link_lock_);
 
   // Even in worker-owned MSE, the CrossThreadMediaSourceAttachment calls this
   // on the main thread.
@@ -1460,7 +1463,7 @@ void MediaSource::ContextDestroyed() {
   // on the same thread as the media element.
   if (IsMainThread()) {
     {
-      MutexLocker lock(attachment_link_lock_);
+      base::AutoLock lock(attachment_link_lock_);
       if (media_source_attachment_) {
         DCHECK(attachment_tracer_);  // Same-thread attachment uses tracer.
         // No need to release |attachment_link_lock_| and RunExclusively(),
@@ -1491,7 +1494,7 @@ void MediaSource::ContextDestroyed() {
   // attaching to us.
   scoped_refptr<MediaSourceAttachmentSupplement> attachment;
   {
-    MutexLocker lock(attachment_link_lock_);
+    base::AutoLock lock(attachment_link_lock_);
     context_already_destroyed_ = true;
 
     // If not yet attached, the flag, above, will prevent us from ever
@@ -1534,7 +1537,7 @@ void MediaSource::DetachWorkerOnContextDestruction_Locked(
   AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
 
   {
-    MutexLocker lock(attachment_link_lock_);
+    base::AutoLock lock(attachment_link_lock_);
 
     DCHECK(!IsMainThread());  // Called only on the worker thread.
 

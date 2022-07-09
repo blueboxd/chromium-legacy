@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 
+#include "third_party/blink/renderer/core/css/container_query.h"
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -42,40 +43,25 @@ namespace blink {
 
 namespace {
 
-PhysicalAxes SupportedAxes(const ComputedStyle& style) {
-  LogicalAxes supported(kLogicalAxisNone);
-  if (style.ContainerType() & kContainerTypeInlineSize)
-    supported |= LogicalAxes(kLogicalAxisInline);
-  if (style.ContainerType() & kContainerTypeBlockSize)
-    supported |= LogicalAxes(kLogicalAxisBlock);
-  return ToPhysicalAxes(supported, style.GetWritingMode());
-}
-
-absl::optional<double> FindSizeForContainerAxis(
-    PhysicalAxes requested_axes,
-    const Element* context_element) {
-  for (const Element* element = context_element; element;
-       element = element->ParentOrShadowHostElement()) {
-    auto* evaluator = element->GetContainerQueryEvaluator();
-    if (!evaluator)
-      continue;
-    const ComputedStyle* style = element->GetComputedStyle();
-    if (!style)
-      continue;
-    if ((requested_axes & SupportedAxes(*style)) != requested_axes)
-      continue;
-    evaluator->SetReferencedByUnit();
-    if (requested_axes == PhysicalAxes(kPhysicalAxisHorizontal))
-      return evaluator->Width();
-    DCHECK_EQ(requested_axes, PhysicalAxes(kPhysicalAxisVertical));
-    return evaluator->Height();
-  }
-  return absl::nullopt;
+absl::optional<double> FindSizeForContainerAxis(PhysicalAxes requested_axis,
+                                                Element* context_element) {
+  Element* container = ContainerQueryEvaluator::FindContainer(
+      context_element, ContainerSelector(requested_axis));
+  if (!container)
+    return absl::nullopt;
+  auto* evaluator = container->GetContainerQueryEvaluator();
+  if (!evaluator)
+    return absl::nullopt;
+  evaluator->SetReferencedByUnit();
+  if (requested_axis == kPhysicalAxisHorizontal)
+    return evaluator->Width();
+  DCHECK_EQ(requested_axis, kPhysicalAxisVertical);
+  return evaluator->Height();
 }
 
 void SetHasContainerRelativeUnits(const ComputedStyle* style) {
   const_cast<ComputedStyle*>(style)->SetHasContainerRelativeUnits();
-  const_cast<ComputedStyle*>(style)->SetDependsOnContainerQueries(true);
+  const_cast<ComputedStyle*>(style)->SetDependsOnSizeContainerQueries(true);
 }
 
 }  // namespace
@@ -296,12 +282,14 @@ double CSSToLengthConversionData::DynamicViewportHeight() const {
 }
 
 double CSSToLengthConversionData::ContainerWidth() const {
-  SetHasContainerRelativeUnits(style_);
+  if (style_)
+    SetHasContainerRelativeUnits(style_);
   return container_sizes_.Width().value_or(SmallViewportWidth());
 }
 
 double CSSToLengthConversionData::ContainerHeight() const {
-  SetHasContainerRelativeUnits(style_);
+  if (style_)
+    SetHasContainerRelativeUnits(style_);
   return container_sizes_.Height().value_or(SmallViewportHeight());
 }
 

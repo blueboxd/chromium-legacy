@@ -8,6 +8,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
@@ -161,6 +163,20 @@ base::TimeDelta GetTryLaterDelayForRequestType(
   }
 }
 
+// The original message of kUserNotManagedError is misleading in case the user
+// is not affiliated. In this case, the error message associated to the error
+// code kUserNotManagedError is replaced.
+std::string ConstructFailureMessage(
+    const attestation::TpmChallengeKeyResult& challenge_result) {
+  std::string failure_message = "Failed to build challenge response: ";
+  if (challenge_result.result_code ==
+      attestation::TpmChallengeKeyResultCode::kUserNotManagedError) {
+    return (failure_message +
+            "User is not affiliated. Certificate profile is not applicable.");
+  }
+  return (failure_message + challenge_result.GetErrorMessage());
+}
+
 }  // namespace
 
 // ============= CertProvisioningWorkerFactory =================================
@@ -295,13 +311,17 @@ CertProvisioningWorkerImpl::GetLastBackendServerError() const {
   return last_backend_server_error_;
 }
 
+const std::string& CertProvisioningWorkerImpl::GetFailureMessage() const {
+  return failure_message_;
+}
+
 void CertProvisioningWorkerImpl::Stop(CertProvisioningWorkerState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(IsFinalState(state));
 
   CancelScheduledTasks();
-  UpdateState(state);
+  UpdateState(FROM_HERE, state);
 }
 
 void CertProvisioningWorkerImpl::Pause() {
@@ -352,6 +372,7 @@ void CertProvisioningWorkerImpl::DoStep() {
 }
 
 void CertProvisioningWorkerImpl::UpdateState(
+    const base::Location& from_here,
     CertProvisioningWorkerState new_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -369,6 +390,11 @@ void CertProvisioningWorkerImpl::UpdateState(
   }
 
   HandleSerialization();
+
+  if (state_ == CertProvisioningWorkerState::kFailed) {
+    LOG(ERROR) << "Failure state from " << from_here.ToString()
+               << ". Details: " << failure_message_;
+  }
 
   state_change_callback_.Run();
   if (IsFinalState(state_)) {
@@ -397,14 +423,15 @@ void CertProvisioningWorkerImpl::OnGenerateRegularKeyDone(
     chromeos::platform_keys::Status status) {
   if (status != chromeos::platform_keys::Status::kSuccess ||
       public_key_spki_der.empty()) {
-    LOG(ERROR) << "Failed to prepare a non-VA key: "
-               << chromeos::platform_keys::StatusToString(status);
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ =
+        base::StrCat({"Failed to prepare a non-VA key: ",
+                      chromeos::platform_keys::StatusToString(status)});
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
   public_key_ = public_key_spki_der;
-  UpdateState(CertProvisioningWorkerState::kKeypairGenerated);
+  UpdateState(FROM_HERE, CertProvisioningWorkerState::kKeypairGenerated);
   DoStep();
 }
 
@@ -439,13 +466,14 @@ void CertProvisioningWorkerImpl::OnGenerateKeyForVaDone(
   }
 
   if (!result.IsSuccess() || result.public_key.empty()) {
-    LOG(ERROR) << "Failed to prepare a key: " << result.GetErrorMessage();
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ =
+        std::string("Failed to prepare a key: ") + result.GetErrorMessage();
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
   public_key_ = result.public_key;
-  UpdateState(CertProvisioningWorkerState::kKeypairGenerated);
+  UpdateState(FROM_HERE, CertProvisioningWorkerState::kKeypairGenerated);
   DoStep();
 }
 
@@ -475,21 +503,22 @@ void CertProvisioningWorkerImpl::OnStartCsrDone(
   }
 
   if (!ConvertHashingAlgorithm(hashing_algorithm, &hashing_algorithm_)) {
-    LOG(ERROR) << "Failed to parse hashing algorithm";
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ = "Failed to parse hashing algorithm";
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
   if (cert_profile_.is_va_enabled && va_challenge.empty()) {
-    LOG(ERROR) << "VA challenge is required, but not included";
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ = "VA challenge is required, but not included";
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
   csr_ = data_to_sign;
   invalidation_topic_ = invalidation_topic;
   va_challenge_ = va_challenge;
-  UpdateState(CertProvisioningWorkerState::kStartCsrResponseReceived);
+  UpdateState(FROM_HERE,
+              CertProvisioningWorkerState::kStartCsrResponseReceived);
 
   RegisterForInvalidationTopic();
 
@@ -498,7 +527,7 @@ void CertProvisioningWorkerImpl::OnStartCsrDone(
 
 void CertProvisioningWorkerImpl::ProcessStartCsrResponse() {
   if (!cert_profile_.is_va_enabled) {
-    UpdateState(CertProvisioningWorkerState::kKeyRegistered);
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kKeyRegistered);
     DoStep();
     return;
   }
@@ -518,26 +547,25 @@ void CertProvisioningWorkerImpl::BuildVaChallengeResponse() {
 
 void CertProvisioningWorkerImpl::OnBuildVaChallengeResponseDone(
     base::TimeTicks start_time,
-    const attestation::TpmChallengeKeyResult& result) {
+    const attestation::TpmChallengeKeyResult& challenge_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RecordVerifiedAccessTime(cert_scope_, base::TimeTicks::Now() - start_time);
 
-  if (!result.IsSuccess()) {
-    LOG(ERROR) << "Failed to build challenge response: "
-               << result.GetErrorMessage();
-    UpdateState(CertProvisioningWorkerState::kFailed);
+  if (!challenge_result.IsSuccess()) {
+    failure_message_ = ConstructFailureMessage(challenge_result);
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
-  if (result.challenge_response.empty()) {
-    LOG(ERROR) << "Challenge response is empty";
-    UpdateState(CertProvisioningWorkerState::kFailed);
+  if (challenge_result.challenge_response.empty()) {
+    failure_message_ = "Challenge response is empty";
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
-  va_challenge_response_ = result.challenge_response;
-  UpdateState(CertProvisioningWorkerState::kVaChallengeFinished);
+  va_challenge_response_ = challenge_result.challenge_response;
+  UpdateState(FROM_HERE, CertProvisioningWorkerState::kVaChallengeFinished);
   DoStep();
 }
 
@@ -556,12 +584,13 @@ void CertProvisioningWorkerImpl::OnRegisterKeyDone(
   tpm_challenge_key_subtle_impl_.reset();
 
   if (!result.IsSuccess()) {
-    LOG(ERROR) << "Failed to register key: " << result.GetErrorMessage();
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ =
+        base::StrCat({"Failed to register key: ", result.GetErrorMessage()});
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
-  UpdateState(CertProvisioningWorkerState::kKeyRegistered);
+  UpdateState(FROM_HERE, CertProvisioningWorkerState::kKeyRegistered);
   DoStep();
 }
 
@@ -583,13 +612,14 @@ void CertProvisioningWorkerImpl::OnMarkKeyDone(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (status != chromeos::platform_keys::Status::kSuccess) {
-    LOG(ERROR) << "Failed to mark a key: "
-               << chromeos::platform_keys::StatusToString(status);
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ =
+        base::StrCat({"Failed to mark a key: ",
+                      chromeos::platform_keys::StatusToString(status)});
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
-  UpdateState(CertProvisioningWorkerState::kKeypairMarked);
+  UpdateState(FROM_HERE, CertProvisioningWorkerState::kKeypairMarked);
   DoStep();
 }
 
@@ -597,8 +627,8 @@ void CertProvisioningWorkerImpl::SignCsr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!hashing_algorithm_.has_value()) {
-    LOG(ERROR) << "Hashing algorithm is empty";
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ = "Hashing algorithm is empty";
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
@@ -627,14 +657,15 @@ void CertProvisioningWorkerImpl::OnSignCsrDone(
   RecordCsrSignTime(cert_scope_, base::TimeTicks::Now() - start_time);
 
   if (status != chromeos::platform_keys::Status::kSuccess) {
-    LOG(ERROR) << "Failed to sign CSR: "
-               << chromeos::platform_keys::StatusToString(status);
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ =
+        base::StrCat({"Failed to sign CSR: ",
+                      chromeos::platform_keys::StatusToString(status)});
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
   signature_ = signature;
-  UpdateState(CertProvisioningWorkerState::kSignCsrFinished);
+  UpdateState(FROM_HERE, CertProvisioningWorkerState::kSignCsrFinished);
   DoStep();
 }
 
@@ -660,7 +691,8 @@ void CertProvisioningWorkerImpl::OnFinishCsrDone(
     return;
   }
 
-  UpdateState(CertProvisioningWorkerState::kFinishCsrResponseReceived);
+  UpdateState(FROM_HERE,
+              CertProvisioningWorkerState::kFinishCsrResponseReceived);
   DoStep();
 }
 
@@ -696,16 +728,17 @@ void CertProvisioningWorkerImpl::ImportCert(
   scoped_refptr<net::X509Certificate> cert = CreateSingleCertificateFromBytes(
       pem_encoded_certificate.data(), pem_encoded_certificate.size());
   if (!cert) {
-    LOG(ERROR) << "Failed to parse a certificate";
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ = "Failed to parse a certificate";
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
   std::string public_key_from_cert =
       chromeos::platform_keys::GetSubjectPublicKeyInfo(cert);
   if (public_key_from_cert != public_key_) {
-    LOG(ERROR) << "Downloaded certificate does not match the expected key pair";
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ =
+        "Downloaded certificate does not match the expected key pair";
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
@@ -720,13 +753,14 @@ void CertProvisioningWorkerImpl::OnImportCertDone(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (status != chromeos::platform_keys::Status::kSuccess) {
-    LOG(ERROR) << "Failed to import certificate: "
-               << chromeos::platform_keys::StatusToString(status);
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ =
+        base::StrCat({"Failed to import certificate: ",
+                      chromeos::platform_keys::StatusToString(status)});
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return;
   }
 
-  UpdateState(CertProvisioningWorkerState::kSucceeded);
+  UpdateState(FROM_HERE, CertProvisioningWorkerState::kSucceeded);
 }
 
 bool CertProvisioningWorkerImpl::ProcessResponseErrors(
@@ -766,11 +800,11 @@ bool CertProvisioningWorkerImpl::ProcessResponseErrors(
   }
 
   if (status != policy::DeviceManagementStatus::DM_STATUS_SUCCESS) {
-    LOG(ERROR) << "DM Server returned error: " << status
-               << " for profile ID: " << cert_profile_.profile_id
-               << " in state: "
-               << CertificateProvisioningWorkerStateToString(state_);
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ = base::StrCat(
+        {"DM Server returned error: ", base::NumberToString(status),
+         " for profile ID: ", cert_profile_.profile_id,
+         " in state: ", CertificateProvisioningWorkerStateToString(state_)});
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return false;
   }
 
@@ -782,16 +816,17 @@ bool CertProvisioningWorkerImpl::ProcessResponseErrors(
                << " for profile ID: " << cert_profile_.profile_id
                << " in state: "
                << CertificateProvisioningWorkerStateToString(state_);
-    UpdateState(CertProvisioningWorkerState::kInconsistentDataError);
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kInconsistentDataError);
     return false;
   }
 
   if (error.has_value()) {
-    LOG(ERROR) << "Server response contains error: " << error.value()
-               << " for profile ID: " << cert_profile_.profile_id
-               << " in state: "
-               << CertificateProvisioningWorkerStateToString(state_);
-    UpdateState(CertProvisioningWorkerState::kFailed);
+    failure_message_ = base::StrCat(
+        {"Server response contains error: ",
+         base::NumberToString(error.value()),
+         " for profile ID: ", cert_profile_.profile_id,
+         " in state: ", CertificateProvisioningWorkerStateToString(state_)});
+    UpdateState(FROM_HERE, CertProvisioningWorkerState::kFailed);
     return false;
   }
 

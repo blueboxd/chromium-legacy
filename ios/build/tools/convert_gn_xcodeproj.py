@@ -18,6 +18,7 @@ import copy
 import filecmp
 import functools
 import hashlib
+import io
 import json
 import os
 import re
@@ -55,7 +56,7 @@ class Template(string.Template):
 @functools.lru_cache
 def LoadSchemeTemplate(root, name):
   """Return a string.Template object for scheme file loaded relative to root."""
-  path = os.path.join(root, 'ios', 'build', 'tools', name)
+  path = os.path.join(root, 'ios', 'build', 'tools', name + '.template')
   with open(path) as file:
     return Template(file.read())
 
@@ -65,7 +66,7 @@ def CreateIdentifier(str_id):
   return hashlib.sha1(str_id.encode("utf-8")).hexdigest()[:24].upper()
 
 
-def GenerateSchemeForTarget(root, project, old_project, name, path, tests):
+def GenerateSchemeForTarget(root, project, old_project, name, path, is_test):
   """Generates the .xcsheme file for target named |name|.
 
   The file is generated in the new project schemes directory from a template.
@@ -81,9 +82,23 @@ def GenerateSchemeForTarget(root, project, old_project, name, path, tests):
   if not os.path.isdir(os.path.dirname(scheme_path)):
     os.makedirs(os.path.dirname(scheme_path))
 
+  substitutions = {
+    'LLDBINIT_PATH': LLDBINIT_PATH,
+    'BLUEPRINT_IDENTIFIER': identifier,
+    'BUILDABLE_NAME': path,
+    'BLUEPRINT_NAME': name,
+    'PROJECT_NAME': project_name
+  }
+
+  if is_test:
+    template = LoadSchemeTemplate(root, 'xcodescheme-testable')
+    substitutions['PATH'] = os.environ['PATH']
+
+  else:
+    template = LoadSchemeTemplate(root, 'xcodescheme')
+
   old_scheme_path = os.path.join(old_project, relative_path)
   if os.path.exists(old_scheme_path):
-    made_changes = False
 
     tree = xml.etree.ElementTree.parse(old_scheme_path)
     tree_root = tree.getroot()
@@ -95,7 +110,6 @@ def GenerateSchemeForTarget(root, project, old_project, name, path, tests):
           ('BlueprintIdentifier', identifier)):
         if reference.get(attr) != value:
           reference.set(attr, value)
-          made_changes = True
 
     for child in tree_root:
       if child.tag not in ('TestAction', 'LaunchAction'):
@@ -103,59 +117,29 @@ def GenerateSchemeForTarget(root, project, old_project, name, path, tests):
 
       if child.get('customLLDBInitFile') != LLDBINIT_PATH:
         child.set('customLLDBInitFile', LLDBINIT_PATH)
-        made_changes = True
 
-      # Override the list of testables.
-      if child.tag == 'TestAction':
-        for subchild in child:
-          if subchild.tag != 'Testables':
-            continue
+    if is_test:
 
-          for elt in list(subchild):
-            subchild.remove(elt)
+      template_tree = xml.etree.ElementTree.parse(
+          io.StringIO(template.substitute(**substitutions)))
 
-          if tests:
-            template = LoadSchemeTemplate(root, 'xcodescheme-testable.template')
-            for (key, test_path, test_name) in sorted(tests):
-              testable = ''.join(template.substitute(
-                  BLUEPRINT_IDENTIFIER=key,
-                  BUILDABLE_NAME=test_path,
-                  BLUEPRINT_NAME=test_name,
-                  PROJECT_NAME=project_name))
+      template_tree_root = template_tree.getroot()
+      for child in tree_root:
+        if child.tag != 'BuildAction':
+          continue
 
-              testable_elt = xml.etree.ElementTree.fromstring(testable)
-              subchild.append(testable_elt)
+        for subchild in list(child):
+          child.remove(subchild)
 
-    if made_changes:
-      tree.write(scheme_path, xml_declaration=True, encoding='UTF-8')
+        for post_action in template_tree_root.findall('.//PostActions'):
+          child.append(post_action)
 
-    else:
-      shutil.copyfile(old_scheme_path, scheme_path)
+    tree.write(scheme_path, xml_declaration=True, encoding='UTF-8')
 
   else:
 
-    testables = ''
-    if tests:
-      template = LoadSchemeTemplate(root, 'xcodescheme-testable.template')
-      testables = '\n' + ''.join(
-          template.substitute(
-              BLUEPRINT_IDENTIFIER=key,
-              BUILDABLE_NAME=test_path,
-              BLUEPRINT_NAME=test_name,
-              PROJECT_NAME=project_name)
-          for (key, test_path, test_name) in sorted(tests)).rstrip()
-
-    template = LoadSchemeTemplate(root, 'xcodescheme.template')
-
     with open(scheme_path, 'w') as scheme_file:
-      scheme_file.write(
-          template.substitute(
-              TESTABLES=testables,
-              LLDBINIT_PATH=LLDBINIT_PATH,
-              BLUEPRINT_IDENTIFIER=identifier,
-              BUILDABLE_NAME=path,
-              BLUEPRINT_NAME=name,
-              PROJECT_NAME=project_name))
+      scheme_file.write(template.substitute(**substitutions))
 
 
 class XcodeProject(object):
@@ -216,22 +200,12 @@ class XcodeProject(object):
     # iterating this list and python dictionaries cannot be mutated
     # during iteration.
 
-    # TODO(crbug.com/1334028) Disable code signing for Xcode 14.
-    lines = check_output(['xcodebuild', '-version']).splitlines()
-    xcode_version_int = int(lines[0].split()[-1].split('.')[0])
-
     for key, obj in list(self.IterObjectsByIsa('XCConfigurationList')):
       # Use the first build configuration as template for creating all the
       # new build configurations.
       build_config_template = self.objects[obj['buildConfigurations'][0]]
       build_config_template['buildSettings']['CONFIGURATION_BUILD_DIR'] = \
           '$(PROJECT_DIR)/../$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)'
-
-      # TODO(crbug.com/1334028) Disable code signing for Xcode 14.
-      if xcode_version_int >= 14:
-        build_config_template['buildSettings']['CODE_SIGN_IDENTITY'] = ''
-        build_config_template['buildSettings']['CODE_SIGNING_REQUIRED'] = 'NO'
-        build_config_template['buildSettings']['CODE_SIGNING_ALLOWED'] = 'NO'
 
       # Remove the existing build configurations from the project before
       # creating the new ones.
@@ -342,14 +316,19 @@ def UpdateXcodeProject(project_dir, old_project_dir, configurations, root_dir):
     product = project.objects[obj['productReference']]
     product_path = product['path']
 
-    # For XCTests, the key is the product path, while for XCUITests, the key
-    # is the target name. Use a sum of both possible keys (there should not
-    # be overlaps since different hosts are used for XCTests and XCUITests
-    # but this make the code simpler).
+    # Do not generate scheme for the XCTests and XXCUITests target app.
+    # Instead, a scheme will be generated for each test modules.
     tests = mapping.get(product_path, []) + mapping.get(obj['name'], [])
-    GenerateSchemeForTarget(
-        root_dir, project_dir, old_project_dir,
-        obj['name'], product_path, tests)
+    if not tests:
+      GenerateSchemeForTarget(
+          root_dir, project_dir, old_project_dir,
+          obj['name'], product_path, False)
+
+    else:
+      for (_, test_name, test_path) in tests:
+        GenerateSchemeForTarget(
+          root_dir, project_dir, old_project_dir,
+          test_name, test_path, True)
 
   root_object = project.objects[json_data['rootObject']]
   main_group = project.objects[root_object['mainGroup']]
@@ -368,7 +347,7 @@ def UpdateXcodeProject(project_dir, old_project_dir, configurations, root_dir):
   SortFileReferencesByName(project, sources, root_object.get('productRefGroup'))
 
   objects = collections.OrderedDict(sorted(project.objects.items()))
-  WriteXcodeProject(project_dir, json.dumps(json_data))
+  # WriteXcodeProject(project_dir, json.dumps(json_data))
 
 
 def CreateGroup(project, parent_group, group_name, use_relative_paths):

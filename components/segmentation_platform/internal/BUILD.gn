@@ -14,6 +14,7 @@ static_library("internal") {
     "//chrome/browser",
     "//chrome/browser/segmentation_platform:*",
     "//chrome/test:*",
+    "//components/segmentation_platform/embedder/*",
     "//ios/chrome/browser/segmentation_platform:*",
   ]
 
@@ -85,8 +86,6 @@ static_library("internal") {
     "execution/processing/sql_feature_processor.h",
     "execution/processing/uma_feature_processor.cc",
     "execution/processing/uma_feature_processor.h",
-    "input_context.cc",
-    "input_context.h",
     "local_state_helper_impl.cc",
     "local_state_helper_impl.h",
     "metadata/metadata_utils.cc",
@@ -168,8 +167,6 @@ static_library("internal") {
 
   if (is_android) {
     sources += [
-      "android/segmentation_platform_conversion_bridge.cc",
-      "android/segmentation_platform_conversion_bridge.h",
       "android/segmentation_platform_service_android.cc",
       "android/segmentation_platform_service_android.h",
     ]
@@ -328,10 +325,7 @@ bundle_data("unit_tests_bundle_data") {
 if (is_android) {
   android_library("internal_java") {
     visibility = [ "//chrome/android:chrome_all_java" ]
-    sources = [
-      "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformConversionBridge.java",
-      "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java",
-    ]
+    sources = [ "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java" ]
 
     deps = [
       "//base:base_java",
@@ -349,9 +343,6 @@ if (is_android) {
       "//chrome/browser",
     ]
 
-    sources = [
-      "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformConversionBridge.java",
-      "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java",
-    ]
+    sources = [ "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java" ]
   }
 }

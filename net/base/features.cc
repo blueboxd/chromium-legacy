@@ -108,6 +108,9 @@ const base::FeatureParam<base::TimeDelta> kUseDnsHttpsSvcbExtraTimeAbsolute{
 const base::FeatureParam<int> kUseDnsHttpsSvcbExtraTimePercent{
     &kUseDnsHttpsSvcb, "UseDnsHttpsSvcbExtraTimePercent", 0};
 
+const base::Feature kUseDnsHttpsSvcbAlpn{"UseDnsHttpsSvcbAlpn",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableTLS13EarlyData{"EnableTLS13EarlyData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -294,17 +297,35 @@ const base::Feature kClampCookieExpiryTo400Days(
     "ClampCookieExpiryTo400Days",
     base::FEATURE_ENABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_ANDROID)
 const base::Feature kStaticKeyPinningEnforcement(
     "StaticKeyPinningEnforcement",
+#if BUILDFLAG(IS_ANDROID)
     base::FEATURE_DISABLED_BY_DEFAULT);
 #else
-const base::Feature kStaticKeyPinningEnforcement(
-    "StaticKeyPinningEnforcement",
     base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 const base::Feature kCookieDomainRejectNonASCII{
     "CookieDomainRejectNonASCII", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBlockSetCookieHeader{"BlockSetCookieHeader",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Read as much of the net::URLRequest as there is space in the Mojo data pipe.
+const base::Feature kOptimizeNetworkBuffers{"OptimizeNetworkBuffers2",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit{
+    &kOptimizeNetworkBuffers, "bytes_read_limit", 64 * 1024};
+
+const base::FeatureParam<int>
+    kOptimizeNetworkBuffersMaxInputStreamBytesToReadWhenAvailableUnknown{
+        &kOptimizeNetworkBuffers, "max_input_stream_bytes_available_unknown",
+        32 * 1024};
+
+const base::FeatureParam<int>
+    kOptimizeNetworkBuffersFilterSourceStreamBufferSize{
+        &kOptimizeNetworkBuffers, "filter_source_stream_buffer_size",
+        32 * 1024};
 
 }  // namespace net::features

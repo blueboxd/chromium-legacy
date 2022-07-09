@@ -5,6 +5,7 @@
 #include "media/audio/system_glitch_reporter.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/trace_event/trace_event.h"
 
 namespace media {
 
@@ -17,20 +18,32 @@ SystemGlitchReporter::SystemGlitchReporter(StreamType stream_type)
     : num_glitches_detected_metric_name_(stream_type == StreamType::kCapture
                                              ? "Media.Audio.Capture.Glitches2"
                                              : "Media.Audio.Render.Glitches2"),
-      largest_glitch_duration_metric_name_(
+      total_glitch_duration_metric_name_(
           stream_type == StreamType::kCapture
               ? "Media.Audio.Capture.LostFramesInMs2"
               : "Media.Audio.Render.LostFramesInMs2"),
-      total_glitch_duration_metric_name_(
+      largest_glitch_duration_metric_name_(
           stream_type == StreamType::kCapture
               ? "Media.Audio.Capture.LargestGlitchMs2"
-              : "Media.Audio.Render.LargestGlitchMs2") {}
+              : "Media.Audio.Render.LargestGlitchMs2"),
+      early_glitch_detected_metric_name_(
+          stream_type == StreamType::kCapture
+              ? "Media.Audio.Capture.EarlyGlitchDetected"
+              : "Media.Audio.Render.EarlyGlitchDetected") {}
+
+SystemGlitchReporter::~SystemGlitchReporter() = default;
 
 SystemGlitchReporter::Stats SystemGlitchReporter::GetLongTermStatsAndReset() {
+  if (callback_count_ > 0) {
+    base::UmaHistogramBoolean(early_glitch_detected_metric_name_,
+                              early_glitch_detected_);
+  }
+
   Stats result = long_term_stats_;
   callback_count_ = 0;
   short_term_stats_ = {};
   long_term_stats_ = {};
+  early_glitch_detected_ = false;
   return result;
 }
 
@@ -38,6 +51,13 @@ void SystemGlitchReporter::UpdateStats(base::TimeDelta glitch_duration) {
   ++callback_count_;
 
   if (glitch_duration.is_positive()) {
+    TRACE_EVENT_INSTANT1("audio", "OsGlitchDetected", TRACE_EVENT_SCOPE_THREAD,
+                         "glitch_duration_ms",
+                         glitch_duration.InMilliseconds());
+
+    if (callback_count_ <= kCallbacksPerLogPeriod)
+      early_glitch_detected_ = true;
+
     ++short_term_stats_.glitches_detected;
     ++long_term_stats_.glitches_detected;
 

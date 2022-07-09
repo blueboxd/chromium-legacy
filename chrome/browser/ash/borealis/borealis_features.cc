@@ -35,7 +35,7 @@ namespace borealis {
 
 namespace {
 
-constexpr int64_t kGibi = 1024 * 1024 * 1024;
+constexpr uint64_t kGibi = 1024ull * 1024 * 1024;
 
 // Used to make it difficult to tell what someone's token is based on their
 // prefs.
@@ -113,7 +113,9 @@ class FullChecker : public TokenHardwareChecker {
         LOG(WARNING) << "Vendor token provided, bypassing hardware checks.";
         return AllowStatus::kAllowed;
       }
-      return AllowStatus::kIncorrectToken;
+      return CpuRegexMatches("Ryzen [57]") && HasMemory(7 * kGibi)
+                 ? AllowStatus::kAllowed
+                 : AllowStatus::kHardwareChecksFailed;
     } else if (IsBoard("draco")) {
       return AllowStatus::kAllowed;
     }

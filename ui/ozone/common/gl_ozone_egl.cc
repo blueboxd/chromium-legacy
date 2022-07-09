@@ -7,21 +7,20 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_context_egl.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_surface_egl.h"
-#include "ui/ozone/common/native_pixmap_egl_binding.h"
+#include "ui/gl/gl_utils.h"
 
 namespace ui {
 
 gl::GLDisplay* GLOzoneEGL::InitializeGLOneOffPlatform(
     uint64_t system_device_id) {
-  gl::GLDisplay* display =
-      gl::GLSurfaceEGL::InitializeOneOff(GetNativeDisplay(), system_device_id);
-  if (!display) {
-    LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
+  gl::GLDisplayEGL* display = gl::GetDisplayEGL(system_device_id);
+  if (!display->Initialize(GetNativeDisplay())) {
+    LOG(ERROR) << "GLDisplayEGL::Initialize failed.";
     return nullptr;
   }
   return display;
@@ -51,13 +50,14 @@ bool GLOzoneEGL::InitializeExtensionSettingsOneOffPlatform(
 }
 
 void GLOzoneEGL::ShutdownGL(gl::GLDisplay* display) {
-  gl::GLSurfaceEGL::ShutdownOneOff(static_cast<gl::GLDisplayEGL*>(display));
+  if (display)
+    display->Shutdown();
   gl::ClearBindingsGL();
   gl::ClearBindingsEGL();
 }
 
 bool GLOzoneEGL::CanImportNativePixmap() {
-  return gl::GLSurfaceEGL::GetGLDisplayEGL()->ext->b_EGL_KHR_image;
+  return false;
 }
 
 std::unique_ptr<NativePixmapGLBinding> GLOzoneEGL::ImportNativePixmap(
@@ -65,10 +65,10 @@ std::unique_ptr<NativePixmapGLBinding> GLOzoneEGL::ImportNativePixmap(
     gfx::BufferFormat plane_format,
     gfx::BufferPlane plane,
     gfx::Size plane_size,
+    const gfx::ColorSpace& color_space,
     GLenum target,
     GLuint texture_id) {
-  return NativePixmapEGLBinding::Create(pixmap, plane_format, plane, plane_size,
-                                        target, texture_id);
+  return nullptr;
 }
 
 bool GLOzoneEGL::GetGLWindowSystemBindingInfo(

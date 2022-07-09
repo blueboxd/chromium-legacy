@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/lens_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/search_image_with_lens_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_utils.h"
@@ -320,17 +321,23 @@ NSString* const kContextMenuEllipsis = @"…";
     }
   }
 
+  NSString* menuTitle;
+
   // Insert any provided menu items. Do after Link and/or Image to allow
   // inserting at beginning or adding to end.
-  ios::provider::AddContextMenuElements(
-      menuElements, self.browser->GetBrowserState(), webState, params,
-      self.baseViewController);
+  ElementsToAddToContextMenu* result =
+      ios::provider::GetContextMenuElementsToAdd(
+          self.browser->GetBrowserState(), webState, params,
+          self.baseViewController);
+  if (result && result.elements) {
+    [menuElements addObjectsFromArray:result.elements];
+    menuTitle = result.title;
+  }
 
   if (menuElements.count == 0) {
     return nil;
   }
 
-  NSString* menuTitle = nil;
   if (isLink || isImage) {
     menuTitle = GetContextMenuTitle(params);
 
@@ -400,10 +407,8 @@ NSString* const kContextMenuEllipsis = @"…";
 
 // Searches an image with Lens using the given `imageData`.
 - (void)searchImageUsingLensWithData:(NSData*)imageData {
-  // TODO(crbug.com/1323783): This should be an id<LensCommands> and use
-  // HandlerForProtocol().
-  id<BrowserCommands> handler =
-      static_cast<id<BrowserCommands>>(_browser->GetCommandDispatcher());
+  id<LensCommands> handler =
+      HandlerForProtocol(_browser->GetCommandDispatcher(), LensCommands);
   UIImage* image = [UIImage imageWithData:imageData];
   SearchImageWithLensCommand* command =
       [[SearchImageWithLensCommand alloc] initWithImage:image];

@@ -65,6 +65,7 @@ class ActionView : public views::View {
   // Show info/edu message.
   void ShowInfoMsg(const base::StringPiece& message,
                    ActionLabel* editing_label);
+  void ShowLabelFocusInfoMsg(const base::StringPiece& message);
   void RemoveMessage();
   // Change binding for |action| binding to |input_element| and set
   // |kEditedSuccess| on |action_label| if |action_label| is not nullptr.
@@ -74,7 +75,10 @@ class ActionView : public views::View {
                      std::unique_ptr<InputElement> input_element);
   // Reset binding to its previous binding before entering to the edit mode.
   void OnResetBinding();
-
+  // Return true if it needs to show error message and also shows error message.
+  // Otherwise, don't show any error message and return false.
+  bool ShouldShowErrorMsg(ui::DomCode code,
+                          ActionLabel* editing_label = nullptr);
   Action* action() { return action_; }
   const std::vector<ActionLabel*>& labels() const { return labels_; }
   void set_editable(bool editable) { editable_ = editable; }
@@ -88,9 +92,6 @@ class ActionView : public views::View {
   bool show_circle() const { return show_circle_; }
 
  protected:
-  bool ShouldShowErrorMsg(ui::DomCode code,
-                          ActionLabel* editing_label = nullptr);
-
   // Reference to the action of this UI.
   raw_ptr<Action> action_ = nullptr;
   // Reference to the owner class.

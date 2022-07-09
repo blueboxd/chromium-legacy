@@ -8,7 +8,7 @@
 // build time. Try not to raise this limit unless absolutely necessary. See
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
 #ifndef NACL_TC_REV
-#pragma clang max_tokens_here 460000
+#pragma clang max_tokens_here 470000
 #endif
 
 #include <algorithm>
@@ -438,20 +438,20 @@ Value::Dict Value::Dict::Clone() const {
   return Dict(storage_);
 }
 
-void Value::Dict::Merge(const Dict& dict) {
+void Value::Dict::Merge(Dict dict) {
   for (const auto [key, value] : dict) {
-    if (const Dict* nested_dict = value.GetIfDict()) {
+    if (Dict* nested_dict = value.GetIfDict()) {
       if (Dict* current_dict = FindDict(key)) {
         // If `key` is a nested dictionary in this dictionary and the dictionary
         // being merged, recursively merge the two dictionaries.
-        current_dict->Merge(*nested_dict);
+        current_dict->Merge(std::move(*nested_dict));
         continue;
       }
     }
 
-    // Otherwise, unconditionally set the value, potentially overwriting any
-    // pre-existing key.
-    Set(key, value.Clone());
+    // Otherwise, unconditionally set the value, overwriting any value that may
+    // already be associated with the key.
+    Set(key, std::move(value));
   }
 }
 
@@ -1031,10 +1031,6 @@ Value::ConstListView Value::GetListDeprecated() const {
   return list();
 }
 
-Value::ListStorage Value::TakeListDeprecated() && {
-  return std::exchange(list(), {});
-}
-
 void Value::Append(bool value) {
   GetList().Append(value);
 }
@@ -1057,10 +1053,6 @@ void Value::Append(StringPiece value) {
 
 void Value::Append(std::string&& value) {
   GetList().Append(std::move(value));
-}
-
-void Value::Append(const char16_t* value) {
-  GetList().Append(value);
 }
 
 void Value::Append(StringPiece16 value) {
@@ -1395,7 +1387,7 @@ void Value::DictClear() {
 }
 
 void Value::MergeDictionary(const Value* dictionary) {
-  return GetDict().Merge(dictionary->GetDict());
+  return GetDict().Merge(dictionary->GetDict().Clone());
 }
 
 bool Value::GetAsList(ListValue** out_value) {
@@ -1790,9 +1782,6 @@ std::unique_ptr<ListValue> ListValue::From(std::unique_ptr<Value> value) {
 }
 
 ListValue::ListValue() : Value(Type::LIST) {}
-ListValue::ListValue(span<const Value> in_list) : Value(in_list) {}
-ListValue::ListValue(ListStorage&& in_list) noexcept
-    : Value(std::move(in_list)) {}
 
 bool ListValue::GetDictionary(size_t index,
                               const DictionaryValue** out_value) const {

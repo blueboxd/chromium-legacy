@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/containers/flat_map.h"
 #include "base/notreached.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/clamped_math.h"
@@ -47,6 +48,11 @@ ui::AXNodeID GetNextNodeID() {
 bool HaveIdenticalFormattingStyle(const chrome_screen_ai::WordBox& word_1,
                                   const chrome_screen_ai::WordBox& word_2) {
   if (word_1.language() != word_2.language())
+    return false;
+
+  // The absence of reliable color information makes the two words have unequal
+  // style, because it could indicate vastly different colors between them.
+  if (word_1.estimate_color_success() != word_2.estimate_color_success())
     return false;
   if (word_1.estimate_color_success() && word_2.estimate_color_success()) {
     if (word_1.foreground_rgb_value() != word_2.foreground_rgb_value())
@@ -390,6 +396,31 @@ void AddSubTree(const std::vector<ui::AXNodeData>& nodes,
     AddSubTree(nodes, id_to_position, nodes_order, id_to_position[child_id]);
 }
 
+// Converts a Chrome role to a Screen2x role as text.
+// TODO(https://crbug.com/1278249): Remove after Screen2x proto generation
+// for training is done directly by Chrome.
+std::string GetScreen2xRoleFromChromeRole(ax::mojom::Role role) {
+  // Some roles have different texts in Screen2x.
+  static base::flat_map<ax::mojom::Role, std::string> exceptions_map = {
+      {ax::mojom::Role::kComboBoxGrouping, "combobox"},
+      {ax::mojom::Role::kContentInfo, "contentinfo"},
+      {ax::mojom::Role::kDescriptionList, "DescriptionList"},
+      {ax::mojom::Role::kDescriptionListDetail, "DescriptionListDetail"},
+      {ax::mojom::Role::kDescriptionListTerm, "DescriptionListTerm"},
+      {ax::mojom::Role::kGenericContainer, "generic"},
+      {ax::mojom::Role::kHeaderAsNonLandmark, "HeaderAsNonLandmark"},
+      {ax::mojom::Role::kImage, "img"},
+      {ax::mojom::Role::kLineBreak, "LineBreak"},
+      {ax::mojom::Role::kListItem, "listitem"},
+      {ax::mojom::Role::kListMarker, "ListMarker"},
+      {ax::mojom::Role::kRootWebArea, "RootWebArea"},
+      {ax::mojom::Role::kSection, "Section"},
+      {ax::mojom::Role::kStaticText, "StaticText"}};
+
+  const auto& item = exceptions_map.find(role);
+  return item == exceptions_map.end() ? ui::ToString(role) : item->second;
+}
+
 }  // namespace
 
 namespace screen_ai {
@@ -574,7 +605,7 @@ std::string Screen2xSnapshotToViewHierarchy(const ui::AXTreeUpdate& snapshot) {
     // Role.
     attrib = uie->add_attributes();
     attrib->set_name("chrome_role");
-    attrib->set_string_value(ui::ToString(node.role));
+    attrib->set_string_value(GetScreen2xRoleFromChromeRole(node.role));
 
     // AXNode ID.
     attrib = uie->add_attributes();
@@ -582,10 +613,10 @@ std::string Screen2xSnapshotToViewHierarchy(const ui::AXTreeUpdate& snapshot) {
     attrib->set_int_value(ax_node_id);
 
     // Child IDs.
+    attrib = uie->add_attributes();
+    attrib->set_name("/axnode/child_ids");
     for (const ui::AXNodeID& id : node.child_ids) {
-      attrib = uie->add_attributes();
-      attrib->set_name("/axnode/child_ids");
-      attrib->set_int_value(id);
+      attrib->mutable_int_list_value()->add_value(id);
       uie->add_child_ids(new_id[id]);
     }
 

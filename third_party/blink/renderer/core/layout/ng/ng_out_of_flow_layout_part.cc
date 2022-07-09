@@ -1441,8 +1441,15 @@ NGOutOfFlowLayoutPart::OffsetInfo NGOutOfFlowLayoutPart::CalculateOffset(
     }
   }
 
-  const LogicalSize computed_available_size = ComputeOutOfFlowAvailableSize(
-      node_info.node, node_info.constraint_space, node_info.static_position);
+  const WritingModeConverter container_converter(
+      container_writing_direction, node_info.container_physical_content_size);
+  const NGLogicalOutOfFlowInsets insets = ComputeOutOfFlowInsets(
+      candidate_style, node_info.constraint_space.AvailableSize(),
+      container_converter, container_builder_->AnchorQuery());
+
+  const LogicalSize computed_available_size =
+      ComputeOutOfFlowAvailableSize(node_info.node, node_info.constraint_space,
+                                    insets, node_info.static_position);
 
   const NGBoxStrut border_padding =
       ComputeBorders(node_info.constraint_space, node_info.node) +
@@ -1457,7 +1464,7 @@ NGOutOfFlowLayoutPart::OffsetInfo NGOutOfFlowLayoutPart::CalculateOffset(
 
   offset_info.inline_size_depends_on_min_max_sizes =
       ComputeOutOfFlowInlineDimensions(
-          node_info.node, node_info.constraint_space, border_padding,
+          node_info.node, node_info.constraint_space, insets, border_padding,
           node_info.static_position, computed_available_size, replaced_size,
           container_writing_direction, &offset_info.node_dimensions);
 
@@ -1465,7 +1472,7 @@ NGOutOfFlowLayoutPart::OffsetInfo NGOutOfFlowLayoutPart::CalculateOffset(
   // our min/max sizes, only run if needed.
   if (offset_info.node_dimensions.size.block_size == kIndefiniteSize) {
     offset_info.initial_layout_result = ComputeOutOfFlowBlockDimensions(
-        node_info.node, node_info.constraint_space, border_padding,
+        node_info.node, node_info.constraint_space, insets, border_padding,
         node_info.static_position, computed_available_size, replaced_size,
         container_writing_direction, &offset_info.node_dimensions);
   }

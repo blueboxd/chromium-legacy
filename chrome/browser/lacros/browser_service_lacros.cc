@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/task_traits.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -145,7 +147,7 @@ NavigateParams::PathBehavior ConvertPathBehavior(
 
 // A struct to keep the pending OpenUrl task.
 struct BrowserServiceLacros::PendingOpenUrl {
-  Profile* profile;
+  raw_ptr<Profile> profile;
   GURL url;
   crosapi::mojom::OpenUrlParamsPtr params;
   OpenUrlCallback callback;
@@ -209,7 +211,8 @@ void BrowserServiceLacros::REMOVED_16(
 void BrowserServiceLacros::NewWindow(bool incognito,
                                      bool should_trigger_session_restore,
                                      NewWindowCallback callback) {
-  if (ProfilePicker::ShouldShowAtLaunch() && !incognito) {
+  if (ProfilePicker::ShouldShowAtLaunch() &&
+      chrome::GetTotalBrowserCount() == 0 && !incognito) {
     // Profile picker does not support passing through the incognito param. It
     // also does not support passing through the
     // `should_trigger_session_restore` param but that's very common (left
@@ -351,10 +354,10 @@ void BrowserServiceLacros::UpdateKeepAlive(bool enabled) {
   }
 }
 
-void BrowserServiceLacros::OpenForFullRestore() {
+void BrowserServiceLacros::OpenForFullRestore(bool skip_crash_restore) {
   LoadMainProfile(
       base::BindOnce(&BrowserServiceLacros::OpenForFullRestoreWithProfile,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     weak_ptr_factory_.GetWeakPtr(), skip_crash_restore),
       /*can_trigger_fre=*/true);
 }
 
@@ -667,7 +670,9 @@ void BrowserServiceLacros::RestoreTabWithProfile(RestoreTabCallback callback,
   std::move(callback).Run();
 }
 
-void BrowserServiceLacros::OpenForFullRestoreWithProfile(Profile* profile) {
+void BrowserServiceLacros::OpenForFullRestoreWithProfile(
+    bool skip_crash_restore,
+    Profile* profile) {
   if (!profile) {
     LOG(WARNING) << "No profile, it might be an early exit from the FRE. "
                     "Aborting the requested action.";
@@ -706,6 +711,9 @@ void BrowserServiceLacros::OpenForFullRestoreWithProfile(Profile* profile) {
 
   // Modify the command line to restore browser sessions.
   lacros_command_line->AppendSwitch(switches::kRestoreLastSession);
+
+  if (skip_crash_restore)
+    lacros_command_line->AppendSwitch(switches::kHideCrashRestoreBubble);
 
   StartupBrowserCreator browser_creator;
   browser_creator.LaunchBrowserForLastProfiles(

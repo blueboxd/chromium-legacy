@@ -179,10 +179,13 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // removed. See crbug/879971
   size_t BufferId() const;
 
+  // ConfigStore is ChromeOS-specific legacy stuff
+#if BUILDFLAG(IS_CHROMEOS)
   // Set the passed config store to this buffer.
   // This method is only used for backward compatibility until the config
   // store is deprecated and should not be called by new code.
   void SetConfigStore(uint32_t config_store);
+#endif
 
   V4L2WritableBufferRef(const V4L2WritableBufferRef&) = delete;
   V4L2WritableBufferRef& operator=(const V4L2WritableBufferRef&) = delete;
@@ -727,6 +730,11 @@ class MEDIA_GPU_EXPORT V4L2Device
   void GetSupportedResolution(uint32_t pixelformat,
                               gfx::Size* min_resolution,
                               gfx::Size* max_resolution);
+
+  // Get the supported bitrate control modes. This function should be called
+  // when V4L2Device opens an encoder driver node.
+  VideoEncodeAccelerator::SupportedRateControlMode
+  GetSupportedRateControlMode();
 
   std::vector<uint32_t> EnumerateSupportedPixelformats(v4l2_buf_type buf_type);
 

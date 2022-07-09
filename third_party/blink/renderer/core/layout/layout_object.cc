@@ -180,21 +180,6 @@ inline bool MightTraversePhysicalFragments(const LayoutObject& obj) {
   // we traverse the fragment tree when hit-testing.
   if (obj.IsTextControlIncludingNG())
     return false;
-  // If this object participates in legacy block fragmentation (but still is a
-  // LayoutNG object, which may happen if we're using a layout type not
-  // supported in the legacy engine, such as custom layout), do not attempt to
-  // fragment-traverse it. Check whether the nearest parent box can traverse
-  // fragments (but ignore the flow thread, as it's not used by LayoutNG and
-  // therefore never fragment-traversable), and just inherit that.
-  if (obj.IsInsideFlowThread()) {
-    if (const LayoutObject* parent = obj.Parent()) {
-      if (const LayoutObject* nearest_box_ancestor = parent->EnclosingBox()) {
-        if (nearest_box_ancestor->IsLayoutFlowThread())
-          nearest_box_ancestor = nearest_box_ancestor->Parent();
-        return nearest_box_ancestor->CanTraversePhysicalFragments();
-      }
-    }
-  }
   return true;
 }
 
@@ -3927,33 +3912,25 @@ CompositingReasons LayoutObject::AdditionalCompositingReasons() const {
 
 bool LayoutObject::HitTestAllPhases(HitTestResult& result,
                                     const HitTestLocation& hit_test_location,
-                                    const PhysicalOffset& accumulated_offset,
-                                    HitTestFilter hit_test_filter) {
+                                    const PhysicalOffset& accumulated_offset) {
   NOT_DESTROYED();
-  bool inside = false;
-  if (hit_test_filter != kHitTestSelf) {
-    // First test the foreground layer (lines and inlines).
-    inside = NodeAtPoint(result, hit_test_location, accumulated_offset,
-                         kHitTestForeground);
-
-    // Test floats next.
-    if (!inside)
-      inside = NodeAtPoint(result, hit_test_location, accumulated_offset,
-                           kHitTestFloat);
-
-    // Finally test to see if the mouse is in the background (within a child
-    // block's background).
-    if (!inside)
-      inside = NodeAtPoint(result, hit_test_location, accumulated_offset,
-                           kHitTestChildBlockBackgrounds);
+  if (NodeAtPoint(result, hit_test_location, accumulated_offset,
+                  HitTestPhase::kForeground)) {
+    return true;
   }
-
-  // See if the mouse is inside us but not any of our descendants
-  if (hit_test_filter != kHitTestDescendants && !inside)
-    inside = NodeAtPoint(result, hit_test_location, accumulated_offset,
-                         kHitTestBlockBackground);
-
-  return inside;
+  if (NodeAtPoint(result, hit_test_location, accumulated_offset,
+                  HitTestPhase::kFloat)) {
+    return true;
+  }
+  if (NodeAtPoint(result, hit_test_location, accumulated_offset,
+                  HitTestPhase::kDescendantBlockBackgrounds)) {
+    return true;
+  }
+  if (NodeAtPoint(result, hit_test_location, accumulated_offset,
+                  HitTestPhase::kSelfBlockBackground)) {
+    return true;
+  }
+  return false;
 }
 
 Node* LayoutObject::NodeForHitTest() const {
@@ -3989,7 +3966,7 @@ void LayoutObject::UpdateHitTestResult(HitTestResult& result,
 bool LayoutObject::NodeAtPoint(HitTestResult&,
                                const HitTestLocation&,
                                const PhysicalOffset&,
-                               HitTestAction) {
+                               HitTestPhase) {
   NOT_DESTROYED();
   return false;
 }

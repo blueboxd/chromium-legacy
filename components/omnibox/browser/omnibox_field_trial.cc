@@ -227,7 +227,7 @@ base::Time OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold() {
   // integer, return the default value.
   unsigned int param_value_as_int = 0;
   if (!base::StringToUint(param_value, &param_value_as_int)) {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID)
     param_value_as_int = 7;
 #else
     param_value_as_int = 60;
@@ -477,8 +477,8 @@ float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
 }
 
 int OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup() {
-#if BUILDFLAG(IS_ANDROID)
-  // Limits on Android are chosen based on experiment results. See
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  // Limits on Android and iOS are chosen based on experiment results. See
   // crbug.com/715852#c18 and crbug.com/1141539#c31.
   constexpr int kDefaultOnLowEndDevices = 100;
   constexpr int kDefaultOnNonLowEndDevices = 400;
@@ -488,7 +488,7 @@ int OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup() {
   // This limit will only affect 0.01% of Windows users. crbug.com/750845.
   constexpr int kDefaultOnLowEndDevices = 20000;
   constexpr int kDefaultOnNonLowEndDevices = 20000;
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif
 
   if (base::SysInfo::IsLowEndDevice()) {
     return variations::GetVariationParamByFeatureAsInt(
@@ -874,18 +874,10 @@ bool IsShortcutExpandingEnabled() {
 }
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions.
-const base::FeatureParam<bool> kZeroSuggestCacheCounterfactual(
-    &omnibox::kZeroSuggestPrefetching,
-    "ZeroSuggestCacheCounterfactual",
-    false);
 const base::FeatureParam<int> kZeroSuggestCacheDurationSec(
     &omnibox::kZeroSuggestPrefetching,
     "ZeroSuggestCacheDurationSec",
     0);
-const base::FeatureParam<bool> kZeroSuggestPrefetchBypassCache(
-    &omnibox::kZeroSuggestPrefetching,
-    "ZeroSuggestPrefetchBypassCache",
-    false);
 
 const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits(
     &omnibox::kLocalHistorySuggestRevamp,

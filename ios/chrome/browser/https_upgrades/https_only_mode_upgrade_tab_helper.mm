@@ -53,11 +53,6 @@ void HttpsOnlyModeUpgradeTabHelper::WebStateDestroyed(
 
 void HttpsOnlyModeUpgradeTabHelper::WebStateDestroyed() {}
 
-void HttpsOnlyModeUpgradeTabHelper::SetFallbackDelayForTesting(
-    base::TimeDelta delay) {
-  fallback_delay_ = delay;
-}
-
 bool HttpsOnlyModeUpgradeTabHelper::IsTimerRunningForTesting() const {
   return timer_.IsRunning();
 }
@@ -115,7 +110,7 @@ void HttpsOnlyModeUpgradeTabHelper::DidStartNavigation(
     // |timer_| is deleted when the tab helper is deleted, so it's safe to use
     // Unretained here.
     timer_.Start(
-        FROM_HERE, fallback_delay_,
+        FROM_HERE, service_->GetFallbackDelay(),
         base::BindOnce(&HttpsOnlyModeUpgradeTabHelper::OnHttpsLoadTimeout,
                        base::Unretained(this)));
     return;
@@ -147,7 +142,7 @@ void HttpsOnlyModeUpgradeTabHelper::DidFinishNavigation(
     params.transition_type = navigation_transition_type_;
     params.is_renderer_initiated = navigation_is_renderer_initiated_;
     params.referrer = referrer_;
-    params.is_using_https_as_default_scheme = true;
+    params.https_upgrade_type = web::HttpsUpgradeType::kHttpsOnlyMode;
     web_state->GetNavigationManager()->LoadURLWithParams(params);
     return;
   }
@@ -165,7 +160,8 @@ void HttpsOnlyModeUpgradeTabHelper::DidFinishNavigation(
   // The upgrade either failed or succeeded. In both cases, stop the timer.
   timer_.Stop();
 
-  if (navigation_context->IsFailedHTTPSUpgrade()) {
+  if (navigation_context->GetFailedHttpsUpgradeType() ==
+      web::HttpsUpgradeType::kHttpsOnlyMode) {
     RecordUMA(Event::kUpgradeFailed);
     FallbackToHttp();
     return;
@@ -204,7 +200,9 @@ void HttpsOnlyModeUpgradeTabHelper::FallbackToHttp() {
   params.transition_type = navigation_transition_type_;
   params.is_renderer_initiated = navigation_is_renderer_initiated_;
   params.referrer = referrer_;
-  params.is_using_https_as_default_scheme = true;
+  // Even though this is an HTTP navigation, mark it as "upgraded" so that we
+  // don't attempt to upgrade it again.
+  params.https_upgrade_type = web::HttpsUpgradeType::kHttpsOnlyMode;
   // Post a task to navigate to the fallback URL. We don't want to navigate
   // synchronously from a DidNavigationFinish() call.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -284,7 +282,7 @@ void HttpsOnlyModeUpgradeTabHelper::ShouldAllowResponse(
   }
 
   // Upgrade to HTTPS if the navigation wasn't upgraded before.
-  if (!item_pending->IsUpgradedToHttps()) {
+  if (item_pending->GetHttpsUpgradeType() == web::HttpsUpgradeType::kNone) {
     if (!prefs_ || !prefs_->GetBoolean(prefs::kHttpsOnlyModeEnabled) ||
         service_->IsLocalhost(url)) {
       // Don't upgrade if the feature is disabled or the URL is localhost.
@@ -309,6 +307,16 @@ void HttpsOnlyModeUpgradeTabHelper::ShouldAllowResponse(
       return;
     }
     StopToUpgrade(url, item_pending->GetReferrer(), std::move(callback));
+    return;
+  }
+
+  // Omnibox upgrade failures are handled in TypedNavigationUpgradeTabHelper.
+  // Ignore them here.
+  if (item_pending->GetHttpsUpgradeType() !=
+      web::HttpsUpgradeType::kHttpsOnlyMode) {
+    DCHECK(state_ == State::kNone);
+    std::move(callback).Run(
+        web::WebStatePolicyDecider::PolicyDecision::Allow());
     return;
   }
 

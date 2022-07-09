@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/basic_shape_functions.h"
 #include "third_party/blink/renderer/core/css/css_border_image.h"
 #include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
+#include "third_party/blink/renderer/core/css/css_bracketed_value_list.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_counter_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
-#include "third_party/blink/renderer/core/css/css_grid_line_names_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
@@ -118,13 +118,6 @@ CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
     const ComputedStyle& style,
     const StyleColor& color,
     CSSValuePhase value_phase) {
-  // This function does NOT look at visited information, so that computed style
-  // doesn't expose that.
-  if (value_phase == CSSValuePhase::kComputedValue &&
-      color.IsSystemColorIncludingDeprecated() &&
-      RuntimeEnabledFeatures::CSSSystemColorComputeToSelfEnabled()) {
-    return CSSIdentifierValue::Create(color.GetColorKeyword());
-  }
   return cssvalue::CSSColor::Create(
       color.Resolve(style.GetCurrentColor(), style.UsedColorScheme()).Rgb());
 }
@@ -1177,14 +1170,14 @@ class OrderedNamedLinesCollector {
            ordered_named_auto_repeat_grid_lines_.IsEmpty();
   }
   virtual void CollectLineNamesForIndex(
-      cssvalue::CSSGridLineNamesValue&,
+      cssvalue::CSSBracketedValueList&,
       size_t index,
       GridTrackListSerializationType named_line_type = kForGridElements) const;
 
  protected:
   enum NamedLinesType { kNamedLines, kAutoRepeatNamedLines };
   void AppendLines(
-      cssvalue::CSSGridLineNamesValue&,
+      cssvalue::CSSBracketedValueList&,
       size_t index,
       NamedLinesType,
       GridTrackListSerializationType named_line_type = kForGridElements) const;
@@ -1201,7 +1194,7 @@ class OrderedNamedLinesCollectorInsideAutoRepeat
       const OrderedNamedGridLines& ordered_named_auto_repeat_grid_lines)
       : OrderedNamedLinesCollector(ordered_named_grid_lines,
                                    ordered_named_auto_repeat_grid_lines) {}
-  void CollectLineNamesForIndex(cssvalue::CSSGridLineNamesValue&,
+  void CollectLineNamesForIndex(cssvalue::CSSBracketedValueList&,
                                 size_t index,
                                 GridTrackListSerializationType named_line_type =
                                     kForGridElements) const override;
@@ -1221,7 +1214,7 @@ class OrderedNamedLinesCollectorInGridLayout
         insertion_point_(insertion_point),
         auto_repeat_total_tracks_(auto_repeat_tracks_count),
         auto_repeat_track_list_length_(auto_repeat_track_list_length) {}
-  void CollectLineNamesForIndex(cssvalue::CSSGridLineNamesValue&,
+  void CollectLineNamesForIndex(cssvalue::CSSBracketedValueList&,
                                 size_t index,
                                 GridTrackListSerializationType named_line_type =
                                     kForGridElements) const override;
@@ -1234,7 +1227,7 @@ class OrderedNamedLinesCollectorInGridLayout
 
 // RJW
 void OrderedNamedLinesCollector::AppendLines(
-    cssvalue::CSSGridLineNamesValue& line_names_value,
+    cssvalue::CSSBracketedValueList& line_names_value,
     size_t index,
     NamedLinesType type,
     GridTrackListSerializationType named_line_type) const {
@@ -1267,7 +1260,7 @@ void OrderedNamedLinesCollector::AppendLines(
 }
 
 void OrderedNamedLinesCollector::CollectLineNamesForIndex(
-    cssvalue::CSSGridLineNamesValue& line_names_value,
+    cssvalue::CSSBracketedValueList& line_names_value,
     size_t i,
     GridTrackListSerializationType named_line_type) const {
   DCHECK(!IsEmpty());
@@ -1275,7 +1268,7 @@ void OrderedNamedLinesCollector::CollectLineNamesForIndex(
 }
 
 void OrderedNamedLinesCollectorInsideAutoRepeat::CollectLineNamesForIndex(
-    cssvalue::CSSGridLineNamesValue& line_names_value,
+    cssvalue::CSSBracketedValueList& line_names_value,
     size_t i,
     GridTrackListSerializationType named_line_type) const {
   DCHECK(!IsEmpty());
@@ -1284,7 +1277,7 @@ void OrderedNamedLinesCollectorInsideAutoRepeat::CollectLineNamesForIndex(
 
 // RJW
 void OrderedNamedLinesCollectorInGridLayout::CollectLineNamesForIndex(
-    cssvalue::CSSGridLineNamesValue& line_names_value,
+    cssvalue::CSSBracketedValueList& line_names_value,
     size_t i,
     GridTrackListSerializationType named_line_type) const {
   DCHECK(!IsEmpty());
@@ -1332,7 +1325,7 @@ void AddValuesForNamedGridLinesAtIndex(
   if (collector.IsEmpty())
     return;
 
-  auto* line_names = MakeGarbageCollected<cssvalue::CSSGridLineNamesValue>();
+  auto* line_names = MakeGarbageCollected<cssvalue::CSSBracketedValueList>();
   collector.CollectLineNamesForIndex(*line_names, i, named_line_type);
   if (line_names->length())
     list.Append(*line_names);
@@ -2973,7 +2966,7 @@ CSSValueList* ComputedStyleUtils::ValuesForContainerShorthand(
   list->Append(*name);
 
   if (!(IsA<CSSIdentifierValue>(type) &&
-        To<CSSIdentifierValue>(*type).GetValueID() == CSSValueID::kNone)) {
+        To<CSSIdentifierValue>(*type).GetValueID() == CSSValueID::kNormal)) {
     list->Append(*type);
   }
 

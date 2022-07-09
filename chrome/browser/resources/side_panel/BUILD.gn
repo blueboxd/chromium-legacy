@@ -29,25 +29,7 @@ grit("resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
-generate_grd("build_grd") {
-  input_files = [
-    "history_clusters/history_clusters.html",
-    "images/read_later_empty_dark.svg",
-    "images/read_later_empty.svg",
-    "reading_list/reading_list.html",
-    "bookmarks/bookmarks.html",
-    "read_anything/read_anything.html",
-    "side_panel.html",
-  ]
-  input_files_base_dir = rebase_path(".", "//")
-  deps = [ ":build_ts" ]
-  manifest_files = [ "$target_gen_dir/tsconfig.manifest" ]
-  grd_prefix = "side_panel"
-  out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
-}
-
 preprocess_if_expr("preprocess_src") {
-  in_folder = "."
   out_folder = "$target_gen_dir/$preprocess_folder"
   in_files = ts_files
 }
@@ -75,16 +57,6 @@ copy("copy_mojo_bookmarks") {
       [ "$target_gen_dir/$preprocess_folder/bookmarks/{{source_file_part}}" ]
 }
 
-copy("copy_mojo_read_anything") {
-  deps = [
-    "//chrome/browser/ui/webui/side_panel/read_anything:mojo_bindings_webui_js",
-  ]
-  sources = [ "$mojo_root_folder/read_anything/read_anything.mojom-webui.js" ]
-  outputs = [
-    "$target_gen_dir/$preprocess_folder/read_anything/{{source_file_part}}",
-  ]
-}
-
 copy("copy_mojo_reading_list") {
   deps = [
     "//chrome/browser/ui/webui/side_panel/reading_list:mojo_bindings_webui_js",
@@ -101,6 +73,7 @@ ts_library("build_ts") {
   composite = true
   in_files = ts_files + html_wrapper_files + mojo_files
   definitions = [
+    "read_anything/read_anything.d.ts",
     "//tools/typescript/definitions/bookmark_manager_private.d.ts",
     "//tools/typescript/definitions/bookmarks.d.ts",
     "//tools/typescript/definitions/chrome_event.d.ts",
@@ -113,9 +86,26 @@ ts_library("build_ts") {
   ]
   extra_deps = [
     ":copy_mojo_bookmarks",
-    ":copy_mojo_read_anything",
     ":copy_mojo_reading_list",
     ":preprocess_gen",
     ":preprocess_src",
   ]
+}
+
+generate_grd("build_grd") {
+  input_files = [
+    "history_clusters/history_clusters.html",
+    "images/read_later_empty_dark.svg",
+    "images/read_later_empty.svg",
+    "reading_list/reading_list.html",
+    "bookmarks/bookmarks.html",
+    "read_anything/read_anything.html",
+    "side_panel.html",
+  ]
+  input_files_base_dir = rebase_path(".", "//")
+  deps = [ ":build_ts" ]
+  manifest_files =
+      filter_include(get_target_outputs(":build_ts"), [ "*.manifest" ])
+  grd_prefix = "side_panel"
+  out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
 }

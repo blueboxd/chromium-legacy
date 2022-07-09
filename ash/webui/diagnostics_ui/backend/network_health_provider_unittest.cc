@@ -12,14 +12,14 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_cert_loader.h"
+#include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
@@ -171,6 +171,9 @@ class NetworkHealthProviderTest : public testing::Test {
   }
 
   ~NetworkHealthProviderTest() override {
+    // Clear in process instance prior to destroying cros_network_config_ to
+    // avoid UaF errors.
+    network_config::OverrideInProcessInstanceForTesting(nullptr);
     // Ordering here is based on dependencies between classes,
     // CrosNetworkConfig depends on NetworkHandler and NetworkHandler
     // indirectly depends on NetworkCertLoader.

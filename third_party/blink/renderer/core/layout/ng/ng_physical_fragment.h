@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_anchor_query.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
@@ -286,17 +287,16 @@ class CORE_EXPORT NGPhysicalFragment
     return IsCSSBox() ? layout_object_->NonPseudoNode() : nullptr;
   }
 
-  bool IsInSelfHitTestingPhase(HitTestAction action) const {
+  bool IsInSelfHitTestingPhase(HitTestPhase phase) const {
     if (IsFragmentainerBox())
       return false;
     if (const auto* box = DynamicTo<LayoutBox>(GetLayoutObject()))
-      return box->IsInSelfHitTestingPhase(action);
+      return box->IsInSelfHitTestingPhase(phase);
     if (IsInlineBox())
-      return action == kHitTestForeground;
+      return phase == HitTestPhase::kForeground;
     // Assuming this is some sort of container, e.g. a fragmentainer (they don't
     // have a LayoutObject associated).
-    return action == kHitTestBlockBackground ||
-           action == kHitTestChildBlockBackground;
+    return phase == HitTestPhase::kSelfBlockBackground;
   }
 
   // Whether there is a PaintLayer associated with the fragment.
@@ -599,8 +599,10 @@ class CORE_EXPORT NGPhysicalFragment
 
   struct OutOfFlowData : public GarbageCollected<OutOfFlowData> {
    public:
+    virtual ~OutOfFlowData() = default;
     virtual void Trace(Visitor* visitor) const;
     HeapVector<NGPhysicalOutOfFlowPositionedNode> oof_positioned_descendants;
+    NGPhysicalAnchorQuery anchor_query;
   };
 
   // Returns true if some child is OOF in the fragment tree. This happens if
@@ -623,6 +625,15 @@ class CORE_EXPORT NGPhysicalFragment
 
   base::span<NGPhysicalOutOfFlowPositionedNode> OutOfFlowPositionedDescendants()
       const;
+
+  bool HasAnchorQuery() const {
+    return oof_data_ && !oof_data_->anchor_query.IsEmpty();
+  }
+  const NGPhysicalAnchorQuery* AnchorQuery() const {
+    if (oof_data_)
+      return &oof_data_->anchor_query;
+    return nullptr;
+  }
 
   NGFragmentedOutOfFlowData* FragmentedOutOfFlowData() const;
 

@@ -674,6 +674,40 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
                                               std::move(callback));
 }
 
+bool ChromeAutofillClient::IsTouchToFillCreditCardSupported() {
+#if BUILDFLAG(IS_ANDROID)
+  return base::FeatureList::IsEnabled(
+      features::kAutofillTouchToFillForCreditCardsAndroid);
+#else
+  // Touch To Fill is not supported on Desktop.
+  return false;
+#endif
+}
+
+bool ChromeAutofillClient::ShowTouchToFillCreditCard(
+    base::WeakPtr<TouchToFillDelegate> delegate) {
+#if BUILDFLAG(IS_ANDROID)
+  // Don't show TTF surface while Autofill Assistant's UI is shown.
+  if (IsAutofillAssistantShowing())
+    return false;
+  // TODO(crbug.com/1247698): Show Touch To Fill surface.
+  return true;
+#else
+  // Touch To Fill is not supported on Desktop.
+  NOTREACHED();
+  return false;
+#endif
+}
+
+void ChromeAutofillClient::HideTouchToFillCreditCard() {
+#if BUILDFLAG(IS_ANDROID)
+  // TODO(crbug.com/1247698): Hide Touch To Fill surface.
+#else
+  // Touch To Fill is not supported on Desktop.
+  NOTREACHED();
+#endif
+}
+
 void ChromeAutofillClient::ShowAutofillPopup(
     const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
@@ -858,9 +892,11 @@ void ChromeAutofillClient::ShowVirtualCardErrorDialog(bool is_permanent_error) {
 }
 
 void ChromeAutofillClient::ShowAutofillProgressDialog(
+    AutofillProgressDialogType autofill_progress_dialog_type,
     base::OnceClosure cancel_callback) {
   DCHECK(autofill_progress_dialog_controller_);
-  autofill_progress_dialog_controller_->ShowDialog(std::move(cancel_callback));
+  autofill_progress_dialog_controller_->ShowDialog(
+      autofill_progress_dialog_type, std::move(cancel_callback));
 }
 
 void ChromeAutofillClient::CloseAutofillProgressDialog(

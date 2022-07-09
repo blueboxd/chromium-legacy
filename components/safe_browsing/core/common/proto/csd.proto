@@ -321,12 +321,11 @@ message LoginReputationClientRequest {
     // The frame that the password reuse is detected.
     optional int32 frame_id = 2;
 
-    // TODO(crbug/914410): Remove once ReusedPasswordAccountType is implemented.
-    // Whether the reused password is used for Chrome signin.
-    optional bool is_chrome_signin_password = 3;
+    // Deprecated field.
+    reserved 3;
 
     // TODO(crbug/914410): Remove once ReusedPasswordAccountType is implemented.
-    // Sync account type. Only set if |is_chrome_signin_password| is true.
+    // Sync account type.
     enum SyncAccountType {
       // Not a sign-in user.
       NOT_SIGNED_IN = 0;
@@ -799,6 +798,8 @@ message ClientDownloadRequest {
   optional ChromeUserPopulation population = 24;
 
   // True if the .zip or DMG, etc, was 100% successfully unpacked.
+  // This field is in the process of being deprecated and replaced with
+  // `archive_summary.valid`.
   optional bool archive_valid = 26;
 
   // True if this ClientDownloadRequest is from a allowlisted domain.
@@ -848,6 +849,8 @@ message ClientDownloadRequest {
 
   // For archives files the number of files and directories contained within the
   // archive.
+  // These fields are in the process of being deprecated and replaced with
+  // `archive_summary.file_count` or `archive_summary.directory_count`.
   optional int32 archive_file_count = 68;
   optional int32 archive_directory_count = 69;
 
@@ -928,6 +931,24 @@ message ClientDownloadRequest {
   }
 
   optional DocumentSummary document_summary = 84;
+
+  message ArchiveSummary {
+    enum Status {
+      UNKNOWN = 0;
+      // The archive was successfully unpacked in its entirety.
+      VALID = 1;
+      // Parsing took too long.
+      PARSER_TIMED_OUT = 2;
+      // The archive was too large to parse.
+      TOO_LARGE = 3;
+    }
+    optional Status parser_status = 1;
+
+    // The number of files and directories contained within.
+    optional int32 file_count = 2;
+    optional int32 directory_count = 3;
+  }
+  optional ArchiveSummary archive_summary = 85;
 }
 
 message ReferrerChainOptions {

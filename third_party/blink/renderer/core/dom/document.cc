@@ -2334,7 +2334,8 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
   //
   // [1] See blink::NodeLayoutUpgrade::Reasons
   NodeLayoutUpgrade::Reasons upgrade_mask =
-      maybe_needs_layout ? NodeLayoutUpgrade::kDependsOnContainerQueries : 0;
+      maybe_needs_layout ? NodeLayoutUpgrade::kDependsOnSizeContainerQueries
+                         : 0;
 
   if (NodeLayoutUpgrade::GetReasons(node) & upgrade_mask)
     is_dirty = true;
@@ -4262,20 +4263,44 @@ void Document::UpdateBaseURL() {
   }
 }
 
+// [spec] https://html.spec.whatwg.org/C/#fallback-base-url
 KURL Document::FallbackBaseURL() const {
+  const bool is_parent_cross_origin =
+      GetFrame() && GetFrame()->IsCrossOriginToParentOrOuterDocument();
+  // TODO(https://crbug.com/751329, https://crbug.com/1336904): Referring to
+  // ParentDocument() is not correct.
+  // We avoid using it when it is cross-origin, to avoid leaking cross-origin.
+  const Document* same_origin_parent =
+      is_parent_cross_origin ? nullptr : ParentDocument();
+
+  // [spec] 1. If document is an iframe srcdoc document, then return the
+  //           document base URL of document's browsing context's container
+  //           document.
   if (IsSrcdocDocument()) {
-    // TODO(tkent): Referring to ParentDocument() is not correct.  See
-    // crbug.com/751329.
-    if (Document* parent = ParentDocument())
+    // TODO(https://crbug.com/751329, https://crbug.com/1336904): Referring to
+    // ParentDocument() is not correct.
+    if (Document* parent = ParentDocument()) {
       return parent->BaseURL();
-  } else if (urlForBinding().IsAboutBlankURL()) {
-    if (!dom_window_ && execution_context_)
-      return execution_context_->BaseURL();
-    // TODO(tkent): Referring to ParentDocument() is not correct.  See
-    // crbug.com/751329.
-    if (Document* parent = ParentDocument())
-      return parent->BaseURL();
+    }
+    // TODO(https://crbug.com/1339824) Sandboxed about:srcdoc document can be
+    // hosted in a different process. As a result, their `parent` may be null,
+    // and we might return something wrong, in a different way here.
   }
+
+  // [spec] 2. If document's URL is about:blank, and document's browsing
+  //           context's creator base URL is non-null, then return that creator
+  //           base URL.
+  if (urlForBinding().IsAboutBlankURL()) {
+    if (!dom_window_ && execution_context_) {
+      return execution_context_->BaseURL();
+    }
+
+    if (same_origin_parent) {
+      return same_origin_parent->BaseURL();
+    }
+  }
+
+  // [spec] 3. Return document's URL.
   return urlForBinding();
 }
 
@@ -6781,9 +6806,11 @@ void Document::FinishedParsing() {
     if (ShouldMarkFontPerformance())
       FontPerformance::MarkDomContentLoaded();
 
-    DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
-        "MarkDOMContent", inspector_mark_load_event::Data, frame);
-    probe::DomContentLoadedEventFired(frame);
+    if (frame->IsAttached()) {
+      DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
+          "MarkDOMContent", inspector_mark_load_event::Data, frame);
+      probe::DomContentLoadedEventFired(frame);
+    }
     frame->GetIdlenessDetector()->DomContentLoadedEventFired();
   }
 
@@ -7233,12 +7260,12 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
   return nullptr;
 }
 
-bool Document::PopupOrHintShowing() const {
-  return !popup_and_hint_stack_.IsEmpty();
-}
-bool Document::HintShowing() const {
-  return !popup_and_hint_stack_.IsEmpty() &&
-         (popup_and_hint_stack_.back()->PopupType() == PopupValueType::kHint);
+Element* Document::TopmostPopupAutoOrHint() const {
+  if (PopupHintShowing())
+    return PopupHintShowing();
+  if (PopupStack().IsEmpty())
+    return nullptr;
+  return PopupStack().back();
 }
 
 void Document::exitPointerLock() {
@@ -7992,7 +8019,8 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(lists_invalidated_at_document_);
   visitor->Trace(node_lists_);
   visitor->Trace(top_layer_elements_);
-  visitor->Trace(popup_and_hint_stack_);
+  visitor->Trace(popup_hint_showing_);
+  visitor->Trace(popup_stack_);
   visitor->Trace(popups_waiting_to_hide_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);

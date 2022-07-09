@@ -17,8 +17,10 @@ class TokenizedString;
 
 // TokenizedStringMatch takes two tokenized strings: one as the text and
 // the other one as the query. It matches the query against the text,
-// calculates a relevance score between [0, 1] and marks the matched portions
-// of text. A relevance of zero means the two are completely different to each
+// calculates a relevance score between [0, 1] and records the matched portions
+// of text ("hits").
+//
+// A relevance score of zero means the two are completely different to each
 // other. The higher the relevance score, the better the two strings are
 // matched. Matched portions of text are stored as index ranges.
 class TokenizedStringMatch {
@@ -32,12 +34,11 @@ class TokenizedStringMatch {
 
   ~TokenizedStringMatch();
 
-  // Calculates the relevance and hits. Returns true if the two strings are
-  // somewhat matched, i.e. relevance score is not zero.
-  bool Calculate(const TokenizedString& query, const TokenizedString& text);
+  // Calculates the relevance and hits, and returns the relevance score.
+  double Calculate(const TokenizedString& query, const TokenizedString& text);
 
   // Convenience wrapper to calculate match from raw string input.
-  bool Calculate(const std::u16string& query, const std::u16string& text);
+  double Calculate(const std::u16string& query, const std::u16string& text);
 
   double relevance() const { return relevance_; }
   const Hits& hits() const { return hits_; }

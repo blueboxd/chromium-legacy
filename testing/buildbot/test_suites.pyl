@@ -75,7 +75,8 @@
             # on images that do not have playstore.
             # They will be ran in chrome_public_test_apk_with_playstore below.
             '--gtest_filter=-'
-            'org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*'
+            'org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*:'
+            'org.chromium.shape_detection.*'
         ],
         'swarming': {
           'shards': 20,
@@ -91,7 +92,8 @@
             # present. See crbug.com/1056330 for more details.
             # They should be ran in emulator on images that have playstore.
             '--gtest_filter='
-            'org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*'
+            'org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*:'
+            'org.chromium.shape_detection.*'
         ],
         'mixins': [
           'skia_gold_test',
@@ -495,6 +497,19 @@
       },
     },
 
+    'chrome_finch_smoke_tests': {
+      'variations_smoke_tests': {
+        'isolate_name': 'variations_smoke_tests',
+        'mixins': [
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+          'result_format': 'single'
+        },
+      },
+    },
+
     'chrome_isolated_script_tests': {
       'chrome_sizes': {
         'merge': {
@@ -519,13 +534,16 @@
     'chrome_public_tests': {
       'chrome_public_test_apk': {
         'swarming': {
-          'shards': 20,
+          'shards': 19,
         },
         'mixins': [
           'skia_gold_test',
         ],
       },
       'chrome_public_unit_test_apk': {
+        'swarming': {
+          'shards': 2,
+        },
         'mixins': [
           'skia_gold_test',
         ],
@@ -639,7 +657,7 @@
           'idempotent': False,  # https://crbug.com/923426#c27
           # Tast test doesn't always output. See crbug.com/1306300
           'io_timeout': 3600,
-          'shards': 7,
+          'shards': 10,
         },
         'mixins': [
           'has_native_resultdb_integration',
@@ -1240,7 +1258,6 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
-          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1259,7 +1276,35 @@
         },
         'results_handler': 'layout tests',
         'swarming': {
-          'shards': 12,
+          'shards': 5,
+        },
+      },
+      'blink_wpt_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+          '--step-name=blink-wpt-tests',
+        ],
+        'isolate_name': 'blink_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+           # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 7,
         },
       },
       'webdriver_tests_suite': {
@@ -1287,7 +1332,6 @@
           # passed, but 0 times when '--test-list' is passed. We want to always
           # retry 3 times, so we explicitly specify it.
           '--num-retries=3',
-          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1306,7 +1350,38 @@
         },
         'results_handler': 'layout tests',
         'swarming': {
-          'shards': 4,
+          'shards': 1,
+        },
+      },
+      'high_dpi_blink_wpt_tests': {
+        # high_dpi_blink_wpt_tests provides coverage for
+        # running Layout Tests with forced device scale factor.
+        'args': [
+          '--flag-specific=highdpi',
+
+          # layout test failures are retried 3 times when '--test-list' is not
+          # passed, but 0 times when '--test-list' is passed. We want to always
+          # retry 3 times, so we explicitly specify it.
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 3,
         },
       },
     },
@@ -1318,7 +1393,6 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
-          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1337,7 +1411,34 @@
         },
         'results_handler': 'layout tests',
         'swarming': {
-          'shards': 12,
+          'shards': 5,
+        }
+      },
+      'blink_wpt_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 7,
         }
       },
     },
@@ -1542,7 +1643,6 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
-          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1561,7 +1661,34 @@
         },
         'results_handler': 'layout tests',
         'swarming': {
-          'shards': 12,
+          'shards': 5,
+        }
+      },
+      'blink_wpt_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 7,
         }
       },
       'content_shell_crash_test': {
@@ -1636,7 +1763,6 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
-          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
         'merge': {
@@ -1655,7 +1781,34 @@
         },
         'results_handler': 'layout tests',
         'swarming': {
-          'shards': 12,
+          'shards': 5,
+        }
+      },
+      'blink_wpt_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 7,
         }
       },
       'webkit_layout_from_devtools': {
@@ -1813,11 +1966,7 @@
         },
       },
       'compositor_unittests': {},
-      'content_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
-        ],
-      },
+      'content_unittests': {},
       'crypto_unittests': {},
       'events_unittests': {},
       'filesystem_service_unittests': {},
@@ -1845,7 +1994,8 @@
       },
       'ozone_gl_unittests': {
         'args': [
-          '--child-arg=--ozone-platform=headless',
+          '--',
+          '--ozone-platform=headless',
         ],
       },
       'ozone_unittests': {},
@@ -1899,6 +2049,7 @@
           'shards': 40,
         },
       },
+      'cast_runner_integration_tests': {},
       'content_browsertests': {
         'args': [
           '--',
@@ -2749,7 +2900,7 @@
         'args': [
           '--extra-browser-args=--force_high_performance_gpu',
           '--retry-limit=3',
-          '--jobs=1',
+          '--jobs=4',
         ],
         'linux_args': [
           '--extra-browser-args=--enable-features=Vulkan',
@@ -2768,7 +2919,7 @@
         'args': [
           '--extra-browser-args=--force_high_performance_gpu',
           '--retry-limit=3',
-          '--jobs=1',
+          '--jobs=4',
         ],
         'linux_args': [
           '--extra-browser-args=--enable-features=Vulkan',
@@ -2788,7 +2939,7 @@
           '--extra-browser-args=--force_high_performance_gpu',
           '--enable-dawn-backend-validation',
           '--retry-limit=3',
-          '--jobs=1',
+          '--jobs=4',
         ],
         'linux_args': [
           '--extra-browser-args=--enable-features=Vulkan',
@@ -3325,6 +3476,17 @@
       },
     },
 
+    'gpu_webcodecs_validating_telemetry_test': {
+      'webcodecs': {
+        'args': [
+          '--extra-browser-args=--use-cmd-decoder=validating',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+      },
+    },
+
     'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests': {
       'webgl2_conformance_d3d11_passthrough_tests': {
         'telemetry_test_name': 'webgl_conformance',
@@ -3841,7 +4003,7 @@
       },
       'ios_chrome_signin_eg2tests_module': {
       'swarming': {
-          'shards': 5,
+          'shards': 10,
         },
       },
       'ios_chrome_ui_eg2tests_module': {
@@ -3948,7 +4110,11 @@
 
     'lacros_skylab_amd64_fyi': {
       'lacros_fyi_tast_tests': {
-        'tast_expr': '("group:mainline" && "dep:lacros" && !informational || "name:lacros.VariationSmoke")',
+        'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
+        'timeout_sec': 10800,
+      },
+      'lacros_variations_tast_tests': {
+        'tast_expr': '("name:lacros.VariationSmoke")',
         'timeout_sec': 10800,
       },
       'ozone_unittests': {
@@ -4192,6 +4358,7 @@
         'test': 'interactive_ui_tests',
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter',
         ],
         'swarming': {
           'shards': 3,
@@ -4216,9 +4383,41 @@
           # passed, but 0 times when '--test-list' is passed. We want to always
           # retry 3 times, so we explicitly specify it.
           '--num-retries=3',
-          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 8,
+        },
+      },
+      'not_site_per_process_blink_wpt_tests': {
+        # not_site_per_process_blink_wpt_tests provides coverage for
+        # running WPTs without site-per-process.  This is the mode used
+        # on Android and Android bots currently do not run the full set of
+        # layout tests.  Running in this mode on linux compensates for lack of
+        # direct Android coverage.
+        'args': [
+          '--flag-specific=disable-site-isolation-trials',
+          # layout test failures are retried 3 times when '--test-list' is not
+          # passed, but 0 times when '--test-list' is passed. We want to always
+          # retry 3 times, so we explicitly specify it.
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_wpt_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -4260,7 +4459,7 @@
 
     'mac_specific_chromium_gtests': {
       'power_sampler_unittests': {},
-      'sandbox_mac_unittests': {},
+      'sandbox_unittests': {},
       'updater_tests': {
         'args': [
           # Timeouts based on empirical observations of test runtimes, 2021-07.
@@ -4435,6 +4634,9 @@
     'paeverywhere_common_tests': {
       # Run popular tests other than capture_unittests, crashpad_tests,
       # content_browsertests, and perfetto_unittests because they fail.
+      #
+      # browser_tests is said to be somewhat flaky for Mac
+      # (crbug.com/1201386), so we exclude that as well.
       'absl_hardening_tests': {},
       'angle_unittests': {
         'args': [
@@ -4452,11 +4654,6 @@
       'blink_unittests': {},
       'boringssl_crypto_tests': {},
       'boringssl_ssl_tests': {},
-      'browser_tests': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
       'cast_unittests': {},
       'components_browsertests': {},
       'components_unittests': {
@@ -4585,6 +4782,11 @@
     },
 
     'pytype_tests': {
+      'fuchsia_pytype': {
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+      },
       'gpu_pytype': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -4599,6 +4801,7 @@
 
     'rust_gtests': {
       'base_unittests': {},
+      'gnrt_unittests': {},
       'rust_gtest_interop_unittests': {},
       'test_cpp_including_rust_unittests': {
         'swarming': {},
@@ -5146,11 +5349,11 @@
       'cast_runner_browsertests': {},
       'cast_runner_integration_tests_cfv1': {},
       'cast_runner_unittests': {},
-      'cr_fuchsia_base_unittests': {},
       'web_engine_browsertests': {},
       'web_engine_integration_tests': {
         'args': [
-          '--child-arg=--vmodule=test_navigation_listener=1',
+          '--',
+          '--vmodule=test_navigation_listener=1',
         ],
       },
       'web_engine_unittests': {},
@@ -5415,7 +5618,6 @@
     },
 
     'win_specific_chromium_gtests': {
-      'browser_switcher_bho_unittests': {},
       'chrome_cleaner_unittests': {},
       'chrome_elf_unittests': {},
       'courgette_unittests': {},
@@ -5514,7 +5716,9 @@
     'wpt_web_tests': {
       'wpt_tests_suite': {
         'args': [
-          '--child-processes=20',
+          '--child-processes=8',
+          '--run-by-dir=0',
+          '--no-restart-on-new-group',
         ],
         'merge': {
           'args': [
@@ -5751,7 +5955,7 @@
     #   'chromium_gtests_for_devices_with_graphical_output',
       'chrome_public_tests',
     #   'linux_flavor_specific_chromium_gtests',
-    #   'system_webview_shell_instrumentation_tests', # Not an experimental test
+      'system_webview_shell_instrumentation_tests',
     #   'vr_android_specific_chromium_tests',
     #   'vr_platform_specific_chromium_gtests',
     #   'weblayer_android_gtests',
@@ -6135,6 +6339,12 @@
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
+    'gpu_common_android_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_validating_telemetry_tests',
+      'gpu_webgl_conformance_validating_telemetry_tests',
+    ],
+
     'gpu_common_gl_passthrough_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
@@ -6144,12 +6354,6 @@
     'gpu_common_linux_and_mac_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
-    ],
-
-    'gpu_common_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_validating_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
@@ -6265,7 +6469,7 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_mediapipe_validating_telemetry_tests',
       'gpu_validating_telemetry_tests',
-      'gpu_webcodecs_telemetry_test',
+      'gpu_webcodecs_validating_telemetry_test',
       'gpu_webgl_conformance_validating_telemetry_tests',
       # Large amounts of WebGL/WebGL2 tests are failing due to issues that are
       # possibly related to other CrOS issues that are already reported.
@@ -6419,7 +6623,7 @@
       'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_mediapipe_validating_telemetry_tests',
       'gpu_validating_telemetry_tests',
-      'gpu_webcodecs_telemetry_test',
+      'gpu_webcodecs_validating_telemetry_test',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_validating_telemetry_tests',
     ],
@@ -6437,7 +6641,7 @@
       'gpu_mediapipe_validating_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_validating_telemetry_tests',
-      'gpu_webcodecs_telemetry_test',
+      'gpu_webcodecs_validating_telemetry_test',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_validating_telemetry_tests',
       'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
@@ -6894,7 +7098,7 @@
         'variants': [
           'SIM_IPHONE_8_16_0',
           'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_6S_14_5',
+          'SIM_IPHONE_6S_14_4',
         ],
       },
       'ios_crash_unittests': {
@@ -6907,7 +7111,7 @@
         'variants': [
           'SIM_IPHONE_X_16_0',
           'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_6S_14_5',
+          'SIM_IPHONE_6S_14_4',
         ]
       },
       'ios_eg2_tests': {
@@ -6919,9 +7123,9 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_X_14_5',
+          'SIM_IPHONE_7_14_4',
+          'SIM_IPAD_AIR_2_14_4',
+          'SIM_IPHONE_X_14_4',
         ]
       },
       'ios_eg2_cq_tests': {
@@ -6933,9 +7137,9 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_7_14_5',
-          'SIM_IPAD_AIR_2_14_5',
-          'SIM_IPHONE_X_14_5',
+          'SIM_IPHONE_7_14_4',
+          'SIM_IPAD_AIR_2_14_4',
+          'SIM_IPHONE_X_14_4',
         ]
       },
       'ios_screen_size_dependent_tests': {
@@ -7243,7 +7447,7 @@
       },
       'lacros_variations_tast_tests': {
         'variants': [
-          'LACROS_AMD64_GENERIC',
+          'LACROS_BETTY_PI_ARC',
         ]
       },
     },

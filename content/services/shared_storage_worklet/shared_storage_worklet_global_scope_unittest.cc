@@ -116,7 +116,7 @@ class TestClient
         FROM_HERE,
         base::BindLambdaForTesting([callback = std::move(callback)]() mutable {
           std::move(callback).Run(
-              /*success=*/true,
+              shared_storage_worklet::mojom::SharedStorageGetStatus::kSuccess,
               /*error_message=*/{},
               /*value=*/u"test-value");
         }));
@@ -545,6 +545,21 @@ TEST_F(SharedStorageAddModuleTest, RegisterOperation_MissingRunFunction) {
   EXPECT_EQ(error_message(),
             "https://example.test/:8 Uncaught TypeError: Missing \"run()\" "
             "function in the class.");
+}
+
+TEST_F(SharedStorageAddModuleTest,
+       RegisterOperation_ClassPrototypeNotAnObject) {
+  SimulateAddModule(R"(
+    function test() {};
+    test.prototype = 123;
+
+    register("test-operation", test);
+  )");
+
+  EXPECT_FALSE(success());
+  EXPECT_EQ(error_message(),
+            "https://example.test/:5 Uncaught TypeError: Unexpected class "
+            "prototype: not an object.");
 }
 
 TEST_F(SharedStorageAddModuleTest, RegisterOperation_Success) {

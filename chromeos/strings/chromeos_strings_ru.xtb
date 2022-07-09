@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Пользователь</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Открыто окно со сведениями о доступных обновлениях (<ph name="NUM_UPDATES" />) встроенного ПО для внешних устройств.</translation>
+<translation id="1145516343487477149">Находите нужные справочные статьи и ответы на частые вопросы об устройствах Chromebook.</translation>
 <translation id="1165039591588034296">Ошибка</translation>
 <translation id="1175697296044146566">Этим устройством <ph name="DEVICE_TYPE" /> управляет <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Средний (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Выключить тёмную тему</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Выключить тёмную тему</translation>
+<translation id="1881188606372070653">Если контент нарушает закон, <ph name="BEGIN_LINK1" />отправьте запрос на исправление<ph name="END_LINK1" />. Некоторые сведения об аккаунте и системе могут быть отправлены в Google. Это помогает нам устранять технические неполадки и улучшать наши сервисы. Ваши данные будут обрабатываться в соответствии с <ph name="BEGIN_LINK2" />Политикой конфиденциальности<ph name="END_LINK2" /> и <ph name="BEGIN_LINK3" />Условиями использования<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Версия оборудования</translation>
+<translation id="1904932688895783618">Вот некоторые источники полезной информации:</translation>
 <translation id="1905710495812624430">Превышено максимально допустимое число попыток.</translation>
 <translation id="1908234395526491708">Невыполненные запросы UDP.</translation>
 <translation id="1932611479324127242">Отключить батарею</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Инструкции по устранению неполадок</translation>
 <translation id="2016848882344942759">Без бренда</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Чтобы просмотреть заставку, подключитесь к сети и обновите страницу.</translation>
 <translation id="2080070583977670716">Дополнительные настройки</translation>
 <translation id="2085089206770112532">Уменьшение яркости дисплея</translation>
 <translation id="2105810540595158374">Это игровой контроллер.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Включить тёмную тему</translation>
 <translation id="2177831236093724629">Обнаружены <ph name="LINK_BEGIN" />не соответствующие требованиям компоненты<ph name="LINK_END" />. Чтобы убедиться, что все подходящие компоненты идентифицированы, обновите Chrome OS до последней версии.</translation>
 <translation id="2180197493692062006">Произошла ошибка. Попробуйте открыть приложение заново.</translation>
+<translation id="2182088270354640012">Спасибо за отзыв! Он поможет улучшить Chrome OS и будет рассмотрен нашей командой. Мы получаем множество обращений, поэтому не сможем вам ответить.</translation>
 <translation id="2209788852729124853">Сбросить счетчики трафика</translation>
 <translation id="2212733584906323460">Разрешение имен</translation>
 <translation id="2217935453350629363">Текущая частота</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Поиск сканеров…</translation>
 <translation id="3246869037381808805">Задания печати, хранящиеся дольше 1 дня, будут удалены</translation>
 <translation id="3268178239013324452">Сбой: крышка открыта</translation>
+<translation id="3275729367986477355">Аватар</translation>
 <translation id="3283504360622356314">{0,plural, =1{Редактировать файл}one{Редактировать файлы}few{Редактировать файлы}many{Редактировать файлы}other{Редактировать файлы}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> ГГц</translation>
 <translation id="3291996639387199448">Направление ключа</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Дополнительную информацию можно найти в <ph name="BEGIN_LINK" />Справочном центре<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Алгоритм сжатия</translation>
 <translation id="4794140124556169553">Выполнение тестирования процессора может повлиять на производительность системы.</translation>
+<translation id="4800589996161293643">Справочный форум Chromebook</translation>
 <translation id="4804818685124855865">Отключиться</translation>
 <translation id="4808449224298348341">Отменено задание печати файла "<ph name="DOCUMENT_TITLE" />"</translation>
 <translation id="4809927044794281115">Светлая тема</translation>
@@ -486,6 +493,7 @@
 Попробуйте озвучить запрос, нажав на значок микрофона.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Выйти</translation>
+<translation id="522307662484862935">Не указывать адрес электронной почты</translation>
 <translation id="5227902338748591677">Расписание тёмной темы</translation>
 <translation id="5234764350956374838">Закрыть</translation>
 <translation id="5252456968953390977">Роуминг</translation>
@@ -612,6 +620,7 @@
 <translation id="6284632978374966585">Включить тёмную тему</translation>
 <translation id="6295178529664209245">Продолжить ремонт?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />: тестирование отменено.</translation>
+<translation id="631063167932043783">Приложение "Возможности"</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" />: обновление встроенного ПО</translation>
 <translation id="6321407676395378991">Включить заставку</translation>
 <translation id="6325525973963619867">Ошибка</translation>
@@ -623,6 +632,7 @@
 <translation id="6379086450106841622">Сенсорный экран</translation>
 <translation id="6381741036071372448">Проверьте свою клавиатуру</translation>
 <translation id="6388847657025262518">Автоподатчик документов заклинило. Устраните проблему и повторите попытку.</translation>
+<translation id="6394634179843537518">Добавить файл</translation>
 <translation id="6410257289063177456">Файлы изображений</translation>
 <translation id="641081527798843608">Совпадение тем</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@
 <translation id="6516990319416533844">Чтобы проверить скорость зарядки батареи, разрядите ее в течение короткого промежутка времени.</translation>
 <translation id="6517239166834772319">Возможности</translation>
 <translation id="6527081081771465939">Неизвестный протокол обеспечения безопасности сети Wi-Fi.</translation>
+<translation id="6535178685492749208">Нет подключения к интернету. Отзыв будет отправлен позже.</translation>
 <translation id="65587193855025101">Планшетный</translation>
 <translation id="6564646048574748301">Сбой: принтер недоступен</translation>
 <translation id="6566314079205407217">Сканировать несколько страниц</translation>
@@ -717,6 +728,7 @@
 <translation id="7297226631177386107">Не удается подключиться к HTTPS-сайтам через брандмауэр.</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Задавайте вопросы на справочном форуме Chromebook.</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Чтобы посмотреть результат в Google Поиске, нажмите "Поиск + Пробел".</translation>
 <translation id="7343649194310845056">Сетевые устройства</translation>
@@ -759,9 +771,11 @@
 <translation id="773153675489693198">Количество циклов</translation>
 <translation id="7747039790905080783">Общий ключ</translation>
 <translation id="7762130827864645708">Вы установили новый пароль. В дальнейшем используйте его.</translation>
+<translation id="7762839321248874531">Отправить <ph name="BEGIN_LINK1" />сведения о системе и приложениях<ph name="END_LINK1" />, а также <ph name="BEGIN_LINK2" />статистику<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Совпадение с доменным суффиксом</translation>
 <translation id="7769672763586021400">Идентификатор модели</translation>
 <translation id="7784116172884276937">Нет настроенных DNS-серверов.</translation>
+<translation id="779591286616261875">Отправить новый отзыв</translation>
 <translation id="7799817062559422778">Светлая тема</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7805768142964895445">Состояние</translation>
@@ -828,6 +842,7 @@
 <translation id="8382302752385457774">Выбранный бренд</translation>
 <translation id="8395584934117017006">Этим устройством <ph name="DEVICE_TYPE" /> управляет организация.</translation>
 <translation id="8398927464629426868">Скорость, с которой устройство заряжается или разряжается в настоящее время</translation>
+<translation id="8420955526972171689">Запускайте тесты и устраняйте неполадки аппаратного обеспечения.</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Встроенная клавиатура</translation>
 <translation id="8431300646573772016">Что нового в Chrome OS</translation>
@@ -913,6 +928,7 @@
 <translation id="9082718469794970195">Использовать это видео</translation>
 <translation id="9087578468327036362">Сообщить о запросе</translation>
 <translation id="9088306295921699330">Используется</translation>
+<translation id="9092255287806472980">Ваш отзыв поможет улучшить Chrome OS и будет рассмотрен нашей командой. Мы получаем множество обращений, поэтому не сможем вам ответить.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Потребуется разобрать устройство</translation>
 <translation id="9098156406873149060">Сохранить пользовательские данные</translation>

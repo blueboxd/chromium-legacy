@@ -102,6 +102,8 @@ static_library("browser") {
     "autocomplete_classifier.h",
     "autocomplete_controller.cc",
     "autocomplete_controller.h",
+    "autocomplete_controller_metrics.cc",
+    "autocomplete_controller_metrics.h",
     "autocomplete_i18n.h",
     "autocomplete_match.cc",
     "autocomplete_match.h",
@@ -479,6 +481,7 @@ if (is_android) {
       "actions/omnibox_pedal_concepts.h",
       "autocomplete_match.h",
       "autocomplete_match_type.h",
+      "most_visited_sites_provider.cc",
       "suggestion_answer.h",
     ]
   }
@@ -582,6 +585,7 @@ source_set("unit_tests") {
     "actions/omnibox_pedal_provider_unittest.cc",
     "actions/omnibox_pedal_unittest.cc",
     "answers_cache_unittest.cc",
+    "autocomplete_controller_metrics_unittest.cc",
     "autocomplete_input_unittest.cc",
     "autocomplete_match_type_unittest.cc",
     "autocomplete_match_unittest.cc",
@@ -593,6 +597,7 @@ source_set("unit_tests") {
     "clipboard_provider_unittest.cc",
     "document_provider_unittest.cc",
     "document_suggestions_service_unittest.cc",
+    "fake_autocomplete_controller.h",
     "favicon_cache_unittest.cc",
     "history_fuzzy_provider_unittest.cc",
     "history_provider_unittest.cc",

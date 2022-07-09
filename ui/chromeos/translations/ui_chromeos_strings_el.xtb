@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Χανγκίλ Romaja</translation>
 <translation id="112387589102719461">Αγγλικά (ΗΠΑ) με πληκτρολόγιο Programmer Dvorak</translation>
 <translation id="1134697384939541955">Αγγλικά (ΗΠΑ) με εκτεταμένο πληκτρολόγιο</translation>
+<translation id="1138691154716715755">Νωρίτερα αυτόν το μήνα</translation>
 <translation id="1148097584170732637">Βρέθηκαν <ph name="FILE_COUNT" /> αρχεία.
     <ph name="LINE_BREAK1" />
     Δεν υπάρχει αρκετός διαθέσιμος χώρος στον τοπικό αποθηκευτικό χώρο. Απαιτούνται επιπλέον <ph name="FILE_SIZE" />.
@@ -137,6 +138,7 @@
 <translation id="2141347188420181405">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Αποκλείστηκε από τον διαχειριστή σας, Λεπτομέρειες</translation>
 <translation id="2142680004883808240">Ρωσικά με φωνητικό πληκτρολόγιο YaZHert</translation>
 <translation id="2143778271340628265">Μη αυτόματη διαμόρφωση διακομιστή μεσολάβησης</translation>
+<translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2163152940313951844">Μη έγκυρος χαρακτήρας: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Πορτογαλικά με πληκτρολόγιο υπολογιστή Διεθνές ΗΠΑ</translation>
 <translation id="2198315389084035571">Απλοποιημένα Κινεζικά</translation>
@@ -161,6 +163,7 @@
 <translation id="2377319039870049694">Εναλλαγή σε προβολή λίστας</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> φάκελοι κοινόχρηστοι με Linux</translation>
 <translation id="2378075407703503998">Έχουν επιλεγεί <ph name="SELCTED_FILE_COUNT" /> αρχεία</translation>
+<translation id="2387120140441437063">Δεν είναι δυνατό το άνοιγμα των αρχείων που βρίσκονται στον κάδο. Επαναφέρετε τα αρχεία πριν από το άνοιγμα.</translation>
 <translation id="2387458720915042159">Τύπος σύνδεσης διακομιστή μεσολάβησης</translation>
 <translation id="2389832672041313158">Βιρμανικά/Μιανμάρ</translation>
 <translation id="2392369802118427583">Ενεργοποίηση</translation>
@@ -182,7 +185,6 @@
 <translation id="2541377937973966830">Τα περιεχόμενα αυτού του φακέλου είναι μόνο για ανάγνωση. Δεν υποστηρίζονται ορισμένες δραστηριότητες.</translation>
 <translation id="2542049655219295786">Πίνακας Google</translation>
 <translation id="2544853746127077729">Το πιστοποιητικό ελέγχου ταυτότητας απορρίφθηκε από το δίκτυο</translation>
-<translation id="2547921442987553570">Προσθήκη στην επέκταση <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Διεθνές ΗΠΑ</translation>
 <translation id="2563185590376525700">Βάτραχος</translation>
 <translation id="2578394532502990878">Φωνητική εισαγωγή Ταμίλ</translation>
@@ -236,7 +238,6 @@
 <translation id="3047197340186497470">Κινεζικά Dayi</translation>
 <translation id="3057861065630527966">Δημιουργία αντιγράφων ασφαλείας για τις φωτογραφίες και τα βίντεό σας</translation>
 <translation id="3067790092342515856">Αρχεία Windows</translation>
-<translation id="3078461028045006476">Μοιραστείτε με την επέκταση <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
 <translation id="3085752524577180175">Κεντρικός υπολογιστής SOCKS</translation>
 <translation id="3104793765551262433">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Αποκλείστηκε από τον διαχειριστή σας, Λεπτομέρειες</translation>
@@ -337,7 +338,6 @@
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3855472144336161447">Γερμανικά Neo 2</translation>
 <translation id="3858860766373142691">Όνομα</translation>
-<translation id="386548886866354912">Συμπίεση με <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Περιγραφή</translation>
 <translation id="3899991606604168269">Γαλλικά (Καναδά) με πολύγλωσσο πληκτρολόγιο</translation>
 <translation id="3901991538546252627">Σύνδεση με <ph name="NAME" /></translation>
@@ -350,6 +350,7 @@
 <translation id="3971140002794351170">Λήψη προφίλ κινητού, Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Αγγλικά (ΗΒ)</translation>
 <translation id="3975895378829046965">Φωνητική εισαγωγή Βεγγαλικών</translation>
+<translation id="3991446849494482687">Αυτή η ενέργεια θα απενεργοποιήσει επίσης τη ρύθμιση κλειδώματος SIM στη συσκευή.</translation>
 <translation id="4002066346123236978">Τίτλος</translation>
 <translation id="4017788180641807848">Αγγλικά (ΗΠΑ) με πληκτρολόγιο Workman</translation>
 <translation id="4040753847560036377">Εσφαλμένος κωδικός PUK</translation>
@@ -386,6 +387,7 @@
 <translation id="4380245540200674032">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Διαχειριζόμενο από τον διαχειριστή σας, Λεπτομέρειες</translation>
 <translation id="4387004326333427325">Το πιστοποιητικό ελέγχου ταυτότητας απορρίφθηκε απομακρυσμένα</translation>
 <translation id="4394214039309501350">Εξωτερικός σύνδεσμος</translation>
+<translation id="4394980935660306080">Νωρίτερα αυτήν την εβδομάδα</translation>
 <translation id="4401287888955153199">Εξαγωγή όλων</translation>
 <translation id="4410695710508688828">Η λειτουργία εξαγωγής απέτυχε. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Δημιουργήστε μια συντόμευση για τα αρχεία σας</translation>
@@ -430,6 +432,7 @@
 <translation id="4712283082407695269">Άνοιγμα "<ph name="PATH" />"</translation>
 <translation id="4720185134442950733">Δίκτυο δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="4724850507808590449">Δημιουργήθηκαν αντίγραφα ασφαλείας για <ph name="FILE_COUNT" /> φωτογραφίες</translation>
+<translation id="4725096204469550614">Νωρίτερα φέτος</translation>
 <translation id="4725511304875193254">Κόργκι</translation>
 <translation id="4737050008115666127">Προσγείωση</translation>
 <translation id="4747271164117300400">Σλαβομακεδονικά</translation>
@@ -481,6 +484,7 @@
 <translation id="509429900233858213">Παρουσιάστηκε σφάλμα.</translation>
 <translation id="5098629044894065541">Εβραϊκά
 </translation>
+<translation id="5102922915594634436">Διαχείριση συγχρονισμένων φακέλων</translation>
 <translation id="5109254780565519649">Παρουσιάστηκε σφάλμα. Ενδέχεται να μην έγινε επαναφορά ορισμένων στοιχείων.</translation>
 <translation id="5110329002213341433">Αγγλικά (Καναδά)</translation>
 <translation id="5123433949759960244">Μπάλα μπάσκετ</translation>
@@ -616,7 +620,6 @@
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6170470584681422115">Σάντουιτς</translation>
 <translation id="6187719147498869044">Ουγγρικά</translation>
-<translation id="6189412234224385711">Άνοιγμα με <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Αλλαγή PIN</translation>
 <translation id="6199801702437275229">Αναμονή για πληροφορίες χώρου...</translation>
 <translation id="6205710420833115353">Ορισμένες λειτουργίες διαρκούν περισσότερο από το αναμενόμενο. Θέλετε να τις ματαιώσετε;</translation>
@@ -721,6 +724,7 @@
 <translation id="7075931588889865715">Ταϊλανδικά με πληκτρολόγιο TIS 820-2531</translation>
 <translation id="708278670402572152">Αποσυνδεθείτε για να είναι δυνατή η σάρωση</translation>
 <translation id="7086590977277044826">Ταμίλ με πληκτρολόγιο InScript</translation>
+<translation id="7088615885725309056">Παλαιότερο</translation>
 <translation id="7103992300314999525">Σλαβομακεδονικά</translation>
 <translation id="7106346894903675391">Αγοράστε περισσότερο αποθηκευτικό χώρο...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;αναζήτηση Drive&lt;/em&gt;</translation>
@@ -788,6 +792,7 @@
 <translation id="7663224033570512922">Χίντι</translation>
 <translation id="7693909743393669729">Η μορφοποίηση ενός δίσκου θα διαγράψει όλα τα δεδομένα που είναι αποθηκευμένα σε αυτόν και θα καταργήσει τα υπάρχοντα διαμερίσματα, συμπεριλαμβανομένων των διαμερισμάτων που μπορεί να μην είναι ορατά. Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.</translation>
 <translation id="7695430100978772476">Δεν ήταν δυνατή η μορφοποίηση της συσκευής <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">Το άδειασμα του κάδου απέτυχε.</translation>
 <translation id="770015031906360009">Ελληνικά</translation>
 <translation id="7705251383879779343">Το αρχείο <ph name="FILE_NAME" /> αντιγράφηκε.</translation>
 <translation id="7711920809702896782">Πληροφορίες εικόνας</translation>
@@ -798,6 +803,7 @@
 <translation id="7760449188139285140">Κινεζικά Wubi</translation>
 <translation id="7765158879357617694">Μεταφορά</translation>
 <translation id="7774365994322694683">Πουλί</translation>
+<translation id="7781829728241885113">Χθες</translation>
 <translation id="7788080748068240085">Για να αποθηκεύσετε το "<ph name="FILE_NAME" />" εκτός σύνδεσης, θα πρέπει να απελευθερώσετε επιπλέον <ph name="TOTAL_FILE_SIZE" /> χώρο:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />ξεκαρφιτσώστε αρχεία στα οποία δεν χρειάζεται πλέον να έχετε πρόσβαση<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />διαγράψτε αρχεία από το φάκελο "Λήψεις"<ph name="MARKUP_5" /></translation>

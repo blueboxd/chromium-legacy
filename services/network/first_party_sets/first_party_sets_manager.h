@@ -80,15 +80,18 @@ class FirstPartySetsManager {
   // Sets the enabled_ attribute for testing.
   void SetEnabledForTesting(bool enabled);
 
-  // Returns nullopt if First-Party Sets is disabled or if the input is not in
-  // a nontrivial set.
+  // Returns optional(nullopt) if First-Party Sets is disabled or if the input
+  // is not in a nontrivial set.
   // If FPS is enabled and the input site is in a nontrivial set, then this
-  // returns the owner site of that set.
+  // returns a non-empty optional containing the owner site of that set.
   //
   // This may return a result synchronously, or asynchronously invoke `callback`
   // with the result. The callback will be invoked iff the return value is
   // nullopt; i.e. a result will be provided via return value or callback, but
   // not both, and not neither.
+  //
+  // Note that there is a semantic difference between optional(nullopt) and
+  // nullopt.
   [[nodiscard]] absl::optional<OwnerResult> FindOwner(
       const net::SchemefulSite& site,
       const FirstPartySetsContextConfig& fps_context_config,
@@ -170,8 +173,8 @@ class FirstPartySetsManager {
   // `infer_singleton_sets` is true. `fps_context_config` is the configuration
   // to be used in this context.
   //
-  // This is synchronous, and must not be called
-  // until the instance is fully initialized.
+  // This is synchronous, and must not be called until the instance is fully
+  // initialized.
   const absl::optional<net::SchemefulSite> FindOwnerInternal(
       const net::SchemefulSite& site,
       const FirstPartySetsContextConfig& fps_context_config,

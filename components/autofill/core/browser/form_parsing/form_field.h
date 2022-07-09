@@ -7,8 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
@@ -63,6 +65,20 @@ class FormField {
       LogManager* log_manager = nullptr);
 
 #if defined(UNIT_TEST)
+  static bool MatchForTesting(const AutofillField* field,
+                              base::StringPiece16 pattern,
+                              MatchParams match_type,
+                              const RegExLogging& logging = {}) {
+    return FormField::Match(field, pattern, match_type, logging);
+  }
+
+  static bool ParseInAnyOrderForTesting(
+      AutofillScanner* scanner,
+      std::vector<std::pair<AutofillField**, base::RepeatingCallback<bool()>>>
+          fields_and_parsers) {
+    return FormField::ParseInAnyOrder(scanner, fields_and_parsers);
+  }
+
   // Assign types to the fields for the testing purposes.
   void AddClassificationsForTesting(
       FieldCandidatesMap* field_candidates_for_testing) const {
@@ -74,11 +90,12 @@ class FormField {
   // Initial values assigned to FieldCandidates by their corresponding parsers.
   // There's an implicit precedence determined by the values assigned here.
   // Email is currently the most important followed by Phone, Travel, Address,
-  // Credit Card, Price, Name, Merchant promo code, and Search.
+  // Birthdate, Credit Card, Price, Name, Merchant promo code, and Search.
   static constexpr float kBaseEmailParserScore = 1.4f;
   static constexpr float kBasePhoneParserScore = 1.3f;
   static constexpr float kBaseTravelParserScore = 1.2f;
   static constexpr float kBaseAddressParserScore = 1.1f;
+  static constexpr float kBaseBirthdateParserScore = 1.05f;
   static constexpr float kBaseCreditCardParserScore = 1.0f;
   static constexpr float kBasePriceParserScore = 0.95f;
   static constexpr float kBaseNameParserScore = 0.9f;
@@ -111,6 +128,18 @@ class FormField {
   // on success and fills |match| with a pointer to the field.
   static bool ParseEmptyLabel(AutofillScanner* scanner, AutofillField** match);
 
+  // Attempts to parse several fields using the specified parsing functions in
+  // arbitrary order. This is useful e.g. when parsing dates, where both dd/mm
+  // and mm/dd makes sense.
+  // Returns true if all fields were parsed successfully. In this case, the
+  // fields are assigned with the matching ones.
+  // If no order is matched every parser, false is returned, all fields are
+  // reset to nullptr and the scanner is rewound to it's original position.
+  static bool ParseInAnyOrder(
+      AutofillScanner* scanner,
+      std::vector<std::pair<AutofillField**, base::RepeatingCallback<bool()>>>
+          fields_and_parsers);
+
   // Adds an association between a |field| and a |type| into |field_candidates|.
   // This association is weighted by |score|, the higher the stronger the
   // association.
@@ -131,9 +160,6 @@ class FormField {
       FieldCandidatesMap* field_candidates) const = 0;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(FormFieldTest, Match);
-  FRIEND_TEST_ALL_PREFIXES(FormFieldTest, TestParseableLabels);
-
   // Function pointer type for the parsing function that should be passed to the
   // ParseFormFieldsPass() helper function.
   typedef std::unique_ptr<FormField> ParseFunction(

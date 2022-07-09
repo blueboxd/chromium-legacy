@@ -16,6 +16,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
@@ -34,20 +35,20 @@ class Separator;
 
 namespace ash {
 
-class AppListConfig;
 class ApplicationDragAndDropHost;
 class AppListA11yAnnouncer;
+class AppListConfig;
 class AppListFolderController;
+class AppListKeyboardController;
 class AppListNudgeController;
 class AppListViewDelegate;
 class ContinueSectionView;
 class IconButton;
 class RecentAppsView;
 class RoundedScrollBar;
-class SearchResultPageDialogController;
-class SearchBoxView;
 class ScrollableAppsGridView;
 class ScrollViewGradientHelper;
+class SearchBoxView;
 
 // The default page for the app list bubble / clamshell launcher. Contains a
 // scroll view with:
@@ -68,7 +69,6 @@ class ASH_EXPORT AppListBubbleAppsPage
                         ApplicationDragAndDropHost* drag_and_drop_host,
                         AppListConfig* app_list_config,
                         AppListA11yAnnouncer* a11y_announcer,
-                        SearchResultPageDialogController* dialog_controller,
                         AppListFolderController* folder_controller,
                         SearchBoxView* search_box);
   AppListBubbleAppsPage(const AppListBubbleAppsPage&) = delete;
@@ -116,6 +116,7 @@ class ASH_EXPORT AppListBubbleAppsPage
   // views::View:
   void Layout() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
+  void OnThemeChanged() override;
 
   // view::ViewObserver:
   void OnViewVisibilityChanged(views::View* observed_view,
@@ -137,14 +138,13 @@ class ASH_EXPORT AppListBubbleAppsPage
   // AppsGridViewFocusDelegate:
   bool MoveFocusUpFromAppsGrid(int column) override;
 
-  // Helper functions to move the focus to RecentAppsView/AppsGridView.
-  bool HandleMovingFocusToRecents(int column);
-  bool HandleMovingFocusToAppsGrid(int column);
-
   // Updates the visibility of the continue section based on user preference.
   void UpdateContinueSectionVisibility();
 
   views::ScrollView* scroll_view() { return scroll_view_; }
+  IconButton* toggle_continue_section_button() {
+    return toggle_continue_section_button_;
+  }
   ScrollableAppsGridView* scrollable_apps_grid_view() {
     return scrollable_apps_grid_view_;
   }
@@ -154,9 +154,6 @@ class ASH_EXPORT AppListBubbleAppsPage
 
   views::View* continue_label_container_for_test() {
     return continue_label_container_;
-  }
-  IconButton* toggle_continue_section_button_for_test() {
-    return toggle_continue_section_button_;
   }
   RecentAppsView* recent_apps_for_test() { return recent_apps_; }
   views::Separator* separator_for_test() { return separator_; }
@@ -216,7 +213,13 @@ class ASH_EXPORT AppListBubbleAppsPage
   // animates back to its original position with `duration`.
   void SlideViewIntoPosition(views::View* view,
                              int vertical_offset,
-                             base::TimeDelta duration);
+                             base::TimeDelta duration,
+                             gfx::Tween::Type tween_type);
+
+  // Animates `view` using a layer fade-in animation as part of the show
+  // continue section animation. Takes `view` because the same animation is used
+  // for continue tasks and for recent apps.
+  void FadeInContinueSectionView(views::View* view);
 
   // Pressed callback for `toggle_continue_section_button_`.
   void OnToggleContinueSection();
@@ -240,10 +243,8 @@ class ASH_EXPORT AppListBubbleAppsPage
   // The search box owned by AppListBubbleView.
   SearchBoxView* search_box_ = nullptr;
 
+  std::unique_ptr<AppListKeyboardController> app_list_keyboard_controller_;
   std::unique_ptr<AppListNudgeController> app_list_nudge_controller_;
-
-  // Controller for showing a modal dialog in the continue section.
-  SearchResultPageDialogController* const dialog_controller_;
 
   // Adds fade in/out gradients to `scroll_view_`.
   std::unique_ptr<ScrollViewGradientHelper> gradient_helper_;

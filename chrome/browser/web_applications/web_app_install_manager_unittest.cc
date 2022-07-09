@@ -19,7 +19,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/commands/install_from_info_command.h"
-#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_data_retriever.h"
 #include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
@@ -45,7 +44,6 @@
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_app_uninstall_job.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/webapps/browser/install_result_code.h"
@@ -103,9 +101,6 @@ class WebAppInstallManagerTest
   void SetUp() override {
     WebAppTest::SetUp();
 
-    externally_installed_app_prefs_ =
-        std::make_unique<ExternallyInstalledWebAppPrefs>(profile()->GetPrefs());
-
     fake_registry_controller_ =
         std::make_unique<FakeWebAppRegistryController>();
     fake_registry_controller_->SetUp(profile());
@@ -120,8 +115,9 @@ class WebAppInstallManagerTest
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
     install_manager_->SetSubsystems(
         &registrar(), &controller().os_integration_manager(),
-        &fake_registry_controller_->command_manager(),
-        install_finalizer_.get());
+        &fake_registry_controller_->command_manager(), install_finalizer_.get(),
+        icon_manager_.get(), &fake_registry_controller_->sync_bridge(),
+        &fake_registry_controller_->translation_manager());
 
     auto test_url_loader = std::make_unique<TestWebAppUrlLoader>();
 
@@ -137,7 +133,8 @@ class WebAppInstallManagerTest
         &fake_registry_controller_->sync_bridge(),
         &fake_registry_controller_->os_integration_manager(),
         icon_manager_.get(), policy_manager_.get(),
-        &fake_registry_controller_->translation_manager());
+        &fake_registry_controller_->translation_manager(),
+        &fake_registry_controller_->command_manager());
   }
 
   void TearDown() override {
@@ -159,9 +156,6 @@ class WebAppInstallManagerTest
   }
   FakeWebAppRegistryController& controller() {
     return *fake_registry_controller_;
-  }
-  ExternallyInstalledWebAppPrefs& externally_installed_app_prefs() {
-    return *externally_installed_app_prefs_;
   }
 
   std::unique_ptr<WebApp> CreateWebAppFromSyncAndPendingInstallation(
@@ -238,8 +232,7 @@ class WebAppInstallManagerTest
         base::BindLambdaForTesting(
             [](content::WebContents* initiator_web_contents,
                std::unique_ptr<WebAppInstallInfo> web_app_info,
-               web_app::WebAppInstallationAcceptanceCallback
-                   acceptance_callback) {
+               WebAppInstallationAcceptanceCallback acceptance_callback) {
               std::move(acceptance_callback)
                   .Run(/*user_accepted=*/true, std::move(web_app_info));
             }),
@@ -260,16 +253,15 @@ class WebAppInstallManagerTest
       webapps::WebappInstallSource install_source) {
     InstallResult result;
     base::RunLoop run_loop;
-    command_manager().ScheduleCommand(
-        std::make_unique<web_app::InstallFromInfoCommand>(
-            std::move(install_info), &finalizer(),
-            overwrite_existing_manifest_fields, install_source,
-            base::BindLambdaForTesting([&](const AppId& installed_app_id,
-                                           webapps::InstallResultCode code) {
-              result.app_id = installed_app_id;
-              result.code = code;
-              run_loop.Quit();
-            })));
+    command_manager().ScheduleCommand(std::make_unique<InstallFromInfoCommand>(
+        std::move(install_info), &finalizer(),
+        overwrite_existing_manifest_fields, install_source,
+        base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                       webapps::InstallResultCode code) {
+          result.app_id = installed_app_id;
+          result.code = code;
+          run_loop.Quit();
+        })));
 
     run_loop.Run();
     return result;
@@ -360,10 +352,8 @@ class WebAppInstallManagerTest
     policy_manager_.reset();
     icon_manager_.reset();
     fake_registry_controller_.reset();
-    externally_installed_app_prefs_.reset();
     install_finalizer_.reset();
     install_manager_.reset();
-
     test_url_loader_ = nullptr;
     file_utils_ = nullptr;
   }
@@ -387,8 +377,6 @@ class WebAppInstallManagerTest
   std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<WebAppInstallFinalizer> install_finalizer_;
   std::unique_ptr<FakeWebAppUiManager> ui_manager_;
-  std::unique_ptr<ExternallyInstalledWebAppPrefs>
-      externally_installed_app_prefs_;
 
   // A weak ptr. The original is owned by install_manager_.
   raw_ptr<TestWebAppUrlLoader> test_url_loader_ = nullptr;
@@ -439,12 +427,12 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
             std::move(apps_to_uninstall),
             base::BindLambdaForTesting(
                 [&, callback](const AppId& uninstalled_app_id,
-                              bool uninstalled) {
+                              webapps::UninstallResultCode code) {
                   EXPECT_EQ(uninstalled_app_id, app_id);
-                  EXPECT_TRUE(uninstalled);
+                  EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
                   event_order.push_back(Event::kUninstallFromSync_Callback);
                   run_loop.Quit();
-                  callback.Run(uninstalled_app_id, uninstalled);
+                  callback.Run(uninstalled_app_id, code);
                 }));
       }));
 
@@ -500,12 +488,12 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
             std::move(apps_to_uninstall),
             base::BindLambdaForTesting(
                 [&, callback](const AppId& uninstalled_app_id,
-                              bool uninstalled) {
+                              webapps::UninstallResultCode code) {
                   EXPECT_EQ(uninstalled_app_id, app_id);
-                  EXPECT_TRUE(uninstalled);
+                  EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
                   event_order.push_back(Event::kUninstallFromSync_Callback);
                   run_loop.Quit();
-                  callback.Run(uninstalled_app_id, uninstalled);
+                  callback.Run(uninstalled_app_id, code);
                 }));
       }));
 
@@ -529,9 +517,10 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   const AppId app_id = policy_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/policy");
 
-  externally_installed_app_prefs().Insert(
-      external_app_url, app_id, ExternalInstallSource::kExternalPolicy);
   InitRegistrarWithApp(std::move(policy_and_user_app));
+  test::AddInstallUrlData(profile()->GetPrefs(), &controller().sync_bridge(),
+                          app_id, external_app_url,
+                          ExternalInstallSource::kExternalPolicy);
 
   EXPECT_FALSE(WasPreinstalledWebAppUninstalled(app_id));
 
@@ -566,9 +555,10 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   const AppId app_id = policy_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/policy");
 
-  externally_installed_app_prefs().Insert(
-      external_app_url, app_id, ExternalInstallSource::kExternalPolicy);
   InitRegistrarWithApp(std::move(policy_and_user_app));
+  test::AddInstallUrlData(profile()->GetPrefs(), &controller().sync_bridge(),
+                          app_id, external_app_url,
+                          ExternalInstallSource::kExternalPolicy);
 
   EXPECT_FALSE(WasPreinstalledWebAppUninstalled(app_id));
 
@@ -604,9 +594,10 @@ TEST_P(WebAppInstallManagerTest_SyncOnly, DefaultAndUser_UninstallWebApp) {
   const AppId app_id = default_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/default");
 
-  externally_installed_app_prefs().Insert(
-      external_app_url, app_id, ExternalInstallSource::kExternalDefault);
   InitRegistrarWithApp(std::move(default_and_user_app));
+  test::AddInstallUrlData(profile()->GetPrefs(), &controller().sync_bridge(),
+                          app_id, external_app_url,
+                          ExternalInstallSource::kExternalDefault);
 
   EXPECT_TRUE(finalizer().CanUserUninstallWebApp(app_id));
   EXPECT_FALSE(WasPreinstalledWebAppUninstalled(app_id));
@@ -645,9 +636,10 @@ TEST_P(WebAppInstallManagerTest_SyncOnly,
   const AppId app_id = default_and_user_app->app_id();
   const GURL external_app_url("https://example.com/path/default");
 
-  externally_installed_app_prefs().Insert(
-      external_app_url, app_id, ExternalInstallSource::kExternalDefault);
   InitRegistrarWithApp(std::move(default_and_user_app));
+  test::AddInstallUrlData(profile()->GetPrefs(), &controller().sync_bridge(),
+                          app_id, external_app_url,
+                          ExternalInstallSource::kExternalDefault);
 
   EXPECT_TRUE(finalizer().CanUserUninstallWebApp(app_id));
   EXPECT_FALSE(WasPreinstalledWebAppUninstalled(app_id));
@@ -725,8 +717,6 @@ TEST_P(WebAppInstallManagerTest, DefaultNotActivelyInstalled) {
   const AppId app_id = default_app->app_id();
   const GURL external_app_url("https://example.com/path/default");
 
-  externally_installed_app_prefs().Insert(
-      external_app_url, app_id, ExternalInstallSource::kExternalDefault);
   InitRegistrarWithApp(std::move(default_app));
 
   EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));

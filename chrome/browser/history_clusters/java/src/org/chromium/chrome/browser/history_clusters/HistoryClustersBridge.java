@@ -76,10 +76,9 @@ public class HistoryClustersBridge {
     }
 
     @CalledByNative
-    static HistoryCluster buildCluster(ClusterVisit[] visits, String[] keywords, String label,
+    static HistoryCluster buildCluster(ClusterVisit[] visits, String label, String rawLabel,
             int[] labelMatchStarts, int[] labelMatchEnds, long timestamp,
             String[] relatedSearches) {
-        List<String> keywordList = Arrays.asList(keywords);
         List<ClusterVisit> clusterVisitList = Arrays.asList(visits);
 
         assert labelMatchEnds.length == labelMatchStarts.length;
@@ -90,16 +89,18 @@ public class HistoryClustersBridge {
         }
 
         List<String> relatedSearchesList = Arrays.asList(relatedSearches);
-        return new HistoryCluster(keywordList, clusterVisitList, label, matchPositions, timestamp,
-                relatedSearchesList);
+        return new HistoryCluster(
+                clusterVisitList, label, rawLabel, matchPositions, timestamp, relatedSearchesList);
     }
 
     @CalledByNative
-    static ClusterVisit buildClusterVisit(float score, GURL url, String urlForDisplay, String title,
-            int[] titleMatchStarts, int[] titleMatchEnds, int[] urlMatchStarts,
-            int[] urlMatchEnds) {
+    static ClusterVisit buildClusterVisit(float score, GURL normalizedUrl, String urlForDisplay,
+            String title, int[] titleMatchStarts, int[] titleMatchEnds, int[] urlMatchStarts,
+            int[] urlMatchEnds, GURL rawUrl, long timestamp, long[] duplicateVisitTimestamps,
+            GURL[] duplicateVisitUrls) {
         assert titleMatchStarts.length == titleMatchEnds.length;
         assert urlMatchStarts.length == urlMatchEnds.length;
+        assert duplicateVisitTimestamps.length == duplicateVisitUrls.length;
 
         List<MatchPosition> titleMatchPositions = new ArrayList<>(titleMatchStarts.length);
         for (int i = 0; i < titleMatchStarts.length; i++) {
@@ -113,8 +114,15 @@ public class HistoryClustersBridge {
             urlMatchPositions.add(matchPosition);
         }
 
-        return new ClusterVisit(
-                score, url, title, urlForDisplay, titleMatchPositions, urlMatchPositions);
+        List<ClusterVisit.DuplicateVisit> duplicateVisits =
+                new ArrayList<>(duplicateVisitTimestamps.length);
+        for (int i = 0; i < duplicateVisitTimestamps.length; i++) {
+            duplicateVisits.add(new ClusterVisit.DuplicateVisit(
+                    duplicateVisitTimestamps[i], duplicateVisitUrls[i]));
+        }
+
+        return new ClusterVisit(score, normalizedUrl, title, urlForDisplay, titleMatchPositions,
+                urlMatchPositions, rawUrl, timestamp, duplicateVisits);
     }
 
     @NativeMethods

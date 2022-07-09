@@ -179,8 +179,9 @@ TEST_F(ListPreferenceMergeTest, ServerNull) {
       pref_service_->FindPreference(kListPrefName);
   base::Value merged_value(pref_sync_service_->MergePreference(
       pref->name(), *pref->GetValue(), *null_value));
-  const base::Value* local_list_value = pref_service_->GetList(kListPrefName);
-  EXPECT_EQ(merged_value, *local_list_value);
+  const base::Value::List& local_list_value =
+      pref_service_->GetValueList(kListPrefName);
+  EXPECT_EQ(merged_value, local_list_value);
 }
 
 TEST_F(ListPreferenceMergeTest, ServerEmpty) {
@@ -195,8 +196,9 @@ TEST_F(ListPreferenceMergeTest, ServerEmpty) {
       pref_service_->FindPreference(kListPrefName);
   base::Value merged_value(pref_sync_service_->MergePreference(
       pref->name(), *pref->GetValue(), *empty_value));
-  const base::Value* local_list_value = pref_service_->GetList(kListPrefName);
-  EXPECT_EQ(merged_value, *local_list_value);
+  const base::Value::List& local_list_value =
+      pref_service_->GetValueList(kListPrefName);
+  EXPECT_EQ(merged_value, local_list_value);
 }
 
 TEST_F(ListPreferenceMergeTest, Merge) {
@@ -299,9 +301,9 @@ TEST_F(DictionaryPreferenceMergeTest, ServerNull) {
       pref_service_->FindPreference(kDictionaryPrefName);
   base::Value merged_value(pref_sync_service_->MergePreference(
       pref->name(), *pref->GetValue(), *null_value));
-  const base::Value* local_dict_value =
-      pref_service_->GetDictionary(kDictionaryPrefName);
-  EXPECT_EQ(merged_value, *local_dict_value);
+  const base::Value::Dict& local_dict_value =
+      pref_service_->GetValueDict(kDictionaryPrefName);
+  EXPECT_EQ(merged_value, local_dict_value);
 }
 
 TEST_F(DictionaryPreferenceMergeTest, ServerEmpty) {
@@ -316,9 +318,9 @@ TEST_F(DictionaryPreferenceMergeTest, ServerEmpty) {
       pref_service_->FindPreference(kDictionaryPrefName);
   base::Value merged_value(pref_sync_service_->MergePreference(
       pref->name(), *pref->GetValue(), *empty_value));
-  const base::Value* local_dict_value =
-      pref_service_->GetDictionary(kDictionaryPrefName);
-  EXPECT_EQ(merged_value, *local_dict_value);
+  const base::Value::Dict& local_dict_value =
+      pref_service_->GetValueDict(kDictionaryPrefName);
+  EXPECT_EQ(merged_value, local_dict_value);
 }
 
 TEST_F(DictionaryPreferenceMergeTest, MergeNoConflicts) {

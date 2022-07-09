@@ -372,10 +372,6 @@ void Node::setNodeValue(const String&, ExceptionState&) {
   // By default, setting nodeValue has no effect.
 }
 
-ContainerNode* Node::parentNode() const {
-  return IsShadowRoot() ? nullptr : ParentOrShadowHostNode();
-}
-
 NodeList* Node::childNodes() {
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (this_node)
@@ -2340,10 +2336,16 @@ String Node::ToString() const {
     builder.Append(" ");
     builder.Append(nodeValue().EncodeForDebugging());
     return builder.ReleaseString();
+  } else if (const auto* element = DynamicTo<Element>(this)) {
+    const AtomicString& pseudo = element->ShadowPseudoId();
+    if (!pseudo.IsEmpty()) {
+      builder.Append(" ::");
+      builder.Append(pseudo);
+    }
+    DumpAttributeDesc(*this, html_names::kIdAttr, builder);
+    DumpAttributeDesc(*this, html_names::kClassAttr, builder);
+    DumpAttributeDesc(*this, html_names::kStyleAttr, builder);
   }
-  DumpAttributeDesc(*this, html_names::kIdAttr, builder);
-  DumpAttributeDesc(*this, html_names::kClassAttr, builder);
-  DumpAttributeDesc(*this, html_names::kStyleAttr, builder);
   if (IsEditable(*this))
     builder.Append(" (editable)");
   if (GetDocument().FocusedElement() == this)
@@ -2892,7 +2894,7 @@ void Node::NotifyMutationObserversNodeWillDetach() {
 }
 
 void Node::HandleLocalEvents(Event& event) {
-  if (UNLIKELY(IsDocumentNode() && GetDocument().PopupOrHintShowing())) {
+  if (UNLIKELY(IsDocumentNode() && GetDocument().TopmostPopupAutoOrHint())) {
     // Check if this event should "light dismiss" one or more popups.
     Element::HandlePopupLightDismiss(event);
   }

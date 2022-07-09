@@ -8,9 +8,10 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/autofill_assistant/password_change/proto/extensions.pb.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/password_change_run_controller.h"
+#include "components/autofill_assistant/browser/public/external_action.pb.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
+#include "components/autofill_assistant/browser/public/password_change/proto/actions.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PasswordChangeRunDisplay;
@@ -57,9 +58,9 @@ class ApcExternalActionDelegate
       const autofill_assistant::password_change::BasePromptSpecification&
           base_prompt) override;
   void OnBasePromptChoiceSelected(size_t choice_index) override;
-  void ShowGeneratedPasswordPrompt(
+  void ShowUseGeneratedPasswordPrompt(
       const autofill_assistant::password_change::
-          GeneratedPasswordPromptSpecification& password_prompt,
+          UseGeneratedPasswordPromptSpecification& password_prompt,
       const std::u16string& generated_password) override;
   void OnGeneratedPasswordSelected(bool selected) override;
   void ShowStartingScreen(const GURL& url) override;
@@ -72,9 +73,12 @@ class ApcExternalActionDelegate
       override;
 
   // Ends the current action by notifying the `ExternalActionController` about
-  // the `success` of the action. If non-empty, `serialized_result` is passed
+  // the `success` of the action. If non-empty, `action_result` is passed
   // as the result payload. Otherwise, no payload is set.
-  void EndAction(bool success, std::string serialized_result = std::string());
+  void EndAction(bool success,
+                 absl::optional<autofill_assistant::password_change::
+                                    GenericPasswordChangeSpecificationResult>
+                     action_result = absl::nullopt);
 
   // Handler methods for the different actions that `ApcExternalActionDelegate`
   // supports.
@@ -83,10 +87,13 @@ class ApcExternalActionDelegate
           specification);
   void HandleGeneratedPasswordPrompt(
       const autofill_assistant::password_change::
-          GeneratedPasswordPromptSpecification& specification);
+          UseGeneratedPasswordPromptSpecification& specification);
   void HandleUpdateSidePanel(
       const autofill_assistant::password_change::UpdateSidePanelSpecification&
           specification);
+
+  void OnBasePromptDomUpdateReceived(
+      const autofill_assistant::external::ElementConditionsUpdate& update);
 
   // The callback that terminates the current action.
   base::OnceCallback<void(const autofill_assistant::external::Result& result)>

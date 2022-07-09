@@ -91,10 +91,12 @@ void UserNoteUICoordinator::OnNoteUpdated(const base::UnguessableToken& id,
                                           const std::string& note_content) {
   auto* service =
       user_notes::UserNoteServiceFactory::GetForContext(browser_->profile());
-  service->OnNoteUpdated(id, note_content);
+  service->OnNoteEdited(id, note_content);
 }
 
 void UserNoteUICoordinator::FocusNote(const base::UnguessableToken& guid) {
+  Show();
+
   auto* scroll_contents_view = scroll_view_->contents();
   for (views::View* child_view : scroll_contents_view->children()) {
     UserNoteView* user_note_view = views::AsViewClass<UserNoteView>(child_view);
@@ -108,9 +110,10 @@ void UserNoteUICoordinator::FocusNote(const base::UnguessableToken& guid) {
 
 void UserNoteUICoordinator::StartNoteCreation(
     user_notes::UserNoteInstance* instance) {
-  scoped_view_observer_.Observe(scroll_view_);
+  Show();
 
   auto* scroll_contents_view = scroll_view_->contents();
+  scoped_view_observer_.Observe(scroll_contents_view);
   scroll_to_note_id_ = instance->model().id();
 
   int index = 0;
@@ -127,6 +130,8 @@ void UserNoteUICoordinator::StartNoteCreation(
       std::make_unique<UserNoteView>(this, instance,
                                      UserNoteView::State::kCreating),
       index);
+
+  scroll_view_->Layout();
 }
 
 void UserNoteUICoordinator::OnViewBoundsChanged(views::View* observed_view) {
@@ -241,7 +246,15 @@ void UserNoteUICoordinator::Invalidate() {
 void UserNoteUICoordinator::Show() {
   auto* side_panel_coordinator =
       BrowserView::GetBrowserViewForBrowser(browser_)->side_panel_coordinator();
-  side_panel_coordinator->Show(SidePanelEntry::Id::kUserNote);
+
+  if (side_panel_coordinator->GetCurrentEntryId() ==
+      SidePanelEntry::Id::kUserNote) {
+    return;
+  }
+
+  side_panel_coordinator->Show(
+      SidePanelEntry::Id::kUserNote,
+      SidePanelUtil::SidePanelOpenTrigger::kNotesInPageContextMenu);
 }
 
 void UserNoteUICoordinator::OnTabStripModelChanged(

@@ -115,10 +115,11 @@ bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
     return true;
   }
 
-  const base::Value* input_method_settings =
-      prefs->GetDictionary(::prefs::kLanguageInputMethodSpecificSettings);
-  const base::Value* autocorrect_setting = input_method_settings->FindPath(
-      engine_id + ".physicalKeyboardAutoCorrectionLevel");
+  const base::Value::Dict& input_method_settings =
+      prefs->GetValueDict(::prefs::kLanguageInputMethodSpecificSettings);
+  const base::Value* autocorrect_setting =
+      input_method_settings.FindByDottedPath(
+          engine_id + ".physicalKeyboardAutoCorrectionLevel");
   return autocorrect_setting && autocorrect_setting->GetIfInt().value_or(0) > 0;
 }
 
@@ -881,6 +882,11 @@ void NativeInputMethodEngineObserver::OnCompositionBoundsChanged(
   ime_base_observer_->OnCompositionBoundsChanged(bounds);
 }
 
+void NativeInputMethodEngineObserver::OnCaretBoundsChanged(
+    const gfx::Rect& caret_bounds) {
+  ime_base_observer_->OnCaretBoundsChanged(caret_bounds);
+}
+
 void NativeInputMethodEngineObserver::OnSurroundingTextChanged(
     const std::string& engine_id,
     const std::u16string& text,
@@ -995,6 +1001,16 @@ void NativeInputMethodEngineObserver::OnSuggestionsGathered(
     RequestSuggestionsCallback callback,
     mojom::SuggestionsResponsePtr response) {
   std::move(callback).Run(std::move(response));
+}
+
+bool NativeInputMethodEngineObserver::IsReadyForTesting() {
+  if (input_method_.is_bound() && input_method_.is_connected()) {
+    bool is_ready = false;
+    const bool successful =
+        input_method_->IsReadyForTesting(&is_ready);  // IN-TEST
+    return successful && is_ready;
+  }
+  return false;
 }
 
 void NativeInputMethodEngineObserver::OnSuggestionsChanged(

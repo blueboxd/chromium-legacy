@@ -38,7 +38,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Browser.AnyWindowHasName" enum="Boolean"
-    expires_after="2022-09-30">
+    expires_after="2022-12-25">
   <owner>ellyjones@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -110,13 +110,33 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.DarkModeStatus" enum="DarkModeStatus"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>lgrey@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
     Whether the user's system is in dark mode, light mode, or if this choice is
     unavailable due to lack of system support. Updated every UMA upload.
   </summary>
+</histogram>
+
+<histogram name="Browser.ERP.EventUploadSizeAdjustment.{Param}" units="bytes"
+    expires_after="2023-06-30">
+  <owner>xuhong@chromium.org</owner>
+  <owner>lbaraz@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    {Param} informed by the Missive daemon. Updated every time the Missive
+    daemon requests uploading.
+  </summary>
+  <token key="Param">
+    <variant name="MaxUploadSize"
+        summary="The maximum upload size computed based on new events rate
+                 and remaining storage capacity"/>
+    <variant name="NewEventsRate"
+        summary="The size of events enqueued every second"/>
+    <variant name="RemainingStorageCapacity"
+        summary="The remaining storage capacity"/>
+  </token>
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.CompressedOnDiskSize" units="KB"
@@ -307,7 +327,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.IOJanksTotalPerMinute" units="janks"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>gab@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -467,7 +487,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.SelectionToVisibilityRequestTime"
-    units="microseconds" expires_after="2022-10-30">
+    units="microseconds" expires_after="2023-01-01">
   <owner>sadrul@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -499,7 +519,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.TabSwitchResult2{TabSwitchingType}"
-    enum="TabSwitchResult" expires_after="2022-07-26">
+    enum="TabSwitchResult" expires_after="2023-01-26">
   <owner>fdoray@chromium.org</owner>
   <owner>joenotcharles@google.com</owner>
   <owner>catan-team@chromium.org</owner>
@@ -510,7 +530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.TabSwitchResult{TabSwitchingType}"
-    enum="TabSwitchResult" expires_after="2022-07-26">
+    enum="TabSwitchResult" expires_after="2023-01-26">
   <owner>fdoray@chromium.org</owner>
   <owner>joenotcharles@google.com</owner>
   <owner>catan-team@chromium.org</owner>
@@ -522,7 +542,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.TotalIncompleteSwitchDuration2{TabSwitchingType}"
-    units="ms" expires_after="2022-07-26">
+    units="ms" expires_after="2023-01-26">
   <owner>fdoray@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <owner>joenotcharles@google.com</owner>
@@ -535,7 +555,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.TotalIncompleteSwitchDuration{TabSwitchingType}"
-    units="ms" expires_after="2022-07-26">
+    units="ms" expires_after="2023-01-26">
   <owner>fdoray@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <owner>joenotcharles@google.com</owner>
@@ -549,7 +569,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.TotalSwitchDuration2{TabSwitchingType}"
-    units="ms" expires_after="2022-07-26">
+    units="ms" expires_after="2023-01-26">
   <owner>ejoe@google.com</owner>
   <owner>jonross@chromium.org</owner>
   <owner>joenotcharles@google.com</owner>
@@ -562,7 +582,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.TotalSwitchDuration{TabSwitchingType}" units="ms"
-    expires_after="2022-07-26">
+    expires_after="2023-01-26">
   <owner>ejoe@google.com</owner>
   <owner>jonross@chromium.org</owner>
   <owner>joenotcharles@google.com</owner>
@@ -595,7 +615,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ThemeService.WritePackToDisk" enum="BooleanSuccess"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>etienneb@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -605,7 +625,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Guest" units="units"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -617,7 +637,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Incognito" units="units"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -1089,6 +1109,27 @@ chromium-metrics-reviews@google.com.
     the user scrolls at the exact moment a new infobar is added, the infobar may
     be hidden, but recorded here as visible. Reliably triggering and detecting
     this combination is tricky so it isn't done. Only recorded on Android.
+  </summary>
+</histogram>
+
+<histogram name="SidePanel.OpenDuration" units="ms" expires_after="2023-06-04">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Records how long the side panel was open for (capped at 1 hour) starting
+    when the side panel is triggered to be opened. Note this might be different
+    than when the side panel becomes visible due to delays for loading content.
+    Recorded when the side panel is closed.
+  </summary>
+</histogram>
+
+<histogram name="SidePanel.OpenTrigger" enum="SidePanelOpenTrigger"
+    expires_after="2023-06-04">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Logs the UI location from which the side panel is triggered to be opened.
+    Recorded when the side panel is shown and a trigger is provided.
   </summary>
 </histogram>
 

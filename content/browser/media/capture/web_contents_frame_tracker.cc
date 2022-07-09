@@ -40,11 +40,13 @@ namespace content {
 
 namespace {
 
-// Note on lifetime: this context should be deleted when the WebContents
-// is destroyed.
+// Note on lifetime: this context is deleted via WebContentsObserver's
+// WebContentsDestroyed() method when the WebContents is destroyed.
 class WebContentsContext : public WebContentsFrameTracker::Context {
  public:
-  explicit WebContentsContext(WebContents* contents) : contents_(contents) {}
+  explicit WebContentsContext(WebContents* contents) : contents_(contents) {
+    DCHECK(contents_);
+  }
   ~WebContentsContext() override = default;
 
   // WebContextFrameTracker::Context overrides.
@@ -105,10 +107,16 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
 }  // namespace
 
 WebContentsFrameTracker::WebContentsFrameTracker(
+    scoped_refptr<base::SequencedTaskRunner> device_task_runner,
     base::WeakPtr<WebContentsVideoCaptureDevice> device,
     MouseCursorOverlayController* cursor_controller)
     : device_(std::move(device)),
-      device_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      device_task_runner_(std::move(device_task_runner)) {
+  // Verify on construction that this object is created on the UI thread.  After
+  // this, depend on the sequence checker to ensure consistent execution.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DCHECK(device_task_runner_);
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -118,7 +126,7 @@ WebContentsFrameTracker::WebContentsFrameTracker(
 }
 
 WebContentsFrameTracker::~WebContentsFrameTracker() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_capturing_) {
     DidStopCapturingWebContents();
   }
@@ -126,7 +134,7 @@ WebContentsFrameTracker::~WebContentsFrameTracker() {
 
 void WebContentsFrameTracker::WillStartCapturingWebContents(
     const gfx::Size& capture_size) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!is_capturing_);
   if (!web_contents()) {
     return;
@@ -138,7 +146,7 @@ void WebContentsFrameTracker::WillStartCapturingWebContents(
 }
 
 void WebContentsFrameTracker::DidStopCapturingWebContents() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (web_contents()) {
     SetCaptureScaleOverride(1.0f);
     DCHECK(is_capturing_);
@@ -150,6 +158,11 @@ void WebContentsFrameTracker::DidStopCapturingWebContents() {
 
 void WebContentsFrameTracker::SetCapturedContentSize(
     const gfx::Size& content_size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!web_contents())
+    return;
+
   // For efficiency, this function should only be called when the captured
   // content size changes. The caller is responsible for enforcing that.
 
@@ -183,6 +196,8 @@ void WebContentsFrameTracker::SetCapturedContentSize(
 // the first capturer's preferred size is set.
 gfx::Size WebContentsFrameTracker::CalculatePreferredSize(
     const gfx::Size& capture_size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (capture_size.IsEmpty()) {
     // NOTE: An empty preferred size will cause the WebContents to keep its
     // previous size preference.
@@ -224,6 +239,8 @@ gfx::Size WebContentsFrameTracker::CalculatePreferredSize(
 float WebContentsFrameTracker::CalculatePreferredScaleFactor(
     const gfx::Size& current_content_size,
     const gfx::Size& unscaled_current_content_size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // A max factor above 2.0 would cause a quality degradation for local
   // rendering. The downscaling used by the compositor uses a linear filter
   // which only looks at 4 source pixels, so rendering more than 4 pixels per
@@ -292,8 +309,6 @@ float WebContentsFrameTracker::CalculatePreferredScaleFactor(
            << ", current_content_size=" << current_content_size.ToString()
            << ", unscaled_current_content_size="
            << unscaled_current_content_size.ToString()
-           << ", context_->GetScaleOverrideForCapture()="
-           << context_->GetScaleOverrideForCapture()
            << ", factors.x()=" << factors.x() << " factors.y()=" << factors.y()
            << ", largest_factor=" << largest_factor
            << ", preferred factor=" << preferred_factor;
@@ -302,6 +317,7 @@ float WebContentsFrameTracker::CalculatePreferredScaleFactor(
 
 void WebContentsFrameTracker::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnPossibleTargetChange();
   if (capture_scale_override_ != 1.0f) {
     if (auto* view = render_frame_host->GetView()) {
@@ -314,12 +330,14 @@ void WebContentsFrameTracker::RenderFrameCreated(
 
 void WebContentsFrameTracker::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnPossibleTargetChange();
 }
 
 void WebContentsFrameTracker::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnPossibleTargetChange();
   if (capture_scale_override_ != 1.0f) {
     // According to WebContentsObserver docs, old_host can be nullptr.
@@ -338,20 +356,26 @@ void WebContentsFrameTracker::RenderFrameHostChanged(
 }
 
 void WebContentsFrameTracker::WebContentsDestroyed() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_capturing_ = false;
+  context_ = nullptr;
   Observe(nullptr);
   OnPossibleTargetChange();
 }
 
 void WebContentsFrameTracker::CaptureTargetChanged() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnPossibleTargetChange();
 }
 
 void WebContentsFrameTracker::SetWebContentsAndContextFromRoutingId(
     const GlobalRenderFrameHostId& id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Observe(WebContents::FromRenderFrameHost(RenderFrameHost::FromID(id)));
-  context_ = std::make_unique<WebContentsContext>(web_contents());
+  if (web_contents()) {
+    // If the routing ID was invalid, don't set up a context.
+    context_ = std::make_unique<WebContentsContext>(web_contents());
+  }
   OnPossibleTargetChange();
 }
 
@@ -359,7 +383,7 @@ void WebContentsFrameTracker::Crop(
     const base::Token& crop_id,
     uint32_t crop_version,
     base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callback);
 
   if (crop_version_ >= crop_version) {
@@ -400,14 +424,16 @@ void WebContentsFrameTracker::Crop(
 void WebContentsFrameTracker::SetWebContentsAndContextForTesting(
     WebContents* web_contents,
     std::unique_ptr<WebContentsFrameTracker::Context> context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Observe(web_contents);
   context_ = std::move(context);
   OnPossibleTargetChange();
 }
 
 void WebContentsFrameTracker::OnPossibleTargetChange() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!web_contents()) {
+    DCHECK(!context_);
     device_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&WebContentsVideoCaptureDevice::OnTargetPermanentlyLost,
@@ -438,13 +464,14 @@ void WebContentsFrameTracker::OnPossibleTargetChange() {
                        std::move(target), crop_version_));
   }
 
+  // Note: MouseCursorOverlayController runs on the UI thread. SetTargetView()
+  // must be called synchronously since the NativeView pointer is not valid
+  // across task switches, cf. https://crbug.com/818679
   SetTargetView(web_contents()->GetNativeView());
 }
 
-// Note: MouseCursorOverlayController runs on the UI thread. It's also
-// important that SetTargetView() be called in the current stack while
-// |view| is known to be a valid pointer. http://crbug.com/818679
 void WebContentsFrameTracker::SetTargetView(gfx::NativeView view) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (view == target_native_view_)
     return;
   target_native_view_ = view;
@@ -454,6 +481,8 @@ void WebContentsFrameTracker::SetTargetView(gfx::NativeView view) {
 }
 
 void WebContentsFrameTracker::SetCaptureScaleOverride(float new_value) {
+  DCHECK(context_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (new_value != capture_scale_override_) {
     capture_scale_override_ = new_value;
     context_->SetScaleOverrideForCapture(new_value);

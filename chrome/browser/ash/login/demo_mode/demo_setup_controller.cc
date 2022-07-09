@@ -36,6 +36,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -498,6 +499,11 @@ std::string DemoSetupController::GetSubOrganizationEmail() {
                 std::end(DemoSession::kSupportedCountries),
                 country_uppercase) !=
       std::end(DemoSession::kSupportedCountries)) {
+    if (chromeos::features::IsCloudGamingDeviceEnabled()) {
+      return base::StringPrintf("admin-%s-blazey@%s", country_lowercase.c_str(),
+                                policy::kDemoModeDomain);
+    }
+
     return "admin-" + country_lowercase + "@" + policy::kDemoModeDomain;
   }
   return std::string();
@@ -549,6 +555,8 @@ void DemoSetupController::Enroll(
           << DemoSession::DemoConfigToString(demo_config_);
 
   SetCurrentSetupStep(DemoSetupStep::kDownloadResources);
+
+  SetRetailerAndStoreIdInPref();
 
   switch (demo_config_) {
     case DemoSession::DemoModeConfig::kOnline:
@@ -706,6 +714,18 @@ void DemoSetupController::Reset() {
   // `demo_config_` is not reset here, because it is needed for retrying setup.
   enrollment_helper_.reset();
   ClearDemoRequisition();
+}
+
+void DemoSetupController::SetRetailerAndStoreIdInPref() {
+  std::vector<std::string> retailer_and_store_id_list =
+      base::SplitString(retailer_store_id_input_, "-", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  if (retailer_and_store_id_list.size() != 2)
+    return;
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(prefs::kDemoModeRetailerId, retailer_and_store_id_list[0]);
+  prefs->SetString(prefs::kDemoModeStoreId, retailer_and_store_id_list[1]);
 }
 
 }  //  namespace ash

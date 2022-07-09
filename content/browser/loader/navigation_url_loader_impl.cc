@@ -296,7 +296,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->transition_type = request_info.common_params->transition;
   new_request->devtools_request_id =
       request_info.devtools_navigation_token.ToString();
-  new_request->obey_origin_policy = request_info.obey_origin_policy;
   if (request_info.begin_params->trust_token_params) {
     new_request->trust_token_params =
         *request_info.begin_params->trust_token_params;
@@ -376,10 +375,10 @@ void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
   DCHECK(mojo::Equals(lhs->origin_agent_cluster, rhs->origin_agent_cluster));
   DCHECK(mojo::Equals(lhs->accept_ch, rhs->accept_ch));
   DCHECK(mojo::Equals(lhs->critical_ch, rhs->critical_ch));
-  DCHECK(mojo::Equals(lhs->xfo, rhs->xfo));
+  DCHECK_EQ(lhs->xfo, rhs->xfo);
   DCHECK(mojo::Equals(lhs->link_headers, rhs->link_headers));
   DCHECK(mojo::Equals(lhs->timing_allow_origin, rhs->timing_allow_origin));
-  DCHECK(mojo::Equals(lhs->bfcache_opt_in_unload, rhs->bfcache_opt_in_unload));
+  DCHECK_EQ(lhs->bfcache_opt_in_unload, rhs->bfcache_opt_in_unload);
   DCHECK(mojo::Equals(lhs->reporting_endpoints, rhs->reporting_endpoints));
   DCHECK(mojo::Equals(lhs->variants_headers, rhs->variants_headers));
   DCHECK(mojo::Equals(lhs->content_language, rhs->content_language));

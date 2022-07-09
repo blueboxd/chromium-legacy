@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">பயனர்</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">வெளிப்புறச் சாதனங்களுக்கான நிலைபொருள் புதுப்பிப்புச் சாளரம் திறந்துள்ளது. <ph name="NUM_UPDATES" /> புதுப்பிப்புகள் உள்ளன.</translation>
+<translation id="1145516343487477149">உதவிக் கட்டுரைகளையும் Chromebook குறித்த பொதுவான கேள்விகளுக்கான பதில்களையும் கண்டறியலாம்</translation>
 <translation id="1165039591588034296">பிழை</translation>
 <translation id="1175697296044146566">இந்த <ph name="DEVICE_TYPE" /> சாதனத்தை <ph name="MANAGER" /> நிர்வகிக்கிறது.</translation>
 <translation id="1175951029573070619">சுமாராக உள்ளது (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">டார்க் தீமினை முடக்குதல்</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">டார்க் பயன்முறையை முடக்குதல்</translation>
+<translation id="1881188606372070653">சட்டப்பூர்வக் காரணங்களுக்காக உள்ளடக்க மாற்றங்களைக் கோர, <ph name="BEGIN_LINK1" />சட்டப்பூர்வ உதவிப் பக்கத்திற்குச்<ph name="END_LINK1" /> செல்லவும். சில கணக்கு மற்றும் சிஸ்டம் தகவல்கள் Googleளுக்கு அனுப்பப்படக்கூடும். தொழில்நுட்பச் சிக்கல்களைச் சரிசெய்யவும் எங்கள் சேவைகளை மேம்படுத்தவும் நீங்கள் அளிக்கும் தகவல்களை எங்கள் <ph name="BEGIN_LINK2" />தனியுரிமைக் கொள்கை<ph name="END_LINK2" />, <ph name="BEGIN_LINK3" />சேவை விதிமுறைகள்<ph name="END_LINK3" /> ஆகியவற்றுக்கு உட்பட்டுப் பயன்படுத்துவோம்.</translation>
 <translation id="1887850431809612466">வன்பொருள் பதிப்பு</translation>
+<translation id="1904932688895783618">உதவிகரமான சில ஆதாரங்கள்:</translation>
 <translation id="1905710495812624430">அனுமதிக்கப்பட்ட அதிகபட்ச முயற்சிகளைக் கடந்துவிட்டீர்கள்.</translation>
 <translation id="1908234395526491708">UDP கோரிக்கையை அனுப்ப முடியவில்லை</translation>
 <translation id="1932611479324127242">பேட்டரி இணைப்பை நீக்கு</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">பிழையறிந்து திருத்தும் படிகளை முயன்று பார்க்கவும்</translation>
 <translation id="2016848882344942759">--வெள்ளை லேபிள் இல்லை--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">ஸ்கிரீன் சேவரைப் பார்க்க நெட்வொர்க்குடன் இணைத்து, பக்கத்தை ரெஃப்ரெஷ் செய்யவும்.</translation>
 <translation id="2080070583977670716">மேலும் அமைப்புகள்</translation>
 <translation id="2085089206770112532">காட்சி ஒளிர்வைக் குறைக்கும்</translation>
 <translation id="2105810540595158374">சாதனம் ஒரு கேம் கண்ட்ரோலர்.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">டார்க் பயன்முறையை இயக்குதல்</translation>
 <translation id="2177831236093724629"><ph name="LINK_BEGIN" />தகுதிபெறாத காம்பனென்ட்டுகள்<ph name="LINK_END" /> உள்ளன. தகுதிபெற்ற அனைத்துக் காம்பனென்ட்டுகளும் அடையாளம் காணப்பட்டதை உறுதிசெய்ய, Chrome OSஸைச் சமீபத்திய பதிப்பிற்குப் புதுப்பிக்கவும்.</translation>
 <translation id="2180197493692062006">ஏதோ தவறாகிவிட்டது. ஆப்ஸை மீண்டும் திறக்கவும்.</translation>
+<translation id="2182088270354640012">கருத்து தெரிவித்ததற்கு நன்றி. உங்கள் கருத்து Chrome OSஸை மேம்படுத்த உதவும், மேலும் Chrome OS குழுவினரால் மதிப்பாய்வு செய்யப்படும். பல புகார்கள் சமர்ப்பிக்கப்படுவதால் உங்களுக்கு நேரடியாகப் பதில் கிடைக்காது.</translation>
 <translation id="2209788852729124853">டிராஃபிக் கவுண்ட்டர்களை மீட்டமை</translation>
 <translation id="2212733584906323460">நேம் ரெசல்யூஷன்</translation>
 <translation id="2217935453350629363">தற்போதைய வேகம்</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">ஸ்கேனர்களைத் தேடுகிறது</translation>
 <translation id="3246869037381808805">1 நாளுக்கும் முன்னதாக உள்ள பிரிண்ட்டிங் பணிகள் அகற்றப்படும்</translation>
 <translation id="3268178239013324452">பிரிண்டரின் மூடி திறந்துள்ளதால் அச்சிட முடியவில்லை</translation>
+<translation id="3275729367986477355">தோற்றப் படம்</translation>
 <translation id="3283504360622356314">{0,plural, =1{ஃபைலைத் திருத்துக}other{ஃபைல்களைத் திருத்துக}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />GHz</translation>
 <translation id="3291996639387199448">குறியீட்டு முறை</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">கூடுதல் உதவிக்கு, <ph name="BEGIN_LINK" />உதவி மையத்திற்குச்<ph name="END_LINK" /> செல்லவும்.</translation>
 <translation id="4793756956024303490">சுருக்குதல் அல்காரிதம்</translation>
 <translation id="4794140124556169553">CPU பரிசோதனையை இயக்குவதால் உங்கள் சிஸ்டத்தின் செயல்திறன் பாதிக்கப்படக்கூடும்</translation>
+<translation id="4800589996161293643">Chromebook சமூகம்</translation>
 <translation id="4804818685124855865">தொடர்பைத் துண்டி</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> அச்சுப் பணி ரத்துசெய்யப்பட்டது</translation>
 <translation id="4809927044794281115">லைட் தீம்</translation>
@@ -486,6 +493,7 @@
 என்னிடம் ஏதேனும் கேட்க, மைக்கைத் தட்டவும்.</translation>
 <translation id="5212593641110061691">டேப்லாய்டு</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>
+<translation id="522307662484862935">மின்னஞ்சல் முகவரியைச் சேர்க்காதே</translation>
 <translation id="5227902338748591677">டார்க் தீமினைத் திட்டமிடுதல்</translation>
 <translation id="5234764350956374838">நிராகரி</translation>
 <translation id="5252456968953390977">ரோமிங்</translation>
@@ -612,6 +620,7 @@
 <translation id="6284632978374966585">டார்க் தீமினை இயக்குதல்</translation>
 <translation id="6295178529664209245">பழுதுநீக்குதலைத் தொடரவா?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> சோதனை ரத்துசெய்யப்பட்டது</translation>
+<translation id="631063167932043783">Explore ஆப்ஸ்</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> இல் நிலைபொருளைப் புதுப்பியுங்கள்</translation>
 <translation id="6321407676395378991">ஸ்கிரீன் சேவரை இயக்குதல்</translation>
 <translation id="6325525973963619867">தோல்வி</translation>
@@ -623,6 +632,7 @@
 <translation id="6379086450106841622">டச்ஸ்கிரீன்</translation>
 <translation id="6381741036071372448">கீபோர்டைச் சோதனை செய்தல்</translation>
 <translation id="6388847657025262518">ஸ்கேனரின் டாக்குமெண்ட் ஃபீடரில் தாள் சிக்கிக் கொண்டது. ஃபீடரைச் சரிசெய்துவிட்டு மீண்டும் முயலவும்.</translation>
+<translation id="6394634179843537518">ஃபைலைச் சேர்</translation>
 <translation id="6410257289063177456">பட ஃபைல்கள்</translation>
 <translation id="641081527798843608">சப்ஜெக்ட் மேட்ச்</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@
 <translation id="6516990319416533844">பேட்டரியின் சார்ஜிங் விகிதத்தைப் பரிசோதிக்க, சிறிது நேரத்திற்கு அதன் சார்ஜைக் காலி செய்யவும்</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6527081081771465939">அறியப்படாத வைஃபை பாதுகாப்பு நெறிமுறை</translation>
+<translation id="6535178685492749208">ஆஃப்லைனில் உள்ளீர்கள். உங்களின் கருத்து பின்னர் அனுப்பப்படும்.</translation>
 <translation id="65587193855025101">ஃபிளாட்பெட்</translation>
 <translation id="6564646048574748301">பிரிண்டரை அணுக முடியாததால் அச்சிட முடியவில்லை</translation>
 <translation id="6566314079205407217">பல பக்கத்தை ஸ்கேன் செய்தல்</translation>
@@ -717,6 +728,7 @@
 <translation id="7297226631177386107">HTTPS இணையதளங்களுடன் இணைப்பதை ஃபயர்வால் தடுக்கிறது</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Chromebook உதவி மன்றத்தில் உள்ள நிபுணர்களிடம் உதவி கேட்கலாம்</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Searchசில் முடிவைப் பார்க்க Search + Space அழுத்தவும்.</translation>
 <translation id="7343649194310845056">நெட்வொர்க் சாதனங்கள்</translation>
@@ -759,9 +771,11 @@
 <translation id="773153675489693198">சுழற்சியின் எண்ணிக்கை</translation>
 <translation id="7747039790905080783">முன்பே பகிரப்பட்ட குறியீடு</translation>
 <translation id="7762130827864645708">உங்கள் கடவுச்சொல் மாற்றப்பட்டது. இனி புதிய கடவுச்சொல்லைப் பயன்படுத்தவும்.</translation>
+<translation id="7762839321248874531"><ph name="BEGIN_LINK1" />சாதனத் தகவல், ஆப்ஸ் தகவல்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />அளவீடுகள்<ph name="END_LINK2" /> ஆகியவற்றை அனுப்பு</translation>
 <translation id="7763470514545477072">டொமைனின் பிற்பாதிக்கான பொருத்தம்</translation>
 <translation id="7769672763586021400">மாடல் ஐடி</translation>
 <translation id="7784116172884276937">DNS சேவையகங்கள் எதுவும் அமைக்கப்படவில்லை</translation>
+<translation id="779591286616261875">புதிய அறிக்கையை அனுப்பு</translation>
 <translation id="7799817062559422778">லைட் பயன்முறை</translation>
 <translation id="780301667611848630">வேண்டாம்</translation>
 <translation id="7805768142964895445">நிலை</translation>
@@ -828,6 +842,7 @@
 <translation id="8382302752385457774">வெள்ளை-லேபிள்</translation>
 <translation id="8395584934117017006">இந்த <ph name="DEVICE_TYPE" /> சாதனத்தை நிறுவனம் நிர்வகிக்கிறது</translation>
 <translation id="8398927464629426868">தற்போது சாதனத்தில் சார்ஜ் ஏறும் அல்லது குறையும் வீதம்</translation>
+<translation id="8420955526972171689">வன்பொருள் சிக்கல்களைக் கண்டறிய சோதனைகளை இயக்கலாம், பிழையறிந்து திருத்தலாம்</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">சாதனத்தில் உள்ள கீபோர்டு</translation>
 <translation id="8431300646573772016">ChromeOSஸில் புதியவை</translation>
@@ -913,6 +928,7 @@
 <translation id="9082718469794970195">இந்த வீடியோவைப் பயன்படுத்து</translation>
 <translation id="9087578468327036362">இந்த வினவல் குறித்துப் புகாரளிக்கலாம்</translation>
 <translation id="9088306295921699330">தற்போதைய உபயோகம்</translation>
+<translation id="9092255287806472980">உங்கள் கருத்து Chrome OSஸை மேம்படுத்த உதவும். மேலும் எங்கள் குழுவினரால் மதிப்பாய்வு செய்யப்படும். புகார்களின் எண்ணிக்கை அதிகமாக இருப்பதால் எங்களால் பதிலளிக்க முடியாது.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">இந்தச் சாதனத்தின் பாகங்களை நீங்கள் பிரிக்க வேண்டும்</translation>
 <translation id="9098156406873149060">பயனர் தரவை வைத்திரு</translation>

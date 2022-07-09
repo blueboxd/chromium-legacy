@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul Romaja</translation>
 <translation id="112387589102719461">Inggris (AS) dengan keyboard Programmer Dvorak</translation>
 <translation id="1134697384939541955">Inggris (AS) dengan keyboard Extended</translation>
+<translation id="1138691154716715755">Awal bulan ini</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> ditemukan.
     <ph name="LINE_BREAK1" />
     Tidak cukup ruang yang tersedia di penyimpanan lokal. Perlu tambahan <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Diblokir oleh Administrator Anda, Detail</translation>
 <translation id="2142680004883808240">Rusia dengan keyboard Fonetik YaZHert</translation>
 <translation id="2143778271340628265">Konfigurasi proxy manual</translation>
+<translation id="2148716181193084225">Hari ini</translation>
 <translation id="2163152940313951844">Karakter tidak valid: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portugis dengan keyboard International PC AS</translation>
 <translation id="2198315389084035571">China Aksara Sederhana</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Beralih ke tampilan daftar</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> folder dibagikan dengan Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> file dipilih</translation>
+<translation id="2387120140441437063">Tidak dapat membuka file yang berada dalam Sampah. Pulihkan file sebelum membukanya.</translation>
 <translation id="2387458720915042159">Jenis sambungan proxy</translation>
 <translation id="2389832672041313158">Burma/Myanmar</translation>
 <translation id="2392369802118427583">Aktifkan</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Konten dalam folder ini bersifat hanya baca. Beberapa aktivitas tidak didukung.</translation>
 <translation id="2542049655219295786">Tabel Google</translation>
 <translation id="2544853746127077729">Sertifikat autentikasi ditolak oleh jaringan</translation>
-<translation id="2547921442987553570">Tambahkan ke <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Internasional AS</translation>
 <translation id="2563185590376525700">Katak</translation>
 <translation id="2578394532502990878">Fonetik Tamil</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">Dayi China</translation>
 <translation id="3057861065630527966">Cadangkan foto dan video</translation>
 <translation id="3067790092342515856">File Windows</translation>
-<translation id="3078461028045006476">Bagikan dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
 <translation id="3085752524577180175">Host SOCKS</translation>
 <translation id="3104793765551262433">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Diblokir oleh Administrator Anda, Detail</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3855472144336161447">Neo 2 Jerman</translation>
 <translation id="3858860766373142691">Nama</translation>
-<translation id="386548886866354912">Paketkan dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Deskripsi</translation>
 <translation id="3899991606604168269">Prancis (Kanada) dengan keyboard Multibahasa</translation>
 <translation id="3901991538546252627">Menghubungkan ke <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Download profil seluler, Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Inggris (Inggris Raya)</translation>
 <translation id="3975895378829046965">Fonetik Bengali</translation>
+<translation id="3991446849494482687">Tindakan ini juga akan menonaktifkan setelan Kunci SIM di perangkat.</translation>
 <translation id="4002066346123236978">Judul</translation>
 <translation id="4017788180641807848">Inggris (AS) dengan keyboard Workman</translation>
 <translation id="4040753847560036377">PUK salah</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Dikelola oleh Administrator Anda, Detail</translation>
 <translation id="4387004326333427325">Sertifikat atutentikasi ditolak dari jarak jauh</translation>
 <translation id="4394214039309501350">Link eksternal</translation>
+<translation id="4394980935660306080">Awal minggu ini</translation>
 <translation id="4401287888955153199">Ekstrak semua</translation>
 <translation id="4410695710508688828">Operasi pengekstrakan gagal. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Buat pintasan untuk file Anda</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">Membuka "<ph name="PATH" />"</translation>
 <translation id="4720185134442950733">Jaringan data seluler</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> foto dicadangkan</translation>
+<translation id="4725096204469550614">Awal tahun ini</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4737050008115666127">Mendarat</translation>
 <translation id="4747271164117300400">Makedonia</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">Memindahkan <ph name="NUMBER_OF_ITEMS" /> item ke <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Terjadi kesalahan.</translation>
 <translation id="5098629044894065541">Ibrani</translation>
+<translation id="5102922915594634436">Kelola folder yang disinkronkan</translation>
 <translation id="5109254780565519649">Terjadi error. Beberapa item mungkin belum dipulihkan.</translation>
 <translation id="5110329002213341433">Inggris (Kanada)</translation>
 <translation id="5123433949759960244">Bola basket</translation>
@@ -603,7 +607,6 @@
 <translation id="6165508094623778733">Pelajari selengkapnya</translation>
 <translation id="6170470584681422115">Sandwich</translation>
 <translation id="6187719147498869044">Hungaria</translation>
-<translation id="6189412234224385711">Buka dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Ubah PIN</translation>
 <translation id="6199801702437275229">Menunggu info ruang...</translation>
 <translation id="6205710420833115353">Beberapa operasi berlangsung lebih lama dari biasanya. Ingin membatalkannya?</translation>
@@ -707,6 +710,7 @@
 <translation id="7075931588889865715">Thai dengan keyboard TIS 820-2531</translation>
 <translation id="708278670402572152">Putuskan hubungan untuk mengaktifkan pemindaian</translation>
 <translation id="7086590977277044826">Tamil dengan keyboard InScript</translation>
+<translation id="7088615885725309056">Lawas</translation>
 <translation id="7103992300314999525">Makedonia</translation>
 <translation id="7106346894903675391">Beli penyimpanan lagi...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;telusuri Drive&lt;/em&gt;</translation>
@@ -771,6 +775,7 @@
 <translation id="7663224033570512922">Hindi</translation>
 <translation id="7693909743393669729">Memformat drive akan menghapus semua data yang tersimpan di dalamnya dan menghapus semua partisi yang ada, termasuk partisi yang mungkin tidak terlihat. Tindakan ini tidak dapat diurungkan.</translation>
 <translation id="7695430100978772476">Tidak dapat memformat <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">Gagal mengosongkan sampah.</translation>
 <translation id="770015031906360009">Yunani</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> disalin.</translation>
 <translation id="7711920809702896782">Info gambar</translation>
@@ -781,6 +786,7 @@
 <translation id="7760449188139285140">Wubi China</translation>
 <translation id="7765158879357617694">Pindahkan</translation>
 <translation id="7774365994322694683">Burung</translation>
+<translation id="7781829728241885113">Kemarin</translation>
 <translation id="7788080748068240085">Untuk menyimpan "<ph name="FILE_NAME" />" secara offline, Anda harus mengosongkan ruang tambahan sebesar <ph name="TOTAL_FILE_SIZE" />:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />lepas sematan file yang tidak lagi Anda gunakan untuk mengakses secara offline<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />hapus file dari folder Download Anda<ph name="MARKUP_5" /></translation>

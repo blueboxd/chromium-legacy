@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangils (Romaja)</translation>
 <translation id="112387589102719461">Angļu (ASV), ar Dvorak tastatūru programmētājiem</translation>
 <translation id="1134697384939541955">Angļu (ASV), ar paplašināto tastatūru</translation>
+<translation id="1138691154716715755">Iepriekš šajā mēnesī</translation>
 <translation id="1148097584170732637">Atrasts: <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     Vietējā krātuvē nav pietiekami daudz vietas. Nepieciešama papildu vieta: <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405"><ph name="NETWORK_INDEX" />. tīkls no <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />%, bloķēja jūsu administrators, detalizēta informācija</translation>
 <translation id="2142680004883808240">Krievu, ar fonētisko YaZHert tastatūru</translation>
 <translation id="2143778271340628265">Manuāla starpniekservera konfigurācija</translation>
+<translation id="2148716181193084225">Šodien</translation>
 <translation id="2163152940313951844">Nederīga rakstzīme: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portugāļu, ar ASV starptautisko datora tastatūru</translation>
 <translation id="2198315389084035571">Ķīniešu (vienkāršotā)</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Pāriet uz saraksta skatījumu</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> mapes kopīgotas ar sistēmu Linux</translation>
 <translation id="2378075407703503998">Atlasīti <ph name="SELCTED_FILE_COUNT" /> faili.</translation>
+<translation id="2387120140441437063">Nevar atvērt atkritnē ievietotos failus. Lai šos failus varētu atvērt, vispirms atjaunojiet tos.</translation>
 <translation id="2387458720915042159">Starpniekservera savienojuma veids</translation>
 <translation id="2389832672041313158">Birmiešu (Mjanma)</translation>
 <translation id="2392369802118427583">Aktivizēt</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Šīs mapes saturs ir tikai lasāms. Noteiktas darbības netiek atbalstītas.</translation>
 <translation id="2542049655219295786">Google tabula</translation>
 <translation id="2544853746127077729">Tīkls noraidīja autentifikācijas sertifikātu.</translation>
-<translation id="2547921442987553570">Pievienot paplašinājumam <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">ASV starptautiskā</translation>
 <translation id="2563185590376525700">Varde</translation>
 <translation id="2578394532502990878">Tamilu, fonētiskā</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">Ķīniešu, Dayi</translation>
 <translation id="3057861065630527966">Dublēt fotoattēlus un videoklipus</translation>
 <translation id="3067790092342515856">Windows faili</translation>
-<translation id="3078461028045006476">Kopīgot ar paplašinājumu <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
 <translation id="3085752524577180175">SOCKS saimniekdators</translation>
 <translation id="3104793765551262433"><ph name="NETWORK_INDEX" />. tīkls no <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signāla stiprums: <ph name="SIGNAL_STRENGTH" />%, bloķēja jūsu administrators, detalizēta informācija</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3855472144336161447">Vācu Neo 2</translation>
 <translation id="3858860766373142691">Nosaukums</translation>
-<translation id="386548886866354912">Sapakot kā: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Apraksts</translation>
 <translation id="3899991606604168269">Franču (Kanāda), ar vairākvalodu tastatūru</translation>
 <translation id="3901991538546252627">Notiek savienojuma izveide ar <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Lejupielādēt mobilo sakaru profilu, tīkls numur <ph name="NETWORK_INDEX" />, tīklu skaits ir <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Angļu (Apvienotā Karaliste)</translation>
 <translation id="3975895378829046965">Bengāļu, fonētiskā</translation>
+<translation id="3991446849494482687">Tādējādi ierīcē tiks atspējots arī SIM kartes bloķēšanas iestatījums.</translation>
 <translation id="4002066346123236978">Nosaukums</translation>
 <translation id="4017788180641807848">Angļu (ASV), ar Workman tastatūru</translation>
 <translation id="4040753847560036377">Nepareizs PUK kods</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">Tīkls numur <ph name="NETWORK_INDEX" />, tīklu kopskaits: <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, signāla stiprums procentos: <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators, informācija</translation>
 <translation id="4387004326333427325">Autentifikācijas sertifikāts tika attāli noraidīts.</translation>
 <translation id="4394214039309501350">Ārējā saite</translation>
+<translation id="4394980935660306080">Iepriekš šajā nedēļā</translation>
 <translation id="4401287888955153199">Izgūt visu</translation>
 <translation id="4410695710508688828">Izgūšana neizdevās. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Izveidojiet saīsni uz saviem failiem</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">Notiek dokumenta “<ph name="PATH" />” atvēršana</translation>
 <translation id="4720185134442950733">Mobilo datu tīkls</translation>
 <translation id="4724850507808590449">Dublēti <ph name="FILE_COUNT" /> fotoattēli</translation>
+<translation id="4725096204469550614">Iepriekš šajā gadā</translation>
 <translation id="4725511304875193254">Korgijs</translation>
 <translation id="4737050008115666127">Ielidošana</translation>
 <translation id="4747271164117300400">Maķedoniešu</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">Notiek pārvietošana uz mapi <ph name="FOLDER_NAME" />. Pārvietojamo vienumu skaits: <ph name="NUMBER_OF_ITEMS" />.</translation>
 <translation id="509429900233858213">Radās kļūda.</translation>
 <translation id="5098629044894065541">Ebreju valoda</translation>
+<translation id="5102922915594634436">Pārvaldīt sinhronizētās mapes</translation>
 <translation id="5109254780565519649">Radās kļūda. Iespējams, daži vienumi netika atjaunoti.</translation>
 <translation id="5110329002213341433">Angļu (Kanāda)</translation>
 <translation id="5123433949759960244">Basketbols</translation>
@@ -603,7 +607,6 @@
 <translation id="6165508094623778733">Uzzināt vairāk</translation>
 <translation id="6170470584681422115">Sviestmaize</translation>
 <translation id="6187719147498869044">Ungāru</translation>
-<translation id="6189412234224385711">Atvērt ar paplašinājumu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Mainīt PIN</translation>
 <translation id="6199801702437275229">Gaida informāciju par brīvo vietu...</translation>
 <translation id="6205710420833115353">Dažas darbības aizņem vairāk laika, nekā paredzēts. Vai vēlaties tās priekšlaikus pārtraukt?</translation>
@@ -707,6 +710,7 @@
 <translation id="7075931588889865715">Taju, ar TIS 820-2531 tastatūru</translation>
 <translation id="708278670402572152">Atvienojiet, lai iespējotu skenēšanu</translation>
 <translation id="7086590977277044826">Tamilu, ar InScript tastatūru</translation>
+<translation id="7088615885725309056">Vecāka</translation>
 <translation id="7103992300314999525">Maķedoniešu</translation>
 <translation id="7106346894903675391">Iegādāties papildu vietu krātuvē...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' — &lt;em&gt;meklēt Diskā&lt;/em&gt;</translation>
@@ -771,6 +775,7 @@
 <translation id="7663224033570512922">Hindi</translation>
 <translation id="7693909743393669729">Formatējot disku, tiks dzēsti visi tajā glabātie dati un tiks noņemti visi esošie nodalījumi, tostarp tie, kas nav redzami. Šo darbību nevar atsaukt.</translation>
 <translation id="7695430100978772476">Nevarēja formatēt disku “<ph name="DRIVE_NAME" />”.</translation>
+<translation id="76959938259365003">Neizdevās iztukšot atkritni.</translation>
 <translation id="770015031906360009">Grieķu valoda</translation>
 <translation id="7705251383879779343">Nokopēts vienums: <ph name="FILE_NAME" />.</translation>
 <translation id="7711920809702896782">Attēla informācija</translation>
@@ -781,6 +786,7 @@
 <translation id="7760449188139285140">Ķīniešu, Wubi</translation>
 <translation id="7765158879357617694">Pārvietot</translation>
 <translation id="7774365994322694683">Putns</translation>
+<translation id="7781829728241885113">Vakar</translation>
 <translation id="7788080748068240085">Lai failu “<ph name="FILE_NAME" />” saglabātu bezsaistē, jums ir jāatbrīvo <ph name="TOTAL_FILE_SIZE" /> vietas.<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />Atspraudiet failus, kuriem vairs nav jāpiekļūst bezsaistē.<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />Dzēsiet failus no mapes Lejupielādes.<ph name="MARKUP_5" /></translation>

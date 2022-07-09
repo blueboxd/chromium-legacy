@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chromeos/crosapi/mojom/cert_provisioning.mojom.h"
@@ -59,7 +60,7 @@ class CertificateProvisioningUiHandler
   // the UI when it loads.
   // |args| is expected to be empty.
   void HandleRefreshCertificateProvisioningProcesses(
-      const base::ListValue* args);
+      const base::Value::List& args);
 
   // Trigger an update / refresh on a certificate provisioning process.
   // |args| is expected to contain two arguments:
@@ -68,7 +69,7 @@ class CertificateProvisioningUiHandler
   // index 1 is a boolean specifying whether the process is a user-specific
   // (false) or a device-wide (true) certificate provisioning process.
   void HandleTriggerCertificateProvisioningProcessUpdate(
-      const base::ListValue* args);
+      const base::Value::List& args);
 
   // Send the list of certificate provisioning processes to the UI.
   void RefreshCertificateProvisioningProcesses();
@@ -80,7 +81,7 @@ class CertificateProvisioningUiHandler
   // The interface to communicate with the cert provisioning component.
   // Can be null (e.g. for non-primary / non-main profiles), in which case this
   // part of the UI should show and do nothing.
-  crosapi::mojom::CertProvisioning* const cert_provisioning_interface_;
+  const raw_ptr<crosapi::mojom::CertProvisioning> cert_provisioning_interface_;
   // Receives mojo messages about cert provisioning updates.
   mojo::Receiver<crosapi::mojom::CertProvisioningObserver> receiver_{this};
 

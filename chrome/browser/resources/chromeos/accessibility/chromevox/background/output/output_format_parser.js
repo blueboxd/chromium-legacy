@@ -5,18 +5,14 @@
 /**
  * @fileoverview Provides a push parser for Output format rules.
  */
-
-goog.provide('OutputFormatParser');
-goog.provide('OutputFormatParserObserver');
-
-goog.require('OutputFormatTree');
+import {OutputFormatTree} from '/chromevox/background/output/output_format_tree.js';
 
 /**
  * Implemented by objects that wish to observe tokens from parsing Output format
  * rules.
  * @interface
  */
-OutputFormatParserObserver = class {
+export class OutputFormatParserObserver {
   /**
    * Indicates the parse start of a new token.
    * @param {string} token
@@ -56,9 +52,9 @@ OutputFormatParserObserver = class {
    * @return {boolean|undefined} True to skip to the next token.
    */
   onTokenEnd() {}
-};
+}
 
-OutputFormatParser = class {
+export class OutputFormatParser {
   /** @param {!OutputFormatParserObserver} observer */
   constructor(observer) {
     /** @private {!OutputFormatParserObserver} observer */
@@ -110,4 +106,4 @@ OutputFormatParser = class {
       this.observer_.onTokenEnd();
     });
   }
-};
+}

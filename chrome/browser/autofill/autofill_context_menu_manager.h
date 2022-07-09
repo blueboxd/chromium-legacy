@@ -14,6 +14,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class Browser;
+
 namespace content {
 class RenderFrameHost;
 }  // namespace content
@@ -21,6 +23,7 @@ class RenderFrameHost;
 namespace autofill {
 
 class AutofillProfile;
+class ContentAutofillDriver;
 class CreditCard;
 class PersonalDataManager;
 
@@ -44,6 +47,10 @@ struct ContextMenuItem {
   // Represents the type that this item belongs to out of address, credit cards
   // and passwords.
   SubMenuType sub_menu_type;
+
+  // The context menu item represents a manage option. Example: Manage
+  // addresses/ Manage payment methods options.
+  bool is_manage_item = false;
 };
 
 // `AutofillContextMenuManager` is responsible for adding/executing Autofill
@@ -68,7 +75,8 @@ class AutofillContextMenuManager {
 
   AutofillContextMenuManager(PersonalDataManager* personal_data_manager,
                              ui::SimpleMenuModel::Delegate* delegate,
-                             ui::SimpleMenuModel* menu_model);
+                             ui::SimpleMenuModel* menu_model,
+                             Browser* browser);
   ~AutofillContextMenuManager();
   AutofillContextMenuManager(const AutofillContextMenuManager&) = delete;
   AutofillContextMenuManager& operator=(const AutofillContextMenuManager&) =
@@ -82,9 +90,14 @@ class AutofillContextMenuManager {
   bool IsCommandIdChecked(CommandId command_id) const;
   bool IsCommandIdVisible(CommandId command_id) const;
   bool IsCommandIdEnabled(CommandId command_id) const;
+  // TODO(crbug.com/1325811): Add tests for the method.
   void ExecuteCommand(CommandId command_id,
                       content::RenderFrameHost* render_frame_host,
                       const content::ContextMenuParams& params);
+  void ExecuteCommand(CommandId command_id,
+                      ContentAutofillDriver* driver,
+                      const content::ContextMenuParams& params,
+                      const blink::LocalFrameToken local_frame_token);
 
 #if defined(UNIT_TEST)
   // Getter for `command_id_to_menu_item_value_mapper_` used for testing
@@ -125,6 +138,7 @@ class AutofillContextMenuManager {
   raw_ptr<PersonalDataManager> personal_data_manager_;
   raw_ptr<ui::SimpleMenuModel> menu_model_;
   raw_ptr<ui::SimpleMenuModel::Delegate> delegate_;
+  raw_ptr<Browser> browser_;
 
   // Stores the count of items added to the context menu from Autofill.
   int count_of_items_added_to_menu_model_ = 0;

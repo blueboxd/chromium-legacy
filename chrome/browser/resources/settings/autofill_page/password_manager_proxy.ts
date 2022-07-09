@@ -7,11 +7,11 @@
  * chrome.passwordsPrivate which facilitates testing.
  */
 
-type InsecureCredentials = Array<chrome.passwordsPrivate.InsecureCredential>;
+type InsecureCredentials = chrome.passwordsPrivate.InsecureCredential[];
 export type SavedPasswordListChangedListener =
-    (entries: Array<chrome.passwordsPrivate.PasswordUiEntry>) => void;
+    (entries: chrome.passwordsPrivate.PasswordUiEntry[]) => void;
 export type PasswordExceptionListChangedListener =
-    (entries: Array<chrome.passwordsPrivate.ExceptionEntry>) => void;
+    (entries: chrome.passwordsPrivate.ExceptionEntry[]) => void;
 export type PasswordsFileExportProgressListener =
     (progress: chrome.passwordsPrivate.PasswordExportProgress) => void;
 export type AccountStorageOptInStateChangedListener = (optInState: boolean) =>
@@ -77,31 +77,27 @@ export interface PasswordManagerProxy {
   /**
    * Changes the saved password corresponding to |ids|.
    * @param ids The ids for the password entry being updated.
-   * @return A promise that resolves when the password is updated for all ids.
+   * @return A promise that resolves with the new IDs when the password is
+   *     updated for all ids.
    */
   changeSavedPassword(
-      ids: Array<number>,
-      params: chrome.passwordsPrivate.ChangeSavedPasswordParams): Promise<void>;
+      ids: number[], params: chrome.passwordsPrivate.ChangeSavedPasswordParams):
+      Promise<chrome.passwordsPrivate.CredentialIds>;
 
   /**
    * Should remove the saved password and notify that the list has changed.
    * @param id The id for the password entry being removed. No-op if |id| is not
    *     in the list.
+   * @param fromStores The store from which credential should be removed.
    */
-  removeSavedPassword(id: number): void;
-
-  /**
-   * Should remove the saved passwords and notify that the list has changed.
-   * @param ids The ids for the password entries being removed. Any id not in
-   *    the list is ignored.
-   */
-  removeSavedPasswords(ids: Array<number>): void;
+  removeSavedPassword(
+      id: number, fromStores: chrome.passwordsPrivate.PasswordStoreSet): void;
 
   /**
    * Moves a list of passwords from the device to the account
    * @param ids The ids for the password entries being moved.
    */
-  movePasswordsToAccount(ids: Array<number>): void;
+  movePasswordsToAccount(ids: number[]): void;
 
   /**
    * Add an observer to the list of password exceptions.
@@ -128,13 +124,6 @@ export interface PasswordManagerProxy {
    *     is not in the list.
    */
   removeException(id: number): void;
-
-  /**
-   * Should remove the password exceptions and notify that the list has changed.
-   * @param ids The ids for the exception url entries being removed. Any |id|
-   *     not in the list is ignored.
-   */
-  removeExceptions(ids: Array<number>): void;
 
   /**
    * Should undo the last saved password or exception removal and notify that
@@ -207,6 +196,13 @@ export interface PasswordManagerProxy {
   optInForAccountStorage(optIn: boolean): void;
 
   /**
+   * Refreshes the cache for automatic password change scripts if the cache is
+   * stale.
+   * @return A promise that resolves when the cache is fresh.
+   */
+  refreshScriptsIfNecessary(): Promise<void>;
+
+  /**
    * Requests the start of the bulk password check.
    */
   startBulkPasswordCheck(): Promise<void>;
@@ -231,6 +227,13 @@ export interface PasswordManagerProxy {
    */
   getPasswordCheckStatus():
       Promise<chrome.passwordsPrivate.PasswordCheckStatus>;
+
+  /**
+   * Starts an automated password change flow.
+   * @param credential The credential for which to start the flow.
+   */
+  startAutomatedPasswordChange(
+      credential: chrome.passwordsPrivate.InsecureCredential): Promise<boolean>;
 
   /**
    * Requests to remove |insecureCredential| from the password store.
@@ -341,8 +344,9 @@ export enum PasswordCheckInteraction {
   SHOW_PASSWORD = 6,
   MUTE_PASSWORD = 7,
   UNMUTE_PASSWORD = 8,
+  CHANGE_PASSWORD_AUTOMATICALLY = 9,
   // Must be last.
-  COUNT = 9,
+  COUNT = 10,
 }
 
 /**
@@ -407,22 +411,22 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
   }
 
   changeSavedPassword(
-      ids: Array<number>,
+      ids: number[],
       params: chrome.passwordsPrivate.ChangeSavedPasswordParams) {
-    return new Promise<void>(resolve => {
-      chrome.passwordsPrivate.changeSavedPassword(ids, params, resolve);
+    return new Promise<chrome.passwordsPrivate.CredentialIds>(resolve => {
+      chrome.passwordsPrivate.changeSavedPassword(
+          ids, params, (newIds: chrome.passwordsPrivate.CredentialIds) => {
+            resolve(newIds);
+          });
     });
   }
 
-  removeSavedPassword(id: number) {
-    chrome.passwordsPrivate.removeSavedPassword(id);
+  removeSavedPassword(
+      id: number, fromStores: chrome.passwordsPrivate.PasswordStoreSet) {
+    chrome.passwordsPrivate.removeSavedPassword(id, fromStores);
   }
 
-  removeSavedPasswords(ids: Array<number>) {
-    chrome.passwordsPrivate.removeSavedPasswords(ids);
-  }
-
-  movePasswordsToAccount(ids: Array<number>) {
+  movePasswordsToAccount(ids: number[]) {
     chrome.passwordsPrivate.movePasswordsToAccount(ids);
   }
 
@@ -444,10 +448,6 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
 
   removeException(id: number) {
     chrome.passwordsPrivate.removePasswordException(id);
-  }
-
-  removeExceptions(ids: Array<number>) {
-    chrome.passwordsPrivate.removePasswordExceptions(ids);
   }
 
   undoRemoveSavedPasswordOrException() {
@@ -531,8 +531,21 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
     });
   }
 
+  startAutomatedPasswordChange(credential:
+                                   chrome.passwordsPrivate.InsecureCredential) {
+    return new Promise<boolean>(resolve => {
+      chrome.passwordsPrivate.startAutomatedPasswordChange(credential, resolve);
+    });
+  }
+
   optInForAccountStorage(optIn: boolean) {
     chrome.passwordsPrivate.optInForAccountStorage(optIn);
+  }
+
+  refreshScriptsIfNecessary() {
+    return new Promise<void>(resolve => {
+      chrome.passwordsPrivate.refreshScriptsIfNecessary(resolve);
+    });
   }
 
   startBulkPasswordCheck() {

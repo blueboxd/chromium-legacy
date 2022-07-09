@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.privacy_sandbox;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -13,18 +14,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
-import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.favicon.LargeIconBridge;
 
 /**
  * Settings fragment for privacy sandbox settings.
  */
-public class AdPersonalizationRemovedFragment
-        extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
+public class AdPersonalizationRemovedFragment extends PrivacySandboxSettingsBaseFragment
+        implements Preference.OnPreferenceClickListener, FragmentSettingsLauncher {
     private static final String TOPICS_CATEGORY_PREFERENCE = "topic_interests";
     private static final String EMPTY_TOPICS_PREFERENCE = "empty_topics";
     private static final String FLEDGE_CATEGORY_PREFERENCE = "fledge_interests";
@@ -35,9 +39,16 @@ public class AdPersonalizationRemovedFragment
     private PreferenceCategory mFledgeCategory;
     private Preference mEmptyFledgePreference;
     private SnackbarManager mSnackbarManager;
+    private LargeIconBridge mLargeIconBridge;
+    private SettingsLauncher mSettingsLauncher;
 
     public void setSnackbarManager(SnackbarManager snackbarManager) {
         mSnackbarManager = snackbarManager;
+    }
+
+    @Override
+    public void setSettingsLauncher(SettingsLauncher settingsLauncher) {
+        mSettingsLauncher = settingsLauncher;
     }
 
     /**
@@ -45,6 +56,7 @@ public class AdPersonalizationRemovedFragment
      */
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
+        super.onCreatePreferences(bundle, s);
         getActivity().setTitle(R.string.privacy_sandbox_remove_interest_title);
 
         SettingsUtils.addPreferencesFromResource(this, R.xml.ad_personalization_removed_preference);
@@ -58,6 +70,10 @@ public class AdPersonalizationRemovedFragment
         mEmptyFledgePreference = findPreference(EMPTY_FLEDGE_PREFERENCE);
         assert mEmptyFledgePreference != null;
 
+        if (mLargeIconBridge == null) {
+            mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedRegularProfile());
+        }
+
         for (Topic topic : PrivacySandboxBridge.getBlockedTopics()) {
             TopicPreference preference = new TopicPreference(getContext(), topic);
             preference.setImage(R.drawable.ic_add,
@@ -69,7 +85,8 @@ public class AdPersonalizationRemovedFragment
             mTopicsCategory.addPreference(preference);
         }
         for (String site : PrivacySandboxBridge.getBlockedFledgeJoiningTopFramesForDisplay()) {
-            FledgePreference preference = new FledgePreference(getContext(), site);
+            FledgePreference preference =
+                    new FledgePreference(getContext(), site, mLargeIconBridge);
             preference.setImage(R.drawable.ic_add,
                     getResources().getString(
                             R.string.privacy_sandbox_add_site_button_description, site));
@@ -87,6 +104,15 @@ public class AdPersonalizationRemovedFragment
         View view = super.onCreateView(inflater, container, savedInstanceState);
         getListView().setItemAnimator(null);
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (mLargeIconBridge != null) {
+            mLargeIconBridge.destroy();
+            mLargeIconBridge = null;
+        }
     }
 
     private void allowTopic(Topic topic) {
@@ -123,5 +149,15 @@ public class AdPersonalizationRemovedFragment
     private void updateEmptyState() {
         mEmptyTopicsPreference.setVisible(mTopicsCategory.getPreferenceCount() == 0);
         mEmptyFledgePreference.setVisible(mFledgeCategory.getPreferenceCount() == 0);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_id_targeted_help) {
+            // Override action for the help button.
+            mSettingsLauncher.launchSettingsActivity(getContext(), LearnMoreFragment.class);
+            return true;
+        }
+        return false;
     }
 }

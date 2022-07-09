@@ -5,6 +5,7 @@
 #include "ash/system/time/date_helper.h"
 
 #include "ash/shell.h"
+#include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/calendar_utils.h"
 #include "base/i18n/unicodestring.h"
@@ -20,6 +21,12 @@ namespace {
 
 // Milliseconds per minute.
 constexpr int kMillisecondsPerMinute = 60000;
+
+// Default week title for a few special languages that cannot find the start of
+// a week. So far the known languages that cannot return their day of week are:
+// 'bn', 'fa', 'mr', 'pa-PK'.
+const std::vector<std::u16string> kDefaultWeekTitle = {u"S", u"M", u"T", u"W",
+                                                       u"T", u"F", u"S"};
 
 UDate TimeToUDate(const base::Time& time) {
   return static_cast<UDate>(time.ToDoubleT() *
@@ -148,9 +155,16 @@ DateHelper::DateHelper()
   DCHECK(U_SUCCESS(status));
   CalculateLocalWeekTitles();
   time_zone_settings_observer_.Observe(system::TimezoneSettings::GetInstance());
+
+  // Not using a scoped observer since the Shell can be destructed before this
+  // `DateHelper` instance gets destructed.
+  Shell::Get()->locale_update_controller()->AddObserver(this);
 }
 
-DateHelper::~DateHelper() = default;
+DateHelper::~DateHelper() {
+  if (Shell::HasInstance())
+    Shell::Get()->locale_update_controller()->RemoveObserver(this);
+}
 
 void DateHelper::ResetFormatters() {
   day_of_month_formatter_ = CreateSimpleDateFormatter("d");
@@ -170,6 +184,13 @@ void DateHelper::ResetFormatters() {
       CreateDateIntervalFormatter("Hm");
 }
 
+void DateHelper::ResetForTesting() {
+  ResetFormatters();
+  CalculateLocalWeekTitles();
+  gregorian_calendar_->setTimeZone(
+      system::TimezoneSettings::GetInstance()->GetTimezone());
+}
+
 void DateHelper::CalculateLocalWeekTitles() {
   week_titles_.clear();
 
@@ -177,7 +198,8 @@ void DateHelper::CalculateLocalWeekTitles() {
   // titles, since there are no daylight saving starts/ends in June worldwide.
   // If the `DCHECK` fails, use `Now()`.
   base::Time start_date = base::Time::Now();
-  DCHECK(base::Time::FromString("15 Jun 2021 10:00 GMT", &start_date));
+  bool result = base::Time::FromString("15 Jun 2021 10:00 GMT", &start_date);
+  DCHECK(result);
   start_date = GetLocalMidnight(start_date);
   std::u16string day_of_week =
       GetFormattedTime(&day_of_week_formatter_, start_date);
@@ -195,11 +217,15 @@ void DateHelper::CalculateLocalWeekTitles() {
   while (day_int != 1) {
     start_date += base::Hours(25);
     day_of_week = GetFormattedTime(&day_of_week_formatter_, start_date);
-    DCHECK(base::StringToInt(day_of_week, &day_int));
+    bool result = base::StringToInt(day_of_week, &day_int);
+    DCHECK(result);
     ++safe_index;
-    // Should already find the first day within 7 times, since there are only 7
-    // days in a week.
-    CHECK_NE(safe_index, calendar_utils::kDateInOneWeek);
+    if (safe_index == calendar_utils::kDateInOneWeek) {
+      NOTREACHED() << "Should already find the first day within 7 times, since "
+                      "there are only 7 days in a week";
+      week_titles_ = kDefaultWeekTitle;
+      return;
+    }
   }
 
   int day_index = 0;
@@ -216,6 +242,10 @@ void DateHelper::TimezoneChanged(const icu::TimeZone& timezone) {
   gregorian_calendar_->setTimeZone(
       system::TimezoneSettings::GetInstance()->GetTimezone());
   Shell::Get()->system_tray_model()->calendar_model()->RedistributeEvents();
+}
+
+void DateHelper::OnLocaleChanged() {
+  CalculateLocalWeekTitles();
 }
 
 }  // namespace ash

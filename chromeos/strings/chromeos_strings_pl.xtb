@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Użytkownik</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Okno aktualizowania oprogramowania układowego urządzeń zewnętrznych jest otwarte. Dostępne są aktualizacje (<ph name="NUM_UPDATES" />).</translation>
+<translation id="1145516343487477149">Znajdź artykuły pomocy i odpowiedzi na najczęstsze pytania dotyczące Chromebooka</translation>
 <translation id="1165039591588034296">Błąd</translation>
 <translation id="1175697296044146566">Tym urządzeniem <ph name="DEVICE_TYPE" /> zarządza <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Przeciętna (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Wyłącz ciemny motyw</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Wyłącz tryb ciemny</translation>
+<translation id="1881188606372070653">Wejdź na <ph name="BEGIN_LINK1" />stronę pomocy prawnej<ph name="END_LINK1" />, aby poprosić o zmianę treści z powodów prawnych. Niektóre informacje o koncie i systemie zostaną przesłane do Google. Podane przez Ciebie informacje wykorzystamy do rozwiązywania problemów technicznych i ulepszania naszych usług, zgodnie z <ph name="BEGIN_LINK2" />Polityką prywatności<ph name="END_LINK2" /> oraz <ph name="BEGIN_LINK3" />Warunkami usługi<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Wersja sprzętu</translation>
+<translation id="1904932688895783618">Oto inne przydatne materiały:</translation>
 <translation id="1905710495812624430">Przekroczono maksymalną liczbę prób.</translation>
 <translation id="1908234395526491708">Nieudane żądania UDP</translation>
 <translation id="1932611479324127242">Odcięcie baterii</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Wykonaj czynności z instrukcji rozwiązywania problemów</translation>
 <translation id="2016848882344942759">– brak etykiety bez oznaczenia marki –</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Aby wyświetlić wygaszacz ekranu, połącz się z siecią i odśwież stronę.</translation>
 <translation id="2080070583977670716">Więcej ustawień</translation>
 <translation id="2085089206770112532">Zmniejsz jasność wyświetlacza</translation>
 <translation id="2105810540595158374">Urządzenie to kontroler do gier.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Włącz tryb ciemny</translation>
 <translation id="2177831236093724629">Znaleziono <ph name="LINK_BEGIN" />niezgodne komponenty<ph name="LINK_END" />. Aby mieć pewność, że zostały zidentyfikowane wszystkie zgodne komponenty, zaktualizuj Chrome OS do najnowszej wersji.</translation>
 <translation id="2180197493692062006">Coś poszło nie tak. Spróbuj ponownie otworzyć aplikację.</translation>
+<translation id="2182088270354640012">Dziękujemy za opinię. Twoją opinię przeczyta nasz zespół, bo opinie pomagają nam ulepszać Chrome OS. Ze względu na liczbę przesłanych zgłoszeń nie będziemy mogli wysłać bezpośredniej odpowiedzi.</translation>
 <translation id="2209788852729124853">Zresetuj liczniki natężenia ruchu</translation>
 <translation id="2212733584906323460">Rozwiązanie nazwy</translation>
 <translation id="2217935453350629363">Obecna szybkość</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Szukam skanerów</translation>
 <translation id="3246869037381808805">Zadania drukowania starsze niż 1 dzień zostaną usunięte</translation>
 <translation id="3268178239013324452">Niepowodzenie – otwarte drzwiczki drukarki</translation>
+<translation id="3275729367986477355">Awatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Edytuj plik}few{Edytuj pliki}many{Edytuj pliki}other{Edytuj pliki}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Kierunek klucza</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Więcej pomocy uzyskasz w <ph name="BEGIN_LINK" />Centrum pomocy<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Algorytm kompresji</translation>
 <translation id="4794140124556169553">Uruchomienie testu procesora może wpłynąć na wydajność systemu</translation>
+<translation id="4800589996161293643">Społeczność Chromebooka</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="4808449224298348341">Zadanie drukowania <ph name="DOCUMENT_TITLE" /> zostało anulowane</translation>
 <translation id="4809927044794281115">Jasny motyw</translation>
@@ -486,6 +493,7 @@
 Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
+<translation id="522307662484862935">Nie podawaj adresu e-mail</translation>
 <translation id="5227902338748591677">Harmonogram ciemnego motywu</translation>
 <translation id="5234764350956374838">Zamknij</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -612,6 +620,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="6284632978374966585">Włącz ciemny motyw</translation>
 <translation id="6295178529664209245">Kontynuować naprawę?</translation>
 <translation id="6302401976930124515">Test <ph name="TEST_NAME" /> został anulowany</translation>
+<translation id="631063167932043783">Aplikacja Odkrywaj</translation>
 <translation id="6319207335391420837">Aktualizacja oprogramowania układowego na urządzeniu <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Włącz wygaszacz ekranu</translation>
 <translation id="6325525973963619867">Niepowodzenie</translation>
@@ -623,6 +632,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="6379086450106841622">Ekran dotykowy</translation>
 <translation id="6381741036071372448">Sprawdź klawiaturę</translation>
 <translation id="6388847657025262518">Podajnik dokumentów w skanerze się zaciął. Sprawdź go i spróbuj ponownie.</translation>
+<translation id="6394634179843537518">Dodaj plik</translation>
 <translation id="6410257289063177456">Pliki graficzne</translation>
 <translation id="641081527798843608">Dopasowanie do tematu</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="6516990319416533844">Aby sprawdzić szybkość ładowania, zaczekaj, aż bateria trochę się rozładuje</translation>
 <translation id="6517239166834772319">Odkrywaj</translation>
 <translation id="6527081081771465939">Nieznany protokół zabezpieczeń Wi-Fi</translation>
+<translation id="6535178685492749208">Jesteś offline. Opinia zostanie wysłana później.</translation>
 <translation id="65587193855025101">Szyba</translation>
 <translation id="6564646048574748301">Niepowodzenie – drukarka jest nieosiągalna</translation>
 <translation id="6566314079205407217">Skanowanie wielu stron</translation>
@@ -717,6 +728,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="7297226631177386107">Nie można połączyć się z witrynami HTTPS przez zaporę sieciową</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Zapytaj ekspertów na forum pomocy Chromebooka</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />. Naciśnij Wyszukaj i spację, aby zobaczyć wynik w wyszukiwarce Google.</translation>
 <translation id="7343649194310845056">Urządzenia sieciowe</translation>
@@ -759,9 +771,11 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="773153675489693198">Liczba cykli</translation>
 <translation id="7747039790905080783">Klucz wstępny</translation>
 <translation id="7762130827864645708">Hasło zostało zmienione. Od teraz używaj nowego hasła.</translation>
+<translation id="7762839321248874531">Wyślij <ph name="BEGIN_LINK1" />informacje o systemie i aplikacjach<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />dane<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Dopasowanie sufiksu domeny</translation>
 <translation id="7769672763586021400">Identyfikator modelu</translation>
 <translation id="7784116172884276937">Nie skonfigurowano serwerów DNS</translation>
+<translation id="779591286616261875">Wyślij nowy raport</translation>
 <translation id="7799817062559422778">Tryb jasny</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7805768142964895445">Stan</translation>
@@ -828,6 +842,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="8382302752385457774">Bez oznaczenia marki</translation>
 <translation id="8395584934117017006">Tym urządzeniem (<ph name="DEVICE_TYPE" />) zarządza firma</translation>
 <translation id="8398927464629426868">Obecne tempo, w jakim urządzenie się ładuje lub rozładowuje</translation>
+<translation id="8420955526972171689">Uruchamianie testów i rozwiązywanie problemów ze sprzętem</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Klawiatura wbudowana</translation>
 <translation id="8431300646573772016">Co nowego w Chrome OS</translation>
@@ -913,6 +928,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="9082718469794970195">Użyj tego filmu</translation>
 <translation id="9087578468327036362">Zgłoś to zapytanie</translation>
 <translation id="9088306295921699330">Obecne wykorzystanie</translation>
+<translation id="9092255287806472980">Twoją opinię przeczyta nasz zespół, bo takie informacje pomagają nam ulepszać Chrome OS. Ze względu na dużą liczbę zgłoszeń nie będziemy mogli wysłać odpowiedzi.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Musisz odłączyć urządzenie.</translation>
 <translation id="9098156406873149060">Zachowaj dane użytkownika</translation>

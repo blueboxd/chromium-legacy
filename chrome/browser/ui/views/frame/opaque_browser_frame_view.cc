@@ -488,6 +488,14 @@ bool OpaqueBrowserFrameView::IsRegularOrGuestSession() const {
   return browser_view()->GetRegularOrGuestSession();
 }
 
+bool OpaqueBrowserFrameView::CanMaximize() const {
+  return browser_view()->CanMaximize();
+}
+
+bool OpaqueBrowserFrameView::CanMinimize() const {
+  return browser_view()->CanMinimize();
+}
+
 bool OpaqueBrowserFrameView::IsMaximized() const {
   return frame()->IsMaximized();
 }
@@ -665,7 +673,7 @@ views::Button* OpaqueBrowserFrameView::CreateImageButton(int normal_image_id,
     // (&processed_bg_image) to create a local copy, so it's safe for this
     // to be locally scoped.
     button->SetBackgroundImage(
-        tp->GetColor(ThemeProperties::COLOR_CONTROL_BUTTON_BACKGROUND),
+        frame()->GetColorProvider()->GetColor(kColorCaptionButtonBackground),
         (processed_bg_image.isNull() ? nullptr : &processed_bg_image),
         tp->GetImageSkiaNamed(mask_image_id));
   }

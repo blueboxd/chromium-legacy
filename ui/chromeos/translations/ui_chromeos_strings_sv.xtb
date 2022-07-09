@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul Romaja</translation>
 <translation id="112387589102719461">engelska (USA) med Dvorak-tangentbord för programmerare</translation>
 <translation id="1134697384939541955">engelska (USA) med utökat tangentbord</translation>
+<translation id="1138691154716715755">Tidigare den här månaden</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> hittades.
     <ph name="LINE_BREAK1" />
     Det finns inte tillräckligt med utrymme i det lokala lagringsutrymmet. Det behövs ytterligare <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, blockerat av administratören, information</translation>
 <translation id="2142680004883808240">ryskt fonetiskt tangentbord (YaZHert)</translation>
 <translation id="2143778271340628265">Manuell proxykonfiguration</translation>
+<translation id="2148716181193084225">Idag</translation>
 <translation id="2163152940313951844">Ogiltigt tecken: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">portugisiska med internationellt PC-tangentbord för USA</translation>
 <translation id="2198315389084035571">kinesiska (förenklad)</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Byt till listvy</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> mappar delas med Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer har valts</translation>
+<translation id="2387120140441437063">Det går inte att öppna filer i papperskorgen. Återställ filerna innan du öppnar dem.</translation>
 <translation id="2387458720915042159">Proxyanslutningstyp</translation>
 <translation id="2389832672041313158">burmesiska (Myanmar)</translation>
 <translation id="2392369802118427583">Aktivera</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Mappens innehåll är skrivskyddat. Vissa aktiviteter stöds inte.</translation>
 <translation id="2542049655219295786">Tabell i Google Dokument</translation>
 <translation id="2544853746127077729">Autentiseringscertifikatet godkändes inte av nätverket</translation>
-<translation id="2547921442987553570">Lägg till i <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">USA (internationell)</translation>
 <translation id="2563185590376525700">Groda</translation>
 <translation id="2578394532502990878">tamil, fonetiskt</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">kinesiska (dayi)</translation>
 <translation id="3057861065630527966">Säkerhetskopiera foton och videor</translation>
 <translation id="3067790092342515856">Windows-filer</translation>
-<translation id="3078461028045006476">Dela med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit-modeller</translation>
 <translation id="3085752524577180175">SOCKS-värd</translation>
 <translation id="3104793765551262433">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, blockerat av administratören, information</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3855472144336161447">Tyska (neo 2)</translation>
 <translation id="3858860766373142691">Namn</translation>
-<translation id="386548886866354912">Packa med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Beskrivning</translation>
 <translation id="3899991606604168269">franska (Kanada) med flerspråkigt tangentbord</translation>
 <translation id="3901991538546252627">Ansluter till <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Ladda ned mobilprofil, Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">engelska (Storbritannien)</translation>
 <translation id="3975895378829046965">bengali, fonetiskt</translation>
+<translation id="3991446849494482687">Det här inaktiverar även låsinställningen för SIM-kort på enheten.</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4017788180641807848">engelska (USA) med Workman-tangentbord</translation>
 <translation id="4040753847560036377">Fel PUK-kod</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, hanteras av administratören, information</translation>
 <translation id="4387004326333427325">Autentiseringscertifikatet godkändes inte av fjärrvärden</translation>
 <translation id="4394214039309501350">Extern länk</translation>
+<translation id="4394980935660306080">Tidigare den här veckan</translation>
 <translation id="4401287888955153199">Extrahera alla</translation>
 <translation id="4410695710508688828">Extraheringen misslyckades. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Skapa en genväg till dina filer</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">Öppnar <ph name="PATH" /></translation>
 <translation id="4720185134442950733">Mobilt datanätverk</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> foton har säkerhetskopierats</translation>
+<translation id="4725096204469550614">Tidigare i år</translation>
 <translation id="4725511304875193254">Welsh corgi</translation>
 <translation id="4737050008115666127">Landning</translation>
 <translation id="4747271164117300400">makedonska</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> objekt flyttas till <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Det har uppstått ett fel.</translation>
 <translation id="5098629044894065541">hebreiska</translation>
+<translation id="5102922915594634436">Hantera synkroniserade mappar</translation>
 <translation id="5109254780565519649">Ett fel har uppstått. Vissa objekt kanske inte har återställts.</translation>
 <translation id="5110329002213341433">engelska (Kanada)</translation>
 <translation id="5123433949759960244">Basketboll</translation>
@@ -603,7 +607,6 @@
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6170470584681422115">Smörgås</translation>
 <translation id="6187719147498869044">ungerska</translation>
-<translation id="6189412234224385711">Öppna med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Byt pinkod</translation>
 <translation id="6199801702437275229">Väntar på information om lagringsutrymme ...</translation>
 <translation id="6205710420833115353">Vissa åtgärder tar längre tid än väntat. Vill du avbryta dem?</translation>
@@ -707,6 +710,7 @@
 <translation id="7075931588889865715">thailändskt tangentbord (TIS 820-2531)</translation>
 <translation id="708278670402572152">Koppla från om du vill aktivera sökning</translation>
 <translation id="7086590977277044826">tamilskt tangentbord (InScript)</translation>
+<translation id="7088615885725309056">Äldre</translation>
 <translation id="7103992300314999525">makedonska</translation>
 <translation id="7106346894903675391">Köp mer lagringsutrymme ...</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; – &lt;em&gt;sök i Drive&lt;/em&gt;</translation>
@@ -771,6 +775,7 @@
 <translation id="7663224033570512922">hindi</translation>
 <translation id="7693909743393669729">Om du formaterar en enhet raderas all data på den och alla partitioner tas bort, även sådana som inte visas. Det går inte att ångra åtgärden.</translation>
 <translation id="7695430100978772476">Det gick inte att formatera <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">Det gick inte att tömma papperskorgen.</translation>
 <translation id="770015031906360009">grekiska</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> har kopierats.</translation>
 <translation id="7711920809702896782">Bildinformation</translation>
@@ -781,6 +786,7 @@
 <translation id="7760449188139285140">kinesiska (Wubi)</translation>
 <translation id="7765158879357617694">Flytta</translation>
 <translation id="7774365994322694683">Fågel</translation>
+<translation id="7781829728241885113">Igår</translation>
 <translation id="7788080748068240085">För att kunna spara<ph name="FILE_NAME" /> offline måste du frigöra ytterligare <ph name="TOTAL_FILE_SIZE" /> utrymme:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />ta bort filer som du inte längre behöver kunna använda offline<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />ta bort filer från mappen Nedladdningar<ph name="MARKUP_5" /></translation>

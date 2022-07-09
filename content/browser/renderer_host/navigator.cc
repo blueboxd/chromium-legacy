@@ -845,9 +845,8 @@ void Navigator::NavigateFromFrameProxy(
   }
 
   // Allow the delegate to cancel the cross-process navigation.
-  // TODO(crbug.com/1316388): With MPArch there may be multiple main frames and
-  // so is_main_frame should not be used to identify outermost main frames.
-  // Follow up to confirm correctness.
+  // With MPArch there may be multiple main frames and so is_main_frame should
+  // not be used to identify outermost main frames.
   if (!delegate_->ShouldAllowRendererInitiatedCrossProcessNavigation(
           render_frame_host->IsOutermostMainFrame()))
     return;
@@ -1255,12 +1254,9 @@ NavigationEntryImpl*
 Navigator::GetNavigationEntryForRendererInitiatedNavigation(
     const blink::mojom::CommonNavigationParams& common_params,
     FrameTreeNode* frame_tree_node) {
-  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
-  // so IsMainFrame should not be used to identify embedded frames. In this
-  // case, we use IsMainFrame since our only instance of embedded main frames
-  // (fenced frames) have their own NavigationController, and we will enforce
-  // main frame behavior at that level. Will need to follow up to confirm
-  // correctness.
+  // With MPArch, there may be multiple main frames, but each one has its own
+  // NavigationController. Thus, it's correct to check for NavigationEntries for
+  // each main frame, even if one is embedded (e.g., a fenced frame).
   if (!frame_tree_node->IsMainFrame())
     return nullptr;
 

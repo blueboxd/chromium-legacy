@@ -68,6 +68,11 @@ gpu::GpuDriverBugWorkarounds CreateGpuWorkarounds() {
   return gpu_workarounds;
 }
 
+gpu::GPUInfo::GPUDevice CreateGpuDevice() {
+  gpu::GPUInfo::GPUDevice device;
+  return device;
+}
+
 struct OutputBuffer {
   base::UnsafeSharedMemoryRegion region;
   base::WritableSharedMemoryMapping mapping;
@@ -316,16 +321,17 @@ void WebrtcVideoEncoderGpu::Core::BitstreamBufferReady(
     const media::BitstreamBufferMetadata& metadata) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  std::unique_ptr<EncodedFrame> encoded_frame =
-      std::make_unique<EncodedFrame>();
+  auto encoded_frame = std::make_unique<EncodedFrame>();
   OutputBuffer* output_buffer = output_buffers_[bitstream_buffer_id].get();
   DCHECK(output_buffer->IsValid());
-  base::span<char> data_span =
-      output_buffer->mapping.GetMemoryAsSpan<char>(metadata.payload_size_bytes);
-  encoded_frame->data.assign(data_span.begin(), data_span.end());
+  base::span<uint8_t> data_span =
+      output_buffer->mapping.GetMemoryAsSpan<uint8_t>(
+          metadata.payload_size_bytes);
+  encoded_frame->data =
+      webrtc::EncodedImageBuffer::Create(data_span.data(), data_span.size());
   encoded_frame->key_frame = metadata.key_frame;
-  encoded_frame->size = webrtc::DesktopSize(input_coded_size_.width(),
-                                            input_coded_size_.height());
+  encoded_frame->dimensions = {input_coded_size_.width(),
+                               input_coded_size_.height()};
   encoded_frame->quantizer = 0;
   encoded_frame->codec = webrtc::kVideoCodecH264;
 
@@ -368,7 +374,8 @@ void WebrtcVideoEncoderGpu::Core::BeginInitialization() {
       input_format, input_visible_size_, codec_profile_, initial_bitrate);
   video_encode_accelerator_ =
       media::GpuVideoEncodeAcceleratorFactory::CreateVEA(
-          config, this, CreateGpuPreferences(), CreateGpuWorkarounds());
+          config, this, CreateGpuPreferences(), CreateGpuWorkarounds(),
+          CreateGpuDevice());
 
   if (!video_encode_accelerator_) {
     LOG(ERROR) << "Could not create VideoEncodeAccelerator";
@@ -420,7 +427,7 @@ bool WebrtcVideoEncoderGpu::IsSupportedByH264(const Profile& profile) {
 
   media::VideoEncodeAccelerator::SupportedProfiles profiles =
       media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
-          CreateGpuPreferences(), CreateGpuWorkarounds());
+          CreateGpuPreferences(), CreateGpuWorkarounds(), CreateGpuDevice());
   for (const auto& supported_profile : profiles) {
     if (supported_profile.profile != kH264Profile) {
       continue;

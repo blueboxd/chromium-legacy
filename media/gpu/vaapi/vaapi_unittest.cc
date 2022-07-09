@@ -41,6 +41,12 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/linux/gbm_defines.h"
 
+#if defined(USE_OZONE) && BUILDFLAG(IS_LINUX)
+// GN doesn't understand conditional includes, so we need nogncheck here.
+// See crbug.com/1125897.
+#include "ui/ozone/public/ozone_platform.h"  // nogncheck
+#endif
+
 namespace media {
 namespace {
 
@@ -285,84 +291,6 @@ std::string GetVaInfo(std::vector<std::string> argv) {
   return output;
 }
 
-int PictureBoundToInt(std::string picture_bound) {
-  const std::vector<std::string> split_bound = base::SplitString(
-      picture_bound, ":", base::WhitespaceHandling::TRIM_WHITESPACE,
-      base::SplitResult::SPLIT_WANT_ALL);
-  if (split_bound.size() != 2) {
-    LOG(ERROR) << "Unexpected picture bound line: " << picture_bound;
-    return -1;
-  }
-  const std::string bound = split_bound[1];
-  return atoi(bound.c_str());
-}
-
-bool isIntelDriver() {
-  const auto implementation = VaapiWrapper::GetImplementationType();
-  return implementation == VAImplementation::kIntelI965 ||
-         implementation == VAImplementation::kIntelIHD;
-}
-
-// Returns a map of strings of the form "VAProfileInfo/VAEntrypoint" to a map,
-// which itself maps Bitrate::Mode to the gfx::Size resolution supported for
-// that mode.
-std::map<std::string, std::map<Bitrate::Mode, gfx::Size>> ParseVerboseVainfo(
-    const std::string& output) {
-  const std::vector<std::string> lines =
-      base::SplitString(output, "\n", base::WhitespaceHandling::TRIM_WHITESPACE,
-                        base::SplitResult::SPLIT_WANT_ALL);
-  std::map<std::string, std::map<Bitrate::Mode, gfx::Size>> info;
-  std::string current_profile = "";
-  std::vector<Bitrate::Mode> supported_modes;
-  gfx::Size resolution;
-  bool current_attrib_rate_control = false;
-  for (const std::string& line : lines) {
-    if (base::StartsWith(line, "VAProfile",
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      current_profile = line;
-      // Reset tracking.
-      supported_modes = {};
-      resolution = gfx::Size();
-      current_attrib_rate_control = false;
-      continue;
-    }
-
-    if (base::StartsWith(line, "VAConfigAttrib")) {
-      if (base::StartsWith(line, "VAConfigAttribRateControl"))
-        current_attrib_rate_control = true;
-      else
-        current_attrib_rate_control = false;
-    }
-
-    if (current_attrib_rate_control) {
-      const std::vector<std::string> split_line =
-          base::SplitString(line, base::kWhitespaceASCII,
-                            base::WhitespaceHandling::TRIM_WHITESPACE,
-                            base::SplitResult::SPLIT_WANT_ALL);
-      for (const std::string& part : split_line) {
-        if (part == "VA_RC_CBR")
-          supported_modes.push_back(Bitrate::Mode::kConstant);
-        else if (part == "VA_RC_VBR")
-          supported_modes.push_back(Bitrate::Mode::kVariable);
-      }
-    }
-
-    // TODO(https://github.com/intel/libva/issues/603): Also check minimum
-    // resolution.
-    if (base::StartsWith(line, "VAConfigAttribMaxPicture")) {
-      if (base::StartsWith(line, "VAConfigAttribMaxPictureWidth"))
-        resolution.set_width(PictureBoundToInt(line));
-      if (base::StartsWith(line, "VAConfigAttribMaxPictureHeight"))
-        resolution.set_height(PictureBoundToInt(line));
-
-      for (auto const& mode : supported_modes) {
-        info[current_profile][mode] = resolution;
-      }
-    }
-  }
-  return info;
-}
-
 std::map<VAProfile, std::vector<VAEntrypoint>> RetrieveVAInfoOutput() {
   std::vector<std::string> argv = {"vainfo"};
   std::string output = GetVaInfo(argv);
@@ -419,29 +347,52 @@ TEST_F(VaapiTest, GetSupportedEncodeProfiles) {
   }
 }
 
-// Verifies that the resolutions of profiles for VBR and CBR are the same as
-// reported by vainfo.
+// Verifies that the resolutions of profiles for VBR and CBR are the same.
 TEST_F(VaapiTest, VbrAndCbrResolutionsMatch) {
-  // TODO(crbug.com/1334880): make a test that works on all platforms
-  if (!isIntelDriver()) {
-    GTEST_SKIP()
-        << "Non-Intel drivers do not output resolution in vainfo -a; skipping";
+  struct ResolutionInfo {
+    VaapiWrapper::CodecMode mode;
+    gfx::Size min;
+    gfx::Size max;
+  };
+  std::map<VAProfile, std::vector<ResolutionInfo>> supported_resolutions;
+  for (const VaapiWrapper::CodecMode codec_mode :
+       {VaapiWrapper::kEncodeConstantBitrate,
+        VaapiWrapper::kEncodeConstantQuantizationParameter,
+        VaapiWrapper::kEncodeVariableBitrate}) {
+    const std::map<VAProfile, std::vector<VAEntrypoint>> configurations =
+        VaapiWrapper::GetSupportedConfigurationsForCodecModeForTesting(
+            codec_mode);
+    for (const auto& configuration : configurations) {
+      const VAProfile va_profile = configuration.first;
+      ResolutionInfo res_info{.mode = codec_mode};
+      ASSERT_TRUE(VaapiWrapper::GetSupportedResolutions(
+          va_profile, codec_mode, res_info.min, res_info.max))
+          << " Failed get resolutions: "
+          << "profile=" << va_profile << ", mode=" << codec_mode;
+
+      supported_resolutions[va_profile].push_back(res_info);
+    }
   }
 
-  std::vector<std::string> argv = {"vainfo", "-a"};
-  std::string output = GetVaInfo(argv);
+  for (const auto& r : supported_resolutions) {
+    const VAProfile va_profile = r.first;
+    const auto& resolution_info = r.second;
 
-  const auto resolution_map = ParseVerboseVainfo(output);
-
-  for (const auto& resolution_info : resolution_map) {
-    const std::string profile_and_entrypoint = resolution_info.first;
-    const std::map<Bitrate::Mode, gfx::Size>& mode_and_resolution =
-        resolution_info.second;
-    if (mode_and_resolution.count(Bitrate::Mode::kConstant) == 1 &&
-        mode_and_resolution.count(Bitrate::Mode::kVariable) == 1) {
-      EXPECT_EQ(mode_and_resolution.at(Bitrate::Mode::kConstant),
-                mode_and_resolution.at(Bitrate::Mode::kVariable))
-          << "Resolution mismatch for " << profile_and_entrypoint;
+    for (size_t i = 0; i < resolution_info.size(); ++i) {
+      for (size_t j = i + 1; j < resolution_info.size(); ++j) {
+        EXPECT_EQ(resolution_info[i].min, resolution_info[j].min)
+            << " Minimum supported resolution mismatch for profile="
+            << VAProfileToString(va_profile) << ": " << resolution_info[i].mode
+            << " (" << resolution_info[i].min.ToString() << ") and "
+            << resolution_info[j].mode << " ("
+            << resolution_info[j].min.ToString() << ")";
+        EXPECT_EQ(resolution_info[i].max, resolution_info[j].max)
+            << " Maximum supported resolution mismatch for profile="
+            << VAProfileToString(va_profile) << ": " << resolution_info[i].mode
+            << " (" << resolution_info[i].max.ToString() << ") and "
+            << resolution_info[j].mode << " ("
+            << resolution_info[j].max.ToString() << ")";
+      }
     }
   }
 }
@@ -847,8 +798,19 @@ TEST_P(VaapiMinigbmTest, AllocateAndCompareWithMinigbm) {
     EXPECT_GE(va_descriptor.objects[1].size,
               base::checked_cast<uint32_t>(2 * uv_width * uv_height));
   }
-  const auto expected_drm_modifier =
-      backend == VAImplementation::kIntelIHD ? I915_FORMAT_MOD_Y_TILED : 0x0;
+
+  base::AutoLockMaybe auto_lock(wrapper->va_lock_.get());
+  const std::string va_vendor_string
+         = vaQueryVendorString(wrapper->va_display_);
+  uint64_t expected_drm_modifier = DRM_FORMAT_MOD_LINEAR;
+
+  if (backend == VAImplementation::kIntelIHD) {
+    expected_drm_modifier = I915_FORMAT_MOD_Y_TILED;
+  } else if (backend == VAImplementation::kMesaGallium) {
+    if (va_vendor_string.find("STONEY") != std::string::npos) {
+      expected_drm_modifier = DRM_FORMAT_MOD_INVALID;
+    }
+  }
   EXPECT_EQ(va_descriptor.objects[0].drm_format_modifier,
             expected_drm_modifier);
   // TODO(mcasas): |num_layers| actually depends on |va_descriptor.va_fourcc|.
@@ -975,6 +937,18 @@ int main(int argc, char** argv) {
     // creates a ScopedFeatureList and multiple concurrent ScopedFeatureLists
     // are not allowed.
     auto scoped_feature_list = media::CreateScopedFeatureList();
+
+#if defined(USE_OZONE) && BUILDFLAG(IS_LINUX)
+    // Initialize Ozone so that the VADisplayState can decide if we're running
+    // on top of a platform that can deal with VA-API buffers.
+    // TODO(b/230370976): we may no longer need to initialize Ozone since we
+    // don't use it for buffer allocation.
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForUI(params);
+    ui::OzonePlatform::InitializeForGPU(params);
+#endif
+
     // PreSandboxInitialization() loads and opens the driver, queries its
     // capabilities and fills in the VASupportedProfiles.
     media::VaapiWrapper::PreSandboxInitialization();

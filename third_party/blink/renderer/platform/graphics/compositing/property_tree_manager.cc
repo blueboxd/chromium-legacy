@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 
 #include "build/build_config.h"
+#include "cc/base/features.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/clip_node.h"
@@ -19,7 +20,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -217,14 +217,14 @@ void PropertyTreeManager::DirectlySetScrollOffset(
 
 void PropertyTreeManager::EnsureCompositorScrollNodes(
     const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes) {
-  DCHECK(RuntimeEnabledFeatures::ScrollUnificationEnabled());
+  DCHECK(base::FeatureList::IsEnabled(features::kScrollUnification));
 
   for (auto* node : scroll_translation_nodes)
     EnsureCompositorScrollNode(*node);
 }
 
 void PropertyTreeManager::SetCcScrollNodeIsComposited(int cc_node_id) {
-  DCHECK(RuntimeEnabledFeatures::ScrollUnificationEnabled());
+  DCHECK(base::FeatureList::IsEnabled(features::kScrollUnification));
   scroll_tree_.Node(cc_node_id)->is_composited = true;
 }
 
@@ -263,7 +263,6 @@ void PropertyTreeManager::SetupRootClipNode() {
       clip_tree_.Insert(cc::ClipNode(), cc::kRootPropertyNodeId));
   DCHECK_EQ(clip_node.id, cc::kSecondaryRootPropertyNodeId);
 
-  clip_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   // TODO(bokan): This needs to come from the Visual Viewport which will
   // correctly account for the URL bar. In fact, the visual viewport property
   // tree builder should probably be the one to create the property tree state
@@ -401,7 +400,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
 
   // ScrollUnification creates the entire scroll tree and will already have done
   // this.
-  if (!RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+  if (!base::FeatureList::IsEnabled(features::kScrollUnification)) {
     if (auto* scroll_translation_for_fixed =
             transform_node.ScrollTranslationForFixed()) {
       // Fixed-position can cause different topologies of the transform tree and
@@ -533,7 +532,6 @@ int PropertyTreeManager::EnsureCompositorClipNode(
   compositor_node.clip = clip_node.PaintClipRect().Rect();
   compositor_node.transform_id =
       EnsureCompositorTransformNode(clip_node.LocalTransformSpace().Unalias());
-  compositor_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
 
   clip_node.SetCcNodeId(new_sequence_number_, id);
   clip_tree_.set_needs_update(true);

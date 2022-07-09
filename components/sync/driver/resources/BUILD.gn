@@ -19,19 +19,18 @@ preprocess_if_expr("preprocess_css") {
   ]
 }
 
-#TODO(crbug.com/986001): Migrate the files below to TypeScript.
-preprocessed_files = [ "sync_index.js" ]
+preprocessed_files = [ "sync_index.ts" ]
 non_preprocessed_files = [
-  "about.js",
+  "about.ts",
   "chrome_sync.ts",
-  "data.js",
-  "invalidations.js",
+  "data.ts",
+  "invalidations.ts",
   "search.ts",
-  "sync_log.js",
-  "sync_node_browser.js",
+  "sync_log.ts",
+  "sync_node_browser.ts",
   "sync_search.ts",
-  "traffic_log.js",
-  "user_events.js",
+  "traffic_log.ts",
+  "user_events.ts",
 ]
 
 preprocess_if_expr("preprocess") {
@@ -53,6 +52,7 @@ ts_library("build_ts") {
   definitions = [
     "//tools/typescript/definitions/chrome_send.d.ts",
     "//tools/typescript/definitions/pending.d.ts",
+    "jstemplate.d.ts",
   ]
   deps = [ "//ui/webui/resources:library" ]
   extra_deps = [
@@ -76,10 +76,9 @@ generate_grd("build_grd") {
     "traffic_log.css",
   ]
   input_files_base_dir = rebase_path("./", "//")
-  manifest_files = [
-    "$target_gen_dir/css_manifest.json",
-    "$target_gen_dir/tsconfig.manifest",
-  ]
+  manifest_files =
+      [ "$target_gen_dir/css_manifest.json" ] +
+      filter_include(get_target_outputs(":build_ts"), [ "*.manifest" ])
 }
 
 grit("resources") {

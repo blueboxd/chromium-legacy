@@ -595,6 +595,21 @@ export class FileTable extends Table {
   }
 
   /**
+   * @override
+   */
+  onDataModelSorted() {
+    const fileListModel = /** @type {FileListModel} */ (this.dataModel);
+    const hasGroupHeadingAfterSort = fileListModel.shouldShowGroupHeading();
+    // Sort doesn't trigger redraw sometimes, e.g. if we sort by Name for now,
+    // then we sort by time, if the list order doesn't change, no permuted event
+    // is triggered, thus no redraw is triggered. In this scenario, we need to
+    // manually trigger a redraw to remove/add the group heading.
+    if (hasGroupHeadingAfterSort !== fileListModel.hasGroupHeadingBeforeSort) {
+      this.list.redraw();
+    }
+  }
+
+  /**
    * Updates high priority range of list thumbnail loader based on current
    * viewport.
    *
@@ -1047,8 +1062,8 @@ export class FileTable extends Table {
     const item = this.metadataModel_.getCache(
         [entry], ['modificationTime', 'modificationByMeTime'])[0];
     const modTime = this.useModificationByMeTime_ ?
-        item.modificationByMeTime || item.modificationTime || null :
-        item.modificationTime || null;
+        item.modificationByMeTime || item.modificationTime :
+        item.modificationTime;
 
     div.textContent = this.formatter_.formatModDate(modTime);
   }

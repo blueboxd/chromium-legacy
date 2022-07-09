@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -370,11 +370,10 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, PolicyId) {
             app_url.spec());
   EXPECT_TRUE(mock_app_publisher.get_deltas().back()->policy_id->empty());
 
-  // Set policy to pin the web app.
-  web_app::ExternallyInstalledWebAppPrefs web_app_prefs(
-      browser()->profile()->GetPrefs());
-  web_app_prefs.Insert(install_url, app_id,
-                       web_app::ExternalInstallSource::kExternalPolicy);
+  // Writing to the external prefs to set policy to pin the app.
+  web_app::test::AddInstallUrlData(
+      browser()->profile()->GetPrefs(), &provider().sync_bridge(), app_id,
+      install_url, ExternalInstallSource::kExternalPolicy);
 
   provider().install_manager().NotifyWebAppInstalledWithOsHooks(app_id);
 
@@ -529,10 +528,9 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, LaunchWithFiles) {
   launch_params->intent->files = std::move(files);
 
   // Skip past the permission dialog.
-  web_app::ScopedRegistryUpdate(
-      &web_app::WebAppProvider::GetForTest(profile())->sync_bridge())
+  ScopedRegistryUpdate(&WebAppProvider::GetForTest(profile())->sync_bridge())
       ->UpdateApp(app_id)
-      ->SetFileHandlerApprovalState(web_app::ApiApprovalState::kAllowed);
+      ->SetFileHandlerApprovalState(ApiApprovalState::kAllowed);
 
   lacros_web_apps_controller.Launch(std::move(launch_params),
                                     base::DoNothing());
@@ -601,8 +599,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, GetMenuModel) {
 
   const GURL app_url =
       https_server()->GetURL("/web_app_shortcuts/shortcuts.html");
-  const web_app::AppId app_id =
-      web_app::InstallWebAppFromPage(browser(), app_url);
+  const AppId app_id = InstallWebAppFromPage(browser(), app_url);
   crosapi::mojom::AppController& lacros_web_apps_controller =
       *apps::AppServiceProxyFactory::GetForProfile(profile())
            ->LacrosWebAppsControllerForTesting();
@@ -634,8 +631,7 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest,
                        ExecuteContextMenuCommand) {
   const GURL app_url =
       https_server()->GetURL("/web_app_shortcuts/shortcuts.html");
-  const web_app::AppId app_id =
-      web_app::InstallWebAppFromPage(browser(), app_url);
+  const AppId app_id = InstallWebAppFromPage(browser(), app_url);
   LacrosWebAppsController& lacros_web_apps_controller =
       *apps::AppServiceProxyFactory::GetForProfile(profile())
            ->LacrosWebAppsControllerForTesting();

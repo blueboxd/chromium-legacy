@@ -5,7 +5,7 @@
 
 load("//lib/args.star", "args")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os", "sheriff_rotations")
+load("//lib/builders.star", "builders", "goma", "os", "sheriff_rotations")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
@@ -392,6 +392,8 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 6 * time.hour,
+    free_space = builders.free_space.high,
+    ssd = True,
 )
 
 ci.builder(
@@ -578,7 +580,7 @@ ci.thin_tester(
     ),
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
-    execution_timeout = 12 * time.hour,
+    execution_timeout = 15 * time.hour,
     triggered_by = ["ci/Android arm Builder (dbg)"],
 )
 

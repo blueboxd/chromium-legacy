@@ -96,8 +96,6 @@ static_library("browser") {
     "http_auth_observer.h",
     "http_password_store_migrator.cc",
     "http_password_store_migrator.h",
-    "import/password_importer.cc",
-    "import/password_importer.h",
     "insecure_credentials_helper.cc",
     "insecure_credentials_helper.h",
     "insecure_credentials_table.cc",
@@ -130,6 +128,7 @@ static_library("browser") {
     "password_change_success_tracker.h",
     "password_change_success_tracker_impl.cc",
     "password_change_success_tracker_impl.h",
+    "password_check_referrer_android.h",
     "password_feature_manager.h",
     "password_feature_manager_impl.cc",
     "password_feature_manager_impl.h",
@@ -256,7 +255,6 @@ static_library("browser") {
     "ui/password_check_referrer.h",
     "ui/password_undo_helper.cc",
     "ui/password_undo_helper.h",
-    "ui/plaintext_reason.h",
     "ui/post_save_compromised_helper.cc",
     "ui/post_save_compromised_helper.h",
     "ui/saved_passwords_presenter.cc",
@@ -342,6 +340,8 @@ static_library("browser") {
       "password_store_backend_migration_decorator.h",
       "password_store_proxy_backend.cc",
       "password_store_proxy_backend.h",
+      "unified_password_manager_proto_utils.cc",
+      "unified_password_manager_proto_utils.h",
     ]
     deps += [ ":unified_password_manager_proto" ]
   }
@@ -353,13 +353,18 @@ static_library("browser") {
       "capabilities_service_impl.h",
       "http_credentials_cleaner.cc",
       "http_credentials_cleaner.h",
+      "import/password_importer.cc",
+      "import/password_importer.h",
       "password_scripts_fetcher.h",
       "password_scripts_fetcher_impl.cc",
       "password_scripts_fetcher_impl.h",
       "saved_passwords_capabilities_fetcher.cc",
       "saved_passwords_capabilities_fetcher.h",
     ]
-    deps += [ "//components/autofill_assistant/browser/public" ]
+    deps += [
+      "//components/autofill_assistant/browser/public",
+      "//components/password_manager/services/csv_password:service",
+    ]
   }
 
   if (!is_android && !is_ios) {
@@ -476,6 +481,7 @@ if (is_android) {
     sources = [
       "android_backend_error.h",
       "manage_passwords_referrer.h",
+      "password_check_referrer_android.h",
       "password_manager_metrics_util.h",
       "password_manager_setting.h",
     ]
@@ -545,6 +551,8 @@ static_library("test_support") {
     "mock_password_manager_settings_service.h",
     "mock_password_reuse_manager.cc",
     "mock_password_reuse_manager.h",
+    "mock_password_scripts_fetcher.cc",
+    "mock_password_scripts_fetcher.h",
     "mock_password_store_backend.cc",
     "mock_password_store_backend.h",
     "mock_password_store_interface.cc",
@@ -685,7 +693,6 @@ source_set("unit_tests") {
     "hsts_query_unittest.cc",
     "http_auth_manager_unittest.cc",
     "http_password_store_migrator_unittest.cc",
-    "import/password_importer_unittest.cc",
     "insecure_credentials_helper_unittest.cc",
     "insecure_credentials_table_unittest.cc",
     "leak_detection_delegate_helper_unittest.cc",
@@ -752,6 +759,7 @@ source_set("unit_tests") {
       "password_store_backend_metrics_recorder_unittest.cc",
       "password_store_backend_migration_decorator_unittest.cc",
       "password_store_proxy_backend_unittest.cc",
+      "unified_password_manager_proto_utils_unittest.cc",
     ]
   }
   if (is_ios) {
@@ -760,6 +768,7 @@ source_set("unit_tests") {
     sources += [
       "capabilities_service_impl_unittest.cc",
       "http_credentials_cleaner_unittest.cc",
+      "import/password_importer_unittest.cc",
       "password_scripts_fetcher_impl_unittest.cc",
       "saved_passwords_capabilities_fetcher_unittest.cc",
     ]
@@ -839,6 +848,10 @@ source_set("unit_tests") {
       "//components/autofill_assistant/browser/public:public",
       "//components/autofill_assistant/browser/public:unit_test_support",
     ]
+  }
+
+  if (is_android) {
+    deps += [ "//components/password_manager/core/browser:unified_password_manager_proto" ]
   }
 }
 

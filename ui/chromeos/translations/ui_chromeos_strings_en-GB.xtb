@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul Romaja</translation>
 <translation id="112387589102719461">English (US) with Programmer Dvorak keyboard</translation>
 <translation id="1134697384939541955">English (US) with Extended keyboard</translation>
+<translation id="1138691154716715755">Earlier this month</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> found.
     <ph name="LINE_BREAK1" />
     Not enough space available in local storage. Additional <ph name="FILE_SIZE" /> needed.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, signal strength <ph name="SIGNAL_STRENGTH" />%, blocked by your administrator. Details</translation>
 <translation id="2142680004883808240">Russian with phonetic YaZHert keyboard</translation>
 <translation id="2143778271340628265">Manual proxy configuration</translation>
+<translation id="2148716181193084225">Today</translation>
 <translation id="2163152940313951844">Invalid character: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portuguese with US international PC keyboard</translation>
 <translation id="2198315389084035571">Simplified Chinese</translation>
@@ -181,7 +183,6 @@
 <translation id="2541377937973966830">The contents of this folder are read-only. Some activities are not supported.</translation>
 <translation id="2542049655219295786">Google table</translation>
 <translation id="2544853746127077729">Authentication certificate rejected by network</translation>
-<translation id="2547921442987553570">Add to <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">US international</translation>
 <translation id="2563185590376525700">Frog</translation>
 <translation id="2578394532502990878">Tamil phonetic</translation>
@@ -233,7 +234,6 @@
 <translation id="3047197340186497470">Chinese Dayi</translation>
 <translation id="3057861065630527966">Backup your photos and videos</translation>
 <translation id="3067790092342515856">Windows files</translation>
-<translation id="3078461028045006476">Share with <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebits</translation>
 <translation id="3085752524577180175">SOCKS Host</translation>
 <translation id="3104793765551262433">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, blocked by your administrator, details</translation>
@@ -330,7 +330,6 @@
 <translation id="385051799172605136">Back</translation>
 <translation id="3855472144336161447">German Neo 2</translation>
 <translation id="3858860766373142691">Name</translation>
-<translation id="386548886866354912">Pack with <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3899991606604168269">French (Canada) with multilingual keyboard</translation>
 <translation id="3901991538546252627">Connecting to <ph name="NAME" /></translation>
@@ -343,6 +342,7 @@
 <translation id="3971140002794351170">Download mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">English (UK)</translation>
 <translation id="3975895378829046965">Bangla phonetic</translation>
+<translation id="3991446849494482687">This will also disable the SIM lock setting on the device.</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4017788180641807848">English (US) with Workman keyboard</translation>
 <translation id="4040753847560036377">Incorrect PUK</translation>
@@ -379,6 +379,7 @@
 <translation id="4380245540200674032">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, managed by your administrator, details</translation>
 <translation id="4387004326333427325">Authentication certificate rejected remotely</translation>
 <translation id="4394214039309501350">External link</translation>
+<translation id="4394980935660306080">Earlier this week</translation>
 <translation id="4401287888955153199">Extract all</translation>
 <translation id="4410695710508688828">Extract operation failed. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Create a shortcut for your files</translation>
@@ -422,6 +423,7 @@
 <translation id="4712283082407695269">Opening '<ph name="PATH" />'</translation>
 <translation id="4720185134442950733">Mobile data network</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> photos backed up</translation>
+<translation id="4725096204469550614">Earlier this year</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4737050008115666127">Landing</translation>
 <translation id="4747271164117300400">Macedonian</translation>
@@ -471,6 +473,7 @@
 <translation id="508423945471810158">Moving <ph name="NUMBER_OF_ITEMS" /> items to <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">An error occurred.</translation>
 <translation id="5098629044894065541">Hebrew</translation>
+<translation id="5102922915594634436">Manage synced folders</translation>
 <translation id="5109254780565519649">An error occurred. Some items may not have been restored.</translation>
 <translation id="5110329002213341433">English (Canada)</translation>
 <translation id="5123433949759960244">Basketball</translation>
@@ -604,7 +607,6 @@
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6170470584681422115">Sandwich</translation>
 <translation id="6187719147498869044">Hungarian</translation>
-<translation id="6189412234224385711">Open with <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Change PIN</translation>
 <translation id="6199801702437275229">Waiting for space info...</translation>
 <translation id="6205710420833115353">Some operations are taking longer than expected. Do you want to abort them?</translation>
@@ -708,6 +710,7 @@
 <translation id="7075931588889865715">Thai with TIS 820-2531 keyboard</translation>
 <translation id="708278670402572152">Disconnect to enable scanning</translation>
 <translation id="7086590977277044826">Tamil with InScript keyboard</translation>
+<translation id="7088615885725309056">Older</translation>
 <translation id="7103992300314999525">Macedonian</translation>
 <translation id="7106346894903675391">Buy more storage...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;search Drive&lt;/em&gt;</translation>
@@ -772,6 +775,7 @@
 <translation id="7663224033570512922">Hindi</translation>
 <translation id="7693909743393669729">Formatting a drive will erase all data stored on it and remove all existing partitions, including partitions that may not be visible. This action cannot be undone.</translation>
 <translation id="7695430100978772476">Could not format <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">Failed to empty the bin.</translation>
 <translation id="770015031906360009">Greek</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> copied.</translation>
 <translation id="7711920809702896782">Image info</translation>
@@ -782,6 +786,7 @@
 <translation id="7760449188139285140">Chinese Wubi</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7774365994322694683">Bird</translation>
+<translation id="7781829728241885113">Yesterday</translation>
 <translation id="7788080748068240085">To save "<ph name="FILE_NAME" />" offline you must free up an additional <ph name="TOTAL_FILE_SIZE" /> of space:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />unpin files that you no longer need to access offline<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />delete files from your Downloads folder<ph name="MARKUP_5" /></translation>

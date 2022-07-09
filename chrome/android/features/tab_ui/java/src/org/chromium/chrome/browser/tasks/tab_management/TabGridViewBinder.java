@@ -28,6 +28,7 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -212,32 +213,45 @@ class TabGridViewBinder {
                 pageInfoButton.getPrimaryTextView().setText(query);
             }
         } else if (TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER == propertyKey) {
-            PriceCardView priceCardView =
-                    (PriceCardView) view.fastFindViewById(R.id.price_info_box_outer);
-            if (model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER) != null) {
-                model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER)
-                        .fetch((shoppingPersistedTabData) -> {
-                            if (shoppingPersistedTabData == null
-                                    || shoppingPersistedTabData.getPriceDrop() == null) {
-                                priceCardView.setVisibility(View.GONE);
+            fetchPriceDrop(model, (priceDrop) -> {
+                PriceCardView priceCardView =
+                        (PriceCardView) view.fastFindViewById(R.id.price_info_box_outer);
+                if (priceDrop == null) {
+                    priceCardView.setVisibility(View.GONE);
+                    return;
+                }
+                priceCardView.setPriceStrings(priceDrop.price, priceDrop.previousPrice);
+                priceCardView.setVisibility(View.VISIBLE);
+                priceCardView.setContentDescription(
+                        view.getResources().getString(R.string.accessibility_tab_price_card,
+                                priceDrop.previousPrice, priceDrop.price));
+            }, true);
+        } else if (TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER == propertyKey) {
+            CouponCardView couponCardView =
+                    (CouponCardView) view.fastFindViewById(R.id.coupon_info_box_outer);
+            if (model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER) == null) {
+                couponCardView.setVisibility(View.GONE);
+                return;
+            }
+            fetchPriceDrop(model, (priceDrop) -> {
+                if (priceDrop != null) {
+                    couponCardView.setVisibility(View.GONE);
+                    return;
+                }
+                model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER)
+                        .fetch((couponPersistedTabData) -> {
+                            // TODO(crbug.com/1337117): add logging for when
+                            // couponPersistedTabData is not null
+                            if (couponPersistedTabData == null
+                                    || couponPersistedTabData.getCoupon() == null) {
+                                couponCardView.setVisibility(View.GONE);
                             } else {
-                                priceCardView.setPriceStrings(
-                                        shoppingPersistedTabData.getPriceDrop().price,
-                                        shoppingPersistedTabData.getPriceDrop().previousPrice);
-                                priceCardView.setVisibility(View.VISIBLE);
-                                priceCardView.setContentDescription(view.getResources().getString(
-                                        R.string.accessibility_tab_price_card,
-                                        shoppingPersistedTabData.getPriceDrop().previousPrice,
-                                        shoppingPersistedTabData.getPriceDrop().price));
-                            }
-                            if (shoppingPersistedTabData != null) {
-                                shoppingPersistedTabData.logPriceDropMetrics(
-                                        SHOPPING_METRICS_IDENTIFIER);
+                                couponCardView.setCouponString(
+                                        couponPersistedTabData.getCoupon().couponName);
+                                couponCardView.setVisibility(View.VISIBLE);
                             }
                         });
-            } else {
-                priceCardView.setVisibility(View.GONE);
-            }
+            }, false);
         } else if (TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER == propertyKey) {
             StoreHoursCardView storeHoursCardView =
                     (StoreHoursCardView) view.fastFindViewById(R.id.store_hours_box_outer);
@@ -324,6 +338,25 @@ class TabGridViewBinder {
         }
     }
 
+    private static void fetchPriceDrop(PropertyModel model,
+            Callback<ShoppingPersistedTabData.PriceDrop> callback, boolean shouldLog) {
+        if (model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER) == null) {
+            callback.onResult(null);
+            return;
+        }
+        model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER)
+                .fetch((shoppingPersistedTabData) -> {
+                    if (shoppingPersistedTabData == null) {
+                        callback.onResult(null);
+                        return;
+                    }
+                    if (shouldLog) {
+                        shoppingPersistedTabData.logPriceDropMetrics(SHOPPING_METRICS_IDENTIFIER);
+                    }
+                    callback.onResult(shoppingPersistedTabData.getPriceDrop());
+                });
+    }
+
     private static void updateThumbnail(ViewLookupCachingFrameLayout view, PropertyModel model) {
         TabListMediator.ThumbnailFetcher fetcher = model.get(TabProperties.THUMBNAIL_FETCHER);
         TabGridThumbnailView thumbnail =
@@ -337,13 +370,15 @@ class TabGridViewBinder {
         thumbnail.setColorThumbnailPlaceHolder(
                 model.get(TabProperties.IS_INCOGNITO), model.get(TabProperties.IS_SELECTED));
 
+        final Size thumbnailSize =
+                TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(view.getContext())
+                ? TabUtils.deriveThumbnailSize(model.get(TabProperties.GRID_CARD_WIDTH),
+                        model.get(TabProperties.GRID_CARD_HEIGHT), view.getContext())
+                : null;
         Callback<Bitmap> callback = result -> {
             if (result != null) {
                 if (TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(view.getContext())) {
                     // Adjust bitmap to thumbnail.
-                    final Size thumbnailSize =
-                            TabUtils.deriveThumbnailSize(model.get(TabProperties.GRID_CARD_WIDTH),
-                                    model.get(TabProperties.GRID_CARD_HEIGHT), view.getContext());
                     updateThumbnailMatrix(thumbnail, result, thumbnailSize);
                 } else {
                     thumbnail.setScaleType(ScaleType.FIT_CENTER);
@@ -353,9 +388,9 @@ class TabGridViewBinder {
             }
         };
         if (TabUiFeatureUtilities.isLaunchPolishEnabled() && sThumbnailFetcherForTesting != null) {
-            sThumbnailFetcherForTesting.fetch(callback);
+            sThumbnailFetcherForTesting.fetch(callback, thumbnailSize);
         } else {
-            fetcher.fetch(callback);
+            fetcher.fetch(callback, thumbnailSize);
         }
     }
 

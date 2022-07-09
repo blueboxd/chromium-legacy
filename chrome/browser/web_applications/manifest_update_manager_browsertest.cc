@@ -33,6 +33,7 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -45,7 +46,6 @@
 #include "chrome/browser/web_applications/manifest_update_task.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
-#include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_sync_test_utils.h"
@@ -80,6 +80,7 @@
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -93,7 +94,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/manifest/handle_links.mojom-shared.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
@@ -323,8 +323,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     // Cannot construct RunLoop in constructor due to threading restrictions.
     shortcut_run_loop_.emplace();
-    web_app::test::WaitUntilReady(
-        web_app::WebAppProvider::GetForTest(browser()->profile()));
+    test::WaitUntilReady(WebAppProvider::GetForTest(browser()->profile()));
   }
 
   void OnShortcutInfoRetrieved(std::unique_ptr<ShortcutInfo> shortcut_info) {
@@ -348,7 +347,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     // The Mac code in generating these icons doesn't write a size 48 icon. See
     // chrome/browser/web_applications/web_app_icon_generator.h's
     // `kInstallIconSize`. Skip it.
-    if (size == web_app::icon_size::k48)
+    if (size == icon_size::k48)
       return false;
     return os == kMac || os == kNotWin || os == kAll;
 #else
@@ -788,8 +787,15 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpToDate, 1);
 }
 
+// TODO(crbug.com/1342625): Test is flaky.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_CheckNameUpdatesForDefaultApps \
+  DISABLED_CheckNameUpdatesForDefaultApps
+#else
+#define MAYBE_CheckNameUpdatesForDefaultApps CheckNameUpdatesForDefaultApps
+#endif
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
-                       CheckNameUpdatesForDefaultApps) {
+                       MAYBE_CheckNameUpdatesForDefaultApps) {
   constexpr char kManifestTemplate[] = R"(
     {
       "name": "$1",
@@ -1283,8 +1289,16 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_UpdateDialog,
             http_server_.GetURL("/"));
 }
 
+// TODO(crbug.com/1342625): Test is flaky.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_CheckDoesApplyIconURLChangeForDefaultApps \
+  DISABLED_CheckDoesApplyIconURLChangeForDefaultApps
+#else
+#define MAYBE_CheckDoesApplyIconURLChangeForDefaultApps \
+  CheckDoesApplyIconURLChangeForDefaultApps
+#endif
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
-                       CheckDoesApplyIconURLChangeForDefaultApps) {
+                       MAYBE_CheckDoesApplyIconURLChangeForDefaultApps) {
   // This test changes the scope and also the icon list. The scope should update
   // along with the icons.
   constexpr char kManifestTemplate[] = R"(
@@ -1868,44 +1882,6 @@ INSTANTIATE_TEST_SUITE_P(
                       UpdateDialogParam::kDisabled),
     ManifestUpdateManagerBrowserTest_UpdateDialog::ParamToString);
 
-class ManifestUpdateManagerHandleLinksBrowserTest
-    : public ManifestUpdateManagerBrowserTest {
-  base::test::ScopedFeatureList scoped_feature_list_{
-      blink::features::kWebAppEnableHandleLinks};
-};
-
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerHandleLinksBrowserTest,
-                       CheckFindsHandleLinksChange) {
-  constexpr char kManifestTemplate[] = R"(
-    {
-      "name": "Test app name",
-      "start_url": ".",
-      "scope": "/",
-      "display": "standalone",
-      "icons": $1,
-      "handle_links": "$2"
-    }
-  )";
-  OverrideManifest(kManifestTemplate, {kInstallableIconList, "auto"});
-  AppId app_id = InstallWebApp();
-  EXPECT_EQ(GetProvider().registrar().GetAppHandleLinks(app_id),
-            blink::mojom::HandleLinks::kAuto);
-
-  OverrideManifest(kManifestTemplate, {kInstallableIconList, "preferred"});
-  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL()),
-            ManifestUpdateResult::kAppUpdated);
-  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
-                                      ManifestUpdateResult::kAppUpdated, 1);
-  ConfirmShortcutColors(app_id, {{{32, kAll}, kInstallableIconTopLeftColor},
-                                 {{48, kAll}, kInstallableIconTopLeftColor},
-                                 {{64, kWin}, kInstallableIconTopLeftColor},
-                                 {{96, kWin}, kInstallableIconTopLeftColor},
-                                 {{128, kAll}, kInstallableIconTopLeftColor},
-                                 {{256, kAll}, kInstallableIconTopLeftColor}});
-  EXPECT_EQ(GetProvider().registrar().GetAppHandleLinks(app_id),
-            blink::mojom::HandleLinks::kPreferred);
-}
-
 class ManifestUpdateManagerLaunchHandlerBrowserTest
     : public ManifestUpdateManagerBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_{
@@ -1952,21 +1928,18 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerLaunchHandlerBrowserTest,
             (LaunchHandler{LaunchHandler::RouteTo::kExistingClientNavigate}));
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class ManifestUpdateManagerSystemAppBrowserTest
     : public ManifestUpdateManagerBrowserTest {
  public:
   ManifestUpdateManagerSystemAppBrowserTest()
-      : system_app_(
-            TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp()) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    EnableSystemWebAppsInLacrosForTesting();
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-  }
+      : system_app_(ash::TestSystemWebAppInstallation::
+                        SetUpStandaloneSingleWindowApp()) {}
 
   void SetUpOnMainThread() override { system_app_->WaitForAppInstall(); }
 
  protected:
-  std::unique_ptr<TestSystemWebAppInstallation> system_app_;
+  std::unique_ptr<ash::TestSystemWebAppInstallation> system_app_;
 };
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerSystemAppBrowserTest,
@@ -1979,6 +1952,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerSystemAppBrowserTest,
       kUpdateHistogramName, ManifestUpdateResult::kAppIsSystemWebApp, 1);
   EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorGREEN);
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using ManifestUpdateManagerWebAppsBrowserTest =
     ManifestUpdateManagerBrowserTest;
@@ -3477,8 +3451,13 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
 
 class ManifestUpdateManagerBrowserTest_LockScreen
     : public ManifestUpdateManagerBrowserTest {
-  base::test::ScopedFeatureList feature_list_{
-      blink::features::kWebAppManifestLockScreen};
+ public:
+  ManifestUpdateManagerBrowserTest_LockScreen() {
+    feature_list_.InitWithFeatures({features::kWebLockScreenApi,
+                                    blink::features::kWebAppManifestLockScreen},
+                                   /*disabled_features=*/{});
+  }
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_LockScreen,
@@ -4409,9 +4388,10 @@ std::string GenerateColoredIconList(int installability_icon,
   return "\n    [\n" + icon_list + "    ]\n  ";
 }
 
+// Disabled due to test flakiness: https://crbug.com/1341954
 IN_PROC_BROWSER_TEST_P(
     ManifestUpdateManagerBrowserTest_AppIdentityParameterized,
-    CheckCombinations) {
+    DISABLED_CheckCombinations) {
   constexpr char kManifestTemplate[] = R"(
     {
       "name": "$1",

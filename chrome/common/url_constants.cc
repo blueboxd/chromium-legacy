@@ -276,6 +276,9 @@ const char kSyncGoogleDashboardURL[] =
 const char kSyncLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_sign_in";
 
+const char kSigninInterceptManagedDisclaimerLearnMoreURL[] =
+    "https://support.google.com/chrome/a/?p=profile_separation";
+
 #if !BUILDFLAG(IS_ANDROID)
 const char kSyncTrustedVaultOptInURL[] =
     "https://passwords.google.com/encryption/enroll?"

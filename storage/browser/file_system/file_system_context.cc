@@ -125,7 +125,6 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
     // don't have their own permission policies.
     case kFileSystemTypeDragged:
     case kFileSystemTypeForTransientFile:
-    case kFileSystemTypePluginPrivate:
       return FILE_PERMISSION_ALWAYS_DENY;
 
     // Following types only appear as mount_type, and will not be
@@ -205,12 +204,6 @@ FileSystemContext::FileSystemContext(
           env_override_.get())),
       sandbox_backend_(
           std::make_unique<SandboxFileSystemBackend>(sandbox_delegate_.get())),
-      plugin_private_backend_(std::make_unique<PluginPrivateFileSystemBackend>(
-          default_file_task_runner_,
-          partition_path,
-          std::move(special_storage_policy),
-          options,
-          env_override_.get())),
       additional_backends_(std::move(additional_backends)),
       auto_mount_handlers_(auto_mount_handlers),
       external_mount_points_(std::move(external_mount_points)),
@@ -223,7 +216,6 @@ FileSystemContext::FileSystemContext(
           std::make_unique<mojo::Receiver<mojom::QuotaClient>>(
               quota_client_wrapper_.get())) {
   RegisterBackend(sandbox_backend_.get());
-  RegisterBackend(plugin_private_backend_.get());
 
   for (const auto& backend : additional_backends_)
     RegisterBackend(backend.get());
@@ -242,7 +234,6 @@ FileSystemContext::FileSystemContext(
 void FileSystemContext::Initialize() {
   sandbox_backend_->Initialize(this);
   isolated_backend_->Initialize(this);
-  plugin_private_backend_->Initialize(this);
   for (const auto& backend : additional_backends_)
     backend->Initialize(this);
 
@@ -646,18 +637,6 @@ bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
   return !is_incognito_ || !FileSystemContext::IsSandboxFileSystem(url.type());
 }
 
-void FileSystemContext::OpenPluginPrivateFileSystem(
-    const url::Origin& origin,
-    FileSystemType type,
-    const std::string& filesystem_id,
-    const std::string& plugin_id,
-    OpenFileSystemMode mode,
-    StatusCallback callback) {
-  DCHECK(plugin_private_backend_);
-  plugin_private_backend_->OpenPrivateFileSystem(
-      origin, type, filesystem_id, plugin_id, mode, std::move(callback));
-}
-
 FileSystemContext::~FileSystemContext() {
   // TODO(crbug.com/823854) This is a leak. Delete env after the backends have
   // been deleted.
@@ -676,7 +655,7 @@ FileSystemContext::QuotaManagedStorageTypes() {
     // to call GetQuotaUtil() on backends. Unfortunately, the method assumes the
     // backends are initialized.
     if (storage_type == blink::mojom::StorageType::kUnknown ||
-        storage_type == blink::mojom::StorageType::kQuotaNotManaged) {
+        storage_type == blink::mojom::StorageType::kDeprecatedQuotaNotManaged) {
       continue;
     }
 

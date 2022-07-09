@@ -75,7 +75,7 @@ class Beacon : public blink::mojom::PendingBeacon {
   // Browser-side pending beacon constructor. Parameters correspond to the
   // renderer-side PendingBeacon class.
   // API explainer can be found at:
-  // https://github.com/darrenw/docs/blob/main/explainers/beacon_api.md
+  // https://github.com/WICG/unload-beacon/blob/main/README.md
   Beacon(const GURL& url,
          blink::mojom::BeaconMethod method,
          base::TimeDelta timeout,
@@ -90,7 +90,12 @@ class Beacon : public blink::mojom::PendingBeacon {
   // PendingBeaconHost.
   void SendNow() override;
 
-  const GURL& url() const { return url_; }
+  // Returns the beacon's url to send request with.
+  // * If `method_` is GET, the url is constructed from `url_` and
+  //   a query string data=`beacon_data_`, where the latter will be encoded by
+  //   application/x-www-form-urlencoded serializer.
+  // * If `method_` is POST, the url is from `url_`.
+  const GURL GenerateRequestURL() const;
 
  private:
   mojo::Receiver<blink::mojom::PendingBeacon> receiver_;

@@ -36,7 +36,6 @@ import collections
 import json
 import logging
 import optparse
-import os
 import re
 import sys
 import tempfile
@@ -56,7 +55,11 @@ from blinkpy.w3c.wpt_manifest import WPTManifest, MANIFEST_NAME
 from blinkpy.web_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from blinkpy.web_tests.models.test_configuration import TestConfiguration
 from blinkpy.web_tests.models.test_run_results import TestRunException
-from blinkpy.web_tests.models.typ_types import TestExpectations, ResultType
+from blinkpy.web_tests.models.typ_types import (
+    TestExpectations,
+    ResultType,
+    SerializableTypHost,
+)
 from blinkpy.web_tests.port import driver
 from blinkpy.web_tests.port import server_process
 from blinkpy.web_tests.port.factory import PortFactory
@@ -990,7 +993,7 @@ class Port(object):
             ]
             tests_by_dir = defaultdict(list)
             for test in tests + wpt_tests:
-                dirname = os.path.dirname(test) + '/'
+                dirname = self._filesystem.dirname(test) + '/'
                 tests_by_dir[dirname].append(test)
 
             if not self._options.no_virtual_tests:
@@ -1003,7 +1006,10 @@ class Port(object):
         files = []
         for path in paths:
             if self._has_supported_extension_for_all(path):
-                files.append(path)
+                # only append the file when it is in tests_by_dir
+                dirname = self._filesystem.dirname(path) + '/'
+                if path in tests_by_dir.get(dirname, []):
+                    files.append(path)
                 continue
             path = path + '/' if path[-1] != '/' else path
             for key, value in tests_by_dir.items():
@@ -1089,6 +1095,8 @@ class Port(object):
         assert path in self.WPT_DIRS
         # Convert '/' to the platform-specific separator.
         path = self._filesystem.normpath(path)
+        self._filesystem.maybe_make_directory(
+            self._filesystem.join(self.web_tests_dir(), path))
         manifest_path = self._filesystem.join(self.web_tests_dir(), path,
                                               MANIFEST_NAME)
         if not self._filesystem.exists(manifest_path) or self.get_option(
@@ -1490,6 +1498,10 @@ class Port(object):
         """Returns the absolute path to the build directory."""
         return self._build_path()
 
+    @memoized
+    def typ_host(self):
+        return SerializableTypHost()
+
     def setup_test_run(self):
         """Performs port-specific work at the beginning of a test run."""
         # Delete the disk cache if any to ensure a clean test run.
@@ -1834,22 +1846,27 @@ class Port(object):
         full_port_name = self.determine_full_port_name(
             self.host, self._options, self.port_name)
         builder_category = self.get_option('ignore_builder_category', 'layout')
-        factory = BotTestExpectationsFactory(self.host.builders)
-        # FIXME: This only grabs release builder's flakiness data. If we're running debug,
-        # when we should grab the debug builder's data.
-        expectations = factory.expectations_for_port(full_port_name,
-                                                     builder_category)
+        step_names = ['blink_web_tests', 'blink_wpt_tests']
+        retval = {}
+        for step_name in step_names:
+            factory = BotTestExpectationsFactory(self.host.builders, step_name)
+            # FIXME: This only grabs release builder's flakiness data. If we're running debug,
+            # when we should grab the debug builder's data.
+            expectations = factory.expectations_for_port(full_port_name,
+                                                         builder_category)
 
-        if not expectations:
-            return {}
+            if not expectations:
+                continue
 
-        ignore_mode = self.get_option('ignore_flaky_tests')
-        if ignore_mode == 'very-flaky' or ignore_mode == 'maybe-flaky':
-            return expectations.flakes_by_path(ignore_mode == 'very-flaky')
-        if ignore_mode == 'unexpected':
-            return expectations.unexpected_results_by_path()
-        _log.warning("Unexpected ignore mode: '%s'.", ignore_mode)
-        return {}
+            ignore_mode = self.get_option('ignore_flaky_tests')
+            if ignore_mode == 'very-flaky' or ignore_mode == 'maybe-flaky':
+                retval.update(expectations.flakes_by_path(ignore_mode == 'very-flaky'))
+            elif ignore_mode == 'unexpected':
+                retval.update(expectations.unexpected_results_by_path())
+            else:
+                _log.warning("Unexpected ignore mode: '%s'.", ignore_mode)
+
+        return retval
 
     def default_expectations_files(self):
         """Returns a list of paths to expectations files that apply by default.

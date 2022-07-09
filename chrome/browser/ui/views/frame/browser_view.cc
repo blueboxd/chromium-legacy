@@ -894,12 +894,12 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   contents_container_ = AddChildView(std::move(contents_container));
   set_contents_view(contents_container_);
 
-    right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
-    right_aligned_side_panel_separator_ =
-        AddChildView(std::make_unique<ContentsSeparator>());
-    if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-      side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(this);
-    }
+  right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
+  right_aligned_side_panel_separator_ =
+      AddChildView(std::make_unique<ContentsSeparator>());
+  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(this);
+  }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (lens::features::IsLensSidePanelEnabled()) {
@@ -912,12 +912,13 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
 #endif
 
   if (browser_->is_type_normal() && IsSideSearchEnabled(browser_->profile())) {
-    side_search_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
-    left_aligned_side_panel_separator_ =
-        AddChildView(std::make_unique<ContentsSeparator>());
-
-    side_search_controller_ = std::make_unique<SideSearchBrowserController>(
-        side_search_side_panel_, this);
+    if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+      side_search_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
+      left_aligned_side_panel_separator_ =
+          AddChildView(std::make_unique<ContentsSeparator>());
+      side_search_controller_ = std::make_unique<SideSearchBrowserController>(
+          side_search_side_panel_, this);
+    }
   }
 
   // InfoBarContainer needs to be added as a child here for drop-shadow, but
@@ -1165,6 +1166,14 @@ bool BrowserView::GetIsWebAppType() const {
 
 bool BrowserView::GetIsPictureInPictureType() const {
   return browser_->is_type_picture_in_picture();
+}
+
+float BrowserView::GetInitialAspectRatio() const {
+  return browser_->create_params().initial_aspect_ratio;
+}
+
+bool BrowserView::GetLockAspectRatio() const {
+  return browser_->create_params().lock_aspect_ratio;
 }
 
 bool BrowserView::GetTopControlsSlideBehaviorEnabled() const {
@@ -2483,6 +2492,29 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
   return ShowTranslateBubbleResult::SUCCESS;
 }
 
+void BrowserView::ShowPartialTranslateBubble(
+    PartialTranslateBubbleModel::ViewState view_state,
+    const std::string& source_language,
+    const std::string& target_language,
+    const std::u16string& text_selection,
+    translate::TranslateErrors::Type error_type) {
+  // Show the Translate icon and enabled the associated command to show the
+  // Translate UI.
+  ChromeTranslateClient::FromWebContents(GetActiveWebContents())
+      ->GetTranslateManager()
+      ->GetLanguageState()
+      ->SetTranslateEnabled(true);
+
+  TranslateBubbleController::GetOrCreate(GetActiveWebContents())
+      ->ShowPartialTranslateBubble(
+          toolbar_button_provider()->GetAnchorView(
+              PageActionIconType::kTranslate),
+          toolbar_button_provider()->GetPageActionIconView(
+              PageActionIconType::kTranslate),
+          view_state, source_language, target_language, text_selection,
+          error_type);
+}
+
 void BrowserView::ShowOneClickSigninConfirmation(
     const std::u16string& email,
     base::OnceCallback<void(bool)> confirmed_callback) {
@@ -3389,21 +3421,6 @@ void BrowserView::RightAlignedSidePanelWasClosed() {
   }
 }
 
-bool BrowserView::IsSideSearchPanelVisible() const {
-  if (side_search_controller_)
-    return side_search_controller_->GetSidePanelToggledOpen();
-
-  return false;
-}
-
-void BrowserView::MaybeRestoreSideSearchStatePerWindow(
-    const std::map<std::string, std::string>& extra_data) {
-  if (side_search_controller_) {
-    side_search::MaybeRestoreSideSearchWindowState(
-        side_search_controller_.get(), extra_data);
-  }
-}
-
 void BrowserView::RevealTabStripIfNeeded() {
   if (!immersive_mode_controller_->IsEnabled())
     return;
@@ -3495,16 +3512,6 @@ views::CloseRequestResult BrowserView::OnWindowCloseRequested() {
     // down. When the tab strip is empty we'll be called back again.
     frame_->Hide();
     result = views::CloseRequestResult::kCannotClose;
-  }
-
-  // Persist the side search browser controller's window side panel state for
-  // use during session restoration. Since the side panel is closed by default,
-  // we only want to persist the state if the side panel is currently open.
-  if (side_search_controller_ &&
-      side_search_controller_->GetSidePanelToggledOpen()) {
-    side_search::MaybeSaveSideSearchWindowSessionData(
-        GetProfile(), browser()->session_id(),
-        side_search_controller_->GetSidePanelToggledOpen());
   }
 
   browser_->OnWindowClosing();

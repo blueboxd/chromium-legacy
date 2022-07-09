@@ -105,8 +105,8 @@ bool TrieWriter::WriteEntries(const TrieEntries& entries,
 
   ReversedEntries reversed_entries;
   for (auto* const entry : entries) {
-    std::unique_ptr<ReversedEntry> reversed_entry(
-        new ReversedEntry(ReverseName(entry->name()), entry));
+    auto reversed_entry =
+        std::make_unique<ReversedEntry>(ReverseName(entry->name()), entry);
     reversed_entries.push_back(std::move(reversed_entry));
   }
 
@@ -128,8 +128,8 @@ bool TrieWriter::WriteDispatchTables(ReversedEntries::iterator start,
   writer.WriteSize(prefix.size());
 
   if (prefix.size()) {
-    for (size_t i = 0; i < prefix.size(); ++i) {
-      writer.WriteChar(prefix.at(i), huffman_table_, huffman_builder_);
+    for (uint8_t c : prefix) {
+      writer.WriteChar(c, huffman_table_, huffman_builder_);
     }
   }
 

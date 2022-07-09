@@ -177,7 +177,7 @@ bool CopyHashToHashesMapFromHeader(
 
     std::vector<std::string> allowed_spkis;
     for (const auto& j : i.second.GetList()) {
-      allowed_spkis.push_back(std::string());
+      allowed_spkis.emplace_back();
       if (!j.is_string() ||
           !base::Base64Decode(j.GetString(), &allowed_spkis.back())) {
         return false;
@@ -236,7 +236,7 @@ bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
   if (not_after < 0)
     return false;
 
-  scoped_refptr<CRLSet> crl_set(new CRLSet());
+  auto crl_set = base::WrapRefCounted(new CRLSet());
   crl_set->sequence_ = static_cast<uint32_t>(*sequence);
   crl_set->not_after_ = static_cast<uint64_t>(not_after);
   crl_set->crls_.reserve(64);  // Value observed experimentally.
@@ -276,13 +276,13 @@ bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
   // Defines kSPKIBlockList and kKnownInterceptionList
 #include "net/cert/cert_verify_proc_blocklist.inc"
   for (const auto& hash : kSPKIBlockList) {
-    crl_set->blocked_spkis_.push_back(std::string(
-        reinterpret_cast<const char*>(hash), crypto::kSHA256Length));
+    crl_set->blocked_spkis_.emplace_back(reinterpret_cast<const char*>(hash),
+                                         crypto::kSHA256Length);
   }
 
   for (const auto& hash : kKnownInterceptionList) {
-    crl_set->known_interception_spkis_.push_back(std::string(
-        reinterpret_cast<const char*>(hash), crypto::kSHA256Length));
+    crl_set->known_interception_spkis_.emplace_back(
+        reinterpret_cast<const char*>(hash), crypto::kSHA256Length);
   }
 
   // Sort, as these will be std::binary_search()'d.
@@ -435,7 +435,7 @@ scoped_refptr<CRLSet> CRLSet::ForTesting(
     OPENSSL_free(x501_data);
   }
 
-  scoped_refptr<CRLSet> crl_set(new CRLSet);
+  auto crl_set = base::WrapRefCounted(new CRLSet());
   crl_set->sequence_ = 0;
   if (is_expired)
     crl_set->not_after_ = 1;

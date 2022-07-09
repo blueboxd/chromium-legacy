@@ -55,6 +55,9 @@ class WaylandEventSource : public PlatformEventSource,
                            public WaylandZwpPointerGestures::Delegate,
                            public WaylandZwpRelativePointerManager::Delegate {
  public:
+  static void ConvertEventToTarget(const EventTarget* new_target,
+                                   LocatedEvent* event);
+
   WaylandEventSource(wl_display* display,
                      wl_event_queue* event_queue,
                      WaylandWindowManager* window_manager,
@@ -137,6 +140,9 @@ class WaylandEventSource : public PlatformEventSource,
   const WaylandWindow* GetTouchTarget(PointerId id) const override;
   void OnTouchStylusToolChanged(PointerId pointer_id,
                                 EventPointerType pointer_type) override;
+  void OnTouchStylusForceChanged(PointerId pointer_id, float force) override;
+  void OnTouchStylusTiltChanged(PointerId pointer_id,
+                                const gfx::Vector2dF& tilt) override;
 
   // WaylandZwpPointerGesture::Delegate:
   void OnPinchEvent(EventType event_type,
@@ -159,6 +165,7 @@ class WaylandEventSource : public PlatformEventSource,
     PointerFrame& operator=(const PointerFrame&);
     PointerFrame& operator=(PointerFrame&&);
 
+    WaylandWindow* target = nullptr;
     absl::optional<uint32_t> axis_source;
     float dx = 0.0f;
     float dy = 0.0f;
@@ -198,10 +205,16 @@ class WaylandEventSource : public PlatformEventSource,
   PointerDetails PointerDetailsForDispatching() const;
 
   // For touch events.
-  PointerDetails PointerDetailsForDispatching(PointerId pointer_id) const;
+  absl::optional<PointerDetails> AmendStylusData(PointerId pointer_id) const;
 
   // Wrap up method to support async touch release processing.
   void OnTouchReleaseInternal(PointerId id);
+
+  // Set the target to the event, then dispatch the event.
+  void SetTargetAndDispatchEvent(Event* event, EventTarget* target);
+
+  // Find and set the target for the touch event, then dispatch the event.
+  void SetTouchTargetAndDispatchTouchEvent(TouchEvent* event);
 
   const raw_ptr<WaylandWindowManager> window_manager_;
 
@@ -232,9 +245,12 @@ class WaylandEventSource : public PlatformEventSource,
   absl::optional<EventPointerType> last_pointer_stylus_tool_;
 
   // Last known touch stylus type (eg touch, pen or eraser).
-  // absl::optional<PointerId, EventPointerType> last_touch_stylus_tool_;
-  base::flat_map<PointerId, absl::optional<EventPointerType>>
-      last_touch_stylus_tool_;
+  struct StylusData {
+    EventPointerType type = EventPointerType::kUnknown;
+    gfx::Vector2dF tilt;
+    float force = std::numeric_limits<float>::quiet_NaN();
+  };
+  base::flat_map<PointerId, absl::optional<StylusData>> last_touch_stylus_data_;
 
   // Recent pointer frames to compute fling scroll.
   // Front is newer, and back is older.

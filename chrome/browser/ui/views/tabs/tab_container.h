@@ -27,7 +27,7 @@
 
 class TabStrip;
 class TabHoverCardController;
-class TabDragContext;
+class TabDragContextBase;
 
 // A View that contains a sequence of Tabs for the TabStrip.
 class TabContainer : public views::View,
@@ -40,7 +40,7 @@ class TabContainer : public views::View,
 
   TabContainer(TabStripController* controller,
                TabHoverCardController* hover_card_controller,
-               TabDragContext* drag_context,
+               TabDragContextBase* drag_context,
                TabSlotController* tab_slot_controller,
                views::View* scroll_contents_view);
   ~TabContainer() override;
@@ -53,6 +53,8 @@ class TabContainer : public views::View,
   void RemoveTab(int index, bool was_active);
   void SetTabPinned(int model_index, TabPinned pinned);
 
+  void StoppedDraggingView(TabSlotView* view);
+
   void ScrollTabToVisible(int model_index);
 
   void OnGroupCreated(const tab_groups::TabGroupId& group);
@@ -60,6 +62,7 @@ class TabContainer : public views::View,
   // action to create the |group|.
   void OnGroupEditorOpened(const tab_groups::TabGroupId& group);
   void OnGroupMoved(const tab_groups::TabGroupId& group);
+  void OnGroupContentsChanged(const tab_groups::TabGroupId& group);
   void OnGroupClosed(const tab_groups::TabGroupId& group);
   void UpdateTabGroupVisuals(tab_groups::TabGroupId group_id);
 
@@ -94,17 +97,18 @@ class TabContainer : public views::View,
   // (cough TabDragController cough) moves tabs directly.
   void InvalidateIdealBounds();
 
-  // Stops any ongoing animations. If |layout| is true and an animation is
-  // ongoing this does a layout.
-  void StopAnimating(bool layout);
+  // Returns true if any tabs are being animated, whether by |this| or by
+  // |drag_context_|.
+  bool IsAnimating() const;
 
-  // Invoked from Layout if the size changes or layout is really needed.
+  // Stops any ongoing animations, leaving tabs where they are.
+  void CancelAnimation();
+
+  // Stops any ongoing animations and forces a layout.
   void CompleteAnimationAndLayout();
 
   // Returns the total width available for the TabContainer's use.
   int GetAvailableWidthForTabContainer() const;
-
-  void StartResetDragAnimation(int tab_model_index);
 
   // See |in_tab_close_| for details on tab closing mode. |source| is the input
   // method used to enter tab closing mode, which determines how it is exited
@@ -200,9 +204,6 @@ class TabContainer : public views::View,
 
   class RemoveTabDelegate;
 
-  // Invoked prior to starting a new animation.
-  void PrepareForAnimation();
-
   // Generates and sets the ideal bounds for each of the tabs as well as the new
   // tab button. Note: Does not animate the tabs to those bounds so callers can
   // use this information for other purposes - see AnimateToIdealBounds.
@@ -212,6 +213,10 @@ class TabContainer : public views::View,
   // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
   // currently set in ideal_bounds.
   void AnimateToIdealBounds();
+
+  // Animates |tab_slot_view| to |target_bounds|
+  void AnimateTabSlotViewTo(TabSlotView* tab_slot_view,
+                            const gfx::Rect& target_bounds);
 
   // Teleports the tabs to their ideal bounds.
   // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
@@ -227,6 +232,10 @@ class TabContainer : public views::View,
   void StartInsertTabAnimation(int model_index);
 
   void StartRemoveTabAnimation(Tab* tab, int former_model_index);
+
+  // Computes the bounds that `tab` should animate towards as it closes.
+  gfx::Rect GetTargetBoundsForClosingTab(Tab* tab,
+                                         int former_model_index) const;
 
   // Remove the tab from |tabs_view_model_|, but *not* from the View hierarchy,
   // so it can be animated closed.
@@ -314,7 +323,7 @@ class TabContainer : public views::View,
   raw_ptr<TabHoverCardController> hover_card_controller_;
 
   // May be nullptr in tests.
-  raw_ptr<TabDragContext> drag_context_;
+  raw_ptr<TabDragContextBase> drag_context_;
 
   raw_ptr<TabSlotController> tab_slot_controller_;
 

@@ -5,10 +5,10 @@
 #include "chrome/browser/navigation_predictor/anchor_element_preloader.h"
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
-#include "chrome/browser/chrome_preloading.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
+#include "chrome/browser/preloading/chrome_preloading.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/preloading.h"
 #include "content/public/browser/preloading_data.h"
@@ -28,10 +28,15 @@ bool is_match_for_preconnect(const url::SchemeHostPort& preconnected_origin,
 const char kPreloadingAnchorElementPreloaderPreloadingTriggered[] =
     "Preloading.AnchorElementPreloader.PreloadingTriggered";
 
+content::PreloadingFailureReason ToFailureReason(
+    AnchorPreloadingFailureReason reason) {
+  return static_cast<content::PreloadingFailureReason>(reason);
+}
+
 AnchorElementPreloader::~AnchorElementPreloader() = default;
 
 AnchorElementPreloader::AnchorElementPreloader(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     mojo::PendingReceiver<blink::mojom::AnchorElementInteractionHost> receiver)
     : content::DocumentService<blink::mojom::AnchorElementInteractionHost>(
           render_frame_host,
@@ -41,15 +46,16 @@ void AnchorElementPreloader::Create(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::AnchorElementInteractionHost>
         receiver) {
+  CHECK(render_frame_host);
   // The object is bound to the lifetime of the |render_frame_host| and the mojo
   // connection. See DocumentService for details.
-  new AnchorElementPreloader(render_frame_host, std::move(receiver));
+  new AnchorElementPreloader(*render_frame_host, std::move(receiver));
 }
 
 void AnchorElementPreloader::OnPointerDown(const GURL& target) {
   content::PreloadingData* preloading_data =
       content::PreloadingData::GetOrCreateForWebContents(
-          content::WebContents::FromRenderFrameHost(render_frame_host()));
+          content::WebContents::FromRenderFrameHost(&render_frame_host()));
   url::SchemeHostPort scheme_host_port(target);
   content::PreloadingURLMatchCallback match_callback =
       base::BindRepeating(is_match_for_preconnect, scheme_host_port);
@@ -65,7 +71,7 @@ void AnchorElementPreloader::OnPointerDown(const GURL& target) {
       content::PreloadingType::kPreconnect, match_callback);
 
   if (!prefetch::IsSomePreloadingEnabled(
-          *Profile::FromBrowserContext(render_frame_host()->GetBrowserContext())
+          *Profile::FromBrowserContext(render_frame_host().GetBrowserContext())
                ->GetPrefs())) {
     attempt->SetEligibility(
         content::PreloadingEligibility::kPreloadingDisabled);
@@ -73,7 +79,7 @@ void AnchorElementPreloader::OnPointerDown(const GURL& target) {
   }
 
   auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
-      Profile::FromBrowserContext(render_frame_host()->GetBrowserContext()));
+      Profile::FromBrowserContext(render_frame_host().GetBrowserContext()));
   if (!loading_predictor) {
     attempt->SetEligibility(ToPreloadingEligibility(
         ChromePreloadingEligibility::kUnableToGetLoadingPredictor));
@@ -96,6 +102,16 @@ void AnchorElementPreloader::OnPointerDown(const GURL& target) {
     // We've already preconnected to that origin.
     attempt->SetTriggeringOutcome(
         content::PreloadingTriggeringOutcome::kDuplicate);
+    return;
+  }
+  int max_preloading_attempts = base::GetFieldTrialParamByFeatureAsInt(
+      blink::features::kAnchorElementInteraction, "max_preloading_attempts",
+      -1);
+  if (max_preloading_attempts >= 0 &&
+      preconnected_targets_.size() >=
+          static_cast<size_t>(max_preloading_attempts)) {
+    attempt->SetFailureReason(
+        ToFailureReason(AnchorPreloadingFailureReason::kLimitExceeded));
     return;
   }
   preconnected_targets_.insert(scheme_host_port);

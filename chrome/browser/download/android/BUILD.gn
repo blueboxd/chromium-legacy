@@ -48,7 +48,6 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogChoice.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogController.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogCoordinator.java",
-    "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogHelper.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogProperties.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogView.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLocationCustomView.java",
@@ -196,7 +195,6 @@ robolectric_library("junit_tests") {
     "java/src/org/chromium/chrome/browser/download/DownloadLaterMetricsUnitTest.java",
     "java/src/org/chromium/chrome/browser/download/DownloadLocationDialogMetricsUnitTest.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadDialogUtilsUnitTest.java",
-    "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogHelperUnitTest.java",
   ]
 
   deps = [
@@ -219,6 +217,7 @@ robolectric_library("junit_tests") {
 
 android_resources("java_resources") {
   sources = [
+    "java/res/drawable/ic_incognito_download_message.xml",
     "java/res/drawable/infobar_download_complete.xml",
     "java/res/layout/confirm_oma_download.xml",
     "java/res/layout/download_later_dialog.xml",

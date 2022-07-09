@@ -6,7 +6,7 @@
  * @fileoverview The element for displaying an animation theme.
  */
 
-import '../../common/common_style.css.js';
+import '../../css/common.css.js';
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 
@@ -74,11 +74,11 @@ export class AnimationThemeItem extends WithPersonalizationStore {
       string {
     switch (animationTheme) {
       case AnimationTheme.kSlideshow:
-        return 'chrome://personalization/common/slideshow.png';
+        return 'chrome://personalization/images/slideshow.png';
       case AnimationTheme.kFeelTheBreeze:
-        return 'chrome://personalization/common/feel_the_breeze.png';
+        return 'chrome://personalization/images/feel_the_breeze.png';
       case AnimationTheme.kFloatOnBy:
-        return 'chrome://personalization/common/float_on_by.png';
+        return 'chrome://personalization/images/float_on_by.png';
       default:
         assertNotReached('invalid animation theme value.');
     }

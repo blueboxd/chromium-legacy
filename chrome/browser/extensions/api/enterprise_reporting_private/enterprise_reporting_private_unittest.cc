@@ -50,13 +50,14 @@
 #include <windows.h>
 #include <wrl/client.h>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/browser/enterprise/signals/signals_aggregator_factory.h"
-#include "chrome/browser/enterprise/signals/signals_features.h"  // nogncheck
 #include "components/device_signals/core/browser/mock_signals_aggregator.h"  // nogncheck
 #include "components/device_signals/core/browser/signals_aggregator.h"  // nogncheck
 #include "components/device_signals/core/common/signals_constants.h"  // nogncheck
+#include "components/device_signals/core/common/signals_features.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -70,6 +71,8 @@ using SettingValue = enterprise_signals::SettingValue;
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Invoke;
+using ::testing::IsEmpty;
+using ::testing::SizeIs;
 using ::testing::StrEq;
 using ::testing::WithArgs;
 
@@ -1048,25 +1051,6 @@ TEST_P(EnterpriseReportingPrivateGetContextInfoRealTimeURLCheckTest, Test) {
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
-class MockMissiveClient : public ::chromeos::FakeMissiveClient {
- public:
-  MockMissiveClient() = default;
-  ~MockMissiveClient() override = default;
-
-  MockMissiveClient(const MockMissiveClient& other) = delete;
-  MockMissiveClient& operator=(const MockMissiveClient& other) = delete;
-
-  void Init() override {}
-
-  MissiveClient::TestInterface* GetTestInterface() override { return this; }
-
-  MOCK_METHOD(void,
-              EnqueueRecord,
-              (const ::reporting::Priority,
-               ::reporting::Record,
-               base::OnceCallback<void(::reporting::Status)>),
-              (override));
-};
 
 // Test for API enterprise.reportingPrivate.enqueueRecord
 class EnterpriseReportingPrivateEnqueueRecordFunctionTest
@@ -1078,7 +1062,7 @@ class EnterpriseReportingPrivateEnqueueRecordFunctionTest
 
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
-    ::chromeos::MissiveClient::InitializeFake<MockMissiveClient>();
+    ::chromeos::MissiveClient::InitializeFake();
     function_ =
         base::MakeRefCounted<EnterpriseReportingPrivateEnqueueRecordFunction>();
     const auto record = GetTestRecord();
@@ -1108,6 +1092,18 @@ class EnterpriseReportingPrivateEnqueueRecordFunctionTest
     return record;
   }
 
+  void VerifyNoRecordsEnqueued(::reporting::Priority priority =
+                                   ::reporting::Priority::BACKGROUND_BATCH) {
+    ::chromeos::MissiveClient::TestInterface* const missive_test_interface =
+        ::chromeos::MissiveClient::Get()->GetTestInterface();
+    ASSERT_TRUE(missive_test_interface);
+
+    const std::vector<::reporting::Record>& records =
+        missive_test_interface->GetEnqueuedRecords(priority);
+
+    ASSERT_THAT(records, IsEmpty());
+  }
+
   std::vector<uint8_t> serialized_record_data_;
   scoped_refptr<extensions::EnterpriseReportingPrivateEnqueueRecordFunction>
       function_;
@@ -1133,25 +1129,25 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
       policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue);
   policy::SetDMTokenForTesting(dm_token);
 
-  auto* const reporting_client =
-      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
-  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _))
-      .WillOnce(WithArgs<1, 2>(
-          Invoke([&](::reporting::Record record,
-                     base::OnceCallback<void(::reporting::Status)>
-                         completion_callback) {
-            EXPECT_THAT(record.destination(),
-                        Eq(::reporting::Destination::TELEMETRY_METRIC));
-            EXPECT_THAT(record.dm_token(), StrEq(dm_token.value()));
-            EXPECT_THAT(record.data(), StrEq(GetTestRecord().data()));
-
-            std::move(completion_callback).Run(::reporting::Status::StatusOK());
-          })));
-
   extension_function_test_utils::RunFunction(function_.get(), std::move(params),
                                              browser(),
                                              extensions::api_test_utils::NONE);
   EXPECT_EQ(function_->GetError(), kNoError);
+
+  ::chromeos::MissiveClient::TestInterface* const missive_test_interface =
+      ::chromeos::MissiveClient::Get()->GetTestInterface();
+  ASSERT_TRUE(missive_test_interface);
+
+  const std::vector<::reporting::Record>& background_batch_records =
+      missive_test_interface->GetEnqueuedRecords(
+          ::reporting::Priority::BACKGROUND_BATCH);
+
+  ASSERT_THAT(background_batch_records, SizeIs(1));
+  EXPECT_THAT(background_batch_records[0].destination(),
+              Eq(::reporting::Destination::TELEMETRY_METRIC));
+  EXPECT_THAT(background_batch_records[0].dm_token(), StrEq(dm_token.value()));
+  EXPECT_THAT(background_batch_records[0].data(),
+              StrEq(GetTestRecord().data()));
 }
 
 TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
@@ -1175,10 +1171,6 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
   policy::SetDMTokenForTesting(
       policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue));
 
-  auto* const reporting_client =
-      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
-  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _)).Times(0);
-
   extension_function_test_utils::RunFunction(function_.get(), std::move(params),
                                              browser(),
                                              extensions::api_test_utils::NONE);
@@ -1186,6 +1178,8 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
   EXPECT_EQ(function_->GetError(),
             EnterpriseReportingPrivateEnqueueRecordFunction::
                 kErrorInvalidEnqueueRecordRequest);
+
+  VerifyNoRecordsEnqueued();
 }
 
 TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
@@ -1208,10 +1202,6 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
   policy::SetDMTokenForTesting(
       policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue));
 
-  auto* const reporting_client =
-      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
-  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _)).Times(0);
-
   extension_function_test_utils::RunFunction(function_.get(), std::move(params),
                                              browser(),
                                              extensions::api_test_utils::NONE);
@@ -1219,6 +1209,8 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
   EXPECT_EQ(function_->GetError(),
             EnterpriseReportingPrivateEnqueueRecordFunction::
                 kErrorProfileNotAffiliated);
+
+  VerifyNoRecordsEnqueued();
 }
 
 TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
@@ -1238,10 +1230,6 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
   // Set up invalid DM token
   policy::SetDMTokenForTesting(policy::DMToken::CreateInvalidTokenForTesting());
 
-  auto* const reporting_client =
-      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
-  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _)).Times(0);
-
   extension_function_test_utils::RunFunction(function_.get(), std::move(params),
                                              browser(),
                                              extensions::api_test_utils::NONE);
@@ -1249,6 +1237,8 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
   EXPECT_EQ(function_->GetError(),
             EnterpriseReportingPrivateEnqueueRecordFunction::
                 kErrorCannotAssociateRecordWithUser);
+
+  VerifyNoRecordsEnqueued();
 }
 
 TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
@@ -1277,10 +1267,6 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
   policy::SetDMTokenForTesting(
       policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue));
 
-  auto* const reporting_client =
-      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
-  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _)).Times(0);
-
   extension_function_test_utils::RunFunction(function_.get(), std::move(params),
                                              browser(),
                                              extensions::api_test_utils::NONE);
@@ -1288,6 +1274,8 @@ TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
   EXPECT_EQ(function_->GetError(),
             EnterpriseReportingPrivateEnqueueRecordFunction::
                 kErrorInvalidEnqueueRecordRequest);
+
+  VerifyNoRecordsEnqueued();
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -1353,6 +1341,7 @@ class UserContextGatedTest : public ExtensionApiUnittest {
 
   device_signals::MockSignalsAggregator* mock_aggregator_;
   base::test::ScopedFeatureList scoped_features_;
+  base::HistogramTester histogram_tester_;
 };
 
 // Tests for API enterprise.reportingPrivate.getAvInfo
@@ -1365,6 +1354,10 @@ class EnterpriseReportingPrivateGetAvInfoTest : public UserContextGatedTest {
 
     function_ =
         base::MakeRefCounted<EnterpriseReportingPrivateGetAvInfoFunction>();
+  }
+
+  device_signals::SignalName signal_name() {
+    return device_signals::SignalName::kAntiVirus;
   }
 
   scoped_refptr<extensions::EnterpriseReportingPrivateGetAvInfoFunction>
@@ -1403,6 +1396,13 @@ TEST_F(EnterpriseReportingPrivateGetAvInfoTest, Success) {
   EXPECT_EQ(parsed_av_signal->state,
             enterprise_reporting_private::ANTI_VIRUS_PRODUCT_STATE_OFF);
   EXPECT_EQ(parsed_av_signal->product_id, fake_av_product.product_id);
+
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Success", signal_name(), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Success.AntiVirus.Items",
+      /*number_of_items=*/1,
+      /*number_of_occurrences=*/1);
 }
 
 TEST_F(EnterpriseReportingPrivateGetAvInfoTest, TopLevelError) {
@@ -1418,6 +1418,13 @@ TEST_F(EnterpriseReportingPrivateGetAvInfoTest, TopLevelError) {
 
   EXPECT_EQ(error, function_->GetError());
   EXPECT_EQ(error, device_signals::ErrorToString(expected_error));
+
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure", signal_name(), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure.AntiVirus.TopLevelError",
+      /*error=*/expected_error,
+      /*number_of_occurrences=*/1);
 }
 
 TEST_F(EnterpriseReportingPrivateGetAvInfoTest, CollectionError) {
@@ -1436,6 +1443,14 @@ TEST_F(EnterpriseReportingPrivateGetAvInfoTest, CollectionError) {
 
   EXPECT_EQ(error, function_->GetError());
   EXPECT_EQ(error, device_signals::ErrorToString(expected_error));
+
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure", signal_name(), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure.AntiVirus."
+      "CollectionLevelError",
+      /*error=*/expected_error,
+      /*number_of_occurrences=*/1);
 }
 
 class EnterpriseReportingPrivateGetAvInfoDisabledTest
@@ -1470,6 +1485,10 @@ class EnterpriseReportingPrivateGetHotfixesTest : public UserContextGatedTest {
         base::MakeRefCounted<EnterpriseReportingPrivateGetHotfixesFunction>();
   }
 
+  device_signals::SignalName signal_name() {
+    return device_signals::SignalName::kHotfixes;
+  }
+
   scoped_refptr<extensions::EnterpriseReportingPrivateGetHotfixesFunction>
       function_;
 };
@@ -1499,6 +1518,13 @@ TEST_F(EnterpriseReportingPrivateGetHotfixesTest, Success) {
       enterprise_reporting_private::HotfixSignal::FromValue(hotfix_value);
   ASSERT_TRUE(parsed_hotfix);
   EXPECT_EQ(parsed_hotfix->hotfix_id, kFakeHotfixId);
+
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Success", signal_name(), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Success.Hotfixes.Items",
+      /*number_of_items=*/1,
+      /*number_of_occurrences=*/1);
 }
 
 TEST_F(EnterpriseReportingPrivateGetHotfixesTest, TopLevelError) {
@@ -1514,6 +1540,13 @@ TEST_F(EnterpriseReportingPrivateGetHotfixesTest, TopLevelError) {
 
   EXPECT_EQ(error, function_->GetError());
   EXPECT_EQ(error, device_signals::ErrorToString(expected_error));
+
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure", signal_name(), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure.Hotfixes.TopLevelError",
+      /*error=*/expected_error,
+      /*number_of_occurrences=*/1);
 }
 
 TEST_F(EnterpriseReportingPrivateGetHotfixesTest, CollectionError) {
@@ -1532,6 +1565,14 @@ TEST_F(EnterpriseReportingPrivateGetHotfixesTest, CollectionError) {
 
   EXPECT_EQ(error, function_->GetError());
   EXPECT_EQ(error, device_signals::ErrorToString(expected_error));
+
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure", signal_name(), 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Enterprise.DeviceSignals.Collection.Failure.Hotfixes."
+      "CollectionLevelError",
+      /*error=*/expected_error,
+      /*number_of_occurrences=*/1);
 }
 
 class EnterpriseReportingPrivateGetHotfixesInfoDisabledTest

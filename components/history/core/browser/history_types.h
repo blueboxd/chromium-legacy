@@ -86,8 +86,9 @@ class VisitRow {
 
   base::Time visit_time;
 
-  // Indicates another visit that was the referring page for this one.
-  // 0 indicates no referrer.
+  // Indicates another visit that was the redirecting or referring page for this
+  // one. 0 indicates no referrer/redirect.
+  // Note that this corresponds to the "from_visit" column in the visit DB.
   VisitID referring_visit = 0;
 
   // A combination of bits from PageTransition.
@@ -123,6 +124,13 @@ class VisitRow {
   // called a "cache" just to match Chrome Sync's terminology.
   std::string originator_cache_guid;
   VisitID originator_visit_id = 0;
+  // `originator_referring_visit` and `originator_opener_visit` are similar to
+  // the non-"originator" versions, but their contents refer to originator visit
+  // IDs rather than to local ones.
+  // Note that `originator_referring_visit` corresponds to the
+  // "originator_from_visit" column in the visit DB.
+  VisitID originator_referring_visit = 0;
+  VisitID originator_opener_visit = 0;
 
   // We allow the implicit copy constructor and operator=.
 };
@@ -432,7 +440,8 @@ struct HistoryAddPageArgs {
                      bool consider_for_ntp_most_visited,
                      bool floc_allowed,
                      absl::optional<std::u16string> title = absl::nullopt,
-                     absl::optional<Opener> opener = absl::nullopt);
+                     absl::optional<Opener> opener = absl::nullopt,
+                     absl::optional<int64_t> bookmark_id = absl::nullopt);
   HistoryAddPageArgs(const HistoryAddPageArgs& other);
   ~HistoryAddPageArgs();
 
@@ -456,6 +465,7 @@ struct HistoryAddPageArgs {
   bool floc_allowed;
   absl::optional<std::u16string> title;
   absl::optional<Opener> opener;
+  absl::optional<int64_t> bookmark_id;
 };
 
 // TopSites -------------------------------------------------------------------
@@ -966,6 +976,10 @@ struct Cluster {
   // A suitable label for the cluster. Will be nullopt if no suitable label
   // could be determined.
   absl::optional<std::u16string> label;
+
+  // The value of label with any leading or trailing quotation indicators
+  // removed.
+  absl::optional<std::u16string> raw_label;
 
   // The positions within the label that match the search query, if it exists.
   query_parser::Snippet::MatchPositions label_match_positions;

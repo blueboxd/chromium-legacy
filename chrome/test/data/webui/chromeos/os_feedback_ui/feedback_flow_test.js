@@ -5,9 +5,10 @@
 import {fakeFeedbackContext, fakePngData, fakeSearchResponse} from 'chrome://os-feedback/fake_data.js';
 import {FakeFeedbackServiceProvider} from 'chrome://os-feedback/fake_feedback_service_provider.js';
 import {FakeHelpContentProvider} from 'chrome://os-feedback/fake_help_content_provider.js';
-import {FeedbackFlowElement, FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
-import {SendReportStatus} from 'chrome://os-feedback/feedback_types.js';
+import {AdditionalContextQueryParam, FeedbackFlowElement, FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
+import {FeedbackContext, SendReportStatus} from 'chrome://os-feedback/feedback_types.js';
 import {setFeedbackServiceProviderForTesting, setHelpContentProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
+import {SearchPageElement} from 'chrome://os-feedback/search_page.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
@@ -52,6 +53,23 @@ export function FeedbackFlowTestSuite() {
     assertTrue(!!page);
     document.body.appendChild(page);
     return flushTasks();
+  }
+
+  /**
+   * @suppress {visibility}
+   * @return {?FeedbackContext}
+   */
+  function getFeedbackContext_() {
+    assertTrue(!!page);
+
+    return page.feedbackContext_;
+  }
+
+  /** @return {!SearchPageElement} */
+  function getSearchPage() {
+    assertTrue(!!page);
+
+    return /** @type {!SearchPageElement} */ (page.$['searchPage']);
   }
 
   // Test that the search page is shown by default.
@@ -329,4 +347,53 @@ export function FeedbackFlowTestSuite() {
     await initializePage();
     assertEquals(1, feedbackServiceProvider.getFeedbackContextCallCount());
   });
+
+  // Test that the extra diagnostics gets set when query parameter is non-empty.
+  test(
+      'AdditionalContextParametersProvidedInUrl_FeedbackContext_Matches',
+      async () => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const extra_diagnostics = 'some%20extra%20diagnostics';
+        queryParams.set(
+            AdditionalContextQueryParam.EXTRA_DIAGNOSTICS, extra_diagnostics);
+        const description_template = 'Q1%3A%20Question%20one?';
+        queryParams.set(
+            AdditionalContextQueryParam.DESCRIPTION_TEMPLATE,
+            description_template);
+        // Replace current querystring with the new one.
+        window.history.replaceState(null, '', '?' + queryParams.toString());
+        await initializePage();
+        page.setCurrentStateForTesting(FeedbackFlowState.SEARCH);
+        const descriptionElement = getSearchPage().$['descriptionText'];
+
+        const feedbackContext = getFeedbackContext_();
+        assertEquals(fakeFeedbackContext.pageUrl, feedbackContext.pageUrl);
+        assertEquals(fakeFeedbackContext.email, feedbackContext.email);
+        assertEquals(
+            decodeURIComponent(extra_diagnostics),
+            feedbackContext.extraDiagnostics);
+        assertEquals(
+            decodeURIComponent(description_template), descriptionElement.value);
+      });
+
+  // Test that the extra diagnostics gets set when query parameter is empty.
+  test(
+      'AdditionalContextParametersNotProvidedInUrl_FeedbackContext_UsesDefault',
+      async () => {
+        // Replace current querystring with the new one.
+        window.history.replaceState(
+            null, '',
+            '?' +
+                '');
+        await initializePage();
+        page.setCurrentStateForTesting(FeedbackFlowState.SEARCH);
+        const descriptionElement = getSearchPage().$['descriptionText'];
+
+        const feedbackContext = getFeedbackContext_();
+        // TODO(ashleydp): Update expectation when page_url passed.
+        assertEquals(fakeFeedbackContext.pageUrl, feedbackContext.pageUrl);
+        assertEquals(fakeFeedbackContext.email, feedbackContext.email);
+        assertEquals('', feedbackContext.extraDiagnostics);
+        assertEquals('', descriptionElement.value);
+      });
 }

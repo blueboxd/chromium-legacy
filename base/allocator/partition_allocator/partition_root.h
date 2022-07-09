@@ -322,6 +322,8 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
   std::atomic<size_t> total_size_of_brp_quarantined_bytes{0};
   std::atomic<size_t> total_count_of_brp_quarantined_slots{0};
+  std::atomic<size_t> cumulative_size_of_brp_quarantined_bytes{0};
+  std::atomic<size_t> cumulative_count_of_brp_quarantined_slots{0};
 #endif
   // Slot span memory which has been provisioned, and is currently unused as
   // it's part of an empty SlotSpan. This is not clean memory, since it has
@@ -1305,6 +1307,10 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
           slot_span->GetSlotSizeForBookkeeping(), std::memory_order_relaxed);
       total_count_of_brp_quarantined_slots.fetch_add(1,
                                                      std::memory_order_relaxed);
+      cumulative_size_of_brp_quarantined_bytes.fetch_add(
+          slot_span->GetSlotSizeForBookkeeping(), std::memory_order_relaxed);
+      cumulative_count_of_brp_quarantined_slots.fetch_add(
+          1, std::memory_order_relaxed);
       return;
     }
   }
@@ -2048,30 +2054,12 @@ using ThreadSafePartitionRoot = PartitionRoot<internal::ThreadSafe>;
 static_assert(offsetof(ThreadSafePartitionRoot, lock_) ==
                   internal::kPartitionCachelineSize,
               "Padding is incorrect");
-}  // namespace partition_alloc
-
-namespace base {
-
-// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
-// the migration to the new namespaces gets done.
-using ::partition_alloc::PartitionOptions;
-using ::partition_alloc::PurgeFlags;
-using ::partition_alloc::ThreadSafePartitionRoot;
-
-namespace internal {
-
-// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
-// the migration to the new namespaces gets done.
-using ::partition_alloc::internal::ScopedSyscallTimer;
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-using ::partition_alloc::internal::PartitionAllocFreeForRefCounting;
+// Usage in `raw_ptr.cc` is notable enough to merit a non-internal alias.
 using ::partition_alloc::internal::PartitionAllocGetSlotStartInBRPPool;
-using ::partition_alloc::internal::PartitionAllocIsValidPtrDelta;
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
-}  // namespace internal
-
-}  // namespace base
+}  // namespace partition_alloc
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ROOT_H_

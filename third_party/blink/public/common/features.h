@@ -62,10 +62,13 @@ BLINK_COMMON_EXPORT extern const base::Feature kFencedFrames;
 BLINK_COMMON_EXPORT extern const base::Feature kUserAgentClientHint;
 BLINK_COMMON_EXPORT extern const base::Feature
     kPrefersColorSchemeClientHintHeader;
+BLINK_COMMON_EXPORT extern const base::Feature kVariableCOLRV1;
 BLINK_COMMON_EXPORT extern const base::Feature kViewportHeightClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature kFullUserAgent;
 BLINK_COMMON_EXPORT extern const base::Feature kPath2DPaintCache;
 BLINK_COMMON_EXPORT extern const base::Feature kPrivacySandboxAdsAPIs;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kPrivateNetworkAccessPermissionPrompt;
 
 enum class FencedFramesImplementationType {
   kShadowDOM,
@@ -142,6 +145,9 @@ BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
 
 // Fenced Frames:
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();
+// Note: This performs a string comparison on the feature param which is slow.
+// When possible, prefer to use the equivalent accessors on blink::Page in the
+// renderer and on content::FrameTree in the browser, which cache the value.
 BLINK_COMMON_EXPORT bool IsFencedFramesMPArchBased();
 BLINK_COMMON_EXPORT bool IsFencedFramesShadowDOMBased();
 
@@ -172,6 +178,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kIntensiveWakeUpThrottling;
 BLINK_COMMON_EXPORT extern const char
     kIntensiveWakeUpThrottling_GracePeriodSeconds_Name[];
+BLINK_COMMON_EXPORT extern const base::Feature
+    kQuickIntensiveWakeUpThrottlingAfterLoading;
 BLINK_COMMON_EXPORT extern const base::Feature kThrottleForegroundTimers;
 
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
@@ -185,6 +193,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kStorageAccessAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kCssSelectorFragmentAnchor;
+BLINK_COMMON_EXPORT extern const base::Feature kDropInputEventsBeforeFirstPaint;
 BLINK_COMMON_EXPORT extern const base::Feature kFontAccess;
 BLINK_COMMON_EXPORT extern const base::Feature kComputePressure;
 BLINK_COMMON_EXPORT extern const base::Feature kFileHandlingAPI;
@@ -232,9 +241,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapConcurrentSweeping;
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlinkHeapIncrementalMarkingStress;
-
-BLINK_COMMON_EXPORT extern const base::Feature
-    kBlinkCompositorUseDisplayThreadPriority;
 
 BLINK_COMMON_EXPORT extern const base::Feature kBackfaceVisibilityInterop;
 
@@ -370,8 +376,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kLogUnexpectedIPCPostedToBackForwardCachedDocuments;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableDarkMode;
-
-BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableHandleLinks;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLaunchHandler;
 
@@ -641,6 +645,11 @@ BLINK_COMMON_EXPORT extern const base::Feature kCompositedCaret;
 // back/forward cache.
 BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheAppBanner;
 
+// Enables back/forward cache for non-plugin embeds.
+// TODO(crbug.com/1325192): Remove once the bug is resolved.
+BLINK_COMMON_EXPORT
+extern const base::Feature kBackForwardCacheEnabledForNonPluginEmbed;
+
 BLINK_COMMON_EXPORT extern const base::Feature kDefaultStyleSheetsEarlyInit;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSystemColorChooser;
@@ -708,13 +717,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kClientHintsSaveData;
 // layer tree frame sink.
 BLINK_COMMON_EXPORT extern const base::Feature kEstablishGpuChannelAsync;
 
-// If enabled, the parser may continue parsing if BeginMainFrame was
-// recently called.
-BLINK_COMMON_EXPORT extern const base::Feature
-    kDeferBeginMainFrameDuringLoading;
-BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
-    kRecentBeginMainFrameCutoff;
-
 // If enabled, script source text will be decoded and hashed off the main
 // thread.
 BLINK_COMMON_EXPORT extern const base::Feature kDecodeScriptSourceOffThread;
@@ -740,7 +742,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kSubstringSetTreeForAttributeBuckets;
 
 // Whether the pending beacon API is enabled or not.
-// https://github.com/darrenw/docs/blob/main/explainers/beacon_api.md
+// https://github.com/WICG/unload-beacon/blob/main/README.md
 BLINK_COMMON_EXPORT extern const base::Feature kPendingBeaconAPI;
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
@@ -789,6 +791,10 @@ BLINK_COMMON_EXPORT extern const base::Feature
 // If enabled, the HTMLDocumentParser will use a budget based on elapsed time
 // rather than token count.
 BLINK_COMMON_EXPORT extern const base::Feature kTimedHTMLParserBudget;
+
+// This flag is meant to be a temporary kill switch to disable
+// CSSOverflowForReplacedElements, if necessary, due to compat issues.
+BLINK_COMMON_EXPORT extern const base::Feature kCSSOverflowForReplacedElements;
 
 }  // namespace features
 }  // namespace blink

@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/named_pages_mapper.h"
 #include "third_party/blink/renderer/core/paint/block_flow_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_inline_paint_context.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -3999,13 +4000,13 @@ Node* LayoutBlockFlow::NodeForHitTest() const {
 bool LayoutBlockFlow::HitTestChildren(HitTestResult& result,
                                       const HitTestLocation& hit_test_location,
                                       const PhysicalOffset& accumulated_offset,
-                                      HitTestAction hit_test_action) {
+                                      HitTestPhase phase) {
   NOT_DESTROYED();
   PhysicalOffset scrolled_offset = accumulated_offset;
   if (IsScrollContainer())
     scrolled_offset -= PhysicalOffset(PixelSnappedScrolledContentOffset());
 
-  if (hit_test_action == kHitTestFloat && !IsLayoutNGObject()) {
+  if (phase == HitTestPhase::kFloat && !IsLayoutNGObject()) {
     // Hit-test the floats using the FloatingObjects list if we're in legacy
     // layout. LayoutNG, on the other hand, just hit-tests floats in regular
     // tree order.
@@ -4015,14 +4016,13 @@ bool LayoutBlockFlow::HitTestChildren(HitTestResult& result,
 
   if (ChildrenInline()) {
     if (line_boxes_.HitTest(LineLayoutBoxModel(this), result, hit_test_location,
-                            scrolled_offset, hit_test_action)) {
+                            scrolled_offset, phase)) {
       UpdateHitTestResult(result,
                           hit_test_location.Point() - accumulated_offset);
       return true;
     }
   } else if (LayoutBlock::HitTestChildren(result, hit_test_location,
-                                          accumulated_offset,
-                                          hit_test_action)) {
+                                          accumulated_offset, phase)) {
     return true;
   }
 
@@ -4439,7 +4439,8 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
     for (const NGPhysicalBoxFragment& fragment : PhysicalFragments()) {
       if (const NGFragmentItems* items = fragment.Items()) {
         NGInlineCursor cursor(fragment, *items);
-        NGFragmentItem::RecalcInkOverflowForCursor(&cursor);
+        NGInlinePaintContext inline_context;
+        NGFragmentItem::RecalcInkOverflowForCursor(&cursor, &inline_context);
       }
       // Even if this turned out to be an inline formatting context with
       // fragment items (handled above), we need to handle floating descendants.

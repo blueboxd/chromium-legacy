@@ -129,7 +129,7 @@ ts_library("build_ts") {
     "hello_world.html.ts"
   ]
   deps = [
-    "//third_party/polymer/v3_0:library,"
+    "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
   ]
   extra_deps = [
@@ -161,7 +161,8 @@ generate_grd("build_grd") {
   ]
   input_files_base_dir = rebase_path(".", "//")
   deps = [ ":build_ts" ]
-  manifest_files = [ "$target_gen_dir/$tsconfig.manifest" ]
+  manifest_files = filter_include(
+      get_target_outputs(":build_ts"), [ "*.manifest" ])
 }
 
 grit("resources") {

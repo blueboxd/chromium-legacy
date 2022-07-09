@@ -24,7 +24,7 @@ generate_grd("build_grdp") {
     "$target_gen_dir/$preprocess_src_manifest",
   ]
   if (include_polymer) {
-    manifest_files += [ "$target_gen_dir/browser_command/tsconfig.manifest" ]
+    manifest_files += [ "$target_gen_dir/browser_command/build_ts.manifest" ]
   }
   resource_path_prefix = "js"
 }
@@ -155,8 +155,10 @@ group("closure_compile") {
   deps = [
     ":js_resources",
     "cr:closure_compile",
-    "cr/ui:closure_compile",
   ]
+  if (is_chromeos_ash) {
+    deps += [ "cr/ui:closure_compile" ]
+  }
 }
 
 js_type_check("js_resources") {

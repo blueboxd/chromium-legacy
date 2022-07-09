@@ -20,7 +20,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/patchpanel/patchpanel_service.pb.h"
-#include "chromeos/network/network_connection_observer.h"
+#include "chromeos/ash/components/network/network_connection_observer.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -98,6 +98,8 @@ class ArcNetHostImpl : public KeyedService,
 
   std::unique_ptr<base::DictionaryValue> TranslateVpnConfigurationToOnc(
       const mojom::AndroidVpnConfiguration& cfg);
+
+  void DisconnectHostVpn() override;
 
   // Overridden from chromeos::NetworkStateHandlerObserver.
   void ScanCompleted(const chromeos::DeviceState* /*unused*/) override;

@@ -140,24 +140,24 @@ std::string DumpFrameState(const blink::ExplodedFrameState& frame_state,
   result.append("\n");
 
   std::vector<blink::ExplodedFrameState> sorted_children = frame_state.children;
-  std::sort(
-      sorted_children.begin(), sorted_children.end(),
-      [](const blink::ExplodedFrameState& lhs,
-         const blink::ExplodedFrameState& rhs) {
-        // Child nodes should always have a target (aka unique name).
-        DCHECK(lhs.target);
-        DCHECK(rhs.target);
-        std::string lhs_name =
-            blink::UniqueNameHelper::ExtractStableNameForTesting(
-                base::UTF16ToUTF8(*lhs.target));
-        std::string rhs_name =
-            blink::UniqueNameHelper::ExtractStableNameForTesting(
-                base::UTF16ToUTF8(*rhs.target));
-        if (!base::EqualsCaseInsensitiveASCII(lhs_name, rhs_name))
-          return base::CompareCaseInsensitiveASCII(lhs_name, rhs_name) < 0;
+  std::sort(sorted_children.begin(), sorted_children.end(),
+            [](const blink::ExplodedFrameState& lhs,
+               const blink::ExplodedFrameState& rhs) {
+              // Child nodes should always have a target (aka unique name).
+              DCHECK(lhs.target);
+              DCHECK(rhs.target);
+              std::string lhs_name =
+                  blink::UniqueNameHelper::ExtractStableNameForTesting(
+                      base::UTF16ToUTF8(*lhs.target));
+              std::string rhs_name =
+                  blink::UniqueNameHelper::ExtractStableNameForTesting(
+                      base::UTF16ToUTF8(*rhs.target));
+              if (!base::EqualsCaseInsensitiveASCII(lhs_name, rhs_name))
+                return base::CompareCaseInsensitiveASCII(lhs_name, rhs_name) <
+                       0;
 
-        return lhs.item_sequence_number < rhs.item_sequence_number;
-      });
+              return lhs.item_sequence_number < rhs.item_sequence_number;
+            });
   for (const auto& child : sorted_children)
     result += DumpFrameState(child, indent + 4, false);
 
@@ -545,7 +545,7 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
     printer_->set_capture_text_only(false);
   printer_->reset();
 
-  accumulated_web_test_runtime_flags_changes_.DictClear();
+  accumulated_web_test_runtime_flags_changes_.clear();
   web_test_runtime_flags_.Reset();
   main_window_render_view_hosts_.clear();
   main_window_render_process_hosts_.clear();
@@ -568,6 +568,9 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
     WebContentsObserver::Observe(main_window_->web_contents());
 
     default_prefs_ = main_window_->web_contents()->GetOrCreateWebPreferences();
+    default_accept_languages_ = main_window_->web_contents()
+                                    ->GetMutableRendererPrefs()
+                                    ->accept_languages;
   } else {
     // Set a different size first to reset the possibly inconsistent state
     // caused by the previous test using unfortunate synchronous resize mode.
@@ -576,9 +579,13 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
     // size. See http://crbug.com/1011191 for more details.
     // TODO(crbug.com/309760): This resize to half-size could go away if
     // testRunner.useUnfortunateSynchronousResizeMode() goes away.
+    main_window_->web_contents()->GetRenderWidgetHostView()->DisableAutoResize(
+        gfx::Size());
     main_window_->ResizeWebContentForTests(
         gfx::ScaleToCeiledSize(window_size, 0.5f, 1));
     main_window_->ResizeWebContentForTests(window_size);
+
+    SetAcceptLanguages(default_accept_languages_);
 
     main_window_->web_contents()->SetWebPreferences(default_prefs_);
 
@@ -1231,9 +1238,9 @@ void WebTestControlHost::OnTestFinished() {
     main_window_->web_contents()->ExitFullscreen(/*will_cause_resize=*/false);
   devtools_bindings_.reset();
   devtools_protocol_test_bindings_.reset();
-  accumulated_web_test_runtime_flags_changes_.DictClear();
+  accumulated_web_test_runtime_flags_changes_.clear();
   web_test_runtime_flags_.Reset();
-  work_queue_states_.DictClear();
+  work_queue_states_.clear();
 
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
@@ -1658,12 +1665,12 @@ void WebTestControlHost::SimulateWebContentIndexDelete(const std::string& id) {
 }
 
 void WebTestControlHost::WebTestRuntimeFlagsChanged(
-    base::Value changed_web_test_runtime_flags) {
+    base::Value::Dict changed_web_test_runtime_flags) {
   const int render_process_id = receiver_bindings_.current_context();
 
   // Stash the accumulated changes for future, not-yet-created renderers.
-  accumulated_web_test_runtime_flags_changes_.MergeDictionary(
-      &changed_web_test_runtime_flags);
+  accumulated_web_test_runtime_flags_changes_.Merge(
+      changed_web_test_runtime_flags.Clone());
   web_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
       accumulated_web_test_runtime_flags_changes_);
 
@@ -1735,7 +1742,7 @@ void WebTestControlHost::RequestWorkItem() {
                                               ->GetRenderViewHost()
                                               ->GetProcess();
   if (work_queue_.empty()) {
-    work_queue_states_.SetBoolPath(kDictKeyWorkQueueHasItems, false);
+    work_queue_states_.SetByDottedPath(kDictKeyWorkQueueHasItems, false);
     GetWebTestRenderThreadRemote(main_frame_process)
         ->ReplicateWorkQueueStates(work_queue_states_.Clone());
   } else {
@@ -1746,8 +1753,31 @@ void WebTestControlHost::RequestWorkItem() {
 }
 
 void WebTestControlHost::WorkQueueStatesChanged(
-    base::Value changed_work_queue_states) {
-  work_queue_states_.MergeDictionary(&changed_work_queue_states);
+    base::Value::Dict changed_work_queue_states) {
+  work_queue_states_.Merge(std::move(changed_work_queue_states));
+}
+
+void WebTestControlHost::SetAcceptLanguages(
+    const std::string& accept_languages) {
+  if (web_contents()->GetMutableRendererPrefs()->accept_languages ==
+      accept_languages) {
+    return;
+  }
+
+  web_contents()->GetMutableRendererPrefs()->accept_languages =
+      accept_languages;
+  web_contents()->SyncRendererPrefs();
+}
+
+void WebTestControlHost::EnableAutoResize(const gfx::Size& min_size,
+                                          const gfx::Size& max_size) {
+  web_contents()->GetRenderWidgetHostView()->EnableAutoResize(min_size,
+                                                              max_size);
+}
+
+void WebTestControlHost::DisableAutoResize(const gfx::Size& new_size) {
+  web_contents()->GetRenderWidgetHostView()->DisableAutoResize(new_size);
+  main_window_->ResizeWebContentForTests(new_size);
 }
 
 void WebTestControlHost::GoToOffset(int offset) {

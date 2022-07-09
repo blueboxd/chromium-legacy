@@ -266,6 +266,9 @@ const base::Feature kFasterSetCookie{"FasterSetCookie",
 const base::Feature kBatchSimpleURLLoader{"BatchSimpleURLLoader",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNetworkServiceMemoryCache{
+    "NetworkServiceMemoryCache", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Do not send TLS client certificates in CORS preflight. Omit all client certs
 // and continue the handshake without sending one if requested.
 const base::Feature kOmitCorsClientCert{"OmitCorsClientCert",
@@ -286,13 +289,6 @@ const base::Feature kPervasivePayloadsList{"PervasivePayloadsList",
 // converted to uppercase hexadecimal.
 constexpr base::FeatureParam<std::string> kCacheTransparencyPervasivePayloads{
     &kPervasivePayloadsList, "pervasive-payloads", ""};
-
-// Read as much of the net::URLRequest as there is space in the Mojo data pipe.
-const base::Feature kOptimizeNetworkBuffers{"OptimizeNetworkBuffers2",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit{
-    &kOptimizeNetworkBuffers, "bytes_read_limit", 64 * 1024};
 
 // Enables support for the `Variants` response header and reduce
 // accept-language. https://github.com/Tanych/accept-language

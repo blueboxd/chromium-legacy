@@ -77,17 +77,6 @@ export class ProfileTypeChoiceElement extends ProfileTypeChoiceElementBase {
         value: false,
       },
       // </if>
-
-      /**
-       * If true, it is possible to create local profiles without sign-in.
-       */
-      localProfileCreationFlowSupported_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('localProfileCreationFlowSupported');
-        },
-      },
-
     };
   }
 
@@ -104,7 +93,7 @@ export class ProfileTypeChoiceElement extends ProfileTypeChoiceElementBase {
     super.connectedCallback();
     this.addWebUIListener(
         'available-accounts-changed',
-        (accounts: Array<AvailableAccount>) =>
+        (accounts: AvailableAccount[]) =>
             this.handleAvailableAccountsChanged_(accounts));
     this.manageProfilesBrowserProxy_.getAvailableAccounts();
   }
@@ -164,7 +153,7 @@ export class ProfileTypeChoiceElement extends ProfileTypeChoiceElementBase {
 
   // <if expr="chromeos_lacros">
   private handleAvailableAccountsChanged_(availableAccounts:
-                                              Array<AvailableAccount>) {
+                                              AvailableAccount[]) {
     this.hasAvailableAccounts_ = availableAccounts.length > 0;
   }
   // </if>

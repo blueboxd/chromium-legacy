@@ -11,7 +11,6 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 
-#define GL_SCANOUT_CHROMIUM 0x6000
 #define GL_SYNC_GPU_COMMANDS_COMPLETE 0x9117
 #define GL_SYNC_FLUSH_COMMANDS_BIT 0x00000001
 
@@ -15185,115 +15184,6 @@ static_assert(offsetof(LockDiscardableTextureCHROMIUM, header) == 0,
 static_assert(
     offsetof(LockDiscardableTextureCHROMIUM, texture_id) == 4,
     "offset of LockDiscardableTextureCHROMIUM texture_id should be 4");
-
-struct TexStorage2DImageCHROMIUM {
-  typedef TexStorage2DImageCHROMIUM ValueType;
-  static const CommandId kCmdId = kTexStorage2DImageCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLenum _target,
-            GLenum _internalFormat,
-            GLsizei _width,
-            GLsizei _height) {
-    SetHeader();
-    target = _target;
-    internalFormat = _internalFormat;
-    width = _width;
-    height = _height;
-  }
-
-  void* Set(void* cmd,
-            GLenum _target,
-            GLenum _internalFormat,
-            GLsizei _width,
-            GLsizei _height) {
-    static_cast<ValueType*>(cmd)->Init(_target, _internalFormat, _width,
-                                       _height);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t target;
-  uint32_t internalFormat;
-  int32_t width;
-  int32_t height;
-  static const uint32_t bufferUsage = GL_SCANOUT_CHROMIUM;
-};
-
-static_assert(sizeof(TexStorage2DImageCHROMIUM) == 20,
-              "size of TexStorage2DImageCHROMIUM should be 20");
-static_assert(offsetof(TexStorage2DImageCHROMIUM, header) == 0,
-              "offset of TexStorage2DImageCHROMIUM header should be 0");
-static_assert(offsetof(TexStorage2DImageCHROMIUM, target) == 4,
-              "offset of TexStorage2DImageCHROMIUM target should be 4");
-static_assert(offsetof(TexStorage2DImageCHROMIUM, internalFormat) == 8,
-              "offset of TexStorage2DImageCHROMIUM internalFormat should be 8");
-static_assert(offsetof(TexStorage2DImageCHROMIUM, width) == 12,
-              "offset of TexStorage2DImageCHROMIUM width should be 12");
-static_assert(offsetof(TexStorage2DImageCHROMIUM, height) == 16,
-              "offset of TexStorage2DImageCHROMIUM height should be 16");
-
-struct SetColorSpaceMetadataCHROMIUM {
-  typedef SetColorSpaceMetadataCHROMIUM ValueType;
-  static const CommandId kCmdId = kSetColorSpaceMetadataCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLuint _texture_id,
-            GLuint _shm_id,
-            GLuint _shm_offset,
-            GLsizei _color_space_size) {
-    SetHeader();
-    texture_id = _texture_id;
-    shm_id = _shm_id;
-    shm_offset = _shm_offset;
-    color_space_size = _color_space_size;
-  }
-
-  void* Set(void* cmd,
-            GLuint _texture_id,
-            GLuint _shm_id,
-            GLuint _shm_offset,
-            GLsizei _color_space_size) {
-    static_cast<ValueType*>(cmd)->Init(_texture_id, _shm_id, _shm_offset,
-                                       _color_space_size);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t texture_id;
-  uint32_t shm_id;
-  uint32_t shm_offset;
-  int32_t color_space_size;
-};
-
-static_assert(sizeof(SetColorSpaceMetadataCHROMIUM) == 20,
-              "size of SetColorSpaceMetadataCHROMIUM should be 20");
-static_assert(offsetof(SetColorSpaceMetadataCHROMIUM, header) == 0,
-              "offset of SetColorSpaceMetadataCHROMIUM header should be 0");
-static_assert(offsetof(SetColorSpaceMetadataCHROMIUM, texture_id) == 4,
-              "offset of SetColorSpaceMetadataCHROMIUM texture_id should be 4");
-static_assert(offsetof(SetColorSpaceMetadataCHROMIUM, shm_id) == 8,
-              "offset of SetColorSpaceMetadataCHROMIUM shm_id should be 8");
-static_assert(
-    offsetof(SetColorSpaceMetadataCHROMIUM, shm_offset) == 12,
-    "offset of SetColorSpaceMetadataCHROMIUM shm_offset should be 12");
-static_assert(
-    offsetof(SetColorSpaceMetadataCHROMIUM, color_space_size) == 16,
-    "offset of SetColorSpaceMetadataCHROMIUM color_space_size should be 16");
 
 struct WindowRectanglesEXTImmediate {
   typedef WindowRectanglesEXTImmediate ValueType;

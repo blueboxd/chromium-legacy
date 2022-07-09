@@ -145,6 +145,12 @@ LayoutUnit FlexItem::FlowAwareMarginBefore() const {
   return LayoutUnit();
 }
 
+LayoutUnit FlexItem::MarginBlockEnd() const {
+  NGBoxStrut margins = physical_margins_.ConvertToLogical(
+      algorithm_->Style()->GetWritingDirection());
+  return margins.block_end;
+}
+
 LayoutUnit FlexItem::MainAxisMarginExtent() const {
   return algorithm_->IsHorizontalFlow() ? physical_margins_.HorizontalSum()
                                         : physical_margins_.VerticalSum();
@@ -777,10 +783,18 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   if (StyleRef().IsDeprecatedWebkitBox())
     return false;
 
-  // TODO(dgrogan): MainAxisOverflowForChild == kClip also qualifies, not just
-  // kVisible.
-  return !child.ShouldApplySizeContainment() &&
-         MainAxisOverflowForChild(child) == EOverflow::kVisible;
+  if (child.ShouldApplySizeContainment())
+    return false;
+
+  bool is_replaced_element_respecting_overflow = false;
+  if (auto* element = DynamicTo<Element>(child.GetNode())) {
+    is_replaced_element_respecting_overflow =
+        element->IsReplacedElementRespectingCSSOverflow();
+  }
+
+  return MainAxisOverflowForChild(child) == EOverflow::kVisible ||
+         (is_replaced_element_respecting_overflow &&
+          MainAxisOverflowForChild(child) == EOverflow::kClip);
 }
 
 LayoutUnit FlexLayoutAlgorithm::IntrinsicContentBlockSize() const {

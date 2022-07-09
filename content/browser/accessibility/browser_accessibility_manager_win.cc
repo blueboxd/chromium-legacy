@@ -186,7 +186,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::ALERT:
       FireWinAccessibilityEvent(EVENT_SYSTEM_ALERT, node);
-      FireUiaAccessibilityEvent(UIA_SystemAlertEventId, node);
+      // Generated 'ALERT' events come from role=alert nodes in the tree.
+      // These should just be treated as normal live region changed events,
+      // since we don't want web pages to be performing system-wide alerts.
+      FireUiaAccessibilityEvent(UIA_LiveRegionChangedEventId, node);
       break;
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
       HandleAriaPropertiesChangedEvent(*node);
@@ -479,7 +482,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED:
       FireWinAccessibilityEvent(IA2_EVENT_TEXT_ATTRIBUTE_CHANGED, node);
-      EnqueueTextChangedEvent(*node);
       break;
     case ui::AXEventGenerator::Event::VALUE_IN_TEXT_FIELD_CHANGED:
       DCHECK(node->IsTextField());

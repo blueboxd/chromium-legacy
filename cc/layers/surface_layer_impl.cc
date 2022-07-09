@@ -182,9 +182,8 @@ void SurfaceLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
 
   if (surface_range_.IsValid()) {
     auto* quad = render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
-    // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
     quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
-                 surface_range_, background_color().toSkColor(),
+                 surface_range_, background_color(),
                  stretch_content_to_fill_bounds_);
     quad->is_reflection = is_reflection_;
     // Add the primary surface ID as a dependency.
@@ -200,10 +199,8 @@ void SurfaceLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
   } else {
     auto* quad =
         render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
-    // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
     quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
-                 background_color().toSkColor(),
-                 false /* force_anti_aliasing_off */);
+                 background_color(), false /* force_anti_aliasing_off */);
   }
 
   // Unless the client explicitly specifies otherwise, don't block on
@@ -222,9 +219,11 @@ gfx::Rect SurfaceLayerImpl::GetEnclosingVisibleRectInTargetSpace() const {
 
 void SurfaceLayerImpl::GetDebugBorderProperties(SkColor4f* color,
                                                 float* width) const {
-  *color = DebugColors::SurfaceLayerBorderColor();
-  *width = DebugColors::SurfaceLayerBorderWidth(
-      layer_tree_impl() ? layer_tree_impl()->device_scale_factor() : 1);
+  if (color)
+    *color = DebugColors::SurfaceLayerBorderColor();
+  if (width)
+    *width = DebugColors::SurfaceLayerBorderWidth(
+        layer_tree_impl() ? layer_tree_impl()->device_scale_factor() : 1);
 }
 
 void SurfaceLayerImpl::AppendRainbowDebugBorder(
@@ -236,17 +235,16 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state, contents_opaque());
 
-  SkColor4f color;
-  float border_width;
-  GetDebugBorderProperties(&color, &border_width);
+  float border_width = DebugColors::SurfaceLayerBorderWidth(
+      layer_tree_impl() ? layer_tree_impl()->device_scale_factor() : 1);
 
-  SkColor colors[] = {
-      0x80ff0000,  // Red.
-      0x80ffa500,  // Orange.
-      0x80ffff00,  // Yellow.
-      0x80008000,  // Green.
-      0x800000ff,  // Blue.
-      0x80ee82ee,  // Violet.
+  SkColor4f colors[] = {
+      {1.0f, 0.0f, 0.0f, 0.5f},     // Red.
+      {1.0f, 0.65f, 0.0f, 0.5f},    // Orange.
+      {1.0f, 1.0f, 0.0f, 0.5f},     // Yellow.
+      {0.0f, 0.5f, 0.0f, 0.5f},     // Green.
+      {0.0f, 0.0f, 1.0f, 0.50f},    // Blue.
+      {0.93f, 0.51f, 0.93f, 0.5f},  // Violet.
   };
   const int kNumColors = std::size(colors);
 
@@ -290,10 +288,8 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(
             render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
         // The inner fill is more transparent then the border.
         static const float kFillOpacity = 0.1f;
-        SkColor fill_color = SkColorSetA(
-            colors[i % kNumColors],
-            static_cast<uint8_t>(SkColorGetA(colors[i % kNumColors]) *
-                                 kFillOpacity));
+        SkColor4f fill_color = colors[i % kNumColors];
+        fill_color.fA *= kFillOpacity;
         gfx::Rect fill_rect(x, 0, width, bounds().height());
         solid_quad->SetNew(shared_quad_state, fill_rect, fill_rect, fill_color,
                            force_anti_aliasing_off);

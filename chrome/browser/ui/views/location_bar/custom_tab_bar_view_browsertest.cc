@@ -17,7 +17,6 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
@@ -96,9 +95,7 @@ Browser* OpenPopup(content::WebContents* web_contents, const GURL& target_url) {
   EXPECT_TRUE(content::ExecuteScript(web_contents, script));
   nav_observer.Wait();
 
-  Browser* browser = browser_change_observer.Wait();
-  ui_test_utils::BrowserActivationWaiter(browser).WaitForActivation();
-  return browser;
+  return browser_change_observer.Wait();
 }
 
 // Navigates to |target_url| and waits for navigation to complete.
@@ -148,7 +145,8 @@ class UrlHidingInterstitialPage
   bool ShouldDisplayURL() const override { return false; }
 
  protected:
-  void PopulateInterstitialStrings(base::Value* load_time_data) override {}
+  void PopulateInterstitialStrings(base::Value::Dict& load_time_data) override {
+  }
 };
 
 // An observer that associates a URL-hiding interstitial when a page loads when

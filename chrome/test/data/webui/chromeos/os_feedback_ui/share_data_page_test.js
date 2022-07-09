@@ -7,8 +7,10 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 
 import {fakeEmptyFeedbackContext, fakeFeedbackContext} from 'chrome://os-feedback/fake_data.js';
 import {FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
+import {FeedbackContext} from 'chrome://os-feedback/feedback_types.js';
 import {ShareDataPageElement} from 'chrome://os-feedback/share_data_page.js';
 import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
@@ -87,6 +89,7 @@ export function shareDataPageTestSuite() {
     await initializePage();
     // Verify the title is in the page.
     assertEquals('Send feedback', getElementContent('.page-title'));
+    assertTrue(page.i18nExists('pageTitle'));
 
     // Verify the back button is in the page.
     assertEquals('Back', getElementContent('#buttonBack'));
@@ -103,6 +106,11 @@ export function shareDataPageTestSuite() {
     // Verify the user email label is in the page.
     assertTrue(page.i18nExists('userEmailLabel'));
     assertEquals('Email', getElementContent('#userEmailLabel'));
+
+    // Verify don't include email address is in the page.
+    assertTrue(page.i18nExists('anonymousUser'));
+    assertEquals(
+        `Don't include email address`, getElementContent('#anonymousUser'));
 
     // Verify the share diagnostic data label is in the page.
     assertTrue(page.i18nExists('shareDiagnosticDataLabel'));
@@ -124,7 +132,8 @@ export function shareDataPageTestSuite() {
     assertTrue(!!getElement('#userEmailDropDown'));
 
     // URL elements.
-    assertEquals('share url:', getElementContent('#pageUrlLabel'));
+    assertEquals('Share URL:', getElementContent('#pageUrlLabel'));
+    assertTrue(page.i18nExists('sharePageUrlLabel'));
     assertTrue(!!getElement('#pageUrlCheckbox'));
     assertTrue(!!getElement('#pageUrlText'));
 
@@ -140,7 +149,6 @@ export function shareDataPageTestSuite() {
             'give us to help address technical issues and to improve our ' +
             'services, subject to our Privacy Policy and Terms of Service.',
         getElementContent('#privacyNote'));
-
   });
 
   // Test that the email drop down is populated with two options.
@@ -181,7 +189,7 @@ export function shareDataPageTestSuite() {
     await initializePage();
     page.feedbackContext = fakeFeedbackContext;
 
-    assertEquals('chrome://tab/', getElement('#pageUrlText').value);
+    assertEquals('chrome://tab/', getElementContent('#pageUrlText'));
   });
 
   /**
@@ -350,6 +358,39 @@ export function shareDataPageTestSuite() {
     assertEquals(imgUrl, screenshotImage.src);
   });
 
+
+  // Test that clicking the screenshot will open preview dialog and set the
+  // focus on the close dialog icon button.
+  test('screenshotPreview', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+    page.screenshotUrl = fakeImageUrl;
+    assertEquals(fakeImageUrl, getElement('#screenshotImage').src);
+
+    const closeDialogButton = getElement('#closeDialogButton');
+    // The preview dialog's close icon button is not visible.
+    assertFalse(isVisible(closeDialogButton));
+
+    // The screenshot is displayed as an image button.
+    const imageButton = /** @type {!Element} */ (getElement('#imageButton'));
+    const imageClickPromise = eventToPromise('click', imageButton);
+    imageButton.click();
+    await imageClickPromise;
+
+    // The preview dialog's close icon button is visible now.
+    assertTrue(isVisible(closeDialogButton));
+    // The preview dialog's close icon button is focused.
+    assertEquals(closeDialogButton, getDeepActiveElement());
+
+    // Press enter should close the preview dialog.
+    closeDialogButton.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'Enter'}));
+    await flushTasks();
+
+    // The preview dialog's close icon button is not visible now.
+    assertFalse(isVisible(closeDialogButton));
+  });
+
   /**
    * Test that when when the send button is clicked, the getAttachedFile has
    * been called.
@@ -466,4 +507,33 @@ export function shareDataPageTestSuite() {
         assertFalse(consentCheckbox.checked);
         assertTrue(consentLabel.classList.contains(disabledInputClass));
       });
+
+  /**
+   * Test that when feedback context contains extra_diagnostics matching value
+   * is set on report.
+   */
+  test('AdditionalContext_ExtraDiagnostics', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    const reportWithoutExtraDiagnostics = (await clickSendAndWait(page)).report;
+    assertFalse(
+        !!reportWithoutExtraDiagnostics.feedbackContext.extraDiagnostics);
+
+    page.reEnableSendReportButton();
+    const fakeFeedbackContextWithExtraDiagnostics =
+        /** @type {!FeedbackContext} */ ({extraDiagnostics: 'some extra info'});
+    page.feedbackContext = fakeFeedbackContextWithExtraDiagnostics;
+    await flushTasks();
+
+    const reportWithExtraDiagnostics = (await clickSendAndWait(page)).report;
+    assertEquals(
+        fakeFeedbackContextWithExtraDiagnostics.extraDiagnostics,
+        reportWithExtraDiagnostics.feedbackContext.extraDiagnostics);
+
+    getElement('#sysInfoCheckbox').checked = false;
+    page.reEnableSendReportButton();
+    const reportNoSysInfo = (await clickSendAndWait(page)).report;
+    assertFalse(!!reportNoSysInfo.feedbackContext.extraDiagnostics);
+  });
 }

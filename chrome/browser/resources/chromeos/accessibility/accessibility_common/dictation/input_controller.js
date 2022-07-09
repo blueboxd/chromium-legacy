@@ -4,11 +4,9 @@
 
 import {EditingUtil} from '/accessibility_common/dictation/editing_util.js';
 
-const IconType = chrome.accessibilityPrivate.DictationBubbleIconType;
+const EventType = chrome.automation.EventType;
 
-/**
- * InputController handles interaction with input fields for Dictation.
- */
+/** InputController handles interaction with input fields for Dictation. */
 export class InputController {
   constructor(stopDictationCallback, focusHandler) {
     /** @private {number} */
@@ -29,6 +27,9 @@ export class InputController {
 
     /** @private {?function():void} */
     this.onConnectCallback_ = null;
+
+    /** @private {?string} */
+    this.locale_ = null;
 
     this.initialize_();
   }
@@ -100,12 +101,17 @@ export class InputController {
       return;
     }
 
+    const language = this.locale_.split('-')[0];
+    const useSmartSpacingAndCapitalization =
+        InputController.SMART_SPACING_AND_CAPITALIZATION_LANGUAGES_.includes(
+            language);
     const editableNode = this.focusHandler_.getEditableNode();
-    if (editableNode && editableNode.textSelStart === editableNode.textSelEnd) {
-      // Adjust the commit text to preserve spacing.
+    if (editableNode && useSmartSpacingAndCapitalization &&
+        editableNode.textSelStart === editableNode.textSelEnd) {
       const value = editableNode.value;
       const caretIndex = editableNode.textSelStart;
-      text = EditingUtil.adjustCommitText(value, caretIndex, text);
+      text = EditingUtil.smartCapitalization(value, caretIndex, text);
+      text = EditingUtil.smartSpacing(value, caretIndex, text);
     }
 
     chrome.input.ime.commitText({contextID: this.activeImeContextId_, text});
@@ -200,9 +206,12 @@ export class InputController {
 
     const value = editableNode.value;
     const caretIndex = editableNode.textSelStart;
-    const newValue = EditingUtil.replacePhrase(
+    const data = EditingUtil.replacePhrase(
         value, caretIndex, deletePhrase, insertPhrase);
-    editableNode.setValue(newValue);
+    const newValue = data.value;
+    const newIndex = data.index;
+
+    this.setEditableValueAndUpdateCaretPosition_(newValue, newIndex);
   }
 
   /**
@@ -222,9 +231,12 @@ export class InputController {
 
     const value = editableNode.value;
     const caretIndex = editableNode.textSelStart;
-    const newValue =
+    const data =
         EditingUtil.insertBefore(value, caretIndex, insertPhrase, beforePhrase);
-    editableNode.setValue(newValue);
+    const newValue = data.value;
+    const newIndex = data.index;
+
+    this.setEditableValueAndUpdateCaretPosition_(newValue, newIndex);
   }
 
   /**
@@ -280,6 +292,37 @@ export class InputController {
     const newCaretIndex = EditingUtil.navPrevSent(value, caretIndex);
     editableNode.setSelection(newCaretIndex, newCaretIndex);
   }
+
+  /** @param {string} locale */
+  setLocale(locale) {
+    this.locale_ = locale;
+  }
+
+  /**
+   * @param {string} value
+   * @param {number} index
+   * @private
+   */
+  setEditableValueAndUpdateCaretPosition_(value, index) {
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (!editableNode) {
+      return;
+    }
+
+    // Set the value first, then update the caret position.
+    let handled = false;
+    const setSelection = () => {
+      if (!handled) {
+        // Ensure this listener only runs once.
+        editableNode.removeEventListener(setSelection);
+        editableNode.setSelection(index, index);
+        handled = true;
+      }
+    };
+
+    editableNode.addEventListener(EventType.VALUE_CHANGED, setSelection);
+    editableNode.setValue(value);
+  }
 }
 
 /**
@@ -294,3 +337,12 @@ InputController.IME_ENGINE_ID =
  * @const
  */
 InputController.NO_ACTIVE_IME_CONTEXT_ID_ = -1;
+
+
+/**
+ * The languages that are supported by smart spacing and capitalization.
+ * @private {!Array<string>}
+ * @const
+ */
+InputController.SMART_SPACING_AND_CAPITALIZATION_LANGUAGES_ =
+    ['en', 'fr', 'it', 'de', 'es'];

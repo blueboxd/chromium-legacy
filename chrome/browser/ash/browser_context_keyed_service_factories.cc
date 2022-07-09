@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ash/app_restore/full_restore_service_factory.h"
-#include "chrome/browser/ash/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_credentials_manager.h"
 #include "chrome/browser/ash/bluetooth/debug_logs_manager_factory.h"
 #include "chrome/browser/ash/borealis/borealis_service_factory.h"
@@ -39,7 +38,6 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
-#include "chrome/browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher.h"
 #include "chrome/browser/chromeos/fileapi/file_change_service_factory.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
@@ -53,7 +51,6 @@ namespace ash {
 
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   android_sms::AndroidSmsServiceFactory::GetInstance();
-  arc::ArcAccessibilityHelperBridge::CreateFactory();
   CalendarKeyedServiceFactory::GetInstance();
   full_restore::FullRestoreServiceFactory::GetInstance();
   HoldingSpaceKeyedServiceFactory::GetInstance();
@@ -74,7 +71,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::MediaPlayerAPI::GetFactoryInstance();
 #if defined(USE_CUPS)
   extensions::PrintingAPIHandler::GetFactoryInstance();
-  extensions::PrintJobFinishedEventDispatcher::GetFactoryInstance();
 #endif
   FileChangeServiceFactory::GetInstance();
   file_manager::EventRouterFactory::GetInstance();

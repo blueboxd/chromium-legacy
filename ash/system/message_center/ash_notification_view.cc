@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
@@ -116,7 +117,8 @@ constexpr int kTitleCharacterLimit =
     message_center::kNotificationWidth * message_center::kMaxTitleLines /
     message_center::kMinPixelsPerTitleCharacter;
 constexpr int kTitleLabelSize = 13;
-constexpr int kTitleLabelMaxLines = 2;
+constexpr int kTitleLabelExpandedMaxLines = 2;
+constexpr int kTitleLabelCollapsedMaxLines = 1;
 constexpr int kTimestampInCollapsedViewSize = 12;
 constexpr int kMessageLabelSize = 12;
 // The size for `icon_view_`, which is the icon within right content (between
@@ -264,10 +266,8 @@ void AshNotificationView::GroupedNotificationsContainer::
 }
 
 AshNotificationView::NotificationTitleRow::NotificationTitleRow(
-    AshNotificationView* parent,
     const std::u16string& title)
-    : parent_(parent),
-      title_view_(AddChildView(GenerateTitleView(title))),
+    : title_view_(AddChildView(GenerateTitleView(title))),
       title_row_divider_(AddChildView(std::make_unique<views::Label>(
           kTitleRowDivider,
           views::style::CONTEXT_DIALOG_BODY_TEXT))),
@@ -284,8 +284,8 @@ AshNotificationView::NotificationTitleRow::NotificationTitleRow(
                                views::MaximumFlexSizeRule::kPreferred));
   title_view_->SetMultiLine(true);
   title_view_->SetAllowCharacterBreak(true);
-  title_view_->SetMaxLines(kTitleLabelMaxLines);
-  title_view_->SetMaximumWidth(parent->GetExpandedTitleLabelWidth());
+  title_view_->SetMaxLines(kTitleLabelExpandedMaxLines);
+  title_view_->SetMaximumWidth(kNotificationInMessageCenterWidth);
 
   ConfigureLabelStyle(title_row_divider_, kTimestampInCollapsedViewSize,
                       /*is_color_primary=*/false);
@@ -622,9 +622,6 @@ void AshNotificationView::AnimateSingleToGroup(
   ash::message_center_utils::InitLayerForAnimations(image_container_view());
   ash::message_center_utils::InitLayerForAnimations(action_buttons_row());
 
-  message_center::Notification* parent_notification =
-      message_center::MessageCenter::Get()->FindNotificationById(parent_id);
-
   auto on_animation_ended = base::BindOnce(
       [](base::WeakPtr<ash::AshNotificationView> parent,
          views::View* left_content, views::View* right_content,
@@ -632,9 +629,14 @@ void AshNotificationView::AnimateSingleToGroup(
          views::View* image_container_view, views::View* action_buttons_row,
          AshNotificationExpandButton* expand_button,
          NotificationGroupingController* grouping_controller,
-         const std::string& notification_id, std::string parent_id,
-         message_center::Notification* parent_notification) {
+         const std::string& notification_id, std::string parent_id) {
         if (!parent)
+          return;
+
+        auto* parent_notification =
+            message_center::MessageCenter::Get()->FindNotificationById(
+                parent_id);
+        if (!parent_notification)
           return;
 
         grouping_controller->ConvertFromSingleToGroupNotificationAfterAnimation(
@@ -657,7 +659,7 @@ void AshNotificationView::AnimateSingleToGroup(
       weak_factory_.GetWeakPtr(), left_content_, right_content(),
       message_label_in_expanded_state_, image_container_view(),
       action_buttons_row(), expand_button_, grouping_controller,
-      notification_id, parent_id, parent_notification);
+      notification_id, parent_id);
 
   std::pair<base::OnceClosure, base::OnceClosure> split =
       base::SplitOnceCallback(std::move(on_animation_ended));
@@ -820,8 +822,19 @@ void AshNotificationView::PopulateGroupNotifications(
 
 void AshNotificationView::RemoveGroupNotification(
     const std::string& notification_id) {
-  AshNotificationView* to_be_removed = static_cast<AshNotificationView*>(
-      FindGroupNotificationView(notification_id));
+  auto* child_view = FindGroupNotificationView(notification_id);
+  if (!child_view)
+    return;
+
+  base::WeakPtr<AshNotificationView> to_be_removed =
+      static_cast<AshNotificationView*>(child_view)->weak_factory_.GetWeakPtr();
+  if (to_be_removed) {
+    // Abort any previously queued animations, if a remove animation was in
+    // progress this will cause `to_be_removed` to be deleted. Because of this
+    // we need to use a weakptr to ensure we do not try to animate an already
+    // deleted view.
+    to_be_removed->layer()->GetAnimator()->AbortAllAnimations();
+  }
 
   if (!to_be_removed)
     return;
@@ -845,12 +858,32 @@ void AshNotificationView::RemoveGroupNotification(
       },
       weak_factory_.GetWeakPtr(), notification_id);
 
+  auto on_animation_aborted = base::BindRepeating(
+      [](base::WeakPtr<AshNotificationView> self,
+         const std::string& notification_id) {
+        if (!self)
+          return;
+
+        views::View* to_be_removed =
+            self->FindGroupNotificationView(notification_id);
+        if (!to_be_removed)
+          return;
+
+        self->total_grouped_notifications_--;
+        self->expand_button_->UpdateGroupedNotificationsCount(
+            self->total_grouped_notifications_);
+
+        self->grouped_notifications_container_->RemoveChildViewT(to_be_removed);
+        self->PreferredSizeChanged();
+      },
+      weak_factory_.GetWeakPtr(), notification_id);
+
   // If the removed notification has a layer transform it has already been slid
   // out (For example user swiped it by dragging). We only need to animate a
   // slide out if there is no transform.
-  if (to_be_removed->layer()->transform().IsIdentity()) {
+  if (to_be_removed && to_be_removed->layer()->transform().IsIdentity()) {
     message_center_utils::SlideOutView(
-        to_be_removed, on_notification_slid_out,
+        to_be_removed.get(), on_notification_slid_out, on_animation_aborted,
         /*delay_in_ms=*/0,
         /*duration_in_ms=*/kSlideOutGroupedNotificationAnimationDurationMs,
         gfx::Tween::LINEAR,
@@ -878,6 +911,9 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
   if (title_row_) {
     title_row_->UpdateVisibility(is_grouped_child_view_ ||
                                  (IsExpandable() && !expanded));
+    title_row_->title_view()->SetMaxLines(
+        expanded ? kTitleLabelExpandedMaxLines : kTitleLabelCollapsedMaxLines);
+    title_row_->title_view()->SetMaximumWidth(GetExpandedTitleLabelWidth());
   }
 
   if (message_label()) {
@@ -1009,8 +1045,8 @@ void AshNotificationView::CreateOrUpdateTitleView(
       notification.title(), kTitleCharacterLimit, gfx::WORD_BREAK);
 
   if (!title_row_) {
-    title_row_ = AddViewToLeftContent(
-        std::make_unique<NotificationTitleRow>(this, title));
+    title_row_ =
+        AddViewToLeftContent(std::make_unique<NotificationTitleRow>(title));
   } else {
     title_row_->UpdateTitle(title);
     ReorderViewInLeftContent(title_row_);
@@ -1431,9 +1467,10 @@ SkColor AshNotificationView::CalculateIconAndButtonsColor(
     return default_color;
 
   // TODO(crbug/1294459): re-evaluate contrast, maybe increase or use fixed HSL
-  float minContrastRatio = AshColorProvider::Get()->IsDarkModeEnabled()
-                               ? minContrastRatio = kDarkModeMinContrastRatio
-                               : color_utils::kMinimumReadableContrastRatio;
+  float minContrastRatio =
+      DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()
+          ? minContrastRatio = kDarkModeMinContrastRatio
+          : color_utils::kMinimumReadableContrastRatio;
 
   // Actual color is kTransparent80, but BlendForMinContrast requires opaque.
   SkColor bg_color = AshColorProvider::Get()->GetBaseLayerColor(
@@ -1485,6 +1522,7 @@ void AshNotificationView::AnimateResizeAfterRemoval(
       grouped_notifications_container_->height();
   int removed_index =
       grouped_notifications_container_->GetIndexOf(to_be_removed);
+  LOG(ERROR) << "Removed after animation";
   grouped_notifications_container_->RemoveChildViewT(to_be_removed).reset();
 
   auto* notification_view_controller = message_center_utils::

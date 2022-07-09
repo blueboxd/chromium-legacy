@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Kasutaja</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Välisseadmete püsivara värskendamise aken on lahti. Saadaval on <ph name="NUM_UPDATES" /> värskendust.</translation>
+<translation id="1145516343487477149">Leidke Chromebookiga seotud levinud küsimustele vastuseid ja abiartikleid</translation>
 <translation id="1165039591588034296">Viga</translation>
 <translation id="1175697296044146566">Seadet <ph name="DEVICE_TYPE" /> haldab <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Keskmine (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Tumeda teema väljalülitamine</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Tumeda režiim väljalülitamine</translation>
+<translation id="1881188606372070653">Õiguslikel põhjustel sisumuudatuste taotlemiseks avage <ph name="BEGIN_LINK1" />leht Juriidiline abi<ph name="END_LINK1" />. Osa konto ja süsteemi teabest võidakse saata Google'ile. Kasutame teilt saadud teavet tehniliste probleemide lahendamiseks ning oma teenuste täiustamiseks kooskõlas meie <ph name="BEGIN_LINK2" />privaatsuseeskirjade<ph name="END_LINK2" /> ja <ph name="BEGIN_LINK3" />teenusetingimustega<ph name="END_LINK3" />.</translation>
 <translation id="1887850431809612466">Riistvara redaktsioon</translation>
+<translation id="1904932688895783618">Allpool on veel kasulikke allikaid</translation>
 <translation id="1905710495812624430">Katsete maksimaalne arv on ületatud.</translation>
 <translation id="1908234395526491708">UDP-taotluste vead</translation>
 <translation id="1932611479324127242">Aku ühenduse katkestamine</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Proovige neid veaotsingu toiminguid</translation>
 <translation id="2016848882344942759">--eemalda tähistamata toote märgistus--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Ekraanisäästja vaatamiseks looge ühendus võrguga ja laadige leht uuesti.</translation>
 <translation id="2080070583977670716">Rohkem seadeid</translation>
 <translation id="2085089206770112532">Ekraanikuva ereduse vähendamine</translation>
 <translation id="2105810540595158374">Seade on mängupult.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Tumeda režiimi sisselülitamine</translation>
 <translation id="2177831236093724629">Leiti <ph name="LINK_BEGIN" />kvalifitseerimata komponendid<ph name="LINK_END" />. Selleks et kõik kvalifitseeritud komponendid oleksid tuvastatud, värskendage Chrome OS uusimale versioonile.</translation>
 <translation id="2180197493692062006">Midagi läks valesti. Proovige rakendus uuesti avada.</translation>
+<translation id="2182088270354640012">Täname tagasiside eest. Teie tagasiside aitab Chrome OS-i täiustada ja meie Chrome OS-i tiim vaatab selle üle. Kuna meile saadetakse rohkelt teavitusi, ei saada me teile otsevastust.</translation>
 <translation id="2209788852729124853">Liiklusloendurite lähtestamine</translation>
 <translation id="2212733584906323460">Nime lahendamine</translation>
 <translation id="2217935453350629363">Praegune kiirus</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Skannerite otsimine</translation>
 <translation id="3246869037381808805">Prinditööd, mis on vanemad kui 1 päev, eemaldatakse</translation>
 <translation id="3268178239013324452">Ebaõnnestus – luuk on avatud</translation>
+<translation id="3275729367986477355">Avatari pilt</translation>
 <translation id="3283504360622356314">{0,plural, =1{Muuda faili}other{Muuda faile}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Võtme suund</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Lisaabi saamiseks avage <ph name="BEGIN_LINK" />abikeskus<ph name="END_LINK" />.</translation>
 <translation id="4793756956024303490">Tihendamisalgoritm</translation>
 <translation id="4794140124556169553">Protsessori testi käitamine võib mõjutada teie süsteemi jõudlust</translation>
+<translation id="4800589996161293643">Chromebooki kogukond</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
 <translation id="4808449224298348341">Prinditöö <ph name="DOCUMENT_TITLE" /> tühistati</translation>
 <translation id="4809927044794281115">Hele teema</translation>
@@ -486,6 +493,7 @@
 Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Logi välja</translation>
+<translation id="522307662484862935">Ära lisa e-posti aadressi</translation>
 <translation id="5227902338748591677">Tumeda teema ajakava</translation>
 <translation id="5234764350956374838">Loobu</translation>
 <translation id="5252456968953390977">Rändlus</translation>
@@ -612,6 +620,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="6284632978374966585">Tumeda teema sisselülitamine</translation>
 <translation id="6295178529664209245">Kas jätkata remondiga?</translation>
 <translation id="6302401976930124515">Test <ph name="TEST_NAME" /> tühistati</translation>
+<translation id="631063167932043783">Rakendus Avastamine</translation>
 <translation id="6319207335391420837">Seadme <ph name="DEVICE_NAME" /> püsivara värskendamine</translation>
 <translation id="6321407676395378991">Ekraanisäästja sisselülitamine</translation>
 <translation id="6325525973963619867">Ebaõnnestus</translation>
@@ -623,6 +632,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="6379086450106841622">Puuteekraan</translation>
 <translation id="6381741036071372448">Testige oma klaviatuuri</translation>
 <translation id="6388847657025262518">Skanneri dokumendisöötur on ummistunud. Kontrollige sööturit ja proovige uuesti.</translation>
+<translation id="6394634179843537518">Lisa fail</translation>
 <translation id="6410257289063177456">Pildifailid</translation>
 <translation id="641081527798843608">Teema vaste</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="6516990319416533844">Aku laadimiskiiruse testimiseks laske akul lühikese perioodi jooksul tühjeneda</translation>
 <translation id="6517239166834772319">Avastamine</translation>
 <translation id="6527081081771465939">Tundmatu WiFi-turvaprotokoll</translation>
+<translation id="6535178685492749208">Võrguühendus puudub. Tagasiside saadetakse hiljem.</translation>
 <translation id="65587193855025101">Tasaskanner</translation>
 <translation id="6564646048574748301">Ebaõnnestus – printeriga ei saa ühendust</translation>
 <translation id="6566314079205407217">Mitme lehe skannimine</translation>
@@ -717,6 +728,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="7297226631177386107">Ei saa HTTPS-veebisaitidega läbi tulemüüri ühendust luua</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Küsige Chromebooki abifoorumis asjatundjatelt nõu</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google'i otsingus tulemuste nägemiseks vajutage korraga otsingu- ja tühikuklahvi.</translation>
 <translation id="7343649194310845056">Võrguseadmed</translation>
@@ -759,9 +771,11 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="773153675489693198">Tsüklite arv</translation>
 <translation id="7747039790905080783">Eeljagatud võti</translation>
 <translation id="7762130827864645708">Parooli muutmine õnnestus. Edaspidi kasutage uut parooli.</translation>
+<translation id="7762839321248874531">Saada <ph name="BEGIN_LINK1" />süsteemi ja rakenduste teave<ph name="END_LINK1" /> ning <ph name="BEGIN_LINK2" />mõõdikud<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Domeenisufiksi vaste</translation>
 <translation id="7769672763586021400">Mudeli ID</translation>
 <translation id="7784116172884276937">Seadistatud pole ühtegi DNS-serverit</translation>
+<translation id="779591286616261875">Saada uus aruanne</translation>
 <translation id="7799817062559422778">Hele režiim</translation>
 <translation id="780301667611848630">Ei, aitäh</translation>
 <translation id="7805768142964895445">Olek</translation>
@@ -828,6 +842,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="8382302752385457774">Tähistamata toode</translation>
 <translation id="8395584934117017006">Seda seadet <ph name="DEVICE_TYPE" /> haldab ettevõte</translation>
 <translation id="8398927464629426868">Praegune seadme laadimise või tühjenemise kiirus</translation>
+<translation id="8420955526972171689">Käitage teste ja tehke veaotsingut, et lahendada riistvaraprobleeme</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Sisemine klaviatuur</translation>
 <translation id="8431300646573772016">Mis on Chrome OS-is uut?</translation>
@@ -913,6 +928,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="9082718469794970195">Kasuta seda videot</translation>
 <translation id="9087578468327036362">Teatage sellest päringust</translation>
 <translation id="9088306295921699330">Praegune kasutus</translation>
+<translation id="9092255287806472980">Teie tagasiside aitab Chrome OS-i täiustada ja meie tiim vaatab selle üle. Kuna saame rohkelt teavitusi, ei saa me vastust saata.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">Peate seadme lahti võtma</translation>
 <translation id="9098156406873149060">Säilita kasutaja andmed</translation>

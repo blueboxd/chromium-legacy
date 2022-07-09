@@ -23,6 +23,8 @@
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
@@ -54,8 +56,12 @@ constexpr int kStatusIndicatorActiveSize = 8;
 constexpr int kStatusIndicatorRunningSize = 4;
 constexpr int kStatusIndicatorThickness = 2;
 
-constexpr int kNotificationIndicatorRadiusDip = 6;
-constexpr int kNotificationIndicatorPadding = 1;
+// The size of the notification indicator circle over the size of the icon.
+constexpr float kNotificationIndicatorWidthRatio = 14.0f / 64.0f;
+
+// The size of the notification indicator circle padding over the size of the
+// icon.
+constexpr float kNotificationIndicatorPaddingRatio = 4.0f / 64.0f;
 
 constexpr SkColor kDefaultIndicatorColor = SK_ColorWHITE;
 constexpr SkAlpha kInactiveIndicatorOpacity = 0x80;
@@ -153,6 +159,8 @@ class ShelfAppButton::AppStatusIndicatorView
       public views::View,
       public ShelfAppButtonAnimation::Observer {
  public:
+  METADATA_HEADER(AppStatusIndicatorView);
+
   AppStatusIndicatorView() {
     // Make sure the events reach the parent view for handling.
     SetCanProcessEventsWithinSubtree(false);
@@ -290,6 +298,9 @@ class ShelfAppButton::AppStatusIndicatorView
   std::unique_ptr<gfx::SlideAnimation> status_change_animation_;
   base::TimeTicks animation_end_time_;  // For attention throbbing underline.
 };
+
+BEGIN_METADATA(ShelfAppButton, AppStatusIndicatorView, views::View)
+END_METADATA
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfAppButton
@@ -613,7 +624,8 @@ gfx::Rect ShelfAppButton::CalculateSmallRippleArea() const {
   // the shelf when there is a non-zero padding between the app icon and the
   // end of scrollable shelf.
   if (TabletModeController::Get()->InTabletMode() && padding > 0) {
-    const int current_index = shelf_view_->view_model()->GetIndexOfView(this);
+    const size_t current_index =
+        shelf_view_->view_model()->GetIndexOfView(this).value();
     int left_padding =
         (shelf_view_->visible_views_indices().front() == current_index)
             ? padding
@@ -729,12 +741,13 @@ gfx::Rect ShelfAppButton::GetIconViewBounds(const gfx::Rect& button_bounds,
 gfx::Rect ShelfAppButton::GetNotificationIndicatorBounds(float icon_scale) {
   gfx::Rect scaled_icon_view_bounds =
       GetIconViewBounds(GetContentsBounds(), icon_scale);
-  float diameter =
-      std::floor(kNotificationIndicatorRadiusDip * icon_scale * 2.0f);
-  return gfx::Rect(scaled_icon_view_bounds.right() - diameter -
-                       kNotificationIndicatorPadding,
-                   scaled_icon_view_bounds.y() + kNotificationIndicatorPadding,
-                   diameter, diameter);
+  float diameter = std::ceil(kNotificationIndicatorWidthRatio *
+                             scaled_icon_view_bounds.width());
+  float padding = std::ceil(kNotificationIndicatorPaddingRatio *
+                            scaled_icon_view_bounds.width());
+  return gfx::ToRoundedRect(
+      gfx::RectF(scaled_icon_view_bounds.right() - diameter - padding,
+                 scaled_icon_view_bounds.y() + padding, diameter, diameter));
 }
 
 void ShelfAppButton::Layout() {

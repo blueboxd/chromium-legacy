@@ -1203,13 +1203,18 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   // Unless this is a WebSocket request, in which case we pass it on up.
   if (response_.headers->response_code() / 100 == 1 &&
       !ForWebSocketHandshake()) {
-    response_.headers = new HttpResponseHeaders(std::string());
+    response_.headers =
+        base::MakeRefCounted<HttpResponseHeaders>(std::string());
     next_state_ = STATE_READ_HEADERS;
     return OK;
   }
 
+  const bool has_body_with_null_source =
+      request_->upload_data_stream &&
+      request_->upload_data_stream->has_null_source();
   if (response_.headers->response_code() == 421 &&
-      (enable_ip_based_pooling_ || enable_alternative_services_)) {
+      (enable_ip_based_pooling_ || enable_alternative_services_) &&
+      !has_body_with_null_source) {
 #if BUILDFLAG(ENABLE_REPORTING)
     GenerateNetworkErrorLoggingReport(OK);
 #endif  // BUILDFLAG(ENABLE_REPORTING)

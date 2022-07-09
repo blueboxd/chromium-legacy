@@ -35,12 +35,12 @@
 #include "chrome/browser/policy/policy_ui_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/status_provider/cloud_policy_core_status_provider.h"
+#include "chrome/browser/policy/status_provider/status_provider_util.h"
+#include "chrome/browser/policy/status_provider/user_cloud_policy_status_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/managed_ui.h"
-#include "chrome/browser/ui/webui/policy/status_provider/cloud_policy_core_status_provider.h"
-#include "chrome/browser/ui/webui/policy/status_provider/status_provider_util.h"
-#include "chrome/browser/ui/webui/policy/status_provider/user_cloud_policy_status_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
@@ -94,19 +94,19 @@
 #include "chrome/browser/ash/policy/off_hours/device_off_hours_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/ui/webui/policy/status_provider/device_active_directory_policy_status_provider.h"
-#include "chrome/browser/ui/webui/policy/status_provider/device_cloud_policy_status_provider_chromeos.h"
-#include "chrome/browser/ui/webui/policy/status_provider/device_local_account_policy_status_provider.h"
-#include "chrome/browser/ui/webui/policy/status_provider/user_active_directory_policy_status_provider.h"
-#include "chrome/browser/ui/webui/policy/status_provider/user_cloud_policy_status_provider_chromeos.h"
+#include "chrome/browser/policy/status_provider/device_active_directory_policy_status_provider.h"
+#include "chrome/browser/policy/status_provider/device_cloud_policy_status_provider_chromeos.h"
+#include "chrome/browser/policy/status_provider/device_local_account_policy_status_provider.h"
+#include "chrome/browser/policy/status_provider/user_active_directory_policy_status_provider.h"
+#include "chrome/browser/policy/status_provider/user_cloud_policy_status_provider_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #else
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/ui/webui/policy/status_provider/device_policy_status_provider_lacros.h"
-#include "chrome/browser/ui/webui/policy/status_provider/user_policy_status_provider_lacros.h"
+#include "chrome/browser/policy/status_provider/device_policy_status_provider_lacros.h"
+#include "chrome/browser/policy/status_provider/user_policy_status_provider_lacros.h"
 #include "chromeos/crosapi/mojom/policy_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #endif
@@ -124,7 +124,7 @@
 #include <DSRole.h>
 
 #include "chrome/browser/google/google_update_policy_fetcher_win.h"
-#include "chrome/browser/ui/webui/policy/status_provider/updater_status_provider.h"
+#include "chrome/browser/policy/status_provider/updater_status_provider.h"
 #include "chrome/install_static/install_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -152,8 +152,8 @@ PolicyUIHandler::~PolicyUIHandler() {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-void PolicyUIHandler::OnGotDevicePolicy(base::Value device_policy,
-                                        base::Value legend_data) {
+void PolicyUIHandler::OnGotDevicePolicy(base::Value::Dict device_policy,
+                                        base::Value::Dict legend_data) {
   if (device_policy != device_policy_) {
     device_policy_ = std::move(device_policy);
     static_cast<DevicePolicyStatusProviderLacros*>(
@@ -161,6 +161,19 @@ void PolicyUIHandler::OnGotDevicePolicy(base::Value device_policy,
         ->SetDevicePolicyStatus(std::move(legend_data));
     SendPolicies();
   }
+}
+
+void PolicyUIHandler::OnGotDevicePolicyDeprecated(base::Value device_policy,
+                                                  base::Value legend_data) {
+  base::Value::Dict device_policy_dict;
+  base::Value::Dict legend_data_dict;
+  if (device_policy.is_dict()) {
+    device_policy_dict = std::move(device_policy.GetDict());
+  }
+  if (legend_data.is_dict()) {
+    legend_data_dict = std::move(legend_data.GetDict());
+  }
+  OnGotDevicePolicy(std::move(device_policy_dict), std::move(legend_data_dict));
 }
 #endif
 
@@ -329,14 +342,23 @@ void PolicyUIHandler::RegisterMessages() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::LacrosService* service = chromeos::LacrosService::Get();
   // Get device policy.
-  if (service->IsAvailable<crosapi::mojom::DeviceSettingsService>() &&
-      service->GetInterfaceVersion(
-          crosapi::mojom::DeviceSettingsService::Uuid_) >=
-          static_cast<int>(crosapi::mojom::DeviceSettingsService::
-                               kGetDevicePolicyMinVersion)) {
-    service->GetRemote<crosapi::mojom::DeviceSettingsService>()
-        ->GetDevicePolicy(base::BindOnce(&PolicyUIHandler::OnGotDevicePolicy,
-                                         weak_factory_.GetWeakPtr()));
+  if (service->IsAvailable<crosapi::mojom::DeviceSettingsService>()) {
+    if (service->GetInterfaceVersion(
+            crosapi::mojom::DeviceSettingsService::Uuid_) >=
+        static_cast<int>(crosapi::mojom::DeviceSettingsService::
+                             kGetDevicePolicyMinVersion)) {
+      service->GetRemote<crosapi::mojom::DeviceSettingsService>()
+          ->GetDevicePolicy(base::BindOnce(&PolicyUIHandler::OnGotDevicePolicy,
+                                           weak_factory_.GetWeakPtr()));
+    } else if (service->GetInterfaceVersion(
+                   crosapi::mojom::DeviceSettingsService::Uuid_) >=
+               static_cast<int>(crosapi::mojom::DeviceSettingsService::
+                                    kGetDevicePolicyDeprecatedMinVersion)) {
+      service->GetRemote<crosapi::mojom::DeviceSettingsService>()
+          ->GetDevicePolicyDeprecated(
+              base::BindOnce(&PolicyUIHandler::OnGotDevicePolicyDeprecated,
+                             weak_factory_.GetWeakPtr()));
+    }
   }
 #endif
 
@@ -531,50 +553,42 @@ void PolicyUIHandler::SendStatus() {
   FireWebUIListener("status-updated", GetStatusValue(/*for_webui*/ true));
 }
 
-base::DictionaryValue PolicyUIHandler::GetStatusValue(bool for_webui) const {
-  std::unique_ptr<base::DictionaryValue> device_status(
-      new base::DictionaryValue);
-  device_status_provider_->GetStatus(device_status.get());
-  std::unique_ptr<base::DictionaryValue> user_status(new base::DictionaryValue);
-  user_status_provider_->GetStatus(user_status.get());
-  const std::string* username = user_status->FindStringKey("username");
+base::Value PolicyUIHandler::GetStatusValue(bool for_webui) const {
+  base::Value::Dict device_status = device_status_provider_->GetStatus();
+  base::Value::Dict user_status = user_status_provider_->GetStatus();
+  const std::string* username = user_status.FindString("username");
   if (username && !username->empty())
-    user_status->SetStringKey("domain", gaia::ExtractDomainName(*username));
+    user_status.Set("domain", gaia::ExtractDomainName(*username));
 
-  std::unique_ptr<base::DictionaryValue> machine_status(
-      new base::DictionaryValue);
-  machine_status_provider_->GetStatus(machine_status.get());
+  base::Value::Dict machine_status = machine_status_provider_->GetStatus();
 
-  std::unique_ptr<base::DictionaryValue> updater_status(
-      new base::DictionaryValue);
-  updater_status_provider_->GetStatus(updater_status.get());
+  base::Value::Dict updater_status = updater_status_provider_->GetStatus();
 
-  base::DictionaryValue status;
-  if (!device_status->DictEmpty()) {
+  base::Value::Dict status;
+  if (!device_status.empty()) {
     if (for_webui)
-      device_status->SetStringKey("boxLegendKey", "statusDevice");
+      device_status.Set("boxLegendKey", "statusDevice");
     status.Set("device", std::move(device_status));
   }
 
-  if (!machine_status->DictEmpty()) {
+  if (!machine_status.empty()) {
     if (for_webui)
-      machine_status->SetStringKey("boxLegendKey", GetMachineStatusLegendKey());
-
+      machine_status.Set("boxLegendKey", GetMachineStatusLegendKey());
     status.Set("machine", std::move(machine_status));
   }
 
-  if (!user_status->DictEmpty()) {
+  if (!user_status.empty()) {
     if (for_webui)
-      user_status->SetStringKey("boxLegendKey", "statusUser");
+      user_status.Set("boxLegendKey", "statusUser");
     status.Set("user", std::move(user_status));
   }
 
-  if (!updater_status->DictEmpty()) {
+  if (!updater_status.empty()) {
     if (for_webui)
-      updater_status->SetStringKey("boxLegendKey", "statusUpdater");
+      updater_status.Set("boxLegendKey", "statusUpdater");
     status.Set("updater", std::move(updater_status));
   }
-  return status;
+  return base::Value(std::move(status));
 }
 
 void PolicyUIHandler::HandleExportPoliciesJson(const base::Value::List& args) {

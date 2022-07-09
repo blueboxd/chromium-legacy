@@ -11,37 +11,46 @@ import {BrailleCaptionsBackground} from '/chromevox/background/braille/braille_c
 import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
 import {ChromeVoxBackground} from '/chromevox/background/classic_background.js';
 import {Color} from '/chromevox/background/color.js';
+import {CommandHandlerInterface} from '/chromevox/background/command_handler_interface.js';
 import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
 import {TypingEcho} from '/chromevox/background/editing/editable_text_base.js';
 import {EventSourceState} from '/chromevox/background/event_source.js';
 import {GestureInterface} from '/chromevox/background/gesture_interface.js';
 import {Output} from '/chromevox/background/output/output.js';
+import {PhoneticData} from '/chromevox/background/phonetic_data.js';
 import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
 import {SmartStickyMode} from '/chromevox/background/smart_sticky_mode.js';
 import {AbstractTts} from '/chromevox/common/abstract_tts.js';
 import {CommandStore} from '/chromevox/common/command_store.js';
-import {CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
+import {ChromeVoxEvent, CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
 import {EventSourceType} from '/chromevox/common/event_source_type.js';
 import {GestureGranularity} from '/chromevox/common/gesture_command_data.js';
 import {ChromeVoxKbHandler} from '/chromevox/common/keyboard_handler.js';
 import {PanelCommand, PanelCommandType} from '/chromevox/common/panel_command.js';
+import {CursorRange} from '/common/cursors/range.js';
 import {EventGenerator} from '/common/event_generator.js';
 
-const ActionType = chrome.automation.ActionType;
-const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
-const StateType = chrome.automation.StateType;
 
 export class CommandHandler extends CommandHandlerInterface {
   /** @private */
   constructor() {
     super();
 
+    /**
+     * To support viewGraphicAsBraille_(), the current image node.
+     * @type {?AutomationNode}
+     */
+    this.imageNode_;
+
     /** @private {boolean} */
     this.isIncognito_ = Boolean(chrome.runtime.getManifest()['incognito']);
+
+    /** @private {boolean} */
+    this.isKioskSession_ = false;
 
     /** @private {boolean} */
     this.languageLoggingEnabled_ = false;
@@ -52,24 +61,13 @@ export class CommandHandler extends CommandHandlerInterface {
      */
     this.smartStickyMode_ = new SmartStickyMode();
 
-    /**
-     * To support viewGraphicAsBraille_(), the current image node.
-     * @type {AutomationNode?};
-     */
-    this.imageNode_;
-
-    /** @private {boolean} */
-    this.isKioskSession_ = false;
-
     this.init();
   }
 
   /** @override */
   onCommand(command) {
     // Check for a command denied in incognito contexts and kiosk.
-    if ((this.isIncognito_ || this.isKioskSession_) &&
-        CommandStore.CMD_ALLOWLIST[command] &&
-        CommandStore.CMD_ALLOWLIST[command].denyOOBE) {
+    if (!this.isAllowed_(command)) {
       return true;
     }
 
@@ -648,8 +646,10 @@ export class CommandHandler extends CommandHandlerInterface {
       case 'nextObject':
         skipSettingSelection = true;
         didNavigate = true;
-        unit = cursors.Unit.NODE;
-        current = current.move(cursors.Unit.NODE, dir);
+        unit = (EventSourceState.get() === EventSourceType.TOUCH_GESTURE) ?
+            cursors.Unit.GESTURE_NODE :
+            cursors.Unit.NODE;
+        current = current.move(unit, dir);
         current = this.skipLabelOrDescriptionFor(current, dir);
         break;
       case 'previousGroup':
@@ -711,7 +711,7 @@ export class CommandHandler extends CommandHandlerInterface {
         const node = AutomationUtil.findNodePost(
             current.start.node.root, Dir.FORWARD, AutomationPredicate.object);
         if (node) {
-          current = cursors.Range.fromNode(node);
+          current = CursorRange.fromNode(node);
         }
         tryScrolling = false;
       } break;
@@ -719,7 +719,7 @@ export class CommandHandler extends CommandHandlerInterface {
         const node = AutomationUtil.findLastNode(
             current.start.node.root, AutomationPredicate.object);
         if (node) {
-          current = cursors.Range.fromNode(node);
+          current = CursorRange.fromNode(node);
         }
         tryScrolling = false;
       } break;
@@ -753,7 +753,7 @@ export class CommandHandler extends CommandHandlerInterface {
           }
           if (actionNode.inPageLinkTarget) {
             ChromeVoxState.instance.navigateToRange(
-                cursors.Range.fromNode(actionNode.inPageLinkTarget));
+                CursorRange.fromNode(actionNode.inPageLinkTarget));
           } else {
             actionNode.doDefault();
           }
@@ -767,7 +767,7 @@ export class CommandHandler extends CommandHandlerInterface {
         }
         if (node && node.details.length) {
           // TODO currently can only jump to first detail.
-          current = cursors.Range.fromNode(node.details[0]);
+          current = CursorRange.fromNode(node.details[0]);
         }
       } break;
       case 'readFromHere':
@@ -809,7 +809,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
         {
           const startNode = ChromeVoxState.instance.currentRange.start.node;
-          const collapsedRange = cursors.Range.fromNode(startNode);
+          const collapsedRange = CursorRange.fromNode(startNode);
           const o =
               new Output()
                   .withoutHints()
@@ -912,7 +912,7 @@ export class CommandHandler extends CommandHandlerInterface {
         } else {
           const root = ChromeVoxState.instance.currentRange.start.node.root;
           if (root && root.selectionStartObject && root.selectionEndObject) {
-            const sel = new cursors.Range(
+            const sel = new CursorRange(
                 new cursors.Cursor(
                     root.selectionStartObject, root.selectionStartOffset),
                 new cursors.Cursor(
@@ -990,7 +990,7 @@ export class CommandHandler extends CommandHandlerInterface {
             node, command === 'goToRowLastCell' ? Dir.BACKWARD : Dir.FORWARD,
             AutomationPredicate.leaf);
         if (end) {
-          current = cursors.Range.fromNode(end);
+          current = CursorRange.fromNode(end);
         }
       } break;
       case 'goToColFirstCell': {
@@ -1004,7 +1004,7 @@ export class CommandHandler extends CommandHandlerInterface {
         const tableOpts = {col: true, dir, end: true};
         pred = AutomationPredicate.makeTableCellPredicate(
             current.start.node, tableOpts);
-        current = cursors.Range.fromNode(node.firstChild);
+        current = CursorRange.fromNode(node.firstChild);
         // Should not be outputted.
         predErrorMsg = 'no_cell_above';
         rootPred = AutomationPredicate.table;
@@ -1030,7 +1030,7 @@ export class CommandHandler extends CommandHandlerInterface {
                !AutomationPredicate.cellLike(startNode.role)) {
           startNode = startNode.lastChild;
         }
-        current = cursors.Range.fromNode(startNode);
+        current = CursorRange.fromNode(startNode);
         matchCurrent = true;
 
         // Should not be outputted.
@@ -1051,7 +1051,7 @@ export class CommandHandler extends CommandHandlerInterface {
             node, command === 'goToLastCell' ? Dir.BACKWARD : Dir.FORWARD,
             AutomationPredicate.leaf);
         if (end) {
-          current = cursors.Range.fromNode(end);
+          current = CursorRange.fromNode(end);
         }
       } break;
 
@@ -1221,7 +1221,7 @@ export class CommandHandler extends CommandHandlerInterface {
         }
 
         if (node) {
-          current = cursors.Range.fromNode(node);
+          current = CursorRange.fromNode(node);
         } else {
           ChromeVox.earcons.playEarcon(Earcon.WRAP);
           if (!shouldWrap) {
@@ -1261,7 +1261,7 @@ export class CommandHandler extends CommandHandlerInterface {
           }
 
           if (node) {
-            current = cursors.Range.fromNode(node);
+            current = CursorRange.fromNode(node);
           } else if (predErrorMsg) {
             new Output()
                 .withString(Msgs.getMsg(predErrorMsg))
@@ -1317,7 +1317,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /**
    * Called when an image frame is received on a node.
-   * @param {!(AutomationEvent|CustomAutomationEvent)} event The event.
+   * @param {!ChromeVoxEvent} event The event.
    * @private
    */
   onImageFrameUpdated_(event) {
@@ -1343,7 +1343,7 @@ export class CommandHandler extends CommandHandlerInterface {
   /**
    * Handle the command to view the first graphic within the current range
    * as braille.
-   * @param {!cursors.Range} current The current range.
+   * @param {!CursorRange} current The current range.
    * @private
    */
   viewGraphicAsBraille_(current) {
@@ -1425,7 +1425,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
         if (textEditHandler.isSelectionOnFirstLine()) {
           ChromeVoxState.instance.setCurrentRange(
-              cursors.Range.fromNode(textEditHandler.node));
+              CursorRange.fromNode(textEditHandler.node));
           return true;
         }
         EventGenerator.sendKeyPress(KeyCode.HOME);
@@ -1448,7 +1448,7 @@ export class CommandHandler extends CommandHandlerInterface {
         }
         if (textEditHandler.isSelectionOnFirstLine()) {
           ChromeVoxState.instance.setCurrentRange(
-              cursors.Range.fromNode(textEditHandler.node));
+              CursorRange.fromNode(textEditHandler.node));
           return true;
         }
         EventGenerator.sendKeyPress(KeyCode.PRIOR);
@@ -1477,7 +1477,6 @@ export class CommandHandler extends CommandHandlerInterface {
   }
 
   /** @override */
-
   skipLabelOrDescriptionFor(current, dir) {
     if (!current) {
       return null;
@@ -1513,7 +1512,7 @@ export class CommandHandler extends CommandHandlerInterface {
     const cur = ChromeVoxState.instance.currentRange;
     if (cur && !cur.isValid()) {
       ChromeVoxState.instance.setCurrentRange(
-          cursors.Range.fromNode(focusedNode));
+          CursorRange.fromNode(focusedNode));
     }
 
     if (!focusedNode) {
@@ -1531,6 +1530,15 @@ export class CommandHandler extends CommandHandlerInterface {
         focusedNode.role === RoleType.CLIENT) {
       ChromeVoxState.instance.setCurrentRange(null);
     }
+  }
+
+  isAllowed_(command) {
+    if (!this.isIncognito_ && !this.isKioskSession_) {
+      return true;
+    }
+
+    return !CommandStore.CMD_ALLOWLIST[command] ||
+        !CommandStore.CMD_ALLOWLIST[command].denySignedOut;
   }
 
   /**

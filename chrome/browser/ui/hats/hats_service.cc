@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/accuracy_tips/features.h"
+#include "components/history_clusters/core/features.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/permissions/constants.h"
 #include "components/permissions/features.h"
@@ -39,6 +40,10 @@ constexpr char kHatsSurveyTriggerAccuracyTips[] = "accuracy-tips";
 constexpr char kHatsSurveyTriggerAutofillAddress[] = "autofill-address";
 constexpr char kHatsSurveyTriggerAutofillCard[] = "autofill-card";
 constexpr char kHatsSurveyTriggerAutofillPassword[] = "autofill-password";
+constexpr char kHatsSurveyTriggerJourneysHistoryEntrypoint[] =
+    "journeys-history-entrypoint";
+constexpr char kHatsSurveyTriggerJourneysOmniboxEntrypoint[] =
+    "journeys-omnibox-entrypoint";
 constexpr char kHatsSurveyTriggerNtpModules[] = "ntp-modules";
 constexpr char kHatsSurveyTriggerNtpPhotosModuleOptOut[] =
     "ntp-photos-module-opt-out";
@@ -140,6 +145,14 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
   survey_configs.emplace_back(&features::kHaTSDesktopDevToolsIssuesCSP,
                               "devtools-issues-csp",
                               "c9fjDmwjb0ugnJ3q1cK0USeAJJ9C");
+
+  // Journeys surveys.
+  survey_configs.emplace_back(
+      &history_clusters::kJourneysSurveyForHistoryEntrypoint,
+      kHatsSurveyTriggerJourneysHistoryEntrypoint);
+  survey_configs.emplace_back(
+      &history_clusters::kJourneysSurveyForOmniboxEntrypoint,
+      kHatsSurveyTriggerJourneysOmniboxEntrypoint);
 
   // Settings surveys.
   survey_configs.emplace_back(
@@ -665,10 +678,10 @@ bool HatsService::CanShowSurvey(const std::string& trigger) const {
     return false;
   }
 
-  const base::Value* pref_data =
-      profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
+  const base::Value::Dict& pref_data =
+      profile_->GetPrefs()->GetValueDict(prefs::kHatsSurveyMetadata);
   absl::optional<int> last_major_version =
-      pref_data->FindIntPath(GetMajorVersionPath(trigger));
+      pref_data.FindIntByDottedPath(GetMajorVersionPath(trigger));
   if (last_major_version.has_value() &&
       static_cast<uint32_t>(*last_major_version) ==
           version_info::GetVersion().components()[0]) {
@@ -680,7 +693,7 @@ bool HatsService::CanShowSurvey(const std::string& trigger) const {
 
   if (!config.user_prompted) {
     absl::optional<base::Time> last_survey_started_time = base::ValueToTime(
-        pref_data->FindPath(GetLastSurveyStartedTime(trigger)));
+        pref_data.FindByDottedPath(GetLastSurveyStartedTime(trigger)));
     if (last_survey_started_time.has_value()) {
       base::TimeDelta elapsed_time_since_last_start =
           base::Time::Now() - *last_survey_started_time;
@@ -695,8 +708,8 @@ bool HatsService::CanShowSurvey(const std::string& trigger) const {
 
   // If an attempt to check with the HaTS servers whether a survey should be
   // delivered was made too recently, another survey cannot be shown.
-  absl::optional<base::Time> last_survey_check_time =
-      base::ValueToTime(pref_data->FindPath(GetLastSurveyCheckTime(trigger)));
+  absl::optional<base::Time> last_survey_check_time = base::ValueToTime(
+      pref_data.FindByDottedPath(GetLastSurveyCheckTime(trigger)));
   if (last_survey_check_time.has_value()) {
     base::TimeDelta elapsed_time_since_last_check =
         base::Time::Now() - *last_survey_check_time;
@@ -734,8 +747,8 @@ bool HatsService::CanShowAnySurvey(bool user_prompted) const {
   // confrontational manner than the standard HaTS prompt). The bar for whether
   // a user is eligible is thus lower for these types of surveys.
   if (!user_prompted) {
-    const base::Value* pref_data =
-        profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
+    const base::Value::Dict& pref_data =
+        profile_->GetPrefs()->GetValueDict(prefs::kHatsSurveyMetadata);
 
     // If the profile is too new, measured as the age of the profile directory,
     // the user is ineligible.
@@ -749,7 +762,7 @@ bool HatsService::CanShowAnySurvey(bool user_prompted) const {
     // If a user has received any HaTS survey too recently, they are also
     // ineligible.
     absl::optional<base::Time> last_any_started_time =
-        base::ValueToTime(pref_data->FindPath(kAnyLastSurveyStartedTimePath));
+        base::ValueToTime(pref_data.Find(kAnyLastSurveyStartedTimePath));
     if (last_any_started_time.has_value()) {
       base::TimeDelta elapsed_time_any_started = now - *last_any_started_time;
       if (elapsed_time_any_started < kMinimumTimeBetweenAnySurveyStarts) {
@@ -789,10 +802,10 @@ void HatsService::CheckSurveyStatusAndMaybeShow(
   // Check the survey status in profile first.
   // We record the survey's over capacity information in user profile to avoid
   // duplicated checks since the survey won't change once it is full.
-  const base::Value* pref_data =
-      profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
+  const base::Value::Dict& pref_data =
+      profile_->GetPrefs()->GetValueDict(prefs::kHatsSurveyMetadata);
   absl::optional<int> is_full =
-      pref_data->FindBoolPath(GetIsSurveyFull(trigger));
+      pref_data.FindBoolByDottedPath(GetIsSurveyFull(trigger));
   if (is_full.has_value() && is_full) {
     std::move(failure_callback).Run();
     return;

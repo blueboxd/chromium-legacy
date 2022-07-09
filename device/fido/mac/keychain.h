@@ -54,7 +54,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) API_AVAILABLE(macos(10.12.2)) Keychain {
   Keychain();
   virtual ~Keychain();
 
- private:
+ protected:
   friend class base::NoDestructor<Keychain>;
   friend class ScopedTouchIdTestEnvironment;
 

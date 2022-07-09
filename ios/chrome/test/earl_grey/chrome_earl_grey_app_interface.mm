@@ -1071,11 +1071,6 @@ NSString* SerializedValue(const base::Value* value) {
   return std::find(ids.begin(), ids.end(), variationID) != ids.end();
 }
 
-+ (BOOL)isAddCredentialsInSettingsEnabled {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kSupportForAddPasswordsInSettings);
-}
-
 + (BOOL)isUKMEnabled {
   return base::FeatureList::IsEnabled(ukm::kUkmFeature);
 }
@@ -1201,6 +1196,12 @@ NSString* SerializedValue(const base::Value* value) {
   prefs->ClearPref(browsing_data::prefs::kDeleteFormData);
 }
 
++ (void)resetDataForLocalStatePref:(NSString*)prefName {
+  std::string path = base::SysNSStringToUTF8(prefName);
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  prefService->ClearPref(path);
+}
+
 #pragma mark - Unified Consent utilities
 
 + (void)setURLKeyedAnonymizedDataCollectionEnabled:(BOOL)enabled {
@@ -1229,8 +1230,8 @@ NSString* SerializedValue(const base::Value* value) {
   [[UIPasteboard generalPasteboard] setURLs:nil];
 }
 
-+ (NSString*)pasteboardString {
-  return [UIPasteboard generalPasteboard].string;
++ (NSArray<NSString*>*)pasteboardStrings {
+  return [UIPasteboard generalPasteboard].strings;
 }
 
 + (NSString*)pasteboardURLSpec {

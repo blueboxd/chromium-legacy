@@ -132,7 +132,6 @@ class WebDedicatedWorker;
 class WebDedicatedWorkerHostFactoryClient;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
-class WebMediaCapabilitiesClient;
 class WebPublicSuffixList;
 class WebResourceRequestSenderDelegate;
 class WebSandboxSupport;
@@ -385,11 +384,11 @@ class BLINK_PLATFORM_EXPORT Platform {
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // This is called after the compositor thread is created, so the embedder
-  // can initiate an IPC to change its thread priority (on Linux we can't
-  // increase the nice value, so we need to ask the browser process). This
-  // function is only called from the main thread (where InitializeCompositor-
-  // Thread() is called).
-  virtual void SetDisplayThreadPriority(base::PlatformThreadId) {}
+  // can initiate an IPC to change its thread type (on Linux we can't increase
+  // the nice value, so we need to ask the browser process). This function is
+  // only called from the main thread (where InitializeCompositor- Thread() is
+  // called).
+  virtual void SetCompositingThreadType(base::PlatformThreadId) {}
 #endif
 
   // Returns a blame context for attributing top-level work which does not
@@ -737,12 +736,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Using a more narrowly defined scope when possible is also generally better
   // for security.
   virtual ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker();
-
-  // Media Capabilities --------------------------------------------------
-
-  virtual WebMediaCapabilitiesClient* MediaCapabilitiesClient() {
-    return nullptr;
-  }
 
   // Media Log -----------------------------------------------------------
 

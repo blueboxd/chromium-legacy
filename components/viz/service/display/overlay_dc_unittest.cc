@@ -135,7 +135,7 @@ ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
 
 SolidColorDrawQuad* CreateSolidColorQuadAt(
     const SharedQuadState* shared_quad_state,
-    SkColor color,
+    SkColor4f color,
     AggregatedRenderPass* render_pass,
     const gfx::Rect& rect) {
   SolidColorDrawQuad* quad =
@@ -148,8 +148,8 @@ void CreateOpaqueQuadAt(DisplayResourceProvider* resource_provider,
                         const SharedQuadState* shared_quad_state,
                         AggregatedRenderPass* render_pass,
                         const gfx::Rect& rect,
-                        SkColor color) {
-  DCHECK_EQ(255u, SkColorGetA(color));
+                        SkColor4f color) {
+  DCHECK(color.isOpaque());
   auto* color_quad = render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad->SetNew(shared_quad_state, rect, rect, color, false);
 }
@@ -214,6 +214,8 @@ class DCLayerOverlayTest : public testing::Test {
         std::make_unique<DCTestOverlayProcessor>(output_surface_.get());
     overlay_processor_->set_using_dc_layers_for_testing(true);
     overlay_processor_->SetViewportSize(gfx::Size(256, 256));
+    overlay_processor_
+        ->set_frames_since_last_qualified_multi_overlays_for_testing(5);
     EXPECT_TRUE(overlay_processor_->IsOverlaySupported());
   }
 
@@ -239,6 +241,61 @@ class DCLayerOverlayTest : public testing::Test {
   std::vector<gfx::Rect> content_bounds_;
 };
 
+TEST_F(DCLayerOverlayTest, DisableVideoOverlayIfMovingFeature) {
+  auto ProcessForOverlaysSingleVideoRectWithOffset =
+      [&](gfx::Vector2d video_rect_offset) {
+        auto pass = CreateRenderPass();
+        auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
+            resource_provider_.get(), child_resource_provider_.get(),
+            child_provider_.get(), pass->shared_quad_state_list.back(),
+            pass.get());
+        video_quad->rect = gfx::Rect(0, 0, 10, 10) + video_rect_offset;
+        video_quad->visible_rect = gfx::Rect(0, 0, 10, 10) + video_rect_offset;
+
+        DCLayerOverlayList dc_layer_list;
+        OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+        OverlayProcessorInterface::FilterOperationsMap
+            render_pass_backdrop_filters;
+
+        AggregatedRenderPassList pass_list;
+        pass_list.push_back(std::move(pass));
+
+        overlay_processor_->ProcessForOverlays(
+            resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+            render_pass_filters, render_pass_backdrop_filters, {}, nullptr,
+            &dc_layer_list, &damage_rect_, &content_bounds_);
+
+        return dc_layer_list;
+      };
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        features::kDisableVideoOverlayIfMoving);
+    EXPECT_EQ(1U, ProcessForOverlaysSingleVideoRectWithOffset({0, 0}).size());
+    EXPECT_EQ(1U, ProcessForOverlaysSingleVideoRectWithOffset({1, 0}).size());
+  }
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kDisableVideoOverlayIfMoving);
+    // We expect an overlay promotion after a couple frames of no movement
+    for (int i = 0; i < 10; i++) {
+      ProcessForOverlaysSingleVideoRectWithOffset({0, 0}).size();
+    }
+    EXPECT_EQ(1U, ProcessForOverlaysSingleVideoRectWithOffset({0, 0}).size());
+
+    // Since the overlay candidate moved, we expect no overlays
+    EXPECT_EQ(0U, ProcessForOverlaysSingleVideoRectWithOffset({1, 0}).size());
+
+    // After some number of frames with no movement, we expect an overlay again
+    for (int i = 0; i < 10; i++) {
+      ProcessForOverlaysSingleVideoRectWithOffset({1, 0}).size();
+    }
+    EXPECT_EQ(1U, ProcessForOverlaysSingleVideoRectWithOffset({1, 0}).size());
+  }
+}
+
 TEST_F(DCLayerOverlayTest, Occluded) {
   {
     auto pass = CreateRenderPass();
@@ -246,7 +303,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     first_shared_state->overlay_damage_index = 0;
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(0, 3, 100, 100), SK_ColorWHITE);
+                       gfx::Rect(0, 3, 100, 100), SkColors::kWhite);
 
     SharedQuadState* second_shared_state =
         pass->CreateAndAppendSharedQuadState();
@@ -297,7 +354,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     first_shared_state->overlay_damage_index = 0;
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(3, 3, 100, 100), SK_ColorWHITE);
+                       gfx::Rect(3, 3, 100, 100), SkColors::kWhite);
 
     SharedQuadState* second_shared_state =
         pass->CreateAndAppendSharedQuadState();
@@ -354,11 +411,11 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
     // Occluding quad fully contained in video rect.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(0, 3, 100, 100), SK_ColorWHITE);
+                       gfx::Rect(0, 3, 100, 100), SkColors::kWhite);
     // Non-occluding quad fully outside video rect
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(210, 210, 20, 20), SK_ColorWHITE);
+                       gfx::Rect(210, 210, 20, 20), SkColors::kWhite);
 
     // Underlay video quad
     SharedQuadState* second_shared_state =
@@ -397,11 +454,11 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
     // Occluding quad fully contained in video rect.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(0, 3, 100, 100), SK_ColorWHITE);
+                       gfx::Rect(0, 3, 100, 100), SkColors::kWhite);
     // Non-occluding quad fully outside video rect
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(210, 210, 20, 20), SK_ColorWHITE);
+                       gfx::Rect(210, 210, 20, 20), SkColors::kWhite);
 
     // Underlay video quad
     SharedQuadState* second_shared_state =
@@ -478,7 +535,7 @@ TEST_F(DCLayerOverlayTest, ClipRect) {
     pass->shared_quad_state_list.back()->overlay_damage_index = 0;
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(0, 2, 100, 100), SK_ColorWHITE);
+                       gfx::Rect(0, 2, 100, 100), SkColors::kWhite);
     pass->shared_quad_state_list.back()->clip_rect = gfx::Rect(0, 3, 100, 100);
 
     SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
@@ -554,7 +611,7 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
     auto pass = CreateRenderPass();
     // Add a solid color quad on top
     SharedQuadState* shared_state_on_top = pass->shared_quad_state_list.back();
-    CreateSolidColorQuadAt(shared_state_on_top, SK_ColorRED, pass.get(),
+    CreateSolidColorQuadAt(shared_state_on_top, SkColors::kRed, pass.get(),
                            kOverlayBottomRightRect);
 
     SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
@@ -658,7 +715,7 @@ TEST_F(DCLayerOverlayTest, RoundedCorners) {
     // Create a solid quad.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(0, 0, 32, 32), SK_ColorRED);
+                       gfx::Rect(0, 0, 32, 32), SkColors::kRed);
 
     // Create a video YUV quad with rounded corners below the red solid quad.
     auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
@@ -716,7 +773,7 @@ TEST_F(DCLayerOverlayTest, RoundedCorners) {
     // Create a solid quad.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(0, 0, 32, 32), SK_ColorRED);
+                       gfx::Rect(0, 0, 32, 32), SkColors::kRed);
 
     // Create a video YUV quad with rounded corners below the red solid quad.
     auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
@@ -777,7 +834,7 @@ TEST_F(DCLayerOverlayTest, MultipleYUVOverlay) {
     auto pass = CreateRenderPass();
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(0, 0, 256, 256), SK_ColorWHITE);
+                       gfx::Rect(0, 0, 256, 256), SkColors::kWhite);
 
     auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
@@ -785,6 +842,7 @@ TEST_F(DCLayerOverlayTest, MultipleYUVOverlay) {
     gfx::Rect rect(10, 10, 80, 80);
     video_quad->rect = rect;
     video_quad->visible_rect = rect;
+    pass->shared_quad_state_list.back()->overlay_damage_index = 1;
 
     auto* second_video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
@@ -792,6 +850,7 @@ TEST_F(DCLayerOverlayTest, MultipleYUVOverlay) {
     gfx::Rect second_rect(100, 100, 120, 120);
     second_video_quad->rect = second_rect;
     second_video_quad->visible_rect = second_rect;
+    pass->shared_quad_state_list.back()->overlay_damage_index = 2;
 
     DCLayerOverlayList dc_layer_list;
     OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
@@ -800,6 +859,9 @@ TEST_F(DCLayerOverlayTest, MultipleYUVOverlay) {
     AggregatedRenderPassList pass_list;
     pass_list.push_back(std::move(pass));
     SurfaceDamageRectList surface_damage_rect_list;
+    surface_damage_rect_list.push_back(gfx::Rect(0, 0, 256, 256));
+    surface_damage_rect_list.push_back(video_quad->rect);
+    surface_damage_rect_list.push_back(second_video_quad->rect);
 
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
@@ -869,7 +931,7 @@ TEST_F(DCLayerOverlayTest, SetEnableDCLayers) {
     damage_rect_ = gfx::Rect(1, 1, 10, 10);
     auto* quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     quad->SetNew(pass->CreateAndAppendSharedQuadState(), damage_rect_,
-                 damage_rect_, SK_ColorRED, false);
+                 damage_rect_, SkColors::kRed, false);
 
     DCLayerOverlayList dc_layer_list;
     OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
@@ -924,7 +986,7 @@ TEST_F(DCLayerOverlayTest, PixelMovingForegroundFilter) {
   // Add a solid quad to the non-root pass.
   SharedQuadState* shared_state_filter =
       filter_pass->CreateAndAppendSharedQuadState();
-  CreateSolidColorQuadAt(shared_state_filter, SK_ColorRED, filter_pass.get(),
+  CreateSolidColorQuadAt(shared_state_filter, SkColors::kRed, filter_pass.get(),
                          filter_rect);
   shared_state_filter->opacity = 1.f;
   pass_list.push_back(std::move(filter_pass));
@@ -995,7 +1057,7 @@ TEST_F(DCLayerOverlayTest, BackdropFilter) {
   // Add a transparent solid quad to the non-root pass.
   SharedQuadState* shared_state_backdrop_filter =
       backdrop_filter_pass->CreateAndAppendSharedQuadState();
-  CreateSolidColorQuadAt(shared_state_backdrop_filter, SK_ColorGREEN,
+  CreateSolidColorQuadAt(shared_state_backdrop_filter, SkColors::kGreen,
                          backdrop_filter_pass.get(), backdrop_filter_rect);
   shared_state_backdrop_filter->opacity = 0.1f;
   pass_list.push_back(std::move(backdrop_filter_pass));
@@ -1057,7 +1119,7 @@ TEST_F(DCLayerOverlayTest, VideoCapture) {
     // Create a solid quad.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(0, 0, 32, 32), SK_ColorRED);
+                       gfx::Rect(0, 0, 32, 32), SkColors::kRed);
 
     // Create a video YUV quad below the red solid quad.
     auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
@@ -1095,7 +1157,7 @@ TEST_F(DCLayerOverlayTest, VideoCapture) {
     // Create a solid quad.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
-                       gfx::Rect(0, 0, 32, 32), SK_ColorRED);
+                       gfx::Rect(0, 0, 32, 32), SkColors::kRed);
 
     // Create a video YUV quad below the red solid quad.
     auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(

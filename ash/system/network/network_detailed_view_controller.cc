@@ -13,10 +13,11 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_detailed_network_view.h"
 #include "ash/system/network/network_list_view_controller.h"
+#include "ash/system/network/network_utils.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "base/metrics/user_metrics.h"
-#include "chromeos/network/network_connect.h"
+#include "chromeos/ash/components/network/network_connect.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,9 +33,14 @@ using chromeos::network_config::NetworkTypeMatchesType;
 using chromeos::network_config::mojom::ActivationStateType;
 using chromeos::network_config::mojom::CellularStateProperties;
 using chromeos::network_config::mojom::ConnectionStateType;
+using chromeos::network_config::mojom::DeviceStateProperties;
+using chromeos::network_config::mojom::DeviceStateType;
 using chromeos::network_config::mojom::NetworkStateProperties;
 using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
+
+using chromeos::bluetooth_config::mojom::BluetoothSystemPropertiesPtr;
+using chromeos::bluetooth_config::mojom::BluetoothSystemState;
 
 void LogUserNetworkEvent(const NetworkStateProperties& network) {
   auto* const logger = ml::UserSettingsEventLogger::Get();
@@ -106,13 +112,28 @@ bool IsNetworkConnectable(const NetworkStatePropertiesPtr& network_properties) {
   return false;
 }
 
+bool IsCellularSimLocked() {
+  const DeviceStateProperties* cellular_device =
+      Shell::Get()->system_tray_model()->network_state_model()->GetDevice(
+          NetworkType::kCellular);
+  return cellular_device &&
+         !cellular_device->sim_lock_status->lock_type.empty();
+}
+
 }  // namespace
 
 NetworkDetailedViewController::NetworkDetailedViewController(
     UnifiedSystemTrayController* tray_controller)
-    : detailed_view_delegate_(
+    : model_(Shell::Get()->system_tray_model()->network_state_model()),
+      detailed_view_delegate_(
           std::make_unique<DetailedViewDelegate>(tray_controller)) {
   DCHECK(ash::features::IsQuickSettingsNetworkRevampEnabled());
+  DCHECK(ash::features::IsBluetoothRevampEnabled());
+
+  GetBluetoothConfigService(
+      remote_cros_bluetooth_config_.BindNewPipeAndPassReceiver());
+  remote_cros_bluetooth_config_->ObserveSystemProperties(
+      cros_system_properties_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 NetworkDetailedViewController::~NetworkDetailedViewController() = default;
@@ -149,6 +170,8 @@ void NetworkDetailedViewController::OnNetworkListItemSelected(
       if (!Shell::Get()->session_controller()->ShouldEnableSettings()) {
         return;
       }
+      RecordNetworkRowClickedAction(
+          NetworkRowClickedAction::kOpenSimUnlockDialog);
       Shell::Get()->system_tray_model()->client()->ShowSettingsSimUnlock();
       return;
     }
@@ -157,6 +180,7 @@ void NetworkDetailedViewController::OnNetworkListItemSelected(
       base::RecordAction(
           UserMetricsAction("StatusArea_Network_ConnectConfigured"));
       LogUserNetworkEvent(*network.get());
+      RecordNetworkRowClickedAction(NetworkRowClickedAction::kConnectToNetwork);
       chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid);
       return;
     }
@@ -165,17 +189,63 @@ void NetworkDetailedViewController::OnNetworkListItemSelected(
   // If the network is no longer available or not connectable or configurable,
   // show the Settings UI.
   base::RecordAction(UserMetricsAction("StatusArea_Network_ConnectionDetails"));
+  RecordNetworkRowClickedAction(
+      NetworkRowClickedAction::kOpenNetworkSettingsPage);
   Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(
       network ? network->guid : std::string());
 }
 
-void NetworkDetailedViewController::OnMobileToggleClicked(bool new_state) {}
+void NetworkDetailedViewController::OnMobileToggleClicked(bool new_state) {
+  const DeviceStateType cellular_state =
+      model_->GetDeviceState(NetworkType::kCellular);
+
+  // When Cellular is available, the toggle controls Cellular enabled state.
+  if (cellular_state != DeviceStateType::kUnavailable) {
+    if (new_state && IsCellularSimLocked()) {
+      Shell::Get()->system_tray_model()->client()->ShowSettingsSimUnlock();
+      return;
+    }
+    model_->SetNetworkTypeEnabledState(NetworkType::kCellular, new_state);
+    return;
+  }
+
+  const DeviceStateType tether_state =
+      model_->GetDeviceState(NetworkType::kTether);
+
+  DCHECK(tether_state != DeviceStateType::kUnavailable);
+
+  // If Tether is available but uninitialized, we expect Bluetooth to be off.
+  // Enable Bluetooth so that Tether will be initialized.
+  if (tether_state == DeviceStateType::kUninitialized) {
+    if (new_state &&
+        (bluetooth_system_state_ == BluetoothSystemState::kDisabled ||
+         bluetooth_system_state_ == BluetoothSystemState::kDisabling)) {
+      remote_cros_bluetooth_config_->SetBluetoothEnabledState(true);
+      waiting_to_initialize_bluetooth_ = true;
+    }
+    return;
+  }
+
+  // Otherwise the toggle controls the Tether enabled state.
+  model_->SetNetworkTypeEnabledState(NetworkType::kTether, new_state);
+}
 
 void NetworkDetailedViewController::OnWifiToggleClicked(bool new_state) {
-  Shell::Get()
-      ->system_tray_model()
-      ->network_state_model()
-      ->SetNetworkTypeEnabledState(NetworkType::kWiFi, new_state);
+  model_->SetNetworkTypeEnabledState(NetworkType::kWiFi, new_state);
+}
+
+void NetworkDetailedViewController::OnPropertiesUpdated(
+    BluetoothSystemPropertiesPtr properties) {
+  bluetooth_system_state_ = properties->system_state;
+
+  // We enabled Bluetooth so Tether is now initialized, but it was not
+  // enabled so enable it.
+  if (waiting_to_initialize_bluetooth_ &&
+      bluetooth_system_state_ == BluetoothSystemState::kEnabled) {
+    waiting_to_initialize_bluetooth_ = false;
+    model_->SetNetworkTypeEnabledState(NetworkType::kTether,
+                                       /*enabled=*/true);
+  }
 }
 
 }  // namespace ash

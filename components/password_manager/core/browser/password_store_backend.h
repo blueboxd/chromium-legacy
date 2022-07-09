@@ -56,26 +56,6 @@ using LoginsOrErrorReply = base::OnceCallback<void(LoginsResultOrError)>;
 // IO operation from possibly blocking the main thread.
 class PasswordStoreBackend {
  public:
-  // Delegate which provides information about current sync status and an
-  // account used for syncing. It can be called only after Sync service was
-  // instantiated.
-  class SyncDelegate {
-   public:
-    SyncDelegate() = default;
-    SyncDelegate(const SyncDelegate&) = delete;
-    SyncDelegate(SyncDelegate&&) = delete;
-    SyncDelegate& operator=(const SyncDelegate&) = delete;
-    SyncDelegate& operator=(SyncDelegate&&) = delete;
-    virtual ~SyncDelegate() = default;
-
-    // Tells whether sync enabled or not.
-    virtual bool IsSyncingPasswordsEnabled() = 0;
-
-    // Active syncing account if one exist. If sync disabled absl::nullopt will
-    // be returned.
-    virtual absl::optional<std::string> GetSyncingAccount() = 0;
-  };
-
   using RemoteChangesReceived =
       base::RepeatingCallback<void(absl::optional<PasswordStoreChangeList>)>;
 
@@ -171,11 +151,10 @@ class PasswordStoreBackend {
 
   // Factory function for creating the backend. The Local backend requires the
   // provided `login_db_path` for storage and Android backend for migration
-  // purposes. |sync_delegate| is also required for migration purposes.
+  // purposes.
   static std::unique_ptr<PasswordStoreBackend> Create(
       const base::FilePath& login_db_path,
-      PrefService* prefs,
-      std::unique_ptr<SyncDelegate> sync_delegate);
+      PrefService* prefs);
 };
 
 }  // namespace password_manager

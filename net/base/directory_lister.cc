@@ -71,7 +71,7 @@ DirectoryLister::DirectoryLister(const base::FilePath& dir,
                                  ListingType type,
                                  DirectoryListerDelegate* delegate)
     : delegate_(delegate) {
-  core_ = new Core(dir, type, this);
+  core_ = base::MakeRefCounted<Core>(dir, type, this);
   DCHECK(delegate_);
   DCHECK(!dir.value().empty());
 }
@@ -114,7 +114,7 @@ void DirectoryLister::Core::CancelOnOriginSequence() {
 }
 
 void DirectoryLister::Core::Start() {
-  std::unique_ptr<DirectoryList> directory_list(new DirectoryList());
+  auto directory_list = std::make_unique<DirectoryList>();
 
   if (!base::DirectoryExists(dir_)) {
     origin_task_runner_->PostTask(

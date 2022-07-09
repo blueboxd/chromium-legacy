@@ -69,7 +69,7 @@ void ForceInstalledAffiliatedExtensionApiTest::
     SetUpInProcessBrowserTestFixture() {
   // Initialize clients here so they are available during setup. They will be
   // shutdown in ChromeBrowserMain.
-  chromeos::SessionManagerClient::InitializeFakeInMemory();
+  ash::SessionManagerClient::InitializeFakeInMemory();
 
   // Init the user policy provider.
   policy_provider_.SetDefaultReturns(
@@ -88,9 +88,9 @@ void ForceInstalledAffiliatedExtensionApiTest::
 void ForceInstalledAffiliatedExtensionApiTest::SetUpOnMainThread() {
   // Log in user that was created with
   // policy::AffiliationTestHelper::PreLoginUser() in the PRE_ test.
-  const base::Value* users =
-      g_browser_process->local_state()->GetList("LoggedInUsers");
-  if (!users->GetListDeprecated().empty()) {
+  const base::Value::List& users =
+      g_browser_process->local_state()->GetValueList("LoggedInUsers");
+  if (!users.empty()) {
     policy::AffiliationTestHelper::LoginUser(affiliation_mixin_.account_id());
   }
 

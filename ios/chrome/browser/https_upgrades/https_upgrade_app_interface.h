@@ -11,8 +11,10 @@
 @interface HttpsUpgradeAppInterface : NSObject
 
 + (void)setHTTPSPortForTesting:(int)HTTPSPort useFakeHTTPS:(bool)useFakeHTTPS;
++ (void)setFallbackHttpPortForTesting:(int)HTTPPort;
 + (void)setFallbackDelayForTesting:(int)fallbackDelayInMilliseconds;
-+ (BOOL)isTimerRunning;
++ (BOOL)isHttpsOnlyModeTimerRunning;
++ (BOOL)isOmniboxUpgradeTimerRunning;
 + (void)clearAllowlist;
 
 @end

@@ -22,7 +22,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_H_
 
+#include <limits>
+
+#include "base/bits.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/types/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/container_query.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -100,8 +104,11 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   StyleRuleBase* Copy() const;
 
   // FIXME: There shouldn't be any need for the null parent version.
-  CSSRule* CreateCSSOMWrapper(CSSStyleSheet* parent_sheet = nullptr) const;
-  CSSRule* CreateCSSOMWrapper(CSSRule* parent_rule) const;
+  CSSRule* CreateCSSOMWrapper(
+      wtf_size_t position_hint = std::numeric_limits<wtf_size_t>::max(),
+      CSSStyleSheet* parent_sheet = nullptr) const;
+  CSSRule* CreateCSSOMWrapper(wtf_size_t position_hint,
+                              CSSRule* parent_rule) const;
 
   void Trace(Visitor*) const;
   void TraceAfterDispatch(blink::Visitor* visitor) const {}
@@ -112,7 +119,8 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   StyleRuleBase(const StyleRuleBase& rule) : type_(rule.type_) {}
 
  private:
-  CSSRule* CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
+  CSSRule* CreateCSSOMWrapper(wtf_size_t position_hint,
+                              CSSStyleSheet* parent_sheet,
                               CSSRule* parent_rule) const;
 
   const uint8_t type_;
@@ -121,22 +129,105 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
 // A single rule from a stylesheet. Contains a selector list (one or more
 // complex selectors) and a collection of style properties to be applied where
 // those selectors match. These are output by CSSParserImpl.
+//
+// Note that since this we generate so many StyleRule objects, and all of them
+// have at least one selector, the selector list is not allocated separately as
+// on a CSSSelectorList. Instead, we put the CSSSelectors immediately after the
+// StyleRule object. This both saves memory (since we don't need the pointer,
+// or any of the extra allocation overhead), and makes it likely that the
+// CSSSelectors are on the same cache line as the StyleRule. (On the flip side,
+// it makes it unlikely that the CSSSelector's RareData is on the same cache
+// line as the CSSSelector itself, but it is still overall a good tradeoff
+// for us.) StyleRule provides an API that is a subset of CSSSelectorList,
+// partially implemented using its static member functions.
 class CORE_EXPORT StyleRule : public StyleRuleBase {
- public:
-  // Adopts the selector list
-  StyleRule(CSSSelectorList, CSSPropertyValueSet*);
-  StyleRule(CSSSelectorList, CSSLazyPropertyParser*);
-  StyleRule(const StyleRule&);
+  static AdditionalBytes AdditionalBytesForSelectors(size_t flattened_size) {
+    constexpr size_t padding_bytes =
+        base::bits::AlignUp(sizeof(StyleRule), alignof(CSSSelector)) -
+        sizeof(StyleRule);
+    return AdditionalBytes{(sizeof(CSSSelector) * flattened_size) +
+                           padding_bytes};
+  }
 
-  const CSSSelectorList& SelectorList() const { return selector_list_; }
+ public:
+  // Use these to allocate the right amount of memory for the StyleRule.
+  static StyleRule* Create(CSSSelectorVector& selector_vector,
+                           CSSPropertyValueSet* properties) {
+    size_t flattened_size = CSSSelectorList::FlattenedSize(selector_vector);
+    return MakeGarbageCollected<StyleRule>(
+        AdditionalBytesForSelectors(flattened_size), base::PassKey<StyleRule>(),
+        selector_vector, flattened_size, properties);
+  }
+  static StyleRule* Create(CSSSelectorVector& selector_vector,
+                           CSSLazyPropertyParser* lazy_property_parser) {
+    size_t flattened_size = CSSSelectorList::FlattenedSize(selector_vector);
+    return MakeGarbageCollected<StyleRule>(
+        AdditionalBytesForSelectors(flattened_size), base::PassKey<StyleRule>(),
+        selector_vector, flattened_size, lazy_property_parser);
+  }
+
+  // Creates a StyleRule with the selectors changed (used by setSelectorText()).
+  static StyleRule* Create(CSSSelectorVector& selector_vector,
+                           StyleRule&& other) {
+    size_t flattened_size = CSSSelectorList::FlattenedSize(selector_vector);
+    return MakeGarbageCollected<StyleRule>(
+        AdditionalBytesForSelectors(flattened_size), base::PassKey<StyleRule>(),
+        selector_vector, flattened_size, std::move(other));
+  }
+
+  // Constructors. Note that these expect that the StyleRule has been
+  // allocated on the Oilpan heap, with <flattened_size> * sizeof(CSSSelector)
+  // additional bytes after the StyleRule (flattened_size is the number of
+  // selectors). Do not call them directly; they are public only so that
+  // MakeGarbageCollected() can call them. Instead, use Create() above or
+  // Copy() below, as appropriate.
+  StyleRule(base::PassKey<StyleRule>,
+            CSSSelectorVector& selector_vector,
+            size_t flattened_size,
+            CSSPropertyValueSet*);
+  StyleRule(base::PassKey<StyleRule>,
+            CSSSelectorVector& selector_vector,
+            size_t flattened_size,
+            CSSLazyPropertyParser*);
+  StyleRule(base::PassKey<StyleRule>,
+            CSSSelectorVector& selector_vector,
+            size_t flattened_size,
+            StyleRule&&);
+  StyleRule(const StyleRule&, size_t flattened_size);
+  StyleRule(const StyleRule&) = delete;
+  ~StyleRule();
+
+  // Partial subset of the CSSSelector API.
+  const CSSSelector* FirstSelector() const { return SelectorArray(); }
+  const CSSSelector& SelectorAt(wtf_size_t index) const {
+    return SelectorArray()[index];
+  }
+  wtf_size_t SelectorIndex(const CSSSelector& selector) const {
+    return static_cast<wtf_size_t>(&selector - FirstSelector());
+  }
+  wtf_size_t IndexOfNextSelectorAfter(wtf_size_t index) const {
+    const CSSSelector& current = SelectorAt(index);
+    const CSSSelector* next = CSSSelectorList::Next(current);
+    if (!next)
+      return kNotFound;
+    return SelectorIndex(*next);
+  }
+  String SelectorsText() const {
+    return CSSSelectorList::SelectorsText(FirstSelector());
+  }
+
   const CSSPropertyValueSet& Properties() const;
   MutableCSSPropertyValueSet& MutableProperties();
 
-  void WrapperAdoptSelectorList(CSSSelectorList selectors) {
-    selector_list_ = std::move(selectors);
+  StyleRule* Copy() const {
+    const CSSSelector* selector_array = SelectorArray();
+    size_t flattened_size = 1;
+    while (!selector_array[flattened_size - 1].IsLastInSelectorList()) {
+      ++flattened_size;
+    }
+    return MakeGarbageCollected<StyleRule>(
+        AdditionalBytesForSelectors(flattened_size), *this, flattened_size);
   }
-
-  StyleRule* Copy() const { return MakeGarbageCollected<StyleRule>(*this); }
 
   static unsigned AverageSizeInBytes();
 
@@ -149,7 +240,14 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   friend class CSSLazyParsingTest;
   bool HasParsedProperties() const;
 
-  CSSSelectorList selector_list_;
+  CSSSelector* SelectorArray() {
+    return reinterpret_cast<CSSSelector*>(base::bits::AlignUp(
+        reinterpret_cast<uint8_t*>(this + 1), alignof(CSSSelector)));
+  }
+  const CSSSelector* SelectorArray() const {
+    return const_cast<StyleRule*>(this)->SelectorArray();
+  }
+
   mutable Member<CSSPropertyValueSet> properties_;
   mutable Member<CSSLazyPropertyParser> lazy_property_parser_;
 };
@@ -265,6 +363,7 @@ class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {
   const HeapVector<Member<StyleRuleBase>>& ChildRules() const {
     return child_rules_;
   }
+  HeapVector<Member<StyleRuleBase>>& ChildRules() { return child_rules_; }
 
   void WrapperInsertRule(unsigned, StyleRuleBase*);
   void WrapperRemoveRule(unsigned);
@@ -292,6 +391,8 @@ class CORE_EXPORT StyleRuleScope : public StyleRuleGroup {
   void TraceAfterDispatch(blink::Visitor*) const;
 
   const StyleScope& GetStyleScope() const { return *style_scope_; }
+
+  void SetPreludeText(const ExecutionContext*, String);
 
  private:
   Member<const StyleScope> style_scope_;

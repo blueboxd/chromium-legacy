@@ -364,6 +364,10 @@
       status: "stable",
     },
     {
+      name: "checkVisibility",
+      status: "stable",
+    },
+    {
       name: "ClickPointerEvent",
       status: "stable",
     },
@@ -687,6 +691,10 @@
       status: "experimental",
     },
     {
+      name: "CSSOverflowForReplacedElements",
+      status: "test",
+    },
+    {
       name: "CSSPaintAPIArguments",
       status: "experimental",
     },
@@ -764,12 +772,6 @@
       name: "CSSStyleQueries",
       status: "test"
     },
-    // Make system color keywords compute to themselves.
-    // https://github.com/w3c/csswg-drafts/issues/3847
-    {
-      name: "CSSSystemColorComputeToSelf",
-      status: "experimental",
-    },
     // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
     {
       name: "CSSToggles",
@@ -845,6 +847,10 @@
       origin_trial_feature_name: "DeviceAttributes",
       origin_trial_os: ["chromeos"],
       origin_trial_allows_third_party: true,
+      status: "experimental",
+    },
+    {
+      name: "DeviceOrientationRequestPermission",
       status: "experimental",
     },
     {
@@ -1255,6 +1261,10 @@
       status:"experimental",
     },
     {
+      name: "IdentityInCanMakePaymentEventFeature",
+      status: "stable",
+    },
+    {
       name: "IdleDetection",
       status: "stable",
     },
@@ -1284,10 +1294,6 @@
     {
       name: "InteractionId",
       status: "stable",
-    },
-    {
-      name: "isVisible",
-      status: "experimental",
     },
     {
       name: "KeyboardAccessibleTooltip",
@@ -1966,12 +1972,19 @@
       status: "experimental",
     },
     {
+      name: "PrivateNetworkAccessPermissionPrompt",
+      status: "test",
+    },
+    {
       name: "PushMessaging",
       status: "stable",
     },
     {
       name: "PushMessagingSubscriptionChange",
       status: "experimental",
+    },
+    {
+      name: "QuickIntensiveWakeUpThrottlingAfterLoading",
     },
     {
       name: "QuotaChange",
@@ -1995,6 +2008,10 @@
     {
       name: "RemoveMobileViewportDoubleTap",
       status: "stable"
+    },
+    {
+      name: "RenderBlockingStatus",
+      status: "experimental"
     },
     {
       // The renderpriority attribute feature.
@@ -2108,6 +2125,11 @@
       name: "ScrollCustomization",
     },
     {
+      name: "ScrollEndEvents",
+      settable_from_internals: true,
+      status: "experimental",
+    },
+    {
       name: "ScrollSnapAfterLayout",
       status: "stable",
     },
@@ -2121,9 +2143,6 @@
     {
       name: "ScrollTopLeftInterop",
       status: "stable",
-    },
-    {
-      name: "ScrollUnification",
     },
     {
       name: "SecureContextFixForSharedWorkers",
@@ -2297,6 +2316,15 @@
       status: "experimental",
     },
     {
+      // When a Web application calls getDisplayMedia() and asks for audio,
+      // allow a hint to be provided as to whether the Web application is
+      // interested in system-audio being among the options offered to the user.
+      //
+      // https://github.com/w3c/mediacapture-screen-share/pull/222/files
+      name: "SystemAudioConstraint",
+      status: "stable",
+    },
+    {
       name: "SystemWakeLock",
       status: "experimental",
     },
@@ -2317,6 +2345,7 @@
     {
       // crbug.com/1008951
       name: "TextDecoratingBox",
+      status: "stable",
     },
     {
       name: "TextDetector",
@@ -2469,6 +2498,9 @@
       name: "V8IdleTasks",
     },
     {
+      name: "VariableCOLRV1",
+    },
+    {
       // Whether a video element should automatically play fullscreen unless
       // 'playsinline' is set.
       name: "VideoAutoFullscreen",
@@ -2540,10 +2572,6 @@
     {
       name: "WebAppDarkMode",
       origin_trial_feature_name: "WebAppDarkMode",
-      status: "experimental",
-    },
-    {
-      name: "WebAppHandleLinks",
       status: "experimental",
     },
     {
@@ -2655,6 +2683,10 @@
       origin_trial_feature_name: "WebCodecs"
     },
     {
+      name: "WebCodecsDequeueEvent",
+      status: "experimental",
+    },
+    {
       name: "WebGLColorManagement",
       status: "stable",
     },
@@ -2696,6 +2728,11 @@
     {
       name: "WebHIDExclusionFiltersOption",
       status: "stable",
+    },
+    {
+      // It is only enabled in extension environment for now.
+      name: "WebHIDOnServiceWorkers",
+      depends_on: ["WebHID"],
     },
     {
       name: "WebNFC",
@@ -2817,6 +2854,10 @@
       depends_on: ["WebXRARModule"],
       status: "stable",
     },
+    {
+      name: "WGIGamepadTriggerRumble",
+      status: "test",
+    },
     // New behavior for window.open's interpretation of the windowFeatures parameter.
     {
       name: "WindowOpenNewPopupBehavior",
@@ -2832,6 +2873,7 @@
     // with window-placement permission.
     {
       name: "WindowPlacementEnhancedScreenLabels",
+      status: "experimental",
     },
     // Allows sites to request fullscreen when the set of screens change.
     {

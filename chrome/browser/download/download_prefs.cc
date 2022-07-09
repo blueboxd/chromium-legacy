@@ -48,6 +48,7 @@
 #include "content/public/browser/save_page_type.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "base/json/values_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
@@ -146,10 +147,14 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   const char* const kPathPrefs[] = {prefs::kSaveFileDefaultDirectory,
                                     prefs::kDownloadDefaultDirectory};
   for (const char* path_pref : kPathPrefs) {
-    // Update the download directory if the pref is from user pref store.
-    if (prefs->FindPreference(path_pref)->IsUserControlled()) {
-      const base::FilePath current = prefs->GetFilePath(path_pref);
-      base::FilePath migrated;
+    const PrefService::Preference* pref = prefs->FindPreference(path_pref);
+    const base::FilePath current = prefs->GetFilePath(path_pref);
+    base::FilePath migrated;
+    // Update the download directory if the pref is from user pref store or
+    // default pref.
+    LOG(ERROR) << "DownloadPrefs::DownloadPrefs" << pref->IsUserControlled()
+               << "," << pref->IsDefaultValue() << "," << current.value();
+    if (pref->IsUserControlled()) {
       if (!current.empty() &&
           file_manager::util::MigratePathFromOldFormat(
               profile_, GetDefaultDownloadDirectory(), current, &migrated)) {
@@ -161,6 +166,12 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
                                                               &migrated)) {
         prefs->SetFilePath(path_pref, migrated);
       }
+    } else if (pref->IsDefaultValue()) {
+      // For default pref, the default download dir is set when profile is not
+      // initialized. As a result, reset the default pref value now.
+      prefs->SetDefaultPrefValue(
+          path_pref,
+          base::FilePathToValue(GetDefaultDownloadDirectoryForProfile()));
     }
   }
 
@@ -202,12 +213,6 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   prompt_for_download_android_.Init(prefs::kPromptForDownloadAndroid, prefs);
   RecordDownloadPromptStatus(
       static_cast<DownloadPromptStatus>(*prompt_for_download_android_));
-  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
-    prompt_for_download_later_.Init(prefs::kDownloadLaterPromptStatus, prefs);
-    RecordDownloadLaterPromptStatus(
-        static_cast<DownloadLaterPromptStatus>(*prompt_for_download_later_));
-  }
-
 #endif
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs);
   save_file_path_.Init(prefs::kSaveFileDefaultDirectory, prefs);
@@ -309,13 +314,6 @@ void DownloadPrefs::RegisterProfilePrefs(
       static_cast<int>(download_prompt_status),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
-  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
-    registry->RegisterIntegerPref(
-        prefs::kDownloadLaterPromptStatus,
-        static_cast<int>(DownloadLaterPromptStatus::kShowInitial),
-        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  }
-
   registry->RegisterBooleanPref(prefs::kShowMissingSdCardErrorAndroid, true);
 #endif
 }
@@ -410,27 +408,10 @@ bool DownloadPrefs::PromptForDownload() const {
 }
 
 bool DownloadPrefs::PromptDownloadLater() const {
-#if BUILDFLAG(IS_ANDROID)
-  if (prompt_for_download_.IsManaged())
-    return false;
-
-  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
-    return *prompt_for_download_later_ !=
-           static_cast<int>(DownloadLaterPromptStatus::kDontShow);
-  }
-#endif
-
   return false;
 }
 
 bool DownloadPrefs::HasDownloadLaterPromptShown() const {
-#if BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
-    return *prompt_for_download_later_ !=
-           static_cast<int>(DownloadLaterPromptStatus::kShowInitial);
-  }
-#endif
-
   return false;
 }
 

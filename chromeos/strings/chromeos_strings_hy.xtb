@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">Օգտատեր</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Բացված է արտաքին սարքերի համար ներկառուցված ծրագրաշարի թարմացման պատուհանը։ Հասանելի է <ph name="NUM_UPDATES" /> թարմացում։</translation>
+<translation id="1145516343487477149">Գտեք օգնության հոդվածներ և Chromebook-ի վերաբերյալ հաճախ տրվող հարցերի պատասխաններ</translation>
 <translation id="1165039591588034296">Սխալ</translation>
 <translation id="1175697296044146566">Այս <ph name="DEVICE_TYPE" /> սարքը կառավարվում է <ph name="MANAGER" /> տիրույթի կողմից։</translation>
 <translation id="1175951029573070619">Միջին (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">Անջատել մուգ թեման</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Անջատել մուգ ռեժիմը</translation>
+<translation id="1881188606372070653">Իրավական հիմքերով բովանդակության փոփոխություն պահանջելու համար անցեք <ph name="BEGIN_LINK1" />Իրավական հարցերով օգնության էջ<ph name="END_LINK1" />։ Հաշվի և համակարգի որոշ տվյալներ կարող են ուղարկվել Google-ին։ Ձեր տրամադրած տեղեկությունները կօգտագործվեն տեխնիկական խնդիրները լուծելու և մեր ծառայությունների որակը բարելավելու նպատակով՝ մեր <ph name="BEGIN_LINK2" />Գաղտնիության քաղաքականության<ph name="END_LINK2" /> և <ph name="BEGIN_LINK3" />Օգտագործման պայմանների<ph name="END_LINK3" /> համաձայն։</translation>
 <translation id="1887850431809612466">Սարքի տարբերակը</translation>
+<translation id="1904932688895783618">Ահա մի քանի այլ օգտակար ռեսուրսներ՝</translation>
 <translation id="1905710495812624430">Փորձերի առավելագույն թույլատրելի քանակը սպառվել է:</translation>
 <translation id="1908234395526491708">Ձախողված UDP հարցումներ</translation>
 <translation id="1932611479324127242">Անջատել մարտկոցը</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">Փորձել վերացնել անսարքությունները</translation>
 <translation id="2016848882344942759">--առանց վաճառողի ապրանքանիշի--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Միացեք որևէ ցանցի և վերաբեռնեք էջը՝ էկրանապահը դիտելու համար։</translation>
 <translation id="2080070583977670716">Այլ կարգավորումներ</translation>
 <translation id="2085089206770112532">Էկրանի պայծառության նվազեցում</translation>
 <translation id="2105810540595158374">Սարքը խաղային վահանակ է։</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">Միացնել մուգ ռեժիմը</translation>
 <translation id="2177831236093724629"><ph name="LINK_BEGIN" />Անհամատեղելի բաղադրիչներ<ph name="LINK_END" /> են գտնվել։ Տեղադրեք Chrome ՕՀ-ի վերջին տարբերակը՝ համոզվելու, որ բոլոր անհամատեղելի բաղադրիչները նույնականացվել են։</translation>
 <translation id="2180197493692062006">Սխալ առաջացավ։ Փորձեք նորից բացել հավելվածը։</translation>
+<translation id="2182088270354640012">Շնորհակալություն կարծիք հայտնելու համար։ Ձեր կարծիքն օգնում է բարելավել Chrome OS-ը և հաշվի կառնվի Chrome OS-ի թիմի կողմից։ Ուղարկված հաղորդումների մեծ քանակի պատճառով դուք ուղղակի պատասխան չեք ստանա։</translation>
 <translation id="2209788852729124853">Զրոյացնել թրաֆիկի հաշվիչները</translation>
 <translation id="2212733584906323460">Անվանել լուծաչափը</translation>
 <translation id="2217935453350629363">Ընթացիկ արագությունը</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">Սկաներների որոնում</translation>
 <translation id="3246869037381808805">Տպման առաջադրանքները, որոնք 1 օրից հին են, կհեռացվեն</translation>
 <translation id="3268178239013324452">Չհաջողվեց տպել – Կափարիչը բաց է</translation>
+<translation id="3275729367986477355">Ավատարի պատկեր</translation>
 <translation id="3283504360622356314">{0,plural, =1{Փոփոխել ֆայլը}one{Փոփոխել ֆայլերը}other{Փոփոխել ֆայլերը}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> ԳՀց</translation>
 <translation id="3291996639387199448">Բանալու ուղղություն</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">Եթե օգնություն է անհրաժեշտ, անցեք <ph name="BEGIN_LINK" />Օգնության կենտրոն<ph name="END_LINK" />։</translation>
 <translation id="4793756956024303490">Սեղմման ալգորիթմ</translation>
 <translation id="4794140124556169553">CPU-ի թեստի գործարկումը կարող է ազդել ձեր համակարգի աշխատանքի վրա</translation>
+<translation id="4800589996161293643">Chromebook համայնք</translation>
 <translation id="4804818685124855865">Անջատել</translation>
 <translation id="4808449224298348341">Տպման առաջադրանքը չեղարկվեց՝ <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Բաց թեմա</translation>
@@ -486,6 +493,7 @@
 Փորձեք օգտագործել խոսափողը` առաջադրանքներ տալու համար:</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Դուրս գրվել</translation>
+<translation id="522307662484862935">Չներառել էլ․ հասցե</translation>
 <translation id="5227902338748591677">Մուգ թեմայի ժամանակացույց</translation>
 <translation id="5234764350956374838">Փակել</translation>
 <translation id="5252456968953390977">Ռոումինգ</translation>
@@ -612,6 +620,7 @@
 <translation id="6284632978374966585">Միացնել մուգ թեման</translation>
 <translation id="6295178529664209245">Շարունակե՞լ նորոգումը</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> թեստը չեղարկվել է</translation>
+<translation id="631063167932043783">«Հնարավորություններ» հավելված</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> սարքի ներկառուցված ծրագրի թարմացում</translation>
 <translation id="6321407676395378991">Միացնել էկրանապահը</translation>
 <translation id="6325525973963619867">Սխալ առաջացավ</translation>
@@ -623,6 +632,7 @@
 <translation id="6379086450106841622">հպէկրան</translation>
 <translation id="6381741036071372448">Փորձարկեք ձեր ստեղնաշարը</translation>
 <translation id="6388847657025262518">Սկաների փաստաթղթերի մատակարարը լռվել է։ Ստուգեք մատակարարը և նորից փորձեք։</translation>
+<translation id="6394634179843537518">Ավելացնել ֆայլ</translation>
 <translation id="6410257289063177456">Պատկերների ֆայլեր</translation>
 <translation id="641081527798843608">Թեմաների համընկնում</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@
 <translation id="6516990319416533844">Մարտկոցի լիցքավորման արագությունը ստուգելու համար թողեք, որ մարտկոցը մի փոքր լիցքաթափվի</translation>
 <translation id="6517239166834772319">Հնարավորություններ</translation>
 <translation id="6527081081771465939">Wi-Fi-ի անվտանգության անհայտ հաղորդակարգ</translation>
+<translation id="6535178685492749208">Դուք անցանց ռեժիմում եք։ Կարծիքը կուղարկվի ավելի ուշ։</translation>
 <translation id="65587193855025101">Պլանշետային</translation>
 <translation id="6564646048574748301">Չհաջողվեց տպել – Տպիչն անհասանելի է</translation>
 <translation id="6566314079205407217">Սկանավորել մի քանի էջ</translation>
@@ -717,6 +728,7 @@
 <translation id="7297226631177386107">Չհաջողվեց միանալ HTTPS կայքերին հրապատի միջոցով։</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Հարցրեք փորձագետներին Chromebook-ի օգնության ֆորումում</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />։ Արդյունքը Google Որոնման մեջ տեսնելու համար սեղմեք «Որոնում» + բացատ։</translation>
 <translation id="7343649194310845056">Ցանցային սարքեր</translation>
@@ -759,9 +771,11 @@
 <translation id="773153675489693198">Շրջափուլերի թիվը</translation>
 <translation id="7747039790905080783">Ընդհանուր բանալի</translation>
 <translation id="7762130827864645708">Ձեր գաղտնաբառը հաջողությամբ փոխվեց։ Այս պահից սկսած օգտագործեք նոր գաղտնաբառը։</translation>
+<translation id="7762839321248874531">Ուղարկել <ph name="BEGIN_LINK1" />համակարգի և հավելվածի մասին տեղեկություններ<ph name="END_LINK1" /> և <ph name="BEGIN_LINK2" />ցուցանիշներ<ph name="END_LINK2" /></translation>
 <translation id="7763470514545477072">Համընկնում տիրույթի վերջածանցի հետ</translation>
 <translation id="7769672763586021400">Մոդելի ID-ն</translation>
 <translation id="7784116172884276937">DNS սերվերներ կարգավորված չեն</translation>
+<translation id="779591286616261875">Ուղարկել նոր հաղորդում</translation>
 <translation id="7799817062559422778">Բաց ռեժիմ</translation>
 <translation id="780301667611848630">Ոչ</translation>
 <translation id="7805768142964895445">Կարգավիճակ</translation>
@@ -828,6 +842,7 @@
 <translation id="8382302752385457774">Վաճառողի ապրանքանիշը</translation>
 <translation id="8395584934117017006">Այս <ph name="DEVICE_TYPE" /> սարքը կառավարվում է կազմակերպության կողմից</translation>
 <translation id="8398927464629426868">Սարքի ընթացիկ լիցքավորման կամ լիցքաթափման արագությունը</translation>
+<translation id="8420955526972171689">Գործարկեք թեստեր և սարքակազմի հետ կապված խնդիրների վերացման գործընթացներ</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Ներքին ստեղնաշար</translation>
 <translation id="8431300646573772016">Ինչն է ChromeOS-ում նոր</translation>
@@ -913,6 +928,7 @@
 <translation id="9082718469794970195">Օգտագործել այս տեսանյութը</translation>
 <translation id="9087578468327036362">Հաղորդել այս հարցման մասին</translation>
 <translation id="9088306295921699330">Օգտագործված տարածքը</translation>
+<translation id="9092255287806472980">Ձեր կարծիքն օգնում է բարելավել Chrome OS-ը և հաշվի կառնվի մեր թիմի կողմից։ Հաղորդումների մեծ քանակի պատճառով մենք չենք կարողանա պատասխան ուղարկել։</translation>
 <translation id="9095775724867566971">PluginVm</translation>
 <translation id="90977145661420967">Հարկավոր է կազմատել սարքը</translation>
 <translation id="9098156406873149060">Պահպանել օգտատիրոջ տվյալները</translation>

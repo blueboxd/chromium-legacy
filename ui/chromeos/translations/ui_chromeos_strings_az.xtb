@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hanqıl Romaca</translation>
 <translation id="112387589102719461">Proqramçı Dvorak klaviaturası ilə İngilis dili (ABŞ)</translation>
 <translation id="1134697384939541955">Genişləndirilmiş klaviatura ilə İngilis dili (ABŞ)</translation>
+<translation id="1138691154716715755">Bu ayın əvvəlində</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> nəticə.
     <ph name="LINE_BREAK1" />
     Lokal yaddaşda kifayət qədər yer yoxdur. Əlavə <ph name="FILE_SIZE" /> lazımdır.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Şəbəkə <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Administrator tərəfindən bloklanıb, Detallar</translation>
 <translation id="2142680004883808240">Fonetik YaZHert klaviaturası ilə Rus dili</translation>
 <translation id="2143778271340628265">Manual proksi sazlaması</translation>
+<translation id="2148716181193084225">Bu gün</translation>
 <translation id="2163152940313951844">Yanlış simvol: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">ABŞ Beynəlxalq kompüter klaviaturası ilə Portuqal dili</translation>
 <translation id="2198315389084035571">Sadələşmiş Çin</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Siyahı görünüşünə keçin</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> qovluq Linux ilə paylaşıldı</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fayl seçildi</translation>
+<translation id="2387120140441437063">Zibil qutusuna atılan faylları açmaq mümkün deyil. Açmazdan əvvəl faylları bərpa edin.</translation>
 <translation id="2387458720915042159">Proksi bağlantı növü</translation>
 <translation id="2389832672041313158">Birma dili (Myanma)</translation>
 <translation id="2392369802118427583">Aktivləşdirin</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Bu qovluğun məzmunları yalnız oxunandır. Bəzi fəaliyyətlər dəstəklənmir.</translation>
 <translation id="2542049655219295786">Google cədvəl</translation>
 <translation id="2544853746127077729">Doğrulama təsdiqi şəbəkə tərəfindən ləğv edildi</translation>
-<translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> atırmasına əlavə edin</translation>
 <translation id="255937426064304553">ABŞ Beynəlxalq</translation>
 <translation id="2563185590376525700">Qurbağa</translation>
 <translation id="2578394532502990878">Tamil dili (Fonetik)</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">Çin dili (Dayi)</translation>
 <translation id="3057861065630527966">Fotolarınızı və videolarınızı yedəkləyin</translation>
 <translation id="3067790092342515856">Windows faylları</translation>
-<translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> ilə paylaşın</translation>
 <translation id="3083975830683400843">Chromebit cihazları</translation>
 <translation id="3085752524577180175">SOCKS Hostu</translation>
 <translation id="3104793765551262433">Şəbəkə <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Administrator tərəfindən bloklanıb, Detallar</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Geri</translation>
 <translation id="3855472144336161447">Alman Neo 2</translation>
 <translation id="3858860766373142691">Ad</translation>
-<translation id="386548886866354912"><ph name="EXTENSION_NAME" /> ilə qablaşdırın</translation>
 <translation id="3866249974567520381">Təsvir</translation>
 <translation id="3899991606604168269">Çoxdilli klaviatura ilə Fransız (Kanada)</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> qoşulur</translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Mobil profili endirin, Şəbəkə <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">İngilis (BK)</translation>
 <translation id="3975895378829046965">Banqla Fonetikası</translation>
+<translation id="3991446849494482687">Bu, həmçinin cihazda SİM Kilidi ayarını deaktiv edəcək.</translation>
 <translation id="4002066346123236978">Başlıq</translation>
 <translation id="4017788180641807848">Workman klaviaturası ilə İngilis dili (ABŞ)</translation>
 <translation id="4040753847560036377">Yanlış PUK</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Administratorunuz tərəfindən idarə olunur, Detallar</translation>
 <translation id="4387004326333427325">Doğrulama təsdiqi uzaqdan ləğv edildi</translation>
 <translation id="4394214039309501350">Xarici keçid</translation>
+<translation id="4394980935660306080">Bu həftənin əvvəlində</translation>
 <translation id="4401287888955153199">Hamısını çıxarın</translation>
 <translation id="4410695710508688828">Çıxarılma əməliyyatı alınmadı. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Fayllarınız üçün qısayol yaradın</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">"<ph name="PATH" />" açılır</translation>
 <translation id="4720185134442950733">Mobil data şəbəkəsi</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> foto yedəkləndi</translation>
+<translation id="4725096204469550614">Bu ilin əvvəlində</translation>
 <translation id="4725511304875193254">Korqi</translation>
 <translation id="4737050008115666127">Eniş</translation>
 <translation id="4747271164117300400">Makedoniya</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> element <ph name="FOLDER_NAME" /> qovluğuna köçürülür</translation>
 <translation id="509429900233858213">Xəta baş verdi.</translation>
 <translation id="5098629044894065541">İvrit</translation>
+<translation id="5102922915594634436">Sinxronlaşdırılmış qovluqları idarə edin</translation>
 <translation id="5109254780565519649">Xəta baş verdi. Bəzi elementlər bərpa edilməmiş ola bilər.</translation>
 <translation id="5110329002213341433">İngilis dili (Kanada)</translation>
 <translation id="5123433949759960244">Basketbol</translation>
@@ -602,7 +606,6 @@
 <translation id="6165508094623778733">Ətraflı öyrənin</translation>
 <translation id="6170470584681422115">Sandviç</translation>
 <translation id="6187719147498869044">Macar</translation>
-<translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> ilə açın</translation>
 <translation id="6198252989419008588">PİN kodu dəyişdirin</translation>
 <translation id="6199801702437275229">Məkan məlumatı gözlənilir...</translation>
 <translation id="6205710420833115353">Bəzi əməliyyatlar gözlənildiyindən daha çox vaxt aparır. Onları dayandırmaq istəyirsiniz?</translation>
@@ -706,6 +709,7 @@
 <translation id="7075931588889865715">TIS 820-2531 klaviaturası ilə Tay dili</translation>
 <translation id="708278670402572152">Skanı aktiv etmək üçün bağlantını kəsin</translation>
 <translation id="7086590977277044826">InScript klaviaturası ilə Tamil dili</translation>
+<translation id="7088615885725309056">Köhnə</translation>
 <translation id="7103992300314999525">Makedon dili</translation>
 <translation id="7106346894903675391">Əlavə yaddaş alın...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;Diskdə axtarın&lt;/em&gt;</translation>
@@ -770,6 +774,7 @@
 <translation id="7663224033570512922">Hind</translation>
 <translation id="7693909743393669729">Formatdan sonra diskdə saxlanılan bütün data silinəcək və görünməyən arakəsmələr də daxil olmaqla bütün mövcud hissələr aradan qaldırılacaq. Bu əməliyyat geri qaytarıla bilməz.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> formatlanmadı</translation>
+<translation id="76959938259365003">Zibil qutusunu boşaltmaq alınmadı.</translation>
 <translation id="770015031906360009">Yunan</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> kopyalanıb.</translation>
 <translation id="7711920809702896782">Şəkil məlumatı</translation>
@@ -780,6 +785,7 @@
 <translation id="7760449188139285140">Çin dili (Vubi)</translation>
 <translation id="7765158879357617694">Daşıyın</translation>
 <translation id="7774365994322694683">Quş</translation>
+<translation id="7781829728241885113">Dünən</translation>
 <translation id="7788080748068240085">"<ph name="FILE_NAME" />" faylını oflayn saxlamaq üçün əlavə <ph name="TOTAL_FILE_SIZE" /> yer boşatlmalısınız:<ph name="MARKUP_1" />     <ph name="MARKUP_2" />oflayn əldə etmək istəmədiyiniz faylları çıxarın<ph name="MARKUP_3" />     <ph name="MARKUP_4" />Endirilənlər qovluğundan faylları silin<ph name="MARKUP_5" /></translation>
 <translation id="7794058097940213561">Cihazı format edin</translation>
 <translation id="7799329977874311193">HTML sənəd</translation>

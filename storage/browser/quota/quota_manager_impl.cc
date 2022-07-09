@@ -85,14 +85,6 @@ int64_t RandomizeByPercent(int64_t value, int percent) {
   double random_percent = (base::RandDouble() - 0.5) * percent * 2;
   return value * (1 + (random_percent / 100.0));
 }
-}  // namespace
-
-// Heuristics: assuming average cloud server allows a few Gigs storage
-// on the server side and the storage needs to be shared for user data
-// and by multiple apps.
-int64_t QuotaManagerImpl::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
-
-namespace {
 
 bool IsSupportedType(StorageType type) {
   return type == StorageType::kTemporary || type == StorageType::kPersistent ||
@@ -111,7 +103,7 @@ std::string StorageTypeEnumToString(StorageType type) {
       return "persistent";
     case StorageType::kSyncable:
       return "syncable";
-    case StorageType::kQuotaNotManaged:
+    case StorageType::kDeprecatedQuotaNotManaged:
       return "quota-not-managed";
     case StorageType::kUnknown:
       return "unknown";
@@ -151,6 +143,11 @@ void DidGetUsageAndQuotaStripOverride(
 }
 
 }  // namespace
+
+// Heuristics: assuming average cloud server allows a few Gigs storage
+// on the server side and the storage needs to be shared for user data
+// and by multiple apps.
+int64_t QuotaManagerImpl::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
 
 constexpr int64_t QuotaManagerImpl::kGBytes;
 constexpr int64_t QuotaManagerImpl::kNoLimit;
@@ -1739,22 +1736,6 @@ void QuotaManagerImpl::GetBucketUsageWithBreakdown(
   usage_tracker->GetBucketUsageWithBreakdown(bucket, std::move(callback));
 }
 
-void QuotaManagerImpl::GetHostUsageForInternals(
-    const std::string& host,
-    storage::mojom::StorageType storage_type,
-    GetHostUsageForInternalsCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  EnsureDatabaseOpened();
-
-  StorageType type = GetBlinkStorageType(storage_type);
-  UsageTracker* usage_tracker = GetUsageTracker(type);
-  DCHECK(usage_tracker);
-
-  usage_tracker->GetHostUsageWithBreakdown(
-      host, base::BindOnce(&QuotaManagerImpl::OnGetHostUsageForInternals,
-                           weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 bool QuotaManagerImpl::IsSessionOnly(const StorageKey& storage_key,
                                      StorageType type) const {
   return type == StorageType::kTemporary && special_storage_policy_ &&
@@ -1770,7 +1751,7 @@ bool QuotaManagerImpl::IsStorageUnlimited(const StorageKey& storage_key,
   // quota must be capped by the server limit).
   if (type == StorageType::kSyncable)
     return false;
-  if (type == StorageType::kQuotaNotManaged)
+  if (type == StorageType::kDeprecatedQuotaNotManaged)
     return true;
   return special_storage_policy_.get() &&
          special_storage_policy_->IsStorageUnlimited(
@@ -1978,22 +1959,12 @@ UsageTracker* QuotaManagerImpl::GetUsageTracker(StorageType type) const {
       return persistent_usage_tracker_.get();
     case StorageType::kSyncable:
       return syncable_usage_tracker_.get();
-    case StorageType::kQuotaNotManaged:
+    case StorageType::kDeprecatedQuotaNotManaged:
       return nullptr;
     case StorageType::kUnknown:
       NOTREACHED();
   }
   return nullptr;
-}
-
-void QuotaManagerImpl::OnGetHostUsageForInternals(
-    GetHostUsageForInternalsCallback callback,
-    int64_t usage,
-    blink::mojom::UsageBreakdownPtr usage_breakdown) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_GE(usage, -1);
-
-  std::move(callback).Run(usage);
 }
 
 void QuotaManagerImpl::NotifyStorageAccessed(const StorageKey& storage_key,
@@ -2167,7 +2138,6 @@ void QuotaManagerImpl::AddBucketTableEntry(
       storage::mojom::BucketTableEntry::New();
   mojo_entry->bucket_id = entry.bucket_id.value();
   mojo_entry->storage_key = entry.storage_key.Serialize();
-  mojo_entry->host = entry.storage_key.origin().host();
   mojo_entry->type = StorageTypeEnumToString(entry.type);
   mojo_entry->name = entry.name;
   mojo_entry->use_count = entry.use_count;
@@ -2504,11 +2474,9 @@ void QuotaManagerImpl::DidDumpBucketTableForHistogram(
     UMA_HISTOGRAM_COUNTS_1000("Quota.AgeOfOriginInDays", age.InDays());
 
     int64_t kilobytes = std::max(it->second / int64_t{1024}, int64_t{1});
-    base::Histogram::FactoryGet(
-        "Quota.AgeOfDataInDays", 1, 1000, 50,
-        base::HistogramBase::kUmaTargetedHistogramFlag)->
-            AddCount(age.InDays(),
-                     base::saturated_cast<int>(kilobytes));
+    base::Histogram::FactoryGet("Quota.AgeOfDataInDays", 1, 1000, 50,
+                                base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->AddCount(age.InDays(), base::saturated_cast<int>(kilobytes));
   }
 }
 
@@ -3099,7 +3067,8 @@ std::tuple<int64_t, int64_t> QuotaManagerImpl::CallGetVolumeInfo(
   UMA_HISTOGRAM_MBYTES("Quota.TotalDiskSpace", total);
   UMA_HISTOGRAM_MBYTES("Quota.AvailableDiskSpace", available);
   if (total > 0) {
-    UMA_HISTOGRAM_PERCENTAGE("Quota.PercentDiskAvailable",
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Quota.PercentDiskAvailable",
         std::min(100, static_cast<int>((available * 100) / total)));
   }
   return std::make_tuple(total, available);

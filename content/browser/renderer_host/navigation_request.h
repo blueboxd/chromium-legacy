@@ -23,7 +23,7 @@
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/browser/prerender/prerender_host.h"
+#include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/renderer_host/commit_deferring_condition_runner.h"
 #include "content/browser/renderer_host/cross_origin_opener_policy_status.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
@@ -55,7 +55,6 @@
 #include "net/dns/public/resolve_error_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
-#include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
@@ -174,13 +173,16 @@ class CONTENT_EXPORT NavigationRequest
     DID_COMMIT_ERROR_PAGE,
   };
 
-  // The SiteInstance currently associated with the navigation. Note that the
+  // The RenderFrameHost currently associated with the navigation. Note that the
   // final value will only be known when the response is received, or the
-  // navigation fails, as server redirects can modify the SiteInstance to use
+  // navigation fails, as server redirects can modify the RenderFrameHost to use
   // for the navigation.
-  enum class AssociatedSiteInstanceType {
+  enum class AssociatedRenderFrameHostType {
     NONE = 0,
+    // The navigation reuses the current RenderFrameHost.
     CURRENT,
+    // The navigation uses a new RenderFrameHost, the speculative
+    // RenderFrameHost.
     SPECULATIVE,
   };
 
@@ -442,11 +444,11 @@ class CONTENT_EXPORT NavigationRequest
 
   bool from_begin_navigation() const { return from_begin_navigation_; }
 
-  AssociatedSiteInstanceType associated_site_instance_type() const {
-    return associated_site_instance_type_;
+  AssociatedRenderFrameHostType associated_rfh_type() const {
+    return associated_rfh_type_;
   }
-  void set_associated_site_instance_type(AssociatedSiteInstanceType type) {
-    associated_site_instance_type_ = type;
+  void set_associated_rfh_type(AssociatedRenderFrameHostType type) {
+    associated_rfh_type_ = type;
   }
 
   void set_was_discarded() { commit_params_->was_discarded = true; }
@@ -767,6 +769,13 @@ class CONTENT_EXPORT NavigationRequest
   // called after a response has been delivered for processing, or after the
   // navigation fails with an error page.
   url::Origin GetOriginToCommit();
+
+  // Same as `GetOriginToCommit()`, except that includes information about how
+  // the origin gets calculated, to help debug if the browser-side calculated
+  // origin for this navigation differs from the origin calculated on the
+  // renderer side.
+  // TODO(https://crbug.com/1220238): Remove this.
+  std::pair<url::Origin, std::string> GetOriginToCommitWithDebugInfo();
 
   // If this navigation fails with net::ERR_BLOCKED_BY_CLIENT, act as if it were
   // cancelled by the user and do not commit an error page.
@@ -1504,6 +1513,17 @@ class CONTENT_EXPORT NavigationRequest
   // after the final response is received or ready.
   url::Origin GetOriginForURLLoaderFactoryWithFinalFrameHost();
 
+  // These functions are the same as their non-WithDebugInfo counterparts,
+  // except that they include information about how the origin gets calculated,
+  // to help debug if the browser-side calculated origin for this navigation
+  // differs from the origin calculated on the renderer side.
+  // TODO(https://crbug.com/1220238): Remove this.
+  std::pair<url::Origin, std::string>
+  GetOriginForURLLoaderFactoryWithoutFinalFrameHostWithDebugInfo(
+      network::mojom::WebSandboxFlags sandbox_flags);
+  std::pair<url::Origin, std::string>
+  GetOriginForURLLoaderFactoryWithFinalFrameHostWithDebugInfo();
+
   // Computes the web-exposed isolation information based on `coop_status_` and
   // current `frame_tree_node_` info.
   // If the return result is nullopt, it means that the WebExposedIsolationInfo
@@ -1601,9 +1621,9 @@ class CONTENT_EXPORT NavigationRequest
   // Whether devtools overrides were applied on the User-Agent request header.
   bool devtools_user_agent_override_ = false;
 
-  // The type of SiteInstance associated with this navigation.
-  AssociatedSiteInstanceType associated_site_instance_type_ =
-      AssociatedSiteInstanceType::NONE;
+  // The type of RenderFrameHost associated with this navigation.
+  AssociatedRenderFrameHostType associated_rfh_type_ =
+      AssociatedRenderFrameHostType::NONE;
 
   // Stores the SiteInstance created on redirects to check if there is an
   // existing RenderProcessHost that can commit the navigation so that the

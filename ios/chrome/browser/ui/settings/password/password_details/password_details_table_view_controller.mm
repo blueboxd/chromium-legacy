@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
@@ -247,24 +248,17 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   [super loadModel];
 
   TableViewModel* model = self.tableViewModel;
-  bool isAddingPasswordsEnabled = base::FeatureList::IsEnabled(
-      password_manager::features::kSupportForAddPasswordsInSettings);
 
   self.websiteTextItem = [self websiteItem];
-  if (isAddingPasswordsEnabled) {
-    [model addSectionWithIdentifier:SectionIdentifierSite];
 
-    [model addItem:self.websiteTextItem
-        toSectionWithIdentifier:SectionIdentifierSite];
+  [model addSectionWithIdentifier:SectionIdentifierSite];
 
-    [model addSectionWithIdentifier:SectionIdentifierTLDFooter];
-  }
+  [model addItem:self.websiteTextItem
+      toSectionWithIdentifier:SectionIdentifierSite];
+
+  [model addSectionWithIdentifier:SectionIdentifierTLDFooter];
 
   [model addSectionWithIdentifier:SectionIdentifierPassword];
-  if (!isAddingPasswordsEnabled) {
-    [model addItem:self.websiteTextItem
-        toSectionWithIdentifier:SectionIdentifierPassword];
-  }
   // Blocked passwords don't have username and password value.
   if (self.credentialType != CredentialTypeBlocked) {
     self.usernameTextItem = [self usernameItem];
@@ -330,11 +324,8 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   item.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   item.hideIcon = (self.credentialType != CredentialTypeNew);
   item.keyboardType = UIKeyboardTypeURL;
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kSupportForAddPasswordsInSettings)) {
-    item.textFieldPlaceholder = l10n_util::GetNSString(
-        IDS_IOS_PASSWORD_SETTINGS_WEBSITE_PLACEHOLDER_TEXT);
-  }
+  item.textFieldPlaceholder = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_SETTINGS_WEBSITE_PLACEHOLDER_TEXT);
   if (self.credentialType == CredentialTypeNew) {
     item.delegate = self;
   }
@@ -359,12 +350,9 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     item.hideIcon = YES;
   }
   item.textFieldEnabled |= (self.credentialType == CredentialTypeNew);
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kSupportForAddPasswordsInSettings)) {
-    item.textFieldPlaceholder = l10n_util::GetNSString(
-        IDS_IOS_PASSWORD_SETTINGS_USERNAME_PLACEHOLDER_TEXT);
-    item.hideIcon = NO;
-  }
+  item.textFieldPlaceholder = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_SETTINGS_USERNAME_PLACEHOLDER_TEXT);
+  item.hideIcon = NO;
   return item;
 }
 
@@ -392,11 +380,8 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   item.keyboardType = UIKeyboardTypeURL;
   item.returnKeyType = UIReturnKeyDone;
   item.delegate = self;
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kSupportForAddPasswordsInSettings)) {
-    item.textFieldPlaceholder = l10n_util::GetNSString(
-        IDS_IOS_PASSWORD_SETTINGS_PASSWORD_PLACEHOLDER_TEXT);
-  }
+  item.textFieldPlaceholder = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_SETTINGS_PASSWORD_PLACEHOLDER_TEXT);
 
   // During editing password is exposed so eye icon shouldn't be shown.
   if (!self.tableView.editing) {
@@ -576,13 +561,13 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     }
     case ItemTypeChangePasswordButton:
       if (!self.tableView.editing) {
-        DCHECK(self.commandsHandler);
+        DCHECK(self.applicationCommandsHandler);
         DCHECK(self.password.changePasswordURL.is_valid());
         OpenNewTabCommand* command = [OpenNewTabCommand
             commandWithURLFromChrome:self.password.changePasswordURL];
         UmaHistogramEnumeration("PasswordManager.BulkCheck.UserAction",
                                 PasswordCheckInteraction::kChangePassword);
-        [self.commandsHandler closeSettingsUIAndOpenURL:command];
+        [self.applicationCommandsHandler closeSettingsUIAndOpenURL:command];
       }
       break;
     case ItemTypeDuplicateCredentialButton:
@@ -1012,12 +997,10 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   TriggerHapticFeedbackForNotification(success
                                            ? UINotificationFeedbackTypeSuccess
                                            : UINotificationFeedbackTypeError);
-  // TODO(crbug.com/1323778): This will need to be called on the
-  // SnackbarCommands handler.
-  [self.commandsHandler showSnackbarWithMessage:message
-                                     buttonText:nil
-                                  messageAction:nil
-                               completionAction:nil];
+  [self.snackbarCommandsHandler showSnackbarWithMessage:message
+                                             buttonText:nil
+                                          messageAction:nil
+                                       completionAction:nil];
 
   if ([self.tableView indexPathForSelectedRow]) {
     [self.tableView

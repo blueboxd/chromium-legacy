@@ -181,6 +181,10 @@ def AddCommonOptions(parser):
       action='store_true',
       help='Whether to archive test output locally and generate '
            'a local results detail page.')
+  parser.add_argument('--wrapper-script-args',
+                      help='A string of args that were passed to the wrapper '
+                      'script. This should probably not be edited by a '
+                      'user as it is passed by the wrapper itself.')
 
   class FastLocalDevAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -590,6 +594,12 @@ def AddInstrumentationTestOptions(parser):
                       default=False,
                       help='If true, WPR server runs in record mode.'
                       'otherwise, runs in replay mode.')
+
+  parser.add_argument(
+      '--approve-app-links',
+      help='Force enables Digital Asset Link verification for the provided '
+      'package and domain, example usage: --approve-app-links '
+      'com.android.package:www.example.com')
 
   # These arguments are suppressed from the help text because they should
   # only ever be specified by an intermediate script.
@@ -1061,8 +1071,10 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
             annotation=getattr(args, 'annotations', None),
             flakiness_server=getattr(args, 'flakiness_dashboard_server',
                                      None))
+
         if iteration_results.GetNotPass():
-          _LogRerunStatement(iteration_results.GetNotPass())
+          _LogRerunStatement(iteration_results.GetNotPass(),
+                             args.wrapper_script_args)
 
         if args.break_on_failure and not iteration_results.DidRunPass():
           break
@@ -1130,7 +1142,7 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
           else constants.ERROR_EXIT_CODE)
 
 
-def _LogRerunStatement(failed_tests):
+def _LogRerunStatement(failed_tests, wrapper_arg_str):
   """Logs a message that can rerun the failed tests.
 
   Logs a copy/pasteable message that filters tests so just the failing tests
@@ -1138,6 +1150,8 @@ def _LogRerunStatement(failed_tests):
 
   Args:
     failed_tests: A set of test results that did not pass.
+    wrapper_arg_str: A string of args that were passed to the called wrapper
+        script.
   """
   rerun_arg_list = []
   try:
@@ -1150,9 +1164,10 @@ def _LogRerunStatement(failed_tests):
 
   test_filter_file = os.path.join(os.path.relpath(constants.GetOutDirectory()),
                                   _RERUN_FAILED_TESTS_FILE)
+  arg_list = shlex.split(wrapper_arg_str) if wrapper_arg_str else sys.argv
   index = 0
-  while index < len(sys.argv):
-    arg = sys.argv[index]
+  while index < len(arg_list):
+    arg = arg_list[index]
     # Skip adding the filter=<file> and/or the filter arg as we're replacing
     # it with the new filter arg.
     # This covers --test-filter=, --test-launcher-filter-file=, --gtest-filter=,

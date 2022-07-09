@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul Romaja</translation>
 <translation id="112387589102719461">Engelsk (USA) med Dvorak-programmeringstastatur</translation>
 <translation id="1134697384939541955">Engelsk (USA) med utvidet tastatur</translation>
+<translation id="1138691154716715755">Tidligere denne måneden</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> ble funnet.
     <ph name="LINE_BREAK1" />
     Utilstrekkelig plass i lokal lagring. Du trenger <ph name="FILE_SIZE" /> til.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> % – blokkert av administratoren din – detaljer</translation>
 <translation id="2142680004883808240">Russisk med fonetisk YaZHert-tastatur</translation>
 <translation id="2143778271340628265">Manuell konfigurasjon av proxy-tjener</translation>
+<translation id="2148716181193084225">I dag</translation>
 <translation id="2163152940313951844">Ugyldig tegn: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portugisisk med datamaskintastaturet USA-Internasjonal</translation>
 <translation id="2198315389084035571">Kinesisk (forenklet)</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Bytt til listevisning</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> mapper er delt med Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer valgt</translation>
+<translation id="2387120140441437063">Kan ikke åpne filer i papirkurven. Gjenopprett filene før du åpner dem.</translation>
 <translation id="2387458720915042159">Tilkoblingstype for proxy-tjener</translation>
 <translation id="2389832672041313158">Burmesisk/myanmarsk</translation>
 <translation id="2392369802118427583">Aktiver</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Innholdet i denne mappen er skrivebeskyttet. Noen aktiviteter støttes ikke.</translation>
 <translation id="2542049655219295786">Google-tabell</translation>
 <translation id="2544853746127077729">Autentiseringssertifikatet ble avvist av nettverket</translation>
-<translation id="2547921442987553570">Legg til i <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">USA internasjonalt</translation>
 <translation id="2563185590376525700">Frosk</translation>
 <translation id="2578394532502990878">Tamil, fonetisk</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">Kinesisk dayi</translation>
 <translation id="3057861065630527966">Sikkerhetskopiér bildene og videoene dine</translation>
 <translation id="3067790092342515856">Windows-filer</translation>
-<translation id="3078461028045006476">Del med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit-enheter</translation>
 <translation id="3085752524577180175">SOCKS-vert</translation>
 <translation id="3104793765551262433">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – <ph name="SECURITY_STATUS" /> – <ph name="CONNECTION_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> % – blokkert av administratoren din – detaljer</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3855472144336161447">Tysk Neo 2</translation>
 <translation id="3858860766373142691">Navn</translation>
-<translation id="386548886866354912">Pakk med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3899991606604168269">Fransk (Canada) med flerspråklig tastatur</translation>
 <translation id="3901991538546252627">Kobler til <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Last ned mobilprofilen, nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Engelsk (Storbritannia)</translation>
 <translation id="3975895378829046965">Bengali, fonetisk</translation>
+<translation id="3991446849494482687">Dette deaktiverer også SIM-låsinnstillingen på enheten.</translation>
 <translation id="4002066346123236978">Tittel</translation>
 <translation id="4017788180641807848">Engelsk (USA) med Workman-tastatur</translation>
 <translation id="4040753847560036377">Feil PUK-kode.</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – <ph name="NETWORK_PROVIDER_NAME" /> – <ph name="CONNECTION_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> % – administreres av administratoren din – detaljer</translation>
 <translation id="4387004326333427325">Autentiseringssertifikatet ble avvist eksternt</translation>
 <translation id="4394214039309501350">Ekstern link</translation>
+<translation id="4394980935660306080">Tidligere denne uken</translation>
 <translation id="4401287888955153199">Pakk ut alt</translation>
 <translation id="4410695710508688828">Utpakkingsoperasjonen mislyktes. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Opprett en snarvei til filene dine</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">Åpner «<ph name="PATH" />»</translation>
 <translation id="4720185134442950733">Mobildatanettverk</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> bilder ble sikkerhetskopiert</translation>
+<translation id="4725096204469550614">Tidligere i år</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4737050008115666127">Landing</translation>
 <translation id="4747271164117300400">Makedonsk</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">Flytter <ph name="NUMBER_OF_ITEMS" /> elementer til <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Det oppsto en feil.</translation>
 <translation id="5098629044894065541">Hebraisk</translation>
+<translation id="5102922915594634436">Administrer synkroniserte mapper</translation>
 <translation id="5109254780565519649">Det oppsto en feil. Noen elementer er kanskje ikke gjenopprettet.</translation>
 <translation id="5110329002213341433">Engelsk (Canada)</translation>
 <translation id="5123433949759960244">Basketball</translation>
@@ -603,7 +607,6 @@
 <translation id="6165508094623778733">Finn ut mer</translation>
 <translation id="6170470584681422115">Smørbrød</translation>
 <translation id="6187719147498869044">Ungarsk</translation>
-<translation id="6189412234224385711">Åpne med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Endre personlig kode</translation>
 <translation id="6199801702437275229">Venter på informasjon om lagringsplass …</translation>
 <translation id="6205710420833115353">Noen handlinger tar lengre tid enn vanlig. Vil du avbryte dem?</translation>
@@ -707,6 +710,7 @@
 <translation id="7075931588889865715">Thai med TIS 820-2531-tastatur</translation>
 <translation id="708278670402572152">Koble fra for å slå på skanning</translation>
 <translation id="7086590977277044826">Tamil med InScript-tastatur</translation>
+<translation id="7088615885725309056">Eldre</translation>
 <translation id="7103992300314999525">Makedonsk</translation>
 <translation id="7106346894903675391">Kjøp mer lagringsplass</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' – &lt;em&gt;søk i Disk&lt;/em&gt;</translation>
@@ -771,6 +775,7 @@
 <translation id="7663224033570512922">Hindi</translation>
 <translation id="7693909743393669729">Når du formaterer stasjoner, slettes alle data som er lagret på dem, og alle eksisterende partisjoner fjernes, inkludert partisjoner som kanskje ikke er synlige. Denne handlingen kan ikke angres.</translation>
 <translation id="7695430100978772476">Kunne ikke formatere <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">Kunne ikke tømme papirkurven.</translation>
 <translation id="770015031906360009">Gresk</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> er kopiert.</translation>
 <translation id="7711920809702896782">Bildeinformasjon</translation>
@@ -781,6 +786,7 @@
 <translation id="7760449188139285140">Kinesisk wubi</translation>
 <translation id="7765158879357617694">Flytt</translation>
 <translation id="7774365994322694683">Fugl</translation>
+<translation id="7781829728241885113">I går</translation>
 <translation id="7788080748068240085">Hvis du vil lagre <ph name="FILE_NAME" /> for bruk uten nett, må du frigjøre ytterligere <ph name="TOTAL_FILE_SIZE" /> lagringsplass:<ph name="MARKUP_1" />
         <ph name="MARKUP_2" />Løsne filer du ikke trenger å bruke uten nett lenger.<ph name="MARKUP_3" />
         <ph name="MARKUP_4" />Slett filer du har i Nedlastinger-mappen.<ph name="MARKUP_5" /></translation>

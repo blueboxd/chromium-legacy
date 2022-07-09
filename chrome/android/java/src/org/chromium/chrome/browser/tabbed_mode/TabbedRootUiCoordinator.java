@@ -99,7 +99,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoUtils;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.ui.signin.SigninPromoUtil;
+import org.chromium.chrome.browser.ui.signin.FullScreenSyncPromoUtil;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
 import org.chromium.chrome.browser.ui.tablet.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -640,10 +640,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         }
 
         mAddToHomescreenIPHController = new AddToHomescreenIPHController(mActivity, mWindowAndroid,
-                mModalDialogManagerSupplier.get(), mAppMenuCoordinator.getAppMenuHandler(),
-                R.id.add_to_homescreen_id, () -> {
-                    return mToolbarManager.getMenuButtonView();
-                }, MessageDispatcherProvider.from(mWindowAndroid));
+                mModalDialogManagerSupplier.get(), MessageDispatcherProvider.from(mWindowAndroid));
         mLinkToTextIPHController = new LinkToTextIPHController(
                 mActivityTabProvider, mTabModelSelectorSupplier.get(), mProfileSupplier);
         mAddToHomescreenMostVisitedTileObserver = new AddToHomescreenMostVisitedTileClickObserver(
@@ -851,7 +848,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
     private boolean maybeShowPromo() {
         // Only one promo can be shown in one run to avoid nagging users too much.
-        if (SigninPromoUtil.launchSigninPromoIfNeeded(mActivity,
+        if (FullScreenSyncPromoUtil.launchPromoIfNeeded(mActivity,
                     SyncConsentActivityLauncherImpl.get(), VersionInfo.getProductMajorVersion())) {
             return true;
         }

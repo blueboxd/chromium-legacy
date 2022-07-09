@@ -1068,29 +1068,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     }
 
     @Test
-    @MediumTest
-    @Feature("NewTabTile")
-    // clang-format off
-    @DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION,
-            ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
-    @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab_tile/false"
-            + "/tab_grid_layout_android_new_tab/false"})
-    public void testNewTabTile_Disabled() throws InterruptedException {
-        // clang-format on
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        prepareTabs(2, 0, null);
-
-        enterGTSWithThumbnailChecking();
-
-        onView(withId(R.id.new_tab_tile)).check(doesNotExist());
-        verifyTabSwitcherCardCount(cta, 2);
-
-        switchTabModel(cta, true);
-        onView(withId(R.id.new_tab_tile)).check(doesNotExist());
-        verifyTabSwitcherCardCount(cta, 0);
-    }
-
-    @Test
     @LargeTest
     // clang-format off
     @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
@@ -1436,7 +1413,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @DisabledTest(message = "https://crbug.com/1335780")
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({BASE_PARAMS + "/enable_launch_polish/true"})
@@ -1574,7 +1550,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1333098")
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testTabGroupManualSelection_DisabledForSingleTab() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -2011,7 +1986,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         TabModel currentModel = mActivityTestRule.getActivity().getCurrentTabModel();
         for (int i = 0; i < currentModel.getCount(); i++) {
             Tab tab = currentModel.getTabAt(i);
-            Bitmap bitmap = TabContentManager.getJpegForTab(tab.getId());
+            Bitmap bitmap = TabContentManager.getJpegForTab(tab.getId(), null);
             bitmap = Bitmap.createScaledBitmap(
                     bitmap, bitmap.getWidth(), (int) (bitmap.getWidth() * 1.0 / 0.75), false);
             encodeJpeg(tab, bitmap);
@@ -2029,7 +2004,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         TabModel currentModel = mActivityTestRule.getActivity().getCurrentTabModel();
         for (int i = 0; i < currentModel.getCount(); i++) {
             Tab tab = currentModel.getTabAt(i);
-            Bitmap bitmap = TabContentManager.getJpegForTab(tab.getId());
+            Bitmap bitmap = TabContentManager.getJpegForTab(tab.getId(), null);
             double bitmapRatio = bitmap.getWidth() * 1.0 / bitmap.getHeight();
             assertTrue("Actual ratio: " + bitmapRatio + "; Expected ratio: " + ratio,
                     Math.abs(bitmapRatio - ratio) <= TabContentManager.ASPECT_RATIO_PRECISION);

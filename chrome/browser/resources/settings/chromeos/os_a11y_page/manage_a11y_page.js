@@ -22,6 +22,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {BatteryStatus, DevicePageBrowserProxy, DevicePageBrowserProxyImpl, ExternalStorage, getDisplayApi, IdleBehavior, LidClosedBehavior, NoteAppInfo, NoteAppLockScreenSupport, PowerManagementSettings, PowerSource, StorageSpaceState} from '../device_page/device_page_browser_proxy.js';
@@ -222,6 +223,15 @@ class SettingsManageA11YPageElement extends SettingsManageA11YPageElementBase {
         },
       },
 
+      /** @private */
+      isAccessibilityOSSettingsVisibilityEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'isAccessibilityOSSettingsVisibilityEnabled');
+        },
+      },
+
       /**
        * Whether the user is in kiosk mode.
        * @private
@@ -367,32 +377,31 @@ class SettingsManageA11YPageElement extends SettingsManageA11YPageElementBase {
 
       /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
-       * @type {!Set<!chromeos.settings.mojom.Setting>}
+       * @type {!Set<!Setting>}
        */
       supportedSettingIds: {
         type: Object,
         value: () => new Set([
-          chromeos.settings.mojom.Setting.kChromeVox,
-          chromeos.settings.mojom.Setting.kSelectToSpeak,
-          chromeos.settings.mojom.Setting.kHighContrastMode,
-          chromeos.settings.mojom.Setting.kFullscreenMagnifier,
-          chromeos.settings.mojom.Setting
-              .kFullscreenMagnifierMouseFollowingMode,
-          chromeos.settings.mojom.Setting.kFullscreenMagnifierFocusFollowing,
-          chromeos.settings.mojom.Setting.kDockedMagnifier,
-          chromeos.settings.mojom.Setting.kStickyKeys,
-          chromeos.settings.mojom.Setting.kOnScreenKeyboard,
-          chromeos.settings.mojom.Setting.kDictation,
-          chromeos.settings.mojom.Setting.kHighlightKeyboardFocus,
-          chromeos.settings.mojom.Setting.kHighlightTextCaret,
-          chromeos.settings.mojom.Setting.kAutoClickWhenCursorStops,
-          chromeos.settings.mojom.Setting.kLargeCursor,
-          chromeos.settings.mojom.Setting.kHighlightCursorWhileMoving,
-          chromeos.settings.mojom.Setting.kTabletNavigationButtons,
-          chromeos.settings.mojom.Setting.kMonoAudio,
-          chromeos.settings.mojom.Setting.kStartupSound,
-          chromeos.settings.mojom.Setting.kEnableSwitchAccess,
-          chromeos.settings.mojom.Setting.kEnableCursorColor,
+          Setting.kChromeVox,
+          Setting.kSelectToSpeak,
+          Setting.kHighContrastMode,
+          Setting.kFullscreenMagnifier,
+          Setting.kFullscreenMagnifierMouseFollowingMode,
+          Setting.kFullscreenMagnifierFocusFollowing,
+          Setting.kDockedMagnifier,
+          Setting.kStickyKeys,
+          Setting.kOnScreenKeyboard,
+          Setting.kDictation,
+          Setting.kHighlightKeyboardFocus,
+          Setting.kHighlightTextCaret,
+          Setting.kAutoClickWhenCursorStops,
+          Setting.kLargeCursor,
+          Setting.kHighlightCursorWhileMoving,
+          Setting.kTabletNavigationButtons,
+          Setting.kMonoAudio,
+          Setting.kStartupSound,
+          Setting.kEnableSwitchAccess,
+          Setting.kEnableCursorColor,
         ]),
       },
     };
@@ -497,17 +506,16 @@ class SettingsManageA11YPageElement extends SettingsManageA11YPageElementBase {
    *    2. If it is enabled, whether a physical keyboard is present.
    * @param {boolean} enabled
    * @param {boolean} hasKeyboard
-   * @param {string} disabledString String to show when Select-to-Speak is
-   *    disabled.
-   * @param {string} keyboardString String to show when there is a physical
-   *    keyboard
-   * @param {string} noKeyboardString String to show when there is no keyboard
    * @private
    */
-  getSelectToSpeakDescription_(
-      enabled, hasKeyboard, disabledString, keyboardString, noKeyboardString) {
-    return !enabled ? disabledString :
-                      hasKeyboard ? keyboardString : noKeyboardString;
+  getSelectToSpeakDescription_(enabled, hasKeyboard) {
+    if (!enabled) {
+      return this.i18n('selectToSpeakDisabledDescription');
+    }
+    if (hasKeyboard) {
+      return this.i18n('selectToSpeakDescription');
+    }
+    return this.i18n('selectToSpeakDescriptionWithoutKeyboard');
   }
 
   /**

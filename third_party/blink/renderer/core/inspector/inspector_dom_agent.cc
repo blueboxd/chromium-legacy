@@ -724,6 +724,8 @@ Response InspectorDOMAgent::collectClassNamesFromSubtree(
   HashSet<String> unique_names;
   *class_names = std::make_unique<protocol::Array<String>>();
   Node* parent_node = NodeForId(node_id);
+  if (!parent_node)
+    return Response::ServerError("No suitable node with given id found");
   auto* parent_element = DynamicTo<Element>(parent_node);
   if (!parent_element && !parent_node->IsDocumentNode() &&
       !parent_node->IsDocumentFragment())
@@ -853,9 +855,12 @@ int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push,
   }
 
   for (int i = path.size() - 1; i >= 0; --i) {
-    int node_id = node_map->at(path.at(i).Get());
-    DCHECK(node_id);
-    PushChildNodesToFrontend(node_id);
+    auto it = node_map->find(path.at(i).Get());
+    if (it != node_map->end()) {
+      int node_id = it->value;
+      DCHECK(node_id);
+      PushChildNodesToFrontend(node_id);
+    }
   }
   it = node_map->find(node_to_push);
   return it != node_map->end() ? it->value : 0;
@@ -1669,7 +1674,7 @@ InspectorDOMAgent::GetContainerQueryingDescendants(Element* container) {
 bool InspectorDOMAgent::ContainerQueriedByElement(Element* container,
                                                   Element* element) {
   const ComputedStyle* style = element->GetComputedStyle();
-  if (!style || !style->DependsOnContainerQueries())
+  if (!style || !style->DependsOnSizeContainerQueries())
     return false;
 
   StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();

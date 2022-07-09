@@ -410,7 +410,8 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
     const ContainerQuery* container_query =
         container_query_seeker.Seek(rule_data.GetPosition());
     if (container_query) {
-      result_.SetDependsOnContainerQueries();
+      // TODO(crbug.com/1302630): May depend on style() queries.
+      result_.SetDependsOnSizeContainerQueries();
 
       // If we are matching pseudo elements like a ::before rule when computing
       // the styles of the originating element, we don't know whether the
@@ -755,7 +756,8 @@ CSSRule* ElementRuleCollector::FindStyleRule(CSSRuleCollection* css_rules,
 
 void ElementRuleCollector::AppendCSSOMWrapperForRule(
     CSSStyleSheet* parent_style_sheet,
-    const RuleData* rule_data) {
+    const RuleData* rule_data,
+    wtf_size_t position) {
   // |parentStyleSheet| is 0 if and only if the |rule| is coming from User
   // Agent. In this case, it is safe to create CSSOM wrappers without
   // parentStyleSheets as they will be used only by inspector which will not try
@@ -774,7 +776,7 @@ void ElementRuleCollector::AppendCSSOMWrapperForRule(
   if (parent_style_sheet)
     css_rule = FindStyleRule(parent_style_sheet, rule);
   else
-    css_rule = rule->CreateCSSOMWrapper();
+    css_rule = rule->CreateCSSOMWrapper(position);
   DCHECK(!parent_style_sheet || css_rule);
   EnsureRuleList()->emplace_back(css_rule, rule_data->SelectorIndex());
 }
@@ -796,7 +798,7 @@ void ElementRuleCollector::SortAndTransferMatchedRules(
     for (unsigned i = 0; i < matched_rules_.size(); ++i) {
       AppendCSSOMWrapperForRule(
           const_cast<CSSStyleSheet*>(matched_rules_[i].ParentStyleSheet()),
-          matched_rules_[i].GetRuleData());
+          matched_rules_[i].GetRuleData(), i);
     }
     return;
   }
@@ -878,7 +880,7 @@ void ElementRuleCollector::DidMatchRule(
         style_->SetHasCustomHighlightName(result.custom_highlight_name);
       }
     } else if (dynamic_pseudo == kPseudoIdFirstLine && container_query) {
-      style_->SetFirstLineDependsOnContainerQueries(true);
+      style_->SetFirstLineDependsOnSizeContainerQueries(true);
     }
   } else {
     matched_rules_.push_back(MatchedRule(rule_data, layer_order, proximity,

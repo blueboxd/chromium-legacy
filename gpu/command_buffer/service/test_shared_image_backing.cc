@@ -130,7 +130,7 @@ class TestSharedImageRepresentationOverlay
                                        MemoryTypeTracker* tracker)
       : SharedImageRepresentationOverlay(manager, backing, tracker) {}
 
-  bool BeginReadAccess(std::vector<gfx::GpuFence>* acquire_fences) override {
+  bool BeginReadAccess(gfx::GpuFenceHandle& acquire_fence) override {
     return true;
   }
   void EndReadAccess(gfx::GpuFenceHandle release_fence) override {}
@@ -206,6 +206,10 @@ TestSharedImageBacking::~TestSharedImageBacking() {
 
   if (have_context())
     glDeleteTextures(1, &service_id_);
+}
+
+SharedImageBackingType TestSharedImageBacking::GetType() const {
+  return SharedImageBackingType::kTest;
 }
 
 gfx::Rect TestSharedImageBacking::ClearedRect() const {

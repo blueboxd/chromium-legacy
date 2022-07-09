@@ -129,6 +129,7 @@ struct RawPtrNoOpImpl {
 
   // This is for accounting only, used by unit tests.
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
+  static ALWAYS_INLINE void IncrementLessCountForTest() {}
   static ALWAYS_INLINE void IncrementPointerToMemberOperatorCountForTest() {}
 };
 
@@ -272,6 +273,7 @@ struct MTECheckedPtrImpl {
 
   // This is for accounting only, used by unit tests.
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
+  static ALWAYS_INLINE void IncrementLessCountForTest() {}
   static ALWAYS_INLINE void IncrementPointerToMemberOperatorCountForTest() {}
 
  private:
@@ -459,6 +461,7 @@ struct BackupRefPtrImpl {
 
   // This is for accounting only, used by unit tests.
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
+  static ALWAYS_INLINE void IncrementLessCountForTest() {}
   static ALWAYS_INLINE void IncrementPointerToMemberOperatorCountForTest() {}
 
  private:
@@ -549,6 +552,7 @@ struct AsanBackupRefPtrImpl {
 
   // This is for accounting only, used by unit tests.
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
+  static ALWAYS_INLINE void IncrementLessCountForTest() {}
   static ALWAYS_INLINE void IncrementPointerToMemberOperatorCountForTest() {}
 
  private:
@@ -558,6 +562,71 @@ struct AsanBackupRefPtrImpl {
       void const volatile* ptr);
   static BASE_EXPORT NOINLINE void AsanCheckIfValidExtraction(
       void const volatile* ptr);
+};
+
+template <class Super>
+struct RawPtrCountingImplWrapperForTest : public Super {
+  template <typename T>
+  static ALWAYS_INLINE T* WrapRawPtr(T* ptr) {
+    ++wrap_raw_ptr_cnt;
+    return Super::WrapRawPtr(ptr);
+  }
+
+  template <typename T>
+  static ALWAYS_INLINE void ReleaseWrappedPtr(T* ptr) {
+    ++release_wrapped_ptr_cnt;
+    Super::ReleaseWrappedPtr(ptr);
+  }
+
+  template <typename T>
+  static ALWAYS_INLINE T* SafelyUnwrapPtrForDereference(T* wrapped_ptr) {
+    ++get_for_dereference_cnt;
+    return Super::SafelyUnwrapPtrForDereference(wrapped_ptr);
+  }
+
+  template <typename T>
+  static ALWAYS_INLINE T* SafelyUnwrapPtrForExtraction(T* wrapped_ptr) {
+    ++get_for_extraction_cnt;
+    return Super::SafelyUnwrapPtrForExtraction(wrapped_ptr);
+  }
+
+  template <typename T>
+  static ALWAYS_INLINE T* UnsafelyUnwrapPtrForComparison(T* wrapped_ptr) {
+    ++get_for_comparison_cnt;
+    return Super::UnsafelyUnwrapPtrForComparison(wrapped_ptr);
+  }
+
+  static ALWAYS_INLINE void IncrementSwapCountForTest() {
+    ++wrapped_ptr_swap_cnt;
+  }
+
+  static ALWAYS_INLINE void IncrementLessCountForTest() {
+    ++wrapped_ptr_less_cnt;
+  }
+
+  static ALWAYS_INLINE void IncrementPointerToMemberOperatorCountForTest() {
+    ++pointer_to_member_operator_cnt;
+  }
+
+  static void ClearCounters() {
+    wrap_raw_ptr_cnt = 0;
+    release_wrapped_ptr_cnt = 0;
+    get_for_dereference_cnt = 0;
+    get_for_extraction_cnt = 0;
+    get_for_comparison_cnt = 0;
+    wrapped_ptr_swap_cnt = 0;
+    wrapped_ptr_less_cnt = 0;
+    pointer_to_member_operator_cnt = 0;
+  }
+
+  static inline int wrap_raw_ptr_cnt = INT_MIN;
+  static inline int release_wrapped_ptr_cnt = INT_MIN;
+  static inline int get_for_dereference_cnt = INT_MIN;
+  static inline int get_for_extraction_cnt = INT_MIN;
+  static inline int get_for_comparison_cnt = INT_MIN;
+  static inline int wrapped_ptr_swap_cnt = INT_MIN;
+  static inline int wrapped_ptr_less_cnt = INT_MIN;
+  static inline int pointer_to_member_operator_cnt = INT_MIN;
 };
 
 }  // namespace internal
@@ -682,7 +751,9 @@ using RawPtrMayDangle = internal::RawPtrNoOpImpl;
 using RawPtrBanDanglingIfSupported = internal::RawPtrNoOpImpl;
 #endif
 
-template <typename T, typename Impl = RawPtrBanDanglingIfSupported>
+using DefaultRawPtrImpl = RawPtrBanDanglingIfSupported;
+
+template <typename T, typename Impl = DefaultRawPtrImpl>
 class TRIVIAL_ABI GSL_POINTER raw_ptr {
  public:
   static_assert(raw_ptr_traits::IsSupportedType<T>::value,
@@ -1125,26 +1196,70 @@ using base::raw_ptr;
 // never be dereferenced after becoming dangling.
 using DisableDanglingPtrDetection = base::RawPtrMayDangle;
 
-// See https://cbug.com/1291138.
+// See `docs/dangling_ptr.md`
 // Annotates known dangling raw_ptr. Those haven't been triaged yet. All the
-// occurrences are meant to be removed.
+// occurrences are meant to be removed. See https://cbug.com/1291138.
 using DanglingUntriaged = DisableDanglingPtrDetection;
+
+// The following template parameters are only meaningful when `raw_ptr`
+// is `MTECheckedPtr` (never the case unless a particular GN arg is set
+// true.) `raw_ptr` users need not worry about this and can refer solely
+// to `DisableDanglingPtrDetection` and `DanglingUntriaged` above.
+//
+// The `raw_ptr` definition allows users to specify an implementation.
+// When `MTECheckedPtr` is in play, we need to augment this
+// implementation setting with another layer that allows the `raw_ptr`
+// to degrade into the no-op version.
+#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+
+// Direct pass-through to no-op implementation.
+using DegradeToNoOpWhenMTE = base::internal::RawPtrNoOpImpl;
+
+// As above, but with the "untriaged dangling" annotation.
+using DanglingUntriagedDegradeToNoOpWhenMTE = base::internal::RawPtrNoOpImpl;
+
+// As above, but with the "explicitly disable protection" annotation.
+using DisableDanglingPtrDetectionDegradeToNoOpWhenMTE =
+    base::internal::RawPtrNoOpImpl;
+
+#else
+
+// Direct pass-through to default implementation specified by `raw_ptr`
+// template.
+using DegradeToNoOpWhenMTE = base::RawPtrBanDanglingIfSupported;
+
+// Direct pass-through to `DanglingUntriaged`.
+using DanglingUntriagedDegradeToNoOpWhenMTE = DanglingUntriaged;
+
+// Direct pass-through to `DisableDanglingPtrDetection`.
+using DisableDanglingPtrDetectionDegradeToNoOpWhenMTE =
+    DisableDanglingPtrDetection;
+
+#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
 
 namespace std {
 
 // Override so set/map lookups do not create extra raw_ptr. This also allows
 // dangling pointers to be used for lookup.
-template <typename T, typename I>
-struct less<raw_ptr<T, I>> {
+template <typename T, typename Impl>
+struct less<raw_ptr<T, Impl>> {
   using is_transparent = void;
 
-  bool operator()(const raw_ptr<T, I>& lhs, const raw_ptr<T, I>& rhs) const {
+  bool operator()(const raw_ptr<T, Impl>& lhs,
+                  const raw_ptr<T, Impl>& rhs) const {
+    Impl::IncrementLessCountForTest();
     return lhs < rhs;
   }
 
-  bool operator()(T* lhs, const raw_ptr<T, I>& rhs) const { return lhs < rhs; }
+  bool operator()(T* lhs, const raw_ptr<T, Impl>& rhs) const {
+    Impl::IncrementLessCountForTest();
+    return lhs < rhs;
+  }
 
-  bool operator()(const raw_ptr<T, I>& lhs, T* rhs) const { return lhs < rhs; }
+  bool operator()(const raw_ptr<T, Impl>& lhs, T* rhs) const {
+    Impl::IncrementLessCountForTest();
+    return lhs < rhs;
+  }
 };
 
 }  // namespace std

@@ -34,7 +34,7 @@ class PolicyGenerationTest(unittest.TestCase):
           "schema": {
               "type": "string"
           },
-          "supported_on": ["chrome_os:1-"],
+          "supported_on": ["chrome_os:1-", "chrome.*:1-"],
           "id": 1,
           "tags": [],
           "caption": "ExampleStringPolicy caption",
@@ -45,71 +45,130 @@ class PolicyGenerationTest(unittest.TestCase):
           "schema": {
               "type": "boolean"
           },
-          "supported_on": ["chrome_os:1-"],
+          "supported_on": ["chrome_os:1-", "chrome.*:1-"],
           "id": 2,
           "tags": [],
           "caption": "ExampleBoolPolicy caption",
           "desc": "ExampleBoolPolicy desc",
       }, {
-          "name": "ExampleBoolMergeMetapolicy",
-          "type": "main",
+          "name":
+          "ExampleBoolMergeMetapolicy",
+          "type":
+          "main",
           "schema": {
               "type": "boolean"
           },
-          "supported_on": ["chrome_os:1-"],
+          "supported_on":
+          ["chrome_os:1-", "chrome.*:1-", "android:1-", "ios:1-"],
           "features": {
               "metapolicy_type": "merge",
           },
-          "id": 3,
+          "id":
+          3,
           "tags": [],
-          "caption": "ExampleBoolMergeMetapolicy caption",
-          "desc": "ExampleBoolMergeMetapolicy desc",
+          "caption":
+          "ExampleBoolMergeMetapolicy caption",
+          "desc":
+          "ExampleBoolMergeMetapolicy desc",
       }, {
-          "name": "ExampleBoolPrecedenceMetapolicy",
-          "type": "main",
+          "name":
+          "ExampleBoolPrecedenceMetapolicy",
+          "type":
+          "main",
           "schema": {
               "type": "boolean"
           },
-          "supported_on": ["chrome_os:1-"],
+          "supported_on":
+          ["chrome_os:1-", "chrome.*:1-", "android:1-", "ios:1-"],
           "features": {
               "metapolicy_type": "precedence",
           },
-          "id": 4,
+          "id":
+          4,
           "tags": [],
-          "caption": "ExampleBoolPrecedenceMetapolicy caption",
-          "desc": "ExampleBoolPrecedenceMetapolicy desc",
+          "caption":
+          "ExampleBoolPrecedenceMetapolicy caption",
+          "desc":
+          "ExampleBoolPrecedenceMetapolicy desc",
       }, {
-          "name": "CloudOnlyPolicy",
-          "type": "main",
+          "name":
+          "CloudOnlyPolicy",
+          "type":
+          "main",
           "schema": {
               "type": "boolean"
           },
           "features": {
               "cloud_only": True,
           },
-          "supported_on": ["chrome_os:1-", "android:1-"],
-          "id": 5,
+          "supported_on": ["chrome_os:1-", "android:1-", "chrome.*:1-"],
+          "id":
+          5,
           "tags": [],
-          "caption": "CloudOnlyPolicy caption",
-          "desc": "CloudOnlyPolicy desc",
+          "caption":
+          "CloudOnlyPolicy caption",
+          "desc":
+          "CloudOnlyPolicy desc",
       }, {
-          "name": "CloudManagementEnrollmentToken",
+          "name":
+          "CloudManagementEnrollmentToken",
+          "type":
+          "string",
+          "schema": {
+              "type": "string"
+          },
+          "supported_on": ["chrome_os:1-", "android:1-", "chrome.*:1-"],
+          "id":
+          6,
+          "tags": [],
+          "caption":
+          "CloudManagementEnrollmentToken caption",
+          "desc":
+          "CloudManagementEnrollmentToken desc"
+      }, {
+          "name":
+          "DeprecatedButGenerated",
+          "type":
+          "string",
+          "schema": {
+              "type": "string"
+          },
+          "supported_on": ["chrome_os:1-93", "android:1-93", "chrome.*:1-93"],
+          "id": 7,
+          "tags": [],
+          "caption":
+          "DeprecatedButGenerated caption",
+          "desc":
+          "DeprecatedButGenerated desc"
+      }, {
+          "name": "DeprecatedNotGenerated",
           "type": "string",
           "schema": {
               "type": "string"
           },
-          "supported_on": ["chrome_os:1-", "android:1-"],
-          "id": 6,
+          "supported_on": ["chrome_os:1-92"],
+          "id": 8,
           "tags": [],
-          "caption": "CloudManagementEnrollmentToken caption",
-          "desc": "CloudManagementEnrollmentToken desc"
+          "caption": "DeprecatedNotGenerated caption",
+          "desc": "DeprecatedNotGenerated desc"
+      }, {
+          "name": "UnsupportedPolicy",
+          "type": "string",
+          "schema": {
+              "type": "string"
+          },
+          "supported_on": [],
+          "id": 9,
+          "tags": [],
+          "caption": "UnsupportedPolicy caption",
+          "desc": "UnsupportedPolicy desc"
       }, {
           "name": "ChunkZeroLastFieldBooleanPolicy",
           "type": "main",
           "schema": {
               "type": "boolean"
           },
-          "supported_on": ["chrome_os:1-"],
+          "supported_on": ["chrome_os:1-", "chrome.*:1-"],
           "id": 1015,
           "tags": [],
           "caption": "ChunkZeroLastFieldBooleanPolicy caption",
@@ -120,7 +179,7 @@ class PolicyGenerationTest(unittest.TestCase):
           "schema": {
               "type": "boolean"
           },
-          "supported_on": ["chrome_os:1-"],
+          "supported_on": ["chrome_os:1-", "chrome.*:1-"],
           "id": 1016,
           "tags": [],
           "caption": "ChunkOneFirstFieldBooleanPolicy caption",
@@ -131,7 +190,7 @@ class PolicyGenerationTest(unittest.TestCase):
           "schema": {
               "type": "boolean"
           },
-          "supported_on": ["chrome_os:1-"],
+          "supported_on": ["chrome_os:1-", "chrome.*:1-"],
           "id": 1815,
           "tags": [],
           "caption": "ChunkOneLastFieldBooleanPolicy caption",
@@ -142,7 +201,7 @@ class PolicyGenerationTest(unittest.TestCase):
           "schema": {
               "type": "string"
           },
-          "supported_on": ["chrome_os:1-"],
+          "supported_on": ["chrome_os:1-", "chrome.*:1-"],
           "id": 1816,
           "tags": [],
           "caption": "ChunkTwoFirstFieldStringPolicy caption",
@@ -153,7 +212,7 @@ class PolicyGenerationTest(unittest.TestCase):
           "schema": {
               "type": "string"
           },
-          "supported_on": ["chrome_os:1-"],
+          "supported_on": ["chrome_os:1-", "chrome.*:1-"],
           "id": 2615,
           "tags": [],
           "caption": "ChunkTwoLastFieldStringPolicy caption",
@@ -163,13 +222,14 @@ class PolicyGenerationTest(unittest.TestCase):
   }
 
   def setUp(self):
-    self.maxDiff = 10000
     self.chrome_major_version = 94
     self.target_platform = 'chrome_os'
+    self.deprecation_milestone_buffer = 1
     self.all_target_platforms = ['win', 'mac', 'linux', 'chromeos', 'fuchsia']
     self.risk_tags = generate_policy_source.RiskTags(self.TEMPLATES_JSON)
     self.policies = [
         generate_policy_source.PolicyDetails(policy, self.chrome_major_version,
+                                             self.deprecation_milestone_buffer,
                                              self.target_platform,
                                              self.risk_tags.GetValidTags())
         for policy in self.TEMPLATES_JSON['policy_definitions']
@@ -314,18 +374,17 @@ class PolicyGenerationTest(unittest.TestCase):
   def testGetMetapoliciesOfType(self):
     merge_metapolicies = generate_policy_source._GetMetapoliciesOfType(
         self.policies, "merge")
-    self.assertListEqual(["ExampleBoolMergeMetapolicy"], merge_metapolicies)
     self.assertEqual(1, len(merge_metapolicies))
+    self.assertEqual("ExampleBoolMergeMetapolicy", merge_metapolicies[0].name)
 
     precedence_metapolicies = generate_policy_source._GetMetapoliciesOfType(
         self.policies, "precedence")
-    self.assertListEqual(["ExampleBoolPrecedenceMetapolicy"],
-                         precedence_metapolicies)
     self.assertEqual(1, len(precedence_metapolicies))
+    self.assertEqual("ExampleBoolPrecedenceMetapolicy",
+                     precedence_metapolicies[0].name)
 
     invalid_metapolicies = generate_policy_source._GetMetapoliciesOfType(
         self.policies, "invalid")
-    self.assertListEqual([], invalid_metapolicies)
     self.assertEqual(0, len(invalid_metapolicies))
 
   def testWritePolicyConstantHeader(self):
@@ -356,6 +415,7 @@ class PolicyGenerationTest(unittest.TestCase):
                                mocked_file().write.call_args_list)
 
   def testWritePolicyConstantSource(self):
+    self.maxDiff = None
     output_path = 'mock_policy_constants_cc'
 
     for target_platform in self.all_target_platforms:

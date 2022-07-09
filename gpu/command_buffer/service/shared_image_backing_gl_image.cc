@@ -282,11 +282,11 @@ SharedImageRepresentationOverlayImpl::~SharedImageRepresentationOverlayImpl() =
     default;
 
 bool SharedImageRepresentationOverlayImpl::BeginReadAccess(
-    std::vector<gfx::GpuFence>* acquire_fences) {
+    gfx::GpuFenceHandle& acquire_fence) {
   auto* gl_backing = static_cast<SharedImageBackingGLImage*>(backing());
   std::unique_ptr<gfx::GpuFence> fence = gl_backing->GetLastWriteGpuFence();
   if (fence)
-    acquire_fences->push_back(std::move(*fence));
+    acquire_fence = fence->GetGpuFenceHandle().Clone();
   return true;
 }
 
@@ -485,6 +485,10 @@ void SharedImageBackingGLImage::OnMemoryDump(
     pmd->AddOwnershipEdge(client_guid, service_guid, importance);
   }
   image_->OnMemoryDump(pmd, client_tracing_id, dump_name);
+}
+
+SharedImageBackingType SharedImageBackingGLImage::GetType() const {
+  return SharedImageBackingType::kGLImage;
 }
 
 gfx::Rect SharedImageBackingGLImage::ClearedRect() const {

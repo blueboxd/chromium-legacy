@@ -675,7 +675,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, OutOfOrderTabSwitchTest) {
   WebContents* new_tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   browser()->tab_strip_model()->ActivateTabAt(
-      0, {TabStripModel::GestureType::kOther});
+      0, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
 
   NavigateHelper(singleton_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
                  false, new_tab);
@@ -748,7 +749,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SaveAfterFocusTabSwitchTest) {
                  false);
 
   browser()->tab_strip_model()->ActivateTabAt(
-      1, {TabStripModel::GestureType::kOther});
+      1, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
 
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();
   EXPECT_EQ(omnibox_view->model()->focus_state(),
@@ -1617,7 +1619,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_CloseSingletonTab) {
   }
 
   browser()->tab_strip_model()->ActivateTabAt(
-      0, {TabStripModel::GestureType::kOther});
+      0, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
 
   {
     content::LoadStopObserver observer(
@@ -1884,21 +1887,32 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SubFrameNavigationUIData) {
 // BrowserNavigatorTest instead.
 // See crbug.com/1320453 for why this is off for lacros.
 class BrowserNavigatorWithPictureInPictureTest : public BrowserNavigatorTest {
- public:
   base::test::ScopedFeatureList scoped_feature_list_{
       features::kPictureInPictureV2};
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorWithPictureInPictureTest,
                        Disposition_PictureInPicture_Open) {
+  // The WebContents holds the parameters from the PiP request.
+  WebContents::CreateParams web_contents_params(browser()->profile());
+  web_contents_params.initial_picture_in_picture_aspect_ratio = 0.5;
+  web_contents_params.lock_picture_in_picture_aspect_ratio = true;
+
   // Opening a picture in picture window should create a new browser.
   NavigateParams params(MakeNavigateParams(browser()));
   params.disposition = WindowOpenDisposition::NEW_PICTURE_IN_PICTURE;
+  params.contents_to_insert = WebContents::Create(web_contents_params);
   Navigate(&params);
 
   // Should not re-use the browser.
   EXPECT_NE(browser(), params.browser);
   EXPECT_TRUE(params.browser->is_type_picture_in_picture());
+
+  // The window should have respected the initial aspect ratio.
+  const gfx::Rect override_bounds = params.browser->override_bounds();
+  const float aspect_ratio = static_cast<float>(override_bounds.width()) /
+                             static_cast<float>(override_bounds.height());
+  EXPECT_FLOAT_EQ(0.5, aspect_ratio);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorWithPictureInPictureTest,

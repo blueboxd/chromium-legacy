@@ -9,7 +9,7 @@ if (is_android) {
 }
 
 proto_library("proto") {
-  proto_in_dir = "//components/autofill_assistant/"
+  proto_in_dir = "//"
   sources = [
     "action_strategy.proto",
     "action_value.proto",
@@ -27,11 +27,8 @@ proto_library("proto") {
 }
 
 proto_library("test_proto") {
-  sources = [
-    "external_action_extension_test.proto",
-    "parse_jspb_test.proto",
-  ]
-  link_deps = [ "//components/autofill_assistant/browser/public:proto" ]
+  proto_in_dir = "//"
+  sources = [ "parse_jspb_test.proto" ]
 }
 
 static_library("browser") {
@@ -182,6 +179,7 @@ static_library("browser") {
     "display_strings_util.h",
     "element_area.cc",
     "element_area.h",
+    "empty_controller_observer.h",
     "empty_website_login_manager_impl.cc",
     "empty_website_login_manager_impl.h",
     "event_handler.cc",
@@ -225,8 +223,6 @@ static_library("browser") {
     "protocol_utils.h",
     "radio_button_controller.cc",
     "radio_button_controller.h",
-    "rectf.cc",
-    "rectf.h",
     "retry_timer.cc",
     "retry_timer.h",
     "save_password_leak_detection_delegate.cc",
@@ -433,6 +429,8 @@ static_library("unit_test_support") {
     "mock_personal_data_manager.h",
     "mock_ui_controller_observer.cc",
     "mock_ui_controller_observer.h",
+    "mock_user_model.cc",
+    "mock_user_model.h",
     "mock_user_model_observer.cc",
     "mock_user_model_observer.h",
     "mock_website_login_manager.cc",
@@ -622,7 +620,7 @@ source_set("unit_tests") {
 
 if (is_android) {
   proto_java_library("proto_java") {
-    proto_path = "//components/autofill_assistant/"
+    proto_path = "//"
     sources = [
       "action_strategy.proto",
       "action_value.proto",

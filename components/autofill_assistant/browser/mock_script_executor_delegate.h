@@ -49,6 +49,7 @@ class MockScriptExecutorDelegate : public ScriptExecutorDelegate {
               (),
               (override));
   MOCK_METHOD(content::WebContents*, GetWebContents, (), (override));
+  MOCK_METHOD(const std::string, GetLocale, (), (override));
   MOCK_METHOD(void,
               SetJsFlowLibrary,
               (const std::string& js_flow_library),
@@ -82,6 +83,7 @@ class MockScriptExecutorDelegate : public ScriptExecutorDelegate {
               (const ClientSettingsProto& client_settings),
               (override));
   MOCK_METHOD(UserModel*, GetUserModel, (), (override));
+  MOCK_METHOD(UserData*, GetUserData, (), (override));
   MOCK_METHOD(void, ExpectNavigation, (), (override));
   MOCK_METHOD(bool, IsNavigatingToNewDocument, (), (override));
   MOCK_METHOD(bool, HasNavigationError, (), (override));
@@ -102,6 +104,10 @@ class MockScriptExecutorDelegate : public ScriptExecutorDelegate {
   MOCK_METHOD(ProcessedActionStatusDetailsProto&, GetLogInfo, (), (override));
   MOCK_METHOD(bool, ShouldShowWarning, (), (override));
   MOCK_METHOD(bool, MustUseBackendData, (), (const override));
+  MOCK_METHOD(void,
+              OnActionsResponseReceived,
+              (const RoundtripNetworkStats& network_stats),
+              (override));
 
  private:
   ClientSettings client_settings_;

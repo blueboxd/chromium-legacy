@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul romaja</translation>
 <translation id="112387589102719461">Inglês (EUA) com teclado Programmer Dvorak</translation>
 <translation id="1134697384939541955">Inglês (EUA) com teclado estendido</translation>
+<translation id="1138691154716715755">No início deste mês</translation>
 <translation id="1148097584170732637">Arquivos encontrados: <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     Não há espaço suficiente disponível no armazenamento local. Você precisa de espaço adicional: <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />%, bloqueada pelo administrador, detalhes</translation>
 <translation id="2142680004883808240">Russo com teclado fonético YaZHert</translation>
 <translation id="2143778271340628265">Configuração manual de proxy</translation>
+<translation id="2148716181193084225">Hoje</translation>
 <translation id="2163152940313951844">Caractere inválido: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Português com teclado internacional de PC dos EUA</translation>
 <translation id="2198315389084035571">Chinês simplificado</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Alternar para a visualização de lista</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> pastas compartilhadas com o Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> arquivos selecionados</translation>
+<translation id="2387120140441437063">Não é possível abrir arquivos que estão na lixeira. Restaure os arquivos antes de abrir.</translation>
 <translation id="2387458720915042159">Tipo de conexão proxy</translation>
 <translation id="2389832672041313158">Birmanês (Mianmar)</translation>
 <translation id="2392369802118427583">Ativar</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Os conteúdos da pasta são somente leitura. Algumas atividades estão indisponíveis.</translation>
 <translation id="2542049655219295786">Tabela do Google</translation>
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
-<translation id="2547921442987553570">Adicionar à extensão <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Internacional: Estados Unidos</translation>
 <translation id="2563185590376525700">Rã</translation>
 <translation id="2578394532502990878">Tâmil (fonético)</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">Chinês (dayi)</translation>
 <translation id="3057861065630527966">Fazer backup de suas fotos e seus vídeos</translation>
 <translation id="3067790092342515856">Arquivos do Windows</translation>
-<translation id="3078461028045006476">Compartilhar com <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebits</translation>
 <translation id="3085752524577180175">Host SOCKS</translation>
 <translation id="3104793765551262433">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />%, bloqueada pelo administrador, detalhes</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3855472144336161447">Alemão (Neo 2)</translation>
 <translation id="3858860766373142691">Nome</translation>
-<translation id="386548886866354912">Compactar com <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Descrição</translation>
 <translation id="3899991606604168269">Francês (Canadá) com teclado multilíngue</translation>
 <translation id="3901991538546252627">Conectando-se a <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Download do perfil móvel. Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Inglês (Reino Unido)</translation>
 <translation id="3975895378829046965">Bengali (fonético)</translation>
+<translation id="3991446849494482687">Isso também vai desativar a configuração de bloqueio do chip no dispositivo.</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4017788180641807848">Inglês (EUA) com teclado Workman</translation>
 <translation id="4040753847560036377">PUK incorreta</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />%, gerenciada pelo administrador, detalhes</translation>
 <translation id="4387004326333427325">Certificado de autenticação rejeitado remotamente</translation>
 <translation id="4394214039309501350">Link externo</translation>
+<translation id="4394980935660306080">No início desta semana</translation>
 <translation id="4401287888955153199">Extrair tudo</translation>
 <translation id="4410695710508688828">A operação de extração falhou. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Criar um atalho para seus arquivos</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">Abrindo "<ph name="PATH" />"</translation>
 <translation id="4720185134442950733">Rede de dados móveis</translation>
 <translation id="4724850507808590449">Foi realizado o backup de <ph name="FILE_COUNT" /> fotos</translation>
+<translation id="4725096204469550614">No início deste ano</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4737050008115666127">Pouso</translation>
 <translation id="4747271164117300400">Macedônio</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">Movendo <ph name="NUMBER_OF_ITEMS" /> itens para <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Ocorreu um erro.</translation>
 <translation id="5098629044894065541">Hebraico</translation>
+<translation id="5102922915594634436">Gerenciar pastas sincronizadas</translation>
 <translation id="5109254780565519649">Ocorreu um erro. Alguns itens podem não ter sido restaurados.</translation>
 <translation id="5110329002213341433">Inglês (Canadá)</translation>
 <translation id="5123433949759960244">Basquete</translation>
@@ -603,7 +607,6 @@
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6170470584681422115">Sanduíche</translation>
 <translation id="6187719147498869044">Húngaro</translation>
-<translation id="6189412234224385711">Abrir com <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Alterar PIN</translation>
 <translation id="6199801702437275229">Aguardando informações sobre espaço...</translation>
 <translation id="6205710420833115353">Algumas operações estão demorando mais tempo que o esperado. Quer cancelar?</translation>
@@ -707,6 +710,7 @@
 <translation id="7075931588889865715">Tailandês com teclado TIS 820-2531</translation>
 <translation id="708278670402572152">Desconectar para ativar a verificação</translation>
 <translation id="7086590977277044826">Tâmil com teclado InScript</translation>
+<translation id="7088615885725309056">Mais antigo</translation>
 <translation id="7103992300314999525">Macedônio</translation>
 <translation id="7106346894903675391">Adquirir mais espaço de armazenamento...</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" - &lt;em&gt;pesquisar no Google Drive&lt;/em&gt;</translation>
@@ -771,6 +775,7 @@
 <translation id="7663224033570512922">Híndi</translation>
 <translation id="7693909743393669729">Formatar uma unidade excluirá todos os dados armazenados nela e todas as partições existentes, incluindo partições não visíveis. Essa ação não pode ser desfeita.</translation>
 <translation id="7695430100978772476">Não foi possível formatar <ph name="DRIVE_NAME" />.</translation>
+<translation id="76959938259365003">Falha ao esvaziar a lixeira.</translation>
 <translation id="770015031906360009">Grego</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> copiado.</translation>
 <translation id="7711920809702896782">Informações sobre a imagem</translation>
@@ -781,6 +786,7 @@
 <translation id="7760449188139285140">Chinês (wubi)</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7774365994322694683">Pássaro</translation>
+<translation id="7781829728241885113">Ontem</translation>
 <translation id="7788080748068240085">Para salvar "<ph name="FILE_NAME" />" off-line, é necessário liberar um espaço adicional de mais <ph name="TOTAL_FILE_SIZE" />:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />libere arquivos que você não precisa mais acessar off-line<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />exclua arquivos da sua pasta "Downloads"<ph name="MARKUP_5" /></translation>

@@ -8,7 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/trace_event/typed_macros.h"
-#include "content/browser/prerender/prerender_host_registry.h"
+#include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -230,7 +230,18 @@ bool PrerenderHostObserver::was_activated() const {
 
 PrerenderTestHelper::PrerenderTestHelper(const WebContents::Getter& fn)
     : get_web_contents_fn_(fn) {
-  feature_list_.InitWithFeatures({blink::features::kPrerender2},
+  std::vector<base::Feature> enabled_features;
+#if !BUILDFLAG(IS_ANDROID)
+  // Prerender2 for Speculation Rules should be enabled by default on Android.
+  // To test the default behavior on Android, explicitly enable the feature only
+  // on non-Android.
+  //
+  // This is useful for preventing breakages by future changes on the complex
+  // flag structure. See review comments on https://crrev.com/c/3670822 for
+  // details.
+  enabled_features.push_back(blink::features::kPrerender2);
+#endif
+  feature_list_.InitWithFeatures(enabled_features,
                                  // Disable the memory requirement of Prerender2
                                  // so the test can run on any bot.
                                  {blink::features::kPrerender2MemoryControls});
@@ -480,6 +491,22 @@ std::string PrerenderTestHelper::GenerateHistogramName(
       return std::string(histogram_base_name) + ".Embedder_" + embedder_suffix;
   }
   NOTREACHED();
+}
+
+ScopedPrerenderWebContentsDelegate::ScopedPrerenderWebContentsDelegate(
+    WebContents& web_contents)
+    : web_contents_(web_contents.GetWeakPtr()) {
+  web_contents_->SetDelegate(this);
+}
+
+ScopedPrerenderWebContentsDelegate::~ScopedPrerenderWebContentsDelegate() {
+  if (web_contents_)
+    web_contents_.get()->SetDelegate(nullptr);
+}
+
+bool ScopedPrerenderWebContentsDelegate::IsPrerender2Supported(
+    WebContents& web_contents) {
+  return true;
 }
 
 }  // namespace test

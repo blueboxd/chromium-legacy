@@ -19,7 +19,6 @@
 #include "chrome/browser/password_manager/android/password_manager_lifecycle_helper.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_bridge.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
-#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store_backend_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_store_util.h"
@@ -54,13 +53,11 @@ class PasswordStoreAndroidBackend
     : public PasswordStoreBackend,
       public PasswordStoreAndroidBackendBridge::Consumer {
  public:
-  PasswordStoreAndroidBackend(std::unique_ptr<SyncDelegate> sync_delegate,
-                              PrefService* prefs);
+  explicit PasswordStoreAndroidBackend(PrefService* prefs);
   PasswordStoreAndroidBackend(
       base::PassKey<class PasswordStoreAndroidBackendTest>,
       std::unique_ptr<PasswordStoreAndroidBackendBridge> bridge,
       std::unique_ptr<PasswordManagerLifecycleHelper> lifecycle_helper,
-      std::unique_ptr<SyncDelegate> sync_delegate,
       std::unique_ptr<PasswordSyncControllerDelegateAndroid>
           sync_controller_delegate,
       PrefService* prefs);
@@ -81,11 +78,9 @@ class PasswordStoreAndroidBackend
 
     JobReturnHandler();
     JobReturnHandler(LoginsOrErrorReply callback,
-                     PasswordStoreBackendMetricsRecorder metrics_recorder,
-                     base::OnceClosure crash_dump_callback);
+                     PasswordStoreBackendMetricsRecorder metrics_recorder);
     JobReturnHandler(PasswordChangesOrErrorReply callback,
-                     PasswordStoreBackendMetricsRecorder metrics_recorder,
-                     base::OnceClosure crash_dump_callback);
+                     PasswordStoreBackendMetricsRecorder metrics_recorder);
     JobReturnHandler(JobReturnHandler&&);
     JobReturnHandler& operator=(JobReturnHandler&&);
     ~JobReturnHandler();
@@ -102,14 +97,11 @@ class PasswordStoreAndroidBackend
 
     void RecordMetrics(absl::optional<AndroidBackendError> error) const;
     base::TimeDelta GetElapsedTimeSinceStart() const;
-    // TODO(crbug.com/1324588): Remove after disabling crash dumps.
-    void SendCrashDump();
 
    private:
     absl::variant<LoginsOrErrorReply, PasswordChangesOrErrorReply>
         success_callback_;
     PasswordStoreBackendMetricsRecorder metrics_recorder_;
-    base::OnceClosure crash_dump_callback_;
   };
 
   using JobId = PasswordStoreAndroidBackendBridge::JobId;
@@ -119,7 +111,7 @@ class PasswordStoreAndroidBackend
       std::unordered_map<JobId, JobReturnHandler, JobId::Hasher>>;
 
   // Implements PasswordStoreBackend interface.
-  void InitBackend(RemoteChangesReceived stored_passwords_changed,
+  void InitBackend(RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override;
   void Shutdown(base::OnceClosure shutdown_completed) override;
@@ -164,19 +156,16 @@ class PasswordStoreAndroidBackend
                        PasswordChanges changes) override;
   void OnError(PasswordStoreAndroidBackendBridge::JobId job_id,
                AndroidBackendError error) override;
+  void OnSubscribed(PasswordStoreAndroidBackendBridge::JobId job_id) override;
+  void OnSubscribeFailed(PasswordStoreAndroidBackendBridge::JobId job_id,
+                         AndroidBackendError error) override;
 
-  // TODO(crbug.com/1324588): Remove signon_realm and origin after disabling
-  // crash dumps.
   template <typename Callback>
-  void QueueNewJob(JobId job_id,
-                   Callback callback,
-                   MetricInfix metric_infix,
-                   absl::optional<std::string> signon_realm = absl::nullopt,
-                   absl::optional<std::string> origin = absl::nullopt,
-                   absl::optional<bool> is_username_empty = absl::nullopt,
-                   absl::optional<bool> is_blocklisted = absl::nullopt,
-                   absl::optional<PasswordForm::Scheme> scheme = absl::nullopt);
+  void QueueNewJob(JobId job_id, Callback callback, MetricInfix metric_infix);
   absl::optional<JobReturnHandler> GetAndEraseJob(JobId job_id);
+
+  // Initial, early ping to GMS. Calls completion with true iff successful.
+  void Subscribe(base::OnceCallback<void(bool)> completion);
 
   // Gets logins matching |form|.
   void GetLoginsAsync(const PasswordFormDigest& form,
@@ -253,10 +242,7 @@ class PasswordStoreAndroidBackend
   // This object is the proxy to the JNI bridge that performs the API requests.
   std::unique_ptr<PasswordStoreAndroidBackendBridge> bridge_;
 
-  raw_ptr<syncer::SyncService> sync_service_ = nullptr;
-
-  // Delegate to obtain sync status, and syncing account.
-  std::unique_ptr<SyncDelegate> sync_delegate_;
+  raw_ptr<const syncer::SyncService> sync_service_ = nullptr;
 
   // Delegate to handle sync events.
   std::unique_ptr<PasswordSyncControllerDelegateAndroid>

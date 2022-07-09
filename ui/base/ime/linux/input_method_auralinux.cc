@@ -7,6 +7,8 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/environment.h"
+#include "base/strings/utf_offset_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/base/ime/constants.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
@@ -110,7 +112,9 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
     // For Wayland, wl_keyboard::key will be sent following the peek key event
     // if the event is not consumed by IME, so peek key events should not be
     // dispatched. crbug.com/1225747
-    if (context_->IsPeekKeyEvent(*event)) {
+    // Do not keep release events. Non-peek Release key event is dispatched,
+    // so the event will be stale. See WaylandKeyboard::OnKey for details.
+    if (event->type() == ET_KEY_PRESSED && context_->IsPeekKeyEvent(*event)) {
       ime_filtered_key_event_ = std::move(*event);
       return ui::EventDispatchDetails();
     }
@@ -369,6 +373,25 @@ void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
   if (client->GetTextRange(&text_range) &&
       client->GetTextFromRange(text_range, &text) &&
       client->GetEditableSelectionRange(&selection_range)) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // SetGrammarFragmentAtCursor must happen before SetSurroundingText to make
+    // sure it is properly updated before IME needs it.
+    auto grammar_fragment_opt = client->GetGrammarFragmentAtCursor();
+    if (grammar_fragment_opt) {
+      auto fragment = grammar_fragment_opt.value();
+      // Convert utf16 offsets to utf8.
+      std::vector<size_t> offsets = {fragment.range.start(),
+                                     fragment.range.end()};
+      base::UTF16ToUTF8AndAdjustOffsets(text, &offsets);
+      context_->SetGrammarFragmentAtCursor(
+          ui::GrammarFragment(gfx::Range(static_cast<uint32_t>(offsets[0]),
+                                         static_cast<uint32_t>(offsets[1])),
+                              fragment.suggestion));
+    } else {
+      context_->SetGrammarFragmentAtCursor(
+          ui::GrammarFragment(gfx::Range(), ""));
+    }
+#endif
     context_->SetSurroundingText(text, selection_range);
   }
 }
@@ -474,6 +497,34 @@ void InputMethodAuraLinux::OnSetPreeditRegion(
   if (!text_input_client)
     return;
   text_input_client->SetCompositionFromExistingText(range, spans);
+
+  std::u16string text;
+  if (text_input_client->GetTextFromRange(range, &text)) {
+    composition_changed_ |= composition_.text != text;
+    composition_.text = text;
+  }
+  last_commit_result_.reset();
+}
+
+void InputMethodAuraLinux::OnClearGrammarFragments(const gfx::Range& range) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* text_input_client = GetTextInputClient();
+  if (!text_input_client)
+    return;
+
+  text_input_client->ClearGrammarFragments(range);
+#endif
+}
+
+void InputMethodAuraLinux::OnAddGrammarFragment(
+    const ui::GrammarFragment& fragment) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* text_input_client = GetTextInputClient();
+  if (!text_input_client)
+    return;
+
+  text_input_client->AddGrammarFragments({fragment});
+#endif
 }
 
 // Overridden from InputMethodBase.

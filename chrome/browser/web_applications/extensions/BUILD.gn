@@ -36,6 +36,7 @@ source_set("extensions") {
     "//chrome/browser/web_applications",
     "//chrome/common",
     "//components/pref_registry",
+    "//components/services/app_service/public/cpp:app_types",
     "//components/services/app_service/public/mojom",
     "//components/sync/model",
     "//components/webapps/browser:browser",
@@ -57,6 +58,7 @@ source_set("unit_tests") {
   deps = [
     ":extensions",
     "//build:chromeos_buildflags",
+    "//chrome/browser/ash/system_web_apps/test_support",
     "//chrome/browser/web_applications:web_applications",
     "//chrome/browser/web_applications:web_applications_test_support",
     "//chrome/common",

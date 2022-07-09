@@ -62,7 +62,9 @@ class CrdHostDelegate::CrdHostSession
                  << parameters_.user_name << "', terminate_upon_input "
                  << parameters_.terminate_upon_input
                  << ", show_confirmation_dialog "
-                 << parameters_.show_confirmation_dialog << "}";
+                 << parameters_.show_confirmation_dialog
+                 << ", curtain_local_user_session "
+                 << parameters_.curtain_local_user_session << "}";
 
     remoting_service.StartSession(
         GetSessionParameters(), GetEnterpriseParameters(),
@@ -87,8 +89,10 @@ class CrdHostDelegate::CrdHostSession
   }
   void OnHostStateDisconnected(
       const absl::optional<std::string>& disconnect_reason) override {
-    CRD_DVLOG(3) << __FUNCTION__
-                 << " with reason: " << disconnect_reason.value_or("<none>");
+    // We always want to log this event, as it could help customers debug why
+    // their CRD connection is failing/disconnecting.
+    LOG(WARNING) << "CRD session disconnected with reason: "
+                 << disconnect_reason.value_or("<none>");
 
     ReportError(ResultCode::FAILURE_CRD_HOST_ERROR, "host disconnected");
   }
@@ -134,9 +138,10 @@ class CrdHostDelegate::CrdHostSession
 
   remoting::ChromeOsEnterpriseParams GetEnterpriseParameters() const {
     return remoting::ChromeOsEnterpriseParams{
-        /*suppress_user_dialogs=*/!parameters_.show_confirmation_dialog,
-        /*suppress_notifications=*/!parameters_.show_confirmation_dialog,
-        /*terminate_upon_input=*/parameters_.terminate_upon_input};
+        .suppress_user_dialogs = !parameters_.show_confirmation_dialog,
+        .suppress_notifications = !parameters_.show_confirmation_dialog,
+        .terminate_upon_input = parameters_.terminate_upon_input,
+        .curtain_local_user_session = parameters_.curtain_local_user_session};
   }
 
   void ReportSuccess(const std::string& access_code) {

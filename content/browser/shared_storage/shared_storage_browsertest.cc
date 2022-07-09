@@ -55,7 +55,7 @@ const char kSelectFrom8URLsScript[] = R"(
     let urls = [];
     for (let i = 0; i < 8; ++i) {
       urls.push({url: 'fenced_frames/title' + i.toString() + '.html',
-                 reporting_metadata: {
+                 reportingMetadata: {
                    'click': 'fenced_frames/report' + i.toString() + '.html'
                  }});
     }
@@ -1056,7 +1056,7 @@ IN_PROC_BROWSER_TEST_F(
       sharedStorage.selectURL(
           'test-url-selection-operation',
           [{url: "fenced_frames/title0.html",
-          reporting_metadata: {"click": "fenced_frames/report1.html",
+          reportingMetadata: {"click": "fenced_frames/report1.html",
               "mouse interaction": "fenced_frames/report2.html"}}],
           {data: {'mockResult':0}});
     )")
@@ -1105,7 +1105,7 @@ IN_PROC_BROWSER_TEST_F(
       sharedStorage.selectURL(
           'test-url-selection-operation',
           [{url: "fenced_frames/title0.html",
-          reporting_metadata: {"click": "fenced_frames/report1.html"}}],
+          reportingMetadata: {"click": "fenced_frames/report1.html"}}],
           {data: {'mockResult':-1}});
     )")
                              .ExtractString();
@@ -1160,7 +1160,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest,
           'test-url-selection-operation',
           [{url: "fenced_frames/title0.html"},
           {url: "fenced_frames/title1.html",
-          reporting_metadata: {"click": "fenced_frames/report1.html"}},
+          reportingMetadata: {"click": "fenced_frames/report1.html"}},
           {url: "fenced_frames/title2.html"}], {data: {'mockResult': 1}});
     )")
                              .ExtractString();
@@ -1202,7 +1202,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest,
       sharedStorage.selectURL(
           'test-url-selection-operation',
           [{url: "fenced_frames/title0.html",
-          reporting_metadata: {"": "fenced_frames/report1.html"}}],
+          reportingMetadata: {"": "fenced_frames/report1.html"}}],
           {data: {'mockResult':0}});
     )")
                              .ExtractString();
@@ -1282,18 +1282,15 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest, DeleteOperationInDocument) {
   ExecuteScriptInWorklet(shell(), R"(
       console.log(await sharedStorage.length());
       console.log(await sharedStorage.get('key0'));
-
-      // This won't be executed due to the error in the last get().
-      console.log(await sharedStorage.length());
     )");
 
   EXPECT_EQ(2u, console_observer.messages().size());
   EXPECT_EQ("0", base::UTF16ToUTF8(console_observer.messages()[0].message));
   EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kInfo,
             console_observer.messages()[0].log_level);
-  EXPECT_EQ("sharedStorage.get() failed",
+  EXPECT_EQ("undefined",
             base::UTF16ToUTF8(console_observer.messages()[1].message));
-  EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kError,
+  EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kInfo,
             console_observer.messages()[1].log_level);
 }
 
@@ -1389,9 +1386,6 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest, DeleteOperationInWorklet) {
 
       console.log(await sharedStorage.length());
       console.log(await sharedStorage.get('key0'));
-
-      // This won't be executed due to the error in the last get().
-      console.log(await sharedStorage.length());
     )");
 
   EXPECT_EQ(4u, console_observer.messages().size());
@@ -1399,7 +1393,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest, DeleteOperationInWorklet) {
   EXPECT_EQ("value0",
             base::UTF16ToUTF8(console_observer.messages()[1].message));
   EXPECT_EQ("0", base::UTF16ToUTF8(console_observer.messages()[2].message));
-  EXPECT_EQ("sharedStorage.get() failed",
+  EXPECT_EQ("undefined",
             base::UTF16ToUTF8(console_observer.messages()[3].message));
   EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kInfo,
             console_observer.messages()[0].log_level);
@@ -1407,7 +1401,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest, DeleteOperationInWorklet) {
             console_observer.messages()[1].log_level);
   EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kInfo,
             console_observer.messages()[2].log_level);
-  EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kError,
+  EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kInfo,
             console_observer.messages()[3].log_level);
 }
 
@@ -1686,7 +1680,7 @@ IN_PROC_BROWSER_TEST_P(SharedStorageFencedFrameInteractionBrowserTest,
           'test-url-selection-operation',
           [{url: "fenced_frames/title0.html"},
           {url: "fenced_frames/title1.html",
-          reporting_metadata: {"click": "fenced_frames/report1.html"}},
+          reportingMetadata: {"click": "fenced_frames/report1.html"}},
           {url: "fenced_frames/title2.html"}], {data: {'mockResult': 1}});
     )")
                              .ExtractString();
@@ -1803,7 +1797,7 @@ IN_PROC_BROWSER_TEST_P(SharedStorageFencedFrameInteractionBrowserTest,
           'test-url-selection-operation',
           [{url: "fenced_frames/title0.html"},
           {url: "fenced_frames/title1.html",
-          reporting_metadata: {"click": "fenced_frames/report1.html"}},
+          reportingMetadata: {"click": "fenced_frames/report1.html"}},
           {url: "fenced_frames/title2.html"}], {data: {'mockResult': 1}});
     )")
                              .ExtractString();
@@ -2045,7 +2039,7 @@ IN_PROC_BROWSER_TEST_P(SharedStorageFencedFrameInteractionBrowserTest,
           'test-url-selection-operation',
           [{url: "fenced_frames/title0.html"},
           {url: "fenced_frames/title1.html",
-          reporting_metadata: {"click": "fenced_frames/report1.html"}},
+          reportingMetadata: {"click": "fenced_frames/report1.html"}},
           {url: "fenced_frames/title2.html"}], {data: {'mockResult': 3}});
     )")
                              .ExtractString();
@@ -2117,7 +2111,7 @@ IN_PROC_BROWSER_TEST_P(SharedStorageFencedFrameInteractionBrowserTest,
           [{url: "fenced_frames/title.html"},
           {url: "fenced_frames/title0.html",
           url: "fenced_frames/title1.html",
-          reporting_metadata: {"click": "fenced_frames/report1.html"}},
+          reportingMetadata: {"click": "fenced_frames/report1.html"}},
           {url: "fenced_frames/title2.html"}], {data: {'mockResult': 1}});
     )")
                              .ExtractString();
@@ -2604,7 +2598,7 @@ IN_PROC_BROWSER_TEST_P(SharedStorageReportEventBrowserTest,
           'test-url-selection-operation',
           [{url: "fenced_frames/title0.html"},
           {url: "fenced_frames/title1.html",
-          reporting_metadata: {'click': "fenced_frames/report1.html",
+          reportingMetadata: {'click': "fenced_frames/report1.html",
               'mouse interaction': "fenced_frames/report2.html"}}],
           {data: {'mockResult':1}});
     )")

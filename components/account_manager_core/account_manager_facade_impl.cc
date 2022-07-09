@@ -13,8 +13,10 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_addition_result.h"
@@ -38,6 +40,10 @@ const char kAccountAdditionResultStatus[] =
     "AccountManager.AccountAdditionResultStatus";
 const char kGetAccountsMojoStatus[] =
     "AccountManager.FacadeGetAccountsMojoStatus";
+const char kMojoDisconnectionsAccountManagerRemote[] =
+    "AccountManager.MojoDisconnections.AccountManagerRemote";
+const char kMojoDisconnectionsAccountManagerObserverReceiver[] =
+    "AccountManager.MojoDisconnections.AccountManagerObserverReceiver";
 
 void UnmarshalAccounts(
     base::OnceCallback<void(const std::vector<Account>&)> callback,
@@ -113,6 +119,16 @@ bool GetIsAvailableInArcBySource(
       NOTREACHED();
       return false;
   }
+}
+
+// Error logs the Mojo connection stats when `event` occurs.
+void LogMojoConnectionStats(const std::string& event,
+                            int num_remote_disconnections,
+                            int num_receiver_disconnections) {
+  LOG(ERROR) << base::StringPrintf(
+      "%s. Number of remote disconnections: %d, "
+      "number of receiver disconnections: %d",
+      event.c_str(), num_remote_disconnections, num_receiver_disconnections);
 }
 
 }  // namespace
@@ -239,7 +255,7 @@ class AccountManagerFacadeImpl::AccessTokenFetcher
         GoogleServiceAuthError::FromServiceError("Mojo pipe disconnected"));
   }
 
-  AccountManagerFacadeImpl* const account_manager_facade_impl_;
+  const raw_ptr<AccountManagerFacadeImpl> account_manager_facade_impl_;
   const account_manager::AccountKey account_key_;
   const std::string oauth_consumer_name_;
 
@@ -272,13 +288,19 @@ AccountManagerFacadeImpl::AccountManagerFacadeImpl(
   }
 
   account_manager_remote_.set_disconnect_handler(base::BindOnce(
-      &AccountManagerFacadeImpl::OnMojoError, weak_factory_.GetWeakPtr()));
+      &AccountManagerFacadeImpl::OnAccountManagerRemoteDisconnected,
+      weak_factory_.GetWeakPtr()));
   account_manager_remote_->AddObserver(
       base::BindOnce(&AccountManagerFacadeImpl::OnReceiverReceived,
                      weak_factory_.GetWeakPtr()));
 }
 
-AccountManagerFacadeImpl::~AccountManagerFacadeImpl() = default;
+AccountManagerFacadeImpl::~AccountManagerFacadeImpl() {
+  base::UmaHistogramCounts100(kMojoDisconnectionsAccountManagerRemote,
+                              num_remote_disconnections_);
+  base::UmaHistogramCounts100(kMojoDisconnectionsAccountManagerObserverReceiver,
+                              num_receiver_disconnections_);
+}
 
 void AccountManagerFacadeImpl::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
@@ -450,6 +472,10 @@ void AccountManagerFacadeImpl::OnReceiverReceived(
           this, std::move(receiver));
   // At this point (`receiver_` exists), we are subscribed to Account Manager.
 
+  receiver_->set_disconnect_handler(base::BindOnce(
+      &AccountManagerFacadeImpl::OnAccountManagerObserverReceiverDisconnected,
+      weak_factory_.GetWeakPtr()));
+
   FinishInitSequenceIfNotAlreadyFinished();
 }
 
@@ -560,13 +586,23 @@ void AccountManagerFacadeImpl::RunOnMojoDisconnection(
   mojo_disconnection_handlers_.emplace_back(std::move(closure));
 }
 
-void AccountManagerFacadeImpl::OnMojoError() {
-  LOG(ERROR) << "Account Manager disconnected";
+void AccountManagerFacadeImpl::OnAccountManagerRemoteDisconnected() {
+  num_remote_disconnections_++;
+  LogMojoConnectionStats("Account Manager disconnected",
+                         num_remote_disconnections_,
+                         num_receiver_disconnections_);
   for (auto& cb : mojo_disconnection_handlers_) {
     std::move(cb).Run();
   }
   mojo_disconnection_handlers_.clear();
   account_manager_remote_.reset();
+}
+
+void AccountManagerFacadeImpl::OnAccountManagerObserverReceiverDisconnected() {
+  num_receiver_disconnections_++;
+  LogMojoConnectionStats("Account Manager Observer disconnected",
+                         num_remote_disconnections_,
+                         num_receiver_disconnections_);
 }
 
 bool AccountManagerFacadeImpl::IsInitialized() {

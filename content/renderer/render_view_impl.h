@@ -21,7 +21,6 @@
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
-#include "content/public/renderer/render_view.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -59,8 +58,7 @@ namespace mojom {
 class CreateViewParams;
 }
 
-// RenderViewImpl (the implementation of RenderView) is the renderer process
-// object that owns the blink frame tree.
+// RenderViewImpl is the renderer process object that owns the blink frame tree.
 //
 // Each top-level web container has a frame tree, and thus a RenderViewImpl.
 // Typically such a container is a browser tab, or a tab-less window. It can
@@ -71,17 +69,16 @@ class CreateViewParams;
 // placeholders behind. Each such frame tree also includes a RenderViewImpl as
 // the owner of it. Thus a tab may have multiple RenderViewImpls, one for the
 // main frame, and one for each other frame tree generated.
-class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
-                                      public RenderView {
+class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient {
  public:
   // Creates a new RenderView. Note that if the original opener has been closed,
   // |params.window_was_created_with_opener| will be true and
   // |params.opener_frame_route_id| will be MSG_ROUTING_NONE.
   // When |params.proxy_routing_id| instead of |params.main_frame_routing_id| is
-  // specified, a RenderFrameProxy will be created for this RenderView's main
-  // RenderFrame.
-  // The opener should provide a non-null value for |show_callback| if it needs
-  // to send an additional IPC to finish making this view visible.
+  // specified, a RenderFrameProxy will be created for this RenderViewImpl's
+  // main RenderFrame. The opener should provide a non-null value for
+  // |show_callback| if it needs to send an additional IPC to finish making this
+  // view visible.
   static RenderViewImpl* Create(
       AgentSchedulingGroup& agent_scheduling_group,
       mojom::CreateViewParamsPtr params,
@@ -99,6 +96,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Returns the RenderViewImpl for the given routing ID.
   static RenderViewImpl* FromRoutingID(int routing_id);
 
+  // Returns the RenderViewImpl for the given blink::WebView.
+  static RenderViewImpl* FromWebView(blink::WebView* web_view);
+
   // blink::WebViewClient implementation --------------------------------------
 
   blink::WebView* CreateView(
@@ -110,12 +110,11 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       network::mojom::WebSandboxFlags sandbox_flags,
       const blink::SessionStorageNamespaceId& session_storage_namespace_id,
       bool& consumed_user_gesture,
-      const absl::optional<blink::Impression>& impression) override;
+      const absl::optional<blink::Impression>& impression,
+      const absl::optional<blink::WebPictureInPictureWindowOptions>&
+          pip_options) override;
 
-  // RenderView implementation -------------------------------------------------
-
-  int GetRoutingID() override;
-  blink::WebView* GetWebView() override;
+  blink::WebView* GetWebView();
 
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
@@ -151,6 +150,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
 
+  // Destroy all active RenderViewImpls.
+  static void DestroyAllRenderViewImpls();
+
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.
@@ -163,7 +165,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // RenderViewHost in the parent browser process.
   const int32_t routing_id_;
 
-  // Whether lookup of frames in the created RenderView (e.g. lookup via
+  // Whether lookup of frames in the created RenderViewImpl (e.g. lookup via
   // window.open or via <a target=...>) should be renderer-wide (i.e. going
   // beyond the usual opener-relationship-based BrowsingInstance boundaries).
   const bool renderer_wide_named_frame_lookup_;
@@ -184,7 +186,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 #if BUILDFLAG(IS_ANDROID)
   // Android Specific ----------------------------------------------------------
 
-  // Whether this was a renderer-created or browser-created RenderView.
+  // Whether this was a renderer-created or browser-created RenderViewImpl.
   bool was_created_by_renderer_ = false;
 #endif
 
@@ -192,7 +194,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above
   // sections rather than throwing it randomly at the end. If you're adding a
   // bunch of stuff, you should probably create a helper class and put your
-  // data and methods on that to avoid bloating RenderView more.  You can
+  // data and methods on that to avoid bloating RenderViewImpl more.  You can
   // use the Observer interface to filter IPC messages and receive frame change
   // notifications.
   // ---------------------------------------------------------------------------

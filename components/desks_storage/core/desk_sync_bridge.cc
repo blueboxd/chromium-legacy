@@ -13,6 +13,7 @@
 #include "base/guid.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,6 +27,7 @@
 #include "components/desks_storage/core/desk_model_observer.h"
 #include "components/desks_storage/core/desk_template_conversion.h"
 #include "components/desks_storage/core/desk_template_util.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -251,7 +253,7 @@ std::unique_ptr<app_restore::AppLaunchInfo> ConvertToAppLaunchInfo(
 
   if (app.has_container()) {
     app_launch_info->container = static_cast<int32_t>(
-        desk_template_conversion::ToMojomLaunchContainer(app.container()));
+        desk_template_conversion::ToLaunchContainer(app.container()));
   }
 
   if (app.has_disposition()) {
@@ -294,9 +296,15 @@ std::unique_ptr<app_restore::AppLaunchInfo> ConvertToAppLaunchInfo(
                                    &app_launch_info->tab_group_infos.value());
       }
 
-      if (app.app().browser_app_window().has_show_as_app())
+      if (app.app().browser_app_window().has_show_as_app()) {
         app_launch_info->app_type_browser =
             app.app().browser_app_window().show_as_app();
+      }
+
+      if (app.app().browser_app_window().has_first_non_pinned_tab_index()) {
+        app_launch_info->first_non_pinned_tab_index =
+            app.app().browser_app_window().first_non_pinned_tab_index();
+      }
 
       break;
     case sync_pb::WorkspaceDeskSpecifics_AppOneOf::AppCase::kChromeApp:
@@ -484,6 +492,11 @@ void FillBrowserAppWindow(const app_restore::AppRestoreData* app_restore_data,
     FillBrowserAppTabGroupInfos(app_restore_data->tab_group_infos.value(),
                                 out_browser_app_window);
   }
+
+  if (app_restore_data->first_non_pinned_tab_index.has_value()) {
+    out_browser_app_window->set_first_non_pinned_tab_index(
+        app_restore_data->first_non_pinned_tab_index.value());
+  }
 }
 
 // Fill `out_window_bounds` with information from `bounds`.
@@ -537,8 +550,8 @@ void FillAppWithLaunchContainer(
     const app_restore::AppRestoreData* app_restore_data,
     WorkspaceDeskSpecifics_App* out_app) {
   if (app_restore_data->container.has_value()) {
-    out_app->set_container(desk_template_conversion::FromMojomLaunchContainer(
-        static_cast<apps::mojom::LaunchContainer>(
+    out_app->set_container(desk_template_conversion::FromLaunchContainer(
+        static_cast<apps::LaunchContainer>(
             app_restore_data->container.value())));
   }
 }
@@ -850,6 +863,9 @@ void FillDeskType(const DeskTemplate* desk_template,
       out_entry_proto->set_desk_type(
           SyncDeskType::WorkspaceDeskSpecifics_DeskType_SAVE_AND_RECALL);
       return;
+    case DeskTemplateType::kUnknown:
+      NOTREACHED();
+      return;
   }
 }
 
@@ -860,6 +876,7 @@ DeskTemplateType GetDeskTemplateTypeFromProtoType(
   switch (proto_type) {
     // Treat unknown desk types as templates.
     case SyncDeskType::WorkspaceDeskSpecifics_DeskType_UNKNOWN_TYPE:
+      return DeskTemplateType::kUnknown;
     case SyncDeskType::WorkspaceDeskSpecifics_DeskType_TEMPLATE:
       return DeskTemplateType::kTemplate;
     case SyncDeskType::WorkspaceDeskSpecifics_DeskType_SAVE_AND_RECALL:
@@ -893,12 +910,19 @@ std::unique_ptr<DeskTemplate> DeskSyncBridge::FromSyncProto(
   const base::Time created_time = desk_template_conversion::ProtoTimeToTime(
       pb_entry.created_time_windows_epoch_micros());
 
-  // Protobuf parsing enforces UTF-8 encoding for all strings.
-  auto desk_template = std::make_unique<DeskTemplate>(
-      uuid, ash::DeskTemplateSource::kUser, pb_entry.name(), created_time,
+  const ash::DeskTemplateType desk_type =
       pb_entry.has_desk_type()
           ? GetDeskTemplateTypeFromProtoType(pb_entry.desk_type())
-          : ash::DeskTemplateType::kTemplate);
+          : ash::DeskTemplateType::kTemplate;
+
+  if (desk_type == ash::DeskTemplateType::kUnknown) {
+    return nullptr;
+  }
+
+  // Protobuf parsing enforces UTF-8 encoding for all strings.
+  auto desk_template =
+      std::make_unique<DeskTemplate>(uuid, ash::DeskTemplateSource::kUser,
+                                     pb_entry.name(), created_time, desk_type);
 
   if (pb_entry.has_updated_time_windows_epoch_micros()) {
     desk_template->set_updated_time(desk_template_conversion::ProtoTimeToTime(

@@ -141,7 +141,9 @@ class LenientMockObserver : public ProcessNodeImpl::Observer {
   }
 
  private:
-  raw_ptr<const ProcessNode> notified_process_node_ = nullptr;
+  // TODO(crbug.com/1298696): Breaks components_unittests.
+  raw_ptr<const ProcessNode, DegradeToNoOpWhenMTE> notified_process_node_ =
+      nullptr;
 };
 
 using MockObserver = ::testing::StrictMock<LenientMockObserver>;
@@ -348,7 +350,7 @@ TEST_F(ProcessNodeImplTest, FireBackgroundTracingTriggerOnUI) {
   // it that function returns false.
   EXPECT_CALL(manager, HasActiveScenario()).WillOnce(Return(false));
   ProcessNodeImpl::FireBackgroundTracingTriggerOnUIForTesting(kTrigger1,
-                                                              &manager);
+                                                              manager);
   testing::Mock::VerifyAndClear(&manager);
 
   // If HasActiveScenario returns true, expect a new trigger to be registered
@@ -357,7 +359,7 @@ TEST_F(ProcessNodeImplTest, FireBackgroundTracingTriggerOnUI) {
   EXPECT_CALL(manager, RegisterTriggerType(_)).WillOnce(Return(kHandle1));
   EXPECT_CALL(manager, TriggerNamedEvent(_, _));
   ProcessNodeImpl::FireBackgroundTracingTriggerOnUIForTesting(kTrigger1,
-                                                              &manager);
+                                                              manager);
   testing::Mock::VerifyAndClear(&manager);
 
   // Now that a trigger is registered, expect the trigger to be validated, and
@@ -365,7 +367,7 @@ TEST_F(ProcessNodeImplTest, FireBackgroundTracingTriggerOnUI) {
   EXPECT_CALL(manager, HasActiveScenario()).WillOnce(Return(true));
   EXPECT_CALL(manager, TriggerNamedEvent(_, _));
   ProcessNodeImpl::FireBackgroundTracingTriggerOnUIForTesting(kTrigger1,
-                                                              &manager);
+                                                              manager);
   testing::Mock::VerifyAndClear(&manager);
 }
 

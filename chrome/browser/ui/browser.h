@@ -316,6 +316,10 @@ class Browser : public TabStripModelObserver,
     // maximizable.
     bool can_maximize = true;
 
+    // Aspect ratio parameters specific to TYPE_PICTURE_IN_PICTURE.
+    float initial_aspect_ratio = 1.0f;
+    bool lock_aspect_ratio = false;
+
    private:
     friend class Browser;
     friend class WindowSizerChromeOSTest;
@@ -1155,7 +1159,10 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
 
   // This Browser's window.
-  raw_ptr<BrowserWindow> window_;
+  //
+  // TODO(crbug.com/1298696): pixel_browser_tests breaks with MTECheckedPtr
+  // enabled. Triage.
+  raw_ptr<BrowserWindow, DegradeToNoOpWhenMTE> window_;
 
   std::unique_ptr<TabStripModelDelegate> const tab_strip_model_delegate_;
   std::unique_ptr<TabStripModel> const tab_strip_model_;

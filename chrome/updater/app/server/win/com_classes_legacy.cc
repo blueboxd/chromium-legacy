@@ -34,6 +34,9 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util.h"
+#include "chrome/updater/win/app_command_runner.h"
+#include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/win_constants.h"
 #include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -44,62 +47,6 @@ HRESULT OpenCallerProcessHandle(DWORD proc_id,
                                 base::win::ScopedHandle& proc_handle) {
   proc_handle.Set(::OpenProcess(PROCESS_DUP_HANDLE, false, proc_id));
   return proc_handle.IsValid() ? S_OK : updater::HRESULTFromLastError();
-}
-
-std::wstring GetCommandToLaunch(const WCHAR* app_guid, const WCHAR* cmd_id) {
-  if (!app_guid || !cmd_id)
-    return std::wstring();
-
-  base::win::RegKey key(HKEY_LOCAL_MACHINE, CLIENTS_KEY,
-                        updater::Wow6432(KEY_READ));
-  if (key.OpenKey(app_guid, updater::Wow6432(KEY_READ)) != ERROR_SUCCESS)
-    return std::wstring();
-
-  std::wstring cmd_line;
-  key.ReadValue(cmd_id, &cmd_line);
-  return cmd_line;
-}
-
-HRESULT LaunchCmd(const std::wstring& cmd,
-                  const base::win::ScopedHandle& caller_proc_handle,
-                  ULONG_PTR* proc_handle) {
-  if (cmd.empty() || !caller_proc_handle.IsValid() || !proc_handle)
-    return E_INVALIDARG;
-
-  *proc_handle = NULL;
-
-  STARTUPINFOW startup_info = {sizeof(startup_info)};
-  PROCESS_INFORMATION process_information = {0};
-  std::wstring cmd_line(cmd);
-  if (!::CreateProcess(nullptr, &cmd_line[0], nullptr, nullptr, FALSE,
-                       CREATE_NO_WINDOW, nullptr, nullptr, &startup_info,
-                       &process_information)) {
-    return updater::HRESULTFromLastError();
-  }
-
-  base::win::ScopedProcessInformation pi(process_information);
-  DCHECK(pi.IsValid());
-
-  HANDLE duplicate_proc_handle = NULL;
-
-  bool res = ::DuplicateHandle(
-                 ::GetCurrentProcess(),     // Current process.
-                 pi.process_handle(),       // Process handle to duplicate.
-                 caller_proc_handle.Get(),  // Process receiving the handle.
-                 &duplicate_proc_handle,    // Duplicated handle.
-                 PROCESS_QUERY_INFORMATION |
-                     SYNCHRONIZE,  // Access requested for the new handle.
-                 FALSE,            // Don't inherit the new handle.
-                 0) != 0;          // Flags.
-  if (!res) {
-    HRESULT hr = updater::HRESULTFromLastError();
-    VLOG(1) << "Failed to duplicate the handle " << hr;
-    return hr;
-  }
-
-  // The caller must close this handle.
-  *proc_handle = reinterpret_cast<ULONG_PTR>(duplicate_proc_handle);
-  return S_OK;
 }
 
 // Extracts a string from a VARIANT if the VARIANT is VT_BSTR or VT_BSTR |
@@ -260,8 +207,8 @@ STDMETHODIMP LegacyOnDemandImpl::get_nextVersionWeb(IDispatch** next) {
 
 STDMETHODIMP LegacyOnDemandImpl::get_command(BSTR command_id,
                                              IDispatch** command) {
-  return LegacyAppCommandWebImpl::CreateAppCommandWeb(
-      GetUpdaterScope(), base::UTF8ToWide(app_id()), command_id, command);
+  return Microsoft::WRL::MakeAndInitialize<LegacyAppCommandWebImpl>(
+      command, GetUpdaterScope(), base::UTF8ToWide(app_id()), command_id);
 }
 
 STDMETHODIMP LegacyOnDemandImpl::get_currentState(IDispatch** current_state) {
@@ -520,34 +467,41 @@ STDMETHODIMP LegacyProcessLauncherImpl::LaunchBrowser(DWORD browser_type,
 }
 
 STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdElevated(
-    const WCHAR* app_guid,
-    const WCHAR* cmd_id,
+    const WCHAR* app_id,
+    const WCHAR* command_id,
     DWORD caller_proc_id,
     ULONG_PTR* proc_handle) {
-  VLOG(2) << "LegacyProcessLauncherImpl::LaunchCmdElevated: app " << app_guid
-          << ", cmd_id " << cmd_id << ", pid " << caller_proc_id;
-
-  if (!cmd_id || !wcslen(cmd_id) || !proc_handle) {
-    VLOG(1) << "Invalid arguments";
-    return E_INVALIDARG;
+  AppCommandRunner app_command_runner;
+  if (HRESULT hr = AppCommandRunner::LoadAppCommand(
+          UpdaterScope::kSystem, app_id, command_id, app_command_runner);
+      FAILED(hr)) {
+    return hr;
   }
 
   base::win::ScopedHandle caller_proc_handle;
-  HRESULT hr = OpenCallerProcessHandle(caller_proc_id, caller_proc_handle);
-  if (FAILED(hr)) {
+  if (HRESULT hr = OpenCallerProcessHandle(caller_proc_id, caller_proc_handle);
+      FAILED(hr)) {
     VLOG(1) << "failed to open caller's handle " << hr;
     return hr;
   }
 
-  std::wstring cmd = GetCommandToLaunch(app_guid, cmd_id);
-  if (cmd.empty()) {
-    VLOG(1) << "cmd not found";
-    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+  base::Process process;
+  if (HRESULT hr = app_command_runner.Run({}, process); FAILED(hr)) {
+    return hr;
   }
 
-  VLOG(2) << "[LegacyProcessLauncherImpl::LaunchCmdElevated][cmd " << cmd
-          << "]";
-  return LaunchCmd(cmd, caller_proc_handle, proc_handle);
+  HANDLE duplicate_proc_handle = NULL;
+  if (!::DuplicateHandle(::GetCurrentProcess(), process.Handle(),
+                         caller_proc_handle.Get(), &duplicate_proc_handle,
+                         PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, 0)) {
+    HRESULT hr = HRESULTFromLastError();
+    VLOG(1) << "Failed to duplicate the handle " << hr;
+    return hr;
+  }
+
+  // The caller must close this handle.
+  *proc_handle = reinterpret_cast<ULONG_PTR>(duplicate_proc_handle);
+  return S_OK;
 }
 
 STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdLineEx(
@@ -561,82 +515,17 @@ STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdLineEx(
 LegacyAppCommandWebImpl::LegacyAppCommandWebImpl() = default;
 LegacyAppCommandWebImpl::~LegacyAppCommandWebImpl() = default;
 
-HRESULT LegacyAppCommandWebImpl::CreateAppCommandWeb(
+HRESULT LegacyAppCommandWebImpl::RuntimeClassInitialize(
     UpdaterScope scope,
     const std::wstring& app_id,
-    const std::wstring& command_id,
-    IDispatch** app_command_web) {
-  DCHECK(app_command_web);
-
-  Microsoft::WRL::ComPtr<LegacyAppCommandWebImpl> web_impl;
-  if (HRESULT hr =
-          CreateLegacyAppCommandWebImpl(scope, app_id, command_id, web_impl);
+    const std::wstring& command_id) {
+  if (HRESULT hr = AppCommandRunner::LoadAppCommand(scope, app_id, command_id,
+                                                    app_command_runner_);
       FAILED(hr)) {
     return hr;
   }
 
-  return web_impl.CopyTo(app_command_web);
-}
-
-HRESULT LegacyAppCommandWebImpl::CreateLegacyAppCommandWebImpl(
-    UpdaterScope scope,
-    const std::wstring& app_id,
-    const std::wstring& command_id,
-    Microsoft::WRL::ComPtr<LegacyAppCommandWebImpl>& web_impl) {
-  const HKEY root = UpdaterScopeToHKeyRoot(scope);
-  const std::wstring app_key_name = base::StrCat({CLIENTS_KEY, app_id});
-  std::wstring command_format;
-
-  if (const base::win::RegKey command_key(
-          root,
-          base::StrCat(
-              {app_key_name, L"\\", kRegKeyCommands, L"\\", command_id})
-              .c_str(),
-          Wow6432(KEY_QUERY_VALUE));
-      !command_key.Valid()) {
-    const base::win::RegKey app_key(root, app_key_name.c_str(),
-                                    Wow6432(KEY_QUERY_VALUE));
-    if (!app_key.HasValue(command_id.c_str()))
-      return HRESULT_FROM_WIN32(ERROR_BAD_COMMAND);
-
-    // Older command layout format:
-    //     Update\Clients\{`app_id`}
-    //         REG_SZ `command_id` == {command format}
-    if (const LONG result =
-            app_key.ReadValue(command_id.c_str(), &command_format);
-        result != ERROR_SUCCESS) {
-      return HRESULT_FROM_WIN32(result);
-    }
-  } else {
-    // New command layout format:
-    //     Update\Clients\{`app_id`}\Commands\`command_id`
-    //         REG_SZ "CommandLine" == {command format}
-    if (const LONG result =
-            command_key.ReadValue(kRegValueCommandLine, &command_format);
-        result != ERROR_SUCCESS) {
-      return HRESULT_FROM_WIN32(result);
-    }
-  }
-
-  if (HRESULT hr =
-          Microsoft::WRL::MakeAndInitialize<LegacyAppCommandWebImpl>(&web_impl);
-      FAILED(hr)) {
-    return hr;
-  }
-
-  return web_impl->Initialize(scope, command_format);
-}
-
-HRESULT LegacyAppCommandWebImpl::Initialize(
-    UpdaterScope scope,
-    const std::wstring& command_format) {
-  return GetAppCommandFormatComponents(scope, command_format, executable_,
-                                       parameters_);
-}
-
-absl::optional<std::wstring> LegacyAppCommandWebImpl::FormatCommandLine(
-    const std::vector<std::wstring>& substitutions) const {
-  return FormatAppCommandLine(parameters_, substitutions);
+  return InitializeTypeInfo();
 }
 
 STDMETHODIMP LegacyAppCommandWebImpl::get_status(UINT* status) {
@@ -688,37 +577,84 @@ STDMETHODIMP LegacyAppCommandWebImpl::execute(VARIANT substitution1,
         StringFromVariant(substitution);
     if (!substitution_string)
       break;
+
+    VLOG(2) << __func__
+            << " substitution_string: " << substitution_string.value();
     substitutions.push_back(substitution_string.value());
   }
 
-  return ExecuteAppCommand(executable_, parameters_, substitutions, process_);
+  return app_command_runner_.Run(substitutions, process_);
 }
 
-STDMETHODIMP LegacyAppCommandWebImpl::GetTypeInfoCount(UINT*) {
-  return E_NOTIMPL;
+STDMETHODIMP LegacyAppCommandWebImpl::GetTypeInfoCount(UINT* type_info_count) {
+  *type_info_count = 1;
+  return S_OK;
 }
 
-STDMETHODIMP LegacyAppCommandWebImpl::GetTypeInfo(UINT, LCID, ITypeInfo**) {
-  return E_NOTIMPL;
+STDMETHODIMP LegacyAppCommandWebImpl::GetTypeInfo(UINT type_info_index,
+                                                  LCID locale_id,
+                                                  ITypeInfo** type_info) {
+  if (type_info_index != 0)
+    return E_INVALIDARG;
+
+  return type_info_.CopyTo(type_info);
 }
 
-STDMETHODIMP LegacyAppCommandWebImpl::GetIDsOfNames(REFIID,
-                                                    LPOLESTR*,
-                                                    UINT,
-                                                    LCID,
-                                                    DISPID*) {
-  return E_NOTIMPL;
+STDMETHODIMP LegacyAppCommandWebImpl::GetIDsOfNames(
+    REFIID iid,
+    LPOLESTR* names_to_be_mapped,
+    UINT count_of_names_to_be_mapped,
+    LCID locale_id,
+    DISPID* dispatch_ids) {
+  return type_info_->GetIDsOfNames(names_to_be_mapped,
+                                   count_of_names_to_be_mapped, dispatch_ids);
 }
 
-STDMETHODIMP LegacyAppCommandWebImpl::Invoke(DISPID,
-                                             REFIID,
-                                             LCID,
-                                             WORD,
-                                             DISPPARAMS*,
-                                             VARIANT*,
-                                             EXCEPINFO*,
-                                             UINT*) {
-  return E_NOTIMPL;
+STDMETHODIMP LegacyAppCommandWebImpl::Invoke(DISPID dispatch_id,
+                                             REFIID iid,
+                                             LCID locale_id,
+                                             WORD flags,
+                                             DISPPARAMS* dispatch_parameters,
+                                             VARIANT* result,
+                                             EXCEPINFO* exception_info,
+                                             UINT* arg_error_index) {
+  HRESULT hr = type_info_->Invoke(
+      Microsoft::WRL::ComPtr<IAppCommandWeb>(this).Get(), dispatch_id, flags,
+      dispatch_parameters, result, exception_info, arg_error_index);
+  if (FAILED(hr)) {
+    LOG(ERROR) << __func__ << " type_info_->Invoke failed: " << dispatch_id
+               << ": " << std::hex << hr;
+  }
+
+  return hr;
+}
+
+HRESULT LegacyAppCommandWebImpl::InitializeTypeInfo() {
+  base::FilePath typelib_path;
+  if (!base::PathService::Get(base::DIR_EXE, &typelib_path))
+    return E_UNEXPECTED;
+
+  typelib_path =
+      typelib_path.Append(GetExecutableRelativePath())
+          .Append(GetComTypeLibResourceIndex(__uuidof(IAppCommandWeb)));
+
+  Microsoft::WRL::ComPtr<ITypeLib> type_lib;
+  if (HRESULT hr = ::LoadTypeLib(typelib_path.value().c_str(), &type_lib);
+      FAILED(hr)) {
+    LOG(ERROR) << __func__ << " ::LoadTypeLib failed: " << typelib_path << ": "
+               << std::hex << hr;
+    return hr;
+  }
+
+  if (HRESULT hr =
+          type_lib->GetTypeInfoOfGuid(__uuidof(IAppCommandWeb), &type_info_);
+      FAILED(hr)) {
+    LOG(ERROR) << __func__ << " ::GetTypeInfoOfGuid failed"
+               << ": " << std::hex << hr;
+    return hr;
+  }
+
+  return S_OK;
 }
 
 }  // namespace updater

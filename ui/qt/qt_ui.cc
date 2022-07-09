@@ -13,11 +13,14 @@
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
+#include "chrome/browser/themes/theme_properties.h"  // nogncheck
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_recipe.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/font_render_params_linux.h"
@@ -29,6 +32,7 @@
 #include "ui/qt/qt_interface.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/linux_ui/linux_ui.h"
 
 namespace qt {
 
@@ -94,7 +98,8 @@ class QtNativeTheme : public ui::NativeThemeAura {
                          ColorScheme color_scheme) const override {
     auto image = shim_->DrawHeader(
         rect.width(), rect.height(), frame_top_area.default_background_color,
-        frame_top_area.is_active, frame_top_area.use_custom_frame);
+        frame_top_area.is_active ? ColorState::kNormal : ColorState::kInactive,
+        frame_top_area.use_custom_frame);
     SkImageInfo image_info = SkImageInfo::Make(
         image.width, image.height, kBGRA_8888_SkColorType, kPremul_SkAlphaType);
     SkBitmap bitmap;
@@ -110,15 +115,16 @@ class QtNativeTheme : public ui::NativeThemeAura {
   raw_ptr<QtInterface> const shim_;
 };
 
-QtUi::QtUi() = default;
+QtUi::QtUi(std::unique_ptr<views::LinuxUI> fallback_linux_ui)
+    : fallback_linux_ui_(std::move(fallback_linux_ui)) {}
 
 QtUi::~QtUi() = default;
 
 std::unique_ptr<ui::LinuxInputMethodContext> QtUi::CreateInputMethodContext(
-    ui::LinuxInputMethodContextDelegate* delegate,
-    bool is_simple) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
+    ui::LinuxInputMethodContextDelegate* delegate) const {
+  return fallback_linux_ui_
+             ? fallback_linux_ui_->CreateInputMethodContext(delegate)
+             : nullptr;
 }
 
 gfx::FontRenderParams QtUi::GetDefaultFontRenderParams() const {
@@ -145,8 +151,9 @@ void QtUi::GetDefaultFontDescription(std::string* family_out,
 ui::SelectFileDialog* QtUi::CreateSelectFileDialog(
     ui::SelectFileDialog::Listener* listener,
     std::unique_ptr<ui::SelectFilePolicy> policy) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
+  return fallback_linux_ui_ ? fallback_linux_ui_->CreateSelectFileDialog(
+                                  listener, std::move(policy))
+                            : nullptr;
 }
 
 bool QtUi::Initialize() {
@@ -172,13 +179,20 @@ bool QtUi::Initialize() {
 }
 
 bool QtUi::GetColor(int id, SkColor* color, bool use_custom_frame) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  auto value = GetColor(id, use_custom_frame);
+  if (value)
+    *color = *value;
+  return value.has_value();
 }
 
 bool QtUi::GetDisplayProperty(int id, int* result) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  switch (id) {
+    case ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR:
+      *result = false;
+      return true;
+    default:
+      return false;
+  }
 }
 
 SkColor QtUi::GetFocusRingColor() const {
@@ -245,8 +259,8 @@ float QtUi::GetDeviceScaleFactor() const {
 }
 
 bool QtUi::PreferDarkTheme() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return color_utils::IsDark(
+      shim_->GetColor(ColorType::kWindowBg, ColorState::kNormal));
 }
 
 bool QtUi::AnimationsEnabled() const {
@@ -264,8 +278,8 @@ views::WindowFrameProvider* QtUi::GetWindowFrameProvider(bool solid_frame) {
 }
 
 base::flat_map<std::string, std::string> QtUi::GetKeyboardLayoutMap() {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return {};
+  return fallback_linux_ui_ ? fallback_linux_ui_->GetKeyboardLayoutMap()
+                            : base::flat_map<std::string, std::string>{};
 }
 
 std::string QtUi::GetCursorThemeName() {
@@ -303,6 +317,19 @@ bool QtUi::MatchEvent(const ui::Event& event,
   // QT doesn't have "key themes" (eg. readline bindings) like GTK.
   return false;
 }
+
+#if BUILDFLAG(ENABLE_PRINTING)
+printing::PrintDialogLinuxInterface* QtUi::CreatePrintDialog(
+    printing::PrintingContextLinux* context) {
+  return fallback_linux_ui_ ? fallback_linux_ui_->CreatePrintDialog(context)
+                            : nullptr;
+}
+
+gfx::Size QtUi::GetPdfPaperSize(printing::PrintingContextLinux* context) {
+  return fallback_linux_ui_ ? fallback_linux_ui_->GetPdfPaperSize(context)
+                            : gfx::Size();
+}
+#endif
 
 void QtUi::FontChanged() {
   auto params = shim_->GetFontRenderParams();
@@ -402,10 +429,81 @@ void QtUi::AddNativeColorMixer(ui::ColorProvider* provider,
   };
   for (const auto& map : kMaps)
     mixer[map.id] = {shim_->GetColor(map.role, map.state)};
+
+  mixer[ui::kColorFrameActive] = {
+      shim_->GetFrameColor(ColorState::kNormal, true)};
+  mixer[ui::kColorFrameInactive] = {
+      shim_->GetFrameColor(ColorState::kInactive, true)};
 }
 
-std::unique_ptr<views::LinuxUI> CreateQtUi() {
-  return std::make_unique<QtUi>();
+absl::optional<SkColor> QtUi::GetColor(int id, bool use_custom_frame) const {
+  switch (id) {
+    case ThemeProperties::COLOR_LOCATION_BAR_BORDER:
+      return shim_->GetColor(ColorType::kEntryFg, ColorState::kNormal);
+    case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
+      return shim_->GetColor(ColorType::kButtonFg, ColorState::kNormal);
+    case ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR:
+      return shim_->GetColor(ColorType::kButtonFg, ColorState::kNormal);
+    case ThemeProperties::COLOR_NTP_BACKGROUND:
+      return shim_->GetColor(ColorType::kEntryBg, ColorState::kNormal);
+    case ThemeProperties::COLOR_NTP_TEXT:
+      return shim_->GetColor(ColorType::kEntryFg, ColorState::kNormal);
+    case ThemeProperties::COLOR_NTP_HEADER:
+      return shim_->GetColor(ColorType::kButtonFg, ColorState::kNormal);
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
+      return shim_->GetColor(ColorType::kWindowFg, ColorState::kNormal);
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_HOVERED:
+      return shim_->GetColor(ColorType::kWindowFg, ColorState::kNormal);
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_PRESSED:
+      return shim_->GetColor(ColorType::kWindowFg, ColorState::kNormal);
+    case ThemeProperties::COLOR_TOOLBAR_TEXT:
+      return shim_->GetColor(ColorType::kWindowFg, ColorState::kNormal);
+    case ThemeProperties::COLOR_NTP_LINK:
+      return shim_->GetColor(ColorType::kHighlightBg, ColorState::kNormal);
+    case ThemeProperties::COLOR_FRAME_ACTIVE:
+      return shim_->GetFrameColor(ColorState::kNormal, use_custom_frame);
+    case ThemeProperties::COLOR_FRAME_INACTIVE:
+      return shim_->GetFrameColor(ColorState::kInactive, use_custom_frame);
+    case ThemeProperties::COLOR_FRAME_ACTIVE_INCOGNITO:
+      return shim_->GetFrameColor(ColorState::kNormal, use_custom_frame);
+    case ThemeProperties::COLOR_FRAME_INACTIVE_INCOGNITO:
+      return shim_->GetFrameColor(ColorState::kInactive, use_custom_frame);
+    case ThemeProperties::COLOR_TOOLBAR:
+      return shim_->GetColor(ColorType::kButtonBg, ColorState::kNormal);
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE:
+      return shim_->GetColor(ColorType::kButtonBg, ColorState::kNormal);
+    case ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE:
+      return shim_->GetColor(ColorType::kButtonBg, ColorState::kInactive);
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE:
+      return color_utils::BlendForMinContrast(
+                 shim_->GetColor(ColorType::kButtonBg, ColorState::kNormal),
+                 shim_->GetFrameColor(ColorState::kNormal, use_custom_frame))
+          .color;
+    case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE:
+      return color_utils::BlendForMinContrast(
+                 shim_->GetColor(ColorType::kButtonBg, ColorState::kInactive),
+                 shim_->GetFrameColor(ColorState::kInactive, use_custom_frame))
+          .color;
+    case ThemeProperties::COLOR_TAB_STROKE_FRAME_ACTIVE:
+      return color_utils::BlendForMinContrast(
+                 shim_->GetColor(ColorType::kButtonBg, ColorState::kNormal),
+                 shim_->GetColor(ColorType::kButtonBg, ColorState::kNormal),
+                 SK_ColorBLACK, 2.0)
+          .color;
+    case ThemeProperties::COLOR_TAB_STROKE_FRAME_INACTIVE:
+      return color_utils::BlendForMinContrast(
+                 shim_->GetColor(ColorType::kButtonBg, ColorState::kInactive),
+                 shim_->GetColor(ColorType::kButtonBg, ColorState::kInactive),
+                 SK_ColorBLACK, 2.0)
+          .color;
+    default:
+      return absl::nullopt;
+  }
+}
+
+std::unique_ptr<views::LinuxUI> CreateQtUi(
+    std::unique_ptr<views::LinuxUI> fallback_linux_ui) {
+  return std::make_unique<QtUi>(std::move(fallback_linux_ui));
 }
 
 }  // namespace qt

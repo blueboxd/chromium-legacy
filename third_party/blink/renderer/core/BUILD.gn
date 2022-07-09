@@ -30,6 +30,7 @@ import("//third_party/blink/renderer/core/dom/build.gni")
 import("//third_party/blink/renderer/core/editing/build.gni")
 import("//third_party/blink/renderer/core/events/build.gni")
 import("//third_party/blink/renderer/core/execution_context/build.gni")
+import("//third_party/blink/renderer/core/exported/build.gni")
 import("//third_party/blink/renderer/core/fetch/build.gni")
 import("//third_party/blink/renderer/core/fileapi/build.gni")
 import("//third_party/blink/renderer/core/fragment_directive/build.gni")
@@ -55,6 +56,8 @@ import("//third_party/blink/renderer/core/page/build.gni")
 import("//third_party/blink/renderer/core/paint/build.gni")
 import("//third_party/blink/renderer/core/permissions_policy/build.gni")
 import("//third_party/blink/renderer/core/resize_observer/build.gni")
+import(
+    "//third_party/blink/renderer/core/scheduler_integration_tests/build.gni")
 import("//third_party/blink/renderer/core/script/build.gni")
 import("//third_party/blink/renderer/core/scroll/build.gni")
 import("//third_party/blink/renderer/core/speculation_rules/build.gni")
@@ -481,8 +484,6 @@ source_set("testing") {
     "testing/origin_trials_test_partial.h",
     "testing/record_test.cc",
     "testing/record_test.h",
-    "testing/scoped_fake_ukm_recorder.cc",
-    "testing/scoped_fake_ukm_recorder.h",
     "testing/scoped_mock_overlay_scrollbars.h",
     "testing/sequence_test.cc",
     "testing/sequence_test.h",
@@ -1077,6 +1078,32 @@ blink_python_runner("make_core_generated_html_element_lookup_trie") {
   deps = make_core_generated_deps
 }
 
+blink_python_runner("make_core_generated_html_attribute_name_lookup_trie") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":*" ]
+  script = "../build/scripts/make_element_attribute_name_lookup_trie.py"
+
+  input_file = "html/html_attribute_names.json5"
+  inputs =
+      make_trie_helpers_files + [
+        input_file,
+        "../build/scripts/templates/element_attribute_name_lookup_trie.cc.tmpl",
+        "../build/scripts/templates/element_attribute_name_lookup_trie.h.tmpl",
+      ]
+  outputs = [
+    "$blink_core_output_dir/html_element_attribute_name_lookup_trie.cc",
+    "$blink_core_output_dir/html_element_attribute_name_lookup_trie.h",
+  ]
+
+  args = [
+    rebase_path(input_file, root_build_dir),
+    "--output_dir",
+    rel_blink_core_gen_dir,
+  ]
+
+  deps = make_core_generated_deps
+}
+
 blink_python_runner("make_core_generated_web_origin_trials") {
   script = "../build/scripts/make_web_origin_trials.py"
 
@@ -1138,6 +1165,11 @@ targets_generating_sources = [
   ":make_core_generated_xml_names",
   ":make_core_generated_xml_ns_names",
 ]
+
+if (!is_android) {
+  targets_generating_sources +=
+      [ ":make_core_generated_html_attribute_name_lookup_trie" ]
+}
 
 group("all_generators") {
   public_deps = targets_generating_sources
@@ -1253,35 +1285,11 @@ fuzzer_test("text_resource_decoder_fuzzer") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "exported/web_document_subresource_filter_test.cc",
-    "exported/web_document_test.cc",
-    "exported/web_drag_data_test.cc",
-    "exported/web_element_test.cc",
-    "exported/web_frame_serializer_sanitization_test.cc",
-    "exported/web_frame_serializer_test.cc",
-    "exported/web_frame_serializer_test_helper.cc",
-    "exported/web_frame_serializer_test_helper.h",
-    "exported/web_image_test.cc",
-    "exported/web_meaningful_layouts_test.cc",
-    "exported/web_node_test.cc",
-    "exported/web_plugin_container_test.cc",
-    "exported/web_range_test.cc",
-    "exported/web_scoped_window_focus_allowed_indicator_test.cc",
-    "exported/web_searchable_form_data_test.cc",
-    "exported/web_selector_test.cc",
-    "exported/web_view_test.cc",
-    "scheduler_integration_tests/frame_scheduler_test.cc",
-    "scheduler_integration_tests/frame_throttling_test.cc",
-    "scheduler_integration_tests/scheduler_affecting_features_test.cc",
-    "scheduler_integration_tests/throttling_test.cc",
-    "scheduler_integration_tests/virtual_time_test.cc",
-  ]
 
   # If you create a new subdirectory 'foo' that contains unit tests, list them in
   # 'foo/build.gni' to define blink_core_tests_foo, and add any dependencies in
   # the deps section below.
-  sources += rebase_path(blink_core_tests_accessibility, "", "accessibility")
+  sources = rebase_path(blink_core_tests_accessibility, "", "accessibility")
   sources += rebase_path(blink_core_tests_animation, "", "animation")
   sources += rebase_path(blink_core_tests_annotation, "", "annotation")
   sources += rebase_path(blink_core_tests_clipboard, "", "clipboard")
@@ -1297,6 +1305,7 @@ source_set("unit_tests") {
   sources += rebase_path(blink_core_tests_events, "", "events")
   sources +=
       rebase_path(blink_core_tests_execution_context, "", "execution_context")
+  sources += rebase_path(blink_core_tests_exported, "", "exported")
   sources += rebase_path(blink_core_tests_fetch, "", "fetch")
   sources += rebase_path(blink_core_tests_fileapi, "", "fileapi")
   sources +=
@@ -1323,6 +1332,9 @@ source_set("unit_tests") {
       rebase_path(blink_core_tests_permissions_policy, "", "permissions_policy")
   sources +=
       rebase_path(blink_core_tests_resize_observer, "", "resize_observer")
+  sources += rebase_path(blink_core_tests_scheduler_integration_tests,
+                         "",
+                         "scheduler_integration_tests")
   sources += rebase_path(blink_core_tests_script, "", "script")
   sources += rebase_path(blink_core_tests_scroll, "", "scroll")
   sources +=
@@ -1438,6 +1450,7 @@ source_set("perf_tests") {
   testonly = true
   sources = [
     "css/style_perftest.cc",
+    "html/html_perftest.cc",
     "layout/svg/svg_hit_test_perftest.cc",
     "layout/visual_rect_mapping_perftest.cc",
   ]

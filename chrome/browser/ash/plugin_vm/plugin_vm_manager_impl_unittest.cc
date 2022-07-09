@@ -23,15 +23,16 @@
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/chunneld/chunneld_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
+#include "chromeos/ash/components/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
-#include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
-#include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -50,10 +51,11 @@ class PluginVmManagerImplTest : public testing::Test {
  public:
   PluginVmManagerImplTest() {
     chromeos::DBusThreadManager::Initialize();
+    ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
     ash::SeneschalClient::InitializeFake();
-    chromeos::VmPluginDispatcherClient::InitializeFake();
+    ash::VmPluginDispatcherClient::InitializeFake();
     testing_profile_ = std::make_unique<TestingProfile>();
     test_helper_ = std::make_unique<PluginVmTestHelper>(testing_profile_.get());
     plugin_vm_manager_ = static_cast<PluginVmManagerImpl*>(
@@ -91,17 +93,18 @@ class PluginVmManagerImplTest : public testing::Test {
     display_service_.reset();
     test_helper_.reset();
     testing_profile_.reset();
-    chromeos::VmPluginDispatcherClient::Shutdown();
+    ash::VmPluginDispatcherClient::Shutdown();
     ash::SeneschalClient::Shutdown();
     ash::ConciergeClient::Shutdown();
     ash::CiceroneClient::Shutdown();
+    ash::ChunneldClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:
-  chromeos::FakeVmPluginDispatcherClient& VmPluginDispatcherClient() {
-    return *static_cast<chromeos::FakeVmPluginDispatcherClient*>(
-        chromeos::VmPluginDispatcherClient::Get());
+  ash::FakeVmPluginDispatcherClient& VmPluginDispatcherClient() {
+    return *static_cast<ash::FakeVmPluginDispatcherClient*>(
+        ash::VmPluginDispatcherClient::Get());
   }
   ash::FakeConciergeClient& ConciergeClient() {
     return *ash::FakeConciergeClient::Get();

@@ -5,8 +5,8 @@
 import 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
-import '../../common/common_style.css.js';
-import '../cros_button_style.css.js';
+import '../../css/common.css.js';
+import '../../css/cros_button_style.css.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
@@ -34,6 +34,17 @@ export interface KeyboardBacklight {
     keys: IronA11yKeysElement,
     selector: IronSelectorElement,
   };
+}
+
+/**
+  Based on this algorithm suggested by the W3:
+  https://www.w3.org/TR/AERT/#color-contrast
+*/
+function calculateColorBrightness(hexVal: number): number {
+  const r = (hexVal >> 16) & 0xff;  // extract red
+  const g = (hexVal >> 8) & 0xff;   // extract green
+  const b = (hexVal >> 0) & 0xff;   // extract blue
+  return (r * 299 + g * 587 + b * 114) / 1000;
 }
 
 interface ColorInfo {
@@ -254,7 +265,7 @@ export class KeyboardBacklight extends WithPersonalizationStore {
   private getWallpaperColorInnerContainerStyle_(wallpaperColor: SkColor):
       string {
     // Show the default style when wallpaper color is loading or invalid.
-    if (!wallpaperColor || !wallpaperColor.value) {
+    if (!wallpaperColor || (wallpaperColor.value & 0xFFFFFF) === 0xFFFFFF) {
       return `background-color: #FFFFFF;
           border: 1px solid var(--cros-separator-color);`;
     }
@@ -262,6 +273,18 @@ export class KeyboardBacklight extends WithPersonalizationStore {
     const hexStr =
         (wallpaperColor.value & 0xFFFFFF).toString(16).padStart(6, '0');
     return `background-color: #${hexStr};`;
+  }
+
+  private getWallpaperIconColorClass_(wallpaperColor: SkColor): string {
+    if (!wallpaperColor || (wallpaperColor.value & 0xFFFFFF) === 0xFFFFFF) {
+      return `light-icon`;
+    }
+    const brightness =
+        calculateColorBrightness(wallpaperColor.value & 0xFFFFFF);
+    if (brightness < 125) {
+      return `dark-icon`;
+    }
+    return `light-icon`;
   }
 
   private getPresetColorAriaLabel_(presetColorId: string): string {

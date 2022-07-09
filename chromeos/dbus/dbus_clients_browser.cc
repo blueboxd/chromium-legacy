@@ -5,20 +5,12 @@
 #include "chromeos/dbus/dbus_clients_browser.h"
 
 #include "base/check.h"
-#include "chromeos/dbus/arc/arc_appfuse_provider_client.h"
-#include "chromeos/dbus/arc/arc_data_snapshotd_client.h"
-#include "chromeos/dbus/arc/arc_keymaster_client.h"
 #include "chromeos/dbus/arc/arc_midis_client.h"
 #include "chromeos/dbus/arc/arc_obb_mounter_client.h"
-#include "chromeos/dbus/arc/fake_arc_appfuse_provider_client.h"
-#include "chromeos/dbus/arc/fake_arc_data_snapshotd_client.h"
-#include "chromeos/dbus/arc/fake_arc_keymaster_client.h"
 #include "chromeos/dbus/arc/fake_arc_midis_client.h"
 #include "chromeos/dbus/arc/fake_arc_obb_mounter_client.h"
 #include "chromeos/dbus/cec_service/cec_service_client.h"
 #include "chromeos/dbus/cec_service/fake_cec_service_client.h"
-#include "chromeos/dbus/chunneld/chunneld_client.h"
-#include "chromeos/dbus/chunneld/fake_chunneld_client.h"
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/cros_disks/fake_cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -28,20 +20,6 @@
 #include "chromeos/dbus/easy_unlock/fake_easy_unlock_client.h"
 #include "chromeos/dbus/fwupd/fake_fwupd_client.h"
 #include "chromeos/dbus/fwupd/fwupd_client.h"
-#include "chromeos/dbus/gnubby/fake_gnubby_client.h"
-#include "chromeos/dbus/gnubby/gnubby_client.h"
-#include "chromeos/dbus/image_burner/fake_image_burner_client.h"
-#include "chromeos/dbus/image_burner/image_burner_client.h"
-#include "chromeos/dbus/image_loader/fake_image_loader_client.h"
-#include "chromeos/dbus/image_loader/image_loader_client.h"
-#include "chromeos/dbus/oobe_config/fake_oobe_configuration_client.h"
-#include "chromeos/dbus/oobe_config/oobe_configuration_client.h"
-#include "chromeos/dbus/runtime_probe/fake_runtime_probe_client.h"
-#include "chromeos/dbus/runtime_probe/runtime_probe_client.h"
-#include "chromeos/dbus/smbprovider/fake_smb_provider_client.h"
-#include "chromeos/dbus/smbprovider/smb_provider_client.h"
-#include "chromeos/dbus/virtual_file_provider/fake_virtual_file_provider_client.h"
-#include "chromeos/dbus/virtual_file_provider/virtual_file_provider_client.h"
 
 namespace chromeos {
 
@@ -58,33 +36,14 @@ namespace chromeos {
 #endif  // USE_REAL_DBUS_CLIENTS
 
 DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
-  arc_data_snapshotd_client_ =
-      CREATE_DBUS_CLIENT(ArcDataSnapshotdClient, use_real_clients);
-  arc_keymaster_client_ =
-      CREATE_DBUS_CLIENT(ArcKeymasterClient, use_real_clients);
-  arc_midis_client_ = CREATE_DBUS_CLIENT(ArcMidisClient, use_real_clients);
   arc_obb_mounter_client_ =
       CREATE_DBUS_CLIENT(ArcObbMounterClient, use_real_clients);
   cec_service_client_ = CREATE_DBUS_CLIENT(CecServiceClient, use_real_clients);
   cros_disks_client_ = CREATE_DBUS_CLIENT(CrosDisksClient, use_real_clients);
-  chunneld_client_ = CREATE_DBUS_CLIENT(ChunneldClient, use_real_clients);
   debug_daemon_client_ =
       CREATE_DBUS_CLIENT(DebugDaemonClient, use_real_clients);
   easy_unlock_client_ = CREATE_DBUS_CLIENT(EasyUnlockClient, use_real_clients);
   fwupd_client_ = CREATE_DBUS_CLIENT(FwupdClient, use_real_clients);
-  gnubby_client_ = CREATE_DBUS_CLIENT(GnubbyClient, use_real_clients);
-  image_burner_client_ =
-      CREATE_DBUS_CLIENT(ImageBurnerClient, use_real_clients);
-  image_loader_client_ =
-      CREATE_DBUS_CLIENT(ImageLoaderClient, use_real_clients);
-  oobe_configuration_client_ =
-      CREATE_DBUS_CLIENT(OobeConfigurationClient, use_real_clients);
-  runtime_probe_client_ =
-      CREATE_DBUS_CLIENT(RuntimeProbeClient, use_real_clients);
-  smb_provider_client_ =
-      CREATE_DBUS_CLIENT(SmbProviderClient, use_real_clients);
-  virtual_file_provider_client_ =
-      CREATE_DBUS_CLIENT(VirtualFileProviderClient, use_real_clients);
 }
 
 DBusClientsBrowser::~DBusClientsBrowser() = default;
@@ -92,23 +51,12 @@ DBusClientsBrowser::~DBusClientsBrowser() = default;
 void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());
 
-  arc_data_snapshotd_client_->Init(system_bus);
-  arc_keymaster_client_->Init(system_bus);
-  arc_midis_client_->Init(system_bus);
   arc_obb_mounter_client_->Init(system_bus);
   cec_service_client_->Init(system_bus);
-  chunneld_client_->Init(system_bus);
   cros_disks_client_->Init(system_bus);
   debug_daemon_client_->Init(system_bus);
   easy_unlock_client_->Init(system_bus);
   fwupd_client_->Init(system_bus);
-  gnubby_client_->Init(system_bus);
-  image_burner_client_->Init(system_bus);
-  image_loader_client_->Init(system_bus);
-  oobe_configuration_client_->Init(system_bus);
-  runtime_probe_client_->Init(system_bus);
-  smb_provider_client_->Init(system_bus);
-  virtual_file_provider_client_->Init(system_bus);
 }
 
 }  // namespace chromeos

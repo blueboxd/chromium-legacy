@@ -178,6 +178,15 @@ BorealisApps::BorealisApps(AppServiceProxy* proxy)
   anonymous_app_observation_.Observe(
       &borealis::BorealisService::GetForProfile(profile_)->WindowManager());
 
+  pref_registrar_.Init(profile_->GetPrefs());
+
+  for (const PermissionInfo& info : permission_infos) {
+    pref_registrar_.Add(
+        info.pref_name,
+        base::BindRepeating(&apps::BorealisApps::OnPermissionChanged,
+                            base::Unretained(this)));
+  }
+
   // TODO(b/170264723): When uninstalling borealis is completed, ensure that we
   // remove the apps from the apps service.
 }
@@ -308,6 +317,14 @@ void BorealisApps::LoadIcon(const std::string& app_id,
                        std::move(callback));
 }
 
+void BorealisApps::Launch(const std::string& app_id,
+                          int32_t event_flags,
+                          LaunchSource launch_source,
+                          WindowInfoPtr window_info) {
+  borealis::BorealisService::GetForProfile(profile_)->AppLauncher().Launch(
+      app_id, base::DoNothing());
+}
+
 void BorealisApps::LaunchAppWithParams(AppLaunchParams&& params,
                                        LaunchCallback callback) {
   Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
@@ -425,6 +442,18 @@ void BorealisApps::OnRegistryUpdated(
           CreateApp(*registration, /*generate_new_icon_key=*/true));
     }
   }
+}
+
+void BorealisApps::OnPermissionChanged() {
+  apps::mojom::AppPtr mojom_app = apps::mojom::App::New();
+  mojom_app->app_type = apps::mojom::AppType::kBorealis;
+  mojom_app->app_id = borealis::kClientAppId;
+  PopulatePermissions(mojom_app.get(), profile_);
+  PublisherBase::Publish(std::move(mojom_app), subscribers_);
+
+  auto app = std::make_unique<App>(AppType::kBorealis, borealis::kClientAppId);
+  app->permissions = CreatePermissions(profile_);
+  AppPublisher::Publish(std::move(app));
 }
 
 void BorealisApps::OnAnonymousAppAdded(const std::string& shelf_app_id,

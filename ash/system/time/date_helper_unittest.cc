@@ -127,7 +127,7 @@ TEST_F(DateHelperUnittest, GetWeekTitle) {
 TEST_F(DateHelperUnittest, GetWeekTitleForAllLocales) {
   for (auto* local : kLocales) {
     SetDefaultLocale(local);
-    DateHelper::GetInstance()->week_titles();
+    EXPECT_EQ(7U, DateHelper::GetInstance()->week_titles().size());
   }
 }
 

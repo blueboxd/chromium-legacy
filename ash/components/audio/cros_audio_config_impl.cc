@@ -13,17 +13,31 @@ CrosAudioConfigImpl::CrosAudioConfigImpl() {
 }
 
 CrosAudioConfigImpl::~CrosAudioConfigImpl() {
-  if (CrasAudioHandler::Get()) {
+  if (CrasAudioHandler::Get())
     CrasAudioHandler::Get()->RemoveAudioObserver(this);
-  }
 }
 
-uint8_t CrosAudioConfigImpl::GetOutputVolumePercent() {
+uint8_t CrosAudioConfigImpl::GetOutputVolumePercent() const {
   return CrasAudioHandler::Get()->GetOutputVolumePercent();
+};
+
+mojom::MuteState CrosAudioConfigImpl::GetOutputMuteState() const {
+  // TODO(owenzhang): Add kMutedExternally.
+  if (CrasAudioHandler::Get()->IsOutputMutedByPolicy())
+    return mojom::MuteState::kMutedByPolicy;
+
+  if (CrasAudioHandler::Get()->IsOutputMuted())
+    return mojom::MuteState::kMutedByUser;
+
+  return mojom::MuteState::kNotMuted;
 };
 
 void CrosAudioConfigImpl::OnOutputNodeVolumeChanged(uint64_t node_id,
                                                     int volume) {
+  NotifyObserversAudioSystemPropertiesChanged();
+};
+
+void CrosAudioConfigImpl::OnOutputMuteChanged(bool mute_on) {
   NotifyObserversAudioSystemPropertiesChanged();
 };
 

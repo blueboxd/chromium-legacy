@@ -77,7 +77,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread_observer.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/agent_scheduling_group.h"
 #include "content/renderer/browser_exposed_renderer_interfaces.h"
 #include "content/renderer/categorized_worker_pool.h"
@@ -677,8 +676,8 @@ void RenderThreadImpl::Init() {
              base::PlatformThreadId thread_id) {
             if (!render_thread)
               return;
-            render_thread->render_message_filter()->SetThreadPriority(
-                thread_id, base::ThreadPriority::BACKGROUND);
+            render_thread->render_message_filter()->SetThreadType(
+                thread_id, base::ThreadType::kBackground);
           },
           weak_factory_.GetWeakPtr()));
 #endif
@@ -693,11 +692,8 @@ void RenderThreadImpl::Init() {
       discardable_memory_allocator_.get());
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBlinkCompositorUseDisplayThreadPriority)) {
-    render_message_filter()->SetThreadPriority(
-        ChildProcess::current()->io_thread_id(), base::ThreadPriority::DISPLAY);
-  }
+  render_message_filter()->SetThreadType(
+      ChildProcess::current()->io_thread_id(), base::ThreadType::kCompositing);
 #endif
 
   process_foregrounded_count_ = 0;

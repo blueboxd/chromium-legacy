@@ -42,6 +42,8 @@ class ProtocolUtilsTest : public testing::Test {
         ClientContextProto::UNKNOWN);
     client_context_proto_.set_country("US");
     client_context_proto_.set_locale("en-US");
+    client_context_proto_.set_platform_type(
+        ClientContextProto::PLATFORM_TYPE_ANDROID);
   }
   ~ProtocolUtilsTest() override {}
 
@@ -128,6 +130,7 @@ TEST_F(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
   processed_actions.emplace_back(ProcessedActionProto());
 
   RoundtripNetworkStats network_stats;
+  network_stats.set_num_roundtrips(1);
   network_stats.set_roundtrip_encoded_body_size_bytes(12345);
   network_stats.set_roundtrip_decoded_body_size_bytes(23456);
   auto* action_stats = network_stats.add_action_stats();
@@ -174,6 +177,7 @@ TEST_F(ProtocolUtilsTest, CreateCapabilitiesByHashRequest) {
   client_context.set_country(client_context_proto_.country());
   client_context.mutable_chrome()->set_chrome_version(
       client_context_proto_.chrome().chrome_version());
+  client_context.set_platform_type(ClientContextProto::PLATFORM_TYPE_ANDROID);
   EXPECT_EQ(client_context, request.client_context());
 
   EXPECT_EQ(request.hash_prefix_length(), 16U);
@@ -665,6 +669,7 @@ TEST_F(ProtocolUtilsTest, ComputeNetworkStats) {
   response_info.encoded_body_length = 20;
 
   RoundtripNetworkStats expected_stats;
+  expected_stats.set_num_roundtrips(1);
   expected_stats.set_roundtrip_encoded_body_size_bytes(20);
   expected_stats.set_roundtrip_decoded_body_size_bytes(28);
   auto* action_stats = expected_stats.add_action_stats();

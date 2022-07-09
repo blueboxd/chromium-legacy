@@ -13,17 +13,17 @@
 
 namespace {
 
-// Returns the default configuration with the given |pointSize|.
+// Returns the default configuration with the given `pointSize`.
 UIImageConfiguration* DefaultSymbolConfigurationWithPointSize(
-    NSInteger pointSize) {
+    CGFloat pointSize) {
   return [UIImageSymbolConfiguration
       configurationWithPointSize:pointSize
                           weight:UIImageSymbolWeightMedium
                            scale:UIImageSymbolScaleMedium];
 }
 
-// Returns a symbol named |symbolName| configured with the given
-// |configuration|. |systemSymbol| is used to specify if it is a SFSymbol or a
+// Returns a symbol named `symbolName` configured with the given
+// `configuration`. `systemSymbol` is used to specify if it is a SFSymbol or a
 // custom symbol.
 
 UIImage* SymbolWithConfiguration(NSString* symbolName,
@@ -90,24 +90,24 @@ UIImage* CustomSymbolWithConfiguration(NSString* symbolName,
   return SymbolWithConfiguration(symbolName, configuration, false);
 }
 
-UIImage* DefaultSymbolWithPointSize(NSString* symbolName, NSInteger pointSize) {
+UIImage* DefaultSymbolWithPointSize(NSString* symbolName, CGFloat pointSize) {
   return DefaultSymbolWithConfiguration(
       symbolName, DefaultSymbolConfigurationWithPointSize(pointSize));
 }
 
-UIImage* CustomSymbolWithPointSize(NSString* symbolName, NSInteger pointSize) {
+UIImage* CustomSymbolWithPointSize(NSString* symbolName, CGFloat pointSize) {
   return CustomSymbolWithConfiguration(
       symbolName, DefaultSymbolConfigurationWithPointSize(pointSize));
 }
 
 UIImage* DefaultSymbolTemplateWithPointSize(NSString* symbolName,
-                                            NSInteger pointSize) {
+                                            CGFloat pointSize) {
   return [DefaultSymbolWithPointSize(symbolName, pointSize)
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 
 UIImage* CustomSymbolTemplateWithPointSize(NSString* symbolName,
-                                           NSInteger pointSize) {
+                                           CGFloat pointSize) {
   return [CustomSymbolWithPointSize(symbolName, pointSize)
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }

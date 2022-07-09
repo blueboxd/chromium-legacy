@@ -76,7 +76,6 @@ const char* const kDumpProviderAllowlist[] = {
     "WebMediaPlayer_MediaThread",
     "SyncDirectory",
     "TabRestoreServiceHelper",
-    "VizProcessContextProvider",
     nullptr  // End of list marker.
 };
 
@@ -139,6 +138,7 @@ const char* const kAllocatorDumpNameAllowlist[] = {
     "history/delta_file_service/leveldb_0x?",
     "history/usage_reports_buffer/leveldb_0x?",
 #if BUILDFLAG(IS_MAC)
+    "ioaccelerator",
     "iosurface",
 #endif
     "java_heap",

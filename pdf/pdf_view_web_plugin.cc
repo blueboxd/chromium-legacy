@@ -639,6 +639,10 @@ bool PdfViewWebPlugin::CanRedo() const {
   return engine_->CanRedo();
 }
 
+bool PdfViewWebPlugin::CanCopy() const {
+  return engine_->HasPermission(DocumentPermission::kCopy);
+}
+
 bool PdfViewWebPlugin::ExecuteEditCommand(const blink::WebString& name,
                                           const blink::WebString& value) {
   if (name == "SelectAll")
@@ -667,6 +671,7 @@ blink::WebURL PdfViewWebPlugin::LinkAtPosition(
 bool PdfViewWebPlugin::StartFind(const blink::WebString& search_text,
                                  bool case_sensitive,
                                  int identifier) {
+  ResetRecentlySentFindUpdate();
   find_identifier_ = identifier;
   engine_->StartFind(search_text.Utf8(), case_sensitive);
   return true;

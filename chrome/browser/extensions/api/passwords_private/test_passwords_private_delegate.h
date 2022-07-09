@@ -24,14 +24,15 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   // PasswordsPrivateDelegate implementation.
   void GetSavedPasswordsList(UiEntriesCallback callback) override;
   void GetPasswordExceptionsList(ExceptionEntriesCallback callback) override;
-  // Fake implementation of GetUrlCollection. This returns value if |url| is
+  // Fake implementation of `GetUrlCollection`. This returns a value if `url` is
   // not empty.
   absl::optional<api::passwords_private::UrlCollection> GetUrlCollection(
       const std::string& url) override;
-  // Fake implementation. This returns value set by SetIsAccountStoreDefault.
+  // Fake implementation. This returns the value set by
+  // `SetIsAccountStoreDefault`.
   bool IsAccountStoreDefault(content::WebContents* web_contents) override;
-  // Fake implementation of AddPassword. This returns true if |url| and
-  // |password| aren't empty.
+  // Fake implementation of AddPassword. This returns true if `url` and
+  // `password` aren't empty.
   bool AddPassword(const std::string& url,
                    const std::u16string& username,
                    const std::u16string& password,
@@ -41,11 +42,13 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   // Fake implementation of ChangeSavedPassword. This succeeds if the current
   // list of entries has each of the ids, vector of ids isn't empty and if the
   // new password isn't empty.
-  bool ChangeSavedPassword(
+  absl::optional<api::passwords_private::CredentialIds> ChangeSavedPassword(
       const std::vector<int>& ids,
       const api::passwords_private::ChangeSavedPasswordParams& params) override;
-  void RemoveSavedPasswords(const std::vector<int>& id) override;
-  void RemovePasswordExceptions(const std::vector<int>& ids) override;
+  void RemoveSavedPassword(
+      int id,
+      api::passwords_private::PasswordStoreSet from_store) override;
+  void RemovePasswordException(int id) override;
   // Simplified version of undo logic, only use for testing.
   void UndoRemoveSavedPasswordOrException() override;
   void RequestPlaintextPassword(int id,
@@ -72,31 +75,38 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
       api::passwords_private::PlaintextReason reason,
       content::WebContents* web_contents,
       PlaintextInsecurePasswordCallback callback) override;
-  // Fake implementation of ChangeInsecureCredential. This succeeds if the
+  // Fake implementation of `ChangeInsecureCredential`. This succeeds if the
   // delegate knows of a insecure credential with the same id.
   bool ChangeInsecureCredential(
       const api::passwords_private::InsecureCredential& credential,
       base::StringPiece new_password) override;
-  // Fake implementation of RemoveInsecureCredential. This succeeds if the
+  // Fake implementation of `RemoveInsecureCredential`. This succeeds if the
   // delegate knows of a insecure credential with the same id.
   bool RemoveInsecureCredential(
       const api::passwords_private::InsecureCredential& credential) override;
-  // Fake implementation of MuteInsecureCredential. This succeeds if the
+  // Fake implementation of `MuteInsecureCredential`. This succeeds if the
   // delegate knows of a insecure credential with the same id.
   bool MuteInsecureCredential(
       const api::passwords_private::InsecureCredential& credential) override;
-  // Fake implementation of UnmuteInsecureCredential. This succeeds if the
+  // Fake implementation of `UnmuteInsecureCredential`. This succeeds if the
   // delegate knows of a insecure credential with the same id.
   bool UnmuteInsecureCredential(
       const api::passwords_private::InsecureCredential& credential) override;
-  // Fake implementation of RecordChangePasswordFlowStarted. Sets the url
-  // returned by |last_change_flow_url()|.
+  // Fake implementation of `RecordChangePasswordFlowStarted`. Sets the url
+  // returned by `last_change_flow_url()`.
   void RecordChangePasswordFlowStarted(
       const api::passwords_private::InsecureCredential& credential,
       bool is_manual_flow) override;
+  // Fake implementation of `RefreshScriptsIfNecessary` that directly calls
+  // `callback`.
+  void RefreshScriptsIfNecessary(
+      RefreshScriptsIfNecessaryCallback callback) override;
   void StartPasswordCheck(StartPasswordCheckCallback callback) override;
   void StopPasswordCheck() override;
   api::passwords_private::PasswordCheckStatus GetPasswordCheckStatus() override;
+  void StartAutomatedPasswordChange(
+      const api::passwords_private::InsecureCredential& credential,
+      StartAutomatedPasswordChangeCallback callback) override;
   password_manager::InsecureCredentialsManager* GetInsecureCredentialsManager()
       override;
 
@@ -141,12 +151,11 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   std::vector<api::passwords_private::ExceptionEntry> current_exceptions_;
 
   // Simplified version of an undo manager that only allows undoing and redoing
-  // the very last deletion. When the batches are *empty*, this means there is
+  // the very last deletion. When the entries are nullopt, this means there is
   // no previous deletion to undo.
-  std::vector<api::passwords_private::PasswordUiEntry>
-      last_deleted_entries_batch_;
-  std::vector<api::passwords_private::ExceptionEntry>
-      last_deleted_exceptions_batch_;
+  absl::optional<api::passwords_private::PasswordUiEntry> last_deleted_entry_;
+  absl::optional<api::passwords_private::ExceptionEntry>
+      last_deleted_exception_;
 
   absl::optional<std::u16string> plaintext_password_ = u"plaintext";
 

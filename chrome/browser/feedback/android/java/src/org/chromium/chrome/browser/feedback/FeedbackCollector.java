@@ -17,11 +17,13 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.HashMap;
@@ -43,7 +45,8 @@ public abstract class FeedbackCollector<T> implements Runnable {
     private String mAccountInUse;
 
     private List<FeedbackSource> mSynchronousSources;
-    private List<AsyncFeedbackSource> mAsynchronousSources;
+    @VisibleForTesting
+    protected List<AsyncFeedbackSource> mAsynchronousSources;
 
     private ScreenshotSource mScreenshotTask;
 
@@ -64,9 +67,12 @@ public abstract class FeedbackCollector<T> implements Runnable {
         //    account.
         mSynchronousSources = buildSynchronousFeedbackSources(activity, initParams);
         mAsynchronousSources = buildAsynchronousFeedbackSources(initParams);
-        mAccountInUse = CoreAccountInfo.getEmailFrom(
-                IdentityServicesProvider.get().getIdentityManager(profile).getPrimaryAccountInfo(
-                        ConsentLevel.SIGNIN));
+        IdentityManager identityManager =
+                IdentityServicesProvider.get().getIdentityManager(profile);
+        if (identityManager != null) {
+            mAccountInUse = CoreAccountInfo.getEmailFrom(
+                    identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN));
+        }
 
         // Sanity check in case a source is added to the wrong list.
         for (FeedbackSource source : mSynchronousSources) {
@@ -199,6 +205,8 @@ public abstract class FeedbackCollector<T> implements Runnable {
             }
         }
 
+        RecordHistogram.recordMediumTimesHistogram("Feedback.Duration.FetchSystemInformation",
+                SystemClock.elapsedRealtime() - mStartTime);
         final Callback<FeedbackCollector> callback = mCallback;
         mCallback = null;
 

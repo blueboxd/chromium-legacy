@@ -22,6 +22,7 @@
 #include "ui/base/ime/utf_offset.h"
 #include "ui/base/wayland/wayland_server_input_types.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/ozone/layout/xkb/xkb_modifier_converter.h"
 
@@ -38,6 +39,21 @@ constexpr const char* kModifierNames[] = {
     XKB_MOD_NAME_NUM,   "Mod3",
     XKB_MOD_NAME_LOGO,  "Mod5",
 };
+uint32_t keyCharToKeySym(char16_t keychar) {
+  // TODO(b/237461655): Lacros fails to handle key presses properly when the
+  // key character is not present in the keyboard layout.
+  if ((keychar >= 0x20 && keychar <= 0x7e) ||
+      (keychar >= 0xa0 && keychar <= 0xff)) {
+    return keychar;
+  }
+  // The spec also requires event.GetCharacter() <= 0x10ffff but this is
+  // always true due to the type of event.GetCharacter().
+  if (keychar >= 0x100) {
+    return keychar + 0x01000000;
+  }
+  // keysym 0 is used for unidentified events
+  return 0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // text_input_v1 interface:
@@ -138,10 +154,24 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
   }
 
   void SendKey(const ui::KeyEvent& event) override {
-    uint32_t keysym = xkb_tracker_->GetKeysym(
-        ui::KeycodeConverter::DomCodeToNativeKeycode(event.code()));
-    bool pressed = (event.type() == ui::ET_KEY_PRESSED);
+    uint32_t keysym =
+        event.code() != ui::DomCode::NONE
+            ? xkb_tracker_->GetKeysym(
+                  ui::KeycodeConverter::DomCodeToNativeKeycode(event.code()))
+            : 0;
+    // Some artificial key events (e.g. from virtual keyboard) do not set code,
+    // so must be handled separately.
+    // https://www.x.org/releases/X11R7.6/doc/xproto/x11protocol.html#keysym_encoding
+    // suggests that we can just directly map some parts of unicode.
+    if (keysym == 0) {
+      keysym = keyCharToKeySym(event.GetCharacter());
+    }
 
+    if (keysym == 0) {
+      VLOG(0) << "Unable to find keysym for: " << event.ToString();
+    }
+
+    bool pressed = (event.type() == ui::ET_KEY_PRESSED);
     zwp_text_input_v1_send_keysym(
         text_input_, TimeTicksToMilliseconds(event.time_stamp()),
         serial_tracker_->GetNextSerial(SerialTracker::EventType::OTHER_EVENT),
@@ -192,6 +222,39 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
     zcr_extended_text_input_v1_send_set_preedit_region(extended_text_input_,
                                                        index, length);
     wl_client_flush(client());
+  }
+
+  void ClearGrammarFragments(base::StringPiece16 surrounding_text,
+                             const gfx::Range& range) override {
+    if (!extended_text_input_)
+      return;
+
+    if (wl_resource_get_version(extended_text_input_) >=
+        ZCR_EXTENDED_TEXT_INPUT_V1_CLEAR_GRAMMAR_FRAGMENTS_SINCE_VERSION) {
+      std::vector<size_t> offsets = {range.start(), range.end()};
+      base::UTF16ToUTF8AndAdjustOffsets(surrounding_text, &offsets);
+      zcr_extended_text_input_v1_send_clear_grammar_fragments(
+          extended_text_input_, static_cast<uint32_t>(offsets[0]),
+          static_cast<uint32_t>(offsets[1]));
+      wl_client_flush(client());
+    }
+  }
+
+  void AddGrammarFragment(base::StringPiece16 surrounding_text,
+                          const ui::GrammarFragment& fragment) override {
+    if (!extended_text_input_)
+      return;
+
+    if (wl_resource_get_version(extended_text_input_) >=
+        ZCR_EXTENDED_TEXT_INPUT_V1_ADD_GRAMMAR_FRAGMENT_SINCE_VERSION) {
+      std::vector<size_t> offsets = {fragment.range.start(),
+                                     fragment.range.end()};
+      base::UTF16ToUTF8AndAdjustOffsets(surrounding_text, &offsets);
+      zcr_extended_text_input_v1_send_add_grammar_fragment(
+          extended_text_input_, static_cast<uint32_t>(offsets[0]),
+          static_cast<uint32_t>(offsets[1]), fragment.suggestion.c_str());
+      wl_client_flush(client());
+    }
   }
 
   void SendPreeditStyle(base::StringPiece16 text,
@@ -512,10 +575,31 @@ void extended_text_input_set_input_type(wl_client* client,
   text_input->SetTypeModeFlags(ui_type, ui_mode, ui_flags, should_do_learning);
 }
 
+void extended_text_input_set_grammar_fragment_at_cursor(
+    wl_client* client,
+    wl_resource* resource,
+    uint32_t start,
+    uint32_t end,
+    const char* suggestion) {
+  auto* delegate =
+      GetUserDataAs<WaylandExtendedTextInput>(resource)->delegate();
+  if (!delegate)
+    return;
+
+  auto* text_input = GetUserDataAs<TextInput>(delegate->resource());
+  if (start == end) {
+    text_input->SetGrammarFragmentAtCursor(absl::nullopt);
+  } else {
+    text_input->SetGrammarFragmentAtCursor(
+        ui::GrammarFragment(gfx::Range(start, end), suggestion));
+  }
+}
+
 constexpr struct zcr_extended_text_input_v1_interface
     extended_text_input_implementation = {
         extended_text_input_destroy,
         extended_text_input_set_input_type,
+        extended_text_input_set_grammar_fragment_at_cursor,
 };
 
 ////////////////////////////////////////////////////////////////////////////////

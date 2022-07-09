@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/url_matcher/url_util.h"
 
@@ -58,8 +59,8 @@ AnalysisServiceSettings::AnalysisServiceSettings(
   // found.
   block_until_verdict_ =
       settings_value.FindIntKey(kKeyBlockUntilVerdict).value_or(0)
-          ? BlockUntilVerdict::BLOCK
-          : BlockUntilVerdict::NO_BLOCK;
+          ? BlockUntilVerdict::kBlock
+          : BlockUntilVerdict::kNoBlock;
   block_password_protected_files_ =
       settings_value.FindBoolKey(kKeyBlockPasswordProtected).value_or(false);
   block_large_files_ =
@@ -155,8 +156,19 @@ absl::optional<AnalysisSettings> AnalysisServiceSettings::GetAnalysisSettings(
   settings.block_password_protected_files = block_password_protected_files_;
   settings.block_large_files = block_large_files_;
   settings.block_unsupported_file_types = block_unsupported_file_types_;
-  settings.analysis_url = GURL(analysis_config_->url);
-  DCHECK(settings.analysis_url.is_valid());
+  if (analysis_config_->url) {
+    CloudAnalysisSettings cloud_settings;
+    cloud_settings.analysis_url = GURL(analysis_config_->url);
+    DCHECK(cloud_settings.analysis_url.is_valid());
+    settings.cloud_or_local_settings =
+        CloudOrLocalAnalysisSettings(std::move(cloud_settings));
+  } else {
+    DCHECK(analysis_config_->local_path);
+    LocalAnalysisSettings local_settings;
+    local_settings.local_path = analysis_config_->local_path;
+    settings.cloud_or_local_settings =
+        CloudOrLocalAnalysisSettings(std::move(local_settings));
+  }
   settings.minimum_data_size = minimum_data_size_;
 
   return settings;
@@ -165,7 +177,7 @@ absl::optional<AnalysisSettings> AnalysisServiceSettings::GetAnalysisSettings(
 bool AnalysisServiceSettings::ShouldBlockUntilVerdict() const {
   if (!IsValid())
     return false;
-  return block_until_verdict_ == BlockUntilVerdict::BLOCK;
+  return block_until_verdict_ == BlockUntilVerdict::kBlock;
 }
 
 absl::optional<std::u16string> AnalysisServiceSettings::GetCustomMessage(

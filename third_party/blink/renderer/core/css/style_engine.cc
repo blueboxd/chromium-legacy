@@ -2659,7 +2659,7 @@ void StyleEngine::RecalcStyleForContainer(Element& container,
   DCHECK(!StyleRecalcChange().ShouldRecalcStyleFor(container));
 
   // If the container itself depends on an outer container, then its
-  // DependsOnContainerQueries flag will be set, and we would recalc its
+  // DependsOnSizeContainerQueries flag will be set, and we would recalc its
   // style (due to ForceRecalcContainer/ForceRecalcDescendantContainers).
   // This is not necessary, hence we suppress recalc for this element.
   change = change.SuppressRecalc();
@@ -2698,6 +2698,7 @@ void StyleEngine::RecalcStyleForNonLayoutNGContainerDescendants(
   if (cq_data->SkippedStyleRecalc()) {
     DecrementSkippedContainerRecalc();
     AllowMarkForReattachFromRebuildLayoutTreeScope allow_reattach(*this);
+    base::AutoReset<bool> cq_recalc(&in_container_query_style_recalc_, true);
     RecalcStyleForContainer(container, {});
   }
 }
@@ -2728,7 +2729,7 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
   DCHECK(evaluator);
 
   ContainerQueryEvaluator::Change query_change = evaluator->ContainerChanged(
-      GetDocument(), style, physical_size, physical_axes);
+      GetDocument(), container, physical_size, physical_axes);
   switch (query_change) {
     case ContainerQueryEvaluator::Change::kNone:
       if (!cq_data->SkippedStyleRecalc())
@@ -2754,7 +2755,7 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
     // depends on size container queries, fall back to re-attaching its box tree
     // when any of the size queries change the evaluation result.
     if (style.HasPseudoElementStyle(kPseudoIdFirstLine) &&
-        style.FirstLineDependsOnContainerQueries()) {
+        style.FirstLineDependsOnSizeContainerQueries()) {
       change = change.ForceMarkReattachLayoutTree().ForceReattachLayoutTree();
     }
   }

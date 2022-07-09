@@ -192,13 +192,11 @@ ExtensionDownloader::ExtensionFetch::ExtensionFetch(
     const GURL& url,
     const std::string& package_hash,
     const std::string& version,
-    const std::set<int>& request_ids,
     const DownloadFetchPriority fetch_priority)
     : id(task.id),
       url(url),
       package_hash(package_hash),
       version(version),
-      request_ids(request_ids),
       fetch_priority(fetch_priority),
       credentials(CREDENTIALS_NONE),
       oauth2_attempt_count(0) {
@@ -206,6 +204,13 @@ ExtensionDownloader::ExtensionFetch::ExtensionFetch(
 }
 
 ExtensionDownloader::ExtensionFetch::~ExtensionFetch() = default;
+
+std::set<int> ExtensionDownloader::ExtensionFetch::GetRequestIds() const {
+  std::set<int> request_ids;
+  for (const ExtensionDownloaderTask& task : associated_tasks)
+    request_ids.insert(task.request_id);
+  return request_ids;
+}
 
 ExtensionDownloader::FetchDataGroupKey::FetchDataGroupKey() = default;
 
@@ -325,6 +330,12 @@ void ExtensionDownloader::DoStartAllPending() {
   ReportStats();
   url_stats_ = URLStats();
 
+  if (g_test_delegate) {
+    g_test_delegate->StartUpdateCheck(this, delegate_,
+                                      std::move(pending_tasks_));
+    pending_tasks_.clear();
+    return;
+  }
   // We limit the number of extensions grouped together in one batch to avoid
   // running into the limits on the length of http GET requests, so there might
   // be multiple ManifestFetchData* objects with the same update_url.
@@ -443,10 +454,6 @@ void ExtensionDownloader::ReportStats() const {
 
 void ExtensionDownloader::StartUpdateCheck(
     std::unique_ptr<ManifestFetchData> fetch_data) {
-  if (g_test_delegate) {
-    g_test_delegate->StartUpdateCheck(this, delegate_, std::move(fetch_data));
-    return;
-  }
   const ExtensionIdSet extension_ids = fetch_data->GetExtensionIds();
   if (!ExtensionsBrowserClient::Get()->IsBackgroundUpdateAllowed()) {
     NotifyExtensionsDownloadStageChanged(
@@ -579,6 +586,7 @@ void ExtensionDownloader::CreateManifestLoader() {
         net::SiteForCookies::FromUrl(active_request->full_url());
   }
 
+  DCHECK(!manifest_loader_);
   manifest_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   // Update checks can be interrupted if a network change is detected; this is
@@ -658,8 +666,7 @@ bool ExtensionDownloader::TryFetchingExtensionsFromCache(
           id, ExtensionDownloaderDelegate::Stage::FINISHED);
       auto extension_fetch_data(std::make_unique<ExtensionFetch>(
           std::move(task), fetch_data->base_url(), /*hash not fetched*/ "",
-          /*version not fetched*/ "", fetch_data->request_ids(),
-          fetch_data->fetch_priority()));
+          /*version not fetched*/ "", fetch_data->fetch_priority()));
       NotifyDelegateDownloadFinished(std::move(extension_fetch_data), true,
                                      cached_crx_path.value(), false);
       extensions_fetched_from_cache.insert(id);
@@ -677,12 +684,12 @@ bool ExtensionDownloader::TryFetchingExtensionsFromCache(
 }
 
 void ExtensionDownloader::RetryRequestOrHandleFailureOnManifestFetchFailure(
-    const network::SimpleURLLoader* loader,
+    const network::SimpleURLLoader& loader,
     const int response_code) {
   bool all_force_installed_extensions =
       manifests_queue_.active_request()->is_all_external_policy_download();
 
-  const int net_error = manifest_loader_->NetError();
+  const int net_error = loader.NetError();
   const int request_failure_count =
       manifests_queue_.active_request_failure_count();
   // If the device is offline, do not retry for force installed extensions,
@@ -696,11 +703,11 @@ void ExtensionDownloader::RetryRequestOrHandleFailureOnManifestFetchFailure(
       RetryManifestFetchRequest(net_error, response_code);
     return;
   }
-  if (ShouldRetryRequest(loader) && request_failure_count < kMaxRetries) {
-    RetryManifestFetchRequest(loader->NetError(), response_code);
+  if (ShouldRetryRequest(&loader) && request_failure_count < kMaxRetries) {
+    RetryManifestFetchRequest(loader.NetError(), response_code);
     return;
   }
-  const GURL url = loader->GetFinalURL();
+  const GURL url = loader.GetFinalURL();
   RETRY_HISTOGRAM("ManifestFetchFailure", request_failure_count, url);
   if (all_force_installed_extensions) {
     if (TryFetchingExtensionsFromCache(manifests_queue_.active_request()))
@@ -726,13 +733,17 @@ void ExtensionDownloader::RetryRequestOrHandleFailureOnManifestFetchFailure(
 
 void ExtensionDownloader::OnManifestLoadComplete(
     std::unique_ptr<std::string> response_body) {
-  const GURL url = manifest_loader_->GetFinalURL();
+  // Move loader from class-wide field to the local variable in order to make
+  // ExtensionDownloader reentrable.
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      std::move(manifest_loader_);
+  const GURL url = loader->GetFinalURL();
   DCHECK(manifests_queue_.active_request());
+  DCHECK(loader);
 
   int response_code = -1;
-  if (manifest_loader_->ResponseInfo() &&
-      manifest_loader_->ResponseInfo()->headers)
-    response_code = manifest_loader_->ResponseInfo()->headers->response_code();
+  if (loader->ResponseInfo() && loader->ResponseInfo()->headers)
+    response_code = loader->ResponseInfo()->headers->response_code();
 
   VLOG(2) << response_code << " " << url;
 
@@ -754,10 +765,8 @@ void ExtensionDownloader::OnManifestLoadComplete(
   } else {
     VLOG(1) << "Failed to fetch manifest '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
-    RetryRequestOrHandleFailureOnManifestFetchFailure(manifest_loader_.get(),
-                                                      response_code);
+    RetryRequestOrHandleFailureOnManifestFetchFailure(*loader, response_code);
   }
-  manifest_loader_.reset();
   file_url_loader_factory_.reset();
   manifests_queue_.reset_active_request();
 
@@ -821,8 +830,7 @@ void ExtensionDownloader::HandleManifestResults(
     FetchUpdatedExtension(
         std::make_unique<ExtensionFetch>(
             std::move(update.first), crx_url, update.second->package_hash,
-            update.second->version, fetch_data->request_ids(),
-            fetch_data->fetch_priority()),
+            update.second->version, fetch_data->fetch_priority()),
         update.second->info);
   }
 
@@ -1074,11 +1082,11 @@ void ExtensionDownloader::FetchUpdatedExtension(
       // case of no updates status in the update manifest.
       ExtensionDownloaderDelegate::FailureData data(info.value_or(""));
       NotifyExtensionsDownloadFailedWithFailureData(
-          {fetch_data->id}, fetch_data->request_ids,
+          {fetch_data->id}, fetch_data->GetRequestIds(),
           ExtensionDownloaderDelegate::Error::CRX_FETCH_URL_EMPTY, data);
     } else {
       NotifyExtensionsDownloadFailed(
-          {fetch_data->id}, fetch_data->request_ids,
+          {fetch_data->id}, fetch_data->GetRequestIds(),
           ExtensionDownloaderDelegate::Error::CRX_FETCH_URL_INVALID);
     }
     return;
@@ -1094,8 +1102,6 @@ void ExtensionDownloader::FetchUpdatedExtension(
           iter->associated_tasks.end(),
           std::make_move_iterator(fetch_data->associated_tasks.begin()),
           std::make_move_iterator(fetch_data->associated_tasks.end()));
-      iter->request_ids.insert(fetch_data->request_ids.begin(),
-                               fetch_data->request_ids.end());
       return;  // already scheduled
     }
   }
@@ -1108,8 +1114,6 @@ void ExtensionDownloader::FetchUpdatedExtension(
         extensions_queue_.active_request()->associated_tasks.end(),
         std::make_move_iterator(fetch_data->associated_tasks.begin()),
         std::make_move_iterator(fetch_data->associated_tasks.end()));
-    extensions_queue_.active_request()->request_ids.insert(
-        fetch_data->request_ids.begin(), fetch_data->request_ids.end());
     return;
   }
   absl::optional<base::FilePath> cached_crx_path =
@@ -1137,7 +1141,7 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
   const std::string& package_hash = fetch_data->package_hash;
   const GURL& url = fetch_data->url;
   const base::Version& version = fetch_data->version;
-  const std::set<int>& request_ids = fetch_data->request_ids;
+  const std::set<int> request_ids = fetch_data->GetRequestIds();
   const crx_file::VerifierFormat required_format =
       extension_urls::IsWebstoreUpdateUrl(fetch_data->url)
           ? GetWebstoreVerifierFormat(false)
@@ -1304,7 +1308,7 @@ void ExtensionDownloader::OnExtensionLoadComplete(base::FilePath crx_path) {
     extensions_queue_.RetryRequest(backoff_delay);
     delegate_->OnExtensionDownloadRetryForTests();
   } else {
-    const std::set<int>& request_ids = active_request.request_ids;
+    const std::set<int> request_ids = active_request.GetRequestIds();
     const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[id];
     VLOG(1) << "Failed to fetch extension '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;

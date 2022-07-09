@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/info_card.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/api_test/feed_api_test.h"
@@ -67,6 +68,9 @@ TEST_F(FeedApiTest, BackgroundRefreshForYouSuccess) {
       RefreshTaskId::kRefreshForYouFeed));
   EXPECT_EQ(LoadStreamStatus::kLoadedFromNetwork,
             metrics_reporter_->background_refresh_status);
+  EXPECT_TRUE(network_.query_request_sent);
+  EXPECT_EQ(feedwire::FeedQuery::SCHEDULED_REFRESH,
+            network_.query_request_sent->feed_request().feed_query().reason());
   EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
   EXPECT_FALSE(stream_->GetModel(kForYouStream));
   TestForYouSurface surface(stream_.get());
@@ -1878,8 +1882,7 @@ TEST_F(FeedApiTest, LoadMoreDoesNotUpdateLoggingEnabled) {
   for (bool waa_on : {true, false}) {
     for (bool privacy_notice_fulfilled : {true, false}) {
       response_translator_.InjectResponse(MakeTypicalNextPageState(
-          page++, kTestTimeEpoch, kTestTimeEpoch, signed_in, waa_on,
-          privacy_notice_fulfilled));
+          page++, kTestTimeEpoch, signed_in, waa_on, privacy_notice_fulfilled));
       stream_->LoadMore(surface, base::DoNothing());
       WaitForIdleTaskQueue();
       EXPECT_TRUE(surface.update->logging_parameters().logging_enabled());
@@ -2695,6 +2698,7 @@ TEST_F(FeedApiTest, ReportUserSettingsFromMetadataWaaOnDpOff) {
     RefreshResponseData response;
     response.model_update_request = MakeTypicalInitialModelState();
     response.web_and_app_activity_enabled = true;
+    response.last_fetch_timestamp = base::Time::Now();
     response_translator_.InjectResponse(std::move(response));
   }
   TestForYouSurface surface(stream_.get());
@@ -2716,6 +2720,7 @@ TEST_F(FeedApiTest, ReportUserSettingsFromMetadataWaaOffDpOn) {
     RefreshResponseData response;
     response.model_update_request = MakeTypicalInitialModelState();
     response.discover_personalization_enabled = true;
+    response.last_fetch_timestamp = base::Time::Now();
     response_translator_.InjectResponse(std::move(response));
   }
   TestForYouSurface surface(stream_.get());
@@ -3077,8 +3082,11 @@ TEST_F(FeedApiTest, InfoCardTrackingActions) {
   task_environment_.AdvanceClock(base::Seconds(200));
 
   // Load the initial page.
-  response_translator_.InjectResponse(
-      MakeTypicalInitialModelState(0, client_timestamp, server_timestamp));
+  RefreshResponseData response;
+  response.model_update_request = MakeTypicalInitialModelState();
+  response.last_fetch_timestamp = client_timestamp;
+  response.server_response_sent_timestamp = server_timestamp;
+  response_translator_.InjectResponse(std::move(response));
   TestForYouSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
@@ -3124,8 +3132,11 @@ TEST_F(FeedApiTest, InfoCardTrackingActions) {
                                kTestInfoCardType1, 1);
 
   // Refresh the page so that a feed query including the info card tracking
-  // states is sent.
+  // states is sent. Call "CreateStream()" before the refresh to simulate
+  // Chrome restart. This is used to test that info card tracking states are
+  // sent in the initial page load when stream model is not loaded yet.
   response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  CreateStream();
   stream_->ManualRefresh(kForYouStream, base::DoNothing());
   WaitForIdleTaskQueue();
 
@@ -3458,7 +3469,9 @@ TEST_F(FeedApiTest, FeedCloseRefresh_Retry) {
                 .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
 
   // Simulate an allowed refresh that failed.
+  surface.Detach();
   task_environment_.FastForwardBy(base::Minutes(35));
+  WaitForIdleTaskQueue();
   refresh_scheduler_.Clear();
   FeedNetwork::RawResponse raw_response;
   raw_response.response_info.status_code = 400;
@@ -3490,6 +3503,44 @@ TEST_F(FeedApiTest, FeedCloseRefresh_Retry) {
   EXPECT_EQ(base::Minutes(20),
             refresh_scheduler_
                 .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+}
+
+TEST_F(FeedApiTest, FeedCloseRefresh_RequestType) {
+  // Sometimes the clock starts near zero; move it forward just in case.
+  task_environment_.AdvanceClock(base::Minutes(10));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kFeedCloseRefresh, {{"require_interaction", "true"}});
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Opening should cause a refresh to be scheduled.
+  stream_->ReportOpenAction(GURL("http://example.com"), kForYouStream, "");
+  EXPECT_EQ(base::Minutes(30),
+            refresh_scheduler_
+                .scheduled_run_times[RefreshTaskId::kRefreshForYouFeed]);
+
+  // Close the surface and unload the model.
+  surface.Detach();
+  task_environment_.FastForwardBy(base::Seconds(2));
+  WaitForIdleTaskQueue();
+
+  // Do the refresh.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  stream_->ExecuteRefreshTask(RefreshTaskId::kRefreshForYouFeed);
+  WaitForIdleTaskQueue();
+
+  ASSERT_TRUE(refresh_scheduler_.completed_tasks.count(
+      RefreshTaskId::kRefreshForYouFeed));
+  EXPECT_EQ(LoadStreamStatus::kLoadedFromNetwork,
+            metrics_reporter_->background_refresh_status);
+  EXPECT_TRUE(network_.query_request_sent);
+  // Request reason should be set.
+  EXPECT_EQ(feedwire::FeedQuery::APP_CLOSE_REFRESH,
+            network_.query_request_sent->feed_request().feed_query().reason());
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
 }
 
 // Keep instantiations at the bottom.

@@ -120,7 +120,7 @@ bool FrameSinkVideoCaptureDevice::CanSupportNV12Format() const {
 
   // If present, GPU capabilities should already be up to date (this is ensured
   // by subscribing to context lost events on the |context_provider_|):
-  return gpu_capabilities_->texture_rg;
+  return gpu_capabilities_->texture_rg && gpu_capabilities_->gpu_rasterization;
 }
 
 media::VideoPixelFormat
@@ -409,6 +409,16 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
               weak_factory_.GetWeakPtr(), buffer_id)),
           std::move(info)),
       {});
+}
+
+void FrameSinkVideoCaptureDevice::OnNewCropVersion(uint32_t crop_version) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!receiver_) {
+    return;
+  }
+
+  receiver_->OnNewCropVersion(crop_version);
 }
 
 void FrameSinkVideoCaptureDevice::OnFrameWithEmptyRegionCapture() {

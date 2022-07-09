@@ -15,16 +15,15 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/network/client_cert_resolver.h"
-#include "chromeos/network/managed_network_configuration_handler_impl.h"
-#include "chromeos/network/network_cert_loader.h"
-#include "chromeos/network/network_configuration_handler.h"
-#include "chromeos/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/managed_network_configuration_handler_impl.h"
+#include "chromeos/ash/components/network/network_cert_loader.h"
+#include "chromeos/ash/components/network/network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_connection_handler.h"
+#include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
@@ -241,12 +240,11 @@ class AutoConnectHandlerTest : public testing::Test {
   void SetupUserPolicy(const std::string& network_configs_json) {
     base::Value network_configs(base::Value::Type::LIST);
     if (!network_configs_json.empty()) {
-      base::JSONReader::ValueWithError parsed_json =
-          base::JSONReader::ReadAndReturnValueWithError(
-              network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS);
-      ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
-      ASSERT_TRUE(parsed_json.value->is_list());
-      network_configs = std::move(*parsed_json.value);
+      auto parsed_json = base::JSONReader::ReadAndReturnValueWithError(
+          network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS);
+      ASSERT_TRUE(parsed_json.has_value()) << parsed_json.error().message;
+      ASSERT_TRUE(parsed_json->is_list());
+      network_configs = std::move(*parsed_json);
     }
     managed_config_handler_->SetPolicy(
         ::onc::ONC_SOURCE_USER_POLICY, helper_.UserHash(), network_configs,
@@ -258,12 +256,11 @@ class AutoConnectHandlerTest : public testing::Test {
                          const base::Value& global_config) {
     base::Value network_configs(base::Value::Type::LIST);
     if (!network_configs_json.empty()) {
-      base::JSONReader::ValueWithError parsed_json =
-          base::JSONReader::ReadAndReturnValueWithError(
-              network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS);
-      ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
-      ASSERT_TRUE(parsed_json.value->is_list());
-      network_configs = std::move(*parsed_json.value);
+      auto parsed_json = base::JSONReader::ReadAndReturnValueWithError(
+          network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS);
+      ASSERT_TRUE(parsed_json.has_value()) << parsed_json.error().message;
+      ASSERT_TRUE(parsed_json->is_list());
+      network_configs = std::move(*parsed_json);
     }
     managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
                                        std::string(),  // no username hash
@@ -676,8 +673,6 @@ TEST_F(AutoConnectHandlerTest, ManualConnectAbortsReconnectAfterLogin) {
 TEST_F(AutoConnectHandlerTest,
        DisableCellularAutoConnectOnAllowOnlyPolicyNetworksAutoconnect) {
   base::HistogramTester histogram_tester;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kESimPolicy);
   std::string cellular1_service_path =
       ConfigureService(kConfigureCellular1UnmanagedConnected);
   ASSERT_FALSE(cellular1_service_path.empty());
@@ -731,8 +726,6 @@ TEST_F(AutoConnectHandlerTest,
 TEST_F(AutoConnectHandlerTest,
        DisconnectCellularOnPolicyLoadingAllowOnlyPolicyCellularNetworks) {
   base::HistogramTester histogram_tester;
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kESimPolicy);
   std::string cellular1_service_path =
       ConfigureService(kConfigureCellular1UnmanagedConnected);
   ASSERT_FALSE(cellular1_service_path.empty());

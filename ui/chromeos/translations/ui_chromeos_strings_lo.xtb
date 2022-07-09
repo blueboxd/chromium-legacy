@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">ຮາງກຸລ ໂຣມາຈາ</translation>
 <translation id="112387589102719461">ພາສາອັງກິດ (ສະຫະລັດ) ທີ່ໃຊ້ແປ້ນພິມ Dvorak ສຳລັບຜູ້ສ້າງໂປຣແກຣມ</translation>
 <translation id="1134697384939541955">ພາສາອັງກິດ (ສະຫະລັດ) ທີ່ໃຊ້ແປ້ນພິມແບບຂະຫຍາຍ</translation>
+<translation id="1138691154716715755">ຕົ້ນເດືອນນີ້</translation>
 <translation id="1148097584170732637">ພົບ <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     ບໍ່ມີພື້ນທີ່ຫວ່າງພຽງພໍໃນບ່ອນເກັບຂໍ້ມູນໃນເຄື່ອງ. ຕ້ອງການເພີ່ມອີກ <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ຄວາມແຮງສັນຍານ <ph name="SIGNAL_STRENGTH" />%, ຖືກບລັອກໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ລາຍລະອຽດ</translation>
 <translation id="2142680004883808240">ພາສາຣັດເຊຍທີ່ໃຊ້ແປ້ນພິມ YaZHert ຕາມການອອກສຽງ</translation>
 <translation id="2143778271340628265">ການປັບຕັ້ງພຣັອກຊີເອົາເອງ</translation>
+<translation id="2148716181193084225">ມື້​ນີ້</translation>
 <translation id="2163152940313951844">ຕົວອັກສອນໃຊ້ບໍ່ໄດ້: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">ພາສາປໍຕຸຍກິສທີ່ໃຊ້ແປ້ນພິມຄອມພິວເຕີສະຫະລັດແບບສາກົນ</translation>
 <translation id="2198315389084035571">ພາສາຈີນຕົວຫຍໍ້</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">ປ່ຽນເປັນມຸມມອງລາຍຊື່</translation>
 <translation id="2377590462528165447">ແບ່ງປັນ <ph name="NUMBER_OF_ITEMS" /> ໂຟນເດີກັບ Linux ແລ້ວ</translation>
 <translation id="2378075407703503998">ເລືອກ <ph name="SELCTED_FILE_COUNT" /> ໄຟລ໌ແລ້ວ</translation>
+<translation id="2387120140441437063">ບໍ່ສາມາດເປີດໄຟລ໌ທີ່ຢູ່ໃນຖັງຂີ້ເຫຍື້ອໄດ້. ກະລຸນາກູ້ໄຟລ໌ຄືນມາກ່ອນເປີດ.</translation>
 <translation id="2387458720915042159">ປະເພດການເຊື່ອມຕໍ່ພຣັອກຊີ</translation>
 <translation id="2389832672041313158">ພາສາມຽນມາ/ພະມ້າ</translation>
 <translation id="2392369802118427583">ເປີດໃຊ້ງານ</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">ເນື້ອຫາຂອງໂຟນເດີນີ້ເປັນແບບອ່ານເທົ່ານັ້ນ. ບໍ່ຮອງຮັບບາງກິດຈະກຳ.</translation>
 <translation id="2542049655219295786">ຕາ​ຕະ​ລາງ​ Google</translation>
 <translation id="2544853746127077729">ໃບ​ຢັ້ງ​ຢືນ​ການ​ຮັບຮອງຖືກ​ເຄືອ​ຂ່າຍ​ປະ​ຕິ​ເສດ</translation>
-<translation id="2547921442987553570">ເພີ່ມໃສ່ <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">US ສາ​ກົນ</translation>
 <translation id="2563185590376525700">ກົບ</translation>
 <translation id="2578394532502990878">ພາສາທາມິລ (ຕາມການອອກສຽງ)</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">ພາສາຈີນ (Dayi)</translation>
 <translation id="3057861065630527966">ສຳ​ຮອງ​ຮູບ ແລະ​ວິ​ດີ​ໂອ​ຂອງ​ທ່ານ</translation>
 <translation id="3067790092342515856">ໄຟລ໌ Windows</translation>
-<translation id="3078461028045006476">ແບ່ງປັນກັບ <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
 <translation id="3085752524577180175">ແມ່ຂ່າຍ SOCKS</translation>
 <translation id="3104793765551262433">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ຄວາມແຮງສັນຍານ <ph name="SIGNAL_STRENGTH" />%, ຖືກບລັອກໄວ້ໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ລາຍລະອຽດ</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">ກັບ​ຄືນ​</translation>
 <translation id="3855472144336161447">ພາສາເຢຍລະັມນ Neo 2</translation>
 <translation id="3858860766373142691">ຊື່</translation>
-<translation id="386548886866354912">ເກັບຮວມກັນກັບ <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">ລາຍ​ລະ​ອຽດ</translation>
 <translation id="3899991606604168269">ພາສາຝຣັ່ງ (ຄານາດາ) ທີ່ໃຊ້ແປ້ນພິມຫຼາຍພາສາ</translation>
 <translation id="3901991538546252627">ກໍາລເຊື່ອມຕໍ່ກັບ <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">ດາວໂຫຼດໂປຣໄຟລ໌ມືຖື, ເຄືອຂ່າຍ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">ພາສາອັງກິດ (ສະຫະລາດຊະອານາຈັກ)</translation>
 <translation id="3975895378829046965">ການອອກສຽງພາສາບັງກລາ</translation>
+<translation id="3991446849494482687">ນີ້ຈະເປັນການປິດການນຳໃຊ້ການຕັ້ງຄ່າການລັອກຊິມຢູ່ອຸປະກອນນຳ.</translation>
 <translation id="4002066346123236978">ຫົວຂໍ້</translation>
 <translation id="4017788180641807848">ພາສາອັງກິດ (ສະຫະລັດ) ທີ່ໃຊ້ແປ້ນພິມ Workman</translation>
 <translation id="4040753847560036377">PUK ບໍ່ຖືກຕ້ອງ</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, ຄວາມແຮງສັນຍານ <ph name="SIGNAL_STRENGTH" />%, ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ລາຍລະອຽດ</translation>
 <translation id="4387004326333427325">ປະຕິເສດໃບຢັ້ງຢືນການຮັບຮອງທາງໄກແລ້ວ</translation>
 <translation id="4394214039309501350">ລິ້ງພາຍນອກ</translation>
+<translation id="4394980935660306080">ຕົ້ນອາທິດນີ້</translation>
 <translation id="4401287888955153199">ແຕກໄຟລ໌ທັງໝົດ</translation>
 <translation id="4410695710508688828">ແຕກໄຟລ໌ບໍ່ສຳເລັດ. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">ສ້າງທາງລັດສຳລັບໄຟລ໌ຂອງທ່ານ</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">ກຳລັງເປີດ "<ph name="PATH" />"</translation>
 <translation id="4720185134442950733">ເຄືອຂ່າຍອິນເຕີເນັດມືຖື</translation>
 <translation id="4724850507808590449">ສຳ​ຮອງ <ph name="FILE_COUNT" /> ຮູບ​ແລ້ວ</translation>
+<translation id="4725096204469550614">ຕົ້ນປີນີ້</translation>
 <translation id="4725511304875193254">ໝາຄໍກິ</translation>
 <translation id="4737050008115666127">ກຳລັງລົງຈອດ</translation>
 <translation id="4747271164117300400">ມາເຊໂດນີ</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">ກຳລັງຍ້າຍ <ph name="NUMBER_OF_ITEMS" /> ລາຍການໄປຍັງ <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">ເກີດຄວາມຜິດພາດຂຶ້ນ.</translation>
 <translation id="5098629044894065541">ພາສາຮິບຣູ</translation>
+<translation id="5102922915594634436">ຈັດການໂຟນເດີທີ່ຊິ້ງຂໍ້ມູນ</translation>
 <translation id="5109254780565519649">ມີຄວາມຜິດພາດເກີດຂຶ້ນ. ລະບົບອາດຈະບໍ່ໄດ້ກູ້ຄືນບາງລາຍການ.</translation>
 <translation id="5110329002213341433">ພາສາອັງກິດ (ຄານາດາ)</translation>
 <translation id="5123433949759960244">ບານບ້ວງ</translation>
@@ -602,7 +606,6 @@
 <translation id="6165508094623778733">ສຶກສາ​ເພີ່ມ​ເຕີມ</translation>
 <translation id="6170470584681422115">ແຊນວິດ</translation>
 <translation id="6187719147498869044">ພາສາຮັງກາຣຽນ</translation>
-<translation id="6189412234224385711">ເປີດດ້ວຍ <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">ປ່ຽນ PIN</translation>
 <translation id="6199801702437275229">ກໍາລັງລໍຖ້າຂໍ້ມູນກ່ຽວ​ກັບ​ບ່ອນວ່າງ...</translation>
 <translation id="6205710420833115353">ການດໍາເນີນງານບາງອັນໃຊ້ເວລາດົນກ່ວາທີ່ຄາດໄວ້. ທ່ານຕ້ອງການຍົກເລີກພວກມັນບໍ?</translation>
@@ -706,6 +709,7 @@
 <translation id="7075931588889865715">ພາສາໄທທີ່ໃຊ້ແປ້ນພິມ TIS 820-2531</translation>
 <translation id="708278670402572152">ຕັດເຊື່ອມຕໍ່ເພື່ອເປີດນຳໃຊ້ການສະແກນ</translation>
 <translation id="7086590977277044826">ພາສາທາມິລທີ່ໃຊ້ແປ້ນພິມ InScript</translation>
+<translation id="7088615885725309056">ເກົ່າກ່ວາ</translation>
 <translation id="7103992300314999525">ພາສາມາເຊໂດນຽນ</translation>
 <translation id="7106346894903675391">ຊື້ບ່ອນເກັບຂໍ້ມູນເພີ່ມ​ເຕີມ...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ຊອກຫາ Drive&lt;/em&gt;</translation>
@@ -770,6 +774,7 @@
 <translation id="7663224033570512922">ພາສາຮິນດິ</translation>
 <translation id="7693909743393669729">ການຟໍແມັດໄດຣຈະລຶບຂໍ້ມູນທັງໝົດທີ່ເກັບໄວ້ໃນມັນ ແລະ ລຶບຫ້ອງຂໍ້ມູນທີ່ມີຢູ່ທັງໝົດ, ຮວມທັງຫ້ອງຂໍ້ມູນທີ່ອາດຈະເບິ່ງບໍ່ເຫັນ. ຄຳສັ່ງນີ້ບໍ່ສາມາດຍົກເລີກໄດ້.</translation>
 <translation id="7695430100978772476">ບໍ່ສາມາດຟໍແມັດ <ph name="DRIVE_NAME" /> ໄດ້</translation>
+<translation id="76959938259365003">ລ້າງຖັງຂີ້ເຫຍື້ອບໍ່ສຳເລັດ.</translation>
 <translation id="770015031906360009">ພາສາເກຼັກ</translation>
 <translation id="7705251383879779343">ສຳເນົາ <ph name="FILE_NAME" /> ແລ້ວ.</translation>
 <translation id="7711920809702896782">ຂໍ້ມູນຮູບ</translation>
@@ -780,6 +785,7 @@
 <translation id="7760449188139285140">ພາສາຈີນ (Wubi)</translation>
 <translation id="7765158879357617694">ຍ້າຍ</translation>
 <translation id="7774365994322694683">ນົກ</translation>
+<translation id="7781829728241885113">ມື້​ວານ​ນີ້</translation>
 <translation id="7788080748068240085">ເພື່ອບັນທຶກ "<ph name="FILE_NAME" />" ອອຟລາຍນ໌ ທ່ານຕ້ອງເຮັດໃຫ້ມີເນື້ອທີ່ <ph name="TOTAL_FILE_SIZE" /> ເພີ່ມເຕີມອີກ:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />ຖອນປັກໝຸດໄຟລ໌ທີ່ທ່ານບໍ່ຕ້ອງການເຂົ້າຫາອອຟລາຍນ໌ອີກ<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />ລຶບໄຟລ໌ຈາກໂຟລເດີດາວໂຫຼດຂອງທ່ານ<ph name="MARKUP_5" /></translation>

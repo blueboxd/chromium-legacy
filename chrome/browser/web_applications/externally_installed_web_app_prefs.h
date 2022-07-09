@@ -23,6 +23,9 @@ class PrefRegistrySyncable;
 }
 
 namespace web_app {
+// TODO(crbug.com/1339965): Retire ExternallyInstalledWebAppPrefs
+// completely if metrics being measured in
+// externally_installed_prefs_migration_metrics.h look good.
 
 // This field is being retired from prefs::kWebAppsPreferences, but is
 // needed for migration to UserUninstalledPreinstalledWebAppPrefs.
@@ -37,9 +40,7 @@ constexpr char kWasExternalAppUninstalledByUser[] =
 class ExternallyInstalledWebAppPrefs {
  public:
   // Used in the migration to the web_app DB.
-  using ParsedPrefs = base::flat_map<
-      AppId,
-      base::flat_map<WebAppManagement::Type, WebApp::ExternalManagementConfig>>;
+  using ParsedPrefs = base::flat_map<AppId, WebApp::ExternalConfigMap>;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -101,10 +102,13 @@ class ExternallyInstalledWebAppPrefs {
       PrefService* pref_service,
       const WebAppRegistrar* registrar,
       const ParsedPrefs& parsed_data);
+
   static base::flat_set<GURL> MergeAllUrls(
-      const base::flat_map<WebAppManagement::Type,
-                           WebApp::ExternalManagementConfig>&
-          source_config_map);
+      const WebApp::ExternalConfigMap& source_config_map);
+
+  static void LogDataMetrics(bool data_exists_in_pref,
+                             bool data_exists_in_registrar);
+
   const raw_ptr<PrefService> pref_service_;
 };
 

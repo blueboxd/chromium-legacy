@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_TELEMETRY_API_TELEMETRY_API_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_TELEMETRY_API_TELEMETRY_API_H_
 
+#include <memory>
+
 #include "ash/webui/telemetry_extension_ui/mojom/probe_service.mojom.h"
-#include "ash/webui/telemetry_extension_ui/services/probe_service.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/base_telemetry_extension_api_guard_function.h"
+#include "chrome/browser/chromeos/extensions/telemetry/api/remote_probe_service_strategy.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -24,10 +26,10 @@ class TelemetryApiFunctionBase : public BaseTelemetryExtensionApiGuardFunction {
  protected:
   ~TelemetryApiFunctionBase() override;
 
-  mojo::Remote<ash::health::mojom::ProbeService> remote_probe_service_;
+  mojo::Remote<ash::health::mojom::ProbeService>& GetRemoteService();
 
  private:
-  ash::ProbeService probe_service_;
+  std::unique_ptr<RemoteProbeServiceStrategy> remote_probe_service_strategy_;
 };
 
 class OsTelemetryGetBatteryInfoFunction : public TelemetryApiFunctionBase {

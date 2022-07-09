@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/payments/risk_data_loader.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
+#include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_state/core/security_state.h"
 #include "components/translate/core/browser/language_state.h"
@@ -65,6 +66,7 @@ class AutofillProfile;
 class AutocompleteHistoryManager;
 class AutofillOfferManager;
 class AutofillPopupDelegate;
+enum class AutofillProgressDialogType;
 struct CardUnmaskChallengeOption;
 class CardUnmaskDelegate;
 class CreditCard;
@@ -581,6 +583,23 @@ class AutofillClient : public RiskDataLoader {
   // HasCreditCardScanFeature() returns true.
   virtual void ScanCreditCard(CreditCardScanCallback callback) = 0;
 
+  // Returns true if the Touch To Fill feature is both supported by platform and
+  // enabled. Should be called before |ShowTouchToFillCreditCard| or
+  // |HideTouchToFillCreditCard|.
+  virtual bool IsTouchToFillCreditCardSupported() = 0;
+
+  // Shows the Touch To Fill surface for filling credit card information, if
+  // possible, and returns |true| on success. |delegate| will be notified of
+  // events. Should be called only if |IsTouchToFillCreditCardSupported|
+  // returns true.
+  virtual bool ShowTouchToFillCreditCard(
+      base::WeakPtr<TouchToFillDelegate> delegate) = 0;
+
+  // Hides the Touch To Fill surface for filling credit card information
+  // if one is currently shown. Should be called only if
+  // |IsTouchToFillCreditCardSupported| returns true.
+  virtual void HideTouchToFillCreditCard() = 0;
+
   // Shows an Autofill popup with the given |values|, |labels|, |icons|, and
   // |identifiers| for the element at |element_bounds|. |delegate| will be
   // notified of popup events.
@@ -643,7 +662,9 @@ class AutofillClient : public RiskDataLoader {
 
   // Show/dismiss the progress dialog which contains a throbber and a text
   // message indicating that something is in progress.
-  virtual void ShowAutofillProgressDialog(base::OnceClosure cancel_callback);
+  virtual void ShowAutofillProgressDialog(
+      AutofillProgressDialogType autofill_progress_dialog_type,
+      base::OnceClosure cancel_callback);
   virtual void CloseAutofillProgressDialog(
       bool show_confirmation_before_closing);
 

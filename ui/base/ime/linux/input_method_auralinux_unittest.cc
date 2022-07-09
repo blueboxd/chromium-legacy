@@ -130,11 +130,10 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     // For the purposes of tests if kPropertyKeyboardImeFlag is not
     // explicitly set assume the event is not a key event.
     if (!properties)
-      return false;
+      return true;
     auto it = properties->find(kPropertyKeyboardImeFlag);
-    if (it == properties->end()) {
-      return false;
-    }
+    if (it == properties->end())
+      return true;
     return !(it->second[0] & kPropertyKeyboardImeIgnoredFlag);
   }
 
@@ -169,6 +168,9 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     input_flags_ = flags;
     should_do_learning_ = should_do_learning;
   }
+
+  void SetGrammarFragmentAtCursor(
+      const ui::GrammarFragment& fragment) override {}
 
  private:
   raw_ptr<LinuxInputMethodContextDelegate> delegate_;
@@ -603,15 +605,15 @@ TEST_F(InputMethodAuraLinuxTest, DeadKeyTestTypeNone) {
 // consumed by IME. In that case, the peek key should not be dispatched.
 TEST_F(InputMethodAuraLinuxTest, MockWaylandEventsTest) {
   KeyEvent peek_key(ET_KEY_PRESSED, VKEY_TAB, 0);
-  ui::Event::Properties properties;
-  properties[ui::kPropertyKeyboardImeFlag] =
-      std::vector<uint8_t>(ui::kPropertyKeyboardImeIgnoredFlag);
-  peek_key.SetProperties(properties);
   input_method_auralinux_->DispatchKeyEvent(&peek_key);
   // No expected action for peek key events.
   test_result_->Verify();
 
   KeyEvent key(ET_KEY_PRESSED, VKEY_TAB, 0);
+  ui::Event::Properties properties;
+  properties[ui::kPropertyKeyboardImeFlag] =
+      std::vector<uint8_t>({ui::kPropertyKeyboardImeIgnoredFlag});
+  key.SetProperties(properties);
   input_method_auralinux_->DispatchKeyEvent(&key);
   test_result_->ExpectAction("keydown:9");
   test_result_->Verify();
@@ -923,6 +925,18 @@ TEST_F(InputMethodAuraLinuxTest, ReleaseKeyTest) {
   test_result_->Verify();
 }
 
+TEST_F(InputMethodAuraLinuxTest, ReleaseKeyTest_PeekKey) {
+  context_->SetSyncMode(true);
+  context_->SetEatKey(true);
+
+  KeyEvent key(ET_KEY_RELEASED, VKEY_A, 0);
+  key.set_character(L'A');
+  input_method_auralinux_->DispatchKeyEvent(&key);
+
+  test_result_->ExpectAction("keyup:65");
+  test_result_->Verify();
+}
+
 TEST_F(InputMethodAuraLinuxTest, SurroundingText_NoSelectionTest) {
   std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
@@ -974,6 +988,62 @@ TEST_F(InputMethodAuraLinuxTest, SurroundingText_PartialText) {
   test_result_->ExpectAction("surroundingtext:fghij");
   test_result_->ExpectAction("selectionrangestart:7");
   test_result_->ExpectAction("selectionrangeend:9");
+  test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, SetPreeditRegionSingleCharTest) {
+  std::unique_ptr<TextInputClientForTesting> client(
+      new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+  input_method_auralinux_->OnTextInputTypeChanged(client.get());
+
+  client->surrounding_text = u"a";
+  client->text_range = gfx::Range(0, 1);
+  client->selection_range = gfx::Range(1, 1);
+
+  input_method_auralinux_->OnCaretBoundsChanged(client.get());
+  input_method_auralinux_->OnSetPreeditRegion(client->text_range,
+                                              std::vector<ImeTextSpan>());
+
+  test_result_->ExpectAction("surroundingtext:a");
+  test_result_->ExpectAction("selectionrangestart:1");
+  test_result_->ExpectAction("selectionrangeend:1");
+
+  input_method_auralinux_->OnCommit(u"a");
+
+  // Verifies single char commit under composition mode will call InsertText
+  // instead of InsertChar.
+  test_result_->ExpectAction("textinput:a");
+  test_result_->Verify();
+}
+
+TEST_F(InputMethodAuraLinuxTest, SetPreeditRegionCompositionEndTest) {
+  std::unique_ptr<TextInputClientForTesting> client(
+      new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
+  input_method_auralinux_->SetFocusedTextInputClient(client.get());
+  input_method_auralinux_->OnTextInputTypeChanged(client.get());
+
+  input_method_auralinux_->OnCommit(u"a");
+
+  test_result_->ExpectAction("keypress:97");
+
+  client->surrounding_text = u"a";
+  client->text_range = gfx::Range(0, 1);
+  client->selection_range = gfx::Range(1, 1);
+
+  input_method_auralinux_->OnCaretBoundsChanged(client.get());
+  input_method_auralinux_->OnSetPreeditRegion(client->text_range,
+                                              std::vector<ImeTextSpan>());
+
+  test_result_->ExpectAction("surroundingtext:a");
+  test_result_->ExpectAction("selectionrangestart:1");
+  test_result_->ExpectAction("selectionrangeend:1");
+
+  CompositionText comp;
+  comp.text = u"";
+  input_method_auralinux_->OnPreeditChanged(comp);
+
+  test_result_->ExpectAction("compositionend");
   test_result_->Verify();
 }
 

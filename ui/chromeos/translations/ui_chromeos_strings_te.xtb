@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">హాంగుల్ రొమాజా</translation>
 <translation id="112387589102719461">ప్రోగ్రామర్ డ్వోరక్ కీబోర్డ్‌తో ఇంగ్లీష్ (US)</translation>
 <translation id="1134697384939541955">పొడగించిన కీబోర్డ్‌తో ఇంగ్లీష్ (US)</translation>
+<translation id="1138691154716715755">ఈ నెల ప్రారంభంలో</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> కనుగొనబడ్డాయి.
     <ph name="LINE_BREAK1" />
     స్థానిక నిల్వలో తగినంత స్థలం అందుబాటులో లేదు. అదనంగా <ph name="FILE_SIZE" /> అవసరం.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405"><ph name="NETWORK_COUNT" />‌లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, మీ అడ్మినిస్ట్రేటర్ బ్లాక్ చేశారు, వివరాలు</translation>
 <translation id="2142680004883808240">YaZHert కీబోర్డ్‌తో రష్యన్</translation>
 <translation id="2143778271340628265">మాన్యువల్ ప్రాక్సీ కాన్ఫిగరేషన్</translation>
+<translation id="2148716181193084225">ఈ రోజు</translation>
 <translation id="2163152940313951844">చెల్లని అక్షరం: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">US అంతర్జాతీయ PC కీబోర్డ్‌తో పోర్చుగీస్</translation>
 <translation id="2198315389084035571">సరళీకృత చైనీస్</translation>
@@ -159,9 +161,10 @@
 <translation id="2377319039870049694">లిస్ట్‌ వీక్షణకు మార్చు</translation>
 <translation id="2377590462528165447">Linuxతో <ph name="NUMBER_OF_ITEMS" /> ఫోల్డర్‌లు షేర్ చేయబడ్డాయి</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ఫైళ్లు ఎంచుకోబడ్డాయి</translation>
+<translation id="2387120140441437063">ట్రాష్‌లో ఉన్న ఫైళ్లను తెరవడం సాధ్యం కాదు. దయచేసి తెరవడానికి ముందు, ఫైళ్లను రీస్టోర్ చేయండి.</translation>
 <translation id="2387458720915042159">ప్రాక్సీ కనెక్షన్ రకం</translation>
 <translation id="2389832672041313158">బర్మీస్/మయన్మార్</translation>
-<translation id="2392369802118427583">సక్రియం చేయి</translation>
+<translation id="2392369802118427583">యాక్టివేట్ చేయండి</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> అందుబాటులో ఉంది</translation>
 <translation id="2425665904502185219">మొత్తం ఫైల్ పరిమాణం</translation>
 <translation id="2428749644083375155"><ph name="NUMBER_OF_ITEMS" /> ఐటెమ్‌లను <ph name="FOLDER_NAME" />కు కాపీ చేస్తోంది</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">ఈ ఫోల్డర్‌లో ఉన్న కంటెంట్‌లు కేవలం చదవడానికి మాత్రమే. కొన్ని యాక్టివిటీలకు సపోర్ట్ ఉండదు.</translation>
 <translation id="2542049655219295786">Google పట్టిక</translation>
 <translation id="2544853746127077729">ప్రామాణీకరణ ప్రమాణపత్రం నెట్‌వర్క్ ద్వారా తిరస్కరించబడింది</translation>
-<translation id="2547921442987553570"><ph name="EXTENSION_NAME" />కి జోడించండి</translation>
 <translation id="255937426064304553">యుఎస్ అంతర్జాతీయం</translation>
 <translation id="2563185590376525700">కప్ప</translation>
 <translation id="2578394532502990878">తమిళం ఫొనెటిక్</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">చైనీస్ డేయి</translation>
 <translation id="3057861065630527966">మీ ఫోటోలను, వీడియోలను బ్యాకప్ చేయండి</translation>
 <translation id="3067790092342515856">Windows ఫైళ్లు</translation>
-<translation id="3078461028045006476"><ph name="EXTENSION_NAME" />తో షేర్ చేయండి</translation>
 <translation id="3083975830683400843">Chromebitలు</translation>
 <translation id="3085752524577180175">SOCKS హోస్ట్</translation>
 <translation id="3104793765551262433"><ph name="NETWORK_COUNT" />‌లో <ph name="NETWORK_INDEX" />వ నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" /> <ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, మీ అడ్మినిస్ట్రేటర్ బ్లాక్ చేశారు, వివరాలు</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">వెనుకకు</translation>
 <translation id="3855472144336161447">జర్మన్ నియో 2</translation>
 <translation id="3858860766373142691">పేరు</translation>
-<translation id="386548886866354912"><ph name="EXTENSION_NAME" /> గల ప్యాక్</translation>
 <translation id="3866249974567520381">వివరణ</translation>
 <translation id="3899991606604168269">బహుభాషా కీబోర్డ్‌తో ఫ్రెంచ్ (కెనడా)</translation>
 <translation id="3901991538546252627"><ph name="NAME" />కి కనెక్ట్ చేస్తోంది</translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170"><ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> నుండి <ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" />వ నెట్‌వర్క్ మొబైల్ ప్రొఫైల్‌ను డౌన్‌లోడ్ చేయండి</translation>
 <translation id="3973925058222872294">ఇంగ్లీష్ (UK)</translation>
 <translation id="3975895378829046965">బంగ్లా ఫొనెటిక్</translation>
+<translation id="3991446849494482687">పరికరంలోని SIM లాక్ సెట్టింగ్‌ను కూడా ఇది డిజేబుల్ చేస్తుంది.</translation>
 <translation id="4002066346123236978">శీర్షిక</translation>
 <translation id="4017788180641807848">వర్క్‌మాన్ కీబోర్డ్‌తో ఇంగ్లీష్ (US)</translation>
 <translation id="4040753847560036377">తప్పు PUK</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, మీ అడ్మినిస్ట్రేటర్ ద్వారా మేనేజ్ చేయబడుతుంది, వివరాలు</translation>
 <translation id="4387004326333427325">ప్రామాణీకరణ ప్రమాణపత్రం రిమోట్‌లో తిరస్కరించబడింది</translation>
 <translation id="4394214039309501350">బాహ్య లింక్</translation>
+<translation id="4394980935660306080">ఈ వారం ప్రారంభంలో</translation>
 <translation id="4401287888955153199">అన్నింటినీ ఎక్స్‌ట్రాక్ట్ చేయండి</translation>
 <translation id="4410695710508688828">ఎక్స్‌ట్రాక్ట్ చేయడం విఫలమైంది. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">మీ ఫైల్స్ కోసం షార్ట్‌కట్‌ను క్రియేట్ చేయండి</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">"<ph name="PATH" />"ను తెరుస్తోంది</translation>
 <translation id="4720185134442950733">మొబైల్ డేటా నెట్‌వర్క్</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> ఫోటోలు బ్యాకప్ చేయబడ్డాయి</translation>
+<translation id="4725096204469550614">ఈ సంవత్సరం ప్రారంభంలో</translation>
 <translation id="4725511304875193254">కార్గి</translation>
 <translation id="4737050008115666127">ల్యాండింగ్</translation>
 <translation id="4747271164117300400">మాసిడోనియన్</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> ఐటెమ్‌లను <ph name="FOLDER_NAME" />కు తరలిస్తోంది</translation>
 <translation id="509429900233858213">ఒక ఎర్రర్ ఏర్పడింది.</translation>
 <translation id="5098629044894065541">హిబ్రూ</translation>
+<translation id="5102922915594634436">సింక్ చేసిన ఫోల్డర్‌లను మేనేజ్ చేయండి</translation>
 <translation id="5109254780565519649">ఎర్రర్ ఏర్పడింది. కొన్ని ఐటెమ్‌లు రీస్టోర్ చేయబడకపోవచ్చు.</translation>
 <translation id="5110329002213341433">ఇంగ్లీష్ (కెనడా)</translation>
 <translation id="5123433949759960244">బాస్కెట్‌బాల్</translation>
@@ -603,7 +607,6 @@
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6170470584681422115">శాండ్విచ్</translation>
 <translation id="6187719147498869044">హంగేరియన్</translation>
-<translation id="6189412234224385711"><ph name="EXTENSION_NAME" />తో తెరవండి</translation>
 <translation id="6198252989419008588">పిన్ మార్పు</translation>
 <translation id="6199801702437275229">ఖాళీ సమాచారం కోసం వేచి ఉంది...</translation>
 <translation id="6205710420833115353">కొన్ని చర్యలకు అనుకున్నదాని కంటే ఎక్కువ సమయం పడుతోంది. మీరు వాటిని రద్దు చేయాలనుకుంటున్నారా?</translation>
@@ -707,6 +710,7 @@
 <translation id="7075931588889865715">TIS 820-2531 కీబోర్డ్‌తో థాయ్</translation>
 <translation id="708278670402572152">స్కానింగ్‌ను ప్రారంభించడం కోసం డిస్‌కనెక్ట్ చేయండి</translation>
 <translation id="7086590977277044826">ఇన్‌స్క్రిప్ట్ కీబోర్డ్‌తో తమిళం</translation>
+<translation id="7088615885725309056">పాతవి</translation>
 <translation id="7103992300314999525">మాసిడోనియన్</translation>
 <translation id="7106346894903675391">మరింత నిల్వని కొనుగోలు చేయండి...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;డిస్క్‌లో వెతకండి&lt;/em&gt;</translation>
@@ -771,6 +775,7 @@
 <translation id="7663224033570512922">హిందీ</translation>
 <translation id="7693909743393669729">డ్రైవ్‌ను ఫార్మాట్ చేయడం వలన దానిలో స్టోర్ చేసిన మొత్తం డేటా తొలగించబడుతుంది, కనపడకుండా ఉండే కొన్ని విభజనలతో సహా విభజనలు అన్నీ తీసివేయబడతాయి. ఈ చర్యను రద్దు చేయలేరు.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" />ను ఫార్మాట్ చేయడం సాధ్యపడలేదు</translation>
+<translation id="76959938259365003">ట్రాష్‌ను ఖాళీ చేయడంలో విఫలమైంది.</translation>
 <translation id="770015031906360009">గ్రీక్</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> కాపీ చేయబడింది.</translation>
 <translation id="7711920809702896782">చిత్రం సమాచారం</translation>
@@ -781,6 +786,7 @@
 <translation id="7760449188139285140">చైనీస్ వుబీ</translation>
 <translation id="7765158879357617694">తరలించు</translation>
 <translation id="7774365994322694683">పక్షి</translation>
+<translation id="7781829728241885113">నిన్న</translation>
 <translation id="7788080748068240085">"<ph name="FILE_NAME" />"ను ఆఫ్‌లైన్‌లో సేవ్ చేయడానికి మీ వద్ద <ph name="TOTAL_FILE_SIZE" /> అదనపు ఖాళీ స్థలం తప్పనిసరిగా ఉండాలి:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />మీరు ఆఫ్‌లైన్‌లో ఇకపై యాక్సెస్ చేయకూడదనుకునే ఫైళ్లను అన్‌పిన్ చేయండి<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />మీ డౌన్‌లోడ్‌ల ఫోల్డర్ నుండి ఫైళ్లను తొలగించండి<ph name="MARKUP_5" /></translation>
@@ -825,7 +831,7 @@
 <translation id="8045462269890919536">రొమేనియన్</translation>
 <translation id="8049184478152619004">వ్యక్తిగత అన్‌బ్లాకింగ్ కీ(PUK)ని ఎంటర్ చేయండి</translation>
 <translation id="807187749540895545"><ph name="FILE_NAME" />ను సంగ్రహిస్తోంది…</translation>
-<translation id="8079530767338315840">పునరావృతం చేయి</translation>
+<translation id="8079530767338315840">రిపీట్‌ చేయి</translation>
 <translation id="8087576439476816834">డౌన్‌లోడ్ చేయి, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">నాతో షేర్ చేసినవి</translation>
 <translation id="8116072619078571545">చల్లటి నీరు</translation>

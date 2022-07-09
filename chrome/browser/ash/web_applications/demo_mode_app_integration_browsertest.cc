@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/constants/ash_features.h"
-#include "ash/webui/demo_mode_app_ui/demo_mode_app_ui.h"
+#include "ash/webui/demo_mode_app_ui/demo_mode_app_untrusted_ui.h"
 #include "ash/webui/demo_mode_app_ui/url_constants.h"
 #include "ash/webui/web_applications/test/sandboxed_web_ui_test_base.h"
 #include "base/files/file_util.h"
@@ -12,7 +12,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/ash/web_applications/system_web_app_integration_test.h"
+#include "chrome/browser/ash/system_web_apps/test_support/system_web_app_integration_test.h"
 #include "content/public/browser/webui_config_map.h"
 #include "content/public/test/browser_test.h"
 #include "ui/views/widget/widget.h"
@@ -24,11 +24,18 @@ const char kTestHtml[] =
     "</head>"
     "<body>"
     "  <h1 id=\"header\">browsertest</h1>"
+    "<script src=\"test.js\" type=\"module\"></script>"
     "</body>";
+
+const char kTestJs[] =
+    "import {pageHandler} from './page_handler.js'; "
+    "document.addEventListener('DOMContentLoaded', function () {"
+    " pageHandler.toggleFullscreen(); "
+    "});";
 
 const char kEmptyHtml[] = "<head></head><body></body>";
 
-class DemoModeAppIntegrationTest : public SystemWebAppIntegrationTest {
+class DemoModeAppIntegrationTest : public ash::SystemWebAppIntegrationTest {
  public:
   DemoModeAppIntegrationTest() {
     scoped_feature_list_.InitAndEnableFeature(chromeos::features::kDemoModeSWA);
@@ -39,10 +46,11 @@ class DemoModeAppIntegrationTest : public SystemWebAppIntegrationTest {
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(component_dir_.CreateUniqueTempDir());
     content::WebUIConfigMap::GetInstance().RemoveForTesting(
-        url::Origin::Create(GURL(ash::kChromeUIDemoModeAppURL)));
-    content::WebUIConfigMap::GetInstance().AddWebUIConfig(
-        std::make_unique<ash::DemoModeAppUIConfig>(base::BindLambdaForTesting(
-            [&] { return component_dir_.GetPath(); })));
+        url::Origin::Create(GURL(ash::kChromeUntrustedUIDemoModeAppURL)));
+    content::WebUIConfigMap::GetInstance().AddUntrustedWebUIConfig(
+        std::make_unique<ash::DemoModeAppUntrustedUIConfig>(
+            base::BindLambdaForTesting(
+                [&] { return component_dir_.GetPath(); })));
   }
 
   base::ScopedTempDir component_dir_;
@@ -83,7 +91,7 @@ class WidgetFullscreenWaiter : public views::WidgetObserver {
 
 // Test that the Demo Mode App installs and launches correctly
 IN_PROC_BROWSER_TEST_P(DemoModeAppIntegrationTest, DemoModeApp) {
-  const GURL url(ash::kChromeUIDemoModeAppURL);
+  const GURL url(ash::kChromeUntrustedUIDemoModeAppURL);
   EXPECT_NO_FATAL_FAILURE(ExpectSystemWebAppValid(
       ash::SystemWebAppType::DEMO_MODE, url, "Demo Mode App"));
 }
@@ -116,14 +124,36 @@ IN_PROC_BROWSER_TEST_P(DemoModeAppIntegrationTest,
 
   apps::AppLaunchParams params =
       LaunchParamsForApp(ash::SystemWebAppType::DEMO_MODE);
-  params.override_url =
-      GURL("chrome://demo-mode-app/" + file_path.BaseName().MaybeAsASCII());
+  params.override_url = GURL(ash::kChromeUntrustedUIDemoModeAppURL +
+                             file_path.BaseName().MaybeAsASCII());
   content::WebContents* web_contents = LaunchApp(std::move(params));
 
   EXPECT_EQ(
       std::string(kTestHtml),
       content::EvalJs(web_contents, R"(document.documentElement.innerHTML)",
                       content::EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1));
+}
+
+// Verify that javascript content loaded from component can invoke
+// the ToggleFullscreen mojo API
+IN_PROC_BROWSER_TEST_P(DemoModeAppIntegrationTest,
+                       DemoModeAppToggleFullscreenFromComponentContent) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath file_path = component_dir_.GetPath().AppendASCII("test.html");
+  base::WriteFile(file_path, kTestHtml);
+  base::FilePath js_file_path = component_dir_.GetPath().AppendASCII("test.js");
+  base::WriteFile(js_file_path, kTestJs);
+  WaitForTestSystemAppInstall();
+
+  apps::AppLaunchParams params =
+      LaunchParamsForApp(ash::SystemWebAppType::DEMO_MODE);
+  params.override_url = GURL(ash::kChromeUntrustedUIDemoModeAppURL +
+                             file_path.BaseName().MaybeAsASCII());
+  content::WebContents* web_contents = LaunchApp(std::move(params));
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
+      web_contents->GetTopLevelNativeWindow());
+
+  WidgetFullscreenWaiter(widget).WaitThenAssert(true);
 }
 
 // TODO(b/232945108): Change this to instead verify default resource if
@@ -134,7 +164,8 @@ IN_PROC_BROWSER_TEST_P(DemoModeAppIntegrationTest,
 
   apps::AppLaunchParams params =
       LaunchParamsForApp(ash::SystemWebAppType::DEMO_MODE);
-  params.override_url = GURL("chrome://demo-mode-app/nonexistent.html");
+  params.override_url =
+      GURL("chrome-untrusted://demo-mode-app/nonexistent.html");
   content::WebContents* web_contents = LaunchApp(std::move(params));
 
   EXPECT_EQ(

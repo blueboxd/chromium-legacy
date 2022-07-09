@@ -1474,10 +1474,9 @@ TEST_F(VideoCaptureDeviceMFWinTest,
       new MockMFMediaSource();
   Microsoft::WRL::ComPtr<MockMFCaptureEngine> engine =
       new MockMFCaptureEngine();
-  std::unique_ptr<VideoCaptureDeviceMFWin> device =
-      std::make_unique<VideoCaptureDeviceMFWin>(
-          descriptor, media_source,
-          /*mf_dxgi_device_manager=*/nullptr, engine);
+  auto device = std::make_unique<VideoCaptureDeviceMFWin>(
+      descriptor, media_source,
+      /*mf_dxgi_device_manager=*/nullptr, engine);
 
   EXPECT_CALL(*(engine.Get()), OnInitEventGuid).WillOnce([]() {
     return MF_CAPTURE_ENGINE_INITIALIZED;
@@ -1869,7 +1868,7 @@ class VideoCaptureDeviceMFWinTestWithDXGI : public VideoCaptureDeviceMFWinTest {
     if (ShouldSkipD3D11Test())
       GTEST_SKIP();
 
-    dxgi_device_manager_ = DXGIDeviceManager::Create();
+    dxgi_device_manager_ = DXGIDeviceManager::Create(CHROME_LUID{0, 0});
     VideoCaptureDeviceMFWinTest::SetUp();
   }
 };

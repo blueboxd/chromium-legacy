@@ -24,8 +24,7 @@ var PersonalizationAppComponentBrowserTest = class extends PolymerTest {
 };
 
 [['AmbientPreviewTest', 'ambient_preview_element_test.js'],
- // TODO(crbug/1334962) re-enable this test case.
- ['AmbientSubpageTest', 'ambient_subpage_element_test.js', 'DISABLED_All'],
+ ['AmbientSubpageTest', 'ambient_subpage_element_test.js'],
  ['AvatarCameraTest', 'avatar_list_element_test.js'],
  ['AvatarListTest', 'avatar_list_element_test.js'],
  ['GooglePhotosAlbumsTest', 'google_photos_albums_element_test.js'],
@@ -60,8 +59,8 @@ function registerTest(testName, module, caseName) {
   this[className] = class extends PersonalizationAppComponentBrowserTest {
     /** @override */
     get browsePreload() {
-      return `chrome://personalization/test_loader.html?host=webui-test` +
-          `&module=chromeos/personalization_app/${module}`;
+      return `chrome://personalization/test_loader.html` +
+          `?module=chromeos/personalization_app/${module}`;
     }
   };
 

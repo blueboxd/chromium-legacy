@@ -403,9 +403,6 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
   if (install_info_->capture_links != app->capture_links())
     return true;
 
-  if (install_info_->handle_links != app->handle_links())
-    return true;
-
   if (app->file_handlers() != install_info_->file_handlers)
     return true;
 
@@ -429,6 +426,9 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
 
   if (install_info_->permissions_policy != app->permissions_policy())
     return true;
+
+  // TODO(crbug.com/897314): Check changes to tab_strip field once icons are
+  // stored.
 
   // TODO(crbug.com/1212849): Handle changes to is_storage_isolated.
 

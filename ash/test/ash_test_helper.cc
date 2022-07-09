@@ -24,7 +24,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
-#include "ash/style/dark_mode_controller.h"
+#include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/message_center/session_state_notification_blocker.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/screen_layout_observer.h"
@@ -38,8 +38,8 @@
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
 #include "base/system/system_monitor.h"
+#include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
 #include "chromeos/ash/components/dbus/rgbkbd/rgbkbd_client.h"
-#include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -114,7 +114,7 @@ AshTestHelper::AshTestHelper(ui::ContextFactory* context_factory)
   display::ResetDisplayIdForTest();
   display::SetInternalDisplayIds({});
 
-  chromeos::CrasAudioClient::InitializeFake();
+  CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
   CrasAudioHandler::InitializeForTesting();
@@ -165,7 +165,7 @@ void AshTestHelper::TearDown() {
   chromeos::LoginState::Shutdown();
 
   CrasAudioHandler::Shutdown();
-  chromeos::CrasAudioClient::Shutdown();
+  CrasAudioClient::Shutdown();
 
   // The PowerPolicyController holds a pointer to the PowerManagementClient, so
   // shut the controller down first.
@@ -265,11 +265,6 @@ void AshTestHelper::SetUp(InitParams init_params) {
 
   ambient_ash_test_helper_ = std::make_unique<AmbientAshTestHelper>();
 
-  // There is a temporary M92-M94 notification that shows once to users
-  // at startup, but this interferes with many tests that expect a
-  // specific active window, or a certain number of notifications.
-  AcceleratorControllerImpl::SetShouldShowShortcutNotificationForTest(false);
-
   ShellInitParams shell_init_params;
   shell_init_params.delegate = std::move(init_params.delegate);
   if (!shell_init_params.delegate)
@@ -288,7 +283,7 @@ void AshTestHelper::SetUp(InitParams init_params) {
   // operations needed in many of the tests, e.g, when productive launcher is
   // shown as well, we need one more click outside of the launcher to dismiss
   // the nudge first before dismissing the launcher.
-  shell->dark_mode_controller()->SetShowNudgeForTesting(false);
+  shell->dark_light_mode_controller()->SetShowNudgeForTesting(false);
 
   // Set up a test wallpaper controller client before signing in any users. At
   // the time a user logs in, Wallpaper controller relies on

@@ -85,6 +85,8 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
   private isAccountStoreDefault_: boolean = false;
   private getUrlCollectionResponse_: chrome.passwordsPrivate.UrlCollection|
       null = null;
+  private changeSavedPasswordResponse_: chrome.passwordsPrivate.CredentialIds|
+      null = null;
 
   constructor() {
     super([
@@ -106,13 +108,13 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       'recordChangePasswordFlowStarted',
       'recordPasswordCheckInteraction',
       'recordPasswordCheckReferrer',
+      'refreshScriptsIfNecessary',
       'removeException',
-      'removeExceptions',
       'removeInsecureCredential',
       'removeSavedPassword',
-      'removeSavedPasswords',
       'requestExportProgressStatus',
       'requestPlaintextPassword',
+      'startAutomatedPasswordChange',
       'startBulkPasswordCheck',
       'stopBulkPasswordCheck',
       'unmuteInsecureCredential'
@@ -160,18 +162,14 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
 
   recordPasswordsPageAccessInSettings() {}
 
-  removeSavedPassword(id: number) {
+  removeSavedPassword(
+      id: number, fromStores: chrome.passwordsPrivate.PasswordStoreSet) {
     this.actual_.removed.passwords++;
-    this.methodCalled('removeSavedPassword', id);
+    this.methodCalled('removeSavedPassword', {id, fromStores});
   }
 
-  movePasswordsToAccount(ids: Array<number>) {
+  movePasswordsToAccount(ids: number[]) {
     this.methodCalled('movePasswordsToAccount', ids);
-  }
-
-  removeSavedPasswords(ids: Array<number>) {
-    this.actual_.removed.passwords += ids.length;
-    this.methodCalled('removeSavedPasswords', ids);
   }
 
   addExceptionListChangedListener(listener:
@@ -193,11 +191,6 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
   removeException(id: number) {
     this.actual_.removed.exceptions++;
     this.methodCalled('removeException', id);
-  }
-
-  removeExceptions(ids: Array<number>) {
-    this.actual_.removed.exceptions += ids.length;
-    this.methodCalled('removeExceptions', ids);
   }
 
   requestPlaintextPassword(
@@ -265,6 +258,11 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
         actual.listening.accountStorageOptInState);
   }
 
+  refreshScriptsIfNecessary() {
+    this.methodCalled('refreshScriptsIfNecessary');
+    return Promise.resolve();
+  }
+
   startBulkPasswordCheck() {
     this.methodCalled('startBulkPasswordCheck');
     if (this.data.checkStatus.state ===
@@ -291,6 +289,13 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
   getPasswordCheckStatus() {
     this.methodCalled('getPasswordCheckStatus');
     return Promise.resolve(this.data.checkStatus);
+  }
+
+  startAutomatedPasswordChange(credential:
+                                   chrome.passwordsPrivate.InsecureCredential) {
+    this.methodCalled('startAutomatedPasswordChange', credential);
+    // Return `false` for empty origins for testing purposes.
+    return Promise.resolve(!!credential.changePasswordUrl);
   }
 
   addCompromisedCredentialsListener(listener: CredentialsChangedListener) {
@@ -347,11 +352,18 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     this.methodCalled('recordPasswordCheckReferrer', referrer);
   }
 
+  setChangeSavedPasswordResponse(newIds:
+                                     chrome.passwordsPrivate.CredentialIds) {
+    this.changeSavedPasswordResponse_ = newIds;
+  }
+
   changeSavedPassword(
-      ids: Array<number>,
+      ids: number[],
       params: chrome.passwordsPrivate.ChangeSavedPasswordParams) {
     this.methodCalled('changeSavedPassword', {ids, params});
-    return Promise.resolve();
+    return !this.changeSavedPasswordResponse_ ?
+        Promise.reject(new Error('Could not change password.')) :
+        Promise.resolve(this.changeSavedPasswordResponse_);
   }
 
   /**

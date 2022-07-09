@@ -191,14 +191,24 @@ CompositorGpuThread::GetSharedContextState() {
 bool CompositorGpuThread::Initialize() {
   // Setup thread options.
   base::Thread::Options thread_options(base::MessagePumpType::DEFAULT, 0);
-  if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority))
-    thread_options.priority = base::ThreadPriority::DISPLAY;
+  thread_options.thread_type = base::ThreadType::kCompositing;
   StartWithOptions(std::move(thread_options));
 
   // Wait until thread is started and Init() is executed in order to return
   // updated |init_succeded_|.
   WaitUntilThreadStarted();
   return init_succeded_;
+}
+
+void CompositorGpuThread::HandleMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+
+  // Context should be current for cache/memory cleanup.
+  if (shared_context_state_ &&
+      shared_context_state_->MakeCurrent(nullptr, /*needs_gl=*/true)) {
+    shared_context_state_->PurgeMemory(memory_pressure_level);
+  }
 }
 
 void CompositorGpuThread::Init() {
@@ -211,10 +221,20 @@ void CompositorGpuThread::Init() {
   if (!watchdog_thread_)
     return;
   watchdog_thread_->OnInitComplete();
+
+  // Making sure to create the |memory_pressure_listener_| on
+  // CompositorGpuThread since this callback will be called on the thread it was
+  // created on.
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&CompositorGpuThread::HandleMemoryPressure,
+                                     base::Unretained(this))),
   init_succeded_ = true;
 }
 
 void CompositorGpuThread::CleanUp() {
+  // Destroying |memory_pressure_listener_| here to ensure its destroyed on the
+  // same thread on which it was created on.
+  memory_pressure_listener_.reset();
   if (watchdog_thread_)
     watchdog_thread_->OnGpuProcessTearDown();
 

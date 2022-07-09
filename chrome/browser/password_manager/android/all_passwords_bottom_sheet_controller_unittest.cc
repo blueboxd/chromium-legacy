@@ -38,7 +38,6 @@ using ::testing::UnorderedElementsAre;
 using autofill::mojom::FocusedFieldType;
 using base::test::RunOnceCallback;
 using device_reauth::BiometricAuthRequester;
-using device_reauth::BiometricsAvailability;
 using device_reauth::MockBiometricAuthenticator;
 using password_manager::PasswordForm;
 using password_manager::TestPasswordStore;
@@ -229,8 +228,7 @@ TEST_F(AllPasswordsBottomSheetControllerTest, FillsPasswordIfAuthNotAvailable) {
 
   EXPECT_CALL(client(), GetBiometricAuthenticator)
       .WillOnce(Return(authenticator()));
-  EXPECT_CALL(*authenticator().get(), CanAuthenticate)
-      .WillOnce(Return(BiometricsAvailability::kNotEnrolled));
+  EXPECT_CALL(*authenticator().get(), CanAuthenticate).WillOnce(Return(false));
   EXPECT_CALL(driver(), FillIntoFocusedField(true, std::u16string(kPassword)));
   EXPECT_CALL(dismissal_callback(), Run());
 
@@ -242,10 +240,10 @@ TEST_F(AllPasswordsBottomSheetControllerTest, FillsPasswordIfAuthSuccessful) {
 
   EXPECT_CALL(client(), GetBiometricAuthenticator)
       .WillOnce(Return(authenticator()));
-  EXPECT_CALL(*authenticator().get(), CanAuthenticate)
-      .WillOnce(Return(BiometricsAvailability::kAvailable));
+  EXPECT_CALL(*authenticator().get(), CanAuthenticate).WillOnce(Return(true));
   EXPECT_CALL(*authenticator().get(),
-              Authenticate(BiometricAuthRequester::kAllPasswordsList, _))
+              Authenticate(BiometricAuthRequester::kAllPasswordsList, _,
+                           /*use_last_valid_auth=*/true))
       .WillOnce(RunOnceCallback<1>(true));
 
   EXPECT_CALL(driver(), FillIntoFocusedField(true, std::u16string(kPassword)));
@@ -259,10 +257,10 @@ TEST_F(AllPasswordsBottomSheetControllerTest, DoesntFillPasswordIfAuthFailed) {
 
   EXPECT_CALL(client(), GetBiometricAuthenticator)
       .WillOnce(Return(authenticator()));
-  EXPECT_CALL(*authenticator().get(), CanAuthenticate)
-      .WillOnce(Return(BiometricsAvailability::kAvailable));
+  EXPECT_CALL(*authenticator().get(), CanAuthenticate).WillOnce(Return(true));
   EXPECT_CALL(*authenticator().get(),
-              Authenticate(BiometricAuthRequester::kAllPasswordsList, _))
+              Authenticate(BiometricAuthRequester::kAllPasswordsList, _,
+                           /*use_last_valid_auth=*/true))
       .WillOnce(RunOnceCallback<1>(false));
 
   EXPECT_CALL(driver(), FillIntoFocusedField(true, std::u16string(kPassword)))
@@ -277,10 +275,10 @@ TEST_F(AllPasswordsBottomSheetControllerTest, CancelsAuthIfDestroyed) {
 
   EXPECT_CALL(client(), GetBiometricAuthenticator)
       .WillOnce(Return(authenticator()));
-  EXPECT_CALL(*authenticator().get(), CanAuthenticate)
-      .WillOnce(Return(BiometricsAvailability::kAvailable));
+  EXPECT_CALL(*authenticator().get(), CanAuthenticate).WillOnce(Return(true));
   EXPECT_CALL(*authenticator().get(),
-              Authenticate(BiometricAuthRequester::kAllPasswordsList, _));
+              Authenticate(BiometricAuthRequester::kAllPasswordsList, _,
+                           /*use_last_valid_auth=*/true));
 
   EXPECT_CALL(driver(), FillIntoFocusedField(true, std::u16string(kPassword)))
       .Times(0);

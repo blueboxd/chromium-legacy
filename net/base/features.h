@@ -169,6 +169,9 @@ NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
 NET_EXPORT extern const base::FeatureParam<int>
     kUseDnsHttpsSvcbExtraTimePercent;
 
+// Update protocol using ALPN information in HTTPS DNS records.
+NET_EXPORT extern const base::Feature kUseDnsHttpsSvcbAlpn;
+
 // Enables TLS 1.3 early data.
 NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 
@@ -438,6 +441,20 @@ NET_EXPORT extern const base::Feature kStaticKeyPinningEnforcement;
 
 // When enabled, cookies with a non-ASCII domain attribute will be rejected.
 NET_EXPORT extern const base::Feature kCookieDomainRejectNonASCII;
+
+// Blocks the 'Set-Cookie' request header on outbound fetch requests.
+NET_EXPORT extern const base::Feature kBlockSetCookieHeader;
+
+NET_EXPORT extern const base::Feature kOptimizeNetworkBuffers;
+
+NET_EXPORT
+extern const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit;
+
+NET_EXPORT extern const base::FeatureParam<int>
+    kOptimizeNetworkBuffersMaxInputStreamBytesToReadWhenAvailableUnknown;
+
+NET_EXPORT extern const base::FeatureParam<int>
+    kOptimizeNetworkBuffersFilterSourceStreamBufferSize;
 
 }  // namespace net::features
 

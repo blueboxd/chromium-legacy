@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <utility>
 
@@ -20,6 +21,7 @@
 #include "components/autofill/core/browser/form_parsing/address_field.h"
 #include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
+#include "components/autofill/core/browser/form_parsing/birthdate_field.h"
 #include "components/autofill/core/browser/form_parsing/credit_card_field.h"
 #include "components/autofill/core/browser/form_parsing/email_field.h"
 #include "components/autofill/core/browser/form_parsing/merchant_promo_code_field.h"
@@ -79,6 +81,13 @@ FieldCandidatesMap FormField::ParseFormFields(
   ParseFormFieldsPass(AddressField::Parse, processed_fields, &field_candidates,
                       page_language, pattern_source, log_manager);
 
+  // Birthdate pass.
+  if (base::FeatureList::IsEnabled(features::kAutofillEnableBirthdateParsing)) {
+    ParseFormFieldsPass(BirthdateField::Parse, processed_fields,
+                        &field_candidates, page_language, pattern_source,
+                        log_manager);
+  }
+
   // Credit card pass.
   ParseFormFieldsPass(CreditCardField::Parse, processed_fields,
                       &field_candidates, page_language, pattern_source,
@@ -119,27 +128,26 @@ FieldCandidatesMap FormField::ParseFormFields(
                  candidate.second.BestHeuristicType() == MERCHANT_PROMO_CODE);
       });
     } else {
-      if (log_manager) {
-        LogBuffer table_rows;
-        for (const auto& field : fields) {
-          table_rows << Tr{} << "Field:" << *field;
-        }
-        for (const auto& [field_id, candidates] : field_candidates) {
-          LogBuffer name;
-          name << "Type candidate for frame and renderer ID: " << field_id;
-          LogBuffer description;
-          ServerFieldType field_type = candidates.BestHeuristicType();
-          description << "BestHeuristicType: "
-                      << AutofillType::ServerFieldTypeToString(field_type)
-                      << ", is fillable: " << IsFillableFieldType(field_type);
-          table_rows << Tr{} << std::move(name) << std::move(description);
-        }
-        log_manager->Log()
-            << LoggingScope::kParsing
-            << LogMessage::kLocalHeuristicDidNotFindEnoughFillableFields
-            << Tag{"table"} << Attrib{"class", "form"} << std::move(table_rows)
-            << CTag{"table"};
+      LogBuffer table_rows(IsLoggingActive(log_manager));
+      for (const auto& field : fields)
+        LOG_AF(table_rows) << Tr{} << "Field:" << *field;
+      for (const auto& [field_id, candidates] : field_candidates) {
+        LogBuffer name(IsLoggingActive(log_manager));
+        name << "Type candidate for frame and renderer ID: " << field_id;
+        LogBuffer description(IsLoggingActive(log_manager));
+        LOG_AF(description)
+            << "BestHeuristicType: "
+            << AutofillType::ServerFieldTypeToString(
+                   candidates.BestHeuristicType())
+            << ", is fillable: "
+            << IsFillableFieldType(candidates.BestHeuristicType());
+        LOG_AF(table_rows) << Tr{} << std::move(name) << std::move(description);
       }
+      LOG_AF(log_manager)
+          << LoggingScope::kParsing
+          << LogMessage::kLocalHeuristicDidNotFindEnoughFillableFields
+          << Tag{"table"} << Attrib{"class", "form"} << std::move(table_rows)
+          << CTag{"table"};
       field_candidates.clear();
     }
   }
@@ -244,6 +252,7 @@ bool FormField::ParseFieldSpecificsWithNewPatterns(
   return false;
 }
 
+// static
 bool FormField::ParseFieldSpecifics(
     AutofillScanner* scanner,
     base::StringPiece16 pattern,
@@ -257,6 +266,42 @@ bool FormField::ParseFieldSpecifics(
                                                   logging, projection)
              : ParseFieldSpecificsWithLegacyPattern(scanner, pattern,
                                                     match_type, match, logging);
+}
+
+// static
+bool FormField::ParseInAnyOrder(
+    AutofillScanner* scanner,
+    std::vector<std::pair<AutofillField**, base::RepeatingCallback<bool()>>>
+        fields_and_parsers) {
+  if (scanner->IsEnd())
+    return fields_and_parsers.empty();
+  auto original_pos = scanner->SaveCursor();
+  // The implementation tries matching every permutation `p` of parsers with the
+  // scanners fields. While this has a terrible runtime for general n, the only
+  // planned use cases are dates (2 or 3 components).
+  // If necessary, bipartite matching could be used for general n.
+  DCHECK(fields_and_parsers.size() <= 3);
+  std::vector<int> p(fields_and_parsers.size());
+  std::iota(p.begin(), p.end(), 0);
+  do {
+    bool matches = true;
+    for (int i : p) {
+      const auto& [field, parser] = fields_and_parsers[i];
+      if (!scanner->IsEnd() && parser.Run()) {
+        *field = scanner->Cursor();
+        scanner->Advance();
+      } else {
+        matches = false;
+        break;
+      }
+    }
+    if (matches)
+      return true;
+    scanner->RewindTo(original_pos);
+  } while (std::next_permutation(p.begin(), p.end()));
+  for (const auto& [field, _] : fields_and_parsers)
+    *field = nullptr;
+  return false;
 }
 
 // static
@@ -363,15 +408,16 @@ bool FormField::Match(const AutofillField* field,
     value = field->placeholder;
   }
 
-  if (found_match && logging.log_manager) {
-    LogBuffer table_rows;
-    table_rows << Tr{} << "Match type:" << match_type_string;
-    table_rows << Tr{} << "RegEx:" << logging.regex_name;
-    table_rows << Tr{} << "Value: " << HighlightValue(value, matches[0]);
+  if (found_match) {
+    LogBuffer table_rows(IsLoggingActive(logging.log_manager));
+    LOG_AF(table_rows) << Tr{} << "Match type:" << match_type_string;
+    LOG_AF(table_rows) << Tr{} << "RegEx:" << logging.regex_name;
+    LOG_AF(table_rows) << Tr{}
+                       << "Value: " << HighlightValue(value, matches[0]);
     // The matched substring is reported once more as the highlighting is not
     // particularly copy&paste friendly.
-    table_rows << Tr{} << "Matched substring: " << matches[0];
-    logging.log_manager->Log()
+    LOG_AF(table_rows) << Tr{} << "Matched substring: " << matches[0];
+    LOG_AF(logging.log_manager)
         << LoggingScope::kParsing << LogMessage::kLocalHeuristicRegExMatched
         << Tag{"table"} << std::move(table_rows) << CTag{"table"};
   }

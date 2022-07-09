@@ -18,6 +18,7 @@ import org.chromium.content_public.common.ContentFeatures;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
+import org.chromium.net.NetFeatures;
 import org.chromium.services.network.NetworkServiceFeatures;
 
 /**
@@ -238,7 +239,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(NetworkServiceFeatures.URL_LOADER_SYNC_CLIENT,
                     "Optimizes communication between URLLoader and CorsURLLoader."),
             Flag.baseFeature(NetworkServiceFeatures.FASTER_SET_COOKIE, "Optimizes cookie access."),
-            Flag.baseFeature(NetworkServiceFeatures.OPTIMIZE_NETWORK_BUFFERS,
+            Flag.baseFeature(NetFeatures.OPTIMIZE_NETWORK_BUFFERS,
                     "Optimizes buffer size for reading from the network or InputStream."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
                     "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
@@ -280,8 +281,6 @@ public final class ProductionSupportedFlagList {
                     "Enable establishing the GPU channel early in renderer startup."),
             Flag.baseFeature(ContentFeatures.OPTIMIZE_EARLY_NAVIGATION,
                     "Temporarily pauses the compositor early in navigation."),
-            Flag.baseFeature(AwFeatures.WEBVIEW_SEND_VARIATIONS_HEADERS,
-                    "Whether WebView will send variations headers on URLs where applicable."),
             Flag.baseFeature(ContentFeatures.INCLUDE_IPC_OVERHEAD_IN_NAVIGATION_START,
                     "Whether navigation metrics include ipc overhead."),
             Flag.baseFeature(ContentFeatures.AVOID_UNNECESSARY_BEFORE_UNLOAD_CHECK_POST_TASK,
@@ -314,9 +313,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.ESTABLISH_GPU_CHANNEL_ASYNC,
                     "Enables establishing the GPU channel asnchronously when requesting a new "
                             + "layer tree frame sink."),
-            Flag.baseFeature(BlinkFeatures.DEFER_BEGIN_MAIN_FRAME_DURING_LOADING,
-                    "If enabled, the parser may continue parsing if BeginMainFrame was "
-                            + "recently called."),
             Flag.baseFeature(BlinkFeatures.DECODE_SCRIPT_SOURCE_OFF_THREAD,
                     "If enabled, script source text will be decoded and hashed off the main"
                             + "thread."),
@@ -342,6 +338,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.TIMED_HTML_PARSER_BUDGET,
                     "If enabled, the HTMLDocumentParser will use a budget based on elapsed time"
                             + " rather than token count."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_HIT_TEST_IN_BLINK_ON_TOUCH_START,
+                    "Hit test on touch start in blink"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

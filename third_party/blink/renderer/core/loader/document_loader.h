@@ -56,7 +56,6 @@
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
-#include "third_party/blink/public/web/web_origin_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
@@ -193,6 +192,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   }
   void SetCodeCacheHost(
       mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host) override;
+  WebString OriginCalculationDebugInfo() const override {
+    return origin_calculation_debug_info_;
+  }
 
   MHTMLArchive* Archive() const { return archive_.Get(); }
 
@@ -539,7 +541,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   AtomicString referrer_;
   scoped_refptr<EncodedFormData> http_body_;
   AtomicString http_content_type_;
-  absl::optional<WebOriginPolicy> origin_policy_;
   const scoped_refptr<const SecurityOrigin> requestor_origin_;
   const KURL unreachable_url_;
   const KURL pre_redirect_url_for_failed_navigations_;
@@ -577,8 +578,13 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       content_security_notifier_;
 
   const scoped_refptr<SecurityOrigin> origin_to_commit_;
+
+  // Information about how `origin_to_commit_` was calculated, to help debug if
+  // it differs from the origin calculated on the browser side.
+  // TODO(https://crbug.com/1220238): Remove this.
+  AtomicString origin_calculation_debug_info_;
+
   blink::BlinkStorageKey storage_key_;
-  const network::mojom::WebSandboxFlags sandbox_flags_;
   WebNavigationType navigation_type_;
 
   DocumentLoadTiming document_load_timing_;

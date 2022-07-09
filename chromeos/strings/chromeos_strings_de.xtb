@@ -123,6 +123,7 @@
 <translation id="188114911237521550">Dunklen Modus ausschalten</translation>
 <translation id="1881188606372070653">Auf der Seite <ph name="BEGIN_LINK1" />Rechtliche Hinweise<ph name="END_LINK1" /> kannst du Inhaltsänderungen aus rechtlichen Gründen beantragen. Einige Konto- und Systeminformationen werden möglicherweise an Google gesendet. Wir verwenden diese Informationen, um unter Einhaltung der <ph name="BEGIN_LINK2" />Datenschutzerklärung<ph name="END_LINK2" /> und der <ph name="BEGIN_LINK3" />Nutzungsbedingungen<ph name="END_LINK3" /> von Google technische Probleme zu beheben und unsere Dienste zu optimieren.</translation>
 <translation id="1887850431809612466">Hardware-Version</translation>
+<translation id="1904932688895783618">Hier findest du hilfreiches Infomaterial:</translation>
 <translation id="1905710495812624430">Die maximal zulässige Anzahl an Versuchen wurde überschritten.</translation>
 <translation id="1908234395526491708">Fehlgeschlagene UDP-Anfragen</translation>
 <translation id="1932611479324127242">Akku abschalten</translation>
@@ -137,6 +138,7 @@
 <translation id="2016697457005847575">Schritte zur Fehlerbehebung ausprobieren</translation>
 <translation id="2016848882344942759">--kein White Label--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">Stelle eine Verbindung zu einem Netzwerk her und lade die Seite neu, um den Bildschirmschoner anzusehen.</translation>
 <translation id="2080070583977670716">Weitere Einstellungen</translation>
 <translation id="2085089206770112532">Displayhelligkeit verringern</translation>
 <translation id="2105810540595158374">Das Gerät ist ein Controller.</translation>
@@ -153,6 +155,7 @@
 <translation id="2163937499206714165">Dunklen Modus einschalten</translation>
 <translation id="2177831236093724629"><ph name="LINK_BEGIN" />Nicht qualifizierte Komponenten<ph name="LINK_END" /> gefunden. Aktualisiere Chrome OS auf die neueste Version, damit alle qualifizierten Komponenten gefunden werden können.</translation>
 <translation id="2180197493692062006">Es gab ein Problem. Versuche, die App wieder zu öffnen.</translation>
+<translation id="2182088270354640012">Vielen Dank für das Feedback. Dein Feedback hilft uns, Chrome OS zu verbessern, und wird vom Chrome OS-Team geprüft. Da wir viele Rückmeldungen erhalten, können wir dir nicht direkt antworten.</translation>
 <translation id="2209788852729124853">Traffic-Zähler zurücksetzen</translation>
 <translation id="2212733584906323460">Namensauflösung</translation>
 <translation id="2217935453350629363">Momentane Geschwindigkeit</translation>
@@ -256,6 +259,7 @@
 <translation id="3226405216343213872">Suche nach Scannern läuft</translation>
 <translation id="3246869037381808805">Druckaufträge, die älter als 1 Tag sind, werden entfernt</translation>
 <translation id="3268178239013324452">Fehlgeschlagen – Druckerklappe offen</translation>
+<translation id="3275729367986477355">Avatarbild</translation>
 <translation id="3283504360622356314">{0,plural, =1{Datei bearbeiten}other{Dateien bearbeiten}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Schlüsselrichtung</translation>
@@ -429,6 +433,7 @@
 <translation id="4793710386569335688"><ph name="BEGIN_LINK" />Weitere Informationen findest du in der Hilfe.<ph name="END_LINK" /></translation>
 <translation id="4793756956024303490">Komprimierungsalgorithmus</translation>
 <translation id="4794140124556169553">Der CPU-Test kann sich auf die Leistung deines Systems auswirken</translation>
+<translation id="4800589996161293643">Chromebook-Community</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4808449224298348341">Druckauftrag für "<ph name="DOCUMENT_TITLE" />" wurde abgebrochen</translation>
 <translation id="4809927044794281115">Helles Design</translation>
@@ -488,6 +493,7 @@
 Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Abmelden</translation>
+<translation id="522307662484862935">E-Mail-Adresse nicht einfügen</translation>
 <translation id="5227902338748591677">Zeitplan für dunkles Design</translation>
 <translation id="5234764350956374838">Schließen</translation>
 <translation id="5252456968953390977">Roaming</translation>
@@ -614,6 +620,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="6284632978374966585">Dunkles Design einschalten</translation>
 <translation id="6295178529664209245">Reparatur fortsetzen?</translation>
 <translation id="6302401976930124515">Test „<ph name="TEST_NAME" />“ wurde abgebrochen</translation>
+<translation id="631063167932043783">Entdecken</translation>
 <translation id="6319207335391420837">Firmware von <ph name="DEVICE_NAME" /> aktualisieren</translation>
 <translation id="6321407676395378991">Bildschirmschoner aktivieren</translation>
 <translation id="6325525973963619867">Fehlgeschlagen</translation>
@@ -642,6 +649,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="6516990319416533844">Wenn du die Aufladegeschwindigkeit deines Akkus testen möchtest, warte zuerst, bis er ein wenig entladen ist</translation>
 <translation id="6517239166834772319">Entdecken</translation>
 <translation id="6527081081771465939">Unbekanntes WLAN-Sicherheitsprotokoll</translation>
+<translation id="6535178685492749208">Du bist offline. Dein Feedback wird später gesendet.</translation>
 <translation id="65587193855025101">Flachbett</translation>
 <translation id="6564646048574748301">Fehlgeschlagen – Drucker nicht erreichbar</translation>
 <translation id="6566314079205407217">Mehrseitiger Scan</translation>
@@ -720,6 +728,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="7297226631177386107">Eine Verbindung zu HTTPS-Websites durch eine Firewall ist nicht möglich</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Experten im Chromebook-Hilfeforum fragen</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Drücke zum Anzeigen des Ergebnisses in der Google Suche die Suchtaste + Leertaste.</translation>
 <translation id="7343649194310845056">Netzwerkgeräte</translation>
@@ -762,9 +771,11 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="773153675489693198">Anzahl der Ladezyklen</translation>
 <translation id="7747039790905080783">Vorinstallierter Schlüssel</translation>
 <translation id="7762130827864645708">Du hast dein Passwort geändert. Bitte verwende ab jetzt das neue Passwort.</translation>
+<translation id="7762839321248874531"><ph name="BEGIN_LINK1" />System- und App-Informationen<ph name="END_LINK1" /> sowie <ph name="BEGIN_LINK2" />Messwerte<ph name="END_LINK2" /> senden</translation>
 <translation id="7763470514545477072">Domain-Suffix stimmt überein</translation>
 <translation id="7769672763586021400">Modell-ID</translation>
 <translation id="7784116172884276937">Es sind keine DNS-Server eingerichtet</translation>
+<translation id="779591286616261875">Neuen Bericht senden</translation>
 <translation id="7799817062559422778">Heller Modus</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -831,6 +842,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="8382302752385457774">White Label</translation>
 <translation id="8395584934117017006">Dieses Gerät (<ph name="DEVICE_TYPE" />) wird von einem Unternehmen verwaltet</translation>
 <translation id="8398927464629426868">Die Stromstärke, mit der das Gerät momentan geladen oder entladen wird</translation>
+<translation id="8420955526972171689">Tests und Fehlerbehebungsschritte bei Hardwareproblemen</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">Interne Tastatur</translation>
 <translation id="8431300646573772016">Neues bei Chrome OS</translation>
@@ -916,6 +928,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="9082718469794970195">Dieses Video verwenden</translation>
 <translation id="9087578468327036362">Diese Anfrage melden</translation>
 <translation id="9088306295921699330">Aktuelle Nutzung</translation>
+<translation id="9092255287806472980">Dein Feedback hilft uns, ChromeOS zu verbessern, und wird von unserem Team geprüft. Da wir sehr viele Rückmeldungen erhalten, können wir dir nicht persönlich antworten.</translation>
 <translation id="9095775724867566971">PluginVM</translation>
 <translation id="90977145661420967">Du musst das Gerät auseinanderbauen</translation>
 <translation id="9098156406873149060">Nutzerdaten beibehalten</translation>

@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_SIDE_PANEL_SIDE_PANEL_COORDINATOR_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry_observer.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_util.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_view_state_observer.h"
 
 class BrowserView;
 class SidePanelComboboxModel;
@@ -38,7 +42,9 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   SidePanelCoordinator& operator=(const SidePanelCoordinator&) = delete;
   ~SidePanelCoordinator() override;
 
-  void Show(absl::optional<SidePanelEntry::Id> entry_id = absl::nullopt);
+  void Show(absl::optional<SidePanelEntry::Id> entry_id = absl::nullopt,
+            absl::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger =
+                absl::nullopt);
   void Close();
   void Toggle();
 
@@ -52,7 +58,17 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
     return current_entry_.get();
   }
 
+  absl::optional<SidePanelEntry::Id> GetCurrentEntryId() const;
+
   SidePanelEntry::Id GetComboboxDisplayedEntryIdForTesting() const;
+
+  SidePanelEntry* GetLoadingEntryForTesting() const;
+
+  bool IsSidePanelShowing();
+
+  void AddSidePanelViewStateObserver(SidePanelViewStateObserver* observer);
+
+  void RemoveSidePanelViewStateObserver(SidePanelViewStateObserver* observer);
 
  private:
   friend class SidePanelCoordinatorTest;
@@ -111,6 +127,11 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   // entries.
   bool no_delays_for_testing_ = false;
 
+  // Timestamp of when the side panel was opened. Updated when the side panel is
+  // triggered to be opened, not when visibility changes. These can differ due
+  // to delays for loading content. This is used for metrics.
+  base::TimeTicks opened_timestamp_;
+
   const raw_ptr<BrowserView> browser_view_;
   raw_ptr<SidePanelRegistry> global_registry_;
   absl::optional<SidePanelEntry::Id> last_active_global_entry_id_;
@@ -129,6 +150,8 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   // their availability in the observed side panel registries.
   std::unique_ptr<SidePanelComboboxModel> combobox_model_;
   raw_ptr<views::Combobox> header_combobox_ = nullptr;
+
+  base::ObserverList<SidePanelViewStateObserver> view_state_observers_;
 
   // TODO(pbos): Add awareness of tab registries here. This probably needs to
   // know the tab registry it's currently monitoring.

@@ -241,17 +241,20 @@ class TracingSamplerProfilerDataSource
     new (g_sampler_profiler_ds_for_test) TracingSamplerProfilerDataSource;
   }
 
+  void RegisterDataSource() {
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+    perfetto::DataSourceDescriptor dsd;
+    dsd.set_name(mojom::kSamplerProfilerSourceName);
+    DataSourceProxy::Register(dsd, this);
+#endif
+  }
+
  private:
   friend class base::NoDestructor<TracingSamplerProfilerDataSource>;
 
   TracingSamplerProfilerDataSource()
       : DataSourceBase(mojom::kSamplerProfilerSourceName) {
     PerfettoTracedProcess::Get()->AddDataSource(this);
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-    perfetto::DataSourceDescriptor dsd;
-    dsd.set_name(mojom::kSamplerProfilerSourceName);
-    DataSourceProxy::Register(dsd, this);
-#endif
     g_sampler_profiler_ds_for_test = this;
   }
 
@@ -604,7 +607,8 @@ TracingSamplerProfiler::StackProfileWriter::GetCallstackIDAndMaybeEmit(
       frame_details.FillWithDummyFields(frame.instruction_pointer);
     }
 
-    MangleModuleIDIfNeeded(&frame_details.module_id);
+    frame_details.module_id =
+        base::TransformModuleIDToBreakpadFormat(frame_details.module_id);
 
     // We never emit frame names in privacy filtered mode.
     bool should_emit_frame_names =
@@ -697,27 +701,6 @@ void TracingSamplerProfiler::StackProfileWriter::ResetEmittedState() {
 }
 
 // static
-void TracingSamplerProfiler::MangleModuleIDIfNeeded(std::string* module_id) {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  // Linux ELF module IDs are 160bit integers, which we need to mangle
-  // down to 128bit integers to match the id that Breakpad outputs.
-  // Example on version '66.0.3359.170' x64:
-  //   Build-ID: "7f0715c2 86f8 b16c 10e4ad349cda3b9b 56c7a773
-  //   Debug-ID  "C215077F F886 6CB1 10E4AD349CDA3B9B 0"
-  if (module_id->size() < 32) {
-    module_id->resize(32, '0');
-  }
-
-  *module_id =
-      base::StrCat({module_id->substr(6, 2), module_id->substr(4, 2),
-                    module_id->substr(2, 2), module_id->substr(0, 2),
-                    module_id->substr(10, 2), module_id->substr(8, 2),
-                    module_id->substr(14, 2), module_id->substr(12, 2),
-                    module_id->substr(16, 16), "0"});
-#endif
-}
-
-// static
 std::unique_ptr<TracingSamplerProfiler>
 TracingSamplerProfiler::CreateOnMainThread() {
   auto profiler = std::make_unique<TracingSamplerProfiler>(
@@ -761,6 +744,7 @@ void TracingSamplerProfiler::ResetDataSourceForTesting() {
 
 // static
 void TracingSamplerProfiler::RegisterDataSource() {
+  TracingSamplerProfilerDataSource::Get()->RegisterDataSource();
   PerfettoTracedProcess::Get()->AddDataSource(
       TracingSamplerProfilerDataSource::Get());
 }
@@ -924,6 +908,7 @@ void TracingSamplerProfiler::StopTracing() {
 }  // namespace tracing
 
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(
+PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS_WITH_ATTRS(
+    COMPONENT_EXPORT(TRACING_CPP),
     tracing::TracingSamplerProfilerDataSource::DataSourceProxy);
 #endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
+
 #import "chrome/browser/app_controller_mac.h"
 
 #include <dispatch/dispatch.h>
@@ -110,11 +112,11 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/plugin_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "net/base/filename_util.h"
 #include "net/base/mac/url_conversions.h"
+#import "ui/base/cocoa/nsmenu_additions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/native_theme/native_theme_mac.h"
@@ -474,7 +476,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
     // kDestroyProfileOnBrowserClose or kUpdateHistoryEntryPointsInIncognito
     // are enabled.
     if (ObserveRegularProfiles() || ObserveOTRProfiles()) {
-      profile_manager_observer_.Observe(profile_manager_);
+      profile_manager_observer_.Observe(profile_manager_.get());
       for (Profile* profile : profile_manager_->GetLoadedProfiles()) {
         profile_observers_.AddObservation(profile);
         Profile* otr_profile =
@@ -556,7 +558,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
   base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observer_{this};
 
-  ProfileManager* const profile_manager_;
+  const raw_ptr<ProfileManager> profile_manager_;
   AppController* const app_controller_;  // Weak; owns us.
 };
 
@@ -610,6 +612,23 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 @implementation AppController
 
 @synthesize startupComplete = _startupComplete;
+
+- (instancetype)init {
+  if (self = [super init]) {
+    // -[NSMenu cr_menuItemForKeyEquivalentEvent:] lives in /content, but
+    // we need to execute special update code before the search begins.
+    // Setting this block gives us the hook we need.
+    [NSMenu cr_setMenuItemForKeyEquivalentEventPreSearchBlock:^{
+      // We avoid calling -[NSMenuDelegate menuNeedsUpdate:] on each submenu's
+      // delegate as that can be slow. Instead, we update the relevant
+      // NSMenuItems if [NSApp delegate] is an instance of AppController. See
+      // https://crbug.com/851260#c4 .
+      [base::mac::ObjCCast<AppController>([NSApp delegate])
+          updateMenuItemKeyEquivalents];
+    }];
+  }
+  return self;
+}
 
 - (void)dealloc {
   [[_closeTabMenuItem menu] setDelegate:nil];

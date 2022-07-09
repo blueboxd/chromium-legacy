@@ -352,7 +352,7 @@ void WebAppSyncBridge::AddAllowedLaunchProtocol(
   // examine stale data.
   {
     ScopedRegistryUpdate update(this);
-    web_app::WebApp* app_to_update = update->UpdateApp(app_id);
+    WebApp* app_to_update = update->UpdateApp(app_id);
     base::flat_set<std::string> protocol_handlers(
         app_to_update->allowed_launch_protocols());
 
@@ -372,7 +372,7 @@ void WebAppSyncBridge::RemoveAllowedLaunchProtocol(
   // examine stale data.
   {
     ScopedRegistryUpdate update(this);
-    web_app::WebApp* app_to_update = update->UpdateApp(app_id);
+    WebApp* app_to_update = update->UpdateApp(app_id);
     base::flat_set<std::string> protocol_handlers(
         app_to_update->allowed_launch_protocols());
     protocol_handlers.erase(protocol_scheme);
@@ -390,7 +390,7 @@ void WebAppSyncBridge::AddDisallowedLaunchProtocol(
   // examine stale data.
   {
     ScopedRegistryUpdate update(this);
-    web_app::WebApp* app_to_update = update->UpdateApp(app_id);
+    WebApp* app_to_update = update->UpdateApp(app_id);
     base::flat_set<std::string> protocol_handlers(
         app_to_update->disallowed_launch_protocols());
 
@@ -410,7 +410,7 @@ void WebAppSyncBridge::RemoveDisallowedLaunchProtocol(
   // examine stale data.
   {
     ScopedRegistryUpdate update(this);
-    web_app::WebApp* app_to_update = update->UpdateApp(app_id);
+    WebApp* app_to_update = update->UpdateApp(app_id);
     base::flat_set<std::string> protocol_handlers(
         app_to_update->disallowed_launch_protocols());
     protocol_handlers.erase(protocol_scheme);
@@ -549,10 +549,14 @@ void WebAppSyncBridge::OnDataWritten(CommitCallback callback, bool success) {
   std::move(callback).Run(success);
 }
 
-void WebAppSyncBridge::WebAppUninstalled(const AppId& app, bool uninstalled) {
-  // In the case `uninstalled` is false, the AppId should still be removed from
-  // the set, since uninstall failures are not yet handled, and there are no
-  // uninstall retry attempts.
+void WebAppSyncBridge::OnWebAppUninstallComplete(
+    const AppId& app,
+    webapps::UninstallResultCode code) {
+  base::UmaHistogramBoolean("Webapp.SyncInitiatedUninstallResult",
+                            code == webapps::UninstallResultCode::kSuccess);
+  // In the case where code indicated a failure, the AppId should still be
+  // removed from the set, since uninstall failures are not yet handled, and
+  // there are no uninstall retry attempts.
   apps_in_sync_uninstall_.erase(app);
 }
 
@@ -681,7 +685,7 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
     command_manager_->NotifySyncSourceRemoved(apps_to_delete);
     install_delegate_->UninstallFromSync(
         apps_to_delete,
-        base::BindRepeating(&WebAppSyncBridge::WebAppUninstalled,
+        base::BindRepeating(&WebAppSyncBridge::OnWebAppUninstallComplete,
                             weak_ptr_factory_.GetWeakPtr()));
   }
 

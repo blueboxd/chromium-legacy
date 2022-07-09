@@ -923,6 +923,16 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
     dict.Set("document_summary", std::move(dict_document_summary));
   }
 
+  if (cdr.has_archive_summary()) {
+    base::Value::Dict dict_archive_summary;
+    auto archive_summary = cdr.archive_summary();
+    dict_archive_summary.Set("parser_status", archive_summary.parser_status());
+    dict_archive_summary.Set("file_count", archive_summary.file_count());
+    dict_archive_summary.Set("directory_count",
+                             archive_summary.directory_count());
+    dict.Set("archive_summary", std::move(dict_archive_summary));
+  }
+
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);
   serializer.set_pretty_print(true);
@@ -1595,8 +1605,6 @@ base::Value::Dict SerializePasswordReuseEvent(
   event_dict.Set("domains_matching_password", std::move(domains_list));
 
   event_dict.Set("frame_id", event.frame_id());
-  event_dict.Set("is_chrome_signin_password",
-                 event.is_chrome_signin_password());
 
   std::string sync_account_type;
   switch (event.sync_account_type()) {
@@ -2021,6 +2029,9 @@ std::string SerializeContentAnalysisRequest(
       break;
     case enterprise_connectors::PRINT:
       request_dict.Set("analysis_connector", "PRINT");
+      break;
+    case enterprise_connectors::FILE_TRANSFER:
+      request_dict.Set("analysis_connector", "FILE_TRANSFER");
       break;
   }
 

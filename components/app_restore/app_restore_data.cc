@@ -28,6 +28,7 @@ constexpr char kFilePathsKey[] = "file_paths";
 constexpr char kAppTypeBrowserKey[] = "is_app";
 constexpr char kAppNameKey[] = "app_name";
 constexpr char kActivationIndexKey[] = "index";
+constexpr char kFirstNonPinnedTabIndexKey[] = "first_non_pinned_tab_index";
 constexpr char kDeskIdKey[] = "desk_id";
 constexpr char kCurrentBoundsKey[] = "current_bounds";
 constexpr char kWindowStateTypeKey[] = "window_state_type";
@@ -239,6 +240,8 @@ AppRestoreData::AppRestoreData(base::Value&& value) {
   app_type_browser = GetBoolValueFromDict(*data_dict, kAppTypeBrowserKey);
   app_name = GetStringValueFromDict(*data_dict, kAppNameKey);
   activation_index = GetIntValueFromDict(*data_dict, kActivationIndexKey);
+  first_non_pinned_tab_index =
+      GetIntValueFromDict(*data_dict, kFirstNonPinnedTabIndexKey);
   desk_id = GetIntValueFromDict(*data_dict, kDeskIdKey);
   current_bounds = GetBoundsRectFromDict(*data_dict, kCurrentBoundsKey);
   window_state_type = GetWindowStateTypeFromDict(*data_dict);
@@ -269,6 +272,8 @@ AppRestoreData::AppRestoreData(std::unique_ptr<AppLaunchInfo> app_launch_info) {
   handler_id = std::move(app_launch_info->handler_id);
   urls = std::move(app_launch_info->urls);
   active_tab_index = std::move(app_launch_info->active_tab_index);
+  first_non_pinned_tab_index =
+      std::move(app_launch_info->first_non_pinned_tab_index);
   file_paths = std::move(app_launch_info->file_paths);
   intent = std::move(app_launch_info->intent);
   app_type_browser = std::move(app_launch_info->app_type_browser);
@@ -302,8 +307,11 @@ std::unique_ptr<AppRestoreData> AppRestoreData::Clone() const {
   if (active_tab_index.has_value())
     data->active_tab_index = active_tab_index.value();
 
-  if (intent.has_value() && intent.value())
-    data->intent = intent.value()->Clone();
+  if (first_non_pinned_tab_index.has_value())
+    data->first_non_pinned_tab_index = first_non_pinned_tab_index.value();
+
+  if (intent)
+    data->intent = intent->Clone();
 
   if (file_paths.has_value())
     data->file_paths = file_paths.value();
@@ -386,9 +394,14 @@ base::Value AppRestoreData::ConvertToValue() const {
   if (active_tab_index.has_value())
     launch_info_dict.SetIntKey(kActiveTabIndexKey, active_tab_index.value());
 
-  if (intent.has_value() && intent.value()) {
+  if (first_non_pinned_tab_index.has_value()) {
+    launch_info_dict.SetIntKey(kFirstNonPinnedTabIndexKey,
+                               first_non_pinned_tab_index.value());
+  }
+
+  if (intent) {
     launch_info_dict.SetKey(kIntentKey,
-                            apps_util::ConvertIntentToValue(intent.value()));
+                            apps_util::ConvertIntentToValue(intent));
   }
 
   if (file_paths.has_value() && !file_paths.value().empty()) {
@@ -526,10 +539,12 @@ std::unique_ptr<AppLaunchInfo> AppRestoreData::GetAppLaunchInfo(
   app_launch_info->container = container;
   app_launch_info->disposition = disposition;
   app_launch_info->display_id = display_id;
+  app_launch_info->active_tab_index = active_tab_index;
   app_launch_info->handler_id = handler_id;
   app_launch_info->urls = urls;
+  app_launch_info->first_non_pinned_tab_index = first_non_pinned_tab_index;
   app_launch_info->file_paths = file_paths;
-  if (intent.has_value())
+  if (intent)
     app_launch_info->intent = intent->Clone();
   app_launch_info->app_type_browser = app_type_browser;
   app_launch_info->app_name = app_name;

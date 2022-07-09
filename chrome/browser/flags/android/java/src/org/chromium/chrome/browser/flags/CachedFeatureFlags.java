@@ -57,6 +57,7 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.CCT_RESIZABLE_90_MAXIMUM_HEIGHT, false)
                     .put(ChromeFeatureList.CCT_RESIZABLE_ALLOW_RESIZE_BY_USER_GESTURE, false)
                     .put(ChromeFeatureList.CCT_RESIZABLE_FOR_FIRST_PARTIES, true)
+                    .put(ChromeFeatureList.COMMERCE_COUPONS, false)
                     .put(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES, false)
                     .put(ChromeFeatureList.CCT_TOOLBAR_CUSTOMIZATIONS, true)
                     .put(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS, false)
@@ -142,7 +143,6 @@ public class CachedFeatureFlags {
      * @param featureName the feature name from ChromeFeatureList.
      * @return whether the cached feature should be considered enabled.
      */
-    @CalledByNative
     public static boolean isEnabled(String featureName) {
         // All cached feature flags should have a default value.
         if (!sDefaults.containsKey(featureName)) {
@@ -162,6 +162,7 @@ public class CachedFeatureFlags {
      *    it is returned.
      * 5. The default value passed as a parameter is returned.
      */
+    @CalledByNative
     @AnyThread
     static boolean isEnabled(String featureName, boolean defaultValue) {
         sSafeMode.onFlagChecked();

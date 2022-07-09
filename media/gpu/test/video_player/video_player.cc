@@ -8,7 +8,8 @@
 #include "base/memory/ptr_util.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/video.h"
-#include "media/gpu/test/video_player/video_decoder_client.h"
+#include "media/gpu/test/video_player/decoder_wrapper.h"
+#include "media/gpu/test/video_player/frame_renderer_dummy.h"
 
 namespace media {
 namespace test {
@@ -37,20 +38,19 @@ const char* EventName(VideoPlayerEvent event) {
 }
 }  // namespace
 
-VideoPlayer::VideoPlayer()
-    : event_cv_(&event_lock_), video_player_event_counts_{}, event_id_(0) {}
+VideoPlayer::VideoPlayer() : event_cv_(&event_lock_) {}
 
 VideoPlayer::~VideoPlayer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(4);
 
-  Destroy();
+  decoder_client_.reset();
 }
 
 // static
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
-    const VideoDecoderClientConfig& config,
-    std::unique_ptr<FrameRenderer> frame_renderer,
+    const DecoderWrapperConfig& config,
+    std::unique_ptr<FrameRendererDummy> frame_renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   auto video_player = base::WrapUnique(new VideoPlayer());
   if (!video_player->CreateDecoderClient(config, std::move(frame_renderer),
@@ -61,37 +61,24 @@ std::unique_ptr<VideoPlayer> VideoPlayer::Create(
 }
 
 bool VideoPlayer::CreateDecoderClient(
-    const VideoDecoderClientConfig& config,
-    std::unique_ptr<FrameRenderer> frame_renderer,
+    const DecoderWrapperConfig& config,
+    std::unique_ptr<FrameRendererDummy> frame_renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kUninitialized);
   DCHECK(frame_renderer);
   DVLOGF(4);
 
-  // base::Unretained is safe here as we will never receive callbacks after
-  // destroying the video player, since the video decoder client will be
-  // destroyed first.
+  // base::Unretained is safe here because |decoder_client_| is fully owned.
   EventCallback event_cb =
       base::BindRepeating(&VideoPlayer::NotifyEvent, base::Unretained(this));
 
-  decoder_client_ = VideoDecoderClient::Create(
-      event_cb, std::move(frame_renderer), std::move(frame_processors), config);
-  if (!decoder_client_) {
-    VLOGF(1) << "Failed to create video decoder client";
-    return false;
-  }
+  decoder_client_ = DecoderWrapper::Create(event_cb, std::move(frame_renderer),
+                                           std::move(frame_processors), config);
 
-  return true;
-}
-
-void VideoPlayer::Destroy() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(video_player_state_, VideoPlayerState::kDestroyed);
-  DVLOGF(4);
-
-  decoder_client_.reset();
-  video_player_state_ = VideoPlayerState::kDestroyed;
+  LOG_IF(ERROR, !decoder_client_) << __func__ << "(): "
+                                  << "Failed to create video decoder client";
+  return !!decoder_client_;
 }
 
 void VideoPlayer::SetEventWaitTimeout(base::TimeDelta timeout) {
@@ -114,7 +101,6 @@ bool VideoPlayer::Initialize(const Video* video) {
   if (!WaitForEvent(VideoPlayerEvent::kInitialized))
     return false;
 
-  video_ = video;
   video_player_state_ = VideoPlayerState::kIdle;
   return true;
 }
@@ -125,17 +111,15 @@ void VideoPlayer::Play() {
   DVLOGF(4);
 
   // Play until the end of the video.
-  PlayUntil(VideoPlayerEvent::kNumEvents, std::numeric_limits<size_t>::max());
+  PlayUntil(VideoPlayerEvent::kNumEvents);
 }
 
-void VideoPlayer::PlayUntil(VideoPlayerEvent event, size_t event_count) {
+void VideoPlayer::PlayUntil(VideoPlayerEvent event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kIdle);
-  DCHECK(video_);
   DVLOGF(4);
 
-  // Start decoding the video.
-  play_until_ = std::make_pair(event, event_count);
+  play_until_ = event;
   video_player_state_ = VideoPlayerState::kDecoding;
   decoder_client_->Play();
 }
@@ -154,51 +138,27 @@ void VideoPlayer::Flush() {
   decoder_client_->Flush();
 }
 
-base::TimeDelta VideoPlayer::GetCurrentTime() const {
-  NOTIMPLEMENTED();
-  return base::TimeDelta();
-}
-
-size_t VideoPlayer::GetCurrentFrame() const {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-VideoPlayerState VideoPlayer::GetState() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  base::AutoLock auto_lock(event_lock_);
-  return video_player_state_;
-}
-
-FrameRenderer* VideoPlayer::GetFrameRenderer() const {
-  return decoder_client_->GetFrameRenderer();
-}
-
-bool VideoPlayer::WaitForEvent(VideoPlayerEvent event, size_t times) {
+bool VideoPlayer::WaitForEvent(VideoPlayerEvent sought_event, size_t times) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(times, 1u);
-  DVLOGF(4) << "Event: " << EventName(event);
+  DVLOGF(4) << "Event: " << EventName(sought_event);
 
   base::TimeDelta time_waiting;
   base::AutoLock auto_lock(event_lock_);
   while (true) {
-    // TODO(dstaessens@) Investigate whether we really need to keep the full
-    // list of events for more complex testcases.
-    // Go through list of events since last wait, looking for the event we're
-    // interested in.
-    for (; event_id_ < video_player_events_.size(); ++event_id_) {
-      if (video_player_events_[event_id_] == event)
+    while (!video_player_events_.empty()) {
+      const auto received_event = video_player_events_.front();
+      video_player_events_.pop();
+
+      if (received_event == sought_event)
         times--;
-      if (times == 0) {
-        event_id_++;
+      if (times == 0)
         return true;
-      }
     }
 
     // Check whether we've exceeded the maximum time we're allowed to wait.
     if (time_waiting >= event_timeout_) {
-      LOG(ERROR) << "Timeout while waiting for '" << EventName(event)
+      LOG(ERROR) << "Timeout while waiting for '" << EventName(sought_event)
                  << "' event";
       return false;
     }
@@ -256,14 +216,12 @@ bool VideoPlayer::NotifyEvent(VideoPlayerEvent event) {
     video_player_state_ = VideoPlayerState::kIdle;
   }
 
-  video_player_events_.push_back(event);
+  video_player_events_.push(event);
   video_player_event_counts_[static_cast<size_t>(event)]++;
   event_cv_.Signal();
 
   // Check whether video playback should be paused after this event.
-  if (play_until_.first == event &&
-      play_until_.second ==
-          video_player_event_counts_[static_cast<size_t>(event)]) {
+  if (play_until_.has_value() && play_until_ == event) {
     video_player_state_ = VideoPlayerState::kIdle;
     return false;
   }

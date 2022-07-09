@@ -2,16 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/background_script_executor.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/permissions_manager.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/mojom/api_permission_id.mojom.h"
+#include "extensions/common/permissions/permissions_data.h"
+#include "extensions/test/permissions_manager_waiter.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
@@ -48,6 +55,36 @@ class UserHostRestrictionsBrowserTest
   int GetActiveTabId() {
     return sessions::SessionTabHelper::IdForTab(GetActiveTab()).id();
   }
+
+  // Withholds host permissions from `extension` and waits for the withholding
+  // to take effect.
+  void WithholdExtensionPermissions(const Extension& extension) {
+    // Withhold extension host permissions. Wait for the notification to be
+    // fired to ensure all renderers and services have been properly updated.
+    auto is_update_for_extension =
+        [&extension](const content::NotificationSource& source,
+                     const content::NotificationDetails& details) {
+          UpdatedExtensionPermissionsInfo* info =
+              content::Details<UpdatedExtensionPermissionsInfo>(details).ptr();
+          return info->extension->id() == extension.id();
+        };
+    content::WindowedNotificationObserver permissions_observer(
+        NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
+        base::BindLambdaForTesting(is_update_for_extension));
+    ScriptingPermissionsModifier(profile(), &extension)
+        .SetWithholdHostPermissions(true);
+    permissions_observer.Wait();
+  }
+
+  // Adds `url` as a new user-permitted site and waits for the change to take
+  // effect.
+  void AddUserPermittedSite(const GURL& url) {
+    PermissionsManager* permissions_manager =
+        PermissionsManager::Get(profile());
+    PermissionsManagerWaiter waiter(permissions_manager);
+    permissions_manager->AddUserPermittedSite(url::Origin::Create(url));
+    waiter.WaitForPermissionsChange();
+  };
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -179,6 +216,256 @@ IN_PROC_BROWSER_TEST_P(UserHostRestrictionsBrowserTest,
     EXPECT_EQ(u"Title Of Awesomeness", GetActiveTab()->GetTitle());
   } else {
     EXPECT_EQ(kInjectedTitle, GetActiveTab()->GetTitle());
+  }
+}
+
+// Ensures user host restrictions are properly propagated to the network
+// service. Since fetch() permissions are controlled here, a cross-origin
+// fetch() is a suitable exercise.
+IN_PROC_BROWSER_TEST_P(
+    UserHostRestrictionsBrowserTest,
+    ExtensionsCannotRunOnUserRestrictedSites_NetworkService) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Test Extension",
+           "version": "0.1",
+           "manifest_version": 3,
+           "background": {"service_worker": "background.js"},
+           "host_permissions": ["<all_urls>"]
+         })";
+
+  static constexpr char kBackground[] =
+      R"(// Attempts to execute a script on the given `tabId` passing either the
+         // result of the execution or the error encountered back as the script
+         // result.
+         async function tryFetchUrl(url) {
+           let result;
+           try {
+             let fetchResult = await fetch(url);
+             result = await fetchResult.text();
+           } catch (e) {
+             result = e.toString();
+           }
+           chrome.test.sendScriptResult(result);
+         })";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  auto try_fetch_url = [this, extension](const GURL& url) {
+    base::Value result = BackgroundScriptExecutor::ExecuteScript(
+        profile(), extension->id(), content::JsReplace("tryFetchUrl($1)", url),
+        BackgroundScriptExecutor::ResultCapture::kSendScriptResult);
+    return result.is_string() ? result.GetString() : "<invalid result>";
+  };
+
+  const GURL allowed_url = embedded_test_server()->GetURL(
+      "allowed.example", "/extensions/fetch1.html");
+  const GURL restricted_url = embedded_test_server()->GetURL(
+      "restricted.example", "/extensions/fetch2.html");
+
+  PermissionsManager* permissions_manager = PermissionsManager::Get(profile());
+  {
+    PermissionsManagerWaiter waiter(permissions_manager);
+    permissions_manager->AddUserRestrictedSite(
+        url::Origin::Create(restricted_url));
+    waiter.WaitForPermissionsChange();
+  }
+
+  EXPECT_EQ("fetch1 - cat\n", try_fetch_url(allowed_url));
+
+  // The extension should not be able to fetch the user-restricted site iff
+  // the feature is enabled.
+  if (GetParam()) {
+    EXPECT_EQ("TypeError: Failed to fetch", try_fetch_url(restricted_url));
+  } else {
+    EXPECT_EQ("fetch2 - dog\n", try_fetch_url(restricted_url));
+  }
+}
+
+// Tests that extensions with withheld host permissions are automatically
+// allowed to run on sites the user allows all extensions to run on.
+IN_PROC_BROWSER_TEST_P(UserHostRestrictionsBrowserTest, UserPermittedSites) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Test Extension",
+           "version": "0.1",
+           "manifest_version": 3,
+           "content_scripts": [{
+             "matches": ["http://allowed.example/*",
+                         "http://restricted.example/*"],
+             "js": ["content_script.js"],
+             "run_at": "document_end"
+           }],
+           "permissions": ["storage"]
+         })";
+
+  // Change the page title if the script is injected. Since the script is
+  // injected at document_end (which happens before the page completes loading),
+  // there shouldn't be a race condition in our checks.
+  static constexpr char kContentScript[] = "document.title = 'Injected';";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScript);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  const GURL allowed_url =
+      embedded_test_server()->GetURL("allowed.example", "/title1.html");
+  const GURL restricted_url =
+      embedded_test_server()->GetURL("restricted.example", "/title2.html");
+  const GURL unrequested_url =
+      embedded_test_server()->GetURL("unrequested.example", "/title3.html");
+
+  WithholdExtensionPermissions(*extension);
+
+  const int kTabId = extension_misc::kUnknownTabId;
+
+  // Check the initial state of (withheld) permissions - the extension should
+  // have all requested host permissions withheld, and be denied on sites it
+  // didn't request.
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+            extension->permissions_data()->GetContentScriptAccess(
+                allowed_url, kTabId, nullptr));
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+            extension->permissions_data()->GetContentScriptAccess(
+                restricted_url, kTabId, nullptr));
+  EXPECT_EQ(PermissionsData::PageAccess::kDenied,
+            extension->permissions_data()->GetContentScriptAccess(
+                unrequested_url, kTabId, nullptr));
+  // And sanity check API permissions.
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
+      mojom::APIPermissionID::kStorage));
+
+  // Next, simulate the user granting all extensions access to `allowed_url` and
+  // `unrequested_url`.
+  AddUserPermittedSite(allowed_url);
+  AddUserPermittedSite(unrequested_url);
+
+  // Now, the extension should be allowed to run on the `allowed_url`, but
+  // `restricted_url` should remain withheld.
+  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
+            extension->permissions_data()->GetContentScriptAccess(
+                allowed_url, kTabId, nullptr));
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+            extension->permissions_data()->GetContentScriptAccess(
+                restricted_url, kTabId, nullptr));
+  // Even though `unrequested_url` is a user-permitted site, the extension is
+  // denied access because it didn't request permission.
+  EXPECT_EQ(PermissionsData::PageAccess::kDenied,
+            extension->permissions_data()->GetContentScriptAccess(
+                unrequested_url, kTabId, nullptr));
+  // Sanity check API permissions are unaffected.
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
+      mojom::APIPermissionID::kStorage));
+
+  // Verify permissions access in the renderer. `allowed_url`'s title should be
+  // changed, while `restricted_url` and `unrequested_url` should remain at
+  // their original (awesome) titles.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), allowed_url));
+  static constexpr char16_t kInjectedTitle[] = u"Injected";
+  EXPECT_EQ(kInjectedTitle, GetActiveTab()->GetTitle());
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), restricted_url));
+  EXPECT_EQ(u"Title Of Awesomeness", GetActiveTab()->GetTitle());
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), unrequested_url));
+  EXPECT_EQ(u"Title Of More Awesomeness", GetActiveTab()->GetTitle());
+
+  // Finally, remove the user-permitted `allowed_url`. Since the extension
+  // only had access to this URL via it being a user-permitted URL (and not
+  // via an explicit grant), the extension should lose access to the URL.
+  {
+    PermissionsManager* permissions_manager =
+        PermissionsManager::Get(profile());
+    PermissionsManagerWaiter waiter(permissions_manager);
+    permissions_manager->RemoveUserPermittedSite(
+        url::Origin::Create(allowed_url));
+    waiter.WaitForPermissionsChange();
+  }
+
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+            extension->permissions_data()->GetContentScriptAccess(
+                allowed_url, kTabId, nullptr));
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), allowed_url));
+  // Note that title1.html has no title, so it defaults to the URL - but it's
+  // sanitized for display (e.g. stripping HTTPS) so to avoid tying this too
+  // closely with the UI, we just check that it's not equal to the injected
+  // title.
+  EXPECT_NE(kInjectedTitle, GetActiveTab()->GetTitle());
+
+  // TODO(https://crbug.com/1268198): We could add more checks here to
+  // exercise the network service path, as we do for user restricted sites
+  // above. Since the user-permitted sites just grants the permissions to the
+  // extension, we don't *really* need to, but additional coverage never hurt
+  // (in case the implementation changes).
+}
+
+// Tests that user permitted sites are persisted and granted on extension load.
+IN_PROC_BROWSER_TEST_P(UserHostRestrictionsBrowserTest,
+                       PRE_UserPermittedSitesArePersisted) {
+  // Note: We need a "real" extension here (instead of just a TestExtensionDir)
+  // because it needs to persist for the next test.
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("simple_all_urls"));
+  ASSERT_TRUE(extension);
+
+  WithholdExtensionPermissions(*extension);
+
+  // Note: We don't use `embedded_test_server` to grab a URL here because the
+  // port would (potentially) change between the PRE_ test and the second test.
+  // Instead, just use a constructed URL. Since all we check is the permissions
+  // data, we don't need the URL to actually load in the browsertest.
+  const GURL allowed_url("https://example.com");
+
+  EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+            extension->permissions_data()->GetPageAccess(
+                allowed_url, extension_misc::kUnknownTabId, nullptr));
+
+  AddUserPermittedSite(allowed_url);
+  // Technically, this should only happen if the feature is enabled. However,
+  // we only add user-permitted sites when the feature is enabled. We can't
+  // DCHECK that (because then the version of these tests without the feature
+  // don't work), so we somewhat awkwardly just allow it to take effect
+  // (knowing that it shouldn't happen outside of tests).
+  EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
+            extension->permissions_data()->GetPageAccess(
+                allowed_url, extension_misc::kUnknownTabId, nullptr));
+}
+
+IN_PROC_BROWSER_TEST_P(UserHostRestrictionsBrowserTest,
+                       UserPermittedSitesArePersisted) {
+  const Extension* found_extension = nullptr;
+  for (const auto& extension :
+       ExtensionRegistry::Get(profile())->enabled_extensions()) {
+    if (extension->name() == "All Urls Extension") {
+      found_extension = extension.get();
+      break;
+    }
+  }
+  ASSERT_TRUE(found_extension);
+
+  const GURL example_com("https://example.com");
+  // The user-permitted site should be allowed if and only if the feature is
+  // enabled (unlike the test above, our load-time granting *is* guarded behind
+  // the feature flag).
+  if (GetParam()) {
+    EXPECT_EQ(PermissionsData::PageAccess::kAllowed,
+              found_extension->permissions_data()->GetPageAccess(
+                  example_com, extension_misc::kUnknownTabId, nullptr));
+  } else {
+    EXPECT_EQ(PermissionsData::PageAccess::kWithheld,
+              found_extension->permissions_data()->GetPageAccess(
+                  example_com, extension_misc::kUnknownTabId, nullptr));
   }
 }
 

@@ -25,10 +25,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/test/browser_test.h"
@@ -80,8 +80,9 @@ class EncryptionMigrationTestBase
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
 
-    FakeUserDataAuthClient::TestApi::Get()->SetEcryptfsUserHome(
-        GetTestCryptohomeId(), true);
+    FakeUserDataAuthClient::TestApi::Get()->SetHomeEncryptionMethod(
+        GetTestCryptohomeId(),
+        FakeUserDataAuthClient::HomeEncryptionMethod::kEcryptfs);
     FakeUserDataAuthClient::TestApi::Get()->set_run_default_dircrypto_migration(
         false);
 

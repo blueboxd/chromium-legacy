@@ -145,6 +145,14 @@ void ShowCertificateViewer(WebContents* web_contents,
       std::move(cert_buffers), std::move(nicknames), web_contents, parent);
 }
 
+#if !(BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC))
+void ShowCertificateViewerForClientAuth(content::WebContents* web_contents,
+                                        gfx::NativeWindow parent,
+                                        net::X509Certificate* cert) {
+  ShowCertificateViewer(web_contents, parent, cert);
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // CertificateViewerDialog
 
@@ -355,12 +363,12 @@ CertificateViewerDialogHandler::~CertificateViewerDialogHandler() {
 }
 
 void CertificateViewerDialogHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "exportCertificate",
       base::BindRepeating(
           &CertificateViewerDialogHandler::HandleExportCertificate,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "requestCertificateFields",
       base::BindRepeating(
           &CertificateViewerDialogHandler::HandleRequestCertificateFields,
@@ -368,13 +376,14 @@ void CertificateViewerDialogHandler::RegisterMessages() {
 }
 
 void CertificateViewerDialogHandler::HandleExportCertificate(
-    const base::ListValue* args) {
-  int cert_index = GetCertificateIndex(args->GetListDeprecated()[0].GetInt());
+    const base::Value::List& args) {
+  int cert_index = GetCertificateIndex(args[0].GetInt());
   if (cert_index < 0)
     return;
 
   gfx::NativeWindow window =
-      platform_util::GetTopLevel(dialog_->GetNativeWebContentsModalDialog());
+      platform_util::GetTopLevel(platform_util::GetViewForWindow(
+          dialog_->GetNativeWebContentsModalDialog()));
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> export_certs;
   for (const auto& cert : base::make_span(*certs_).subspan(cert_index)) {
@@ -386,10 +395,10 @@ void CertificateViewerDialogHandler::HandleExportCertificate(
 }
 
 void CertificateViewerDialogHandler::HandleRequestCertificateFields(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
-  const base::Value& callback_id = args->GetListDeprecated()[0];
-  int cert_index = GetCertificateIndex(args->GetListDeprecated()[1].GetInt());
+  const base::Value& callback_id = args[0];
+  int cert_index = GetCertificateIndex(args[1].GetInt());
   if (cert_index < 0)
     return;
 
@@ -478,13 +487,13 @@ void CertificateViewerDialogHandler::HandleRequestCertificateFields(
                      .Build())
           .Build());
 
-  base::ListValue root_list;
+  base::Value::List root_list;
   root_list.Append(
       base::Value::FromUniquePtrValue(CertNodeBuilder(model.GetTitle())
                                           .Child(contents_builder.Build())
                                           .Build()));
   // Send certificate information to javascript.
-  ResolveJavascriptCallback(callback_id, root_list);
+  ResolveJavascriptCallback(callback_id, base::Value(std::move(root_list)));
 }
 
 int CertificateViewerDialogHandler::GetCertificateIndex(

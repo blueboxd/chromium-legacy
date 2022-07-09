@@ -5,17 +5,28 @@
 #include "ash/style/ash_color_mixer.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_recipe.h"
 
 namespace ash {
+
+void AddCrosStylesColorMixer(ui::ColorProvider* provider,
+                             const ui::ColorProviderManager::Key& key) {
+  ui::ColorMixer& mixer = provider->AddMixer();
+  bool dark_mode = key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
+  cros_tokens::AddCrosRefColorsToMixer(mixer, dark_mode);
+  cros_tokens::AddCrosSysColorsToMixer(mixer, dark_mode);
+  cros_tokens::AddLegacySemanticColorsToMixer(mixer, dark_mode);
+
+  // TODO(b/235913438): Remap legacy colors to tokens here.
+}
 
 void AddAshColorMixer(ui::ColorProvider* provider,
                       const ui::ColorProviderManager::Key& key) {
@@ -27,10 +38,7 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   mixer[ui::kColorAshActionLabelFocusRingHover] =
       ui::SetAlpha(gfx::kGoogleGrey200, 0x60);
 
-  mixer[ui::kColorAshAppListFocusRing] = {
-      AppListColorProvider::Get()->GetFocusRingColor()};
-  mixer[ui::kColorAshAppListFocusRingNoKeyboard] =
-      ui::SetAlpha(ui::kColorAshAppListFocusRing, SK_AlphaTRANSPARENT);
+  mixer[ui::kColorAshAppListFocusRingNoKeyboard] = {SK_AlphaTRANSPARENT};
   mixer[ui::kColorAshAppListSeparatorLight] = {
       ui::kColorAshSystemUIMenuSeparator};
   mixer[ui::kColorAshAppListSeparator] =
@@ -40,6 +48,9 @@ void AddAshColorMixer(ui::ColorProvider* provider,
       ash::AshColorProvider::ControlsLayerType::kFocusRingColor)};
   mixer[ui::kColorAshEditFinishFocusRing] = {gfx::kGoogleBlue300};
   mixer[ui::kColorAshIconInOobe] = {kIconColorInOobe};
+
+  // TODO(skau): Remove when dark/light mode launches.
+  mixer[ui::kColorAshAppListFocusRingCompat] = {gfx::kGoogleBlue600};
 
   mixer[ui::kColorAshLightFocusRing] = {gfx::kGoogleBlue300};
 
@@ -51,12 +62,18 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   mixer[ui::kColorAshSystemUIBorderColor2] = {
       ash_color_provider->GetControlsLayerColor(
           ash::AshColorProvider::ControlsLayerType::kBorderColor2)};
+  mixer[ui::kColorAshSystemUIBorderColor3] = {
+      ash_color_provider->GetControlsLayerColor(
+          ash::AshColorProvider::ControlsLayerType::kBorderColor3)};
   mixer[ui::kColorAshSystemUIHighlightColor1] = {
       ash_color_provider->GetControlsLayerColor(
           ash::AshColorProvider::ControlsLayerType::kHighlightColor1)};
   mixer[ui::kColorAshSystemUIHighlightColor2] = {
       ash_color_provider->GetControlsLayerColor(
           ash::AshColorProvider::ControlsLayerType::kHighlightColor2)};
+  mixer[ui::kColorAshSystemUIHighlightColor3] = {
+      ash_color_provider->GetControlsLayerColor(
+          ash::AshColorProvider::ControlsLayerType::kHighlightColor3)};
 
   if (!features::IsDarkLightModeEnabled()) {
     ash::ScopedLightModeAsDefault scoped_light_mode_as_default;

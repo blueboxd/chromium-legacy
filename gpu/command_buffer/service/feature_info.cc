@@ -20,7 +20,6 @@
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/native_image_buffer.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
@@ -312,10 +311,9 @@ bool IsGL_REDSupportedOnFBOs() {
 #endif  // BUILDFLAG(IS_MAC)
 }
 
-void FeatureInfo::EnableCHROMIUMTextureStorageImage() {
-  if (!feature_flags_.chromium_texture_storage_image) {
-    feature_flags_.chromium_texture_storage_image = true;
-    AddExtensionString("GL_CHROMIUM_texture_storage_image");
+void FeatureInfo::EnableTextureStorageImage() {
+  if (!feature_flags_.texture_storage_image) {
+    feature_flags_.texture_storage_image = true;
   }
 }
 
@@ -500,7 +498,6 @@ void FeatureInfo::InitializeFeatures() {
 
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
   AddExtensionString("GL_CHROMIUM_bind_uniform_location");
-  AddExtensionString("GL_CHROMIUM_color_space_metadata");
   AddExtensionString("GL_CHROMIUM_command_buffer_query");
   AddExtensionString("GL_CHROMIUM_command_buffer_latency_query");
   AddExtensionString("GL_CHROMIUM_copy_texture");

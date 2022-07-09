@@ -19,6 +19,7 @@
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tri_view.h"
+#include "base/timer/timer.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -46,6 +47,9 @@ using chromeos::network_config::mojom::ProxyMode;
 
 using chromeos::bluetooth_config::mojom::BluetoothSystemPropertiesPtr;
 using chromeos::bluetooth_config::mojom::BluetoothSystemState;
+
+// Delay between scan requests.
+constexpr int kRequestScanDelaySeconds = 10;
 
 // Helper function to remove |*view| from its view hierarchy, delete the view,
 // and reset the value of |*view| to be |nullptr|.
@@ -100,6 +104,14 @@ bool IsESimSupported() {
       return true;
   }
   return false;
+}
+
+bool IsCellularSimLocked() {
+  const DeviceStateProperties* cellular_device =
+      Shell::Get()->system_tray_model()->network_state_model()->GetDevice(
+          NetworkType::kCellular);
+  return cellular_device &&
+         !cellular_device->sim_lock_status->lock_type.empty();
 }
 
 }  // namespace
@@ -234,6 +246,8 @@ void NetworkListViewControllerImpl::OnGetNetworkStateList(
         wifi_status_message_, index++);
   }
 
+  UpdateScanningBarAndTimer();
+
   // Remaining views in |previous_network_views| are no longer needed
   // and should be deleted.
   for (const auto& id_and_view : previous_network_views) {
@@ -361,8 +375,7 @@ void NetworkListViewControllerImpl::UpdateMobileSection() {
 
   // Adding new cellular networks is disallowed when only policy cellular
   // networks are allowed by admin.
-  if (ash::features::IsESimPolicyEnabled() &&
-      (!global_policy || global_policy->allow_only_policy_cellular_networks)) {
+  if (!global_policy || global_policy->allow_only_policy_cellular_networks) {
     is_add_esim_visible = false;
   }
 
@@ -427,10 +440,22 @@ void NetworkListViewControllerImpl::UpdateMobileToggleAndSetStatusMessage() {
       return;
     }
 
-    const bool toggle_enabled =
-        !is_secondary_user && (cellular_state == DeviceStateType::kEnabled ||
-                               cellular_state == DeviceStateType::kDisabled);
     const bool cellular_enabled = cellular_state == DeviceStateType::kEnabled;
+
+    // The toggle will never be enabled for secondary users.
+    bool toggle_enabled = !is_secondary_user;
+
+    // The toggle will never be enabled during cellular state transitions.
+    toggle_enabled &=
+        cellular_enabled || cellular_state == DeviceStateType::kDisabled;
+
+    // The toggle will never be enabled if the device is SIM locked and we
+    // cannot open the Settings UI.
+    toggle_enabled &=
+        cellular_enabled ||
+        Shell::Get()->session_controller()->ShouldEnableSettings() ||
+        !IsCellularSimLocked();
+
     mobile_header_view_->SetToggleVisibility(/*visibility=*/true);
     mobile_header_view_->SetToggleState(/*enabled=*/toggle_enabled,
                                         /*is_on=*/cellular_enabled);
@@ -599,6 +624,40 @@ void NetworkListViewControllerImpl::ShowConnectionWarning() {
   connection_warning_ =
       network_detailed_network_view()->network_list()->AddChildView(
           std::move(connection_warning));
+}
+
+void NetworkListViewControllerImpl::UpdateScanningBarAndTimer() {
+  if (is_wifi_enabled_ && !network_scan_repeating_timer_.IsRunning())
+    ScanAndStartTimer();
+
+  if (!is_wifi_enabled_ && network_scan_repeating_timer_.IsRunning())
+    network_scan_repeating_timer_.Stop();
+
+  bool is_scanning_bar_visible = false;
+  if (is_wifi_enabled_) {
+    const DeviceStateProperties* wifi = model_->GetDevice(NetworkType::kWiFi);
+    const DeviceStateProperties* tether =
+        model_->GetDevice(NetworkType::kTether);
+
+    is_scanning_bar_visible =
+        (wifi && wifi->scanning) || (tether && tether->scanning);
+  }
+
+  network_detailed_network_view()->UpdateScanningBarVisibility(
+      /*visible=*/is_scanning_bar_visible);
+}
+
+void NetworkListViewControllerImpl::ScanAndStartTimer() {
+  RequestScan();
+  network_scan_repeating_timer_.Start(
+      FROM_HERE, base::Seconds(kRequestScanDelaySeconds), this,
+      &NetworkListViewControllerImpl::RequestScan);
+}
+
+void NetworkListViewControllerImpl::RequestScan() {
+  VLOG(1) << "Requesting Network Scan.";
+  model_->cros_network_config()->RequestNetworkScan(NetworkType::kWiFi);
+  model_->cros_network_config()->RequestNetworkScan(NetworkType::kTether);
 }
 
 void NetworkListViewControllerImpl::FocusLastSelectedView() {

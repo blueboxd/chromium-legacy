@@ -130,7 +130,6 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/accessibility/live_caption_controller_factory.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -551,6 +550,9 @@ ProfileManager::~ProfileManager() {
       }
     }
   }
+
+  profiles_info_.clear();
+  ProfileDestroyer::DestroyPendingProfilesForShutdown();
 }
 
 // static
@@ -1267,11 +1269,10 @@ void ProfileManager::CleanUpEphemeralProfiles() {
 void ProfileManager::CleanUpDeletedProfiles() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  const base::Value* deleted_profiles =
-      local_state->GetList(prefs::kProfilesDeleted);
-  DCHECK(deleted_profiles);
+  const base::Value::List& deleted_profiles =
+      local_state->GetValueList(prefs::kProfilesDeleted);
 
-  for (const base::Value& value : deleted_profiles->GetListDeprecated()) {
+  for (const base::Value& value : deleted_profiles) {
     absl::optional<base::FilePath> profile_path = base::ValueToFilePath(value);
     // Although it should never happen, make sure this is a valid path in the
     // user_data_dir, so we don't accidentally delete something else.
@@ -1432,11 +1433,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
                                    supervised_user_id);
   }
 #if !BUILDFLAG(IS_ANDROID)
-  // TODO(pmonette): Fix IsNewProfile() to handle the case where the profile is
-  // new even if the "Preferences" file already existed. (For example: The
-  // master_preferences file is dumped into the default profile on first run,
-  // before profile creation.)
-  if (profile->IsNewProfile() || first_run::IsChromeFirstRun()) {
+  if (profile->IsNewProfile()) {
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
   }
 #endif  // !BUILDFLAG(IS_ANDROID)

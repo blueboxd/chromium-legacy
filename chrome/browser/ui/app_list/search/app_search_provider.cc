@@ -63,7 +63,6 @@ constexpr double kEps = 1e-5;
 constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
 
 // Parameters for FuzzyTokenizedStringMatch.
-constexpr bool kUsePrefixOnly = false;
 constexpr bool kUseWeightedRatio = false;
 constexpr bool kUseEditDistance = false;
 constexpr double kRelevanceThreshold = 0.32;
@@ -213,17 +212,15 @@ class AppSearchProvider::App {
     if (use_exact_match) {
       TokenizedStringMatch match;
       for (auto& curr_text : tokenized_indexed_searchable_text_) {
-        match.Calculate(query, *curr_text);
-        if (match.relevance() > relevance_threshold())
+        if (match.Calculate(query, *curr_text) > relevance_threshold())
           return true;
       }
     } else {
       FuzzyTokenizedStringMatch match;
       for (auto& curr_text : tokenized_indexed_searchable_text_) {
-        if (match.IsRelevant(query, *curr_text, kRelevanceThreshold,
-                             kUsePrefixOnly, kUseWeightedRatio,
-                             kUseEditDistance, kPartialMatchPenaltyRate) &&
-            match.relevance() >= relevance_threshold()) {
+        if (match.Relevance(query, *curr_text, kUseWeightedRatio,
+                            kUseEditDistance, kPartialMatchPenaltyRate) >=
+            std::max(kRelevanceThreshold, relevance_threshold())) {
           return true;
         }
       }
@@ -586,30 +583,31 @@ void AppSearchProvider::UpdateQueriedResults() {
     TokenizedString* indexed_name = app->GetTokenizedIndexedName();
     if (use_exact_match) {
       TokenizedStringMatch match;
-      if (match.Calculate(query_terms, *indexed_name)) {
-        // Exact matches should be shown even if the threshold isn't reached,
-        // e.g. due to a localized name being particularly short.
-        if (match.relevance() <= app->relevance_threshold() &&
-            !app->MatchSearchableText(query_terms, use_exact_match)) {
-          continue;
-        }
-      } else if (!app->MatchSearchableText(query_terms, use_exact_match)) {
+      double relevance = match.Calculate(query_terms, *indexed_name);
+
+      // N.B. Exact matches should be shown even if the threshold isn't reached,
+      // e.g. due to a localized name being particularly short.
+      const bool keep = relevance > app->relevance_threshold() ||
+                        app->MatchSearchableText(query_terms, use_exact_match);
+
+      if (!keep)
         continue;
-      }
+
       std::unique_ptr<AppResult> result =
           app->data_source()->CreateResult(app->id(), list_controller_, false);
 
       // Update result from match.
       result->SetTitle(indexed_name->text());
       result->SetTitleTags(CalculateTags(query_, indexed_name->text()));
-      result->set_relevance(match.relevance());
+      result->set_relevance(relevance);
 
       MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
     } else {
       FuzzyTokenizedStringMatch match;
-      if (match.IsRelevant(query_terms, *indexed_name, kRelevanceThreshold,
-                           kUsePrefixOnly, kUseWeightedRatio, kUseEditDistance,
-                           kPartialMatchPenaltyRate) ||
+      const double relevance =
+          match.Relevance(query_terms, *indexed_name, kUseWeightedRatio,
+                          kUseEditDistance, kPartialMatchPenaltyRate);
+      if (relevance >= kRelevanceThreshold ||
           app->MatchSearchableText(query_terms, use_exact_match)) {
         std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
             app->id(), list_controller_, false);
@@ -617,7 +615,7 @@ void AppSearchProvider::UpdateQueriedResults() {
         // Update result from match.
         result->SetTitle(indexed_name->text());
         result->SetTitleTags(CalculateTags(query_, indexed_name->text()));
-        result->set_relevance(match.relevance());
+        result->set_relevance(relevance);
 
         MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
       }

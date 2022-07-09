@@ -539,6 +539,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
+      "external/wpt/html/infrastructure/urls/terminology-0",
       "external/wpt/navigation-api/navigate-event/cross-window"
     ],
     "args": ["--disable-auto-wpt-origin-isolation",
@@ -598,12 +599,6 @@
               "html/details_summary/color-scheme-validation"],
     "args": ["--force-high-contrast",
              "--enable-blink-features=ForcedColors,ForcedColorsPreserveParentColor"]
-  },
-  {
-    "prefix": "system-color-compute",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/css/css-color"],
-    "args": ["--enable-blink-features=CSSSystemColorComputeToSelf"]
   },
   {
     "prefix": "dark-color-scheme",
@@ -703,6 +698,12 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
     "args": ["--force-color-profile=color-spin-gamma24"]
+  },
+  {
+    "prefix": "wide-gamut",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [],
+    "args": ["--force-color-profile=display-p3-d65"]
   },
   {
     "prefix": "split-cache-by-include-credentials",
@@ -1072,6 +1073,8 @@
     "bases": [
       "http/tests/inspector-protocol/target/auto-attach-auction-worklet.js",
       "http/tests/inspector-protocol/target/target-auction-worklet.js",
+      "http/tests/inspector-protocol/timeline/auction-worklet.js",
+      "http/tests/inspector-protocol/timeline/auction-worklet-frame.js",
       "http/tests/inspector-protocol/storage/interest-groups.js"
     ],
     "args": [
@@ -1083,7 +1086,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/lazyembed"],
     "args": [
-      "--enable-features=AutomaticLazyFrameLoadingToEmbeds,AutomaticLazyFrameLoadingToEmbedUrls:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed",
+      "--enable-features=AutomaticLazyFrameLoadingToEmbeds:timeout/1000,AutomaticLazyFrameLoadingToEmbedUrls:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed,AutomaticLazyFrameLoadingToAds:timeout/5000",
       "--disable-field-trial-config"
     ]
   },
@@ -1270,5 +1273,11 @@
       "fast/preloader"
     ],
     "args": ["--enable-features=ThreadedPreloadScanner,PrecompileInlineScripts"]
+  },
+  {
+    "prefix": "coop-restrict-properties",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "external/wpt/html/cross-origin-opener-policy/tentative/restrict-properties" ],
+    "args": [ "--enable-features=CoopRestrictProperties" ]
   }
 ]

@@ -65,7 +65,6 @@
 #include "gpu/command_buffer/service/gpu_state_tracer.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_factory.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -739,9 +738,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   VertexArrayManager* GetVertexArrayManager() override {
     return vertex_array_manager_.get();
   }
-  ImageManager* GetImageManagerForTest() override {
-    return group_->image_manager();
-  }
 
   bool HasPendingQueries() const override;
   void ProcessPendingQueries(bool did_finish) override;
@@ -965,8 +961,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   MailboxManager* mailbox_manager() {
     return group_->mailbox_manager();
   }
-
-  ImageManager* image_manager() { return group_->image_manager(); }
 
   VertexArrayManager* vertex_array_manager() {
     return vertex_array_manager_.get();
@@ -3624,11 +3618,11 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     }
   }
 
-  // Support for CHROMIUM_texture_storage_image depends on the underlying
+  // Support for texture_storage_image depends on the underlying
   // ImageFactory's ability to create anonymous images.
   gpu::ImageFactory* image_factory = group_->image_factory();
   if (image_factory && image_factory->SupportsCreateAnonymousImage())
-    feature_info_->EnableCHROMIUMTextureStorageImage();
+    feature_info_->EnableTextureStorageImage();
 
   // In theory |needs_emulation| needs to be true on Desktop GL 4.1 or lower.
   // However, we set it to true everywhere, not to trust drivers to handle
@@ -4137,6 +4131,11 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   DoGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &caps.max_renderbuffer_size, 1);
   DoGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &caps.max_texture_image_units, 1);
   DoGetIntegerv(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size, 1);
+  if (workarounds().webgl_or_caps_max_texture_size) {
+    caps.max_texture_size =
+        std::min(caps.max_texture_size,
+                 feature_info_->workarounds().webgl_or_caps_max_texture_size);
+  }
   DoGetIntegerv(GL_MAX_VARYING_VECTORS, &caps.max_varying_vectors, 1);
   DoGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &caps.max_vertex_attribs, 1);
   DoGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
@@ -4269,7 +4268,10 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   caps.surface_origin =
       !is_offscreen ? surface_->GetOrigin() : gfx::SurfaceOrigin::kBottomLeft;
-  caps.msaa_is_slow = workarounds().msaa_is_slow;
+  caps.msaa_is_slow =
+      base::FeatureList::IsEnabled(features::kEnableMSAAOnNewIntelGPUs)
+          ? workarounds().msaa_is_slow_2
+          : workarounds().msaa_is_slow;
   caps.avoid_stencil_buffers = workarounds().avoid_stencil_buffers;
   caps.multisample_compatibility =
       feature_info_->feature_flags().ext_multisample_compatibility;
@@ -4316,7 +4318,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   }
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.texture_storage_image =
-      feature_info_->feature_flags().chromium_texture_storage_image;
+      feature_info_->feature_flags().texture_storage_image;
   caps.supports_oop_raster = false;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.separate_stencil_ref_mask_writemask =
@@ -13544,39 +13546,6 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleSetColorSpaceMetadataCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::SetColorSpaceMetadataCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::SetColorSpaceMetadataCHROMIUM*>(
-          cmd_data);
-
-  GLuint texture_id = c.texture_id;
-  gfx::ColorSpace color_space;
-  if (!ReadColorSpace(c.shm_id, c.shm_offset, c.color_space_size,
-                      &color_space)) {
-    return error::kOutOfBounds;
-  }
-
-  TextureRef* ref = texture_manager()->GetTexture(texture_id);
-  if (!ref) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glSetColorSpaceMetadataCHROMIUM",
-                       "unknown texture");
-    return error::kNoError;
-  }
-
-  scoped_refptr<gl::GLImage> image =
-      ref->texture()->GetLevelImage(ref->texture()->target(), 0);
-  if (!image) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glSetColorSpaceMetadataCHROMIUM",
-                       "no image associated with texture");
-    return error::kNoError;
-  }
-
-  image->SetColorSpace(color_space);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::GetAttribLocationHelper(
     GLuint client_id,
     uint32_t location_shm_id,
@@ -18426,85 +18395,6 @@ void GLES2DecoderImpl::DoTexStorage3D(GLenum target,
       "widthXheight", width * height, "depth", depth);
   TexStorageImpl(target, levels, internal_format, width, height, depth,
                  ContextState::k3D, "glTexStorage3D");
-}
-
-void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
-                                                   GLenum internal_format,
-                                                   GLenum buffer_usage,
-                                                   GLsizei width,
-                                                   GLsizei height) {
-  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM", "width",
-               width, "height", height);
-
-  ScopedGLErrorSuppressor suppressor(
-      "GLES2CmdDecoder::DoTexStorage2DImageCHROMIUM", error_state_.get());
-
-  if (!texture_manager()->ValidForTarget(target, 0, width, height, 1)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2DImageCHROMIUM",
-                       "dimensions out of range");
-    return;
-  }
-
-  TextureRef* texture_ref =
-      texture_manager()->GetTextureInfoForTarget(&state_, target);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
-                       "unknown texture for target");
-    return;
-  }
-
-  Texture* texture = texture_ref->texture();
-  if (texture->IsImmutable()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
-                       "texture is immutable");
-    return;
-  }
-
-  gfx::BufferFormat buffer_format;
-  if (!GetGFXBufferFormat(internal_format, &buffer_format)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glTexStorage2DImageCHROMIUM",
-                       "Invalid buffer format");
-    return;
-  }
-
-  gfx::BufferUsage gfx_buffer_usage;
-  if (!GetGFXBufferUsage(buffer_usage, &gfx_buffer_usage)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glTexStorage2DImageCHROMIUM",
-                       "Invalid buffer usage");
-    return;
-  }
-
-  if (!GetContextGroup()->image_factory()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
-                       "Cannot create GL image");
-    return;
-  }
-
-  bool is_cleared = false;
-  scoped_refptr<gl::GLImage> image =
-      GetContextGroup()->image_factory()->CreateAnonymousImage(
-          gfx::Size(width, height), buffer_format, gfx_buffer_usage,
-          gpu::kNullSurfaceHandle, &is_cleared);
-  if (!image || !image->BindTexImage(target)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
-                       "Failed to create or bind GL Image");
-    return;
-  }
-
-  gfx::Rect cleared_rect;
-  if (is_cleared)
-    cleared_rect = gfx::Rect(width, height);
-
-  texture_manager()->SetLevelInfo(
-      texture_ref, target, 0, image->GetInternalFormat(), width, height, 1, 0,
-      image->GetDataFormat(), image->GetDataType(), cleared_rect);
-  texture_manager()->SetLevelImage(texture_ref, target, 0, image.get(),
-                                   Texture::BOUND);
-
-  if (texture->IsAttachedToFramebuffer())
-    framebuffer_state_.clear_state_dirty = true;
-
-  texture->SetImmutable(true, false);
 }
 
 void GLES2DecoderImpl::DoProduceTextureDirectCHROMIUM(

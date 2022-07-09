@@ -310,7 +310,8 @@ void URLRequestContextBuilder::SetCreateHttpTransactionFactoryCallback(
 }
 
 void URLRequestContextBuilder::BindToNetwork(
-    NetworkChangeNotifier::NetworkHandle network) {
+    NetworkChangeNotifier::NetworkHandle network,
+    absl::optional<HostResolver::ManagerOptions> options) {
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(NetworkChangeNotifier::AreNetworkHandlesSupported());
   // DNS lookups for this context will need to target `network`. NDK to do that
@@ -321,6 +322,7 @@ void URLRequestContextBuilder::BindToNetwork(
   CHECK(base::android::BuildInfo::GetInstance()->sdk_int() >=
         base::android::SDK_VERSION_MARSHMALLOW);
   bound_network_ = network;
+  manager_options_ = options.value_or(manager_options_);
 #else
   NOTIMPLEMENTED();
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -357,7 +359,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (bound_network_ != NetworkChangeNotifier::kInvalidNetworkHandle) {
-    DCHECK(!client_socket_factory_);
+    DCHECK(!client_socket_factory_raw_);
     DCHECK(!host_resolver_);
     DCHECK(!host_resolver_manager_);
     DCHECK(!host_resolver_factory_);
@@ -371,11 +373,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     set_client_socket_factory(client_socket_factory.get());
     storage->set_client_socket_factory(std::move(client_socket_factory));
 
-    HostResolver::ManagerOptions manager_options;
-    manager_options.insecure_dns_client_enabled = false;
-    manager_options.additional_types_via_insecure_dns_enabled = false;
     host_resolver_ = HostResolver::CreateStandaloneNetworkBoundResolver(
-        context->net_log(), bound_network_, manager_options);
+        context->net_log(), bound_network_, manager_options_);
 
     if (!quic_context_)
       set_quic_context(std::make_unique<QuicContext>());
@@ -392,6 +391,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     // Objects used by network sessions for this context shouldn't listen to
     // network changes.
     http_network_session_params_.ignore_ip_address_changes = true;
+  }
+
+  if (client_socket_factory_) {
+    storage->set_client_socket_factory(std::move(client_socket_factory_));
   }
 
   if (host_resolver_) {
@@ -440,8 +443,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (cookie_store_set_by_client_) {
     storage->set_cookie_store(std::move(cookie_store_));
   } else {
-    std::unique_ptr<CookieStore> cookie_store(new CookieMonster(
-        nullptr /* store */, context->net_log(), first_party_sets_enabled_));
+    auto cookie_store = std::make_unique<CookieMonster>(
+        nullptr /* store */, context->net_log(), first_party_sets_enabled_);
     storage->set_cookie_store(std::move(cookie_store));
   }
 
@@ -502,11 +505,11 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (!proxy_resolution_service_) {
 #if !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
     // TODO(willchan): Switch to using this code when
-    // ConfiguredProxyResolutionService::CreateSystemProxyConfigService()'s
+    // ProxyConfigService::CreateSystemProxyConfigService()'s
     // signature doesn't suck.
     if (!proxy_config_service_) {
       proxy_config_service_ =
-          ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
+          ProxyConfigService::CreateSystemProxyConfigService(
               base::ThreadTaskRunnerHandle::Get().get());
     }
 #endif  // !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS) &&
@@ -567,7 +570,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   SetHttpNetworkSessionComponents(
       context.get(), &network_session_context,
       suppress_setting_socket_performance_watcher_factory_for_testing_,
-      client_socket_factory_);
+      client_socket_factory_raw_);
 
   storage->set_http_network_session(std::make_unique<HttpNetworkSession>(
       http_network_session_params_, network_session_context));

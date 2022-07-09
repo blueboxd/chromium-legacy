@@ -180,17 +180,16 @@ class ExtensionDownloader {
                    const GURL& url,
                    const std::string& package_hash,
                    const std::string& version,
-                   const std::set<int>& request_ids,
                    DownloadFetchPriority fetch_priority);
     ~ExtensionFetch();
+
+    // Collects request ids from associated tasks.
+    std::set<int> GetRequestIds() const;
 
     ExtensionId id;
     GURL url;
     std::string package_hash;
     base::Version version;
-    // TODO(b:235968596): Remove `request_ids` from this struct, as we have all
-    // data needed in the associated tasks.
-    std::set<int> request_ids;
     DownloadFetchPriority fetch_priority;
     std::vector<ExtensionDownloaderTask> associated_tasks;
 
@@ -273,7 +272,7 @@ class ExtensionDownloader {
   // AddFailureDataOnManifestFetchFailed when fetching of update manifest
   // failed.
   void RetryRequestOrHandleFailureOnManifestFetchFailure(
-      const network::SimpleURLLoader* loader,
+      const network::SimpleURLLoader& loader,
       const int response_code);
 
   // Handles the result of a manifest fetch.

@@ -34,8 +34,8 @@ class TaskGraphRunner;
 namespace blink {
 
 namespace scheduler {
-class WebThreadScheduler;
-}
+class WidgetScheduler;
+}  // namespace scheduler
 
 class PLATFORM_EXPORT LayerTreeView
     : public cc::LayerTreeHostClient,
@@ -43,7 +43,7 @@ class PLATFORM_EXPORT LayerTreeView
       public cc::LayerTreeHostSchedulingClient {
  public:
   LayerTreeView(LayerTreeViewDelegate* delegate,
-                scheduler::WebThreadScheduler* scheduler);
+                scoped_refptr<scheduler::WidgetScheduler> scheduler);
   LayerTreeView(const LayerTreeView&) = delete;
   LayerTreeView& operator=(const LayerTreeView&) = delete;
   ~LayerTreeView() override;
@@ -74,8 +74,10 @@ class PLATFORM_EXPORT LayerTreeView
   void DidUpdateLayers() override;
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void OnDeferMainFrameUpdatesChanged(bool) override;
-  void OnDeferCommitsChanged(bool defer_status,
-                             cc::PaintHoldingReason reason) override;
+  void OnDeferCommitsChanged(
+      bool defer_status,
+      cc::PaintHoldingReason reason,
+      absl::optional<cc::PaintHoldingCommitTrigger> trigger) override;
   void BeginMainFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
   void UpdateLayerTreeHost() override;
@@ -152,7 +154,7 @@ class PLATFORM_EXPORT LayerTreeView
       base::circular_deque<std::pair<uint32_t, std::vector<Callback>>>&
           callbacks);
 
-  scheduler::WebThreadScheduler* const web_main_thread_scheduler_;
+  scoped_refptr<scheduler::WidgetScheduler> widget_scheduler_;
   const std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::RasterDarkModeFilter> dark_mode_filter_;
 

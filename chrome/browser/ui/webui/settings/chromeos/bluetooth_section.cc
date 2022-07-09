@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/bluetooth_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/fast_pair_saved_devices_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -161,7 +162,7 @@ BluetoothSection::BluetoothSection(Profile* profile,
       pref_service_(pref_service),
       pref_change_registrar_(std::make_unique<PrefChangeRegistrar>()) {
   bool is_initialized = false;
-  if (base::FeatureList::IsEnabled(floss::features::kFlossEnabled)) {
+  if (floss::features::IsFlossEnabled()) {
     is_initialized = floss::FlossDBusManager::IsInitialized();
   } else {
     is_initialized = bluez::BluezDBusManager::IsInitialized();
@@ -318,6 +319,7 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"enableFastPairSubtitle", IDS_BLUETOOTH_ENABLE_FAST_PAIR_SUBTITLE},
       {"savedDevicesLabel", IDS_BLUETOOTH_SAVED_DEVICES_LABEL},
       {"savedDevicesSubtitle", IDS_BLUETOOTH_SAVED_DEVICES_SUBTITLE},
+      {"savedDevicesPageName", IDS_SETTINGS_BLUETOOTH_SAVED_DEVICES},
       {"bluetoothPrimaryUserControlled",
        IDS_SETTINGS_BLUETOOTH_PRIMARY_USER_CONTROLLED},
       {"bluetoothDeviceWithConnectionStatus",
@@ -369,6 +371,10 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
 void BluetoothSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<BluetoothHandler>());
+
+  if (features::IsFastPairSavedDevicesEnabled()) {
+    web_ui->AddMessageHandler(std::make_unique<FastPairSavedDevicesHandler>());
+  }
 }
 
 int BluetoothSection::GetSectionNameMessageId() const {
@@ -413,6 +419,7 @@ void BluetoothSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Setting::kBluetoothConnectToDevice,
       mojom::Setting::kBluetoothDisconnectFromDevice,
   };
+
   RegisterNestedSettingBulk(mojom::Subpage::kBluetoothDevices,
                             kBluetoothDevicesSettings, generator);
   generator->RegisterTopLevelAltSetting(mojom::Setting::kBluetoothOnOff);
@@ -426,6 +433,13 @@ void BluetoothSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                 ? mojom::Subpage::kBluetoothDeviceDetail
                                 : mojom::Subpage::kBluetoothDevices,
                             kBluetoothDevicesSettingsLegacy, generator);
+
+  generator->RegisterNestedSubpage(IDS_SETTINGS_BLUETOOTH_SAVED_DEVICES,
+                                   mojom::Subpage::kBluetoothSavedDevices,
+                                   mojom::Subpage::kBluetoothDevices,
+                                   mojom::SearchResultIcon::kBluetooth,
+                                   mojom::SearchResultDefaultRank::kMedium,
+                                   mojom::kBluetoothSavedDevicesSubpagePath);
 }
 
 void BluetoothSection::AdapterPresentChanged(device::BluetoothAdapter* adapter,

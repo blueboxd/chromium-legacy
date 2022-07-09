@@ -15,23 +15,12 @@ class Bus;
 
 namespace chromeos {
 
-class ArcDataSnapshotdClient;
-class ArcKeymasterClient;
-class ArcMidisClient;
 class ArcObbMounterClient;
 class CecServiceClient;
-class ChunneldClient;
 class CrosDisksClient;
 class DebugDaemonClient;
 class EasyUnlockClient;
 class FwupdClient;
-class GnubbyClient;
-class ImageBurnerClient;
-class ImageLoaderClient;
-class OobeConfigurationClient;
-class RuntimeProbeClient;
-class SmbProviderClient;
-class VirtualFileProviderClient;
 
 // Owns D-Bus clients.
 // TODO(jamescook): Rename this class. "Browser" refers to the browser process
@@ -54,23 +43,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsBrowser {
   friend class DBusThreadManager;
   friend class DBusThreadManagerSetter;
 
-  std::unique_ptr<ArcDataSnapshotdClient> arc_data_snapshotd_client_;
-  std::unique_ptr<ArcKeymasterClient> arc_keymaster_client_;
-  std::unique_ptr<ArcMidisClient> arc_midis_client_;
   std::unique_ptr<ArcObbMounterClient> arc_obb_mounter_client_;
   std::unique_ptr<CecServiceClient> cec_service_client_;
-  std::unique_ptr<ChunneldClient> chunneld_client_;
   std::unique_ptr<CrosDisksClient> cros_disks_client_;
   std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
   std::unique_ptr<EasyUnlockClient> easy_unlock_client_;
   std::unique_ptr<FwupdClient> fwupd_client_;
-  std::unique_ptr<GnubbyClient> gnubby_client_;
-  std::unique_ptr<ImageBurnerClient> image_burner_client_;
-  std::unique_ptr<ImageLoaderClient> image_loader_client_;
-  std::unique_ptr<OobeConfigurationClient> oobe_configuration_client_;
-  std::unique_ptr<RuntimeProbeClient> runtime_probe_client_;
-  std::unique_ptr<SmbProviderClient> smb_provider_client_;
-  std::unique_ptr<VirtualFileProviderClient> virtual_file_provider_client_;
 };
 
 }  // namespace chromeos

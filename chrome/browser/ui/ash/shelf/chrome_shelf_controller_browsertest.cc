@@ -85,7 +85,6 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/external_install_options.h"
-#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
@@ -93,6 +92,7 @@
 #include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -111,6 +111,7 @@
 #include "components/app_constants/constants.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -1180,10 +1181,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchUnpinned) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
-                          WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                          true /* prefer_containner */));
+      "app1", apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                  true /* prefer_containner */));
   EXPECT_EQ(++tab_count, tab_strip->count());
   ash::ShelfID shortcut_id = CreateShortcut("app1");
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
@@ -1199,10 +1198,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchUnpinned) {
 // an unpinned hosted app web contents.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppIDForUnpinnedHostedApp) {
   const extensions::Extension* extension = LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
-                          WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                          true /* prefer_containner */));
+      "app1", apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                  true /* prefer_containner */));
 
   int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   ash::ShelfID browser_id = shelf_model()->items()[browser_index].id;
@@ -1338,10 +1335,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchInBackground) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
-                          WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                          true /* prefer_containner */));
+      "app1", apps::GetEventFlags(WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                                  true /* prefer_containner */));
   EXPECT_EQ(++tab_count, tab_strip->count());
   controller_->LaunchApp(ash::ShelfID(last_loaded_extension_id()),
                          ash::LAUNCH_FROM_UNKNOWN, 0,
@@ -1618,10 +1613,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AsyncActivationStateCheck) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
   // Open an App, maximized its window, and close it.
   const Extension* extension = LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          false /* prefer_containner */));
+      "app1", apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                  false /* prefer_containner */));
   Browser* app_browser = FindBrowserForApp(extension->id());
   ASSERT_TRUE(app_browser);
   BrowserWindow* window = app_browser->window();
@@ -1632,10 +1625,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
 
   // Reopen the App. It should start maximized. Un-maximize it and close it.
   extension = LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          false /* prefer_containner */));
+      "app1", apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                  false /* prefer_containner */));
   app_browser = FindBrowserForApp(extension->id());
   ASSERT_TRUE(app_browser);
   window = app_browser->window();
@@ -1648,10 +1639,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
 
   // Reopen the App. It should start un-maximized.
   extension = LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          false /* prefer_containner */));
+      "app1", apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                  false /* prefer_containner */));
   app_browser = FindBrowserForApp(extension->id());
   ASSERT_TRUE(app_browser);
   window = app_browser->window();
@@ -1668,10 +1657,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(0u, running_browser);
 
   const Extension* extension = LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          false /* prefer_containner */));
+      "app1", apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                  false /* prefer_containner */));
   ASSERT_TRUE(extension);
 
   // No new browser should get detected, even though one more is running.
@@ -1679,14 +1666,12 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
-  proxy->Launch(
-      extension->id(),
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
-                          WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                          true /* prefer_containner */),
-      apps::mojom::LaunchSource::kFromTest,
-      apps::MakeWindowInfo(
-          display::Screen::GetScreen()->GetPrimaryDisplay().id()));
+  proxy->Launch(extension->id(),
+                apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                    true /* prefer_containner */),
+                apps::mojom::LaunchSource::kFromTest,
+                apps::MakeWindowInfo(
+                    display::Screen::GetScreen()->GetPrimaryDisplay().id()));
   proxy->FlushMojoCallsForTesting();
 
   // A new browser should get detected and one more should be running.
@@ -1699,10 +1684,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
                        EnumerateAllBrowsersAndTabs) {
   // Create at least one browser.
   LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
-                          WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                          true /* prefer_containner */));
+      "app1", apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                  true /* prefer_containner */));
   size_t browsers = BrowserShortcutMenuItemCount(false);
   size_t tabs = BrowserShortcutMenuItemCount(true);
 
@@ -1712,7 +1695,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_TRUE(extension);
   apps::AppServiceProxyFactory::GetForProfile(profile())->LaunchAppWithParams(
       apps::AppLaunchParams(extension->id(),
-                            apps::mojom::LaunchContainer::kLaunchContainerTab,
+                            apps::LaunchContainer::kLaunchContainerTab,
                             WindowOpenDisposition::NEW_WINDOW,
                             apps::mojom::LaunchSource::kFromTest));
 
@@ -1721,10 +1704,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
 
   // Create only a tab.
   LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
-                          WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                          true /* prefer_containner */));
+      "app1", apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                  true /* prefer_containner */));
 
   EXPECT_EQ(browsers, BrowserShortcutMenuItemCount(false));
   EXPECT_EQ(++tabs, BrowserShortcutMenuItemCount(true));
@@ -2074,11 +2055,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_TRUE(browser1->window()->IsActive());
 
   // Create another app and make sure that none of our browsers is active.
-  LoadAndLaunchExtension(
-      "app1",
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                          WindowOpenDisposition::NEW_WINDOW,
-                          false /* prefer_containner */));
+  LoadAndLaunchExtension("app1",
+                         apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                             false /* prefer_containner */));
   EXPECT_FALSE(browser1->window()->IsActive());
   EXPECT_FALSE(browser2->window()->IsActive());
 
@@ -2355,8 +2334,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   // Create a windowed application.
   apps::AppServiceProxyFactory::GetForProfile(profile())->Launch(
       extensions::kWebStoreAppId,
-      apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerTab,
-                          WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
                           true /* prefer_containner */),
       apps::mojom::LaunchSource::kFromTest,
       apps::MakeWindowInfo(
@@ -2625,8 +2603,8 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicyUpdate) {
   web_app_info->start_url = app_url;
   web_app_info->scope = app_url;
   web_app_info->title = u"Example";
-  web_app::AppId app_id = web_app::test::InstallWebApp(browser()->profile(),
-                                                       std::move(web_app_info));
+  web_app::AppId app_id =
+      web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 
   // Set policy to pin the web app.
   base::DictionaryValue entry;
@@ -2644,13 +2622,12 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicyUpdate) {
   EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
             GetPinnableForAppID(app_id, profile()));
 
-  web_app::ExternallyInstalledWebAppPrefs web_app_prefs(
-      browser()->profile()->GetPrefs());
-  web_app_prefs.Insert(app_url, app_id,
-                       web_app::ExternalInstallSource::kExternalPolicy);
-  web_app::WebAppProvider::GetForTest(browser()->profile())
-      ->install_manager()
-      .NotifyWebAppInstalledWithOsHooks(app_id);
+  web_app::WebAppProvider* provider =
+      web_app::WebAppProvider::GetForTest(profile());
+  web_app::test::AddInstallUrlData(
+      profile()->GetPrefs(), &provider->sync_bridge(), app_id, app_url,
+      web_app::ExternalInstallSource::kExternalPolicy);
+  provider->install_manager().NotifyWebAppInstalledWithOsHooks(app_id);
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->FlushMojoCallsForTesting();
 

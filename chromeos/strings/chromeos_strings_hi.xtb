@@ -123,6 +123,7 @@
 <translation id="188114911237521550">गहरे रंग वाला मोड बंद करें</translation>
 <translation id="1881188606372070653">कानूनी वजहों से कॉन्टेंट में बदलाव के अनुरोध के लिए, <ph name="BEGIN_LINK1" />कानूनी सहायता पेज<ph name="END_LINK1" /> पर जाएं. खाते और सिस्टम से जुड़ी कुछ जानकारी, Google को भेजी जा सकती है. हम आपसे मिली जानकारी का इस्तेमाल, तकनीकी समस्याएं हल करने और अपनी सेवाओं को बेहतर बनाने के लिए करेंगे. जानकारी का इस्तेमाल, हमारी <ph name="BEGIN_LINK2" />निजता नीति<ph name="END_LINK2" /> और <ph name="BEGIN_LINK3" />सेवा की शर्तों<ph name="END_LINK3" /> के मुताबिक किया जाता है.</translation>
 <translation id="1887850431809612466">हार्डवेयर पुनरीक्षण</translation>
+<translation id="1904932688895783618">यहां आपकी मदद के लिए कुछ अन्य संसाधन दिए गए हैं:</translation>
 <translation id="1905710495812624430">अधिकतम स्वीकार्य प्रयासों की सीमा पार हो गई है.</translation>
 <translation id="1908234395526491708">यूडीपी अनुरोध पूरे नहीं हो पाए</translation>
 <translation id="1932611479324127242">बैटरी कटऑफ़ करें</translation>
@@ -137,6 +138,7 @@
 <translation id="2016697457005847575">समस्या ठीक करने के तरीके आज़माएं</translation>
 <translation id="2016848882344942759">--व्हाइट-लेबल मिटाएं--</translation>
 <translation id="202500043506723828">ईआईडी</translation>
+<translation id="2047316797244836561">स्क्रीन सेवर देखने के लिए, नेटवर्क से कनेक्ट करें और पेज को फिर से लोड करें.</translation>
 <translation id="2080070583977670716">ज़्यादा सेटिंग</translation>
 <translation id="2085089206770112532">डिसप्ले की रोशनी कम करने वाला बटन</translation>
 <translation id="2105810540595158374">डिवाइस एक गेम कंट्रोलर है.</translation>
@@ -153,6 +155,7 @@
 <translation id="2163937499206714165">गहरे रंग वाला मोड चालू करें</translation>
 <translation id="2177831236093724629"><ph name="LINK_BEGIN" />अमान्य कॉम्पोनेंट<ph name="LINK_END" /> मिले. यह पक्का करने के लिए कि सभी मान्य कॉम्पोनेंट को पहचाना जाए, अपने Chrome OS को सबसे नए वर्शन में अपडेट करें.</translation>
 <translation id="2180197493692062006">कोई गड़बड़ी हुई. ऐप्लिकेशन को फिर से खोलने की कोशिश करें.</translation>
+<translation id="2182088270354640012">शिकायत, सुझाव या राय देने के लिए, आपका धन्यवाद. Chrome OS की टीम आपकी शिकायत, सुझाव या राय की समीक्षा करेगी. इससे, हमें इस प्रॉडक्ट को बेहतर बनाने में मदद मिलती है. हमें बहुत सारी रिपोर्ट मिलती हैं. इसलिए, आपको सीधे जवाब नहीं मिल पाएगा.</translation>
 <translation id="2209788852729124853">ट्रैफ़िक काउंटर रीसेट करें</translation>
 <translation id="2212733584906323460">होस्ट के नाम से आईपी पता बनाएं</translation>
 <translation id="2217935453350629363">मौजूदा स्पीड</translation>
@@ -256,6 +259,7 @@
 <translation id="3226405216343213872">स्कैनर खोजे जा रहे हैं</translation>
 <translation id="3246869037381808805">एक दिन से ज़्यादा पुरानी, प्रिंट की गई फ़ाइलों को हटा दिया जाएगा</translation>
 <translation id="3268178239013324452">प्रिंट नहीं हो पाया - प्रिंटर का दरवाज़ा खुला है</translation>
+<translation id="3275729367986477355">अवतार इमेज की सेटिंग पर जाएं</translation>
 <translation id="3283504360622356314">{0,plural, =1{फ़ाइल में बदलाव करें}one{फ़ाइल में बदलाव करें}other{फ़ाइलों में बदलाव करें}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />गीगाहर्ट्ज़</translation>
 <translation id="3291996639387199448">कुंजी का डायरेक्शन</translation>
@@ -429,6 +433,7 @@
 <translation id="4793710386569335688">ज़्यादा मदद के लिए, <ph name="BEGIN_LINK" />सहायता केंद्र<ph name="END_LINK" /> पर जाएं.</translation>
 <translation id="4793756956024303490">कंप्रेस करने का एल्गोरिदम</translation>
 <translation id="4794140124556169553">सीपीयू की जांच करने से सिस्टम की परफ़ॉर्मेंस पर असर पड़ सकता है</translation>
+<translation id="4800589996161293643">Chromebook समुदाय</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> के प्रिंट का काम बंद किया गया</translation>
 <translation id="4809927044794281115">हल्के रंग वाली थीम</translation>
@@ -488,6 +493,7 @@
 मुझे कुछ पूछने के लिए माइक टैप करके देखें.</translation>
 <translation id="5212593641110061691">टैबलॉइड</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
+<translation id="522307662484862935">ईमेल पता शामिल न करें</translation>
 <translation id="5227902338748591677">गहरे रंग वाली थीम शेड्यूल करें</translation>
 <translation id="5234764350956374838">खारिज करें</translation>
 <translation id="5252456968953390977">रोमिंग</translation>
@@ -614,6 +620,7 @@
 <translation id="6284632978374966585">गहरे रंग वाली थीम चालू करें</translation>
 <translation id="6295178529664209245">क्या आपको रिपेयर की प्रोसेस जारी रखनी है?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> टेस्ट को रद्द कर दिया गया है</translation>
+<translation id="631063167932043783">Explore ऐप्लिकेशन</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> के लिए फ़र्मवेयर अपडेट करें</translation>
 <translation id="6321407676395378991">स्क्रीन सेवर चालू करें</translation>
 <translation id="6325525973963619867">विफल</translation>
@@ -642,6 +649,7 @@
 <translation id="6516990319416533844">बैटरी चार्ज होने की दर की जांच करने के लिए, बैटरी को पहले काफ़ी हद तक (पूरी नहीं) खर्च होने दें</translation>
 <translation id="6517239166834772319">एक्सप्लोर करें</translation>
 <translation id="6527081081771465939">इस वाई-फ़ाई सुरक्षा प्रोटोकॉल की जानकारी नहीं है</translation>
+<translation id="6535178685492749208">आप ऑफ़लाइन हैं. आपका सुझाव, शिकायत या राय बाद में भेजी जाएगी.</translation>
 <translation id="65587193855025101">फ़्लैटबेड</translation>
 <translation id="6564646048574748301">प्रिंट नहीं हो पाया - प्रिंटर से कनेक्ट नहीं हो पा रहा है</translation>
 <translation id="6566314079205407217">मल्टी-पेज स्कैन</translation>
@@ -720,6 +728,7 @@
 <translation id="7297226631177386107">फ़ायरवॉल के ज़रिए, एचटीटीपीएस वेबसाइटों से नहीं जोड़ा जा सकता</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Chromebook के सहायता फ़ोरम पर विशेषज्ञों से सवाल पूछें</translation>
 <translation id="7319430975418800333">ए3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Search में नतीजा देखने के लिए, Search के साथ Space दबाएं.</translation>
 <translation id="7343649194310845056">नेटवर्क के डिवाइस</translation>
@@ -762,9 +771,11 @@
 <translation id="773153675489693198">साइकल काउंट</translation>
 <translation id="7747039790905080783">पहले से शेयर की गई कुंजी</translation>
 <translation id="7762130827864645708">आपने अपना पासवर्ड बदल लिया है. कृपया अपना नया पासवर्ड इस्तेमाल करना शुरू करें.</translation>
+<translation id="7762839321248874531"><ph name="BEGIN_LINK1" />सिस्टम और ऐप्लिकेशन की जानकारी<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />मेट्रिक<ph name="END_LINK2" /> भेजें</translation>
 <translation id="7763470514545477072">डोमेन सफ़िक्स से मिलते-जुलते</translation>
 <translation id="7769672763586021400">मॉडल आईडी</translation>
 <translation id="7784116172884276937">कोई भी डीएनएस सर्वर सेट अप नहीं है</translation>
+<translation id="779591286616261875">नई रिपोर्ट भेजें</translation>
 <translation id="7799817062559422778">हल्के रंग वाला मोड</translation>
 <translation id="780301667611848630">नहीं, रहने दें</translation>
 <translation id="7805768142964895445">स्थिति</translation>
@@ -831,6 +842,7 @@
 <translation id="8382302752385457774">व्हाइट-लेबल</translation>
 <translation id="8395584934117017006">इस <ph name="DEVICE_TYPE" /> को एंटरप्राइज़ मैनेज करता है</translation>
 <translation id="8398927464629426868">वह दर जिस पर डिवाइस अभी चार्ज या डिस्चार्ज हो रहा है</translation>
+<translation id="8420955526972171689">गड़बड़ी की जानकारी देने वाले टेस्ट करके, हार्डवेयर से जुड़ी समस्याओं को हल करता है</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">डिवाइस में पहले से मौजूद कीबोर्ड</translation>
 <translation id="8431300646573772016">ChromeOS में नया क्या है</translation>
@@ -916,6 +928,7 @@
 <translation id="9082718469794970195">इस वीडियो का इस्तेमाल करें</translation>
 <translation id="9087578468327036362">इस क्वेरी की शिकायत करें</translation>
 <translation id="9088306295921699330">मौजूदा इस्तेमाल</translation>
+<translation id="9092255287806472980">हमारी टीम आपकी शिकायत, राय या सुझाव की समीक्षा करेगी. इससे, हमें Chrome OS को बेहतर बनाने में मदद मिलती है. फ़िलहाल, हमारे पास बहुत सारी रिपोर्ट आ रही हैं. इसलिए, हम जवाब नहीं दे पाएंगे.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">इसके लिए, आपको डिवाइस को अलग करना होगा</translation>
 <translation id="9098156406873149060">उपयोगकर्ता का डेटा सुरक्षित रखें</translation>

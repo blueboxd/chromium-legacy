@@ -10,7 +10,6 @@
 -BrowserViewTest.GetAccessibleTabModalDialogTitle
 -BrowsingDataRemoverBrowserTest.StorageRemovedFromDisk
 -ContextMenuBrowserTest.OpenLinkInProfile
--ContextMenuBrowserTest.OpenLinkInWebApp
 -DeclarativeContentApiTest.RulesPersistence
 -ExternalProtocolDialogBrowserTest.TestFocus
 -FolderUploadConfirmationViewTest.InitiallyFocusesCancel
@@ -19,6 +18,7 @@
 -OmniboxPopupContentsViewTest.PopupMatchesLocationBarBackground
 -OutOfProcessPPAPITest.Printing
 -ProfileListDesktopBrowserTest.SwitchToProfile
+-SSLUITest.TestCloseTabWithUnsafePopup
 -TabHoverCardBubbleViewBrowserTest.WidgetNotVisibleOnMousePressAfterTabFocus
 -TabHoverCardBubbleViewBrowserTest.WidgetVisibleOnKeyPressAfterTabFocus
 # crbug.com/1121486
@@ -27,6 +27,7 @@
 -All/HostedOrWebAppTest.CtrlClickLink/WebApp
 -AudioFocusWebContentsObserverBrowserTest.PlatformAppHasDifferentAudioFocus
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions
+-CustomTabBarViewBrowserTest.BackToAppButtonIsNotVisibleInOutOfScopePopups
 -DevToolsTest.TestDispatchKeyEventShowsAutoFill
 # #TODO (b/235882005): These tests fail due to a NOT_IMPLEMENTED_LOG_ONCE()
 # within the  wayland_surface.cc implementation. This implementation is

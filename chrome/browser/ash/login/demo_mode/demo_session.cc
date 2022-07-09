@@ -35,10 +35,12 @@
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -47,6 +49,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
@@ -397,8 +400,8 @@ base::Value DemoSession::GetCountryList() {
 void DemoSession::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDemoModeDefaultLocale, std::string());
   registry->RegisterStringPref(prefs::kDemoModeCountry, kSupportedCountries[0]);
-  registry->RegisterStringPref(prefs::kDemoModeRetailerAndStoreIdInput,
-                               std::string());
+  registry->RegisterStringPref(prefs::kDemoModeRetailerId, std::string());
+  registry->RegisterStringPref(prefs::kDemoModeStoreId, std::string());
 }
 
 void DemoSession::EnsureResourcesLoaded(base::OnceClosure load_callback) {
@@ -583,8 +586,13 @@ void DemoSession::OnSessionStateChanged() {
   }
 }
 
-// TODO(b/231761044): Launch the Demo Mode SWA after the component has
-// been successfully loaded
+void LaunchDemoSystemWebApp() {
+  // SystemWebAppManager won't run this callback if the profile is destroyed,
+  // so we don't need to worry about there being no active user profile
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::DEMO_MODE);
+}
+
 void DemoSession::OnDemoAppComponentLoaded(
     component_updater::CrOSComponentManager::Error error,
     const base::FilePath& path) {
@@ -594,6 +602,9 @@ void DemoSession::OnDemoAppComponentLoaded(
     return;
   }
   demo_app_component_path_ = path;
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  ash::SystemWebAppManager::Get(profile)->on_apps_synchronized().Post(
+      FROM_HERE, base::BindOnce(&LaunchDemoSystemWebApp));
 }
 
 void DemoSession::ShowSplashScreen() {
@@ -646,10 +657,10 @@ void DemoSession::OnAppUpdate(const apps::AppUpdate& update) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithParams(
-      apps::AppLaunchParams(
-          update.AppId(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
-          WindowOpenDisposition::NEW_WINDOW,
-          apps::mojom::LaunchSource::kFromChromeInternal));
+      apps::AppLaunchParams(update.AppId(),
+                            apps::LaunchContainer::kLaunchContainerWindow,
+                            WindowOpenDisposition::NEW_WINDOW,
+                            apps::mojom::LaunchSource::kFromChromeInternal));
 }
 
 void DemoSession::OnAppRegistryCacheWillBeDestroyed(

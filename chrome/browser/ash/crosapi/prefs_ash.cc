@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -98,18 +99,6 @@ const std::string& GetExtensionPrefNameForPref(mojom::PrefPath path) {
   return pref_name->second;
 }
 
-// On non login case, ProfileManager::GetPrimaryUserProfile() returns
-// a Profile instance which is different from logged in user profile.
-Profile* GetPrimaryLoggedInUserProfile() {
-  // Check login state first.
-  if (!user_manager::UserManager::IsInitialized() ||
-      !user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    return nullptr;
-  }
-
-  return ProfileManager::GetPrimaryUserProfile();
-}
-
 }  // namespace
 
 PrefsAsh::PrefsAsh(ProfileManager* profile_manager, PrefService* local_state)
@@ -123,10 +112,6 @@ PrefsAsh::PrefsAsh(ProfileManager* profile_manager, PrefService* local_state)
 
   profile_manager_->AddObserver(this);
   local_state_registrar_.Init(local_state_);
-
-  Profile* primary_profile = GetPrimaryLoggedInUserProfile();
-  if (primary_profile)
-    OnPrimaryProfileReady(primary_profile);
 }
 
 PrefsAsh::~PrefsAsh() {
@@ -161,12 +146,12 @@ void PrefsAsh::GetExtensionPrefWithControl(
     return;
   }
 
-  const base::Value* value = state->pref_service->Get(state->path);
+  const base::Value& value = state->pref_service->GetValue(state->path);
 
   if (!state->is_extension_controlled_pref) {
     // Not extension controlled
     std::move(callback).Run(
-        absl::optional<base::Value>(value->Clone()),
+        absl::optional<base::Value>(value.Clone()),
         mojom::PrefControlState::kNotExtensionControlledPrefPath);
     return;
   }
@@ -186,7 +171,7 @@ void PrefsAsh::GetExtensionPrefWithControl(
     // Lacros could control this.
     pref_control_state = mojom::PrefControlState::kLacrosExtensionControllable;
   }
-  std::move(callback).Run(absl::optional<base::Value>(value->Clone()),
+  std::move(callback).Run(absl::optional<base::Value>(value.Clone()),
                           pref_control_state);
 }
 
@@ -244,14 +229,11 @@ void PrefsAsh::AddObserver(mojom::PrefPath path,
 }
 
 void PrefsAsh::OnProfileAdded(Profile* profile) {
-  Profile* primary_profile = GetPrimaryLoggedInUserProfile();
-  if (!primary_profile) {
-    // Primary profile is not yet available. Wait for another invocation
-    // to capture its creation.
+  if (!ash::ProfileHelper::IsPrimaryProfile(profile)) {
     return;
   }
 
-  OnPrimaryProfileReady(primary_profile);
+  OnPrimaryProfileReady(profile);
 }
 
 absl::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {

@@ -277,10 +277,6 @@ CHAR_LIMIT guidelines:
         USB
       </message>
 
-      <message name="IDS_UNSUPPORTED" desc="Message displayed to the user when an attempted action is not supported.">
-        Unsupported
-      </message>
-
       <!-- Sign-in, sync and personalization preferences -->
       <message name="IDS_PREFS_SECTION_ACCOUNT_AND_GOOGLE_SERVICES" desc="Title for the group of account-related entries and google services in Settings. [CHAR_LIMIT=32]">
         You and Google
@@ -980,10 +976,10 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
         Add <ph name="SITE">%1$s<ex>example.com</ex></ph>
       </message>
       <message name="IDS_PRIVACY_SANDBOX_ADD_INTEREST_SNACKBAR" desc="Text on a snackbar after an ad personalization interest was added to the Topics API of the Privacy Sandbox.">
-        Interest added
+        Chrome can consider this interest
       </message>
       <message name="IDS_PRIVACY_SANDBOX_ADD_SITE_SNACKBAR" desc="Text on a snackbar after an ad personalization interest was added to the FLEDGE API of the Privacy Sandbox.">
-        Site added
+        Site can define interests
       </message>
       <message name="IDS_PRIVACY_SANDBOX_REMOVE_INTEREST_BUTTON_DESCRIPTION" desc="Content description for button that removes an ad interest for the Topics API of the Privacy Sandbox.">
         Remove <ph name="INTEREST">%1$s<ex>Acting and Theater</ex></ph>
@@ -1611,6 +1607,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_LANGUAGES_SRP_SUBTITLE" desc="Subtitle warning a user that the language of their keyboard will not change if they change the application language of Chrome on Android.">
         Your keyboard won’t change
       </message>
+      <message name="IDS_LANGUAGES_MORE_LANGUAGES" desc="Text used in a language picker to hide languages that a user is less likely to select. [CHAR_LIMIT=32]">
+        More languages
+      </message>
       <message name="IDS_LANGUAGES_SRP_LOADING_TEXT" desc="Text to display while a language pack is being downloaded.">
         Loading <ph name="LANG">%1$s<ex>Hindi</ex></ph>
       </message>
@@ -1863,10 +1862,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_CHILD_CONTENT_ALL" desc="Setting that permits child accounts to visit any websites.">
         Allow all sites
-      </message>
-
-      <message name="IDS_POWERED_BY_CHROME_MESSAGE" desc="A message indicating that the current page is running in Chrome.">
-        Powered by Chrome
       </message>
 
       <!-- Sync strings in account management dialog -->
@@ -2475,12 +2470,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_IPH_PWA_INSTALL_AVAILABLE_TEXT" desc="The in-product-help message for PWAs that can be installed to the device.">
         Install this app
-      </message>
-      <message name="IDS_IPH_BUBBLE_ADD_TO_HOME_SCREEN" desc="The in-product-help text bubble message encouraging users to add a commonly visited webpage to the home screen.">
-        To get here quicker, add this page to your Home screen
-      </message>
-      <message name="IDS_IPH_BUBBLE_ADD_TO_HOME_SCREEN_ACCESSIBILITY" desc="The in-product-help text bubble message encouraging users to add a commonly visited webpage to the home screen. Used when a screen reader is turned. 'More options' should match TC ID 8110367050267853536.">
-        To get here quicker, add this page to your Home screen from the More options button
       </message>
       <message name="IDS_IPH_MESSAGE_ADD_TO_HOME_SCREEN_TITLE" desc="The title of in-product-help message encouraging users to add a commonly visited webpage to the home screen.">
         Add to Home screen
@@ -4235,6 +4224,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <!-- WebAPK/TWA related strings -->
       <message name="IDS_TWA_RUNNING_IN_CHROME" desc="Message on a snackbar indicating that the current Activity may use Chrome data (the rest of the app may not be).">
         Running in Chrome
+      </message>
+      <message name="IDS_TWA_RUNNING_IN_CHROME_TEMPLATE" desc="Message template that used to indicating that the current Activity may use Chrome data (the rest of the app may not be). [CHAR_LIMIT=32]">
+        Running in <ph name="APP_NAME">%1$s<ex>Chromium</ex></ph>
       </message>
       <message name="IDS_TWA_RUNNING_IN_CHROME_V2" desc="Updated message on a snackbar indicating that the current Activity may use Chrome data (the rest of the app may not be).">
         You'll see your <ph name="SITE_NAME">%1$s<ex>www.youtube.com</ex></ph> sign-in status, browsing data, and site data in Chrome

@@ -14,10 +14,16 @@
 #include "ipcz/ipcz.h"
 #include "test/test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
 #include "third_party/abseil-cpp/absl/base/macros.h"
 #include "third_party/abseil-cpp/absl/types/span.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/ipcz/src/test_buildflags.h"
 #include "util/ref_counted.h"
+
+#if BUILDFLAG(ENABLE_IPCZ_MULTIPROCESS_TESTS)
+#include "test/test_child_launcher.h"
+#endif
 
 namespace ipcz::test {
 
@@ -26,8 +32,8 @@ class TestNode;
 template <typename TestNodeType>
 class MultinodeTest;
 
-// Selects which driver test nodes will use. Interconnecting nodes must always
-// use the same driver.
+// Selects which driver will be used by test nodes. Interconnecting nodes must
+// always use the same driver.
 //
 // Multinode tests are parameterized over these modes to provide coverage of
 // various interesting constraints encountered in production. Some platforms
@@ -39,27 +45,44 @@ class MultinodeTest;
 // all driver modes. The synchronous version is generally easier to debug in
 // such cases.
 enum class DriverMode {
-  // Use the fully synchronous, single-process reference driver. This driver
-  // does not create any background threads and all ipcz operations will
-  // complete synchronously from end-to-end.
+  // Use the synchronous, single-process reference driver. This driver does not
+  // create any background threads and all ipcz operations (e.g. message
+  // delivery, portal transfer, proxy elimination, etc) complete synchronously
+  // from end-to-end. Each test node runs its test body on a dedicated thread
+  // within the test process.
   kSync,
 
-  // Use the async multiprocess driver as-is. All nodes can allocate their own
-  // shared memory directly through the driver.
+  // Use the asynchronous single-process reference driver. Transport messages
+  // are received asynchronously, similar to how most production drivers are
+  // likely to operate in practice. Such asynchrony gives rise to
+  // non-determinism throughout ipcz proper and provides good coverage of
+  // potential race conditions.
+  //
+  // As with the kSync driver, each test node runs its test body on a dedicated
+  // thread within the test process.
   kAsync,
 
-  // Use the async multiprocess driver, and force non-broker nodes to delegate
-  // shared memory allocation to their broker.
+  // Use the same driver as kAsync, but non-broker nodes are forced to delegate
+  // shared memory allocation to their broker. This simulates the production
+  // constraints of some sandbox environments and exercises additional
+  // asynchrony in ipcz proper.
   kAsyncDelegatedAlloc,
 
-  // Use the async multiprocess driver, and force non-broker-to-non-broker
-  // transmission of driver objects to be relayed through a broker. All nodes
-  // can allocate their own shared memory directly through the driver.
+  // Use the same driver as kAsync, but driver objects cannot be transmitted
+  // directly between non-brokers and must instead be relayed by a broker. This
+  // simulates the production constraints of some sandbox environments and
+  // exercises additional asynchrony in ipcz proper.
   kAsyncObjectBrokering,
 
-  // Use the async multiprocess driver, forcing shared memory AND driver
-  // object relay both to be delegated to a broker.
+  // Use the same driver as kAsync, imposing the additional constraints of both
+  // kAsyncDelegatedAlloc and kAsyncObjectBrokering as described above.
   kAsyncObjectBrokeringAndDelegatedAlloc,
+
+#if BUILDFLAG(ENABLE_IPCZ_MULTIPROCESS_TESTS)
+  // Use a multiprocess-capable driver (Linux only for now), with each test node
+  // running in its own isolated child process.
+  kMultiprocess,
+#endif
 };
 
 namespace internal {
@@ -187,6 +210,9 @@ class TestNode : public internal::TestBase {
   };
   TransportPair CreateTransports();
 
+  // Helper used to support multiprocess TestNode invocation.
+  int RunAsChild();
+
  private:
   // Sets the transport to use when connecting to a broker via ConnectBroker.
   // Must only be called once.
@@ -218,6 +244,10 @@ class TestNode : public internal::TestBase {
   IpczHandle node_ = IPCZ_INVALID_HANDLE;
   IpczDriverHandle transport_ = IPCZ_INVALID_DRIVER_HANDLE;
   std::vector<Ref<TestNodeController>> spawned_nodes_;
+
+#if BUILDFLAG(ENABLE_IPCZ_MULTIPROCESS_TESTS)
+  TestChildLauncher child_launcher_;
+#endif
 };
 
 // Actual parameterized GTest Test fixture for multinode tests. This or a
@@ -237,6 +267,15 @@ class MultinodeTest : public TestNodeType,
 
 }  // namespace ipcz::test
 
+#define MULTINODE_TEST_CHILD_MAIN_HELPER(func, node_name) \
+  MULTIPROCESS_TEST_MAIN(func) {                          \
+    node_name node;                                       \
+    return node.RunAsChild();                             \
+  }
+
+#define MULTINODE_TEST_CHILD_MAIN(fixture, node_name) \
+  MULTINODE_TEST_CHILD_MAIN_HELPER(fixture##_##node_name##_Node, node_name)
+
 // Defines the main body of a non-broker test node for a multinode test. The
 // named node can be spawned by another node using SpawnTestNode<T> where T is
 // the unique name given by `node_name` here. `fixture` must be
@@ -254,11 +293,21 @@ class MultinodeTest : public TestNodeType,
     };                                                                     \
     void NodeBody() override;                                              \
   };                                                                       \
+  MULTINODE_TEST_CHILD_MAIN(fixture, node_name);                           \
   void node_name::NodeBody()
+
+#if BUILDFLAG(ENABLE_IPCZ_MULTIPROCESS_TESTS)
+#define IPCZ_EXTRA_DRIVER_MODES , ipcz::test::DriverMode::kMultiprocess
+#else
+#define IPCZ_EXTRA_DRIVER_MODES
+#endif
 
 // TODO: Add other DriverMode enumerators here as support is landed.
 #define INSTANTIATE_MULTINODE_TEST_SUITE_P(suite) \
-  INSTANTIATE_TEST_SUITE_P(, suite,               \
-                           ::testing::Values(ipcz::test::DriverMode::kSync))
+  INSTANTIATE_TEST_SUITE_P(                       \
+      , suite,                                    \
+      ::testing::Values(                          \
+          ipcz::test::DriverMode::kSync,          \
+          ipcz::test::DriverMode::kAsync IPCZ_EXTRA_DRIVER_MODES))
 
 #endif  // IPCZ_SRC_TEST_MULTINODE_TEST_H_

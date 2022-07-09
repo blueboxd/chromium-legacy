@@ -592,7 +592,7 @@ bool IsOnlySuggestion(int suggestions, int suggestion) {
 // network error. Appears above the fold underneath heading and intro paragraph.
 void GetSuggestionsSummaryList(
     int error_code,
-    base::DictionaryValue* error_strings,
+    base::Value::Dict& error_strings,
     int suggestions,
     const std::string& locale,
     std::vector<base::Value>& suggestions_summary_list,
@@ -759,7 +759,7 @@ void GetSuggestionsSummaryList(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   // Add list prefix header.
-  error_strings->SetStringPath(
+  error_strings.Set(
       "suggestionsSummaryListHeader",
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LIST_HEADER));
 }
@@ -787,7 +787,6 @@ void AddSuggestionDetailDictionaryToList(std::vector<base::Value>& list,
 // Certain suggestions have supporting details which get displayed under
 // the "Details" button.
 void AddSuggestionsDetails(int error_code,
-                           base::DictionaryValue* error_strings,
                            int suggestions,
                            std::vector<base::Value>& suggestions_details) {
   if (suggestions & SUGGEST_CHECK_CONNECTION) {
@@ -890,41 +889,38 @@ LocalizedError::PageState LocalizedError::GetPageState(
     result.is_offline_error = true;
 
     // These strings are to be read by a screen reader during the dino game.
-    result.strings.SetStringPath(
+    result.strings.Set(
         "dinoGameA11yAriaLabel",
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_ARIA_LABEL));
-    result.strings.SetStringPath(
-        "dinoGameA11yGameOver",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_GAME_OVER));
-    result.strings.SetStringPath(
+    result.strings.Set("dinoGameA11yGameOver",
+                       l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_GAME_OVER));
+    result.strings.Set(
         "dinoGameA11yHighScore",
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_HIGH_SCORE));
-    result.strings.SetStringPath(
-        "dinoGameA11yJump", l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_JUMP));
-    result.strings.SetStringPath(
+    result.strings.Set("dinoGameA11yJump",
+                       l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_JUMP));
+    result.strings.Set(
         "dinoGameA11yStartGame",
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_GAME_START));
-    result.strings.SetStringPath(
+    result.strings.Set(
         "dinoGameA11ySpeedToggle",
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_SLOW_SPEED_TOGGLE));
-    result.strings.SetStringPath(
+    result.strings.Set(
         "dinoGameA11yDescription",
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_GAME_DESCRIPTION));
 
     if (EnableAltGameMode()) {
-      result.strings.SetBoolKey("enableAltGameMode", true);
+      result.strings.Set("enableAltGameMode", true);
       // We don't know yet which scale the page will use, so both 1x and 2x
       // should be loaded.
-      result.strings.SetStringPath(
-          "altGameCommonImage1x", GetAltGameImage(/*image_id=*/0, /*scale=*/1));
-      result.strings.SetStringPath(
-          "altGameCommonImage2x", GetAltGameImage(/*image_id=*/0, /*scale=*/2));
+      result.strings.Set("altGameCommonImage1x",
+                         GetAltGameImage(/*image_id=*/0, /*scale=*/1));
+      result.strings.Set("altGameCommonImage2x",
+                         GetAltGameImage(/*image_id=*/0, /*scale=*/2));
       int choice = ChooseAltGame();
-      result.strings.SetStringPath("altGameType", base::NumberToString(choice));
-      result.strings.SetStringPath("altGameSpecificImage1x",
-                                   GetAltGameImage(choice, 1));
-      result.strings.SetStringPath("altGameSpecificImage2x",
-                                   GetAltGameImage(choice, 2));
+      result.strings.Set("altGameType", base::NumberToString(choice));
+      result.strings.Set("altGameSpecificImage1x", GetAltGameImage(choice, 1));
+      result.strings.Set("altGameSpecificImage2x", GetAltGameImage(choice, 2));
     }
   }
 
@@ -964,6 +960,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
   if (is_kiosk_mode) {
     options.suggestions &= ~SUGGEST_DIAGNOSE_TOOL;
     options.suggestions &= ~SUGGEST_LEARNMORE;
+    options.suggestions &= ~SUGGEST_CONTACT_ADMINISTRATOR;
   }
 
   std::u16string failed_url_string(url_formatter::FormatUrl(
@@ -975,9 +972,9 @@ LocalizedError::PageState LocalizedError::GetPageState(
 
   std::u16string host_name(url_formatter::IDNToUnicode(failed_url.host()));
   if (failed_url.SchemeIsHTTPOrHTTPS()) {
-    result.strings.SetStringPath("title", host_name);
+    result.strings.Set("title", host_name);
   } else {
-    result.strings.SetStringPath("title", failed_url_string);
+    result.strings.Set("title", failed_url_string);
 
     // If the page is blocked by policy, and no hostname is available to show,
     // instead show the scheme.
@@ -987,36 +984,35 @@ LocalizedError::PageState LocalizedError::GetPageState(
     }
   }
 
-  result.strings.SetStringPath("iconClass",
-                               GetIconClassForError(error_domain, error_code));
+  result.strings.Set("iconClass",
+                     GetIconClassForError(error_domain, error_code));
 
-  base::DictionaryValue heading;
+  base::Value::Dict heading;
 
   int msg_id = show_game_instructions ? IDS_ERRORPAGES_GAME_INSTRUCTIONS
                                       : options.heading_resource_id;
-  heading.SetStringPath("msg", l10n_util::GetStringUTF16(msg_id));
-  heading.SetStringPath("hostName", host_name);
-  result.strings.SetPath("heading", std::move(heading));
+  heading.Set("msg", l10n_util::GetStringUTF16(msg_id));
+  heading.Set("hostName", host_name);
+  result.strings.Set("heading", std::move(heading));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Check if easter egg should be disabled.
   if (command_line->HasSwitch(
           error_page::switches::kDisableDinosaurEasterEgg)) {
     // The presence of this string disables the easter egg. Acts as a flag.
-    result.strings.SetStringPath(
-        "disabledEasterEgg",
-        l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
+    result.strings.Set("disabledEasterEgg",
+                       l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
   }
 
   // Return early and don't add suggestions or other information when showing
   // game instructions.
   if (show_game_instructions) {
     // When showing instructions, set an empty error to prevent a "NULL" string.
-    result.strings.SetStringPath("errorCode", "");
+    result.strings.Set("errorCode", "");
     return result;
   }
 
-  base::DictionaryValue summary;
+  base::Value::Dict summary;
 
   // Set summary message under the heading.
   std::u16string message;
@@ -1029,17 +1025,16 @@ LocalizedError::PageState LocalizedError::GetPageState(
     message = l10n_util::GetStringUTF16(options.summary_resource_id);
   }
 
-  summary.SetStringPath("msg", std::move(message));
+  summary.Set("msg", std::move(message));
 
-  summary.SetStringPath("failedUrl", failed_url_string);
-  summary.SetStringPath("hostName", host_name);
+  summary.Set("failedUrl", failed_url_string);
+  summary.Set("hostName", host_name);
 
-  result.strings.SetStringPath(
+  result.strings.Set(
       "details", l10n_util::GetStringUTF16(IDS_ERRORPAGE_NET_BUTTON_DETAILS));
-  result.strings.SetStringPath(
-      "hideDetails",
-      l10n_util::GetStringUTF16(IDS_ERRORPAGE_NET_BUTTON_HIDE_DETAILS));
-  result.strings.SetPath("summary", std::move(summary));
+  result.strings.Set("hideDetails", l10n_util::GetStringUTF16(
+                                        IDS_ERRORPAGE_NET_BUTTON_HIDE_DETAILS));
+  result.strings.Set("summary", std::move(summary));
 
   std::u16string error_string;
   if (error_domain == Error::kNetErrorDomain) {
@@ -1053,7 +1048,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
     DCHECK_EQ(Error::kHttpErrorDomain, error_domain);
     error_string = base::ASCIIToUTF16(HttpErrorCodeToString(error_code));
   }
-  result.strings.SetStringPath("errorCode", error_string);
+  result.strings.Set("errorCode", error_string);
 
   std::vector<base::Value> suggestions_details;
   std::vector<base::Value> suggestions_summary_list;
@@ -1061,12 +1056,12 @@ LocalizedError::PageState LocalizedError::GetPageState(
   // Add the reload suggestion, if needed, for pages that didn't come
   // from a post.
   if ((options.buttons & SHOW_BUTTON_RELOAD) && !is_post) {
-    base::DictionaryValue reload_button;
+    base::Value::Dict reload_button;
     result.reload_button_shown = true;
-    reload_button.SetStringPath(
-        "msg", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
-    reload_button.SetStringPath("reloadUrl", failed_url.spec());
-    result.strings.SetPath("reloadButton", std::move(reload_button));
+    reload_button.Set("msg",
+                      l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
+    reload_button.Set("reloadUrl", failed_url.spec());
+    result.strings.Set("reloadButton", std::move(reload_button));
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1076,11 +1071,10 @@ LocalizedError::PageState LocalizedError::GetPageState(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Add default suggestions and any relevant supporting details.
-  GetSuggestionsSummaryList(error_code, &result.strings, options.suggestions,
+  GetSuggestionsSummaryList(error_code, result.strings, options.suggestions,
                             locale, suggestions_summary_list,
                             can_show_network_diagnostics_dialog, failed_url);
-  AddSuggestionsDetails(error_code, &result.strings, options.suggestions,
-                        suggestions_details);
+  AddSuggestionsDetails(error_code, options.suggestions, suggestions_details);
 
 #if BUILDFLAG(IS_ANDROID)
   if (!is_post && !result.reload_button_shown && !is_incognito &&
@@ -1088,25 +1082,25 @@ LocalizedError::PageState LocalizedError::GetPageState(
       LocalizedError::IsOfflineError(error_domain, error_code)) {
     if (!auto_fetch_feature_enabled) {
       result.download_button_shown = true;
-      result.strings.SetPath({"downloadButton", "msg"},
-                             base::Value(l10n_util::GetStringUTF16(
-                                 IDS_ERRORPAGES_BUTTON_DOWNLOAD)));
-      result.strings.SetPath({"downloadButton", "disabledMsg"},
-                             base::Value(l10n_util::GetStringUTF16(
-                                 IDS_ERRORPAGES_BUTTON_DOWNLOADING)));
+      result.strings.SetByDottedPath(
+          "downloadButton.msg",
+          l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOAD));
+      result.strings.SetByDottedPath(
+          "downloadButton.disabledMsg",
+          l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOADING));
     } else {
       result.auto_fetch_allowed = true;
-      result.strings.SetStringPath("attemptAutoFetch", "true");
-      result.strings.SetPath({"savePageLater", "savePageMsg"},
-                             base::Value(l10n_util::GetStringUTF16(
-                                 IDS_ERRORPAGES_SAVE_PAGE_BUTTON)));
-      result.strings.SetPath({"savePageLater", "cancelMsg"},
-                             base::Value(l10n_util::GetStringUTF16(
-                                 IDS_ERRORPAGES_CANCEL_SAVE_PAGE_BUTTON)));
+      result.strings.Set("attemptAutoFetch", "true");
+      result.strings.SetByDottedPath(
+          "savePageLater.savePageMsg",
+          l10n_util::GetStringUTF16(IDS_ERRORPAGES_SAVE_PAGE_BUTTON));
+      result.strings.SetByDottedPath(
+          "savePageLater.cancelMsg",
+          l10n_util::GetStringUTF16(IDS_ERRORPAGES_CANCEL_SAVE_PAGE_BUTTON));
     }
   }
 
-  result.strings.SetStringPath(
+  result.strings.Set(
       "closeDescriptionPopup",
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_CLOSE_POPUP_BUTTON));
 
@@ -1114,45 +1108,44 @@ LocalizedError::PageState LocalizedError::GetPageState(
       !is_incognito) {
     result.offline_content_feature_enabled = offline_content_feature_enabled;
     if (offline_content_feature_enabled) {
-      result.strings.SetStringPath("suggestedOfflineContentPresentation", "on");
-      result.strings.SetPath({"offlineContentList", "title"},
-                             base::Value(l10n_util::GetStringUTF16(
-                                 IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_TITLE)));
-      result.strings.SetPath(
-          {"offlineContentList", "actionText"},
-          base::Value(l10n_util::GetStringUTF16(
-              IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_OPEN_ALL_BUTTON)));
-      result.strings.SetPath(
-          {"offlineContentList", "showText"},
-          base::Value(l10n_util::GetStringUTF16(IDS_SHOW_CONTENT)));
-      result.strings.SetPath(
-          {"offlineContentList", "hideText"},
-          base::Value(l10n_util::GetStringUTF16(IDS_HIDE_CONTENT)));
+      result.strings.Set("suggestedOfflineContentPresentation", "on");
+      result.strings.SetByDottedPath(
+          "offlineContentList.title",
+          l10n_util::GetStringUTF16(IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_TITLE));
+      result.strings.SetByDottedPath(
+          "offlineContentList.actionText",
+          l10n_util::GetStringUTF16(
+              IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_OPEN_ALL_BUTTON));
+      result.strings.SetByDottedPath(
+          "offlineContentList.showText",
+          l10n_util::GetStringUTF16(IDS_SHOW_CONTENT));
+      result.strings.SetByDottedPath(
+          "offlineContentList.hideText",
+          l10n_util::GetStringUTF16(IDS_HIDE_CONTENT));
     }
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  result.strings.SetPath("suggestionsSummaryList",
-                         base::Value(std::move(suggestions_summary_list)));
-  result.strings.SetPath("suggestionsDetails",
-                         base::Value(std::move(suggestions_details)));
+  result.strings.Set("suggestionsSummaryList",
+                     base::Value(std::move(suggestions_summary_list)));
+  result.strings.Set("suggestionsDetails",
+                     base::Value(std::move(suggestions_details)));
   return result;
 }
 
 LocalizedError::PageState LocalizedError::GetPageStateForOverriddenErrorPage(
-    base::Value string_dict,
+    base::Value::Dict string_dict,
     int error_code,
     const std::string& error_domain,
     const GURL& failed_url,
     const std::string& locale) {
   LocalizedError::PageState result;
 
-  result.strings.MergeDictionary(&string_dict);
+  result.strings.Merge(std::move(string_dict));
   webui::SetLoadTimeDataDefaults(locale, &result.strings);
 
   if (failed_url.SchemeIsHTTPOrHTTPS()) {
-    result.strings.SetStringPath(
-        "title", url_formatter::IDNToUnicode(failed_url.host()));
+    result.strings.Set("title", url_formatter::IDNToUnicode(failed_url.host()));
   } else {
     std::u16string failed_url_string(url_formatter::FormatUrl(
         failed_url, url_formatter::kFormatUrlOmitNothing,
@@ -1160,7 +1153,7 @@ LocalizedError::PageState LocalizedError::GetPageStateForOverriddenErrorPage(
     // URLs are always LTR.
     if (base::i18n::IsRTL())
       base::i18n::WrapStringWithLTRFormatting(&failed_url_string);
-    result.strings.SetStringPath("title", failed_url_string);
+    result.strings.Set("title", failed_url_string);
   }
 
   return result;

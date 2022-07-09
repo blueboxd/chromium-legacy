@@ -177,7 +177,9 @@ std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
   auto result = std::make_unique<base::DictionaryValue>();
   result->SetBoolKey(key::kRemoteAccessHostFirewallTraversal, true);
   result->SetBoolKey(key::kRemoteAccessHostRequireCurtain, false);
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
   result->SetBoolKey(key::kRemoteAccessHostMatchUsername, false);
+#endif
   result->Set(key::kRemoteAccessHostClientDomainList,
               std::make_unique<base::ListValue>());
   result->Set(key::kRemoteAccessHostDomainList,
@@ -190,8 +192,11 @@ std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
   result->SetBoolKey(key::kRemoteAccessHostAllowGnubbyAuth, true);
   result->SetBoolKey(key::kRemoteAccessHostAllowRelayedConnection, true);
   result->SetStringKey(key::kRemoteAccessHostUdpPortRange, "");
+
+#if BUILDFLAG(IS_WIN)
   result->SetBoolKey(key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
                      false);
+#endif
   result->SetIntKey(key::kRemoteAccessHostClipboardSizeBytes, -1);
   result->SetBoolKey(key::kRemoteAccessHostAllowRemoteSupportConnections, true);
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -453,8 +458,7 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithTaskRunner(
   std::unique_ptr<policy::AsyncPolicyLoader> policy_loader;
 #if BUILDFLAG(IS_WIN)
   policy_loader = std::make_unique<policy::PolicyLoaderWin>(
-      file_task_runner, management_service, kChromePolicyKey,
-      true /* is_dev_registry_key_supported */);
+      file_task_runner, management_service, kChromePolicyKey);
 #elif BUILDFLAG(IS_APPLE)
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
   policy_loader = std::make_unique<policy::PolicyLoaderMac>(

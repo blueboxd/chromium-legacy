@@ -57,12 +57,10 @@ PendingWriteStore::GetPendingAdds() {
     return list;
   }
 
-  const base::Value* result = pref_service->Get(kFastPairPendingWritesPref);
-  if (!result) {
-    return list;
-  }
+  const base::Value& result =
+      pref_service->GetValue(kFastPairPendingWritesPref);
 
-  for (const auto item : result->DictItems()) {
+  for (const auto item : result.DictItems()) {
     list.emplace_back(item.first, item.second.GetString());
   }
 
@@ -101,13 +99,10 @@ std::vector<const std::string> PendingWriteStore::GetPendingDeletes() {
     return list;
   }
 
-  const base::Value* result =
-      pref_service->GetList(kFastPairPendingDeletesPref);
-  if (!result) {
-    return list;
-  }
+  const base::Value::List& result =
+      pref_service->GetValueList(kFastPairPendingDeletesPref);
 
-  for (const auto& item : result->GetListDeprecated()) {
+  for (const auto& item : result) {
     list.emplace_back(item.GetString());
   }
 

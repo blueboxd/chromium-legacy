@@ -15,11 +15,10 @@
 #include "base/strings/string_piece_forward.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 
 namespace password_manager {
 
-struct PasswordForm;
-struct CredentialUIEntry;
 class PasswordUndoHelper;
 
 // This interface provides a way for clients to obtain a list of all saved
@@ -58,6 +57,21 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
     virtual void OnSavedPasswordsChanged(SavedPasswordsView passwords) {}
   };
 
+  // Result of EditSavedCredentials.
+  enum EditResult {
+    // Some credentials were successfully updated.
+    kSuccess,
+    // New credential matches the old one so nothing was changed.
+    kNothingChanged,
+    // Credential couldn't be found in the store.
+    kNotFound,
+    // Credentials with the same username and sign on realm already exists.
+    kAlreadyExisits,
+    // Password was empty.
+    kEmptyPassword,
+    kMaxValue = kEmptyPassword,
+  };
+
   explicit SavedPasswordsPresenter(
       scoped_refptr<PasswordStoreInterface> profile_store,
       scoped_refptr<PasswordStoreInterface> account_store = nullptr);
@@ -75,12 +89,10 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   // Cancels the last removal operation.
   void UndoLastRemoval();
 
-  // Adds the credential to the store specified in the |form|. Returns true
-  // if the password was added, false if |form|'s data is not valid (invalid
-  // url/empty password), or an entry with such signon_realm and username
-  // already exists in any (profile or account) store.
-  // TODO(crbug.com/1330906): Remove in favor of EditSavedCredentials.
-  bool AddPassword(const PasswordForm& form);
+  // Adds the |credential| to the specified store. Returns true if the password
+  // was added, false if |credential|'s data is not valid (invalid url/empty
+  // password), or an entry with such signon_realm and username already exists
+  // in any (profile or account) store.
   bool AddCredential(const CredentialUIEntry& credential);
 
   // Tries to edit |password|. After checking whether |form| is present in
@@ -100,18 +112,9 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
                           const std::u16string& new_username,
                           const std::u16string& new_password);
 
-  // Modifies provided password forms, with |new_username|, |new_password| and
-  // |new_note|. |forms| must represent single credential, with its duplicates,
-  // or the same form saved on another store type.
-  // TODO(crbug.com/1330906): Remove in favor of EditSavedCredentials.
-  bool EditSavedPasswords(const SavedPasswordsView forms,
-                          const std::u16string& new_username,
-                          const std::u16string& new_password,
-                          const std::u16string& new_note = std::u16string());
-
   // Modifies all the saved credentials with a matching key. Only username,
   // password and notes are modified.
-  bool EditSavedCredentials(const CredentialUIEntry& credential);
+  EditResult EditSavedCredentials(const CredentialUIEntry& credential);
 
   // Returns a list of the currently saved credentials.
   SavedPasswordsView GetSavedPasswords() const;
@@ -125,6 +128,10 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   // TODO(crbug.com/1330906): Replace all API to work with CredentialUIEntry.
   std::vector<PasswordForm> GetUniquePasswordForms() const;
   std::vector<CredentialUIEntry> GetSavedCredentials() const;
+
+  // Returns PasswordForms corresponding to |key|.
+  std::vector<PasswordForm> GetCorrespondingPasswordForms(
+      const CredentialKey& key) const;
 
   // Allows clients and register and de-register themselves.
   void AddObserver(Observer* observer);

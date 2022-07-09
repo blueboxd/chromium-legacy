@@ -22,6 +22,31 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="OmniboxProviders">
+  <variant name="Bookmark"/>
+  <variant name="Builtin"/>
+  <variant name="Clipboard"/>
+  <variant name="Contact"/>
+  <variant name="Document"/>
+  <variant name="ExtensionApp"/>
+  <variant name="HistoryCluster"/>
+  <variant name="HistoryContents"/>
+  <variant name="HistoryFuzzy"/>
+  <variant name="HistoryQuick"/>
+  <variant name="HistoryURL"/>
+  <variant name="Keyword"/>
+  <variant name="LocalHistoryZeroSuggest"/>
+  <variant name="MostVisitedSites"/>
+  <variant name="OnDeviceHead"/>
+  <variant name="OpenTab"/>
+  <variant name="QueryTile"/>
+  <variant name="Search"/>
+  <variant name="Shortcuts"/>
+  <variant name="VerbatimMatch"/>
+  <variant name="VoiceSuggest"/>
+  <variant name="ZeroSuggest"/>
+</variants>
+
 <histogram name="Omnibox.AcceptedKeywordSuggestion"
     enum="OmniboxEnteredKeywordMode2" expires_after="2022-11-10">
   <owner>yoangela@chromium.org</owner>
@@ -72,6 +97,152 @@ chromium-metrics-reviews@google.com.
     order to load Search Result Page or when a proactive request is made to
     prefetch the Search Result Page.
   </summary>
+</histogram>
+
+<histogram
+    name="Omnibox.AsyncAutocompletionTime.Provider.{Provider}{Completed}"
+    units="ms" expires_after="2022-12-01">
+  <owner>manukh@chromium.org</owner>
+  <owner>jdonnelly@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    When the user focuses or types into the omnibox, the dropdown results can be
+    updated multiple times per input (i.e. when focused, per char typed,
+    backspace, etc).
+
+    Specifically, the set of events that trigger dropdown updates are:
+
+    - synchronous suggestions
+
+    - asynchronous suggestions. Can trigger multiple times per input. These are
+    often generated on different threads.
+
+    - expiring copied matches
+
+    - interruptions e.g. additional user input changes or closing the dropdown
+
+    A sample flow looks like:
+
+    1) User types a character.
+
+    2) 10ms later, update results with synchronous suggestions.
+
+    3) 50ms later, update results with some asynchronous suggestions.
+
+    4) 50ms later, update results with more asynchronous suggestions.
+
+    5) 400ms later, update results by removing copied matches from the previous
+    input.
+
+    6) 50 later, update results with the last batch of asynchronous suggestions.
+
+    The 'Provider.*' slices measure the time between the input change and the
+    last async update of that provider is done or interrupted. Includes async
+    updates that have no user visible change (i.e. that do not produce async
+    matches or produce only async matches that get deduped, culled, or are the
+    same as the existing match in its position). Only logged for asynchronous
+    providers. Emitted exactly once per input per asynchronous provider;
+    additionally emits to exactly one of the 'Completed' and 'Interrupted'
+    slices per input per asynchronous provider.
+
+    {Completed}
+  </summary>
+  <token key="Provider" variants="OmniboxProviders"/>
+  <token key="Completed">
+    <variant name=""/>
+    <variant name=".Completed"
+        summary="The 'Completed' slice only includes inputs that completed;
+                 i.e. the last async update completed without interruption
+                 by, e.g., closing the omnibox dropdown."/>
+    <variant name=".Interrupted"
+        summary="The 'Interrupted' slice only includes inputs that were
+                 interrupted; i.e. the last async update was interrupted by,
+                 e.g., closing the omnibox dropdown before completing. It can
+                 be misleading to interpret this slice, as neither an
+                 increase or decrease is necessarily good."/>
+  </token>
+</histogram>
+
+<histogram name="Omnibox.AsyncAutocompletionTime.{Change}{Completed}"
+    units="ms" expires_after="2022-12-01">
+  <owner>manukh@chromium.org</owner>
+  <owner>jdonnelly@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    When the user focuses or types into the omnibox, the dropdown results can be
+    updated multiple times per input (i.e. when focused, per char typed,
+    backspace, etc).
+
+    Specifically, the set of events that trigger dropdown updates are:
+
+    - synchronous suggestions
+
+    - asynchronous suggestions. Can trigger multiple times per input. These are
+    often generated on different threads.
+
+    - expiring copied matches
+
+    - interruptions e.g. additional user input changes or closing the dropdown
+
+    A sample flow looks like:
+
+    1) User types a character.
+
+    2) 10ms later, update results with synchronous suggestions.
+
+    3) 50ms later, update results with some asynchronous suggestions.
+
+    4) 50ms later, update results with more asynchronous suggestions.
+
+    5) 400ms later, update results by removing copied matches from the previous
+    input.
+
+    6) 50 later, update results with the last batch of asynchronous suggestions.
+
+    {Change}
+
+    {Completed}
+  </summary>
+  <token key="Change">
+    <variant name="Done"
+        summary="The 'Done' slice measures the time between input change and
+                 the last async update is done or interrupted. Includes async
+                 updates that have no user visible change (i.e. that do not
+                 produce async matches or produce only async matches that get
+                 deduped, culled, or are the same as the existing match in
+                 its position). Emitted exactly once per input; additionally
+                 emits to exactly one of the 'Completed' and 'Interrupted'
+                 slices per input."/>
+    <variant name="LastChange"
+        summary="The 'LastChange' slice measures the time between input
+                 change and the last async update that made at least 1 change
+                 to the results. Updates that produce only async matches that
+                 get deduped, culled, or are the same as the existing match
+                 in its position are not included. Emitted exactly once per
+                 input; additionally emits to exactly one of the 'Completed'
+                 and 'Interrupted' slices per input."/>
+    <variant name="LastDefaultChange"
+        summary="The 'LastDefaultChange' slice measures the time between
+                 input change and the last async update that changed the
+                 default suggestion. Updates that produce an async default
+                 match that is the same as the existing default match are not
+                 included. Emitted exactly once per input; additionally emits
+                 to exactly one of the 'Completed' and 'Interrupted' slices
+                 per input."/>
+  </token>
+  <token key="Completed">
+    <variant name=""/>
+    <variant name=".Completed"
+        summary="The 'Completed' slice only includes inputs that completed;
+                 i.e. the last async update completed without interruption
+                 by, e.g., closing the omnibox dropdown."/>
+    <variant name=".Interrupted"
+        summary="The 'Interrupted' slice only includes inputs that were
+                 interrupted; i.e. the last async update was interrupted by,
+                 e.g., closing the omnibox dropdown before completing. It can
+                 be misleading to interpret this slice, as neither an
+                 increase or decrease is necessarily good."/>
+  </token>
 </histogram>
 
 <histogram name="Omnibox.BitmapFetchLatency" units="ms"
@@ -127,7 +298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency.InsertToPresent" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -155,7 +326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency.ToPaint" units="ms"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -320,7 +491,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CutOrCopyAllText" units="count"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -863,13 +1034,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.ProviderTime2" units="ms" expires_after="2022-10-23">
+<histogram name="Omnibox.ProviderTime2.{OmniboxProvider}" units="ms"
+    expires_after="2022-12-25">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
-    The length of time taken by the named provider&quot;s synchronous pass.
+    The length of time taken by the {OmniboxProvider}Provider's synchronous
+    pass.
   </summary>
+  <token key="OmniboxProvider" variants="OmniboxProviders"/>
 </histogram>
 
 <histogram name="Omnibox.QueryTime2" units="ms" expires_after="2022-11-13">
@@ -884,7 +1058,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ResumeJourneyShown" units="position"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1162,7 +1336,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SearchPrefetch.PrefetchEligibilityReason.SuggestionPrefetch"
-    enum="SearchPrefetchEligibilityReason" expires_after="2022-10-30">
+    enum="SearchPrefetchEligibilityReason" expires_after="2023-01-01">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1184,7 +1358,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchPrefetch.PrefetchFinalStatus.NavigationPrefetch"
-    enum="SearchPrefetchFinalStatus" expires_after="2022-10-30">
+    enum="SearchPrefetchStatus" expires_after="2022-10-30">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1208,7 +1382,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchPrefetch.PrefetchFinalStatus.SuggestionPrefetch"
-    enum="SearchPrefetchFinalStatus" expires_after="2022-08-07">
+    enum="SearchPrefetchStatus" expires_after="2022-08-07">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1249,6 +1423,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SearchPrefetch.PrefetchServingReason.Prerender"
+    enum="SearchPrefetchServingReason" expires_after="2022-12-11">
+  <owner>lingqi@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Records whether a search prerender request uses the prefetched response.
+    SearchPrefetchService records this metric when
+    SearchPrefetchURLLoaderInterceptor attempts to intercept a prerendering main
+    resource request, for prerender main frame navigations with the feature flag
+    of SearchPrefetchUpgradeToPrerender enabled.
+
+    Backgound: A search prerender request should use the prefetched response
+    instead of resending the same request, otherwise it will waste resources.
+    The search suggestion service may suggest to prefetch a result page, and
+    then ask the client to prerender the page. When the client attempts
+    prerender the page, it has received the response associated with the
+    prefetch request (by design), and should serve the prefetched response to
+    the prerender request.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SearchPrefetch.StartTime.NavigationPrefetch"
     units="ms" expires_after="2022-10-30">
   <owner>ryansturm@chromium.org</owner>
@@ -1285,7 +1481,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SelectedPosition" units="position"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1322,7 +1518,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.AnswerInSuggest"
-    enum="SuggestionAnswerOptionalType" expires_after="2022-10-23">
+    enum="SuggestionAnswerOptionalType" expires_after="2022-12-25">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1375,7 +1571,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.ResumeJourney" units="position"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1731,7 +1927,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.URL.Experimental.NavigationToFirstMeaningfulPaint"
-    units="ms" expires_after="2022-10-30">
+    units="ms" expires_after="2023-01-01">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1825,8 +2021,82 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SuggestTiles.DeletedTilePosition" units="position"
+    expires_after="2023-06-01">
+  <owner>ender@google.com</owner>
+  <owner>mahmadi@chromium.org</owner>
+  <summary>
+    The index of the item in the MostVisited carousel that the user deleted.
+    Zero-based: the first item in the carousel is recorded in bucket 0, second
+    in bucket 1 and so on. Items beyond 16 will be stored in the overflow bucket
+    (15).
+
+    Recorded every time the user initiates deletion of a suggest tile, even if
+    the operation is later canceled.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestTiles.DeletedTileType" enum="SuggestTileType"
+    expires_after="2023-06-01">
+  <owner>ender@google.com</owner>
+  <owner>mahmadi@chromium.org</owner>
+  <summary>
+    Records the type of the SuggestTile that the user deleted. Most Visited URLs
+    record a URL, and Organic Repeatable Queries record a Search type.
+
+    Recorded every time the user initiates deletion of a suggest tile, that
+    results with tile removal. Not recorded if the user chooses to cancel the
+    action.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestTiles.SelectedTilePosition" units="position"
+    expires_after="2023-06-01">
+  <owner>ender@google.com</owner>
+  <owner>mahmadi@chromium.org</owner>
+  <summary>
+    The index of the item in the MostVisited carousel that the user opened.
+    Zero-based: the first item in the carousel is recorded in bucket 0, second
+    in bucket 1 and so on. Items beyond 16 will be stored in the overflow bucket
+    (15).
+
+    Recorded every time the user selects the tile to initiate navigation, even
+    if the navigation could not be completed (eg. target site did not load).
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestTiles.SelectedTileType" enum="SuggestTileType"
+    expires_after="2023-06-01">
+  <owner>ender@google.com</owner>
+  <owner>mahmadi@chromium.org</owner>
+  <summary>
+    Records the type of the SuggestTile that the user interacted with. Most
+    Visited URLs record a URL, and Organic Repeatable Queries record a Search
+    type.
+
+    Recorded every time the user selects the tile to initiate navigation, even
+    if the navigation could not be completed (eg. target site did not load).
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.SuggestTiles.TileTypeCount.{SuggestTileType}"
+    units="count" expires_after="2023-06-01">
+  <owner>ender@google.com</owner>
+  <owner>mahmadi@chromium.org</owner>
+  <summary>
+    Total count of offered {SuggestTileType} tile types.
+
+    Recorded every time the current context is eligible to receive
+    MostVisitedTiles, even if there were no tiles of any kind to show.
+  </summary>
+  <token key="SuggestTileType">
+    <variant name="Search"/>
+    <variant name="URL"/>
+  </token>
+</histogram>
+
 <histogram name="Omnibox.TabMatchTime" units="microseconds"
-    expires_after="2022-10-23">
+    expires_after="2022-12-25">
   <owner>gangwu@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
@@ -1871,7 +2141,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ToggleSuggestionGroupId.Off" enum="SuggestionGroupId"
-    expires_after="2022-10-30">
+    expires_after="2023-01-01">
   <owner>mahmadi@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1915,7 +2185,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ZeroSuggest.Eligible.OnFocusV2"
-    enum="ZeroSuggestEligibleOnFocus" expires_after="2022-10-23">
+    enum="ZeroSuggestEligibleOnFocus" expires_after="2022-12-25">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -1955,12 +2225,16 @@ chromium-metrics-reviews@google.com.
     Counts the number of non-prefetch zero suggest requests (requests for
     suggestions when the user has focused but not modified the omnibox) the
     omnibox sent, requests that were invalidated, responses that were received,
-    and the subset of responses that were loaded from HTTP cache.
+    the subset of responses that were loaded from HTTP cache, and finally the
+    subset of responses that ended up updating the displayed results.
   </summary>
 </histogram>
 
 <histogram name="Omnibox.ZeroSuggestRequests.NonPrefetch.RoundTripTime"
     units="ms" expires_after="2022-12-11">
+  <obsolete>
+    Obsolete as of M105.
+  </obsolete>
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1979,12 +2253,16 @@ chromium-metrics-reviews@google.com.
     Counts the number of prefetch zero suggest requests (requests for
     suggestions when the user opens a new tab or brings one to foreground) the
     omnibox sent, requests that were invalidated, responses that were received,
-    and the subset of responses that were loaded from HTTP cache.
+    the subset of responses that were loaded from HTTP cache, and finally the
+    subset of responses that ended up updating the displayed results.
   </summary>
 </histogram>
 
 <histogram name="Omnibox.ZeroSuggestRequests.Prefetch.RoundTripTime" units="ms"
     expires_after="2022-12-11">
+  <obsolete>
+    Obsolete as of M105.
+  </obsolete>
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>

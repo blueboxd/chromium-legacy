@@ -217,6 +217,24 @@ void MaybeInitializeVlogInfo() {
 }
 #endif  // BUILDFLAG(USE_RUNTIME_VLOG)
 
+#if !BUILDFLAG(USE_RUNTIME_VLOG) && DCHECK_IS_ON()
+
+// Warn developers that vlog command line settings are being ignored.
+void MaybeWarnVmodule() {
+  if (base::CommandLine::InitializedForCurrentProcess()) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kV) ||
+        command_line->HasSwitch(switches::kVModule)) {
+      LOG(WARNING)
+          << "--" << switches::kV << " and --" << switches::kVModule
+          << " are currently ignored. See comments in base/logging.h on "
+             "proper usage of USE_RUNTIME_VLOG.";
+    }
+  }
+}
+
+#endif  // !BUILDFLAG(USE_RUNTIME_VLOG) && DCHECK_IS_ON()
+
 const char* const log_severity_names[] = {"INFO", "WARNING", "ERROR", "FATAL"};
 static_assert(LOGGING_NUM_SEVERITIES == std::size(log_severity_names),
               "Incorrect number of log_severity_names");
@@ -293,8 +311,8 @@ uint64_t TickCount() {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
 
-  uint64_t absolute_micro = static_cast<int64_t>(ts.tv_sec) * 1000000 +
-                            static_cast<int64_t>(ts.tv_nsec) / 1000;
+  uint64_t absolute_micro = static_cast<uint64_t>(ts.tv_sec) * 1000000 +
+                            static_cast<uint64_t>(ts.tv_nsec) / 1000;
 
   return absolute_micro;
 #endif
@@ -451,7 +469,7 @@ inline FuchsiaLogSeverity LogSeverityToFuchsiaLogSeverity(
 
 void WriteToFd(int fd, const char* data, size_t length) {
   size_t bytes_written = 0;
-  int rv;
+  long rv;
   while (bytes_written < length) {
     rv = HANDLE_EINTR(write(fd, data + bytes_written, length - bytes_written));
     if (rv < 0) {
@@ -490,6 +508,10 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
 #if BUILDFLAG(USE_RUNTIME_VLOG)
   MaybeInitializeVlogInfo();
 #endif  // BUILDFLAG(USE_RUNTIME_VLOG)
+
+#if !BUILDFLAG(USE_RUNTIME_VLOG) && DCHECK_IS_ON()
+  MaybeWarnVmodule();
+#endif  // !BUILDFLAG(USE_RUNTIME_VLOG) && DCHECK_IS_ON()
 
   g_logging_destination = settings.logging_dest;
 
@@ -658,7 +680,7 @@ LogMessage::LogMessage(const char* file, int line, const char* condition)
 }
 
 LogMessage::~LogMessage() {
-  size_t stack_start = stream_.tellp();
+  size_t stack_start = stream_.str().length();
 #if !defined(OFFICIAL_BUILD) && !BUILDFLAG(IS_NACL) && !defined(__UCLIBC__) && \
     !BUILDFLAG(IS_AIX)
   if (severity_ == LOGGING_FATAL && !base::debug::BeingDebugged()) {
@@ -980,6 +1002,10 @@ LogMessage::~LogMessage() {
   }
 }
 
+std::string LogMessage::GetMessageWithoutPrefix() const {
+  return str().substr(message_start_);
+}
+
 // writes the common header info to the stream
 void LogMessage::Init(const char* file, int line) {
   base::StringPiece filename(file);
@@ -1196,7 +1222,7 @@ void RawLog(int level, const char* message) {
     WriteToFd(STDERR_FILENO, message, message_len);
 
     if (message_len > 0 && message[message_len - 1] != '\n') {
-      int rv;
+      long rv;
       do {
         rv = HANDLE_EINTR(write(STDERR_FILENO, "\n", 1));
         if (rv < 0) {

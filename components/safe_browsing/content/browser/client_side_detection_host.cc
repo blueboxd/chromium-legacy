@@ -299,8 +299,6 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     bool is_phishing;
     if (!HasDebugFeatureDirectory() &&
         csd_service_->GetValidCachedResult(url_, &is_phishing)) {
-      base::UmaHistogramBoolean("SBClientPhishing.RequestSatisfiedFromCache",
-                                true);
       // Since we are already on the UI thread, this is safe.
       host_->MaybeShowPhishingWarning(/*is_from_cache=*/true, url_,
                                       is_phishing);
@@ -399,6 +397,9 @@ void ClientSideDetectionHost::DidFinishNavigation(
       !navigation_handle->HasCommitted()) {
     return;
   }
+
+  if (base::FeatureList::IsEnabled(kClientSideDetectionKillswitch))
+    return;
 
   // TODO(noelutz): move this DCHECK to WebContents and fix all the unit tests
   // that don't call this method on the UI thread.

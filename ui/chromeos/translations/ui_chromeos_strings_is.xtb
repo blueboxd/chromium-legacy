@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul Romaja</translation>
 <translation id="112387589102719461">Enska (bandarísk) með Dvorak-forritunarlyklaborði</translation>
 <translation id="1134697384939541955">Enska (bandarísk) með stækkuðu lyklaborði</translation>
+<translation id="1138691154716715755">Fyrr í þessum mánuði</translation>
 <translation id="1148097584170732637">Fann <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     Ekki er nægt pláss á staðbundinni geymslu. <ph name="FILE_SIZE" /> nauðsynlegt til viðbótar.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, sendistyrkur <ph name="SIGNAL_STRENGTH" />%, útilokað af kerfisstjóra, nánar</translation>
 <translation id="2142680004883808240">Rússneska með YaZHert-hljóðritunarlyklaborði</translation>
 <translation id="2143778271340628265">Handvirkar proxy-stillingar</translation>
+<translation id="2148716181193084225">Í dag</translation>
 <translation id="2163152940313951844">Ógildur stafur: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">Portúgalska með bandarísku alþjóðlegu tölvulyklaborði</translation>
 <translation id="2198315389084035571">Kínverska (einfölduð)</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Skipta yfir í listayfirlit</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> möppum deilt með Linux</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> skrár valdar</translation>
+<translation id="2387120140441437063">Ekki tókst að opna skrár í rusli. Endurheimtu skrárnar áður en þú opnar þær.</translation>
 <translation id="2387458720915042159">Gerð tengingar staðgengilsþjóns</translation>
 <translation id="2389832672041313158">Búrmíska/Myanmar</translation>
 <translation id="2392369802118427583">Virkja</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Innihald þessarar möppu er skrifvarið. Sumar aðgerðir eru ekki studdar.</translation>
 <translation id="2542049655219295786">Google tafla</translation>
 <translation id="2544853746127077729">Auðkenningarvottorði hafnað af neti</translation>
-<translation id="2547921442987553570">Bæta við <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Bandarískt (alþjóðlegt)</translation>
 <translation id="2563185590376525700">Fúsi</translation>
 <translation id="2578394532502990878">Tamíl hljóðritun</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">Kínverska Dayi</translation>
 <translation id="3057861065630527966">Afrita myndir og myndskeið</translation>
 <translation id="3067790092342515856">Windows-skrár</translation>
-<translation id="3078461028045006476">Deila með <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit tæki</translation>
 <translation id="3085752524577180175">SOCKS-hýsill</translation>
 <translation id="3104793765551262433">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, sendistyrkur <ph name="SIGNAL_STRENGTH" />%, útilokað af stjórnanda, nánar</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Til baka</translation>
 <translation id="3855472144336161447">Þýskt Neo 2</translation>
 <translation id="3858860766373142691">Heiti</translation>
-<translation id="386548886866354912">Pakki með <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Lýsing</translation>
 <translation id="3899991606604168269">Franska (Kanada) með fjölmála lyklaborði</translation>
 <translation id="3901991538546252627">Tengist <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Sækja snjallprófíl, netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Enska (bresk)</translation>
 <translation id="3975895378829046965">Bengalska hljóðritun</translation>
+<translation id="3991446849494482687">Þetta mun einnig slökkva á stillingum fyrir SIM-lás í tækinu.</translation>
 <translation id="4002066346123236978">Heiti</translation>
 <translation id="4017788180641807848">Enska (bandarísk) með Workman-lyklaborði</translation>
 <translation id="4040753847560036377">Rangt PUK-númer</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, sendistyrkur <ph name="SIGNAL_STRENGTH" />%, stjórnað af kerfisstjóra, upplýsingar</translation>
 <translation id="4387004326333427325">Sannvottunarvottorði hafnað fjartengt</translation>
 <translation id="4394214039309501350">Ytri tengill</translation>
+<translation id="4394980935660306080">Fyrr í þessari viku</translation>
 <translation id="4401287888955153199">Draga allt út</translation>
 <translation id="4410695710508688828">Útdráttaraðgerð mistókst. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Búðu til flýtileið fyrir skrárnar þínar</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">Opnar „<ph name="PATH" />“</translation>
 <translation id="4720185134442950733">Farsímagagnanet</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> myndir afritaðar</translation>
+<translation id="4725096204469550614">Fyrr á þessu ári</translation>
 <translation id="4725511304875193254">Corgi-hundur</translation>
 <translation id="4737050008115666127">Lending</translation>
 <translation id="4747271164117300400">Makedónska</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">Færir <ph name="NUMBER_OF_ITEMS" /> atriði í <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Villa kom upp.</translation>
 <translation id="5098629044894065541">Hebreskt</translation>
+<translation id="5102922915594634436">Stjórna samstilltum möppum</translation>
 <translation id="5109254780565519649">Villa kom upp. Tiltekin atriði voru hugsanlega ekki endurheimt.</translation>
 <translation id="5110329002213341433">Enska (Kanada)</translation>
 <translation id="5123433949759960244">Körfubolti</translation>
@@ -602,7 +606,6 @@
 <translation id="6165508094623778733">Frekari upplýsingar</translation>
 <translation id="6170470584681422115">Samloka</translation>
 <translation id="6187719147498869044">Ungverska</translation>
-<translation id="6189412234224385711">Opna með <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Breyta PIN-númeri</translation>
 <translation id="6199801702437275229">Beðið eftir rýmisupplýsingum...</translation>
 <translation id="6205710420833115353">Sumar aðgerðir ætla að taka lengri tíma en búist var við. Viltu hætta við þær?</translation>
@@ -706,6 +709,7 @@
 <translation id="7075931588889865715">Taílenska með TIS 820-2531-lyklaborði</translation>
 <translation id="708278670402572152">Aftengdu net til að leita</translation>
 <translation id="7086590977277044826">Tamíl með InScript-lyklaborði</translation>
+<translation id="7088615885725309056">Eldra</translation>
 <translation id="7103992300314999525">Makedónska</translation>
 <translation id="7106346894903675391">Kaupa meira geymslurými...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ – &lt;em&gt;leita í Drive&lt;/em&gt;</translation>
@@ -770,6 +774,7 @@
 <translation id="7663224033570512922">Hindí</translation>
 <translation id="7693909743393669729">Þegar drif er forsniðið eyðast öll gögn af því, og öll núverandi svæði þess, þ.m.t. svæði sem hugsanlega eru ekki sýnileg, eru fjarlægð. Ekki er hægt að afturkalla þessa aðgerð.</translation>
 <translation id="7695430100978772476">Ekki tókst að forsníða <ph name="DRIVE_NAME" /></translation>
+<translation id="76959938259365003">Ekki tókst að tæma ruslið.</translation>
 <translation id="770015031906360009">Grískt</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> afritað.</translation>
 <translation id="7711920809702896782">Myndupplýsingar</translation>
@@ -780,6 +785,7 @@
 <translation id="7760449188139285140">Kínverska Wubi</translation>
 <translation id="7765158879357617694">Færa</translation>
 <translation id="7774365994322694683">Fugl</translation>
+<translation id="7781829728241885113">Í gær</translation>
 <translation id="7788080748068240085">Til að vista „<ph name="FILE_NAME" />“ án nettengingar þarftu að losa <ph name="TOTAL_FILE_SIZE" /> af plássi til viðbótar:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />losaðu skrár sem þú þarf ekki lengur að hafa aðgang að án nettengingar<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />eyddu skrám úr möppunni Niðurhal<ph name="MARKUP_5" /></translation>

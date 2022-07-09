@@ -1,7 +1,9 @@
 # These deps should be only the required deps for //chromeos/ash/components/memory
 include_rules = [
   "+third_party/zlib/google",
+  "+third_party/re2",
   "+services/resource_coordinator",
+  "+chromeos/ash/components/dbus/resourced",
   "+components/memory_pressure",
   "+content/public/child",
 ]

@@ -16,11 +16,11 @@ class GURL;
 @protocol BrowserCoordinatorCommands
 
 // Prints the currently active tab.
-// Print preview will be presented on top of |baseViewController|.
+// Print preview will be presented on top of `baseViewController`.
 - (void)printTabWithBaseViewController:(UIViewController*)baseViewController;
 
 // Prints an image.
-// Print preview will be presented on top of |baseViewController|.
+// Print preview will be presented on top of `baseViewController`.
 - (void)printImage:(UIImage*)image
                  title:(NSString*)title
     baseViewController:(UIViewController*)baseViewController;
@@ -43,6 +43,9 @@ class GURL;
 // applicable.
 - (void)showDefaultSiteViewIPH;
 
+// Shows bookmarks manager.
+- (void)showBookmarksManager;
+
 // Shows recent tabs.
 - (void)showRecentTabs;
 
@@ -52,14 +55,17 @@ class GURL;
 // Shows the AddCreditCard UI.
 - (void)showAddCreditCard;
 
-// Shows the dialog for sending the page with |url| and |title| between a user's
+// Shows the dialog for sending the page with `url` and `title` between a user's
 // devices.
 - (void)showSendTabToSelfUI:(const GURL&)url title:(NSString*)title;
+
+// Hides the dialog shown by showSendTabToSelfUI().
+- (void)hideSendTabToSelfUI;
 
 // Shows the online help page in a tab.
 - (void)showHelpPage;
 
-// Displays the Badge popup menu showing |badgeItems|.
+// Displays the Badge popup menu showing `badgeItems`.
 - (void)displayPopupMenuWithBadgeItems:(NSArray<id<BadgeItem>>*)badgeItems;
 
 // Dismisses the Badge popup menu.

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
+
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 
 #import <objc/runtime.h>
@@ -145,7 +147,7 @@ display::Display GetDisplayForWindow(NSWindow* window) {
 @implementation ModalShowAnimationWithLayer {
   // This is the "real" delegate, but this class acts as the NSAnimationDelegate
   // to avoid a separate object.
-  remote_cocoa::NativeWidgetNSWindowBridge* _bridgedNativeWidget;
+  raw_ptr<remote_cocoa::NativeWidgetNSWindowBridge> _bridgedNativeWidget;
 }
 - (instancetype)initWithBridgedNativeWidget:
     (remote_cocoa::NativeWidgetNSWindowBridge*)widget {
@@ -749,7 +751,7 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
 
   // If the parent (or an ancestor) is hidden, return and wait for it to become
   // visible.
-  for (auto* ancestor = parent_; ancestor; ancestor = ancestor->parent_) {
+  for (auto* ancestor = parent_.get(); ancestor; ancestor = ancestor->parent_) {
     if (!ancestor->window_visible_)
       return;
   }
@@ -1224,13 +1226,21 @@ void NativeWidgetNSWindowBridge::FullscreenControllerTransitionComplete(
 void NativeWidgetNSWindowBridge::FullscreenControllerSetFrame(
     const gfx::Rect& frame,
     bool animate,
-    base::TimeDelta& transition_time) {
+    base::OnceCallback<void()> completion_callback) {
   NSRect ns_frame = gfx::ScreenRectToNSRect(frame);
+  base::TimeDelta transition_time = base::Seconds(0);
   if (animate)
     transition_time = base::Seconds([window_ animationResizeTime:ns_frame]);
-  else
-    transition_time = base::Seconds(0);
-  [window_ setFrame:ns_frame display:NO animate:animate];
+
+  __block base::OnceCallback<void()> complete = std::move(completion_callback);
+  [NSAnimationContext
+      runAnimationGroup:^(NSAnimationContext* context) {
+        [context setDuration:transition_time.InSecondsF()];
+        [[window_ animator] setFrame:ns_frame display:YES animate:animate];
+      }
+      completionHandler:^{
+        std::move(complete).Run();
+      }];
 }
 
 void NativeWidgetNSWindowBridge::FullscreenControllerToggleFullscreen() {
@@ -1251,7 +1261,11 @@ void NativeWidgetNSWindowBridge::FullscreenControllerToggleFullscreen() {
     return;
   }
 
+  bool is_key_window = [window_ isKeyWindow];
   [window_ toggleFullScreen:nil];
+  // Ensure the transitioning window maintains focus (crbug.com/1338659).
+  if (is_key_window)
+    [window_ makeKeyAndOrderFront:nil];
 }
 
 void NativeWidgetNSWindowBridge::FullscreenControllerCloseWindow() {
@@ -1267,7 +1281,10 @@ gfx::Rect NativeWidgetNSWindowBridge::FullscreenControllerGetFrameForDisplay(
   display::Display display;
   if (display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
                                                             &display)) {
-    return display.work_area();
+    // Use the current window size to avoid unexpected window resizes on
+    // subsequent cross-screen window drag and drops; see crbug.com/1338664
+    return gfx::Rect(display.work_area().origin(),
+                     FullscreenControllerGetFrame().size());
   }
   return gfx::Rect();
 }

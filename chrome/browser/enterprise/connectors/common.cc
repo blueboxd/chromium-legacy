@@ -110,17 +110,12 @@ safe_browsing::EventResult CalculateEventResult(
     bool allowed_by_scan_result,
     bool should_warn) {
   bool wait_for_verdict =
-      settings.block_until_verdict == BlockUntilVerdict::BLOCK;
+      settings.block_until_verdict == BlockUntilVerdict::kBlock;
   return (allowed_by_scan_result || !wait_for_verdict)
              ? safe_browsing::EventResult::ALLOWED
              : (should_warn ? safe_browsing::EventResult::WARNED
                             : safe_browsing::EventResult::BLOCKED);
 }
-
-AnalysisSettings::AnalysisSettings() = default;
-AnalysisSettings::AnalysisSettings(AnalysisSettings&&) = default;
-AnalysisSettings& AnalysisSettings::operator=(AnalysisSettings&&) = default;
-AnalysisSettings::~AnalysisSettings() = default;
 
 ReportingSettings::ReportingSettings() = default;
 ReportingSettings::ReportingSettings(GURL url,
@@ -150,6 +145,10 @@ const char* ConnectorPref(AnalysisConnector connector) {
       return kOnFileAttachedPref;
     case AnalysisConnector::PRINT:
       return kOnPrintPref;
+    case AnalysisConnector::FILE_TRANSFER:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      return kOnFileTransferPref;
+#endif
     case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
       NOTREACHED() << "Using unspecified analysis connector";
       return "";
@@ -180,6 +179,10 @@ const char* ConnectorScopePref(AnalysisConnector connector) {
       return kOnFileAttachedScopePref;
     case AnalysisConnector::PRINT:
       return kOnPrintScopePref;
+    case AnalysisConnector::FILE_TRANSFER:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      return kOnFileTransferScopePref;
+#endif
     case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
       NOTREACHED() << "Using unspecified analysis connector";
       return "";

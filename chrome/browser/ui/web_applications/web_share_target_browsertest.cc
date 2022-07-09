@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/safe_base_name.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "build/chromeos_buildflags.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "content/public/browser/web_contents.h"
@@ -94,9 +96,8 @@ content::WebContents* LaunchWebAppWithIntent(Profile* profile,
   apps::AppLaunchParams params = apps::CreateAppLaunchParamsForIntent(
       app_id,
       /*event_flags=*/0, apps::mojom::LaunchSource::kFromSharesheet,
-      display::kDefaultDisplayId,
-      apps::mojom::LaunchContainer::kLaunchContainerWindow, std::move(intent),
-      profile);
+      display::kDefaultDisplayId, apps::LaunchContainer::kLaunchContainerWindow,
+      std::move(intent), profile);
 
   content::WebContents* const web_contents =
       apps::AppServiceProxyFactory::GetForProfile(profile)
@@ -146,7 +147,7 @@ class FakeSharesheet : public crosapi::mojom::Sharesheet {
       override {}
   void CloseBubble(const std::string& window_id) override {}
 
-  Profile* profile_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
   web_app::AppId selected_app_id_;
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)

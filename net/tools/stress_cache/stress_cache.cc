@@ -321,9 +321,9 @@ void StressTheCache(int iteration) {
   g_data->cache->SetFlags(disk_cache::kNoLoadProtection);
 
   net::TestCompletionCallback cb;
-  int rv = g_data->cache->Init(cb.callback());
+  g_data->cache->Init(cb.callback());
 
-  if (cb.GetResult(rv) != net::OK) {
+  if (cb.WaitForResult() != net::OK) {
     printf("Unable to initialize cache.\n");
     return;
   }
@@ -333,8 +333,8 @@ void StressTheCache(int iteration) {
   int seed = static_cast<int>(Time::Now().ToInternalValue());
   srand(seed);
 
-  for (int i = 0; i < kNumKeys; i++)
-    g_data->keys[i] = GenerateStressKey();
+  for (auto& key : g_data->keys)
+    key = GenerateStressKey();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::BindOnce(&LoopTask));

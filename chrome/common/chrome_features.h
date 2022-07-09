@@ -262,6 +262,11 @@ extern const base::Feature kEnableWebAppUninstallFromOsSettings;
 
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kEnableWebHidOnExtensionServiceWorker;
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kExtensionDeferredIndividualSettings;
 #endif
 
@@ -422,9 +427,6 @@ extern const base::Feature kIncognitoNtpRevamp;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kIPHInWebUIDemo;
-
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLinuxLowMemoryMonitor;
@@ -536,9 +538,6 @@ extern const base::Feature kPrefixWebAppWindowsWithAppName;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrerenderFallbackToPreconnect;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kPrivacyGuide;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrivacyGuide2;

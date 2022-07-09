@@ -177,12 +177,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
 
   EXPECT_EQ(window_id, GetWindowId(result));
   // "populate" was enabled so tabs should be populated.
-  std::unique_ptr<base::ListValue> tabs =
-      api_test_utils::GetList(result, keys::kTabsKey);
-  ASSERT_TRUE(tabs);
-  ASSERT_FALSE(tabs->GetListDeprecated().empty());
-  absl::optional<int> tab0_id =
-      tabs->GetListDeprecated()[0].FindIntKey(keys::kIdKey);
+  base::Value::List tabs = api_test_utils::GetList(result, keys::kTabsKey);
+  ASSERT_FALSE(tabs.empty());
+  absl::optional<int> tab0_id = tabs[0].GetDict().FindInt(keys::kIdKey);
   ASSERT_TRUE(tab0_id.has_value());
   EXPECT_GE(*tab0_id, 0);
 
@@ -264,12 +261,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetCurrentWindow) {
   // to RunFunctionAndReturnSingleResult.
   EXPECT_EQ(window_id, GetWindowId(result));
   // "populate" was enabled so tabs should be populated.
-  std::unique_ptr<base::ListValue> tabs =
-      api_test_utils::GetList(result, keys::kTabsKey);
-  ASSERT_TRUE(tabs);
-  ASSERT_FALSE(tabs->GetListDeprecated().empty());
-  absl::optional<int> tab0_id =
-      tabs->GetListDeprecated()[0].FindIntKey(keys::kIdKey);
+  base::Value::List tabs = api_test_utils::GetList(result, keys::kTabsKey);
+  ASSERT_FALSE(tabs.empty());
+  absl::optional<int> tab0_id = tabs[0].GetDict().FindInt(keys::kIdKey);
   ASSERT_TRUE(tab0_id.has_value());
   // The tab id should not be -1 as this is a browser window.
   EXPECT_GE(*tab0_id, 0);
@@ -998,6 +992,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, ValidateCreateWindowBounds) {
         base::StringPrintf(kArgsCreateFunction, window_left, window_top,
                            window_width, window_height),
         browser(), api_test_utils::NONE));
+  }
+
+  {
+    // Window bounds that specify size and not position should be adjusted
+    // to the screen in case the window is not visible.
+    // For this, update the current window bounds so the new window position
+    // needs to be adjusted to fit.
+    gfx::Rect current_window_bounds = browser()->window()->GetBounds();
+    current_window_bounds.set_x(current_window_bounds.x() +
+                                current_window_bounds.width() - window_offset);
+    current_window_bounds.set_y(current_window_bounds.y() +
+                                current_window_bounds.height() - window_offset);
+    browser()->window()->SetBounds(current_window_bounds);
+
+    static const char kArgsCreateFunctionOnlySize[] =
+        "[{\"width\": %d, \"height\": %d }]";
+    auto function = base::MakeRefCounted<WindowsCreateFunction>();
+    function->set_extension(ExtensionBuilder("Test").Build().get());
+    EXPECT_TRUE(
+        utils::RunFunction(function.get(),
+                           base::StringPrintf(kArgsCreateFunctionOnlySize,
+                                              window_width, window_height),
+                           browser(), api_test_utils::NONE));
   }
 }
 
@@ -2035,11 +2052,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
   ASSERT_TRUE(navigation_manager.WaitForRequestStart());
 
   browser()->tab_strip_model()->ActivateTabAt(
-      0, {TabStripModel::GestureType::kOther});
+      0, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
   EXPECT_EQ(first_web_contents,
             browser()->tab_strip_model()->GetActiveWebContents());
   browser()->tab_strip_model()->ActivateTabAt(
-      1, {TabStripModel::GestureType::kOther});
+      1, TabStripUserGestureDetails(
+             TabStripUserGestureDetails::GestureType::kOther));
   EXPECT_EQ(second_web_contents,
             browser()->tab_strip_model()->GetActiveWebContents());
 

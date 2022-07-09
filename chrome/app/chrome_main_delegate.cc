@@ -84,6 +84,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -99,7 +100,6 @@
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/protobuf_init.h"
 #include "chrome/common/win/delay_load_failure_hook.h"
 #include "chrome/install_static/install_util.h"
 #include "components/browser_watcher/extended_crash_reporting.h"
@@ -583,7 +583,9 @@ ChromeMainDelegate::~ChromeMainDelegate() {
 
 void ChromeMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
   DCHECK(base::ThreadPoolInstance::Get());
-  if (invoked_in == InvokedIn::kChildProcess) {
+  const auto* invoked_in_browser =
+      absl::get_if<InvokedInBrowserProcess>(&invoked_in);
+  if (!invoked_in_browser) {
     CommonEarlyInitialization();
     return;
   }
@@ -595,7 +597,7 @@ void ChromeMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
 
   // For now, do not enable delay load failure hooks for browser process except
   // in tests, where failures really shouldn't happen.
-  if (invoked_in != InvokedIn::kBrowserProcessUnderTest)
+  if (invoked_in_browser->is_running_test)
     chrome::DisableDelayLoadFailureHooksForCurrentModule();
 #endif
 
@@ -661,9 +663,8 @@ void ChromeMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
   CommonEarlyInitialization();
 
   // Initializes the resource bundle and determines the locale.
-  std::string actual_locale =
-      LoadLocalState(chrome_feature_list_creator,
-                     invoked_in == InvokedIn::kBrowserProcessUnderTest);
+  std::string actual_locale = LoadLocalState(
+      chrome_feature_list_creator, invoked_in_browser->is_running_test);
   chrome_feature_list_creator->SetApplicationLocale(actual_locale);
   chrome_feature_list_creator->OverrideCachedUIStrings();
 
@@ -698,16 +699,12 @@ void ChromeMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
 #if BUILDFLAG(IS_MAC)
   chrome::CacheChannelInfo();
 #endif
-
-#if BUILDFLAG(IS_WIN)
-  chrome::InitializeProtobuf();
-#endif
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList(InvokedIn invoked_in) {
   // In the browser process Chrome creates the FeatureList, so content should
   // not.
-  return invoked_in == InvokedIn::kChildProcess;
+  return absl::holds_alternative<InvokedInChildProcess>(invoked_in);
 }
 
 void ChromeMainDelegate::CommonEarlyInitialization() {

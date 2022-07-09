@@ -7,6 +7,7 @@
 
 #include <regstr.h>
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -332,7 +333,7 @@ void CheckInstallation(UpdaterScope scope,
 // Returns true is any updater process is found running in any session in the
 // system, regardless of its path.
 bool IsUpdaterRunning() {
-  return IsProcessRunning(kUpdaterProcessName);
+  return IsProcessRunning(GetExecutableRelativePath().value().c_str());
 }
 
 void SleepFor(int seconds) {
@@ -410,6 +411,56 @@ class WindowEnumerator {
   base::RepeatingCallback<void(HWND hwnd)> action_;
 };
 
+DISPID GetDispId(Microsoft::WRL::ComPtr<IDispatch> dispatch,
+                 std::wstring name) {
+  DISPID id = 0;
+  LPOLESTR name_ptr = &name[0];
+  EXPECT_HRESULT_SUCCEEDED(dispatch->GetIDsOfNames(IID_NULL, &name_ptr, 1,
+                                                   LOCALE_USER_DEFAULT, &id));
+  VLOG(2) << __func__ << ": " << name << ": " << id;
+  return id;
+}
+
+void CallDispatchMethod(
+    Microsoft::WRL::ComPtr<IDispatch> dispatch,
+    const std::wstring& method_name,
+    const std::vector<base::win::ScopedVariant>& variant_params) {
+  std::vector<VARIANT> params;
+  params.reserve(variant_params.size());
+
+  // IDispatch::Invoke() expects the parameters in reverse order.
+  std::transform(variant_params.rbegin(), variant_params.rend(),
+                 std::back_inserter(params),
+                 [](const auto& param) { return param.Copy(); });
+
+  DISPPARAMS dp = {};
+  if (!params.empty()) {
+    dp.rgvarg = &params[0];
+    dp.cArgs = params.size();
+  }
+
+  EXPECT_HRESULT_SUCCEEDED(dispatch->Invoke(
+      GetDispId(dispatch, method_name), IID_NULL, LOCALE_USER_DEFAULT,
+      DISPATCH_METHOD, &dp, nullptr, nullptr, nullptr));
+
+  std::for_each(params.begin(), params.end(),
+                [&](auto& param) { ::VariantClear(&param); });
+  return;
+}
+
+base::win::ScopedVariant GetDispatchProperty(
+    Microsoft::WRL::ComPtr<IDispatch> dispatch,
+    const std::wstring& property_name) {
+  DISPPARAMS dp = {};
+  base::win::ScopedVariant result;
+
+  EXPECT_HRESULT_SUCCEEDED(dispatch->Invoke(
+      GetDispId(dispatch, property_name), IID_NULL, LOCALE_USER_DEFAULT,
+      DISPATCH_PROPERTYGET, &dp, result.Receive(), nullptr, nullptr));
+
+  return result;
+}
+
 }  // namespace
 
 base::FilePath GetSetupExecutablePath() {
@@ -423,7 +474,7 @@ absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
   absl::optional<base::FilePath> path = GetProductVersionPath(scope);
   if (!path)
     return absl::nullopt;
-  return path->AppendASCII("updater.exe");
+  return path->Append(GetExecutableRelativePath());
 }
 
 absl::optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
@@ -507,6 +558,7 @@ void EnterTestMode(const GURL& url) {
                   .SetUseCUP(false)
                   .SetInitialDelay(0.1)
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
+                  .SetOverinstallTimeout(base::Seconds(11))
                   .Modify());
 }
 
@@ -531,12 +583,12 @@ void ExpectActiveUpdater(UpdaterScope scope) {
 }
 
 void Uninstall(UpdaterScope scope) {
-  // Note: updater_test.exe --uninstall is run from the build dir, not the
-  // install dir, because it is useful for tests to be able to run it to clean
-  // the system even if installation has failed or the installed binaries have
+  // Note: "updater.exe --uninstall" is run from the build dir, not the install
+  // dir, because it is useful for tests to be able to run it to clean the
+  // system even if installation has failed or the installed binaries have
   // already been removed.
   base::FilePath path =
-      GetSetupExecutablePath().DirName().AppendASCII("updater_test.exe");
+      GetSetupExecutablePath().DirName().Append(GetExecutableRelativePath());
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
   command_line.AppendSwitch("uninstall");
@@ -930,6 +982,24 @@ void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
   DWORD exit_code = 0;
   EXPECT_HRESULT_SUCCEEDED(app_command_web->get_exitCode(&exit_code));
   EXPECT_EQ(exit_code, static_cast<DWORD>(expected_exit_code));
+
+  // Now also run the AppCommand using the IDispatch methods.
+  command_dispatch.Reset();
+  ASSERT_HRESULT_SUCCEEDED(app->get_command(
+      base::win::ScopedBstr(commandid).Get(), &command_dispatch));
+
+  CallDispatchMethod(command_dispatch, L"execute", variant_params);
+
+  EXPECT_TRUE(WaitFor(base::BindLambdaForTesting([&]() {
+    base::win::ScopedVariant status =
+        GetDispatchProperty(command_dispatch, L"status");
+    return V_UINT(status.ptr()) == COMMAND_STATUS_COMPLETE;
+  })));
+
+  base::win::ScopedVariant command_exit_code =
+      GetDispatchProperty(command_dispatch, L"exitCode");
+  EXPECT_EQ(V_UI4(command_exit_code.ptr()),
+            static_cast<DWORD>(expected_exit_code));
 
   DeleteAppClientKey(scope, appid);
 }

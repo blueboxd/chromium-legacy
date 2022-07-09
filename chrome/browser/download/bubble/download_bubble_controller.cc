@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "content/public/browser/download_manager.h"
 
@@ -73,10 +74,9 @@ struct StartTimeComparator {
 using SortedDownloadUIModelSet =
     std::multiset<DownloadUIModelPtrList::iterator, StartTimeComparator>;
 
-template <typename T>
-bool AddModelIfRequired(T model,
+bool AddModelIfRequired(DownloadUIModelPtr model,
                         base::Time cutoff_time,
-                        std::vector<T>& models_aggregate) {
+                        std::vector<DownloadUIModelPtr>& models_aggregate) {
   if (model->ShouldShowInBubble() &&
       DownloadUIModelIsRecent(model.get(), cutoff_time)) {
     models_aggregate.push_back(std::move(model));
@@ -85,8 +85,7 @@ bool AddModelIfRequired(T model,
   return false;
 }
 
-template <typename T>
-bool ShouldStopAddingModels(std::vector<T>& models_aggregate) {
+bool ShouldStopAddingModels(std::vector<DownloadUIModelPtr>& models_aggregate) {
   return (models_aggregate.size() >= kMaxDownloadsToShow);
 }
 
@@ -282,29 +281,6 @@ void DownloadBubbleUIController::PruneOfflineItems() {
   }
 }
 
-std::vector<std::unique_ptr<DownloadUIModel>>
-DownloadBubbleUIController::GetAllItemsToDisplayWithoutTaskRunnerDeletion() {
-  base::Time cutoff_time =
-      base::Time::Now() - base::Days(kShowDownloadsInBubbleForNumDays);
-  std::vector<std::unique_ptr<DownloadUIModel>> models_aggregate;
-  for (const OfflineItem& item : GetOfflineItems()) {
-    std::unique_ptr<DownloadUIModel> model(
-        new OfflineItemModel(offline_manager_, item));
-    if (AddModelIfRequired(std::move(model), cutoff_time, models_aggregate) &&
-        ShouldStopAddingModels(models_aggregate)) {
-      return models_aggregate;
-    }
-  }
-  for (download::DownloadItem* item : GetDownloadItems()) {
-    std::unique_ptr<DownloadUIModel> model(new DownloadItemModel(item));
-    if (AddModelIfRequired(std::move(model), cutoff_time, models_aggregate) &&
-        ShouldStopAddingModels(models_aggregate)) {
-      return models_aggregate;
-    }
-  }
-  return models_aggregate;
-}
-
 std::vector<DownloadUIModelPtr>
 DownloadBubbleUIController::GetAllItemsToDisplay() {
   base::Time cutoff_time =
@@ -413,6 +389,9 @@ void DownloadBubbleUIController::ProcessDownloadButtonPress(
       model->ReviewScanningVerdict(
           browser_->tab_strip_model()->GetActiveWebContents());
       break;
+    case DownloadCommands::RETRY:
+      RetryDownload(model, command);
+      break;
     case DownloadCommands::CANCEL:
       RemoveContentIdFromPartialView(model->GetContentId());
       [[fallthrough]];
@@ -454,4 +433,44 @@ bool DownloadBubbleUIController::SubmitDownloadToFeedbackService(
   NOTREACHED();
   return false;
 #endif
+}
+
+void DownloadBubbleUIController::RetryDownload(
+    DownloadUIModel* model,
+    DownloadCommands::Command command) {
+  DCHECK(command == DownloadCommands::RETRY);
+  display_controller_->HideBubble();
+  RecordDownloadRetry(
+      OfflineItemUtils::ConvertFailStateToDownloadInterruptReason(
+          model->GetLastFailState()));
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("download_bubble_retry_download", R"(
+        semantics {
+          sender: "The download bubble"
+          description: "Kick off retrying an interrupted download."
+          trigger:
+            "The user selects the retry button for an interrupted download on "
+            "the downloads bubble."
+          data: "None"
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled by settings, but it's only "
+            "triggered by user request."
+          policy_exception_justification: "Not implemented."
+        })");
+
+  // Use the last URL in the chain like resumption does.
+  auto download_url_params = std::make_unique<download::DownloadUrlParameters>(
+      model->GetURL(), traffic_annotation);
+  // Set to false because user interaction is needed.
+  download_url_params->set_content_initiated(false);
+  download_url_params->set_download_source(
+      download::DownloadSource::RETRY_FROM_BUBBLE);
+
+  download_manager_->DownloadUrl(std::move(download_url_params));
 }

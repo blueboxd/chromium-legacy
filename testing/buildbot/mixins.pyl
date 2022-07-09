@@ -224,6 +224,13 @@
       },
     },
   },
+  'chrome-finch-swarming-pool': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'chrome.tests.finch',
+      },
+    },
+  },
   'chrome-swarming-pool': {
     'swarming': {
       'dimensions': {
@@ -435,11 +442,9 @@
   },
   'finch-chromium-swarming-pool': {
     'swarming': {
-      'dimension_sets': [
-        {
-          'pool': 'chromium.tests.finch',
-        },
-      ],
+      'dimensions': {
+        'pool': 'chromium.tests.finch',
+      },
     },
   },
   'flame': {
@@ -455,8 +460,7 @@
     '$mixin_append': {
       'args': [
         '--code-coverage',
-        '--code-coverage-dir=${ISOLATED_OUTDIR}',
-        '--test-launcher-jobs=2'
+        '--code-coverage-dir=${ISOLATED_OUTDIR}'
       ],
     },
   },
@@ -811,23 +815,6 @@
       },
     },
   },
-  # TODO(crbug.com/1325185) Remove Mac11 once testers have been upgraded to Mac12
-  'mac_11_or_12_arm64': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'arm64',
-        'os': 'Mac-11|Mac-12',
-      },
-    },
-  },
-  'mac_11_or_12_x64': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'os': 'Mac-11|Mac-10.16|Mac-12',
-      },
-    },
-  },
   'mac_11_x64': {
     'swarming': {
       'dimensions': {
@@ -836,18 +823,10 @@
       },
     },
   },
-  'mac_12_beta_arm64': {
+  'mac_12_arm64': {
     'swarming': {
       'dimensions': {
         'cpu': 'arm64',
-        'os': 'Mac-12',
-      },
-    },
-  },
-  'mac_12_beta_x64': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
         'os': 'Mac-12',
       },
     },
@@ -882,6 +861,22 @@
       },
     },
   },
+  'mac_beta_arm64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'arm64',
+        'os': 'Mac-12',
+      },
+    },
+  },
+  'mac_beta_x64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'x86-64',
+        'os': 'Mac-12.4',
+      },
+    },
+  },
   'mac_mini_intel_gpu_experimental': {
     'swarming': {
       'dimensions': {
@@ -897,7 +892,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:3e9b',
-        'os': 'Mac-11.5.2',
+        'os': 'Mac-11.5.2|Mac-12.4',
         'display_attached': '1',
       },
     },
@@ -979,7 +974,7 @@
     'swarming': {
       'dimension_sets': [
          {
-           'os': 'Mac-10.15',
+           'os': 'Mac-12',
            'cpu': 'x86-64',
          },
       ],
@@ -1401,18 +1396,18 @@
       ],
     },
   },
-  # Default Xcode 14 beta 1.
+  # Default Xcode 14 beta.
   'xcode_14_beta': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14a5228q'
+        '14a5270f'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14a5228q',
+          'name': 'xcode_ios_14a5270f',
           'path': 'Xcode.app',
         },
       ],

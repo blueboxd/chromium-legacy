@@ -152,6 +152,7 @@
 <translation id="1771761307086386028">រំកិល​ទៅស្តាំ</translation>
 <translation id="1774796056689732716">ប្រតិទិន, <ph name="CURRENT_MONTH_YEAR" />, បច្ចុប្បន្នបានជ្រើសរើសថ្ងៃទី <ph name="DATE" />។</translation>
 <translation id="1787955149152357925">បិទ</translation>
+<translation id="1797271123677381264">ភ្លេចពាក្យសម្ងាត់</translation>
 <translation id="181103072419391116">កម្លាំង​រលកសញ្ញា <ph name="SIGNAL_STRENGTH" />, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក</translation>
 <translation id="1812997170047690955">តើ​មាន​អ្វី​នៅលើ​អេក្រង់​របស់ខ្ញុំ?</translation>
 <translation id="1823873187264960516">អ៊ីសឺរណិត៖ <ph name="ADDRESS" /></translation>
@@ -536,6 +537,7 @@
 <translation id="4115378294792113321">ស្វាយខ្ចី</translation>
 <translation id="412298498316631026">វិនដូ</translation>
 <translation id="4123259114412175274">ដើម្បីដោះសោ Chromebook​ របស់អ្នក សូមប្រាកដថាបើកប៊្លូធូសទូរសព្ទរបស់អ្នក</translation>
+<translation id="4125970834901680537">មិនអាច​ស្ទ្រីម​កម្មវិធី​នៅក្នុង​មុខងារ​ថេប្លេត​បានទេ។ ព្យាយាម​ម្ដងទៀត​នៅក្នុង​មុខងារ​កុំព្យូទ័រយួរដៃ។</translation>
 <translation id="4129129681837227511">ដើម្បីមើលការជូនដំណឹង​នៅលើអេក្រង់ចាក់​សោរបស់អ្នក សូមដោះសោ ដើម្បីប្ដូរការកំណត់</translation>
 <translation id="4136724716305260864">បើក​រហូតដល់​ពេលថ្ងៃរះ</translation>
 <translation id="4146833061457621061">ចាក់​តន្ត្រី</translation>
@@ -553,6 +555,7 @@
 <translation id="4215497585250573029">ការ​កំណត់ VPN</translation>
 <translation id="4217571870635786043">ការសរសេរ​តាមអាន​</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, កម្មវិធី​ដែលបាន​ដំឡើង ហើយ​បានផ្អាក</translation>
+<translation id="423685346499232137">មិនអាច​ចម្លង ឬ​ដាក់​ខ្លឹមសារ​ចូល​នៅពេលនេះ​បានទេ</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4242533952199664413">បើកការកំណត់</translation>
 <translation id="4250229828105606438">ថតអេក្រង់</translation>
@@ -607,9 +610,11 @@
 <translation id="4479639480957787382">ខ្សែអ៊ីនធឺណិត</translation>
 <translation id="4481530544597605423">ឧបករណ៍​ដែល​ឈប់​ផ្គូផ្គង</translation>
 <translation id="4505050298327493054">តុសកម្ម។</translation>
+<translation id="450584155212756404">បណ្តាញអ្នកអភិវឌ្ឍន៍</translation>
 <translation id="4513946894732546136">មតិ</translation>
 <translation id="4518404433291145981">ដើម្បី​ដោះសោ Chromebook របស់អ្នក សូមដោះសោទូរសព្ទ​របស់អ្នកជាមុនសិន</translation>
 <translation id="4527045527269911712">ឧបករណ៍ប៊្លូធូស "<ph name="DEVICE_NAME" />" ចង់សុំការអនុញ្ញាតដើម្បីភ្ជាប់។</translation>
+<translation id="4533343294786968049">កំពុង​បង្កើន​កម្រិតថាមពលថ្ម​របស់​អ្នក។ ថ្ម​នឹង​សាក​ពេញ​​ត្រឹម​ម៉ោង <ph name="FULLY_CHARGE_TIME" />។</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ទៀតទើបពេញ</translation>
 <translation id="4538824937723742295">ថតរូប​អេក្រង់​ពេញអេក្រង់</translation>
 <translation id="4544483149666270818">ជ្រើសរើសវិនដូណាមួយ ដើម្បីថតវីដេអូ</translation>
@@ -873,6 +878,7 @@
 <translation id="6062360702481658777">អ្នកនឹងចាកចេញដោយស្វ័យប្រវត្តិក្នុង <ph name="LOGOUT_TIME_LEFT" />។</translation>
 <translation id="6064463340679478396">ប្រើឯកសារនេះរួចហើយ</translation>
 <translation id="6073451960410192870">បញ្ឈប់ការថត</translation>
+<translation id="6074087755403037157">បណ្ដាញបេតា</translation>
 <translation id="6099678161144790572">បានកែ​កាលពីខែមុន</translation>
 <translation id="6103838137565245112">ប្រព័ន្ធ</translation>
 <translation id="6114505516289286752">បានទាញយក​ឯកសារនៃការនិយាយ​ជាភាសា<ph name="LANGUAGE" /></translation>
@@ -1223,6 +1229,7 @@
 <translation id="8200772114523450471">បន្ត</translation>
 <translation id="8203795194971602413">ចុចកណ្ដុរខាងស្ដាំ</translation>
 <translation id="8209010265547628927">កំណត់​ឡើងវិញ</translation>
+<translation id="8214996719228530800">បណ្តាញ Canary</translation>
 <translation id="8219451629189078428">Chromebook របស់អ្នកត្រូវបន្តបើក និងភ្ជាប់ទៅថាមពលនៅអំឡុងពេលនេះ។ ត្រូវប្រាកដថា ខ្សែសាក ឬឆ្នាំងសាកត្រូវបានដោតត្រឹមត្រូវ ទាំងនៅលើ Chromebook របស់អ្នក និង​ព្រីភ្លើង។ សូមកុំបិទ Chromebook ​របស់អ្នក។</translation>
 <translation id="8236042855478648955">ដល់​ពេល​សម្រាក​ហើយ</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, កម្លាំង​រលកសញ្ញា <ph name="SIGNAL_STRENGTH" />, ថ្មទូរសព្ទ <ph name="BATTERY_STATUS" /></translation>
@@ -1231,7 +1238,6 @@
 <translation id="826107067893790409">ចុច "បញ្ចូល" ដើម្បី​ដោះសោ​សម្រាប់ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">លុប</translation>
 <translation id="8270450402312105425">{0,plural, =1{ប្ដូរកំណែ​ឧបករណ៍​ទៅកំណែមុន​ក្នុងរយៈពេល​មួយម៉ោង}other{ប្ដូរកំណែ​ឧបករណ៍​ទៅកំណែមុន​ក្នុងរយៈពេល # ម៉ោង}}</translation>
-<translation id="8271580342040932214">ថ្ម​របស់អ្នក​ស្ថិតនៅ 80% ជាបណ្ដោះអាសន្ន នៅពេល​បានដោត ដើម្បី​បង្កើន​កម្រិតថាមពល។ ថ្ម​របស់អ្នក​នឹង​សាក​ពេញ​នៅ <ph name="FULLY_CHARGE_TIME" />.</translation>
 <translation id="8284362522226889623">អូសទៅឆ្វេង​ដោយប្រើម្រាមដៃបួន ដើម្បីប្ដូរទៅតុមុន</translation>
 <translation id="828708037801473432">បិទ</translation>
 <translation id="8297006494302853456">ខ្សោយ</translation>

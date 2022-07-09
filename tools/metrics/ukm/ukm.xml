@@ -2466,6 +2466,84 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AutofillAssistant.FlowFinished">
+  <owner>arbesser@google.com</owner>
+  <owner>fga@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    A set of metrics that are recorded at the end of a flow. Once an autofill
+    assistant flow has started, this event will be recorded exactly once at the
+    end of it. Metrics in this event describe aggregated statistics of the flow.
+  </summary>
+  <metric name="FlowFinishedState" enum="AutofillAssistantFlowFinishedState">
+    <summary>
+      An enum capturing whether the flow ended successfully or not.
+    </summary>
+  </metric>
+  <metric name="NumActions">
+    <summary>
+      The total number of actions received, across all roundtrips of this flow.
+    </summary>
+  </metric>
+  <metric name="NumJsFlowActions">
+    <summary>
+      The total number of JS flow actions received, summed over all GetActions
+      responses.
+    </summary>
+  </metric>
+  <metric name="NumRoundtrips">
+    <summary>
+      The total number of roundtrips during this flow.
+    </summary>
+  </metric>
+  <metric name="TotalDecodedGetActionsSizeInBytes">
+    <summary>
+      The total size of all received GetActions responses, summed over all
+      downloaded responses after decoding, in bytes. This number is
+      exponentially bucketed and uses the UKM GetExponentialBucketMinForBytes
+      method with a default value of 1.3 for spacing.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="TotalDecodedJsFlowSizeInBytes">
+    <summary>
+      The total size of all JS flow actions received, summed over all GetActions
+      responses, in bytes. This number is exponentially bucketed and uses the
+      UKM GetExponentialBucketMinForBytes method with a default value of 1.3 for
+      spacing.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="TotalEncodedGetActionsSizeInBytes">
+    <summary>
+      The total number of bytes that were received from the GetActions RPC,
+      summed over all downloaded responses before decoding, in bytes. This
+      number is exponentially bucketed and uses the UKM
+      GetExponentialBucketMinForBytes method with a default value of 1.3 for
+      spacing.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="AutofillAssistant.InChromeTriggering">
   <owner>arbesser@google.com</owner>
   <owner>mcarlen@google.com</owner>
@@ -2992,8 +3070,59 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Status.Revoke" enum="FedCmRevokeStatus">
+    <obsolete>
+      Removed June 2022 with the removal of the revoke() method.
+    </obsolete>
     <summary>
       Records the status of a revoke call to the FedCM API.
+    </summary>
+  </metric>
+  <metric name="Timing.CancelOnDialog">
+    <summary>
+      Records the time (in milliseconds) from when the accounts dialog is shown
+      to when the user closes the dialog without selecting any account.
+    </summary>
+  </metric>
+  <metric name="Timing.ContinueOnDialog">
+    <summary>
+      Records the time (in milliseconds) from when the accounts dialog is shown
+      to when the user presses the Continue button.
+    </summary>
+  </metric>
+  <metric name="Timing.IdTokenResponse">
+    <summary>
+      Records the time (in milliseconds) from when the user presses the Continue
+      button to when the id token response is received.
+    </summary>
+  </metric>
+  <metric name="Timing.ShowAccountsDialog">
+    <summary>
+      Records the time (in milliseconds) from when a call to the API was made to
+      when the accounts dialog is shown.
+    </summary>
+  </metric>
+  <metric name="Timing.TurnaroundTime">
+    <summary>
+      Records the overall time (in milliseconds) from when the API is called to
+      when the id token response is received.
+    </summary>
+  </metric>
+</event>
+
+<event name="Blink.FedCmIdp">
+  <owner>npm@chromium.org</owner>
+  <owner>webid-core@google.com</owner>
+  <summary>
+    Records performance metrics for FedCM (Federated Credential Management) API.
+    Recorded when the web developer calls the FedCM API. Individual metrics are
+    recorded eagerly, whenever the value has been computed.
+
+    This event uses the specific WEB_IDENTITY ukm_source_id which is generated
+    from the identity provider's origin.
+  </summary>
+  <metric name="Status.RequestIdToken" enum="FedCmRequestIdTokenStatus">
+    <summary>
+      Records the status of a request id token call to the FedCM API.
     </summary>
   </metric>
   <metric name="Timing.CancelOnDialog">
@@ -6005,6 +6134,72 @@ be describing additional metrics about the same event.
     <summary>
       The number of function calls in a window detached by another reason, that
       happened at least 1 minute after detaching.
+    </summary>
+  </metric>
+</event>
+
+<event name="DIPS.Redirect" singular="True">
+  <owner>rtarpine@google.com</owner>
+  <summary>
+    Recorded on every HTTP redirect or client-side bounce, where a client-side
+    bounce is a non-user-initiated navigation starting soon after the previous
+    navigation committed.
+  </summary>
+  <metric name="ClientBounceDelay">
+    <summary>
+      Populated for client redirects only. The time in seconds (capped at 10)
+      between the page committing and the redirect navigation starting. An int
+      in the range [0, 10].
+    </summary>
+  </metric>
+  <metric name="CookieAccessType" enum="CookieAccessType">
+    <summary>
+      Whether the redirect read cookies, wrote cookies, both, or neither.
+    </summary>
+  </metric>
+  <metric name="HasStickyActivation" enum="BooleanHasUserActivation">
+    <summary>
+      Populated for client redirects only. Whether the user ever interacted with
+      the page. (See the HTML spec for a definition.)
+    </summary>
+  </metric>
+  <metric name="InitialAndFinalSitesSame" enum="BooleanSameSite">
+    <summary>
+      True when the site before the redirect chain is the same as the site at
+      the end of the chain.
+    </summary>
+  </metric>
+  <metric name="RedirectAndFinalSiteSame" enum="BooleanSameSite">
+    <summary>
+      True when the redirect site is the same as the site at the end of the
+      redirect chain.
+    </summary>
+  </metric>
+  <metric name="RedirectAndInitialSiteSame" enum="BooleanSameSite">
+    <summary>
+      True when the redirect site is the same as the site before the redirect
+      chain.
+    </summary>
+  </metric>
+  <metric name="RedirectChainIndex">
+    <summary>
+      0-based index of this individual redirect within its chain.
+    </summary>
+  </metric>
+  <metric name="RedirectChainLength">
+    <summary>
+      The length of the overall redirect chain.
+    </summary>
+  </metric>
+  <metric name="RedirectType" enum="DIPSRedirectType">
+    <summary>
+      The type of the redirect: client or server.
+    </summary>
+  </metric>
+  <metric name="SiteEngagementLevel" enum="SiteEngagementLevel">
+    <summary>
+      The site engagement level of the redirect URL, at the time the redirect
+      took place.
     </summary>
   </metric>
 </event>
@@ -18314,7 +18509,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="SharedHighlights.LinkGenerated">
-  <owner>seblalancette@chromium.org</owner>
+  <owner>jeffreycohen@chromium.org</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
     Event representing the user action of selecting a piece of text on a page
@@ -18336,7 +18531,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="SharedHighlights.LinkGenerated.Requested">
-  <owner>gayane@chromium.org</owner>
+  <owner>jeffreycohen@chromium.org</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
     Event representing the user action of selecting a piece of text on a page
@@ -18358,7 +18553,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="SharedHighlights.LinkOpened" singular="true">
-  <owner>seblalancette@chromium.org</owner>
+  <owner>jeffreycohen@chromium.org</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
     Event representing the browser action of highlighting (incl. scroll-to) text

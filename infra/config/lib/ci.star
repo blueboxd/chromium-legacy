@@ -303,6 +303,8 @@ ci = struct(
 
 rbe_instance = struct(
     DEFAULT = "rbe-chromium-trusted",
+    DEFAULT_CQ = "rbe-chromium-untrusted",
+    TEST_CQ = "rbe-chromium-untrusted-test",
     GVISOR_SHADOW = "rbe-chromium-gvisor-shadow",
 )
 
@@ -310,4 +312,6 @@ rbe_jobs = struct(
     DEFAULT = 250,
     LOW_JOBS_FOR_CI = 80,
     HIGH_JOBS_FOR_CI = 500,
+    LOW_JOBS_FOR_CQ = 80,
+    HIGH_JOBS_FOR_CQ = 500,
 )

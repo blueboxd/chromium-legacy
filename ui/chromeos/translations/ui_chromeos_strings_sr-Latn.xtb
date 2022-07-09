@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">Hangul romadža</translation>
 <translation id="112387589102719461">engleski (SAD) sa tastaturom Programmer Dvorak</translation>
 <translation id="1134697384939541955">engleski (SAD) sa proširenom tastaturom</translation>
+<translation id="1138691154716715755">Ranije ovog meseca</translation>
 <translation id="1148097584170732637">Pronađene su datoteke (<ph name="FILE_COUNT" />).
     <ph name="LINE_BREAK1" />
     Nemate dovoljno prostora u lokalnoj memoriji. Potrebno je još <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405"><ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, blokirao administrator, detalji</translation>
 <translation id="2142680004883808240">ruski sa fonetskom tastaturom YaZHert</translation>
 <translation id="2143778271340628265">Ručna konfiguracija proksija</translation>
+<translation id="2148716181193084225">Danas</translation>
 <translation id="2163152940313951844">Nevažeći znak: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">portugalski sa američkom internacionalnom tastaturom za računar</translation>
 <translation id="2198315389084035571">kineski (pojednostavljeni)</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">Pređi na prikaz liste</translation>
 <translation id="2377590462528165447">Direktorijumi (<ph name="NUMBER_OF_ITEMS" />) se dele sa Linux-om</translation>
 <translation id="2378075407703503998">Izabranih datoteka: <ph name="SELCTED_FILE_COUNT" /></translation>
+<translation id="2387120140441437063">Fajlovi u otpadu ne mogu da se otvore. Vratite fajlove pre otvaranja.</translation>
 <translation id="2387458720915042159">Tip veze sa proksijem</translation>
 <translation id="2389832672041313158">burmanski (Mijanmar)</translation>
 <translation id="2392369802118427583">Aktiviraj</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">Sadržaj ovog foldera je samo za čitanje. Neke aktivnosti nisu podržane.</translation>
 <translation id="2542049655219295786">Google tabela</translation>
 <translation id="2544853746127077729">Mreža je odbila sertifikat za potvrdu autentičnosti</translation>
-<translation id="2547921442987553570">Dodaj u <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">međunarodna američka</translation>
 <translation id="2563185590376525700">Žaba</translation>
 <translation id="2578394532502990878">fonetski tamilski</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">kineski daji</translation>
 <translation id="3057861065630527966">Napravite rezervne kopije slika i video snimaka</translation>
 <translation id="3067790092342515856">Windows datoteke</translation>
-<translation id="3078461028045006476">Deli pomoću dodatka <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit-ovi</translation>
 <translation id="3085752524577180175">SOCKS host</translation>
 <translation id="3104793765551262433"><ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, blokirao administrator, detalji</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3855472144336161447">nemačka Neo 2</translation>
 <translation id="3858860766373142691">Naziv</translation>
-<translation id="386548886866354912">Spakuj pomoću dodatka <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3899991606604168269">francuski (Kanada) sa višejezičnom tastaturom</translation>
 <translation id="3901991538546252627">Povezivanje sa mrežom <ph name="NAME" /></translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">Preuzmite profil za mobilne uređaje, <ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">engleski (UK)</translation>
 <translation id="3975895378829046965">fonetski bengalski</translation>
+<translation id="3991446849494482687">Time ćete onemogućiti i podešavanje zaključavanja SIM kartice na uređaju.</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4017788180641807848">engleski (SAD) sa tastaturom Workman</translation>
 <translation id="4040753847560036377">Netačan PUK</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032"><ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, upravlja administrator, detalji</translation>
 <translation id="4387004326333427325">Sertifikat za potvrdu autentičnosti je odbijen daljinski</translation>
 <translation id="4394214039309501350">Spoljni link</translation>
+<translation id="4394980935660306080">Ranije ove nedelje</translation>
 <translation id="4401287888955153199">Izdvoji sve</translation>
 <translation id="4410695710508688828">Operacija izdvajanja nije uspela. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Napravite prečicu za fajlove</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">Otvara se „<ph name="PATH" />“</translation>
 <translation id="4720185134442950733">Mobilna mreža za prenos podataka</translation>
 <translation id="4724850507808590449">Napravljena je rezervna kopija slika (<ph name="FILE_COUNT" />)</translation>
+<translation id="4725096204469550614">Ranije ove godine</translation>
 <translation id="4725511304875193254">Korgi</translation>
 <translation id="4737050008115666127">Sletanje</translation>
 <translation id="4747271164117300400">makedonski</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">Stavke (<ph name="NUMBER_OF_ITEMS" />) se premeštaju u direktorijum <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Došlo je do greške.</translation>
 <translation id="5098629044894065541">hebrejski</translation>
+<translation id="5102922915594634436">Upravljajte sinhronizovanim folderima</translation>
 <translation id="5109254780565519649">Došlo je do greške. Neke stavke možda nisu vraćene.</translation>
 <translation id="5110329002213341433">engleski (Kanada)</translation>
 <translation id="5123433949759960244">Košarkaška lopta</translation>
@@ -603,7 +607,6 @@
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6170470584681422115">Sendvič</translation>
 <translation id="6187719147498869044">mađarski</translation>
-<translation id="6189412234224385711">Otvori pomoću dodatka <ph name="EXTENSION_NAME" /></translation>
 <translation id="6198252989419008588">Promeni PIN</translation>
 <translation id="6199801702437275229">Čekaju se informacije o prostoru...</translation>
 <translation id="6205710420833115353">Neke radnje traju duže od očekivanog. Želite li da ih prekinete?</translation>
@@ -707,6 +710,7 @@
 <translation id="7075931588889865715">tajski sa tastaturom TIS 820-2531</translation>
 <translation id="708278670402572152">Prekinite vezu da biste omogućili skeniranje</translation>
 <translation id="7086590977277044826">tamilski sa indijskom tastaturom</translation>
+<translation id="7088615885725309056">Starije</translation>
 <translation id="7103992300314999525">makedonski</translation>
 <translation id="7106346894903675391">Kupi još memorijskog prostora...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ – &lt;em&gt;pretraži Disk&lt;/em&gt;</translation>
@@ -771,6 +775,7 @@
 <translation id="7663224033570512922">hindi</translation>
 <translation id="7693909743393669729">Ako formatirate disk, izbrisaćete sve podatke koji se na njemu čuvaju i ukloniti sve postojeće particije, uključujući i one koje možda nisu vidljive. Ova radnja ne može da se opozove.</translation>
 <translation id="7695430100978772476">Formatiranje memorijskog uređaja <ph name="DRIVE_NAME" /> nije uspelo</translation>
+<translation id="76959938259365003">Pražnjenje otpada nije uspelo.</translation>
 <translation id="770015031906360009">grčki</translation>
 <translation id="7705251383879779343">Kopiranih stavki: <ph name="FILE_NAME" />.</translation>
 <translation id="7711920809702896782">Informacije o datoteci slike</translation>
@@ -781,6 +786,7 @@
 <translation id="7760449188139285140">kineski vubi</translation>
 <translation id="7765158879357617694">Premesti</translation>
 <translation id="7774365994322694683">Ptica</translation>
+<translation id="7781829728241885113">Juče</translation>
 <translation id="7788080748068240085">Da biste sačuvali „<ph name="FILE_NAME" />“ oflajn, morate da oslobodite još <ph name="TOTAL_FILE_SIZE" /> prostora:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />otkačite datoteke kojima više ne morate da pristupate oflajn<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />izbrišite datoteke iz direktorijuma Preuzimanja<ph name="MARKUP_5" /></translation>

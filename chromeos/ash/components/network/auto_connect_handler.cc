@@ -13,11 +13,11 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chromeos/ash/components/network/device_state.h"
+#include "chromeos/ash/components/network/managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/device_state.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -326,8 +326,6 @@ void AutoConnectHandler::DisconnectWiFiIfPolicyRequires() {
 }
 
 void AutoConnectHandler::DisconnectCellularIfPolicyRequires() {
-  if (!features::IsESimPolicyEnabled())
-    return;
   bool only_managed_cellular =
       managed_configuration_handler_->AllowOnlyPolicyCellularNetworks();
   bool only_managed_autoconnect =

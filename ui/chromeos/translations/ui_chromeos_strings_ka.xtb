@@ -11,6 +11,7 @@
 <translation id="1120073797882051782">ჰანგული რომაული</translation>
 <translation id="112387589102719461">ინგლისური (აშშ) საერთაშორისო პროგრამისტთა Dvorak კლავიატურით</translation>
 <translation id="1134697384939541955">ინგლისური (აშშ) გაფართოებული კლავიატურით</translation>
+<translation id="1138691154716715755">ამ თვის დასაწყისში</translation>
 <translation id="1148097584170732637">დისკი <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     ადგილობრივ მეხსიერებაში სივრცე არასაკმარისია. საჭიროა კიდევ <ph name="FILE_SIZE" />.
@@ -135,6 +136,7 @@
 <translation id="2141347188420181405">ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />%, დაბლოკილია თქვენი ადმინისტრატორის მიერ, დეტალები</translation>
 <translation id="2142680004883808240">რუსული ფონეტიკური YaZHert კლავიატურით</translation>
 <translation id="2143778271340628265">მექანიკური პროქსის კონფიგურაცია</translation>
+<translation id="2148716181193084225">დღეს</translation>
 <translation id="2163152940313951844">არასწორი სიმბოლო: <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">პორტუგალიური აშშ-ის საერთაშორისო (PC) კლავიატურით</translation>
 <translation id="2198315389084035571">გამარტივებული ჩინური</translation>
@@ -159,6 +161,7 @@
 <translation id="2377319039870049694">სიის ხედზე გადართვა</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> საქაღალდე გაზიარებულია Linux-თან</translation>
 <translation id="2378075407703503998">არჩეულია <ph name="SELCTED_FILE_COUNT" /> ფაილი</translation>
+<translation id="2387120140441437063">წაშლილი ფაილების გახსნა ვერ ხერხდება. გახსნამდე აღადგინეთ ფაილები.</translation>
 <translation id="2387458720915042159">პროქსი-სერვერის კავშირის ტიპი</translation>
 <translation id="2389832672041313158">ბირმული/მიანმარული</translation>
 <translation id="2392369802118427583">გააქტიურება</translation>
@@ -180,7 +183,6 @@
 <translation id="2541377937973966830">ამ საქაღალდის კონტენტი მხოლოდ კითხვადია. ზოგიერთი მოქმედება მხარდაუჭერელია.</translation>
 <translation id="2542049655219295786">Google ცხრილი</translation>
 <translation id="2544853746127077729">ავტორიზაციის სერთიფიკატი უარყოფილი იყო ქსელის მიერ</translation>
-<translation id="2547921442987553570"><ph name="EXTENSION_NAME" />-ში დამატება</translation>
 <translation id="255937426064304553">აშშ საერთაშორისო</translation>
 <translation id="2563185590376525700">ბაყაყი</translation>
 <translation id="2578394532502990878">ტამილური ფონეტიკური</translation>
@@ -232,7 +234,6 @@
 <translation id="3047197340186497470">ჩინური Dayi</translation>
 <translation id="3057861065630527966">თქვენი ფოტოებისა და ვიდეოს სარეზერვო კოპირება</translation>
 <translation id="3067790092342515856">Windows ფაილები</translation>
-<translation id="3078461028045006476"><ph name="EXTENSION_NAME" />-ით გაზიარება</translation>
 <translation id="3083975830683400843">Chromebit-ები</translation>
 <translation id="3085752524577180175">SOCKS ჰოსტი</translation>
 <translation id="3104793765551262433">ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />%, დაბლოკილია თქვენი ადმინისტრატორის მიერ, დეტალები</translation>
@@ -329,7 +330,6 @@
 <translation id="385051799172605136">უკან</translation>
 <translation id="3855472144336161447">გერმანული Neo 2</translation>
 <translation id="3858860766373142691">სახელი</translation>
-<translation id="386548886866354912"><ph name="EXTENSION_NAME" />-ით შეფუთვა</translation>
 <translation id="3866249974567520381">აღწერა</translation>
 <translation id="3899991606604168269">ფრანგული (კანადა) მრავალენოვანი კლავიატურით</translation>
 <translation id="3901991538546252627"><ph name="NAME" />-თან დაკავშირება</translation>
@@ -342,6 +342,7 @@
 <translation id="3971140002794351170">მობილური პროფილის ჩამოტვირთვა, ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">ინგლისური (გაერთიანებული სამეფო)</translation>
 <translation id="3975895378829046965">ბენგალური ფონეტიკური</translation>
+<translation id="3991446849494482687">ეს მოქმედება მოწყობილობაზე, ასევე, გათიშავს SIM ბარათის ჩაკეტვის პარამეტრს.</translation>
 <translation id="4002066346123236978">სათაური</translation>
 <translation id="4017788180641807848">ინგლისური (აშშ) Workman კლავიატურით</translation>
 <translation id="4040753847560036377">PUK-კოდი არასწორია</translation>
@@ -378,6 +379,7 @@
 <translation id="4380245540200674032">ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />%, მართავს თქვენი ადმინისტრატორი, დეტალები</translation>
 <translation id="4387004326333427325">ავთენტიფიკაციის სერტიფიკატი დისტანციურად უარყოფილი იქნა</translation>
 <translation id="4394214039309501350">გარე ბმული</translation>
+<translation id="4394980935660306080">ამ კვირის დასაწყისში</translation>
 <translation id="4401287888955153199">ყველას ამოღება</translation>
 <translation id="4410695710508688828">ამოღების ოპერაცია ვერ შესრულდა. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">შექმენით თქვენი ფაილების მალსახმობი</translation>
@@ -421,6 +423,7 @@
 <translation id="4712283082407695269">მიმდინარეობს „<ph name="PATH" />“-ის გახსნა</translation>
 <translation id="4720185134442950733">მობილური ინტერნეტის ქსელი</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> ფოტოს სარეზერვო ასლი შენახულია</translation>
+<translation id="4725096204469550614">ამ წლის დასაწყისში</translation>
 <translation id="4725511304875193254">კორგი</translation>
 <translation id="4737050008115666127">დაშვება</translation>
 <translation id="4747271164117300400">მაკედონიური</translation>
@@ -470,6 +473,7 @@
 <translation id="508423945471810158">მიმდინარეობს <ph name="NUMBER_OF_ITEMS" /> ერთეულის გადატანა „<ph name="FOLDER_NAME" />“-ში</translation>
 <translation id="509429900233858213">შეცდომა მოხდა.</translation>
 <translation id="5098629044894065541">ებრაული</translation>
+<translation id="5102922915594634436">სინქრონიზებული საქაღალდეების მართვა</translation>
 <translation id="5109254780565519649">მოხდა შეცდომა. შესაძლოა, ზოგიერთი ერთეულის აღდგენა ვერ მოხერხებულიყო.</translation>
 <translation id="5110329002213341433">ინგლისური (კანადა)</translation>
 <translation id="5123433949759960244">კალათბურთის ბურთი</translation>
@@ -602,7 +606,6 @@
 <translation id="6165508094623778733">შეიტყვეთ მეტი</translation>
 <translation id="6170470584681422115">სენდვიჩი</translation>
 <translation id="6187719147498869044">უნგრული</translation>
-<translation id="6189412234224385711"><ph name="EXTENSION_NAME" />-ით გახსნა</translation>
 <translation id="6198252989419008588">შეცვალეთ PIN-ი</translation>
 <translation id="6199801702437275229">ელოდება ინფორმაციას ადგილის შესახებ…</translation>
 <translation id="6205710420833115353">ზოგიერთი ოპერაციის შეასრულებას მოსალოდნელზე მეტი დრო დასჭირდა. გსურთ შეწყვიტოთ?</translation>
@@ -706,6 +709,7 @@
 <translation id="7075931588889865715">ტაი TIS 820-2531 კლავიატურით</translation>
 <translation id="708278670402572152">გათიშვა სკანირების ჩასართავად</translation>
 <translation id="7086590977277044826">ტამილური InScript კლავიატურით</translation>
+<translation id="7088615885725309056">უფრო ძველი</translation>
 <translation id="7103992300314999525">მაკედონიური</translation>
 <translation id="7106346894903675391">შეიძინეთ დამატებითი სივრცე…</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ - &lt;em&gt;ძიება Drive-ზე&lt;/em&gt;</translation>
@@ -770,6 +774,7 @@
 <translation id="7663224033570512922">ჰინდი</translation>
 <translation id="7693909743393669729">დისკის დაფორმატება ამოშლის მასში შენახულ ყველა მონაცემს, მათ შორის, დანაყოფებს, რომლებიც შეიძლება არ ჩანდეს. ამ მოქმედებას ვერ გააუქმებთ.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ვერ დაფორმატდა</translation>
+<translation id="76959938259365003">წაშლილები ვერ გასუფთავდა.</translation>
 <translation id="770015031906360009">ბერძნული</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> დაკოპირდა.</translation>
 <translation id="7711920809702896782">სურათის ინფორმაცია</translation>
@@ -780,6 +785,7 @@
 <translation id="7760449188139285140">ჩინური Wubi</translation>
 <translation id="7765158879357617694">გადატანა</translation>
 <translation id="7774365994322694683">ჩიტი</translation>
+<translation id="7781829728241885113">გუშინ</translation>
 <translation id="7788080748068240085">„<ph name="FILE_NAME" />“-ის ოფლაინში შესანახად უნდა გაანთავისუფლოთ დამატებით <ph name="TOTAL_FILE_SIZE" /> <ph name="MARKUP_1" />
     <ph name="MARKUP_2" />მოხსნათ იმ ფაილების ჩამაგრება, რომლებიც აღარ გჭირდებათ, ოფლაინში წვდომის მისაღებად<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />წაშალოთ ფაილები ჩამოტვირთვების საქაღალდიდან<ph name="MARKUP_5" /></translation>

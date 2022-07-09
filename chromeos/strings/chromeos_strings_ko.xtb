@@ -16,6 +16,7 @@
 <translation id="1124772482545689468">사용자</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">외부 기기용 펌웨어 업데이트 창이 열려 있습니다. 업데이트가 <ph name="NUM_UPDATES" />개 있습니다.</translation>
+<translation id="1145516343487477149">Chromebook과 관련된 일반적인 질문에 관한 도움말 및 답변 찾기</translation>
 <translation id="1165039591588034296">오류</translation>
 <translation id="1175697296044146566">이 <ph name="DEVICE_TYPE" /> 기기는 <ph name="MANAGER" />에서 관리합니다.</translation>
 <translation id="1175951029573070619">평균(<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -120,7 +121,9 @@
 <translation id="1871569928317311284">어두운 테마 사용 중지</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">어두운 모드 사용 중지</translation>
+<translation id="1881188606372070653">법적인 이유로 콘텐츠 변경을 요청하려면 <ph name="BEGIN_LINK1" />법률 도움말 페이지<ph name="END_LINK1" />로 이동하세요. 일부 계정 및 시스템 정보가 Google로 전송될 수 있습니다. 제공하신 정보는 기술적인 문제를 해결하고 서비스를 개선하는 데 사용되며, <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" /> 및 <ph name="BEGIN_LINK3" />서비스 약관<ph name="END_LINK3" />이 적용됩니다.</translation>
 <translation id="1887850431809612466">하드웨어 버전</translation>
+<translation id="1904932688895783618">다음은 몇 가지 유용한 리소스입니다.</translation>
 <translation id="1905710495812624430">허용되는 최대 시도 횟수를 초과했습니다.</translation>
 <translation id="1908234395526491708">UDP 요청 실패</translation>
 <translation id="1932611479324127242">배터리 사용 차단</translation>
@@ -135,6 +138,7 @@
 <translation id="2016697457005847575">문제 해결 단계 시도해 보기</translation>
 <translation id="2016848882344942759">--허용 목록 라벨 없음--</translation>
 <translation id="202500043506723828">EID</translation>
+<translation id="2047316797244836561">화면 보호기를 보려면 네트워크에 연결하고 페이지를 새로고침하세요.</translation>
 <translation id="2080070583977670716">설정 더보기</translation>
 <translation id="2085089206770112532">디스플레이 밝기 낮추기</translation>
 <translation id="2105810540595158374">게임 컨트롤러 기기입니다.</translation>
@@ -151,6 +155,7 @@
 <translation id="2163937499206714165">어두운 모드 사용 설정</translation>
 <translation id="2177831236093724629"><ph name="LINK_BEGIN" />정규화되지 않은 구성요소<ph name="LINK_END" />가 발견되었습니다. 정규화된 구성요소를 모두 식별할 수 있도록 Chrome OS를 최신 버전으로 업데이트하세요.</translation>
 <translation id="2180197493692062006">문제가 발생했습니다. 앱을 다시 열어 보세요.</translation>
+<translation id="2182088270354640012">의견을 보내 주셔서 감사합니다. 여러분의 의견은 Chrome OS팀에서 검토한 후 Chrome OS를 개선하는 데 사용됩니다. 제출되는 의견이 많아 직접 답변해 드리기는 어렵습니다.</translation>
 <translation id="2209788852729124853">트래픽 카운터 재설정</translation>
 <translation id="2212733584906323460">이름 결정</translation>
 <translation id="2217935453350629363">현재 속도</translation>
@@ -254,6 +259,7 @@
 <translation id="3226405216343213872">스캐너 검색 중</translation>
 <translation id="3246869037381808805">1일 이상 경과한 인쇄 작업은 삭제됩니다.</translation>
 <translation id="3268178239013324452">실패 - 덮개 열림</translation>
+<translation id="3275729367986477355">아바타 이미지</translation>
 <translation id="3283504360622356314">{0,plural, =1{파일 수정}other{파일 수정}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />GHz</translation>
 <translation id="3291996639387199448">키 방향</translation>
@@ -427,6 +433,7 @@
 <translation id="4793710386569335688">도움이 더 필요하면 <ph name="BEGIN_LINK" />고객센터<ph name="END_LINK" />로 이동하세요.</translation>
 <translation id="4793756956024303490">압축 알고리즘</translation>
 <translation id="4794140124556169553">CPU 테스트를 실행하면 시스템 성능에 영향을 줄 수 있습니다.</translation>
+<translation id="4800589996161293643">Chromebook 커뮤니티</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> 인쇄 작업 취소됨</translation>
 <translation id="4809927044794281115">밝은 테마</translation>
@@ -486,6 +493,7 @@
 마이크를 탭하여 무엇이든지 물어보세요.</translation>
 <translation id="5212593641110061691">타블로이드</translation>
 <translation id="5222676887888702881">로그아웃</translation>
+<translation id="522307662484862935">이메일 주소 포함 안함</translation>
 <translation id="5227902338748591677">어두운 테마 일정</translation>
 <translation id="5234764350956374838">닫기</translation>
 <translation id="5252456968953390977">로밍</translation>
@@ -612,6 +620,7 @@
 <translation id="6284632978374966585">어두운 테마 사용 설정</translation>
 <translation id="6295178529664209245">수리를 계속할까요?</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> 테스트가 취소됨</translation>
+<translation id="631063167932043783">탐색 앱</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> 펌웨어 업데이트</translation>
 <translation id="6321407676395378991">화면 보호기 사용 설정</translation>
 <translation id="6325525973963619867">실패</translation>
@@ -623,6 +632,7 @@
 <translation id="6379086450106841622">터치스크린</translation>
 <translation id="6381741036071372448">키보드 테스트</translation>
 <translation id="6388847657025262518">스캐너의 급지대에 용지가 걸렸습니다. 급지대를 확인한 후 다시 시도해 보세요.</translation>
+<translation id="6394634179843537518">파일 추가</translation>
 <translation id="6410257289063177456">이미지 파일</translation>
 <translation id="641081527798843608">주제 일치</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -639,6 +649,7 @@
 <translation id="6516990319416533844">배터리 충전 속도를 테스트하려면 짧은 시간 동안 배터리를 소모하세요.</translation>
 <translation id="6517239166834772319">살펴보기</translation>
 <translation id="6527081081771465939">알려지지 않은 Wi-Fi 보안 프로토콜입니다.</translation>
+<translation id="6535178685492749208">오프라인 상태입니다. 의견은 나중에 전송됩니다.</translation>
 <translation id="65587193855025101">평판</translation>
 <translation id="6564646048574748301">실패 - 프린터에 연결할 수 없음</translation>
 <translation id="6566314079205407217">여러 페이지 스캔</translation>
@@ -717,6 +728,7 @@
 <translation id="7297226631177386107">방화벽으로 인해 HTTPS 웹사이트에 연결할 수 없습니다.</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7308203371573257315">Chromebook 도움말 포럼에서 전문가에게 문의하기</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />, <ph name="RESULT_TEXT" />, Search와 Space키를 눌러 Google 검색에서 검색결과를 확인하세요.</translation>
 <translation id="7343649194310845056">네트워크 기기</translation>
@@ -759,9 +771,11 @@
 <translation id="773153675489693198">사이클 수</translation>
 <translation id="7747039790905080783">사전 공유 키</translation>
 <translation id="7762130827864645708">비밀번호가 변경되었습니다. 지금부터 새로운 비밀번호를 사용해 주세요.</translation>
+<translation id="7762839321248874531"><ph name="BEGIN_LINK1" />시스템 및 앱 정보<ph name="END_LINK1" />와 <ph name="BEGIN_LINK2" />통계<ph name="END_LINK2" /> 전송</translation>
 <translation id="7763470514545477072">도메인 서픽스 일치</translation>
 <translation id="7769672763586021400">모델 ID</translation>
 <translation id="7784116172884276937">DNS 서버가 설정되어 있지 않습니다.</translation>
+<translation id="779591286616261875">신규 보고서 보내기</translation>
 <translation id="7799817062559422778">밝은 모드</translation>
 <translation id="780301667611848630">취소</translation>
 <translation id="7805768142964895445">상태</translation>
@@ -828,6 +842,7 @@
 <translation id="8382302752385457774">허용 목록 라벨</translation>
 <translation id="8395584934117017006"><ph name="DEVICE_TYPE" /> 기기는 기업에서 관리합니다.</translation>
 <translation id="8398927464629426868">기기가 현재 충전 또는 방전되는 속도</translation>
+<translation id="8420955526972171689">테스트 실행 및 하드웨어 문제 해결</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">내부 키보드</translation>
 <translation id="8431300646573772016">ChromeOS의 새로운 기능</translation>
@@ -913,6 +928,7 @@
 <translation id="9082718469794970195">이 동영상 사용</translation>
 <translation id="9087578468327036362">쿼리 보고</translation>
 <translation id="9088306295921699330">현재 사용량</translation>
+<translation id="9092255287806472980">여러분의 의견은 Google팀에서 검토한 후 Chrome OS를 개선하는 데 사용됩니다. 접수되는 의견이 많아 직접 답변해 드리기는 어렵습니다.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="90977145661420967">기기를 분해해야 합니다</translation>
 <translation id="9098156406873149060">사용자 데이터 유지</translation>

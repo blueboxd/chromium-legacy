@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOCUMENT_TRANSITION_DOCUMENT_TRANSITION_STYLE_TRACKER_H_
 
 #include "components/viz/common/shared_element_resource_id.h"
+#include "third_party/blink/renderer/core/css/style_request.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
@@ -112,11 +113,19 @@ class DocumentTransitionStyleTracker
   int CapturedTagCount() const { return captured_tag_count_; }
 
   bool IsSharedElement(Element* element) const;
+
+  // This function represents whether root itself is participating in the
+  // transition (i.e. it has a tag in the current phase). Note that we create an
+  // EffectNode for the root whether or not it's transitioning.
   bool IsRootTransitioning() const;
 
   std::vector<viz::SharedElementResourceId> TakeCaptureResourceIds() {
     return std::move(capture_resource_ids_);
   }
+
+  // Returns whether styles applied to pseudo elements should be limited to UA
+  // rules based on the current phase of the transition.
+  StyleRequest::RulesToInclude StyleRulesToInclude() const;
 
  private:
   class ImageWrapperPseudoElement;
@@ -138,12 +147,10 @@ class DocumentTransitionStyleTracker
     // |target_element|. This information is mirrored into the UA stylesheet.
     LayoutSize border_box_size_in_css_space;
     TransformationMatrix viewport_matrix;
-    float device_pixel_ratio = 1.f;
 
     // Computed info cached before the DOM switches to the new state.
     LayoutSize cached_border_box_size_in_css_space;
     TransformationMatrix cached_viewport_matrix;
-    float cached_device_pixel_ratio = 1.f;
 
     // Valid if there is an element in the old DOM generating a snapshot.
     viz::SharedElementResourceId old_snapshot_id;

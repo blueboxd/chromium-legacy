@@ -199,20 +199,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
-                       RemoveAndUndoRemoveSavedPasswordsBatch) {
-  EXPECT_TRUE(RunPasswordsSubtest("removeAndUndoRemoveSavedPasswordsBatch"))
-      << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
                        RemoveAndUndoRemovePasswordException) {
   EXPECT_TRUE(RunPasswordsSubtest("removeAndUndoRemovePasswordException"))
-      << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
-                       RemoveAndUndoRemovePasswordExceptionsBatch) {
-  EXPECT_TRUE(RunPasswordsSubtest("removeAndUndoRemovePasswordExceptionsBatch"))
       << message_;
 }
 
@@ -367,6 +355,10 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
   EXPECT_EQ(last_change_flow_url(), "");
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RefreshScriptsIfNecessary) {
+  EXPECT_TRUE(RunPasswordsSubtest("refreshScriptsIfNecessary")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StartPasswordCheck) {
   set_start_password_check_state(
       password_manager::BulkLeakCheckService::State::kRunning);
@@ -391,6 +383,15 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StopPasswordCheck) {
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetPasswordCheckStatus) {
   EXPECT_TRUE(RunPasswordsSubtest("getPasswordCheckStatus")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, StartAutomatedPasswordChange) {
+  EXPECT_TRUE(RunPasswordsSubtest("startAutomatedPasswordChange"));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       StartAutomatedPasswordChangeWithEmptyUrl) {
+  EXPECT_TRUE(RunPasswordsSubtest("startAutomatedPasswordChangeWithEmptyUrl"));
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, MovePasswordsToAccount) {

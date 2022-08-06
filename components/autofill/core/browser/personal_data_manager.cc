@@ -46,6 +46,7 @@
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/offers_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/ui/autofill_image_fetcher.h"
 #include "components/autofill/core/browser/ui/label_formatter.h"
@@ -1174,9 +1175,9 @@ PersonalDataManager::GetActiveAutofillPromoCodeOffersForOrigin(
   return promo_code_offers_for_origin;
 }
 
-raw_ptr<gfx::Image> PersonalDataManager::GetCreditCardArtImageForUrl(
+gfx::Image* PersonalDataManager::GetCreditCardArtImageForUrl(
     const GURL& card_art_url) const {
-  raw_ptr<gfx::Image> cached_image = GetCachedCardArtImageForUrl(card_art_url);
+  gfx::Image* cached_image = GetCachedCardArtImageForUrl(card_art_url);
   if (cached_image)
     return cached_image;
 
@@ -1184,7 +1185,7 @@ raw_ptr<gfx::Image> PersonalDataManager::GetCreditCardArtImageForUrl(
   return nullptr;
 }
 
-raw_ptr<gfx::Image> PersonalDataManager::GetCachedCardArtImageForUrl(
+gfx::Image* PersonalDataManager::GetCachedCardArtImageForUrl(
     const GURL& card_art_url) const {
   if (!IsAutofillWalletImportEnabled())
     return nullptr;
@@ -1196,7 +1197,7 @@ raw_ptr<gfx::Image> PersonalDataManager::GetCachedCardArtImageForUrl(
 
   // If the cache contains the image, return it.
   if (images_iterator != credit_card_art_images_.end()) {
-    raw_ptr<gfx::Image> image = images_iterator->second.get();
+    gfx::Image* image = images_iterator->second.get();
     if (!image->IsEmpty())
       return image;
   }
@@ -1885,7 +1886,7 @@ void PersonalDataManager::LogStoredCreditCardMetrics() const {
 
 void PersonalDataManager::LogStoredOfferMetrics() const {
   if (!has_logged_stored_offer_metrics_) {
-    AutofillMetrics::LogStoredOfferMetrics(autofill_offer_data_);
+    autofill_metrics::LogStoredOfferMetrics(autofill_offer_data_);
     // Only log this info once per chrome user profile load.
     has_logged_stored_offer_metrics_ = true;
   }

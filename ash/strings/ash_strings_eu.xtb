@@ -56,10 +56,6 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1247519845643687288">Azken aplikazioak</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> gailutik kargatzen</translation>
 <translation id="1255033239764210633">Zer eguraldi dago?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> - 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Xehetasun gehiago lortzeko, hautatu gertaera bat Google Calendar-en.</translation>
 <translation id="1267032506238418139">Aldatu egin da lasterbidea</translation>
 <translation id="1269405891096105529">Gailu periferikoa ez da onartzen gonbidatu moduan</translation>
 <translation id="1270290102613614947">Pantailako teklatua desgaitu egin da</translation>
@@ -125,6 +121,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Ezarpenak &gt; Erabilerraztasuna atalean desgai dezakezu erabilerraztasun-osagarria.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> gailu</translation>
+<translation id="1639239467298939599">Kargatzen</translation>
 <translation id="1654477262762802994">Sortu ahozko kontsulta bat</translation>
 <translation id="1668469839109562275">VPN integratua</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> geratzen dira</translation>
@@ -240,6 +237,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="2359808026110333948">Egin aurrera</translation>
 <translation id="2367186422933365202">Ezin da hasi saioa Chromebook-ean</translation>
 <translation id="2369165858548251131">Nola esaten da "Kaixo" txineraz</translation>
+<translation id="2375445874393996153">Google-ren Laguntzailea zerbitzuaren bidez pantailan gauzak bilatzeko eginbidea ez da jada bateragarria.</translation>
 <translation id="2390318262976603432">Lurraldeko ezarpenak</translation>
 <translation id="240006516586367791">Multimedia-edukia kontrolatzeko aukerak</translation>
 <translation id="2402411679569069051">Chromebook-a desblokeatzeko, erabili hatz-marka edo desblokeatu telefonoa</translation>
@@ -507,6 +505,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="3901991538546252627"><ph name="NAME" /> sarera konektatzen</translation>
 <translation id="3922427723338465344">{0,plural, =1{Itzuli gailuaren aurreko bertsiora minutu bat barru}other{Itzuli gailuaren aurreko bertsiora # minutu barru}}</translation>
 <translation id="3923494859158167397">Ez da konfiguratu sare mugikorrik</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Gertaerak kargatzen.</translation>
 <translation id="3932043219784172185">Ez dago gailurik konektatuta</translation>
 <translation id="3934456833412894880">Karga egokitua aktibatuta dago. Bateria % 80ra kargatuta mantenduko da haren iraupena luzatzeko, eta erabat kargatuko halakorik behar duzunean.</translation>
 <translation id="3943857333388298514">Itsatsi</translation>
@@ -706,6 +705,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="5078796286268621944">Okerra da PINa</translation>
 <translation id="5083553833479578423">Desblokeatu Laguntzailea zerbitzuaren eginbide gehiago.</translation>
 <translation id="509790653408515442">Telefonoko aplikazioak zuzenean igortzen dituzunean, hemen agertuko dira</translation>
+<translation id="5098537242461068432">Ireki dira berriro lan-eremua eta leihoak</translation>
 <translation id="5107522548814527560">Sarea</translation>
 <translation id="5117590920725113268">Erakutsi hurrengo hilabetea</translation>
 <translation id="5136175204352732067">Beste teklatu bat konektatu duzu</translation>
@@ -1050,7 +1050,6 @@ Berriki instalatu da</translation>
 <translation id="7165278925115064263">Alt + Maius + K</translation>
 <translation id="7168224885072002358">Aurreko bereizmenera leheneratuko da <ph name="TIMEOUT_SECONDS" /> ondoren</translation>
 <translation id="7180611975245234373">Freskatu</translation>
-<translation id="718361511487535372">Ireki Google Calendar-en</translation>
 <translation id="7188494361780961876">Pantailaren goiko ezkerreko izkinara eraman da menua.</translation>
 <translation id="7189412385142492784">Zer distantziatara dago Artizarra</translation>
 <translation id="7198435252016571249">Atxiki egin da kamera beheko eskuinaldeko izkinan, sistemaren beste gainazal batean gainjartzen zelako.</translation>
@@ -1059,6 +1058,9 @@ Berriki instalatu da</translation>
 <translation id="7258828758145722155">Atzo editatu zen</translation>
 <translation id="726276584504105859">Arrastatu hona pantaila zatitzeko</translation>
 <translation id="7262906531272962081">Sortu abisua</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" />-<ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Xehetasun gehiago lortzeko, hautatu gertaera bat Google Calendar-en.</translation>
 <translation id="7302889331339392448">Istanteko azpitituluak desaktibatuta daude.</translation>
 <translation id="7303365578352795231">Beste gailu batean erantzuten.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1171,6 +1173,7 @@ Berriki instalatu da</translation>
 <translation id="7904094684485781019">Kontu honen administratzaileak saio-hasiera anitzerako baimenak kendu ditu.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Hizketa gailuan bertan prozesatzen da orain eta diktaketak konexiorik gabe funtzionatzen du</translation>
+<translation id="7932451802722951285">Ireki Google Calendar-en</translation>
 <translation id="7933084174919150729">Profil nagusian soilik erabil daiteke Google-ren Laguntzailea.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> eta <ph name="SECOND_PARENT_EMAIL" /> kontuen bidez kudeatzen da kontu hau</translation>
 <translation id="793716872548410480">Sakatu <ph name="SHORTCUT_KEY_NAME" /> + V arbela ikusteko. Kopiatutako azken bost elementuak arbelean gordeta geratzen dira.</translation>

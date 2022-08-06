@@ -40,7 +40,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableLocaleSync[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kArcDisableMediaStoreMaintenance[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisablePlayAutoInstall[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableTtsCache[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableUreadahead[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceShowOptInUi[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcGeneratePlayAutoInstall[];
@@ -217,6 +216,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLoginProfile[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLoginUser[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kBrowserDataMigrationForUser[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kBrowserDataMigrationMoveMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kForceBrowserDataMigrationForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kMarketingOptInUrl[];

@@ -25,6 +25,7 @@ constexpr int kShadowElevation = 2;
 constexpr int kSideInset = 24;
 constexpr int kTopMargin = 24;
 constexpr int kMinHeight = 72;
+constexpr int kMaxTextWidth = 256;
 constexpr SkColor kTextColor = gfx::kGoogleGrey200;
 constexpr SkColor kBackgroundColor = gfx::kGoogleGrey900;
 constexpr SkColor kForegroundColor = SkColorSetA(SK_ColorWHITE, 0x0F);
@@ -59,12 +60,14 @@ MessageView::MessageView(DisplayOverlayController* controller,
       color_utils::GetResultingPaintColor(kForegroundColor, kBackgroundColor),
       kCornerRadius));
   SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(0, kSideInset)));
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
   SetText(base::UTF8ToUTF16(message));
   SetEnabledTextColors(kTextColor);
   label()->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::NORMAL, kFontSize,
                                      gfx::Font::Weight::NORMAL));
   label()->SetLineHeight(kLineHeight);
+  label()->SetMultiLine(true);
 
   SetImageLabelSpacing(kImageLabelSpace);
   image()->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
@@ -86,8 +89,10 @@ MessageView::MessageView(DisplayOverlayController* controller,
   }
 
   auto preferred_size = CalculatePreferredSize();
-  preferred_size.SetSize(preferred_size.width() + kIconSize + kImageLabelSpace,
-                         kMinHeight);
+  preferred_size.SetSize(
+      std::min(preferred_size.width() + kIconSize + kImageLabelSpace,
+               kMaxTextWidth + kIconSize + kImageLabelSpace + 2 * kSideInset),
+      kMinHeight);
   preferred_size.SetToMin(parent_size);
   SetSize(preferred_size);
   SetPosition(gfx::Point(

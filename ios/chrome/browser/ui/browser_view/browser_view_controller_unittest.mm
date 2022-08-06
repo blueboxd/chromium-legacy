@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
-#import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
@@ -38,6 +37,11 @@
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
+#import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/primary_toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_adaptor.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
@@ -104,15 +108,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     id passKitController =
         [OCMockObject niceMockForClass:[PKAddPassesViewController class]];
     passKitViewController_ = passKitController;
-
-    bvcHelper_ = [[BrowserViewControllerHelper alloc] init];
-
-    // Set up a stub dependency factory.
-    id factory = [OCMockObject
-        mockForClass:[BrowserViewControllerDependencyFactory class]];
-    [[[factory stub] andReturn:bvcHelper_] newBrowserViewControllerHelper];
-
-    dependencyFactory_ = factory;
 
     browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
     WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
@@ -183,6 +178,10 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     ClipboardRecentContent::SetInstance(
         std::make_unique<FakeClipboardRecentContent>());
 
+    container_ = [[BrowserContainerViewController alloc] init];
+    bvc_helper_ = [[BrowserViewControllerHelper alloc] init];
+    key_commands_provider_ = [[KeyCommandsProvider alloc] init];
+
     fake_prerender_service_ = std::make_unique<FakePrerenderService>();
 
     bubble_presenter_ = [[BubblePresenter alloc]
@@ -192,15 +191,38 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         initWithBaseViewController:[[UIViewController alloc] init]
                            browser:browser_.get()];
 
-    container_ = [[BrowserContainerViewController alloc] init];
+    toolbar_coordinator_adaptor_ = [[ToolbarCoordinatorAdaptor alloc]
+        initWithDispatcher:browser_->GetCommandDispatcher()];
+
+    primary_toolbar_coordinator_ =
+        [[PrimaryToolbarCoordinator alloc] initWithBrowser:browser_.get()];
+
+    secondary_toolbar_coordinator_ =
+        [[SecondaryToolbarCoordinator alloc] initWithBrowser:browser_.get()];
+
+    tab_strip_coordinator_ =
+        [[TabStripCoordinator alloc] initWithBrowser:browser_.get()];
+
+    legacy_tab_strip_coordinator_ =
+        [[TabStripLegacyCoordinator alloc] initWithBrowser:browser_.get()];
+
+    BrowserViewControllerDependencies dependencies;
+    dependencies.prerenderService = fake_prerender_service_.get();
+    dependencies.bubblePresenter = bubble_presenter_;
+    dependencies.downloadManagerCoordinator = download_manager_coordinator_;
+    dependencies.toolbarInterface = toolbar_coordinator_adaptor_;
+    dependencies.primaryToolbarCoordinator = primary_toolbar_coordinator_;
+    dependencies.secondaryToolbarCoordinator = secondary_toolbar_coordinator_;
+    dependencies.tabStripCoordinator = tab_strip_coordinator_;
+    dependencies.legacyTabStripCoordinator = legacy_tab_strip_coordinator_;
+
     bvc_ = [[BrowserViewController alloc]
                        initWithBrowser:browser_.get()
-                     dependencyFactory:factory
         browserContainerViewController:container_
+           browserViewControllerHelper:bvc_helper_
                             dispatcher:browser_->GetCommandDispatcher()
-                      prerenderService:fake_prerender_service_.get()
-                       bubblePresenter:bubble_presenter_
-            downloadManagerCoordinator:download_manager_coordinator_];
+                   keyCommandsProvider:key_commands_provider_
+                          dependencies:dependencies];
 
     // Force the view to load.
     UIWindow* window = [[UIWindow alloc] initWithFrame:CGRectZero];
@@ -228,7 +250,8 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<PrerenderService> fake_prerender_service_;
-  BrowserViewControllerHelper* bvcHelper_;
+  BrowserViewControllerHelper* bvc_helper_;
+  KeyCommandsProvider* key_commands_provider_;
   PKAddPassesViewController* passKitViewController_;
   OCMockObject* dependencyFactory_;
   CommandDispatcher* command_dispatcher_;
@@ -238,6 +261,11 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   UIWindow* window_;
   SceneState* scene_state_;
   DownloadManagerCoordinator* download_manager_coordinator_;
+  ToolbarCoordinatorAdaptor* toolbar_coordinator_adaptor_;
+  PrimaryToolbarCoordinator* primary_toolbar_coordinator_;
+  SecondaryToolbarCoordinator* secondary_toolbar_coordinator_;
+  TabStripCoordinator* tab_strip_coordinator_;
+  TabStripLegacyCoordinator* legacy_tab_strip_coordinator_;
 };
 
 TEST_F(BrowserViewControllerTest, TestWebStateSelected) {

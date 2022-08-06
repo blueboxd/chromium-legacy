@@ -2059,6 +2059,7 @@ test("content_unittests") {
     "../browser/attribution_reporting/attribution_cookie_checker_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_data_host_manager_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_filter_data_unittest.cc",
+    "../browser/attribution_reporting/attribution_header_utils_unittest.cc",
     "../browser/attribution_reporting/attribution_host_unittest.cc",
     "../browser/attribution_reporting/attribution_insecure_random_generator_unittest.cc",
     "../browser/attribution_reporting/attribution_interop_parser_unittest.cc",
@@ -3077,6 +3078,7 @@ group("gpu_pytype") {
     "//build/util/lib/results/",
     "//content/test/gpu/gold_inexact_matching/",
     "//content/test/gpu/flake_suppressor/",
+    "//testing/pytype_common/",
     "//testing/unexpected_passes_common/",
   ]
 

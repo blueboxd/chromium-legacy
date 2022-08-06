@@ -73,6 +73,10 @@ export class ReimagingCalibrationFailedPage extends
     };
   }
 
+  static get observers() {
+    return ['updateIsFirstClickableComponent_(componentCheckboxes_.*)'];
+  }
+
   constructor() {
     super();
     /** @private {ShimlessRmaServiceInterface} */
@@ -83,7 +87,7 @@ export class ReimagingCalibrationFailedPage extends
      * a exit button. So we use the common exit button from shimless_rma.js
      * This function needs to be public, because it's invoked by
      * shimless_rma.js as part of the response to the exit button click.
-     * @return {!Promise<!StateResult>}
+     * @return {!Promise<!{stateResult: !StateResult}>}
      */
     this.onExitButtonClick = () => {
       if (this.tryingToSkipWithFailedComponents_()) {
@@ -143,7 +147,7 @@ export class ReimagingCalibrationFailedPage extends
   }
 
   /**
-   * @return {!Promise<!StateResult>}
+   * @return {!Promise<!{stateResult: !StateResult}>}
    * @private
    */
   skipCalibration_() {
@@ -157,7 +161,7 @@ export class ReimagingCalibrationFailedPage extends
     return this.shimlessRmaService_.startCalibration(skippedComponents);
   }
 
-  /** @return {!Promise<!StateResult>} */
+  /** @return {!Promise<!{stateResult: !StateResult}>} */
   onNextButtonClick() {
     return this.shimlessRmaService_.startCalibration(this.getComponentsList_());
   }
@@ -189,6 +193,16 @@ export class ReimagingCalibrationFailedPage extends
   tryingToSkipWithFailedComponents_() {
     return this.componentCheckboxes_.some(
         component => component.failed && !component.checked);
+  }
+
+  /** @private */
+  updateIsFirstClickableComponent_() {
+    const firstClickableComponent =
+        this.componentCheckboxes_.find(component => !component.disabled);
+    this.componentCheckboxes_.forEach(component => {
+      component.isFirstClickableComponent =
+          (component === firstClickableComponent) ? true : false;
+    });
   }
 }
 

@@ -1508,7 +1508,7 @@ gboolean AddSelection(AtkSelection* selection, gint index) {
       AXPlatformNodeAuraLinux::FromAtkObject(ATK_OBJECT(selection));
   if (!obj)
     return FALSE;
-  if (index < 0 || index >= obj->GetChildCount())
+  if (index < 0 || static_cast<size_t>(index) >= obj->GetChildCount())
     return FALSE;
 
   AXPlatformNodeAuraLinux* child =
@@ -1596,7 +1596,7 @@ gboolean IsChildSelected(AtkSelection* selection, gint index) {
       AXPlatformNodeAuraLinux::FromAtkObject(ATK_OBJECT(selection));
   if (!obj)
     return FALSE;
-  if (index < 0 || index >= obj->GetChildCount())
+  if (index < 0 || static_cast<size_t>(index) >= obj->GetChildCount())
     return FALSE;
 
   AXPlatformNodeAuraLinux* child =
@@ -2117,7 +2117,7 @@ AtkObject* RefChild(AtkObject* atk_object, gint index) {
   if (!obj)
     return nullptr;
 
-  if (index < 0 || index >= obj->GetChildCount())
+  if (index < 0 || static_cast<size_t>(index) >= obj->GetChildCount())
     return nullptr;
 
   AtkObject* result = obj->ChildAtIndex(index);
@@ -2139,7 +2139,10 @@ gint GetIndexInParent(AtkObject* atk_object) {
   if (!obj)
     return -1;
 
-  return obj->GetIndexInParent().value_or(-1);
+  auto index_in_parent = obj->GetIndexInParent();
+  return index_in_parent.has_value()
+             ? static_cast<gint>(index_in_parent.value())
+             : -1;
 }
 
 gint AtkGetIndexInParent(AtkObject* atk_object) {
@@ -3171,7 +3174,8 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   }
 
   if (GetData().GetRestriction() != ax::mojom::Restriction::kDisabled) {
-    if (IsReadOnlySupported(GetRole()) && GetData().IsReadOnlyOrDisabled()) {
+    if (GetDelegate()->IsReadOnlySupported() &&
+        GetDelegate()->IsReadOnlyOrDisabled()) {
 #if defined(ATK_216)
       // Runtime check in case we were compiled with a newer version of ATK.
       if (PlatformSupportsState(ATK_STATE_READ_ONLY))
@@ -3364,7 +3368,7 @@ bool AXPlatformNodeAuraLinux::IsPlatformCheckable() const {
   return AXPlatformNodeBase::IsPlatformCheckable();
 }
 
-absl::optional<int> AXPlatformNodeAuraLinux::GetIndexInParent() {
+absl::optional<size_t> AXPlatformNodeAuraLinux::GetIndexInParent() {
   AXPlatformNode* parent =
       AXPlatformNode::FromNativeViewAccessible(GetParent());
   // Even though the node doesn't have its parent, GetParent() could return the
@@ -4056,8 +4060,12 @@ void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
   if (!atk_object)
     return;
 
-  g_signal_emit_by_name(GetParent(), "children-changed::add",
-                        GetIndexInParent().value_or(-1), atk_object);
+  auto index_in_parent = GetIndexInParent();
+  gint index_gint = index_in_parent.has_value()
+                        ? static_cast<gint>(index_in_parent.value())
+                        : -1;
+  g_signal_emit_by_name(GetParent(), "children-changed::add", index_gint,
+                        atk_object);
 }
 
 void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
@@ -4070,8 +4078,12 @@ void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
   if (!atk_object)
     return;
 
-  g_signal_emit_by_name(GetParent(), "children-changed::remove",
-                        GetIndexInParent().value_or(-1), atk_object);
+  auto index_in_parent = GetIndexInParent();
+  gint index_gint = index_in_parent.has_value()
+                        ? static_cast<gint>(index_in_parent.value())
+                        : -1;
+  g_signal_emit_by_name(GetParent(), "children-changed::remove", index_gint,
+                        atk_object);
 }
 
 void AXPlatformNodeAuraLinux::OnParentChanged() {

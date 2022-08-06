@@ -21,6 +21,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
@@ -763,6 +764,10 @@ public class LayoutManagerImpl
         getActiveLayout().onTabsAllClosing(incognito);
     }
 
+    protected Supplier<TopUiThemeColorProvider> getTopUiThemeColorProvider() {
+        return mTopUiThemeColorProvider;
+    }
+
     @Override
     public void initLayoutTabFromHost(final int tabId) {
         if (getTabModelSelector() == null || getActiveLayout() == null) return;
@@ -1089,8 +1094,12 @@ public class LayoutManagerImpl
             if (!mSceneOverlays.get(i).isSceneOverlayTreeShowing()) continue;
 
             // If the back button was consumed by any overlays, return true.
-            if (mSceneOverlays.get(i).onBackPressed()) return true;
+            if (mSceneOverlays.get(i).onBackPressed()) {
+                BackPressManager.record(BackPressHandler.Type.SCENE_OVERLAY);
+                return true;
+            }
         }
+        // Back press metrics of active layout is recorded by their implementations.
         return getActiveLayout() != null && getActiveLayout().onBackPressed();
     }
 

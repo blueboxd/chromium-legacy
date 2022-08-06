@@ -136,6 +136,7 @@
       # Times out listing tests crbug.com/1167314
       'android-asan',
       # Does not currently work on Lacros configurations.
+      'linux-lacros-asan-lsan-rel',
       'linux-lacros-code-coverage',
       'linux-lacros-tester-rel',
       'linux-lacros-tester-fyi-rel',
@@ -229,6 +230,7 @@
   'blink_web_tests': {
     'remove_from': [
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
+      'Win7 Tests (1)',
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
@@ -1069,6 +1071,15 @@
       }
     }
   },
+  'chrome_public_unit_test_apk': {
+    'modifications': {
+      'android-12-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_unit_test_apk.filter',
+        ],
+      },
+    },
+  },
   'chrome_sizes': {
     'modifications': {
       'lacros-amd64-generic-chrome': {
@@ -1627,39 +1638,6 @@
         ],
       },
     },
-  },
-  # TODO(crbug.com/1202958): Remove these GLRenderer variants when
-  # SkiaRenderer is fully shipped on Chrome OS.
-  # Don't run these on real devices due to capacity issues.
-  'gl_renderer_context_lost_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
-  },
-  'gl_renderer_gpu_process_launch_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
-  },
-  'gl_renderer_hardware_accelerated_feature_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
-  },
-  'gl_renderer_maps_pixel_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
-  },
-  'gl_renderer_pixel_skia_gold_tests': {
-    'remove_from': [
-      'ChromeOS FYI Release (kevin)',
-      'Lacros FYI x64 Release (Intel)',
-    ],
   },
   'gl_tests_passthrough': {
     'remove_from': [
@@ -2640,40 +2618,6 @@
       },
     },
   },
-  'rendering_representative_perf_tests': {
-    'modifications': {
-      'Win10 FYI x64 Exp Release (Intel HD 630)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 FYI x64 Exp Release (NVIDIA)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 FYI x64 Release (AMD RX 5500 XT)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 FYI x64 Release (Intel HD 630)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 FYI x64 Release (NVIDIA)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-      'Win10 x64 Release (NVIDIA)': {
-        'args': [
-          '--browser=release_x64',
-        ],
-      },
-    },
-  },
   'sandbox_linux_unittests': {
     'modifications': {
       'android-12-x64-rel': {
@@ -2879,7 +2823,7 @@
       'Mac Retina Debug (AMD)',
       'Win10 FYI x64 Debug (NVIDIA)',
       # Disabled due to dbus crashes crbug.com/927465
-      'Linux FYI Release (Intel HD 630)',
+      'Linux FYI Release (Intel UHD 630)',
       'Linux FYI Release (NVIDIA)',
       'Linux Release (NVIDIA)',
     ],
@@ -2961,6 +2905,7 @@
     },
     'remove_from': [
       # TODO(crbug.com/1141234): Restore when there's more DUTs
+      'chromeos-eve-chrome',
       'chromeos-kevin-chrome',
       'chromeos-kevin-rel',
 
@@ -3077,8 +3022,24 @@
   },
   'variations_smoke_tests': {
     'modifications': {
+      'linux-chrome': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chrome.tests.finch',
+            },
+          ],
+        },
+      },
       'win-chrome': {
         'experiment_percentage': 100,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chrome.tests.finch',
+            },
+          ],
+        },
       },
     },
   },
@@ -3142,21 +3103,6 @@
   },
   'viz_unittests': {
     'modifications': {
-      'android-11-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.viz_unittests.filter',
-        ],
-      },
-      'android-marshmallow-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
-        ],
-      },
-      'android-pie-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
-        ],
-      },
       'fuchsia-fyi-arm64-dbg': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.viz_unittests.filter',

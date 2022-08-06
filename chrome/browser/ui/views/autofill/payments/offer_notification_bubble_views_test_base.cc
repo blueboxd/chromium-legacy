@@ -22,22 +22,29 @@
 namespace autofill {
 
 const char kDefaultTestPromoCode[] = "5PCTOFFSHOES";
+const char kDefaultTestValuePropText[] = "5% off on shoes. Up to $50.";
+const char kDefaultTestSeeDetailsText[] = "See details";
+const char kDefaultTestUsageInstructionsText[] =
+    "Click the promo code field at checkout to autofill it.";
+const char kDefaultTestDetailsUrlString[] = "https://pay.google.com";
 
 OfferNotificationBubbleViewsTestBase::OfferNotificationBubbleViewsTestBase(
     bool promo_code_flag_enabled) {
   if (promo_code_flag_enabled) {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         /*enabled_features=*/
-        {{features::kAutofillEnableOfferNotificationForPromoCodes, {}},
-         {commerce::kRetailCoupons,
-          {{commerce::kRetailCouponsWithCodeParam, "true"}}}},
+        {{commerce::kRetailCoupons,
+          {{commerce::kRetailCouponsWithCodeParam, "true"}}},
+         {features::kAutofillEnableOfferNotificationForPromoCodes, {}},
+         {features::kAutofillFillMerchantPromoCodeFields, {}}},
         /*disabled_features=*/{});
   } else {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{},
         /*disabled_features=*/{
+            commerce::kRetailCoupons,
             features::kAutofillEnableOfferNotificationForPromoCodes,
-            commerce::kRetailCoupons});
+            features::kAutofillFillMerchantPromoCodeFields});
   }
 }
 
@@ -89,7 +96,7 @@ OfferNotificationBubbleViewsTestBase::CreateCardLinkedOfferDataWithDomains(
 }
 
 std::unique_ptr<AutofillOfferData>
-OfferNotificationBubbleViewsTestBase::CreatePromoCodeOfferDataWithDomains(
+OfferNotificationBubbleViewsTestBase::CreateFreeListingCouponDataWithDomains(
     const std::vector<GURL>& domains) {
   int64_t offer_id = 5555;
   base::Time expiry = AutofillClock::Now() + base::Days(2);
@@ -97,15 +104,36 @@ OfferNotificationBubbleViewsTestBase::CreatePromoCodeOfferDataWithDomains(
   for (auto url : domains)
     merchant_origins.emplace_back(url.DeprecatedGetOriginAsURL());
   DisplayStrings display_strings;
-  display_strings.value_prop_text = "5% off on shoes. Up to $50.";
-  display_strings.see_details_text = "See details";
+  display_strings.value_prop_text = GetDefaultTestValuePropText();
+  display_strings.see_details_text = GetDefaultTestSeeDetailsText();
   display_strings.usage_instructions_text =
-      "Click the promo code field at checkout to autofill it.";
+      GetDefaultTestUsageInstructionsText();
   auto promo_code = GetDefaultTestPromoCode();
   return std::make_unique<AutofillOfferData>(
       AutofillOfferData::FreeListingCouponOffer(
-          offer_id, expiry, merchant_origins, /*offer_details_url=*/GURL(),
-          display_strings, promo_code));
+          offer_id, expiry, merchant_origins,
+          /*offer_details_url=*/GURL(), display_strings, promo_code));
+}
+
+std::unique_ptr<AutofillOfferData>
+OfferNotificationBubbleViewsTestBase::CreateGPayPromoCodeOfferDataWithDomains(
+    const std::vector<GURL>& domains) {
+  int64_t offer_id = 5555;
+  base::Time expiry = AutofillClock::Now() + base::Days(2);
+  std::vector<GURL> merchant_origins;
+  for (auto url : domains)
+    merchant_origins.emplace_back(url.DeprecatedGetOriginAsURL());
+  DisplayStrings display_strings;
+  display_strings.value_prop_text = GetDefaultTestValuePropText();
+  display_strings.see_details_text = GetDefaultTestSeeDetailsText();
+  display_strings.usage_instructions_text =
+      GetDefaultTestUsageInstructionsText();
+  auto promo_code = GetDefaultTestPromoCode();
+  GURL offer_details_url = GURL(GetDefaultTestDetailsUrlString());
+  return std::make_unique<AutofillOfferData>(
+      AutofillOfferData::GPayPromoCodeOffer(offer_id, expiry, merchant_origins,
+                                            offer_details_url, display_strings,
+                                            promo_code));
 }
 
 void OfferNotificationBubbleViewsTestBase::DeleteFreeListingCouponForUrl(
@@ -122,6 +150,9 @@ void OfferNotificationBubbleViewsTestBase::SetUpOfferDataWithDomains(
       break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       SetUpFreeListingCouponOfferDataWithDomains(domains);
+      break;
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      SetUpGPayPromoCodeOfferDataWithDomains(domains);
       break;
     case AutofillOfferData::OfferType::UNKNOWN:
       NOTREACHED();
@@ -142,12 +173,16 @@ void OfferNotificationBubbleViewsTestBase::
     SetUpFreeListingCouponOfferDataWithDomains(
         const std::vector<GURL>& domains) {
   personal_data_->ClearAllServerData();
-  // TODO(crbug.com/1203811): Should distinguish between activated GPay promo
-  //     code offers and free-listing coupon offers separately. When that
-  //     separation is created in a followup CL, this class should probably
-  //     create a `SetUpGPayPromoCodeOfferDataWithDomains(~)` helper.
   personal_data_->AddOfferDataForTest(
-      CreatePromoCodeOfferDataWithDomains(domains));
+      CreateFreeListingCouponDataWithDomains(domains));
+  personal_data_->NotifyPersonalDataObserver();
+}
+
+void OfferNotificationBubbleViewsTestBase::
+    SetUpGPayPromoCodeOfferDataWithDomains(const std::vector<GURL>& domains) {
+  personal_data_->ClearAllServerData();
+  personal_data_->AddOfferDataForTest(
+      CreateGPayPromoCodeOfferDataWithDomains(domains));
   personal_data_->NotifyPersonalDataObserver();
 }
 
@@ -222,6 +257,27 @@ void OfferNotificationBubbleViewsTestBase::UpdateFreeListingCouponDisplayTime(
 std::string OfferNotificationBubbleViewsTestBase::GetDefaultTestPromoCode()
     const {
   return kDefaultTestPromoCode;
+}
+
+std::string OfferNotificationBubbleViewsTestBase::GetDefaultTestValuePropText()
+    const {
+  return kDefaultTestValuePropText;
+}
+
+std::string OfferNotificationBubbleViewsTestBase::GetDefaultTestSeeDetailsText()
+    const {
+  return kDefaultTestSeeDetailsText;
+}
+
+std::string
+OfferNotificationBubbleViewsTestBase::GetDefaultTestUsageInstructionsText()
+    const {
+  return kDefaultTestUsageInstructionsText;
+}
+
+std::string
+OfferNotificationBubbleViewsTestBase::GetDefaultTestDetailsUrlString() const {
+  return kDefaultTestDetailsUrlString;
 }
 
 AutofillOfferManager* OfferNotificationBubbleViewsTestBase::GetOfferManager() {

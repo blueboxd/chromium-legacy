@@ -20,6 +20,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -3953,31 +3954,6 @@ TEST_F(AutofillMetricsTest, LogStoredCreditCardWithNicknameMetrics) {
       "Autofill.StoredCreditCardCount.Server.Masked.WithNickname", 2, 1);
 }
 
-TEST_F(AutofillMetricsTest, LogStoredOfferMetrics) {
-  std::vector<std::unique_ptr<AutofillOfferData>> offers;
-  AutofillOfferData offer1 = test::GetCardLinkedOfferData1();
-  AutofillOfferData offer2 = test::GetCardLinkedOfferData2();
-  offer2.SetEligibleInstrumentIdForTesting({222222, 999999, 888888});
-  offer2.SetMerchantOriginForTesting(
-      {GURL("http://www.example2.com"), GURL("https://www.example3.com/")});
-  offers.push_back(std::make_unique<AutofillOfferData>(offer1));
-  offers.push_back(std::make_unique<AutofillOfferData>(offer2));
-
-  base::HistogramTester histogram_tester;
-  auto SamplesOf = [&histogram_tester](base::StringPiece metric) {
-    return histogram_tester.GetAllSamples(metric);
-  };
-  AutofillMetrics::LogStoredOfferMetrics(offers);
-
-  // Validate the count metrics.
-  EXPECT_THAT(SamplesOf("Autofill.Offer.StoredOfferCount"),
-              BucketsAre(Bucket(2, 1)));
-  EXPECT_THAT(SamplesOf("Autofill.Offer.StoredOfferRelatedMerchantCount"),
-              BucketsAre(Bucket(1, 1), Bucket(2, 1)));
-  EXPECT_THAT(SamplesOf("Autofill.Offer.StoredOfferRelatedCardCount"),
-              BucketsAre(Bucket(1, 1), Bucket(3, 1)));
-}
-
 // Test that we correctly log when Profile Autofill is enabled at startup.
 TEST_F(AutofillMetricsTest, AutofillProfileIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
@@ -4938,9 +4914,6 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardShownFormEvents) {
 // Test that we log specific suggestion shown form events for virtual credit
 // cards.
 TEST_P(AutofillMetricsIFrameTest, VirtualCreditCardShownFormEvents) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillEnableMerchantBoundVirtualCards);
-
   // Set up our form data.  https:// is required.
   FormData form;
   form.name = u"TestForm";
@@ -5420,6 +5393,98 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardFilledFormEvents) {
                                        FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE,
                                        1);
   }
+}
+
+// Test to log when an unique local card is autofilled, when other duplicated
+// server cards exist.
+TEST_P(
+    AutofillMetricsIFrameTest,
+    CreditCardFilledFormEventsUsingUniqueLocalCardWhenOtherDuplicateServerCardsPresent) {
+  CreateLocalAndDuplicateServerCreditCard();
+  // Creating a local mastercard credit card.
+  std::string local_guid = CreateLocalMasterCard();
+
+  // Set up our form data.
+  FormData form = test::GetFormData(
+      {.description_for_logging = "PaymentProfileImportRequirements",
+       .fields = {
+           {.role = ServerFieldType::CREDIT_CARD_EXP_MONTH, .value = u""},
+           {.role = ServerFieldType::CREDIT_CARD_EXP_2_DIGIT_YEAR,
+            .value = u""},
+           {.role = ServerFieldType::CREDIT_CARD_NUMBER, .value = u""}}});
+  std::vector<ServerFieldType> field_types = {
+      CREDIT_CARD_EXP_MONTH, CREDIT_CARD_EXP_2_DIGIT_YEAR, CREDIT_CARD_NUMBER};
+
+  autofill_manager().AddSeenForm(form, field_types, field_types);
+  // Simulate filling a unique local card suggestion.
+  base::HistogramTester histogram_tester;
+  autofill_manager().FillOrPreviewForm(
+      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
+      autofill_manager().suggestion_generator()->MakeFrontendId(local_guid,
+                                                                std::string()));
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.FormEvents.CreditCard"),
+      BucketsInclude(
+          Bucket(FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1),
+          Bucket(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, 1),
+          Bucket(
+              FORM_EVENT_LOCAL_SUGGESTION_FILLED_FOR_AN_EXISTING_SERVER_CARD_ONCE,
+              0)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(credit_card_form_events_frame_histogram_),
+      BucketsInclude(
+          Bucket(FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1),
+          Bucket(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, 1),
+          Bucket(
+              FORM_EVENT_LOCAL_SUGGESTION_FILLED_FOR_AN_EXISTING_SERVER_CARD_ONCE,
+              0)));
+}
+
+// Test to log when a local card is autofilled and its duplicated
+// server card exists.
+TEST_P(AutofillMetricsIFrameTest,
+       CreditCardFilledFormEventsUsingDuplicateServerCard) {
+  // Creating a local and a duplicate server card.
+  std::vector<std::string> local_and_duplicate_server_card_guids =
+      CreateLocalAndDuplicateServerCreditCard();
+  // Set up our form data.
+  FormData form = test::GetFormData(
+      {.description_for_logging = "PaymentProfileImportRequirements",
+       .fields = {
+           {.role = ServerFieldType::CREDIT_CARD_EXP_MONTH, .value = u""},
+           {.role = ServerFieldType::CREDIT_CARD_EXP_2_DIGIT_YEAR,
+            .value = u""},
+           {.role = ServerFieldType::CREDIT_CARD_NUMBER, .value = u""}}});
+  std::vector<ServerFieldType> field_types = {
+      CREDIT_CARD_EXP_MONTH, CREDIT_CARD_EXP_2_DIGIT_YEAR, CREDIT_CARD_NUMBER};
+
+  autofill_manager().AddSeenForm(form, field_types, field_types);
+  // Simulate filling a local card suggestion with a duplicate server card.
+  base::HistogramTester histogram_tester;
+  // Local card with a duplicate server card present at index 0.
+  std::string local_guid(local_and_duplicate_server_card_guids.at(0));
+  autofill_manager().FillOrPreviewForm(
+      mojom::RendererFormDataAction::kFill, 0, form, form.fields.front(),
+      autofill_manager().suggestion_generator()->MakeFrontendId(local_guid,
+                                                                std::string()));
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.FormEvents.CreditCard"),
+      BucketsInclude(
+          Bucket(FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1),
+          Bucket(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, 1),
+          Bucket(
+              FORM_EVENT_LOCAL_SUGGESTION_FILLED_FOR_AN_EXISTING_SERVER_CARD_ONCE,
+              1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(credit_card_form_events_frame_histogram_),
+      BucketsInclude(
+          Bucket(FORM_EVENT_LOCAL_SUGGESTION_FILLED, 1),
+          Bucket(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, 1),
+          Bucket(
+              FORM_EVENT_LOCAL_SUGGESTION_FILLED_FOR_AN_EXISTING_SERVER_CARD_ONCE,
+              1)));
 }
 
 // Test that we log preflight calls for credit card unmasking.
@@ -12215,7 +12280,8 @@ class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
                  {.label = u"ExpDate",
                   .name = u"expdate",
                   .is_autofilled = false},
-                 {.label = u"CVC",
+                 {.is_visible = false,
+                  .label = u"CVC",
                   .name = u"cvc",
                   .is_autofilled = false,
                   .origin = other_origin},
@@ -12302,9 +12368,50 @@ class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
   CreditCardAndCvc credit_card_with_cvc_;
 };
 
+// This fixture adds utilities for the seamlessness metric names.
+//
+// These metric names get very long, and with >16 variants the tests become
+// unreadable otherwise.
+class AutofillMetricsSeamlessnessTest
+    : public AutofillMetricsCrossFrameFormTest {
+ public:
+  struct MetricName {
+    enum class Fill { kFills, kFillable };
+    enum class Time { kBefore, kAfter, kSubmission };
+    enum class Visibility { kAll, kVisible };
+    enum class Variant { kQualitative, kBitmask };
+
+    Fill fill;
+    Time time;
+    Visibility visibility;
+    Variant variant;
+
+    std::string str() const {
+      return base::StringPrintf(
+          "Autofill.CreditCard.Seamless%s.%s%s%s",
+          fill == Fill::kFills ? "Fills" : "Fillable",
+          time == Time::kSubmission ? "AtSubmissionTime"
+          : time == Time::kBefore   ? "AtFillTimeBeforeSecurityPolicy"
+                                    : "AtFillTimeAfterSecurityPolicy",
+          visibility == Visibility::kAll ? "" : ".Visible",
+          variant == Variant::kQualitative ? "" : ".Bitmask");
+    }
+  };
+
+  static constexpr auto kFills = MetricName::Fill::kFills;
+  static constexpr auto kFillable = MetricName::Fill::kFillable;
+  static constexpr auto kBefore = MetricName::Time::kBefore;
+  static constexpr auto kAfter = MetricName::Time::kAfter;
+  static constexpr auto kSubmission = MetricName::Time::kSubmission;
+  static constexpr auto kAll = MetricName::Visibility::kAll;
+  static constexpr auto kVisible = MetricName::Visibility::kVisible;
+  static constexpr auto kQualitative = MetricName::Variant::kQualitative;
+  static constexpr auto kBitmask = MetricName::Variant::kBitmask;
+};
+
 // Tests that Autofill.CreditCard.SeamlessFills.* is not emitted for manual
 // fills.
-TEST_F(AutofillMetricsCrossFrameFormTest,
+TEST_F(AutofillMetricsSeamlessnessTest,
        DoNotLogCreditCardSeamlessFillsMetricIfNotAutofilled) {
   using UkmBuilder = ukm::builders::Autofill_CreditCardFill;
   base::HistogramTester histogram_tester;
@@ -12322,38 +12429,22 @@ TEST_F(AutofillMetricsCrossFrameFormTest,
   SubmitForm();
   ResetDriverToCommitMetrics();
 
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.SeamlessFills.AtFillTimeBeforeSecurityPolicy", 0);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.SeamlessFills.AtFillTimeBeforeSecurityPolicy."
-      "Bitmask",
-      0);
-
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.SeamlessFills.AtFillTimeAfterSecurityPolicy", 0);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.SeamlessFills.AtFillTimeAfterSecurityPolicy.Bitmask",
-      0);
-
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.SeamlessFillable.AtFillTimeBeforeSecurityPolicy", 0);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.SeamlessFillable.AtFillTimeBeforeSecurityPolicy."
-      "Bitmask",
-      0);
-
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.SeamlessFillable.AtFillTimeAfterSecurityPolicy", 0);
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.SeamlessFillable.AtFillTimeAfterSecurityPolicy."
-      "Bitmask",
-      0);
+  for (auto fill : {kFills, kFillable}) {
+    for (auto time : {kBefore, kAfter, kSubmission}) {
+      for (auto visibility : {kAll, kVisible}) {
+        for (auto variant : {kQualitative, kBitmask}) {
+          histogram_tester.ExpectTotalCount(
+              MetricName{fill, time, visibility, variant}.str(), 0);
+        }
+      }
+    }
+  }
 
   VerifyUkm(test_ukm_recorder_, form_, UkmBuilder::kEntryName, {});
 }
 
 // Tests that Autofill.CreditCard.SeamlessFills.* are emitted.
-TEST_F(AutofillMetricsCrossFrameFormTest,
+TEST_F(AutofillMetricsSeamlessnessTest,
        LogCreditCardSeamlessFillsMetricIfAutofilledWithoutCvc) {
   using Metric = AutofillMetrics::CreditCardSeamlessness::Metric;
   using UkmBuilder = ukm::builders::Autofill_CreditCardFill;
@@ -12376,8 +12467,8 @@ TEST_F(AutofillMetricsCrossFrameFormTest,
   };
 
   base::HistogramTester histogram_tester;
-  auto SamplesOf = [&histogram_tester](base::StringPiece metric) {
-    return histogram_tester.GetAllSamples(metric);
+  auto SamplesOf = [&histogram_tester](MetricName metric) {
+    return histogram_tester.GetAllSamples(metric.str());
   };
 
   SeeForm();
@@ -12390,6 +12481,7 @@ TEST_F(AutofillMetricsCrossFrameFormTest,
   // - after security  and assuming a complete profile: kPartialFill;
   // - after security  and without a CVC:               kPartialFill;
   // because due to the security policy, only NAME and EXP_DATE are filled.
+  // The CVC field is invisible.
   FillForm(form_.fields[0]);
   SetFormValues({CREDIT_CARD_NAME_FULL, CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR},
                 /*is_autofilled=*/true, /*is_user_typed=*/false);
@@ -12401,6 +12493,7 @@ TEST_F(AutofillMetricsCrossFrameFormTest,
   // - after security  and without a CVC:               kPartialFill;
   // because the due to the security policy, only NUMBER and CVC could be
   // filled.
+  // The CVC field is invisible.
   FillForm(form_.fields[1]);
   SetFormValues({CREDIT_CARD_NUMBER},
                 /*is_autofilled=*/true, /*is_user_typed=*/false);
@@ -12408,47 +12501,51 @@ TEST_F(AutofillMetricsCrossFrameFormTest,
   SubmitForm();
   ResetDriverToCommitMetrics();
 
-  EXPECT_THAT(SamplesOf("Autofill.CreditCard.SeamlessFillable."
-                        "AtFillTimeBeforeSecurityPolicy"),
-              BucketsAre(Bucket(Metric::kFullFill, 2)));
-  EXPECT_THAT(SamplesOf("Autofill.CreditCard.SeamlessFillable."
-                        "AtFillTimeBeforeSecurityPolicy"),
-              BucketsAre(Bucket(Metric::kFullFill, 2)));
-  EXPECT_THAT(SamplesOf("Autofill.CreditCard.SeamlessFillable."
-                        "AtFillTimeBeforeSecurityPolicy.Bitmask"),
+  // Bitmask metrics.
+  EXPECT_THAT(SamplesOf({kFillable, kBefore, kAll, kBitmask}),
               BucketsAre(Bucket(kName | kNumber | kExp | kCvc, 2)));
-
-  EXPECT_THAT(
-      SamplesOf(
-          "Autofill.CreditCard.SeamlessFillable.AtFillTimeAfterSecurityPolicy"),
-      BucketsAre(Bucket(Metric::kPartialFill, 2)));
-  EXPECT_THAT(SamplesOf("Autofill.CreditCard.SeamlessFillable."
-                        "AtFillTimeAfterSecurityPolicy.Bitmask"),
+  EXPECT_THAT(SamplesOf({kFillable, kAfter, kAll, kBitmask}),
               BucketsAre(Bucket(kName | kExp, 1), Bucket(kNumber | kCvc, 1)));
-
   EXPECT_THAT(
-      SamplesOf(
-          "Autofill.CreditCard.SeamlessFills.AtFillTimeBeforeSecurityPolicy"),
-      BucketsAre(Bucket(Metric::kOptionalCvcMissing, 1),
-                 Bucket(Metric::kPartialFill, 1)));
-  EXPECT_THAT(
-      SamplesOf("Autofill.CreditCard.SeamlessFills."
-                "AtFillTimeBeforeSecurityPolicy.Bitmask"),
+      SamplesOf({kFills, kBefore, kAll, kBitmask}),
       BucketsAre(Bucket(kName | kNumber | kExp, 1), Bucket(kNumber, 1)));
-
+  EXPECT_THAT(SamplesOf({kFills, kAfter, kAll, kBitmask}),
+              BucketsAre(Bucket(kName | kExp, 1), Bucket(kNumber, 1)));
+  EXPECT_THAT(SamplesOf({kFills, kSubmission, kAll, kBitmask}),
+              BucketsAre(Bucket(kName | kNumber | kExp, 1)));
+  // Bitmask metrics restricted to visible fields.
+  EXPECT_THAT(SamplesOf({kFillable, kBefore, kVisible, kBitmask}),
+              BucketsAre(Bucket(kName | kNumber | kExp, 2)));
+  EXPECT_THAT(SamplesOf({kFillable, kAfter, kVisible, kBitmask}),
+              BucketsAre(Bucket(kName | kExp, 1), Bucket(kNumber, 1)));
   EXPECT_THAT(
-      SamplesOf(
-          "Autofill.CreditCard.SeamlessFills.AtFillTimeAfterSecurityPolicy"),
-      BucketsAre(Bucket(Metric::kPartialFill, 2)));
-  EXPECT_THAT(SamplesOf("Autofill.CreditCard.SeamlessFills."
-                        "AtFillTimeAfterSecurityPolicy.Bitmask"),
+      SamplesOf({kFills, kBefore, kVisible, kBitmask}),
+      BucketsAre(Bucket(kName | kNumber | kExp, 1), Bucket(kNumber, 1)));
+  EXPECT_THAT(SamplesOf({kFills, kAfter, kVisible, kBitmask}),
               BucketsAre(Bucket(kName | kExp, 1), Bucket(kNumber, 1)));
 
-  EXPECT_THAT(SamplesOf("Autofill.CreditCard.SeamlessFills.AtSubmissionTime"),
+  // Qualitative metrics.
+  EXPECT_THAT(SamplesOf({kFillable, kBefore, kAll, kQualitative}),
+              BucketsAre(Bucket(Metric::kFullFill, 2)));
+  EXPECT_THAT(SamplesOf({kFillable, kAfter, kAll, kQualitative}),
+              BucketsAre(Bucket(Metric::kPartialFill, 2)));
+  EXPECT_THAT(SamplesOf({kFills, kBefore, kAll, kQualitative}),
+              BucketsAre(Bucket(Metric::kOptionalCvcMissing, 1),
+                         Bucket(Metric::kPartialFill, 1)));
+  EXPECT_THAT(SamplesOf({kFills, kAfter, kAll, kQualitative}),
+              BucketsAre(Bucket(Metric::kPartialFill, 2)));
+  EXPECT_THAT(SamplesOf({kFills, kSubmission, kAll, kQualitative}),
               BucketsAre(Bucket(Metric::kOptionalCvcMissing, 1)));
-  EXPECT_THAT(
-      SamplesOf("Autofill.CreditCard.SeamlessFills.AtSubmissionTime.Bitmask"),
-      BucketsAre(Bucket(kName | kNumber | kExp, 1)));
+  // Qualitative metrics restricted to visible fields.
+  EXPECT_THAT(SamplesOf({kFillable, kBefore, kVisible, kQualitative}),
+              BucketsAre(Bucket(Metric::kOptionalCvcMissing, 2)));
+  EXPECT_THAT(SamplesOf({kFillable, kAfter, kVisible, kQualitative}),
+              BucketsAre(Bucket(Metric::kPartialFill, 2)));
+  EXPECT_THAT(SamplesOf({kFills, kBefore, kVisible, kQualitative}),
+              BucketsAre(Bucket(Metric::kOptionalCvcMissing, 1),
+                         Bucket(Metric::kPartialFill, 1)));
+  EXPECT_THAT(SamplesOf({kFills, kAfter, kVisible, kQualitative}),
+              BucketsAre(Bucket(Metric::kPartialFill, 2)));
 
   VerifyUkm(
       test_ukm_recorder_, form_, UkmBuilder::kEntryName,
@@ -12466,6 +12563,24 @@ TEST_F(AutofillMetricsCrossFrameFormTest,
             kName | kNumber | kExp},
            {UkmBuilder::kFilled_AfterSecurity_BitmaskName, kName | kExp},
 
+           {UkmBuilder::kFillable_BeforeSecurity_Visible_QualitativeName,
+            kOptionalCvcMissing},
+           {UkmBuilder::kFillable_AfterSecurity_Visible_QualitativeName,
+            kPartialFill},
+           {UkmBuilder::kFilled_BeforeSecurity_Visible_QualitativeName,
+            kOptionalCvcMissing},
+           {UkmBuilder::kFilled_AfterSecurity_Visible_QualitativeName,
+            kPartialFill},
+
+           {UkmBuilder::kFillable_BeforeSecurity_Visible_BitmaskName,
+            kName | kNumber | kExp},
+           {UkmBuilder::kFillable_AfterSecurity_Visible_BitmaskName,
+            kName | kExp},
+           {UkmBuilder::kFilled_BeforeSecurity_Visible_BitmaskName,
+            kName | kNumber | kExp},
+           {UkmBuilder::kFilled_AfterSecurity_Visible_BitmaskName,
+            kName | kExp},
+
            {UkmBuilder::kSharedAutofillName, kSharedAutofillWouldHelp},
 
            {UkmBuilder::kFormSignatureName,
@@ -12482,6 +12597,21 @@ TEST_F(AutofillMetricsCrossFrameFormTest,
            {UkmBuilder::kFillable_AfterSecurity_BitmaskName, kNumber | kCvc},
            {UkmBuilder::kFilled_BeforeSecurity_BitmaskName, kNumber},
            {UkmBuilder::kFilled_AfterSecurity_BitmaskName, kNumber},
+
+           {UkmBuilder::kFillable_BeforeSecurity_Visible_QualitativeName,
+            kOptionalCvcMissing},
+           {UkmBuilder::kFillable_AfterSecurity_Visible_QualitativeName,
+            kPartialFill},
+           {UkmBuilder::kFilled_BeforeSecurity_Visible_QualitativeName,
+            kPartialFill},
+           {UkmBuilder::kFilled_AfterSecurity_Visible_QualitativeName,
+            kPartialFill},
+
+           {UkmBuilder::kFillable_BeforeSecurity_Visible_BitmaskName,
+            kName | kNumber | kExp},
+           {UkmBuilder::kFillable_AfterSecurity_Visible_BitmaskName, kNumber},
+           {UkmBuilder::kFilled_BeforeSecurity_Visible_BitmaskName, kNumber},
+           {UkmBuilder::kFilled_AfterSecurity_Visible_BitmaskName, kNumber},
 
            {UkmBuilder::kSharedAutofillName, kSharedAutofillIsIrrelevant},
 

@@ -348,6 +348,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="2842985007712546952">Folder induk</translation>
 <translation id="2856503607207334158">Log masuk gagal</translation>
 <translation id="2860954141821109167">Pastikan apl telefon didayakan pada peranti ini</translation>
+<translation id="2861923151411510142">Sesetengah ciri Chrome tidak akan tersedia lagi</translation>
 <translation id="2870560284913253234">Tapak</translation>
 <translation id="2871733351037274014">Halaman pramuat</translation>
 <translation id="2888126860611144412">Perihal Chrome</translation>
@@ -526,7 +527,6 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3845098929839618392">Buka dalam tab Inkognito</translation>
 <translation id="3856096718352044181">Sila sahkan bahawa penyedia ini sah atau cuba lagi nanti</translation>
 <translation id="3858860766373142691">Nama</translation>
-<translation id="3859206958100234503">Segerakkan untuk mendapatkan kata laluan, penanda halaman dan pelbagai lagi pada semua peranti anda</translation>
 <translation id="3861633093716975811">Video popular</translation>
 <translation id="3892148308691398805">Salin teks</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
@@ -565,6 +565,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="4095146165863963773">Padam data apl?</translation>
 <translation id="4096227151372679484">Aliran penyimpanan penanda halaman dibuka pada ketinggian separuh</translation>
 <translation id="4099578267706723511">Bantu jadikan Chrome lebih baik dengan menghantar laporan perangkaan penggunaan dan ranap sistem kepada Google.</translation>
+<translation id="4101475238162928417">Segerakkan untuk mendapatkan kata laluan, penanda halaman dan pelbagai lagi pada peranti anda yang lain</translation>
 <translation id="410351446219883937">Automain</translation>
 <translation id="4106587138345390261">Chrome sedang meneroka ciri baharu yang membolehkan laman menyampaikan pengalaman penyemakan imbas yang sama menggunakan kurang maklumat anda</translation>
 <translation id="4108314971463891922">Ikut</translation>
@@ -587,6 +588,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="4227318652298512614">Ikuti mana-mana laman yang anda mahu</translation>
 <translation id="4242533952199664413">Buka tetapan</translation>
 <translation id="4248098802131000011">Pastikan kata laluan anda selamat daripada pelanggaran data dan isu keselamatan yang lain</translation>
+<translation id="424864128008805179">Log keluar daripada Chrome?</translation>
 <translation id="4249955472157341256">Isih mengikut yang Terbaharu</translation>
 <translation id="4250229828105606438">Tangkapan skrin</translation>
 <translation id="4256782883801055595">Lesen sumber terbuka</translation>
@@ -654,7 +656,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4594952190837476234">Halaman luar talian ini dari <ph name="CREATION_TIME" /> dan mungkin berbeza daripada versi dalam talian.</translation>
 <translation id="4616150815774728855">Buka <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">Sahkan orang itu ialah anda</translation>
-<translation id="4627165777145349100">Lagi tentang halaman ini</translation>
 <translation id="4634124774493850572">Gunakan kata laluan</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 kata laluan yang terjejas}other{# kata laluan yang terjejas}}</translation>
 <translation id="4650364565596261010">Lalai sistem</translation>
@@ -793,7 +794,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5342314432463739672">Permintaan kebenaran</translation>
 <translation id="5355191726083956201">Perlindungan Dipertingkat dihidupkan</translation>
 <translation id="5368227114232678694">Untuk menyemak imbas secara peribadi pada peranti ini, cubalah Inkognito</translation>
-<translation id="5371717687506906963">Gesaan Kotak Pasir Privasi</translation>
 <translation id="5375577065097716013">Cari imej dengan Lens <ph name="BEGIN_NEW" />Baharu<ph name="END_NEW" /></translation>
 <translation id="5376898820269806588">Reaksi diubah</translation>
 <translation id="5401851137404501592">Untuk meneruskan, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> akan berkongsi nama, alamat e-mel dan gambar profil anda dengan laman ini.</translation>
@@ -892,6 +892,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5869522115854928033">Kata laluan disimpan</translation>
 <translation id="5869789175361934029">Teruskan daripada peranti lain</translation>
 <translation id="587735546353481577">Untuk mengikuti laman, pergi ke laman tersebut, buka menu Chrome dan ketik Ikut.</translation>
+<translation id="5879072387416556377">Dapatkan cadangan lebih baik</translation>
 <translation id="5880748256563468367">Pergi ke suapan</translation>
 <translation id="5884076754568147479">Untuk membantu anda menyelesaikan tugasan, Google akan menerima URL dan kandungan tapak tempat anda menggunakan Assistant, serta maklumat yang anda serahkan melalui Assistant</translation>
 <translation id="5906513782029855931">Mengetahui URL bagi laman membolehkan Google Assistant membantu anda menyelesaikan tugas. Anda boleh mematikan Assistant dalam tetapan Chrome.</translation>
@@ -1195,6 +1196,7 @@ Token amanah meningkatkan privasi pada web dan tidak boleh digunakan untuk menge
 <translation id="749294055653435199">Google Lens tidak tersedia pada peranti ini</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dikemas kini <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Sila tunggu…</translation>
+<translation id="7502234197872745058">Untuk log keluar daripada Google Account dalam semua laman web, <ph name="BEGIN_LINK1" />log keluar daripada Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Kemaskinian Tidak Tersedia</translation>
 <translation id="7507207699631365376">Lihat <ph name="BEGIN_LINK" />dasar privasi<ph name="END_LINK" /> penyedia ini</translation>
 <translation id="7514365320538308">Muat Turun</translation>
@@ -1234,6 +1236,7 @@ Token amanah meningkatkan privasi pada web dan tidak boleh digunakan untuk menge
 <translation id="770741401784017797">Membuat GIF</translation>
 <translation id="7707922173985738739">Gunakan data mudah alih</translation>
 <translation id="7709094866268987903">Minat yang anda alih keluar akan dipaparkan di sini</translation>
+<translation id="7709918231054955894">Dapatkan semua tab anda</translation>
 <translation id="7725024127233776428">Halaman yang anda tandai halaman dipaparkan di sini</translation>
 <translation id="7757787379047923882">Teks dikongsi daripada <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Pilih tarikh &amp; masa</translation>
@@ -1429,6 +1432,7 @@ Token amanah meningkatkan privasi pada web dan tidak boleh digunakan untuk menge
 <translation id="8656747343598256512">Log masuk ke tapak ini dan Chrome menggunakan Akaun Google anda. Anda boleh menghidupkan penyegerakan kemudian.</translation>
 <translation id="8659579665266920523">Cara mencari menggunakan Chrome</translation>
 <translation id="8662811608048051533">Mengelog anda keluar daripada kebanyakan tapak.</translation>
+<translation id="8664215986015753476">Guna Chrome dengan cara anda</translation>
 <translation id="8664979001105139458">Nama fail sudah wujud</translation>
 <translation id="8666759526542103597">Perihal pemeribadian iklan berasaskan penyemak imbas</translation>
 <translation id="8667760277771450375">Kami sedang meneroka cara untuk menyekat penjejakan rentas laman sambil membolehkan laman menghentikan spam dan penipuan iklan.</translation>

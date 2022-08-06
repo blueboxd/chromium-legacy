@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക.</translation>
 <translation id="1147031633655575115"><ph name="USER" /> ആയി സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="1154984953698510061">മറ്റ് ടാബുകൾ കാണുക</translation>
+<translation id="1161340988127985692">അദൃശ്യ വിൻഡോയിൽ മറ്റ് ആപ്പുകളിൽ നിന്നുള്ള ലിങ്കുകൾ തുറക്കാൻ ആവശ്യപ്പെടുക</translation>
 <translation id="1164064664035028907">ശക്തമായ ഈ പാസ്‌വേഡ് ഉപയോഗിക്കുക:</translation>
 <translation id="1165039591588034296">പിശക്</translation>
 <translation id="1172898394251786223">അടുത്ത ഫീൽഡ്</translation>
@@ -50,7 +51,7 @@
 <translation id="1321993286294231467">ചിത്രം സംരക്ഷിക്കുന്നതിൽ പിശക്.</translation>
 <translation id="1322735045095424339">അദൃശ്യ മോഡ് ഉപയോഗിക്കാൻ നിങ്ങളുടെ സ്ഥാപനം ആവശ്യപ്പെടുന്നു</translation>
 <translation id="1323735185997015385">ഇല്ലാതാക്കുക</translation>
-<translation id="132683371494960526">പാരന്റ് ഫോൾഡർ മാറ്റാൻ രണ്ടുതവണ ടാപ്പ് ചെയ്യുക.</translation>
+<translation id="132683371494960526">പാരന്റ് ഫോൾഡർ മാറ്റാൻ ഡബിൾ ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="1340643665687018190">മെനു അടയ്‌ക്കുക</translation>
 <translation id="1358214951266274152">നിങ്ങൾ പകർത്തിയ ലിങ്ക് സന്ദർശിക്കുക</translation>
 <translation id="1360432990279830238">സൈൻ ഔട്ട് ചെയ്‌ത് സമന്വയം ഓഫാക്കണോ?</translation>
@@ -67,7 +68,7 @@
 <translation id="145015347812617860"><ph name="COUNT" /> ഇനങ്ങൾ</translation>
 <translation id="1450170672351507823">സാധാരണ പരിരക്ഷ ഓണാണ്. കൂടുതൽ സുരക്ഷയ്ക്ക്, മെച്ചപ്പെടുത്തിയ പരിരക്ഷ ഉപയോഗിക്കുക.</translation>
 <translation id="149095475893949513">കോൺഫിഗറേഷൻ പ്രൊഫൈൽ ഡൗൺലോഡ് ചെയ്യാൻ ഈ വെബ്സൈറ്റ് ശ്രമിക്കുന്നു.</translation>
-<translation id="1491277525950327607">ക്രമീകരണം മാറ്റാൻ രണ്ടുതവണ ടാപ്പ് ചെയ്യുക</translation>
+<translation id="1491277525950327607">ക്രമീകരണം മാറ്റാൻ ഡബിൾ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="1492417797159476138">ഈ സൈറ്റിനായി നിങ്ങൾ ഇതിനകം തന്നെ ഈ ഉപയോക്തൃനാമം സംരക്ഷിച്ചു</translation>
 <translation id="1506063256525392513">ഫോട്ടോകളെടുത്ത് അപ്‌ലോഡ് ചെയ്യാനും QR കോഡുകൾ സ്‌കാൻ ചെയ്യാനും ഇത് നിങ്ങളെ അനുവദിക്കുന്നു</translation>
 <translation id="1509486075633541495">വെബ്‌സൈറ്റിലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
@@ -101,7 +102,7 @@
 <translation id="1690731385917361335">ഇനങ്ങളൊന്നുമില്ല</translation>
 <translation id="1692118695553449118">സമന്വയം ഓണാണ്</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> തിരഞ്ഞെടുത്തു</translation>
-<translation id="1740468249224277719">ഇൻസ്‌റ്റാൾ ചെയ്യാൻ രണ്ടുതവണ ടാപ്പ് ചെയ്യുക.</translation>
+<translation id="1740468249224277719">ഇൻസ്‌റ്റാൾ ചെയ്യാൻ ഡബിൾ ടാപ്പ് ചെയ്യുക.</translation>
 <translation id="1752547299766512813">സംരക്ഷിച്ച പാസ്‌വേഡുകള്‍</translation>
 <translation id="1753905327828125965">കൂടുതൽ‍ സന്ദര്‍ശിച്ചത്</translation>
 <translation id="1803264062614276815">കാർഡ് ഉടമയുടെ പേര്</translation>
@@ -292,6 +293,7 @@
 <translation id="3443810440409579745">ടാബ് സ്വീകരിച്ചു.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> മി.</translation>
 <translation id="3448016392200048164">വിഭജിത കാഴ്‌ച</translation>
+<translation id="3450502512529866925">ഈ പേജ് ബുക്ക്‌മാർക്ക് ചെയ്യുക</translation>
 <translation id="345565170154308620">പാസ്‌വേഡുകൾ മാനേജ് ചെയ്യുക...</translation>
 <translation id="3469166899695866866">ഡൗൺലോഡ് നിർത്തണോ?</translation>
 <translation id="3470502288861289375">പകർത്തുന്നു...</translation>
@@ -406,6 +408,7 @@
 <translation id="4502566650163919158">ഇപ്പോൾ പരിശോധിക്കുക</translation>
 <translation id="4505980578794259603">അവസാനം പരിശോധിച്ചത് <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">സൈൻ ഇൻ പ്രമോ അടയ്‌ക്കുക</translation>
+<translation id="4511669830082467224">Google-ന്റെ സഹായത്തോടെ ചിത്രം തിരയുക</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, നിയന്ത്രിക്കുക</translation>
 <translation id="452750746583162491">നിങ്ങളുടെ സമന്വയിപ്പിച്ച ഡാറ്റ അവലോകനം ചെയ്യുക</translation>
 <translation id="4536418791685807335">വീണ്ടും സൈൻ ഇൻ ചെയ്യാൻ ശ്രമിക്കുക.</translation>
@@ -483,6 +486,7 @@
 <translation id="5090832849094901128">ഈ പാസ്‌വേഡ് ഇല്ലാതാക്കുന്നത് <ph name="WEBSITE" /> -ലെ നിങ്ങളുടെ അക്കൗണ്ട് ഇല്ലാതാക്കില്ല.</translation>
 <translation id="5092117651143801290">പിന്നീട് അല്ലെങ്കിൽ ഓഫ്‌ലൈനിൽ വായിക്കുന്നതിന് നിങ്ങൾക്ക് പേജുകൾ സംരക്ഷിക്കാനാകും. ദൈർഘ്യമേറിയ പേജുകൾ സംരക്ഷിക്കണോ എന്ന് Chrome നിങ്ങളോട് ചോദിക്കും.</translation>
 <translation id="5094827893301452931">Tweet പങ്കിടൽ പൂർത്തിയായി.</translation>
+<translation id="509789154667432072">ബുക്ക്‌മാർക്ക് ചേർക്കുക</translation>
 <translation id="5118713593561876160">താൽപ്പര്യങ്ങൾ</translation>
 <translation id="5118764316110575523">ഓഫാണ്</translation>
 <translation id="5127805178023152808">സമന്വയം ഓഫാണ്</translation>
@@ -772,6 +776,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906">വായിക്കാത്ത <ph name="UNREAD_COUNT" /> ലേഖനങ്ങൾ.</translation>
 <translation id="7412027924265291969">തുടരുക</translation>
+<translation id="7419565702166471774">എല്ലായ്‌പ്പോഴും സുരക്ഷിതമായ കണക്ഷനുകൾ ഉപയോഗിക്കുക</translation>
 <translation id="7425346204213733349">ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ, മറ്റ് ക്രമീകരണം എന്നിവയിലുള്ള മാറ്റങ്ങളെ ഇനി നിങ്ങളുടെ Google അക്കൗണ്ടിലേക്ക് സമന്വയിപ്പിക്കില്ല. എന്നിരുന്നാലും, നിങ്ങളുടെ നിലവിലെ വിവരം Google അക്കൗണ്ടിൽ തുടർന്നും സൂക്ഷിക്കും.</translation>
 <translation id="7431991332293347422">തിരയലും മറ്റും വ്യക്തിപരമാക്കുന്നതിന് നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിക്കുന്ന വിധം നിയന്ത്രിക്കുക</translation>
 <translation id="7435356471928173109">നിങ്ങളുടെ അഡ്‌മിൻ ഓഫാക്കിയിരിക്കുന്നു</translation>
@@ -811,7 +816,6 @@
 <translation id="7781069478569868053">പുതിയ ടാബ് പേജ്</translation>
 <translation id="7781829728241885113">ഇന്നലെ</translation>
 <translation id="778855399387580014">പുതിയ Chrome ടാബിൽ തിരയൽ ആരംഭിക്കുക.</translation>
-<translation id="7790892308048519147">സുരക്ഷിത കണക്ഷനുകൾ ഉപയോഗിക്കാൻ ശ്രമിക്കുക</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="7807060072011926525">Google നൽകുന്നത്</translation>
 <translation id="7839985698273989086">പേജ് ഓഫ്‌ലൈനാണ്</translation>

@@ -41,8 +41,7 @@ version_info::Channel AutofillClient::GetChannel() const {
   return version_info::Channel::UNKNOWN;
 }
 
-base::WeakPtr<MerchantPromoCodeManager>
-AutofillClient::GetMerchantPromoCodeManager() {
+MerchantPromoCodeManager* AutofillClient::GetMerchantPromoCodeManager() {
   return nullptr;
 }
 
@@ -81,7 +80,7 @@ void AutofillClient::DismissUnmaskAuthenticatorSelectionDialog(
   // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
 }
 
-raw_ptr<VirtualCardEnrollmentManager>
+VirtualCardEnrollmentManager*
 AutofillClient::GetVirtualCardEnrollmentManager() {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop and Clank) implements this.

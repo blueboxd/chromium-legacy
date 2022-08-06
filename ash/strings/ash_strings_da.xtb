@@ -31,6 +31,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Parrede enheder</translation>
 <translation id="1165712434476988950">Enheden skal genstartes, før opdateringen anvendes.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" /> <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Dit USB-C-kabel kan muligvis ikke sluttes korrekt til skærmene</translation>
 <translation id="1175572348579024023">Rul</translation>
 <translation id="1178581264944972037">Pause</translation>
@@ -55,10 +56,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1247519845643687288">Seneste apps</translation>
 <translation id="1252999807265626933">Oplader fra <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hvordan er vejret?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> til 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Vælg for at få flere oplysninger i Google Kalender.</translation>
 <translation id="1267032506238418139">Ændring af genvej</translation>
 <translation id="1269405891096105529">Eksternt tilbehør understøttes ikke i gæstetilstand</translation>
 <translation id="1270290102613614947">Skærmtastaturet er deaktiveret</translation>
@@ -124,6 +121,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Kontaktadgang kan deaktiveres under Indstillinger &gt; Hjælpefunktioner.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> enheder</translation>
+<translation id="1639239467298939599">Indlæser...</translation>
 <translation id="1654477262762802994">Start en stemmeforespørgsel</translation>
 <translation id="1668469839109562275">Indbygget VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
@@ -239,6 +237,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2367186422933365202">Det lykkedes ikke at logge ind på din Chromebook</translation>
 <translation id="2369165858548251131">"Hej" på kinesisk</translation>
+<translation id="2375445874393996153">Der kan ikke længeres søges efter, hvad der vises på skærmen, ved hjælp af Google Assistent.</translation>
 <translation id="2390318262976603432">Lokale indstillinger</translation>
 <translation id="240006516586367791">Mediestyring</translation>
 <translation id="2402411679569069051">Hvis du vil låse din Chromebook op, skal du bruge dit fingeraftryk eller låse din telefon op</translation>
@@ -505,6 +504,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="3901991538546252627">Opretter forbindelse til <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Skift til en tidligere version af enheden inden for 1 minut}one{Skift til en tidligere version af enheden inden for # minut}other{Skift til en tidligere version af enheden inden for # minutter}}</translation>
 <translation id="3923494859158167397">Der er ikke konfigureret nogen mobilnetværk</translation>
+<translation id="3925540965556789199"><ph name="DATE" /> – indlæser begivenhederne.</translation>
 <translation id="3932043219784172185">Der er ikke nogen forbundne enheder</translation>
 <translation id="3934456833412894880">Adaptiv opladning er aktiveret. Dit batteri oplades til 80 % for at forlænge batteritiden og oplades helt, når du har brug for det.</translation>
 <translation id="3943857333388298514">Indsæt</translation>
@@ -704,6 +704,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5078796286268621944">Forkert pinkode</translation>
 <translation id="5083553833479578423">Få adgang til endnu flere Assistent-funktioner.</translation>
 <translation id="509790653408515442">Når du streamer din telefons apps, vises de her</translation>
+<translation id="5098537242461068432">Skrivebordet og vinduer er genåbnet</translation>
 <translation id="5107522548814527560">Internet</translation>
 <translation id="5117590920725113268">Vis næste måned</translation>
 <translation id="5136175204352732067">Du har tilsluttet et andet tastatur</translation>
@@ -1048,7 +1049,6 @@ Installeret for nylig</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7180611975245234373">Opdater</translation>
-<translation id="718361511487535372">Åbn i Google Kalender</translation>
 <translation id="7188494361780961876">Menuen blev flyttet til øverste venstre hjørne af skærmen.</translation>
 <translation id="7189412385142492784">Hvor langt væk er Venus?</translation>
 <translation id="7198435252016571249">Kameraet er fastgjort til hjørnet nederst til højre. Dette er i strid med systemfladen.</translation>
@@ -1057,6 +1057,10 @@ Installeret for nylig</translation>
 <translation id="7258828758145722155">Redigeret i går</translation>
 <translation id="726276584504105859">Træk hertil for at bruge opdelt skærm</translation>
 <translation id="7262906531272962081">Opret påmindelse</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> til
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Vælg for at få flere oplysninger i Google Kalender.</translation>
 <translation id="7302889331339392448">Livetekstning er slået fra.</translation>
 <translation id="7303365578352795231">Besvares på en anden enhed</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@ Installeret for nylig</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Tale behandles nu lokalt, og diktering kan bruges offline</translation>
+<translation id="7932451802722951285">Åbn i Google Kalender</translation>
 <translation id="7933084174919150729">Google Assistent kan kun bruges via den primære profil.</translation>
 <translation id="79341161159229895">Kontoen administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Tryk på <ph name="SHORTCUT_KEY_NAME" />+V for at se din udklipsholder. De seneste fem elementer, du har kopieret, gemmes i din udklipsholder.</translation>

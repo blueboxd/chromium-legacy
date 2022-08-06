@@ -111,7 +111,7 @@ import java.util.HashSet;
 public class MainSettingsFragmentTest {
     private static final String SEARCH_ENGINE_SHORT_NAME = "Google";
 
-    private static final int RENDER_TEST_REVISION = 5;
+    private static final int RENDER_TEST_REVISION = 7;
 
     private final HomepageTestRule mHomepageTestRule = new HomepageTestRule();
 
@@ -264,7 +264,7 @@ public class MainSettingsFragmentTest {
 
         verify(mMockSyncConsentActivityLauncher)
                 .launchActivityForPromoDefaultFlow(any(Activity.class),
-                        eq(SigninAccessPoint.SETTINGS), eq(accountInfo.getEmail()));
+                        eq(SigninAccessPoint.SETTINGS_SYNC_OFF_ROW), eq(accountInfo.getEmail()));
     }
 
     @Test
@@ -285,7 +285,7 @@ public class MainSettingsFragmentTest {
 
         verify(mMockSyncConsentActivityLauncher)
                 .launchActivityForPromoDefaultFlow(any(Activity.class),
-                        eq(SigninAccessPoint.SETTINGS), eq(accountInfo.getEmail()));
+                        eq(SigninAccessPoint.SETTINGS_SYNC_OFF_ROW), eq(accountInfo.getEmail()));
     }
 
     @Test
@@ -340,12 +340,54 @@ public class MainSettingsFragmentTest {
                 TextUtils.isEmpty(searchEngineSettings.getSummary()));
     }
 
+    @Test
+    @SmallTest
+    @EnableFeatures({
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
+    })
+    public void
+    testAccountSignInWithNewPromo() throws InterruptedException {
+        launchSettingsActivity();
+
+        SyncPromoPreference syncPromoPreference =
+                (SyncPromoPreference) mMainSettings.findPreference(MainSettings.PREF_SYNC_PROMO);
+        Assert.assertEquals(
+                "SyncPromoPreference should be at the personalized signin promo state. ",
+                syncPromoPreference.getState(), State.PERSONALIZED_SIGNIN_PROMO);
+        Assert.assertTrue("Account section header should be shown together with the promo.",
+                mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
+                        .isVisible());
+        Assert.assertFalse("Sync preference should be hidden when promo is shown.",
+                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+
+        CoreAccountInfo account = mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+        SyncTestUtil.waitForSyncFeatureActive();
+        Assert.assertEquals("SignInPreference should be at the signed in state.",
+                account.getEmail(),
+                mMainSettings.findPreference(MainSettings.PREF_SIGN_IN).getSummary().toString());
+        assertSettingsExists(MainSettings.PREF_SIGN_IN, AccountManagementFragment.class);
+
+        Assert.assertTrue("Account section header should be shown when user signed in.",
+                mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
+                        .isVisible());
+        Assert.assertTrue("Sync preference should be shown when the user is signed in.",
+                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+    }
+
     /**
      * Test when the sign-in preference is the promo. The section header should be hidden.
      */
     @Test
     @SmallTest
-    public void testAccountSignIn() throws InterruptedException {
+    @DisableFeatures({
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
+    })
+    public void
+    testAccountSignIn() throws InterruptedException {
         launchSettingsActivity();
 
         SyncPromoPreference syncPromoPreference =
@@ -375,6 +417,8 @@ public class MainSettingsFragmentTest {
                 mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
     }
 
+    // TODO(crbug.com/1334912): This test should be removed, since we have a similar test in
+    // SigninPromoControllerRenderTest.
     @Test
     @LargeTest
     @Feature({"RenderTest"})

@@ -110,6 +110,7 @@ Dzēšot pārlūkošanas vēsturi (visu vai konkrētas vietnes vēsturi), tiek d
 <translation id="1513352483775369820">Grāmatzīmes un tīmekļa vēsture</translation>
 <translation id="1513814250881909472">Veiciet sinhronizāciju, lai iegūtu cilnes no savām pārējām ierīcēm</translation>
 <translation id="1513858653616922153">Dzēst paroli</translation>
+<translation id="1514552811327923157">Konfidencialitātes smilškastes uzvedne ir atvērta pilnā augstumā</translation>
 <translation id="1518421282666914498">Emociju GIF <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">Aktīvs šodien</translation>
 <translation id="1538801903729528855">Labākas balss izmantošanas iespējas tīmeklī</translation>
@@ -321,6 +322,7 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="2711073837061989559">Izmēģinājuma versijas</translation>
 <translation id="2718352093833049315">Tikai Wi-Fi</translation>
 <translation id="2718846868787000099">Apmeklētajām vietnēm ir atļauta piekļuve jūsu preferencēm, lai nodrošinātu satura rādīšanu jūsu izvēlētajā valodā.</translation>
+<translation id="2722945394406572875">Konfidencialitātes smilškastes uzvedne ir aizvērta</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732063072010454421">Labāka pieredze meklēšanā ar balsi</translation>
 <translation id="2739256783402597439">2G</translation>
@@ -346,6 +348,7 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="2842985007712546952">Vecākmape</translation>
 <translation id="2856503607207334158">Neizdevās pierakstīties</translation>
 <translation id="2860954141821109167">Šajā ierīcē jābūt iespējotai tālruņa lietotnei</translation>
+<translation id="2861923151411510142">Dažas Chrome funkcijas vairs nebūs pieejamas.</translation>
 <translation id="2870560284913253234">Vietne</translation>
 <translation id="2871733351037274014">Lapu iepriekšēja ielāde</translation>
 <translation id="2888126860611144412">Par Chrome</translation>
@@ -524,7 +527,6 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="3845098929839618392">Atvērt inkognito cilnē</translation>
 <translation id="3856096718352044181">Pārbaudiet, vai pakalpojumu sniedzējs ir derīgs, vai arī vēlāk mēģiniet vēlreiz</translation>
 <translation id="3858860766373142691">Nosaukums</translation>
-<translation id="3859206958100234503">Aktivizējiet sinhronizāciju, lai varētu skatīt paroles, grāmatzīmes un citu saturu visās savās ierīcēs.</translation>
 <translation id="3861633093716975811">Populāri videoklipi</translation>
 <translation id="3892148308691398805">Kopēt tekstu</translation>
 <translation id="3894427358181296146">Mapes pievienošana</translation>
@@ -563,6 +565,7 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="4095146165863963773">Vai dzēst lietotnes datus?</translation>
 <translation id="4096227151372679484">Grāmatzīmes saglabāšanas plūsma ir atvērta pusekrāna augstumā</translation>
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
+<translation id="4101475238162928417">Veiciet sinhronizāciju, lai varētu skatīt paroles, grāmatzīmes un citu saturu savās pārējās ierīcēs.</translation>
 <translation id="410351446219883937">Automātiskā atskaņošana</translation>
 <translation id="4106587138345390261">Chrome pēta jaunas funkcijas, kas ļauj vietnēs nodrošināt tādas pašas pārlūkošanas iespējas, izmantojot mazāk personas informācijas.</translation>
 <translation id="4108314971463891922">Sekot</translation>
@@ -585,6 +588,7 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="4227318652298512614">Sekojiet jebkurām vietnēm</translation>
 <translation id="4242533952199664413">Atvērt iestatījumus</translation>
 <translation id="4248098802131000011">Aizsargājiet savas paroles pret datu pārkāpumiem un citām drošības problēmām.</translation>
+<translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4249955472157341256">Kārtot, sākot ar jaunāko saturu</translation>
 <translation id="4250229828105606438">Ekrānuzņēmums</translation>
 <translation id="4256782883801055595">Atklātā pirmkoda licences</translation>
@@ -652,7 +656,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4594952190837476234">Šī lapas bezsaistes versija (izveidota: <ph name="CREATION_TIME" />) var atšķirties no tiešsaistes versijas.</translation>
 <translation id="4616150815774728855">Atvērt <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">Apstiprināt identitāti</translation>
-<translation id="4627165777145349100">Vairāk par šo lapu</translation>
 <translation id="4634124774493850572">Izmantot paroli</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 uzlauzta parole}zero{# uzlauztu paroļu}one{# uzlauzta parole}other{# uzlauztas paroles}}</translation>
 <translation id="4650364565596261010">Sistēmas noklusējums</translation>
@@ -889,11 +892,13 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5869522115854928033">Saglabātās paroles</translation>
 <translation id="5869789175361934029">Turpiniet citā ierīcē</translation>
 <translation id="587735546353481577">Lai sekotu kādai vietnei, atveriet attiecīgo vietni, atveriet Chrome izvēlni un pieskarieties vienumam Sekot.</translation>
+<translation id="5879072387416556377">Iegūstiet labākus ieteikumus</translation>
 <translation id="5880748256563468367">Pāriet uz plūsmu</translation>
 <translation id="5884076754568147479">Lai palīdzētu jums paveikt uzdevumus, Google saņems to vietņu vietrāžus URL un saturu, kurās izmantojat Asistentu, kā arī informāciju, ko iesniedzat, izmantojot Asistentu.</translation>
 <translation id="5906513782029855931">Zinot vietņu vietrāžus URL, Google asistents var palīdzēt jums veikt uzdevumus. Chrome iestatījumos varat izslēgt Asistentu.</translation>
 <translation id="5916664084637901428">Iesl.</translation>
 <translation id="5919204609460789179">Lai sāktu sinhronizēšanu, atjauniniet <ph name="PRODUCT_NAME" /></translation>
+<translation id="593625682991400408">Izmēģinājumu laikā Chrome komanda pēta veidus, kā ierobežot nevēlamu saturu, krāpšanu un kopīgošanu starp vietnēm. Turklāt pārlūkā Chrome tiek <ph name="BEGIN_LINK" />aptuveni noteiktas jūsu intereses<ph name="END_LINK" />, ko var izmantot vietnēs, lai rādītu jums reklāmas. Intereses varat pārvaldīt iestatījumos.</translation>
 <translation id="5938820472109305350">Pievienot interesi “<ph name="INTEREST" />”</translation>
 <translation id="5942872142862698679">Tiek izmantota meklētājprogramma Google</translation>
 <translation id="5945035219773565305">Pašreizējais ieteikums: <ph name="RECOMMENDATION" /></translation>
@@ -1191,6 +1196,7 @@ Uzticamības marķieri uzlabo konfidencialitāti tīmeklī. Tos nevar izmantot, 
 <translation id="749294055653435199">Tehnoloģija Google Lens šajā ierīcē nav pieejama.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atjaunināts: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Lūdzu, uzgaidiet...</translation>
+<translation id="7502234197872745058">Lai izrakstītos no sava Google konta visās vietnēs, <ph name="BEGIN_LINK1" />izrakstieties no pārlūka Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Atjauninājumi nav pieejami</translation>
 <translation id="7507207699631365376">Skatīt šī pakalpojumu sniedzēja <ph name="BEGIN_LINK" />konfidencialitātes politiku<ph name="END_LINK" /></translation>
 <translation id="7514365320538308">Lejupielādēt</translation>
@@ -1230,6 +1236,7 @@ Uzticamības marķieri uzlabo konfidencialitāti tīmeklī. Tos nevar izmantot, 
 <translation id="770741401784017797">Notiek GIF izveide</translation>
 <translation id="7707922173985738739">Izmantot mobilos datus</translation>
 <translation id="7709094866268987903">Šeit būs redzamas jūsu noņemtās intereses.</translation>
+<translation id="7709918231054955894">Iegūstiet visas savas cilnes</translation>
 <translation id="7725024127233776428">Šeit tiek rādītas ar grāmatzīmēm atzīmētās lapas</translation>
 <translation id="7757787379047923882">Kopīgots teksts no ierīces <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Datuma un laika izvēle</translation>
@@ -1425,6 +1432,7 @@ Uzticamības marķieri uzlabo konfidencialitāti tīmeklī. Tos nevar izmantot, 
 <translation id="8656747343598256512">Pierakstieties šajā vietnē un pārlūkā Chrome, izmantojot savu Google kontu. Sinhronizāciju varat ieslēgt vēlāk.</translation>
 <translation id="8659579665266920523">Meklēšana pārlūkā Chrome</translation>
 <translation id="8662811608048051533">Jūs tiksiet izrakstīts no lielākās daļas vietņu.</translation>
+<translation id="8664215986015753476">Pielāgojiet pārlūku Chrome savām vajadzībām</translation>
 <translation id="8664979001105139458">Faila nosaukums jau pastāv</translation>
 <translation id="8666759526542103597">Par reklāmu personalizēšanu, balstoties uz pārlūku</translation>
 <translation id="8667760277771450375">Mēs pētām iespējas ierobežot starpvietņu izsekošanu, vienlaikus ļaujot vietnēs novērst nevēlamas reklāmas un krāpšanu.</translation>
@@ -1512,6 +1520,7 @@ Uzticamības marķieri uzlabo konfidencialitāti tīmeklī. Tos nevar izmantot, 
 <translation id="9106148373857059373">Grāmatzīmes saglabāšanas plūsma ir aizvērta</translation>
 <translation id="9108312223223904744">Atbalsts, kas var palīdzēt izmantot tālruni kā drošības atslēgu</translation>
 <translation id="9108808586816295166">Drošs DNS serveris var nebūt pieejams visu laiku.</translation>
+<translation id="9128984223251192329">Konfidencialitātes smilškastes uzvedne ir atvērta pusekrāna augstumā</translation>
 <translation id="9133397713400217035">Izpētīt bezsaisti</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9148126808321036104">Pierakstieties vēlreiz</translation>

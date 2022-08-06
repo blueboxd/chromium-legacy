@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">カレンダー</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
 <translation id="1165712434476988950">アップデートを適用するにはデバイスの再起動が必要です。</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />、<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">USB-C ケーブルがディスプレイに正しく接続されていない可能性があります</translation>
 <translation id="1175572348579024023">スクロール</translation>
 <translation id="1178581264944972037">一時停止</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">最近使ったアプリ</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> から充電しています</translation>
 <translation id="1255033239764210633">今日の天気は？</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> から
-        <ph name="END_TIME" /> まで、
-        <ph name="TIME_ZONE" />、
-        <ph name="EVENT_SUMMARY" />。選択すると、Google カレンダーで詳細を確認できます。</translation>
 <translation id="1267032506238418139">ショートカットの変更</translation>
 <translation id="1269405891096105529">ゲストモードでは周辺機器を使用できません</translation>
 <translation id="1270290102613614947">画面キーボードは無効です</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1632985212731562677">スイッチ アクセスは [設定] &gt; [ユーザー補助機能] で無効にできます。</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> 台のデバイス</translation>
+<translation id="1639239467298939599">読み込み中</translation>
 <translation id="1654477262762802994">音声検索を開始</translation>
 <translation id="1668469839109562275">組み込みの VPN</translation>
 <translation id="1677472565718498478">残り <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@
 <translation id="2359808026110333948">続行</translation>
 <translation id="2367186422933365202">Chromebook にログインできません</translation>
 <translation id="2369165858548251131">中国語で「こんにちは」ってどう言うの</translation>
+<translation id="2375445874393996153">画面の表示内容を Google アシスタントで検索することはできなくなりました。</translation>
 <translation id="2390318262976603432">言語 / 地域設定</translation>
 <translation id="240006516586367791">メディア コントロール</translation>
 <translation id="2402411679569069051">Chromebook のロックを解除するには、指紋認証を使用するか、スマートフォンのロックを解除します</translation>
@@ -505,6 +504,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> に接続しています</translation>
 <translation id="3922427723338465344">{0,plural, =1{1 分以内にデバイスを以前のバージョンに戻してください}other{# 分以内にデバイスを以前のバージョンに戻してください}}</translation>
 <translation id="3923494859158167397">モバイル ネットワークが設定されていません</translation>
+<translation id="3925540965556789199"><ph name="DATE" />、予定を読み込んでいます。</translation>
 <translation id="3932043219784172185">接続されているデバイスはありません</translation>
 <translation id="3934456833412894880">アダプティブ充電がオンになっています。バッテリー寿命を延ばすため、残量は 80% に保たれ、必要なときにフル充電します。</translation>
 <translation id="3943857333388298514">貼り付け</translation>
@@ -704,6 +704,7 @@
 <translation id="5078796286268621944">PIN が正しくありません</translation>
 <translation id="5083553833479578423">さらに多くのアシスタント機能をぜひご活用ください。</translation>
 <translation id="509790653408515442">スマートフォンのアプリでストリーミングした場合、そのアプリがここに表示されます</translation>
+<translation id="5098537242461068432">デスクとウィンドウが再度開かれました</translation>
 <translation id="5107522548814527560">ウェブ</translation>
 <translation id="5117590920725113268">次の月を表示</translation>
 <translation id="5136175204352732067">別のキーボードが接続されています</translation>
@@ -794,7 +795,7 @@
 <translation id="5669267381087807207">有効化中</translation>
 <translation id="5673434351075758678">設定の同期後に「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="5675363643668471212">シェルフ アイテム</translation>
-<translation id="5677928146339483299">ブロック中</translation>
+<translation id="5677928146339483299">ブロック</translation>
 <translation id="5678564054339031017">翌週を表示</translation>
 <translation id="5679050765726761783">低電力アダプターが接続されています</translation>
 <translation id="5682642926269496722">Google アシスタントは、現在のユーザー アカウントではご利用いただけません。</translation>
@@ -1048,7 +1049,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
 <translation id="7180611975245234373">更新</translation>
-<translation id="718361511487535372">Google カレンダーで開く</translation>
 <translation id="7188494361780961876">メニューは画面左上に移動しました。</translation>
 <translation id="7189412385142492784">金星までの距離は</translation>
 <translation id="7198435252016571249">カメラは右下にスナップされています。システムのサーフェスと競合しています。</translation>
@@ -1057,6 +1057,10 @@
 <translation id="7258828758145722155">昨日編集したファイル</translation>
 <translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
 <translation id="7262906531272962081">リマインダーの作成</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> から
+        <ph name="END_TIME" />、
+        <ph name="TIME_ZONE" />、
+        <ph name="EVENT_SUMMARY" />。選択すると、Google カレンダーで詳細を確認できます。</translation>
 <translation id="7302889331339392448">自動字幕起こしはオフになっています。</translation>
 <translation id="7303365578352795231">別のデバイスで応答しています。</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1170,6 +1174,7 @@
 <translation id="7904094684485781019">このアカウントの管理者がマルチログインを許可していません。</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">音声はローカルで処理されました。オフラインで音声入力を使用できます。</translation>
+<translation id="7932451802722951285">Google カレンダーで開く</translation>
 <translation id="7933084174919150729">Google アシスタントはメインのプロフィールでのみご利用いただけます。</translation>
 <translation id="79341161159229895">このアカウントは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> により管理されています</translation>
 <translation id="793716872548410480"><ph name="SHORTCUT_KEY_NAME" />+V キーを押すと、クリップボードを表示できます。クリップボードに、コピーした最新のアイテム 5 件が保存されています。</translation>

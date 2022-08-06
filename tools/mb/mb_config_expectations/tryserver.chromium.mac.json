@@ -205,21 +205,6 @@
       "use_libfuzzer": true
     }
   },
-  "ios-clang-tidy-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "ios_code_signing_identity_description": "Apple Development",
-      "ios_enable_code_signing": false,
-      "ios_set_attributes_for_xcode_project_generation": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 0,
-      "target_cpu": "arm64",
-      "target_environment": "device",
-      "target_os": "ios",
-      "use_goma": true
-    }
-  },
   "ios-device": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -461,7 +446,9 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "treat_warnings_as_errors": false,
+      "use_goma": true,
+      "use_lld": false
     }
   },
   "mac-arm64-on-arm64-rel": {
@@ -484,15 +471,6 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_cpu": "arm64",
-      "use_goma": true
-    }
-  },
-  "mac-clang-tidy-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 0,
       "use_goma": true
     }
   },

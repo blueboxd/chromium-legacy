@@ -5,30 +5,20 @@
 #include "pdf/pdf_view_plugin_base.h"
 
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/test/icu_test_util.h"
 #include "base/test/values_test_util.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "pdf/accessibility_structs.h"
-#include "pdf/content_restriction.h"
-#include "pdf/document_attachment_info.h"
-#include "pdf/document_layout.h"
-#include "pdf/document_metadata.h"
 #include "pdf/pdf_engine.h"
-#include "pdf/pdfium/pdfium_form_filler.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/test/test_pdfium_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -39,14 +29,6 @@ namespace chrome_pdf {
 
 namespace {
 
-using blink::WebPrintParams;
-using ::testing::ByMove;
-using ::testing::ElementsAre;
-using ::testing::Field;
-using ::testing::InSequence;
-using ::testing::IsEmpty;
-using ::testing::IsFalse;
-using ::testing::IsTrue;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -56,18 +38,11 @@ using ::testing::SaveArg;
 class FakePdfViewPluginBase : public PdfViewPluginBase {
  public:
   // Public for testing.
-  using PdfViewPluginBase::accessibility_state;
   using PdfViewPluginBase::engine;
-  using PdfViewPluginBase::full_frame;
   using PdfViewPluginBase::HandleInputEvent;
   using PdfViewPluginBase::HandleMessage;
-  using PdfViewPluginBase::PrintBegin;
-  using PdfViewPluginBase::PrintEnd;
-  using PdfViewPluginBase::PrintPages;
   using PdfViewPluginBase::SetCaretPosition;
-  using PdfViewPluginBase::SetZoom;
   using PdfViewPluginBase::UpdateGeometryOnPluginRectChanged;
-  using PdfViewPluginBase::UpdateScroll;
 
   MOCK_METHOD(std::string, GetURL, (), (override));
 
@@ -154,6 +129,8 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
 
   MOCK_METHOD(void, UserMetricsRecordAction, (const std::string&), (override));
 
+  MOCK_METHOD(bool, full_frame, (), (const override));
+
   void clear_sent_messages() { sent_messages_.clear(); }
 
   const std::vector<base::Value>& sent_messages() const {
@@ -166,21 +143,9 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
   base::WeakPtrFactory<FakePdfViewPluginBase> weak_factory_{this};
 };
 
-base::Value CreateExpectedFormTextFieldFocusChangeResponse() {
-  base::Value::Dict message;
-  message.Set("type", "formFocusChange");
-  message.Set("focused", false);
-  return base::Value(std::move(message));
-}
-
 }  // namespace
 
-class PdfViewPluginBaseTest : public testing::Test {
- protected:
-  NiceMock<FakePdfViewPluginBase> fake_plugin_;
-};
-
-class PdfViewPluginBaseWithEngineTest : public PdfViewPluginBaseTest {
+class PdfViewPluginBaseWithEngineTest : public testing::Test {
  public:
   void SetUp() override {
     auto engine = std::make_unique<NiceMock<TestPDFiumEngine>>(&fake_plugin_);
@@ -204,119 +169,9 @@ class PdfViewPluginBaseWithEngineTest : public PdfViewPluginBaseTest {
     })");
     fake_plugin_.HandleMessage(message.GetDict());
   }
+
+  NiceMock<FakePdfViewPluginBase> fake_plugin_;
 };
-
-class PdfViewPluginBaseWithScopedLocaleTest
-    : public PdfViewPluginBaseWithEngineTest {
- protected:
-  base::test::ScopedRestoreICUDefaultLocale scoped_locale_{"en_US"};
-  base::test::ScopedRestoreDefaultTimezone la_time_{"America/Los_Angeles"};
-};
-
-using PdfViewPluginBaseWithoutDocInfoTest =
-    PdfViewPluginBaseWithScopedLocaleTest;
-
-TEST_F(PdfViewPluginBaseTest, DocumentLoadProgress) {
-  fake_plugin_.DocumentLoadProgress(10, 200);
-
-  EXPECT_THAT(fake_plugin_.sent_messages(), ElementsAre(base::test::IsJson(R"({
-    "type": "loadProgress",
-    "progress": 5.0,
-  })")));
-}
-
-TEST_F(PdfViewPluginBaseTest, DocumentLoadProgressIgnoreSmall) {
-  fake_plugin_.DocumentLoadProgress(2, 100);
-  fake_plugin_.clear_sent_messages();
-
-  fake_plugin_.DocumentLoadProgress(3, 100);
-
-  EXPECT_THAT(fake_plugin_.sent_messages(), IsEmpty());
-}
-
-TEST_F(PdfViewPluginBaseTest, DocumentLoadProgressMultipleSmall) {
-  fake_plugin_.DocumentLoadProgress(2, 100);
-  fake_plugin_.clear_sent_messages();
-
-  fake_plugin_.DocumentLoadProgress(3, 100);
-  fake_plugin_.DocumentLoadProgress(4, 100);
-
-  EXPECT_THAT(fake_plugin_.sent_messages(), ElementsAre(base::test::IsJson(R"({
-    "type": "loadProgress",
-    "progress": 4.0,
-  })")));
-}
-
-TEST_F(PdfViewPluginBaseWithoutDocInfoTest,
-       DocumentLoadCompleteInFullFramePdfViewerWithAccessibilityEnabled) {
-  // Notify the render frame about document loading.
-  fake_plugin_.set_full_frame_for_testing(true);
-  ASSERT_TRUE(fake_plugin_.full_frame());
-  fake_plugin_.CreateUrlLoader();
-
-  ASSERT_FALSE(fake_plugin_.IsPrintPreview());
-  ASSERT_EQ(PdfViewPluginBase::DocumentLoadState::kLoading,
-            fake_plugin_.document_load_state_for_testing());
-
-  // Change the accessibility state to pending so that accessibility can be
-  // loaded later.
-  fake_plugin_.EnableAccessibility();
-  EXPECT_EQ(PdfViewPluginBase::AccessibilityState::kPending,
-            fake_plugin_.accessibility_state());
-
-  EXPECT_CALL(fake_plugin_, UserMetricsRecordAction("PDF.LoadSuccess"));
-  EXPECT_CALL(fake_plugin_, SetFormTextFieldInFocus(false));
-  EXPECT_CALL(fake_plugin_, DidStopLoading());
-  EXPECT_CALL(fake_plugin_,
-              SetContentRestrictions(fake_plugin_.GetContentRestrictions()));
-  EXPECT_CALL(fake_plugin_,
-              SetAccessibilityDocInfo(fake_plugin_.GetAccessibilityDocInfo()));
-
-  fake_plugin_.DocumentLoadComplete();
-  EXPECT_EQ(PdfViewPluginBase::DocumentLoadState::kComplete,
-            fake_plugin_.document_load_state_for_testing());
-  EXPECT_EQ(PdfViewPluginBase::AccessibilityState::kLoaded,
-            fake_plugin_.accessibility_state());
-
-  // Check all the sent messages.
-  ASSERT_EQ(1u, fake_plugin_.sent_messages().size());
-  EXPECT_EQ(CreateExpectedFormTextFieldFocusChangeResponse(),
-            fake_plugin_.sent_messages()[0]);
-}
-
-TEST_F(PdfViewPluginBaseWithoutDocInfoTest,
-       DocumentLoadCompleteInFullFramePdfViewerWithAccessibilityDisabled) {
-  // Notify the render frame about document loading.
-  fake_plugin_.set_full_frame_for_testing(true);
-  ASSERT_TRUE(fake_plugin_.full_frame());
-  fake_plugin_.CreateUrlLoader();
-
-  ASSERT_FALSE(fake_plugin_.IsPrintPreview());
-  ASSERT_EQ(PdfViewPluginBase::DocumentLoadState::kLoading,
-            fake_plugin_.document_load_state_for_testing());
-  ASSERT_EQ(PdfViewPluginBase::AccessibilityState::kOff,
-            fake_plugin_.accessibility_state());
-
-  EXPECT_CALL(fake_plugin_, UserMetricsRecordAction("PDF.LoadSuccess"));
-  EXPECT_CALL(fake_plugin_, SetFormTextFieldInFocus(false));
-  EXPECT_CALL(fake_plugin_, DidStopLoading());
-  EXPECT_CALL(fake_plugin_,
-              SetContentRestrictions(fake_plugin_.GetContentRestrictions()));
-  EXPECT_CALL(fake_plugin_,
-              SetAccessibilityDocInfo(fake_plugin_.GetAccessibilityDocInfo()))
-      .Times(0);
-
-  fake_plugin_.DocumentLoadComplete();
-  EXPECT_EQ(PdfViewPluginBase::DocumentLoadState::kComplete,
-            fake_plugin_.document_load_state_for_testing());
-  EXPECT_EQ(PdfViewPluginBase::AccessibilityState::kOff,
-            fake_plugin_.accessibility_state());
-
-  // Check all the sent messages.
-  ASSERT_EQ(1u, fake_plugin_.sent_messages().size());
-  EXPECT_EQ(CreateExpectedFormTextFieldFocusChangeResponse(),
-            fake_plugin_.sent_messages()[0]);
-}
 
 TEST_F(PdfViewPluginBaseWithEngineTest, HandleInputEvent) {
   auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
@@ -337,217 +192,6 @@ TEST_F(PdfViewPluginBaseWithEngineTest, HandleInputEvent) {
   EXPECT_TRUE(fake_plugin_.HandleInputEvent(mouse_event));
 }
 
-TEST_F(PdfViewPluginBaseWithEngineTest,
-       HandleViewportMessageBeforeDocumentLoadComplete) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  EXPECT_CALL(*engine, ApplyDocumentLayout(DocumentLayout::Options()));
-
-  base::Value message = base::test::ParseJson(R"({
-    "type": "viewport",
-    "userInitiated": false,
-    "zoom": 1,
-    "layoutOptions": {
-      "direction": 0,
-      "defaultPageOrientation": 0,
-      "twoUpViewEnabled": false,
-    },
-    "xOffset": 0,
-    "yOffset": 0,
-    "pinchPhase": 0,
-  })");
-  fake_plugin_.HandleMessage(message.GetDict());
-
-  EXPECT_THAT(fake_plugin_.sent_messages(), IsEmpty());
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest,
-       HandleViewportMessageAfterDocumentLoadComplete) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  EXPECT_CALL(*engine, ApplyDocumentLayout(DocumentLayout::Options()));
-
-  fake_plugin_.DocumentLoadComplete();
-  fake_plugin_.clear_sent_messages();
-
-  base::Value message = base::test::ParseJson(R"({
-    "type": "viewport",
-    "userInitiated": false,
-    "zoom": 1,
-    "layoutOptions": {
-      "direction": 0,
-      "defaultPageOrientation": 0,
-      "twoUpViewEnabled": false,
-    },
-    "xOffset": 0,
-    "yOffset": 0,
-    "pinchPhase": 0,
-  })");
-  fake_plugin_.HandleMessage(message.GetDict());
-
-  EXPECT_THAT(fake_plugin_.sent_messages(), ElementsAre(base::test::IsJson(R"({
-    "type": "loadProgress",
-    "progress": 100.0,
-  })")));
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, HandleViewportMessageSubsequently) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-
-  base::Value message1 = base::test::ParseJson(R"({
-    "type": "viewport",
-    "userInitiated": false,
-    "zoom": 1,
-    "layoutOptions": {
-      "direction": 0,
-      "defaultPageOrientation": 0,
-      "twoUpViewEnabled": false,
-    },
-    "xOffset": 0,
-    "yOffset": 0,
-    "pinchPhase": 0,
-  })");
-  fake_plugin_.HandleMessage(message1.GetDict());
-  fake_plugin_.clear_sent_messages();
-
-  DocumentLayout::Options two_up_options;
-  two_up_options.set_page_spread(DocumentLayout::PageSpread::kTwoUpOdd);
-  EXPECT_CALL(*engine, ApplyDocumentLayout(two_up_options));
-
-  base::Value message2 = base::test::ParseJson(R"({
-    "type": "viewport",
-    "userInitiated": false,
-    "zoom": 1,
-    "layoutOptions": {
-      "direction": 0,
-      "defaultPageOrientation": 0,
-      "twoUpViewEnabled": true,
-    },
-    "xOffset": 0,
-    "yOffset": 0,
-    "pinchPhase": 0,
-  })");
-  fake_plugin_.HandleMessage(message2.GetDict());
-
-  EXPECT_THAT(fake_plugin_.sent_messages(), IsEmpty());
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, HandleViewportMessageScroll) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  EXPECT_CALL(*engine, ApplyDocumentLayout)
-      .WillRepeatedly(Return(gfx::Size(16, 9)));
-  EXPECT_CALL(*engine, ScrolledToXPosition(2));
-  EXPECT_CALL(*engine, ScrolledToYPosition(3));
-
-  base::Value message = base::test::ParseJson(R"({
-    "type": "viewport",
-    "userInitiated": false,
-    "zoom": 1,
-    "layoutOptions": {
-      "direction": 2,
-      "defaultPageOrientation": 0,
-      "twoUpViewEnabled": false,
-    },
-    "xOffset": 2,
-    "yOffset": 3,
-    "pinchPhase": 0,
-  })");
-  fake_plugin_.HandleMessage(message.GetDict());
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest,
-       HandleViewportMessageScrollRightToLeft) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  EXPECT_CALL(*engine, ApplyDocumentLayout)
-      .WillRepeatedly(Return(gfx::Size(16, 9)));
-  EXPECT_CALL(*engine, ScrolledToXPosition(2));
-  EXPECT_CALL(*engine, ScrolledToYPosition(3));
-
-  base::Value message = base::test::ParseJson(R"({
-    "type": "viewport",
-    "userInitiated": false,
-    "zoom": 1,
-    "layoutOptions": {
-      "direction": 1,
-      "defaultPageOrientation": 0,
-      "twoUpViewEnabled": false,
-    },
-    "xOffset": 2,
-    "yOffset": 3,
-    "pinchPhase": 0,
-  })");
-  fake_plugin_.HandleMessage(message.GetDict());
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScroll) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  EXPECT_CALL(*engine, ScrolledToXPosition(0));
-  EXPECT_CALL(*engine, ScrolledToYPosition(0));
-
-  fake_plugin_.UpdateScroll({0, 0});
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollStopped) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  EXPECT_CALL(*engine, ScrolledToXPosition).Times(0);
-  EXPECT_CALL(*engine, ScrolledToYPosition).Times(0);
-
-  base::Value message = base::test::ParseJson(R"({
-    "type": "stopScrolling",
-  })");
-  fake_plugin_.HandleMessage(message.GetDict());
-  fake_plugin_.UpdateScroll({0, 0});
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollUnderflow) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  EXPECT_CALL(*engine, ApplyDocumentLayout)
-      .WillRepeatedly(Return(gfx::Size(16, 9)));
-  SendDefaultViewportMessage();
-  EXPECT_CALL(*engine, ScrolledToXPosition(0));
-  EXPECT_CALL(*engine, ScrolledToYPosition(0));
-
-  fake_plugin_.UpdateScroll({-1, -1});
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollOverflow) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  fake_plugin_.UpdateGeometryOnPluginRectChanged({3, 2}, 1.0f);
-  EXPECT_CALL(*engine, ApplyDocumentLayout)
-      .WillRepeatedly(Return(gfx::Size(16, 9)));
-  SendDefaultViewportMessage();
-
-  EXPECT_CALL(*engine, ScrolledToXPosition(13));
-  EXPECT_CALL(*engine, ScrolledToYPosition(7));
-
-  fake_plugin_.UpdateScroll({14, 8});
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollOverflowZoomed) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  fake_plugin_.UpdateGeometryOnPluginRectChanged({3, 2}, 1.0f);
-  EXPECT_CALL(*engine, ApplyDocumentLayout)
-      .WillRepeatedly(Return(gfx::Size(16, 9)));
-  SendDefaultViewportMessage();
-  fake_plugin_.SetZoom(2.0);
-
-  EXPECT_CALL(*engine, ScrolledToXPosition(29));
-  EXPECT_CALL(*engine, ScrolledToYPosition(16));
-
-  fake_plugin_.UpdateScroll({30, 17});
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollScaled) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  fake_plugin_.UpdateGeometryOnPluginRectChanged({3, 2}, 2.0f);
-  EXPECT_CALL(*engine, ApplyDocumentLayout)
-      .WillRepeatedly(Return(gfx::Size(16, 9)));
-  SendDefaultViewportMessage();
-
-  EXPECT_CALL(*engine, ScrolledToXPosition(4));
-  EXPECT_CALL(*engine, ScrolledToYPosition(2));
-
-  fake_plugin_.UpdateScroll({2, 1});
-}
-
 TEST_F(PdfViewPluginBaseWithEngineTest, SetCaretPosition) {
   auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
   fake_plugin_.UpdateGeometryOnPluginRectChanged({300, 56, 20, 5}, 1.0f);
@@ -556,7 +200,7 @@ TEST_F(PdfViewPluginBaseWithEngineTest, SetCaretPosition) {
   SendDefaultViewportMessage();
 
   EXPECT_CALL(*engine, SetCaretPosition(gfx::Point(2, 3)));
-  fake_plugin_.SetCaretPosition({304.0f, 59.0f});
+  fake_plugin_.SetCaretPosition({4.0f, 3.0f});
 }
 
 TEST_F(PdfViewPluginBaseWithEngineTest, SetCaretPositionNegativeOrigin) {
@@ -567,7 +211,7 @@ TEST_F(PdfViewPluginBaseWithEngineTest, SetCaretPositionNegativeOrigin) {
   SendDefaultViewportMessage();
 
   EXPECT_CALL(*engine, SetCaretPosition(gfx::Point(2, 3)));
-  fake_plugin_.SetCaretPosition({-296.0f, -53.0f});
+  fake_plugin_.SetCaretPosition({4.0f, 3.0f});
 }
 
 TEST_F(PdfViewPluginBaseWithEngineTest, SetCaretPositionFractional) {
@@ -578,7 +222,7 @@ TEST_F(PdfViewPluginBaseWithEngineTest, SetCaretPositionFractional) {
   SendDefaultViewportMessage();
 
   EXPECT_CALL(*engine, SetCaretPosition(gfx::Point(1, 2)));
-  fake_plugin_.SetCaretPosition({303.9f, 58.9f});
+  fake_plugin_.SetCaretPosition({3.9f, 2.9f});
 }
 
 TEST_F(PdfViewPluginBaseWithEngineTest, SetCaretPositionScaled) {
@@ -589,7 +233,7 @@ TEST_F(PdfViewPluginBaseWithEngineTest, SetCaretPositionScaled) {
   SendDefaultViewportMessage();
 
   EXPECT_CALL(*engine, SetCaretPosition(gfx::Point(4, 6)));
-  fake_plugin_.SetCaretPosition({304.0f, 59.0f});
+  fake_plugin_.SetCaretPosition({4.0f, 3.0f});
 }
 
 TEST_F(PdfViewPluginBaseWithEngineTest, SelectionChanged) {
@@ -603,13 +247,13 @@ TEST_F(PdfViewPluginBaseWithEngineTest, SelectionChanged) {
 
   AccessibilityViewportInfo viewport_info;
   EXPECT_CALL(fake_plugin_,
-              NotifySelectionChanged(gfx::PointF(292.0f, 36.0f), 40,
-                                     gfx::PointF(352.0f, 116.0f), 80));
+              NotifySelectionChanged(gfx::PointF(-8.0f, -20.0f), 40,
+                                     gfx::PointF(52.0f, 60.0f), 80));
   EXPECT_CALL(fake_plugin_, SetAccessibilityViewportInfo)
       .WillOnce(SaveArg<0>(&viewport_info));
   fake_plugin_.SelectionChanged({-10, -20, 30, 40}, {50, 60, 70, 80});
 
-  EXPECT_EQ(gfx::Point(-300, -56), viewport_info.scroll);
+  EXPECT_EQ(gfx::Point(), viewport_info.scroll);
 }
 
 TEST_F(PdfViewPluginBaseWithEngineTest, SelectionChangedNegativeOrigin) {
@@ -623,13 +267,13 @@ TEST_F(PdfViewPluginBaseWithEngineTest, SelectionChangedNegativeOrigin) {
 
   AccessibilityViewportInfo viewport_info;
   EXPECT_CALL(fake_plugin_,
-              NotifySelectionChanged(gfx::PointF(-308.0f, -76.0f), 40,
-                                     gfx::PointF(-248.0f, 4.0f), 80));
+              NotifySelectionChanged(gfx::PointF(-8.0f, -20.0f), 40,
+                                     gfx::PointF(52.0f, 60.0f), 80));
   EXPECT_CALL(fake_plugin_, SetAccessibilityViewportInfo)
       .WillOnce(SaveArg<0>(&viewport_info));
   fake_plugin_.SelectionChanged({-10, -20, 30, 40}, {50, 60, 70, 80});
 
-  EXPECT_EQ(gfx::Point(300, 56), viewport_info.scroll);
+  EXPECT_EQ(gfx::Point(), viewport_info.scroll);
 }
 
 TEST_F(PdfViewPluginBaseWithEngineTest, SelectionChangedScaled) {
@@ -643,168 +287,13 @@ TEST_F(PdfViewPluginBaseWithEngineTest, SelectionChangedScaled) {
 
   AccessibilityViewportInfo viewport_info;
   EXPECT_CALL(fake_plugin_,
-              NotifySelectionChanged(gfx::PointF(292.0f, 36.0f), 40,
-                                     gfx::PointF(352.0f, 116.0f), 80));
+              NotifySelectionChanged(gfx::PointF(-8.0f, -20.0f), 40,
+                                     gfx::PointF(52.0f, 60.0f), 80));
   EXPECT_CALL(fake_plugin_, SetAccessibilityViewportInfo)
       .WillOnce(SaveArg<0>(&viewport_info));
   fake_plugin_.SelectionChanged({-20, -40, 60, 80}, {100, 120, 140, 160});
 
-  EXPECT_EQ(gfx::Point(-300, -56), viewport_info.scroll);
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, NormalPrinting) {
-  WebPrintParams params;
-  const std::vector<int> kPageNumbers = {0};
-
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  engine->SetPermissions({DocumentPermission::kPrintHighQuality,
-                          DocumentPermission::kPrintLowQuality});
-
-  InSequence sequence;
-  EXPECT_CALL(*engine,
-              PrintPages(kPageNumbers,
-                         Field(&WebPrintParams::rasterize_pdf, IsFalse())))
-      .Times(1);
-  EXPECT_CALL(
-      *engine,
-      PrintPages(kPageNumbers, Field(&WebPrintParams::rasterize_pdf, IsTrue())))
-      .Times(1);
-
-  ASSERT_EQ(static_cast<int>(TestPDFiumEngine::kPageNumber),
-            fake_plugin_.PrintBegin(params));
-  fake_plugin_.PrintPages(kPageNumbers);
-  fake_plugin_.PrintEnd();
-
-  params.rasterize_pdf = true;
-  ASSERT_EQ(static_cast<int>(TestPDFiumEngine::kPageNumber),
-            fake_plugin_.PrintBegin(params));
-  fake_plugin_.PrintPages(kPageNumbers);
-  fake_plugin_.PrintEnd();
-}
-
-// Regression test for crbug.com/1307219.
-TEST_F(PdfViewPluginBaseWithEngineTest, LowQualityPrinting) {
-  WebPrintParams params;
-  const std::vector<int> kPageNumbers = {0};
-
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  engine->SetPermissions({DocumentPermission::kPrintLowQuality});
-
-  EXPECT_CALL(
-      *engine,
-      PrintPages(kPageNumbers, Field(&WebPrintParams::rasterize_pdf, IsTrue())))
-      .Times(2);
-
-  ASSERT_EQ(static_cast<int>(TestPDFiumEngine::kPageNumber),
-            fake_plugin_.PrintBegin(params));
-  fake_plugin_.PrintPages(kPageNumbers);
-  fake_plugin_.PrintEnd();
-
-  params.rasterize_pdf = true;
-  ASSERT_EQ(static_cast<int>(TestPDFiumEngine::kPageNumber),
-            fake_plugin_.PrintBegin(params));
-  fake_plugin_.PrintPages(kPageNumbers);
-  fake_plugin_.PrintEnd();
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, NoPrinting) {
-  WebPrintParams params;
-
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  engine->SetPermissions({});
-
-  EXPECT_EQ(0, fake_plugin_.PrintBegin(params));
-
-  params.rasterize_pdf = true;
-  EXPECT_EQ(0, fake_plugin_.PrintBegin(params));
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, GetContentRestrictions) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-  static constexpr int kContentRestrictionCutPaste =
-      kContentRestrictionCut | kContentRestrictionPaste;
-
-  // Test engine without any permissions.
-  engine->SetPermissions({});
-
-  int content_restrictions = fake_plugin_.GetContentRestrictions();
-  EXPECT_EQ(kContentRestrictionCutPaste | kContentRestrictionCopy |
-                kContentRestrictionPrint,
-            content_restrictions);
-
-  // Test engine with only copy permission.
-  engine->SetPermissions({DocumentPermission::kCopy});
-
-  content_restrictions = fake_plugin_.GetContentRestrictions();
-  EXPECT_EQ(kContentRestrictionCutPaste | kContentRestrictionPrint,
-            content_restrictions);
-
-  // Test engine with only print low quality permission.
-  engine->SetPermissions({DocumentPermission::kPrintLowQuality});
-
-  content_restrictions = fake_plugin_.GetContentRestrictions();
-  EXPECT_EQ(kContentRestrictionCutPaste | kContentRestrictionCopy,
-            content_restrictions);
-
-  // Test engine with both copy and print low quality permissions.
-  engine->SetPermissions(
-      {DocumentPermission::kCopy, DocumentPermission::kPrintLowQuality});
-
-  content_restrictions = fake_plugin_.GetContentRestrictions();
-  EXPECT_EQ(kContentRestrictionCutPaste, content_restrictions);
-
-  // Test engine with print high and low quality permissions.
-  engine->SetPermissions({DocumentPermission::kPrintHighQuality,
-                          DocumentPermission::kPrintLowQuality});
-
-  content_restrictions = fake_plugin_.GetContentRestrictions();
-  EXPECT_EQ(kContentRestrictionCutPaste | kContentRestrictionCopy,
-            content_restrictions);
-
-  // Test engine with copy, print high and low quality permissions.
-  engine->SetPermissions({DocumentPermission::kCopy,
-                          DocumentPermission::kPrintHighQuality,
-                          DocumentPermission::kPrintLowQuality});
-
-  content_restrictions = fake_plugin_.GetContentRestrictions();
-  EXPECT_EQ(kContentRestrictionCutPaste, content_restrictions);
-}
-
-TEST_F(PdfViewPluginBaseWithEngineTest, GetAccessibilityDocInfo) {
-  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
-
-  // Test engine without any permissions.
-  engine->SetPermissions({});
-
-  AccessibilityDocInfo doc_info = fake_plugin_.GetAccessibilityDocInfo();
-  EXPECT_EQ(TestPDFiumEngine::kPageNumber, doc_info.page_count);
-  EXPECT_FALSE(doc_info.text_accessible);
-  EXPECT_FALSE(doc_info.text_copyable);
-
-  // Test engine with only copy permission.
-  engine->SetPermissions({DocumentPermission::kCopy});
-
-  doc_info = fake_plugin_.GetAccessibilityDocInfo();
-  EXPECT_EQ(TestPDFiumEngine::kPageNumber, doc_info.page_count);
-  EXPECT_FALSE(doc_info.text_accessible);
-  EXPECT_TRUE(doc_info.text_copyable);
-
-  // Test engine with only copy accessible permission.
-  engine->SetPermissions({DocumentPermission::kCopyAccessible});
-
-  doc_info = fake_plugin_.GetAccessibilityDocInfo();
-  EXPECT_EQ(TestPDFiumEngine::kPageNumber, doc_info.page_count);
-  EXPECT_TRUE(doc_info.text_accessible);
-  EXPECT_FALSE(doc_info.text_copyable);
-
-  // Test engine with both copy and copy accessible permission.
-  engine->SetPermissions(
-      {DocumentPermission::kCopy, DocumentPermission::kCopyAccessible});
-
-  doc_info = fake_plugin_.GetAccessibilityDocInfo();
-  EXPECT_EQ(TestPDFiumEngine::kPageNumber, doc_info.page_count);
-  EXPECT_TRUE(doc_info.text_accessible);
-  EXPECT_TRUE(doc_info.text_copyable);
+  EXPECT_EQ(gfx::Point(), viewport_info.scroll);
 }
 
 }  // namespace chrome_pdf

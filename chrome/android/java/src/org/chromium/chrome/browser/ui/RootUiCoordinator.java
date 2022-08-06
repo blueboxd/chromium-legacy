@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ui;
 
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
@@ -44,6 +45,7 @@ import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingControlle
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
+import org.chromium.chrome.browser.bookmarks.TabBookmarker;
 import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -63,6 +65,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersCoordinator;
+import org.chromium.chrome.browser.history_clusters.HistoryClustersDelegate;
 import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsController;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
@@ -89,8 +92,10 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceInteractionSource;
 import org.chromium.chrome.browser.paint_preview.DemoPaintPreview;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingButtonController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.segmentation_platform.ContextualPageActionController;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareButtonController;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -155,6 +160,7 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.vr.VrModeObserver;
+import org.chromium.url.GURL;
 
 import java.util.Arrays;
 import java.util.List;
@@ -232,6 +238,7 @@ public class RootUiCoordinator
     private List<ButtonDataProvider> mButtonDataProviders;
     @Nullable
     private AdaptiveToolbarButtonController mAdaptiveToolbarButtonController;
+    private ContextualPageActionController mContextualPageActionController;
     private IdentityDiscController mIdentityDiscController;
     private ChromeActionModeHandler mChromeActionModeHandler;
     private final ToolbarActionModeCallback mActionModeControllerCallback;
@@ -241,6 +248,7 @@ public class RootUiCoordinator
             mMerchantTrustSignalsCoordinatorSupplier = new ObservableSupplierImpl<>();
     protected final ObservableSupplier<Profile> mProfileSupplier;
     private final ObservableSupplier<BookmarkBridge> mBookmarkBridgeSupplier;
+    private final ObservableSupplier<TabBookmarker> mTabBookmarkerSupplier;
     private final OneshotSupplierImpl<AppMenuCoordinator> mAppMenuSupplier;
     private BottomSheetObserver mContextualSearchSuppressor;
     private final Supplier<ContextualSearchManager> mContextualSearchManagerSupplier;
@@ -303,6 +311,7 @@ public class RootUiCoordinator
      * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      * @param profileSupplier Supplier of the currently applicable profile.
      * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
+     * @param tabBookmarkerSupplier Supplier of {@link TabBookmarker} for bookmarking a given tab.
      * @param contextualSearchManagerSupplier Supplier of the {@link ContextualSearchManager}.
      * @param tabModelSelectorSupplier Supplies the {@link TabModelSelector}.
      * @param startSurfaceSupplier Supplier of the {@link StartSurface}.
@@ -342,6 +351,7 @@ public class RootUiCoordinator
             @NonNull ActivityTabProvider tabProvider,
             @NonNull ObservableSupplier<Profile> profileSupplier,
             @NonNull ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
+            @NonNull ObservableSupplier<TabBookmarker> tabBookmarkerSupplier,
             @NonNull Supplier<ContextualSearchManager> contextualSearchManagerSupplier,
             @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
             @NonNull OneshotSupplier<StartSurface> startSurfaceSupplier,
@@ -432,6 +442,7 @@ public class RootUiCoordinator
         }
         mProfileSupplier = profileSupplier;
         mBookmarkBridgeSupplier = bookmarkBridgeSupplier;
+        mTabBookmarkerSupplier = tabBookmarkerSupplier;
         mAppMenuSupplier = new OneshotSupplierImpl<>();
         mContextualSearchManagerSupplier = contextualSearchManagerSupplier;
         mActionModeControllerCallback = new ToolbarActionModeCallback();
@@ -531,6 +542,11 @@ public class RootUiCoordinator
             }
             mToolbarManager.destroy();
             mToolbarManager = null;
+        }
+
+        if (mContextualPageActionController != null) {
+            mContextualPageActionController.destroy();
+            mContextualPageActionController = null;
         }
 
         if (mAdaptiveToolbarButtonController != null) {
@@ -787,14 +803,38 @@ public class RootUiCoordinator
 
     private void initHistoryClustersCoordinator(Profile profile) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HISTORY_JOURNEYS)) {
-            mHistoryClustersCoordinator = new HistoryClustersCoordinator(profile, mActivity,
-                    ()
-                            -> new Intent()
-                                       .setClass(mActivity, HistoryActivity.class)
-                                       .putExtra(IntentHandler.EXTRA_PARENT_COMPONENT,
-                                               mActivity.getComponentName()),
-                    mActivityTabProvider,
-                    (url) -> new Intent(), TemplateUrlServiceFactory.get(), (vg) -> null);
+            HistoryClustersDelegate historyClustersDelegate = new HistoryClustersDelegate() {
+                @Override
+                public boolean isSeparateActivity() {
+                    return false;
+                }
+
+                @Override
+                public Tab getTab() {
+                    return mActivityTabProvider.get();
+                }
+
+                @Override
+                public Intent getHistoryActivityIntent() {
+                    return new Intent()
+                            .setClass(mActivity, HistoryActivity.class)
+                            .putExtra(IntentHandler.EXTRA_PARENT_COMPONENT,
+                                    mActivity.getComponentName());
+                }
+
+                @Override
+                public Intent getOpenUrlIntent(GURL gurl) {
+                    return new Intent();
+                }
+
+                @Override
+                public ViewGroup getToggleView(ViewGroup parent) {
+                    return null;
+                }
+            };
+
+            mHistoryClustersCoordinator = new HistoryClustersCoordinator(
+                    profile, mActivity, TemplateUrlServiceFactory.get(), historyClustersDelegate);
             mHistoryClustersCoordinatorSupplier.set(mHistoryClustersCoordinator);
         }
     }
@@ -1016,6 +1056,9 @@ public class RootUiCoordinator
 
             mIdentityDiscController = new IdentityDiscController(
                     mActivity, mActivityLifecycleDispatcher, mProfileSupplier);
+            PriceTrackingButtonController priceTrackingButtonController =
+                    new PriceTrackingButtonController(
+                            mActivity, mActivityTabProvider, mTabBookmarkerSupplier);
             ShareButtonController shareButtonController = new ShareButtonController(mActivity,
                     AppCompatResources.getDrawable(
                             mActivity, R.drawable.ic_toolbar_share_offset_24dp),
@@ -1061,6 +1104,10 @@ public class RootUiCoordinator
                     AdaptiveToolbarButtonVariant.SHARE, shareButtonController);
             adaptiveToolbarButtonController.addButtonVariant(
                     AdaptiveToolbarButtonVariant.VOICE, voiceToolbarButtonController);
+            adaptiveToolbarButtonController.addButtonVariant(
+                    AdaptiveToolbarButtonVariant.PRICE_TRACKING, priceTrackingButtonController);
+            mContextualPageActionController = new ContextualPageActionController(
+                    mProfileSupplier, mActivityTabProvider, adaptiveToolbarButtonController);
             mButtonDataProviders =
                     Arrays.asList(mIdentityDiscController, adaptiveToolbarButtonController);
 
@@ -1106,7 +1153,7 @@ public class RootUiCoordinator
                 new ScrimCoordinator.SystemUiScrimDelegate() {
                     @Override
                     public void setStatusBarScrimFraction(float scrimFraction) {
-                        mStatusBarColorController.setStatusBarScrimFraction(scrimFraction);
+                        RootUiCoordinator.this.setStatusBarScrimFraction(scrimFraction);
                     }
 
                     @Override
@@ -1114,6 +1161,10 @@ public class RootUiCoordinator
                 };
         return new ScrimCoordinator(mActivity, delegate, coordinator,
                 coordinator.getContext().getColor(R.color.omnibox_focused_fading_background_color));
+    }
+
+    protected void setStatusBarScrimFraction(float scrimFraction) {
+        mStatusBarColorController.setStatusBarScrimFraction(scrimFraction);
     }
 
     protected void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
@@ -1178,7 +1229,14 @@ public class RootUiCoordinator
             mAppMenuCoordinator = AppMenuCoordinatorFactory.createAppMenuCoordinator(mActivity,
                     mActivityLifecycleDispatcher, mToolbarManager, mAppMenuDelegate,
                     mActivity.getWindow().getDecorView(),
-                    mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub));
+                    mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub),
+                    () -> {
+                        View coord = mActivity.findViewById(R.id.coordinator);
+                        int[] location = new int[2];
+                        coord.getLocationInWindow(location);
+                        return new Rect(location[0], location[1], location[0] + coord.getWidth(),
+                                location[1] + coord.getHeight());
+                    });
             AppMenuCoordinatorFactory.setExceptionReporter(
                     (throwable)
                             -> ChromePureJavaExceptionReporter.reportJavaException(
@@ -1274,7 +1332,8 @@ public class RootUiCoordinator
                         -> mScrimCoordinator,
                 sheetInitializedCallback, mActivity.getWindow(),
                 mWindowAndroid.getKeyboardDelegate(),
-                () -> mActivity.findViewById(R.id.sheet_container));
+                () -> mActivity.findViewById(R.id.sheet_container),
+                () -> mActivity.findViewById(R.id.coordinator).getHeight());
         BottomSheetControllerFactory.setExceptionReporter(
                 (throwable)
                         -> ChromePureJavaExceptionReporter.reportJavaException(

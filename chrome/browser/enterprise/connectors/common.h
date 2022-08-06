@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -81,6 +82,14 @@ struct CustomMessageData {
   GURL learn_more_url;
 };
 
+// A struct representing tag-specific settings that are applied to an analysis
+// which includes that tag.
+struct TagSettings {
+  CustomMessageData custom_message;
+  bool requires_justification = false;
+  const SupportedFiles* supported_files = nullptr;
+};
+
 // Structs representing settings to be used for an analysis or a report. These
 // settings should only be kept and considered valid for the specific
 // analysis/report they were obtained for.
@@ -91,13 +100,11 @@ struct AnalysisSettings {
   ~AnalysisSettings();
 
   GURL analysis_url;
-  std::set<std::string> tags;
+  std::map<std::string, TagSettings> tags;
   BlockUntilVerdict block_until_verdict = BlockUntilVerdict::NO_BLOCK;
   bool block_password_protected_files = false;
   bool block_large_files = false;
   bool block_unsupported_file_types = false;
-  std::map<std::string, CustomMessageData> custom_message_data;
-  std::set<std::string> tags_requiring_justification;
 
   // Minimum text size for BulkDataEntry scans. 0 means no minimum.
   size_t minimum_data_size = 100;

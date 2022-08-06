@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">हे <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="1175951029573070619">सरासरी (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
+<translation id="1190378975642195988">बेस अ‍ॅक्सेलेरोमीटर</translation>
 <translation id="1195447618553298278">अज्ञात एरर.</translation>
 <translation id="1196959502276349371">आवृत्ती <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">प्ले करा/थांबवा</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">USB मध्ये सेव्ह करा</translation>
 <translation id="1468664791493211953">ऑफर</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> हे डिव्हाइस व्यवस्थापित करतो आणि तो तुमच्या अ‍ॅक्टिव्हिटीचे निरीक्षण करू शकतो.</translation>
+<translation id="147809995039451286">अपडेट डाउनलोड करता आले नाही</translation>
 <translation id="1478594628797167447">स्कॅनर</translation>
 <translation id="1491076385728777984"><ph name="DEVICE_NAME" /> वर फर्मवेअर अपडेट करत आहे</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> या वापरकर्त्याला व्यवस्थापित करतो आणि तो रिमोट पद्धतीने सेटिंग्ज व्यवस्थापित करू शकतो तसेच वापरकर्ता अ‍ॅक्टिव्हिटीचे निरीक्षण करू शकतो.</translation>
@@ -95,6 +97,7 @@
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" /> आणि <ph name="SECOND_MANAGER" /> द्वारे व्यवस्थापित</translation>
 <translation id="1726100011689679555">नाव सर्व्हर</translation>
 <translation id="1731082422893354635">ब्लूटूथ टचपॅड</translation>
+<translation id="1745577949879301685">इमेज लोड करता आल्या नाहीत. तुमचे नेटवर्क कनेक्शन तपासा किंवा इमेज पुन्हा लोड करून पहा.</translation>
 <translation id="1751249301761991853">वैयक्तिक</translation>
 <translation id="1753496554272155572">वॉलपेपर पूर्वावलोकनामधून बाहेर पडा</translation>
 <translation id="175763766237925754">चांगला (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -124,6 +127,7 @@
 <translation id="1999615961760456652">कॅप्टिव्ह पोर्टल</translation>
 <translation id="2006864819935886708">कनेक्टिव्हिटी</translation>
 <translation id="2008685064673031089">प्राइम शोध</translation>
+<translation id="2011174342667534258">SDK आवृत्ती:</translation>
 <translation id="2016697457005847575">ट्रबलशूटिंगच्या पायऱ्या वापरून पहा</translation>
 <translation id="2016848882344942759">--व्हाइट-लेबल नाही--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -155,6 +159,7 @@
 <translation id="225692081236532131">सक्रियन स्थिती</translation>
 <translation id="2271469253353559191">गडद मोडचे शेड्युल</translation>
 <translation id="2275586345903859204">दुरुस्ती पूर्ण झाली आहे</translation>
+<translation id="2276999893457278469">सर्वोत्तम मदत आशय</translation>
 <translation id="2287186687001756809">इमेज उपलब्ध नाही. फोटो जोडण्यासाठी, <ph name="LINK" /> वर जा</translation>
 <translation id="2294753434210277304">डाउनलोड केलेल्या Chromebook Recovery Utility इमेजसह बाह्य स्टोरेज, जसे की USB ड्राइव्ह किंवा SD कार्ड घाला</translation>
 <translation id="2307344026739914387">सध्याचे कीपेअर वापरा</translation>
@@ -176,6 +181,7 @@
 <translation id="2418150275289244458">सेटिंग्जमध्ये उघडा</translation>
 <translation id="2421798028054665193"><ph name="TOTAL_PAGES" /> पैकी <ph name="CURRENT_PAGE" /> ची इमेज</translation>
 <translation id="2446553403094072641">फ्लोटिंग पॉइंटची अचूकता</translation>
+<translation id="2447969267935997922">इंस्टॉल करणे पूर्ण झाले. तुम्ही आता तुमची USB ड्राइव्ह किंवा SD कार्ड काढून टाकू शकता.</translation>
 <translation id="2448312741937722512">प्रकार</translation>
 <translation id="2461822463642141190">सद्य</translation>
 <translation id="2480034874476596812">मॅन्युअली बंद करा</translation>
@@ -187,6 +193,7 @@
 <translation id="2517472476991765520">स्कॅन करा</translation>
 <translation id="2526590354069164005">डेस्कटॉप</translation>
 <translation id="253029298928638905">रीस्टार्ट करत आहे…</translation>
+<translation id="2533048460510040082">सुचवलेला मदत आशय</translation>
 <translation id="2536159006530886390">इंटरनेटशी कनेक्ट करू शकत नाही.</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> चाचणी रन होत आहे...</translation>
 <translation id="2584559707064218956">सेट करण्यासाठी, सेटिंग्ज वर जा</translation>
@@ -213,7 +220,6 @@
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> सेकंदामध्ये <ph name="RATE" /> डिस्चार्ज झाले.</translation>
 <translation id="291142119251986300">अपात्र घटक</translation>
 <translation id="2926057806159140518">तुमचे वापरकर्ता नाव आणि पासवर्ड एंटर करा किंवा तुमचा QR कोड स्कॅन करा</translation>
-<translation id="2928420929544864228">इंस्टॉलेशन पूर्ण झाले.</translation>
 <translation id="3008341117444806826">रिफ्रेश करा</translation>
 <translation id="3009958530611748826">ज्यामध्ये सेव्ह करायचे आहे ते फोल्डर निवडा</translation>
 <translation id="3017079585324758401">बॅकग्राउंड</translation>
@@ -267,6 +273,7 @@
 <translation id="3484914941826596830">फर्मवेअर अपडेट होत असताना, हे बाह्य डिव्हाइस अनप्लग करू नका किंवा तुमचा कॉंप्युटर बंद करू नका. तुम्ही ही विंडो लहान करू शकता. या अपडेटला काही मिनिटे लागू शकतात आणि या कालावधीदरम्यान तुमचे बाह्य डिव्हाइस कदाचित काम करणार नाही.</translation>
 <translation id="3486220673238053218">परिभाषा</translation>
 <translation id="3488065109653206955">आंशिक रूपात सक्रिय </translation>
+<translation id="3492982278147736083">लिड जायरोस्‍कोप</translation>
 <translation id="3517001332549868749">ChromeOS अपडेट</translation>
 <translation id="3527036260304016759">अयशस्वी झाले - अज्ञात एरर</translation>
 <translation id="3532980081107202182">जवळपास <ph name="MIN_REMAINING" /> मिनिटे शिल्‍लक आहेत</translation>
@@ -286,6 +293,7 @@
 <translation id="3621202678540785336">इनपुट</translation>
 <translation id="3632579075709132555">गोपनीयता स्क्रीन टॉगल करा</translation>
 <translation id="3643810137582748570">कॅलिब्रेशन वगळा</translation>
+<translation id="3651050199673793219">तापमान युनिट निवडा</translation>
 <translation id="3678765385266369662">तुम्हाला Write Protect कसे बंद करायचे आहे ते निवडा</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> चाचणी</translation>
 <translation id="370665806235115550">लोड करीत आहे...</translation>
@@ -300,9 +308,12 @@
 <translation id="3820172043799983114">चुकीचे पिन.</translation>
 <translation id="3838338534323494292">नवीन पासवर्ड</translation>
 <translation id="385051799172605136">मागील</translation>
+<translation id="3856304145690230735">बेस जायरोस्‍कोप</translation>
 <translation id="385832974417157471">बंद करण्यापूर्वी तुमचे डिव्हाइस पॉवरवॉश करा. तुमच्या डिव्हाइसला लिड असल्यास, लिड बंद करण्यापूर्वी पॉवरवॉश पूर्ण होईपर्यंत प्रतीक्षा करा. पॉवरवॉश पूर्ण होण्यासाठी कमाल एक मिनिट लागू शकतो.</translation>
 <translation id="3858860766373142691">नाव</translation>
+<translation id="3862598938296403232">वर्णन आवश्यक आहे</translation>
 <translation id="3865414814144988605">रिझोल्युशन</translation>
+<translation id="3866249974567520381">वर्णन</translation>
 <translation id="387301095347517405">तुमची बॅटरी किती वेळा पूर्ण चार्ज झाली त्याची संख्या</translation>
 <translation id="3885327323343477505">स्क्रीन सेव्हर बदला</translation>
 <translation id="3923184630988645767">डेटा वापर</translation>
@@ -370,6 +381,7 @@
 <translation id="4472575034687746823">सुरुवात करा</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4483049906298469269">डीफॉल्ट नसलेला नेटवर्क गेटवे पिंग करता आला नाही</translation>
+<translation id="4500213108254186382">लिड अ‍ॅक्सेलेरोमीटर</translation>
 <translation id="4503223151711056411">लेफ्ट अ‍ॅरो</translation>
 <translation id="4511264077854731334">पोर्टल</translation>
 <translation id="4521826082652183069">विषयाच्या पर्यायी नावाची जुळणी</translation>
@@ -381,6 +393,7 @@
 <translation id="4561801978359312462">सिम अनलॉक केले</translation>
 <translation id="4562494484721939086">सेवा नाही</translation>
 <translation id="4568938274596692027">इंस्टॉल करणे पूर्ण झाले. रीस्टार्ट करण्यासाठी तयार करत आहे…</translation>
+<translation id="4576943788798178439">स्टायलस सपोर्ट</translation>
 <translation id="458794348635939462">सर्व होस्टचे निराकरण करता आले नाही</translation>
 <translation id="4593212453765072419">प्रॉक्सी प्रमाणीकरण आवश्यक</translation>
 <translation id="4609350030397390689">कीबोर्डचा ब्राइटनेस कमी करा</translation>
@@ -429,6 +442,7 @@
 <translation id="4915052247106771211">यामुळे डिव्हाइस फॅक्टरी सेटिंग्जवर रीसेट केले जाईल (Powerwash).</translation>
 <translation id="4917385247580444890">मजबूत</translation>
 <translation id="4917889632206600977">थांबले - कागद संपला आहे</translation>
+<translation id="491791267030419270">फीडबॅक लिहिण्यासाठी टिपा</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> सेकंदांत <ph name="RATE" /> शुल्क आकारले.</translation>
 <translation id="4930320165497208503">कनेक्शन सेट किंवा अपडेट करण्यासाठी, <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> वर जा.</translation>
 <translation id="4932733599132424254">तारीख</translation>
@@ -535,6 +549,7 @@
 <translation id="5866840822086176774">खूप मजबूत</translation>
 <translation id="588258955323874662">क्षेत्रे</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
+<translation id="5898758006340607522">पॉवर बटण</translation>
 <translation id="5901630391730855834">पिवळा</translation>
 <translation id="5903200662178656908">डिव्हाइस हे कीबोर्ड आणि माउस यांचे काँबो आहे.</translation>
 <translation id="5916084858004523819">प्रतिबंधित</translation>
@@ -670,6 +685,7 @@
 <translation id="7143207342074048698">कनेक्ट करत आहे</translation>
 <translation id="7144878232160441200">पुन्हा प्रयत्न करा</translation>
 <translation id="714876143603641390">LAN कनेक्टिव्हिटी</translation>
+<translation id="7154020516215182599">तुमचा फीडबॅक शेअर करा किंवा तुमच्या समस्येचे वर्णन करा. शक्य असल्यास, तुमची समस्या पुन्हा तयार करता येण्यासाठी पायऱ्या समाविष्ट करा.</translation>
 <translation id="7155171745945906037">कॅमेरा किंवा फाईल मधील विद्यमान फोटो</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7170236477717446850">प्रोफाइल फोटो</translation>
@@ -847,6 +863,7 @@
 <translation id="885701979325669005">स्टोरेज</translation>
 <translation id="8863170912498892583">गडद थीम सुरू करा</translation>
 <translation id="8863888432376731307">"<ph name="QUERY" />" आणि आणखी बऱ्याच गोष्टींसाठी <ph name="INTENT" /> मिळवा</translation>
+<translation id="8864415976656252616">कोणताही सुचवलेला आशय नाही. सर्वोत्तम मदत आशय पहा.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">डिव्हाइस हे टॅबलेट आहे.</translation>
 <translation id="8881098542468797602">चाचणी यशस्वी झाली</translation>
@@ -857,6 +874,7 @@
 <translation id="8919792139048574232">कशाचे निराकरण केले आहे ते पहा</translation>
 <translation id="8919837981463578619">अयशस्वी झाले - ट्रे सापडला नाही</translation>
 <translation id="8923267550422472772">रीसेट करण्यासाठी महिन्यातील तारीख</translation>
+<translation id="8925613211674558308">Vpd कॅशे केले</translation>
 <translation id="8928727111548978589">अयशस्वी झाले - कागद संपला आहे</translation>
 <translation id="8930521118335213258">पीअर</translation>
 <translation id="8930622219860340959">बिनतारी</translation>
@@ -898,6 +916,7 @@
 <translation id="922179502584117429"><ph name="VERSION_NUMBER" /> ही सध्याची आवृत्ती कालबाह्य झाली आहे</translation>
 <translation id="932327136139879170">होम</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">अभिप्राय पाठवा</translation>
 <translation id="952992212772159698">सक्रिय नाही</translation>
 <translation id="960719561871045870">ऑपरेटर कोड</translation>
 <translation id="982713511914535780">डिस्चार्ज चाचणी रन करा</translation>

@@ -27,6 +27,7 @@ Il tuo motore di ricerca è <ph name="DSE_NAME" />. Consulta le relative istruzi
 <translation id="1145536944570833626">Elimina i dati esistenti.</translation>
 <translation id="1147031633655575115">Accesso eseguito come <ph name="USER" /></translation>
 <translation id="1154984953698510061">Vedi altre schede</translation>
+<translation id="1161340988127985692">Chiedi di aprire link da altre app in incognito</translation>
 <translation id="1164064664035028907">Usa una password efficace:</translation>
 <translation id="1165039591588034296">Errore</translation>
 <translation id="1172898394251786223">Campo successivo</translation>
@@ -65,6 +66,7 @@ Il tuo motore di ricerca è <ph name="DSE_NAME" />. Consulta le relative istruzi
 <translation id="1434356225517321998">Il tuo browser è gestito. <ph name="BEGIN_LINK" />Dettagli<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Nascondi password</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementi</translation>
+<translation id="1450170672351507823">È attiva la protezione standard. Per una maggiore sicurezza, utilizza la Protezione avanzata.</translation>
 <translation id="149095475893949513">Questo sito web sta cercando di scaricare un profilo di configurazione.</translation>
 <translation id="1491277525950327607">Tocca due volte per attivare/disattivare l'impostazione</translation>
 <translation id="1492417797159476138">Hai già salvato questo nome utente per questo sito</translation>
@@ -162,6 +164,7 @@ Il tuo motore di ricerca è <ph name="DSE_NAME" />. Consulta le relative istruzi
 <translation id="236977714248711277">I siti non possono utilizzare i cookie per migliorare la tua esperienza di navigazione, ad esempio per mantenere l'accesso o memorizzare gli articoli aggiunti al carrello.
 
 I siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su siti diversi, ad esempio per personalizzare gli annunci.</translation>
+<translation id="2375243552872247702">Vedi i contenuti per te</translation>
 <translation id="2381405137052800939">Opzioni di base</translation>
 <translation id="2386793615875593361">Una selezionata</translation>
 <translation id="2421004566762153674">Blocco dei cookie di terze parti</translation>
@@ -290,6 +293,7 @@ Consulta le istruzioni del tuo motore di ricerca per eliminare la tua cronologia
 <translation id="3443810440409579745">Scheda ricevuta.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Visualizzazione divisa</translation>
+<translation id="3450502512529866925">Aggiungi questa pagina ai Preferiti</translation>
 <translation id="345565170154308620">Gestisci password…</translation>
 <translation id="3469166899695866866">Interrompere il download?</translation>
 <translation id="3470502288861289375">Copia...</translation>
@@ -404,6 +408,7 @@ Svolgi i passaggi che seguono:</translation>
 <translation id="4502566650163919158">Controlla ora</translation>
 <translation id="4505980578794259603">Ultima verifica: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Chiudi promo accesso</translation>
+<translation id="4511669830082467224">Cerca immagine con Google</translation>
 <translation id="4526249700380860531">Controlla e gestisci le password salvate all'indirizzo <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Verifica i tuoi dati sincronizzati</translation>
 <translation id="4536418791685807335">Prova ad accedere nuovamente.</translation>
@@ -481,6 +486,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5090832849094901128">L'eliminazione di questa password non comporta l'eliminazione del tuo account su <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Puoi salvare le pagine da leggere in un secondo momento oppure offline. Chrome ti chiederà se vuoi salvare le pagine lunghe.</translation>
 <translation id="5094827893301452931">Tweet completato.</translation>
+<translation id="509789154667432072">Aggiungi un preferito</translation>
 <translation id="5118713593561876160">Interessi</translation>
 <translation id="5118764316110575523">Off</translation>
 <translation id="5127805178023152808">La sincronizzazione è disattivata</translation>
@@ -601,6 +607,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6136914049981179737">Secondi fa</translation>
 <translation id="6144589619057374135">Apri ${url} in incognito</translation>
 <translation id="6149061208933997199">Utilizza password</translation>
+<translation id="6152406514676263192">Sincronizza i contenuti più pertinenti in base ai tuoi interessi.</translation>
 <translation id="6159839020698489198">facoltativo</translation>
 <translation id="6177442314419606057">Cerca in Chrome</translation>
 <translation id="6184086493125982861">Mostra schede</translation>
@@ -738,6 +745,7 @@ Quando navighi in incognito, i siti non possono utilizzare i cookie per conoscer
 <translation id="7099761977003084116">Schede recenti</translation>
 <translation id="7102005569666697658">Download in corso… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Nascondi</translation>
+<translation id="7108762695052995889">Visita sito</translation>
 <translation id="7133798577887235672">Nome e cognome</translation>
 <translation id="7136892417564438900">La videocamera non è disponibile</translation>
 <translation id="7153999225810839758">Minuti di lettura: <ph name="TIME" /></translation>
@@ -748,6 +756,7 @@ Quando navighi in incognito, i siti non possono utilizzare i cookie per conoscer
 <translation id="7189598951263744875">Condividi...</translation>
 <translation id="7192050974311852563">Avvia logging</translation>
 <translation id="7203585745079012652">Pronuncia le risposte</translation>
+<translation id="7207023858769244910">Sincronizza per ricevere contenuti in base ai tuoi interessi.</translation>
 <translation id="7207383424303353046">Novità: apri automaticamente siti in Chrome impostandolo come App browser predefinita. <ph name="BEGIN_LINK" />Apri le Impostazioni<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Nickname carta non valido</translation>
 <translation id="722454870747268814">Nuova scheda in incognito</translation>
@@ -767,6 +776,7 @@ Quando navighi in incognito, i siti non possono utilizzare i cookie per conoscer
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> articoli da leggere.</translation>
 <translation id="7412027924265291969">Continua</translation>
+<translation id="7419565702166471774">Utilizza sempre connessioni sicure</translation>
 <translation id="7425346204213733349">Le modifiche ai preferiti, alla cronologia, alle password e ad altre impostazioni non verranno più sincronizzate con il tuo Account Google. Tuttavia, i dati esistenti rimarranno memorizzati.</translation>
 <translation id="7431991332293347422">Controlla la modalità di utilizzo della cronologia di navigazione per personalizzare la Ricerca e non solo</translation>
 <translation id="7435356471928173109">Disattivata dall'amministratore</translation>
@@ -806,7 +816,6 @@ Quando navighi in incognito, i siti non possono utilizzare i cookie per conoscer
 <translation id="7781069478569868053">Pagina Nuova scheda</translation>
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="778855399387580014">Avvia una ricerca in una nuova scheda di Chrome.</translation>
-<translation id="7790892308048519147">Prova a usare connessioni sicure</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="7807060072011926525">Fornito da Google</translation>
 <translation id="7839985698273989086">Pagina offline</translation>

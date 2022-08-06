@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.chromium.android_webview.js_sandbox.common.IJsSandboxIsolate;
 import org.chromium.android_webview.js_sandbox.common.IJsSandboxService;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -148,7 +149,7 @@ public class AwJsSandbox implements AutoCloseable {
         });
     }
 
-    // We prevent direct initialitations of this class. Use AwJsSandbox.newConnectedInstance().
+    // We prevent direct initializations of this class. Use AwJsSandbox.newConnectedInstance().
     private AwJsSandbox(ConnectionSetup connectionSetup, IJsSandboxService jsSandboxService) {
         mConnection = connectionSetup;
         mJsSandboxService = jsSandboxService;
@@ -172,6 +173,25 @@ public class AwJsSandbox implements AutoCloseable {
                 return new AwJsIsolate(isolateStub, mainExecutor);
             } catch (RemoteException e) {
                 throw e.rethrowAsRuntimeException();
+            }
+        }
+    }
+
+    /**
+     * Quick temporary feature detection interface for testing the IPC.
+     * TODO(crbug.com/1297672): make parameterized and cached.
+     */
+    public boolean isIsolateTerminationSupported() {
+        synchronized (mLock) {
+            if (mJsSandboxService == null) {
+                throw new IllegalStateException(
+                        "Attempting to check features on a service that isn't connected");
+            }
+            try {
+                List<String> features = mJsSandboxService.getSupportedFeatures();
+                return features.contains(IJsSandboxService.ISOLATE_TERMINATION);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
             }
         }
     }

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <linux/videodev2.h>
-
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -15,8 +13,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "media/base/video_types.h"
-#include "media/filters/ivf_parser.h"
 #include "media/gpu/v4l2/test/av1_decoder.h"
 #include "media/gpu/v4l2/test/video_decoder.h"
 #include "media/gpu/v4l2/test/vp9_decoder.h"
@@ -64,23 +60,6 @@ constexpr char kHelpMsg[] =
 
 }  // namespace
 
-// For stateless API, fourcc |VP9F| is needed instead of |VP90| for VP9 codec.
-// Fourcc |AV1F| is needed instead of |AV10| for AV1 codec.
-// https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/pixfmt-compressed.html
-// Converts fourcc |VP90| or |AV01| from file header to fourcc |VP9F| or |AV1F|,
-// which is a format supported on driver.
-uint32_t FileFourccToDriverFourcc(uint32_t header_fourcc) {
-  if (header_fourcc == V4L2_PIX_FMT_VP9) {
-    LOG(INFO) << "OUTPUT format mapped from VP90 to VP9F.";
-    return V4L2_PIX_FMT_VP9_FRAME;
-  } else if (header_fourcc == V4L2_PIX_FMT_AV1) {
-    LOG(INFO) << "OUTPUT format mapped from AV01 to AV1F.";
-    return V4L2_PIX_FMT_AV1_FRAME;
-  }
-
-  return header_fourcc;
-}
-
 // Computes the md5 of given I420 data |yuv_plane| and prints the md5 to stdout.
 // This functionality is needed for tast tests.
 void ComputeAndPrintMd5hash(const std::vector<char>& yuv_plane) {
@@ -95,31 +74,12 @@ std::unique_ptr<VideoDecoder> CreateVideoDecoder(
     const base::MemoryMappedFile& stream) {
   CHECK(stream.IsValid());
 
-  // Set up video parser.
-  auto ivf_parser = std::make_unique<media::IvfParser>();
-  media::IvfFileHeader file_header{};
+  std::unique_ptr<VideoDecoder> decoder = Av1Decoder::Create(stream);
 
-  if (!ivf_parser->Initialize(stream.data(), stream.length(), &file_header)) {
-    LOG(ERROR) << "Couldn't initialize IVF parser";
-    return nullptr;
-  }
+  if (!decoder)
+    decoder = Vp9Decoder::Create(stream);
 
-  // Create appropriate decoder for codec.
-  VLOG(1) << "Creating decoder with codec "
-          << media::FourccToString(file_header.fourcc);
-
-  const auto driver_codec_fourcc = FileFourccToDriverFourcc(file_header.fourcc);
-
-  if (driver_codec_fourcc == V4L2_PIX_FMT_AV1_FRAME) {
-    return Av1Decoder::Create(std::move(ivf_parser), file_header);
-  } else if (driver_codec_fourcc == V4L2_PIX_FMT_VP9_FRAME) {
-    return Vp9Decoder::Create(std::move(ivf_parser), file_header);
-  }
-
-  LOG(ERROR) << "Codec " << media::FourccToString(file_header.fourcc)
-             << " not supported.\n"
-             << kUsageMsg;
-  return nullptr;
+  return decoder;
 }
 
 int main(int argc, char** argv) {

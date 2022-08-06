@@ -224,11 +224,11 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
   //                        bottom viewport alignment
   void ScrollIntoViewBrowserTestTemplate(
       const ax::mojom::Role expected_start_role,
-      BrowserAccessibility* (BrowserAccessibility::*fstart)(uint32_t) const,
-      const uint32_t fstart_arg,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)(size_t) const,
+      const size_t fstart_arg,
       const ax::mojom::Role expected_end_role,
-      BrowserAccessibility* (BrowserAccessibility::*fend)(uint32_t) const,
-      const uint32_t fend_arg,
+      BrowserAccessibility* (BrowserAccessibility::*fend)(size_t) const,
+      const size_t fend_arg,
       const bool align_to_top) {
     BrowserAccessibility* root_browser_accessibility =
         GetRootAndAssertNonNull();
@@ -357,11 +357,11 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
 
   void ScrollIntoViewTopBrowserTestTemplate(
       const ax::mojom::Role expected_role_start,
-      BrowserAccessibility* (BrowserAccessibility::*fstart)(uint32_t) const,
-      const uint32_t fstart_arg,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)(size_t) const,
+      const size_t fstart_arg,
       const ax::mojom::Role expected_role_end,
-      BrowserAccessibility* (BrowserAccessibility::*fend)(uint32_t) const,
-      const uint32_t fend_arg) {
+      BrowserAccessibility* (BrowserAccessibility::*fend)(size_t) const,
+      const size_t fend_arg) {
     ScrollIntoViewBrowserTestTemplate(expected_role_start, fstart, fstart_arg,
                                       expected_role_end, fend, fend_arg, true);
   }
@@ -384,11 +384,11 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
 
   void ScrollIntoViewBottomBrowserTestTemplate(
       const ax::mojom::Role expected_role_start,
-      BrowserAccessibility* (BrowserAccessibility::*fstart)(uint32_t) const,
-      const uint32_t fstart_arg,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)(size_t) const,
+      const size_t fstart_arg,
       const ax::mojom::Role expected_role_end,
-      BrowserAccessibility* (BrowserAccessibility::*fend)(uint32_t) const,
-      const uint32_t fend_arg) {
+      BrowserAccessibility* (BrowserAccessibility::*fend)(size_t) const,
+      const size_t fend_arg) {
     ScrollIntoViewBrowserTestTemplate(expected_role_start, fstart, fstart_arg,
                                       expected_role_end, fend, fend_arg, false);
   }
@@ -2973,6 +2973,99 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       TextUnit_Line,
       "<h1>line one</h1><ul><li>line two</li><li>line three</li></ul>",
       {L"line one", L"• line two", L"• line three"});
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ExpandToLineCrossingBoundary) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          plain text <b>on <i>line</i></b><i><b> one<br>
+          <span>next</span> <span>text</span> </b> on </i>line two<br>
+          line three,
+        </body>
+      </html>)HTML");
+
+  BrowserAccessibility* start_of_second_line =
+      FindNode(ax::mojom::Role::kStaticText, "next");
+  ASSERT_NE(nullptr, start_of_second_line);
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*start_of_second_line, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  // Ensure ExpandToEnclosingUnit by Line both moves the start and end endpoints
+  // appropriately (doesn't move to previous line for start and spans multiple
+  // elements).
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Line);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"next text on line two");
+
+  BrowserAccessibility* text_on_second_line =
+      FindNode(ax::mojom::Role::kStaticText, "next");
+  ASSERT_NE(nullptr, text_on_second_line);
+
+  GetTextRangeProviderFromTextNode(*text_on_second_line, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  // Ensure ExpandToEnclosingUnit by Line moves the start past the anchor
+  // boundary (but not past the start of the line).
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Line);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"next text on line two");
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ExpandToParagraphCrossingBoundary) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          plain text <b>on <i>line</i></b><i><b> one<br>
+          <span>next</span> <span>text</span> </b> on </i>line two<br>
+          line three,
+        </body>
+      </html>)HTML");
+
+  BrowserAccessibility* first_bold_text =
+      FindNode(ax::mojom::Role::kStaticText, "line two");
+  ASSERT_NE(nullptr, first_bold_text);
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*first_bold_text, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  // Ensure ExpandToEnclosingUnit by Line both moves the start and end endpoints
+  // appropriately.
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"next text on line two\n");
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ExpandToPageCrossingBoundary) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          plain text <b>on <i>line</i></b><i><b> one<br>
+          <span>next</span> <span>text</span> </b> on </i>line two<br>
+          line three,
+        </body>
+      </html>)HTML");
+
+  BrowserAccessibility* first_bold_text =
+      FindNode(ax::mojom::Role::kStaticText, "next");
+  ASSERT_NE(nullptr, first_bold_text);
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*first_bold_text, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  // Ensure ExpandToEnclosingUnit by Line both moves the start and end endpoints
+  // appropriately.
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Page);
+  EXPECT_UIA_TEXTRANGE_EQ(
+      text_range_provider,
+      L"plain text on line one\nnext text on line two\nline three,");
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,

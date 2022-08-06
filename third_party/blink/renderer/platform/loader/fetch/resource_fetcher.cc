@@ -604,7 +604,7 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
 
   resource_load_observer_->WillSendRequest(
       request, ResourceResponse() /* redirects */, resource->GetType(),
-      resource->Options(), render_blocking_behavior);
+      resource->Options(), render_blocking_behavior, resource);
   resource_load_observer_->DidReceiveResponse(
       request.InspectorId(), request, resource->GetResponse(), resource,
       ResourceLoadObserver::ResponseSource::kFromMemoryCache);
@@ -1944,8 +1944,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
       auto receiver = Context().TakePendingWorkerTimingReceiver(
           resource->GetResponse().RequestId());
       info->SetWorkerTimingReceiver(std::move(receiver));
-      if (resource->Options().request_initiator_context == kDocumentContext)
-        Context().AddResourceTiming(*info);
+      Context().AddResourceTiming(*info);
     }
   }
 
@@ -2001,8 +2000,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
     PopulateAndAddResourceTimingInfo(resource, info, finish_time);
-    if (resource->Options().request_initiator_context == kDocumentContext)
-      Context().AddResourceTiming(*info);
+    Context().AddResourceTiming(*info);
   }
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
@@ -2073,7 +2071,7 @@ bool ResourceFetcher::StartLoad(
       ResourceResponse response;
       resource_load_observer_->WillSendRequest(
           request, response, resource->GetType(), resource->Options(),
-          render_blocking_behavior);
+          render_blocking_behavior, resource);
     }
 
     using QuotaType = decltype(inflight_keepalive_bytes_);

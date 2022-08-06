@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">Naptár</translation>
 <translation id="1153356358378277386">Párosított eszközök</translation>
 <translation id="1165712434476988950">A frissítés alkalmazásához az eszköz újraindítása szükséges.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Előfordulhat, hogy az USB-C kábellel nem csatlakoztathatók megfelelően a kijelzők</translation>
 <translation id="1175572348579024023">Görgetés</translation>
 <translation id="1178581264944972037">Szünet</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">Legutóbbi alkalmazások</translation>
 <translation id="1252999807265626933">Töltési forrás: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Milyen idő van?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> és 
-        <ph name="END_TIME" /> között, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Válassza ki a Google Naptárban található további részletek megtekintéséhez.</translation>
 <translation id="1267032506238418139">Billentyűparancsot érintő módosítás</translation>
 <translation id="1269405891096105529">A periféria nem támogatott vendég módban</translation>
 <translation id="1270290102613614947">Képernyő-billentyűzet kikapcsolva</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">A Kapcsolóalapú hozzáférés a Beállítások Kisegítő lehetőségek pontjában kapcsolható ki.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> eszköz</translation>
+<translation id="1639239467298939599">Betöltés</translation>
 <translation id="1654477262762802994">Hangalapú lekérdezés indítása</translation>
 <translation id="1668469839109562275">Beépített VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
@@ -239,6 +237,7 @@
 <translation id="2359808026110333948">Tovább</translation>
 <translation id="2367186422933365202">Nem lehet bejelentkezni a Chromebookra</translation>
 <translation id="2369165858548251131">„Helló” kínai nyelven</translation>
+<translation id="2375445874393996153">A Google Segéddel már nem lehetséges a képernyőn látható tartalmak közötti keresés.</translation>
 <translation id="2390318262976603432">Nyelv- és országkód beállításai</translation>
 <translation id="240006516586367791">Médiaelemek vezérlője</translation>
 <translation id="2402411679569069051">A Chromebook zárolásának feloldásához használja ujjlenyomatát, vagy oldja fel telefonja zárolását.</translation>
@@ -506,6 +505,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="3901991538546252627">Csatlakozás a következőhöz: <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Eszköz módosítása az előző verzióra 1 percen belül}other{Eszköz módosítása az előző verzióra # percen belül}}</translation>
 <translation id="3923494859158167397">Nincs beállítva mobilhálózat</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, események betöltése…</translation>
 <translation id="3932043219784172185">Nincs csatlakoztatott eszköz</translation>
 <translation id="3934456833412894880">Az adaptív töltés be van kapcsolva. Az akkumulátor töltöttségi szintje 80%-on marad az akkumulátor-élettartam növelése érdekében, és teljesen feltöltődik, ha szükséges.</translation>
 <translation id="3943857333388298514">Beillesztés</translation>
@@ -705,6 +705,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5078796286268621944">Helytelen PIN-kód</translation>
 <translation id="5083553833479578423">Hozzáférés a Segéd további funkcióihoz</translation>
 <translation id="509790653408515442">Telefonja alkalmazásai itt jelennek majd meg streameléskor</translation>
+<translation id="5098537242461068432">Asztal és ablakok újra megnyitva</translation>
 <translation id="5107522548814527560">Internet</translation>
 <translation id="5117590920725113268">A következő hónap megjelenítése</translation>
 <translation id="5136175204352732067">Új billentyűzet lett csatlakoztatva</translation>
@@ -1049,7 +1050,6 @@ Frissen telepítve</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Visszaállítás a régi felbontásra <ph name="TIMEOUT_SECONDS" /> mp múlva</translation>
 <translation id="7180611975245234373">Frissítés</translation>
-<translation id="718361511487535372">Megnyitás a Google Naptárban</translation>
 <translation id="7188494361780961876">A menü a képernyő bal felső sarkába került.</translation>
 <translation id="7189412385142492784">Milyen messze van a Vénusz?</translation>
 <translation id="7198435252016571249">Kamera a jobb alsó sarokhoz igazítva. Ütközés a rendszerfelülettel.</translation>
@@ -1058,6 +1058,10 @@ Frissen telepítve</translation>
 <translation id="7258828758145722155">Tegnap szerkesztette</translation>
 <translation id="726276584504105859">Húzza ide az osztott képernyő használatához</translation>
 <translation id="7262906531272962081">Emlékeztető létrehozása</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> –
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Válassza ki a Google Naptárban található további részletek megtekintéséhez.</translation>
 <translation id="7302889331339392448">Az Élő feliratozás ki van kapcsolva.</translation>
 <translation id="7303365578352795231">Válasz másik eszközön.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1170,6 +1174,7 @@ Frissen telepítve</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">A beszéd feldolgozása helyben történik, a diktálás pedig offline működik.</translation>
+<translation id="7932451802722951285">Megnyitás a Google Naptárban</translation>
 <translation id="7933084174919150729">A Google Segéd csak az elsődleges profilhoz áll rendelkezésre.</translation>
 <translation id="79341161159229895">A fiókot a(z) <ph name="FIRST_PARENT_EMAIL" /> és a(z) <ph name="SECOND_PARENT_EMAIL" /> kezeli</translation>
 <translation id="793716872548410480">Nyomja le a(z) <ph name="SHORTCUT_KEY_NAME" /> + V billentyűkombinációt a vágólap megtekintéséhez. A rendszer az utoljára másolt öt elemet menti a vágólapra.</translation>

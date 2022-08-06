@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">ລຶບຂໍ້ມູນທີ່ມີຢູ່.</translation>
 <translation id="1147031633655575115">ເຂົ້າສູ່ລະບົບເປັນ <ph name="USER" /></translation>
 <translation id="1154984953698510061">ເບິ່ງແຖບອື່ນ</translation>
+<translation id="1161340988127985692">ຖາມເພື່ອເປີດລິ້ງຈາກແອັບອື່ນໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="1164064664035028907">ໃຊ້ລະຫັດຜ່ານຍາກ:</translation>
 <translation id="1165039591588034296">ຜິດພາດ</translation>
 <translation id="1172898394251786223">ຫ້ອງ​ໃສ່​ຂໍ້​ມູນ​ຕໍ່​ໄປ</translation>
@@ -163,6 +164,7 @@
 <translation id="236977714248711277">ເວັບໄຊສາມາດໃຊ້ຄຸກກີ້ເພື່ອປັບປຸງປະສົບການທ່ອງເວັບຂອງທ່ານ, ຕົວຢ່າງ: ເພື່ອໃຫ້ທ່ານສືບຕໍ່ຢູ່ໃນລະບົບ ຫຼື ຈື່ລາຍການຕ່າງໆໃນກະຕ່າຊື້ເຄື່ອງຂອງທ່ານ.
 
 ເວັບໄຊບໍ່ສາມາດໃຊ້ຄຸກກີ້ເພື່ອເບິ່ງການເຄື່ອນໄຫວທ່ອງເວັບຂອງທ່ານໃນທົ່ວເວັບໄຊຕ່າງໆ, ຕົວຢ່າງ: ເພື່ອປັບແຕ່ງໂຄສະນາໃຫ້ເປັນແບບສ່ວນຕົວໄດ້.</translation>
+<translation id="2375243552872247702">ເບິ່ງເນື້ອຫາສຳລັບທ່ານ</translation>
 <translation id="2381405137052800939">ພື້ນ​ຖານ</translation>
 <translation id="2386793615875593361">1 ຖືກເລືອກແລ້ວ</translation>
 <translation id="2421004566762153674">ການບລັອກຄຸກກີ້ພາກສ່ວນທີສາມ</translation>
@@ -291,6 +293,7 @@
 <translation id="3443810440409579745">ແຖບທີ່ໄດ້ຮັບ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ນາທີ</translation>
 <translation id="3448016392200048164">ມຸມມອງແຍກກັນ</translation>
+<translation id="3450502512529866925">ບຸກມາກໜ້ານີ້</translation>
 <translation id="345565170154308620">ຈັດການລະຫັດຜ່ານ...</translation>
 <translation id="3469166899695866866">ຢຸດການດາວໂຫຼດບໍ?</translation>
 <translation id="3470502288861289375">ກໍາລັງກັອບປີ້...</translation>
@@ -405,6 +408,7 @@
 <translation id="4502566650163919158">ກວດເບິ່ງດຽວນີ້</translation>
 <translation id="4505980578794259603">ກວດສອບຫຼ້າສຸດເມື່ອ <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">ປິດໂປຣໂມການເຂົ້າສູ່ລະບົບ</translation>
+<translation id="4511669830082467224">ຊອກຫາຮູບດ້ວຍ Google</translation>
 <translation id="4526249700380860531">ເບິ່ງ ແລະ​ຈັດ​ການ​ລະ​ຫັດ​ຜ່ານ​ໄດ້​ຢູ່​ທີ່ <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">ກວດເບິ່ງຂໍ້ມູນທີ່ຊິ້ງຂອງທ່ານ</translation>
 <translation id="4536418791685807335">ລອງເຂົ້າສູ່ລະບົບອີກຄັ້ງ.</translation>
@@ -482,6 +486,7 @@
 <translation id="5090832849094901128">ການລຶບລະຫັດຜ່ານນີ້ຈະບໍ່ລຶບບັນຊີຂອງທ່ານໃນ <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">ທ່ານສາມາດບັນທຶກໜ້າຕ່າງໆໄວ້ອ່ານໃນພາຍຫຼັງ ຫຼື ອ່ານອອບລາຍໄດ້. Chrome ຈະຖາມວ່າທ່ານຕ້ອງການບັນທຶກໜ້າເວັບແບບຍາວບໍ່.</translation>
 <translation id="5094827893301452931">Tweet ສໍາ​ເລັດ​.</translation>
+<translation id="509789154667432072">ເພີ່ມບຸກມາກ</translation>
 <translation id="5118713593561876160">ຄວາມສົນໃຈ</translation>
 <translation id="5118764316110575523">ປິດ</translation>
 <translation id="5127805178023152808">ຊິງ​ຄ໌​ປິດ</translation>
@@ -602,6 +607,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="6136914049981179737">ວິ​ນາ​ທີ​ກ່ອນ​​ນີ້</translation>
 <translation id="6144589619057374135">ເປີດ ${url} ໃນໂໝດທີ່ບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="6149061208933997199">ໃຊ້​ລະ​ຫັດ​ຜ່ານ</translation>
+<translation id="6152406514676263192">ຊິ້ງຂໍ້ມູນສຳລັບເນື້ອຫາທີ່ກ່ຽວຂ້ອງທີ່ສຸດໂດຍອ້າງອີງໃສ່ຄວາມສົນໃຈຂອງທ່ານ.</translation>
 <translation id="6159839020698489198">ບໍ່ບັງຄັບ</translation>
 <translation id="6177442314419606057">ຊອກຫາໃນ Chrome</translation>
 <translation id="6184086493125982861">ສະ​ແດງ​ແຖບ</translation>
@@ -739,6 +745,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7099761977003084116">ແຖບຫຼ້າສຸດ</translation>
 <translation id="7102005569666697658">ກຳລັງດາວໂຫຼດ… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">ເຊື່ອງ</translation>
+<translation id="7108762695052995889">ເຂົ້າເບິ່ງເວັບໄຊ</translation>
 <translation id="7133798577887235672">ຊື່​ເຕັມ</translation>
 <translation id="7136892417564438900">ກ້ອງຖ່າຍຮູບບໍ່ສາມາດໃຊ້ໄດ້</translation>
 <translation id="7153999225810839758">ອ່ານ <ph name="TIME" /> ນາທີ</translation>
@@ -749,6 +756,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7189598951263744875">ແບ່ງປັນ...</translation>
 <translation id="7192050974311852563">ເລີ່ມການບັນທຶກ</translation>
 <translation id="7203585745079012652">ເວົ້າ​ຄຳ​ຕອບ​ກັບ​ຄືນ</translation>
+<translation id="7207023858769244910">ຊິ້ງຂໍ້ມູນເພື່ອຮັບເນື້ອຫາໂດຍອ້າງອີງໃສ່ຄວາມສົນໃຈຂອງທ່ານ.</translation>
 <translation id="7207383424303353046">ໃໝ່: ເປີດເວັບໄຊໃນ Chrome ໂດຍອັດຕະໂນມັດໂດຍການເຮັດໃຫ້ມັນເປັນແອັບໂປຣແກຣມທ່ອງເວັບເລີ່ມຕົ້ນຂອງທ່ານ. <ph name="BEGIN_LINK" />ເປີດການຕັ້ງຄ່າ<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">ຊື່ຫຼິ້ນບັດບໍ່ຖືກຕ້ອງ</translation>
 <translation id="722454870747268814">ແຖບທີ່ບໍ່ເຜີຍຕົວຕົນໃໝ່</translation>
@@ -768,6 +776,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> ບົດຄວາມທີ່ຍັງບໍ່ໄດ້ອ່ານ.</translation>
 <translation id="7412027924265291969">ສືບຕໍ່</translation>
+<translation id="7419565702166471774">ໃຊ້ການເຊື່ອມຕໍ່ທີ່ປອດໄພທຸກເທື່ອ</translation>
 <translation id="7425346204213733349">ການປ່ຽນແປງຕໍ່ກັບບຸກມາກ, ປະຫວັດ, ລະຫັດຜ່ານ ແລະ ການຕັ້ງຄ່າອື່ນຂອງທ່ານຈະບໍ່ຖືກຊິ້ງກັບບັນຊີ Google ຂອງທ່ານອີກຕໍ່ໄປ. ແນວໃດກໍຕາມ, ຂໍ້ມູນທີ່ມີຢູ່ຂອງທ່ານຈະຍັງຄົງເກັບຮັກສາໄວ້ໃນບັນຊີ Google ຂອງທ່ານ.</translation>
 <translation id="7431991332293347422">ຄວບຄຸມວ່າຈະໃຫ້ໃຊ້ປະຫວັດການທ່ອງເວັບຂອງທ່ານແນວໃດເພື່ອປັບແຕ່ງການຊອກຫາ ແລະ ອື່ນໆອີກໃຫ້ເປັນແບບສ່ວນຕົວ</translation>
 <translation id="7435356471928173109">ປິດໄວ້ໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ</translation>
@@ -807,7 +816,6 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7781069478569868053">ໜ້າແຖບໃໝ່</translation>
 <translation id="7781829728241885113">ມື້​ວານ​ນີ້</translation>
 <translation id="778855399387580014">ເລີ່ມການຊອກຫາໃນແຖບ Chrome ໃໝ່.</translation>
-<translation id="7790892308048519147">ໃຫ້ລອງໃຊ້ການເຊື່ອມຕໍ່ທີ່ປອດໄພ</translation>
 <translation id="7791543448312431591">ເພີ່ມ</translation>
 <translation id="7807060072011926525">ສະໜອງໃຫ້ໂດຍ Google</translation>
 <translation id="7839985698273989086">ໜ້າອອບລາຍ</translation>

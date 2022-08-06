@@ -320,6 +320,18 @@
       },
     },
 
+    'ash_pixel_gtests': {
+      'ash_pixeltests': {
+         'args': [
+          '--enable-pixel-output-in-tests',
+        ],
+        'experiment_percentage': 100,
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
+    },
+
     'aura_gtests': {
       'aura_unittests': {},
       'compositor_unittests': {},
@@ -982,6 +994,11 @@
           'nougat-x86-emulator',
         ],
       },
+      'build_junit_tests':{
+        'remove_mixins': [
+          'nougat-x86-emulator',
+        ],
+      },
       'chrome_java_test_pagecontroller_junit_tests': {
         'remove_mixins': [
           'nougat-x86-emulator',
@@ -1003,11 +1020,6 @@
         ],
       },
       'device_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-      },
-      'incremental_javac_junit_tests':{
         'remove_mixins': [
           'nougat-x86-emulator',
         ],
@@ -3909,6 +3921,16 @@
       },
     },
 
+    'lacros_skylab_amd64_fyi': {
+      'lacros_fyi_tast_tests': {
+        'tast_expr': '("group:mainline" && "dep:lacros" && !informational || "name:lacros.VariationSmoke")',
+        'timeout_sec': 10800,
+      },
+      'ozone_unittests': {
+        'timeout_sec': 3600,
+      },
+    },
+
     # TODO(crbug.com/1283076): ozone_unittests and viz_unittests have failures
     # remove the filter when the tests are shown to be stable in
     # lacros-arm-generic-chrome-fyi
@@ -4539,45 +4561,6 @@
       },
     },
 
-    'rendering_desktop_representative_perf_tests_isolated_scripts': {
-      'rendering_representative_perf_tests': {
-        'isolate_name': 'rendering_representative_perf_tests',
-        'args': [
-          "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop",
-        ],
-        'check_flakiness_for_new_tests': False,
-        'swarming': {},
-      }
-    },
-
-    'rendering_mobile_representative_perf_tests_isolated_scripts': {
-      'rendering_representative_perf_tests': {
-        'isolate_name': 'rendering_representative_perf_tests_android_chrome',
-        'args': [
-          "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.mobile",
-          "--browser=android-chromium"
-        ],
-        'check_flakiness_for_new_tests': False,
-        'swarming': {},
-      }
-    },
-
-    'rendering_mobile_representative_perf_tests_isolated_scripts_experimental': {
-      'rendering_representative_perf_tests': {
-        'isolate_name': 'rendering_representative_perf_tests_android_chrome',
-        'args': [
-          "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.mobile",
-          "--browser=android-chromium"
-        ],
-        'check_flakiness_for_new_tests': False,
-        'swarming': {},
-        'experiment_percentage': 10,
-      }
-    },
-
     'rust_gtests': {
       'base_unittests': {},
       'rust_gtest_interop_unittests': {},
@@ -5194,7 +5177,7 @@
       },
     },
 
-    'webrtc_chromium_baremetal_browser_gtests': {
+    'webrtc_chromium_baremetal_gtests': {
       'browser_tests': {
         'args': [
           '--gtest_filter=WebRtcStatsPerfBrowserTest.*:'
@@ -5215,9 +5198,6 @@
           'r_webrtc_git': '${webrtc_got_rev}'
         },
       },
-    },
-
-    'webrtc_chromium_baremetal_capture_gtests_linux': {
       # Run capture unittests as well since our bots have real webcams.
       'capture_unittests': {
         'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
@@ -5225,42 +5205,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'builder': 'WebRTC Chromium Linux Tester',
-              'pool': 'luci.chromium.webrtc',
-            }
-          ],
-        },
-      },
-    },
-
-    'webrtc_chromium_baremetal_capture_gtests_mac': {
-      # Run capture unittests as well since our bots have real webcams.
-      'capture_unittests': {
-        'remove_mixins': ['mac_x64'],
-        'mixins': ['mac_11_or_12_x64'],
-        'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
-                 '--test-launcher-print-test-stdio=always'],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'builder': 'WebRTC Chromium Mac Tester',
-              'pool': 'luci.chromium.webrtc',
-            }
-          ],
-        },
-      },
-    },
-
-    'webrtc_chromium_baremetal_capture_gtests_win': {
-      # Run capture unittests as well since our bots have real webcams.
-      'capture_unittests': {
-        'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
-                 '--test-launcher-print-test-stdio=always'],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'builder': 'WebRTC Chromium Win10 Tester',
-              'pool': 'luci.chromium.webrtc',
+              'pool': 'WebRTC-chromium',
             }
           ],
         },
@@ -6291,10 +6236,6 @@
       'gpu_desktop_specific_gtests',
     ],
 
-    'gpu_desktop_representative_perf_fyi_isolated_scripts': [
-      'rendering_desktop_representative_perf_tests_isolated_scripts',
-    ],
-
     'gpu_fuchsia_telemetry_experimental_tests': [
       'gpu_fuchsia_common_telemetry_tests',
       'gpu_mediapipe_validating_telemetry_tests',
@@ -6521,9 +6462,8 @@
       'gpu_win_intel_specific_telemetry_tests',
     ],
 
-    'gpu_fyi_win_optional_and_representative_perf_isolated_scripts': [
+    'gpu_fyi_win_optional_isolated_scripts': [
       'gpu_command_buffer_perf_passthrough_isolated_scripts',
-      'rendering_desktop_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_fyi_win_release_telemetry_tests': [
@@ -6534,10 +6474,6 @@
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
-    ],
-
-    'gpu_mobile_representative_perf_fyi_isolated_scripts': [
-      'rendering_mobile_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_nexus5x_telemetry_tests': [
@@ -6641,6 +6577,7 @@
       'linux_chromeos_browser_tests_require_lacros',
       'linux_flavor_specific_chromium_gtests',
       'non_android_chromium_gtests',
+      'ash_pixel_gtests',
     ],
 
     'linux_viz_gtests': [
@@ -6693,25 +6630,8 @@
       'webrtc_chromium_simple_gtests',
     ],
 
-    'webrtc_chromium_tests_with_baremetal_tests_linux': [
-      'webrtc_chromium_baremetal_capture_gtests_linux',
-      'webrtc_chromium_baremetal_browser_gtests',
-      'webrtc_chromium_gtests',
-      'webrtc_chromium_simple_baremetal_gtests',
-      'webrtc_chromium_simple_gtests',
-    ],
-
-    'webrtc_chromium_tests_with_baremetal_tests_mac': [
-      'webrtc_chromium_baremetal_capture_gtests_mac',
-      'webrtc_chromium_baremetal_browser_gtests',
-      'webrtc_chromium_gtests',
-      'webrtc_chromium_simple_baremetal_gtests',
-      'webrtc_chromium_simple_gtests',
-    ],
-
-    'webrtc_chromium_tests_with_baremetal_tests_win': [
-      'webrtc_chromium_baremetal_capture_gtests_win',
-      'webrtc_chromium_baremetal_browser_gtests',
+    'webrtc_chromium_tests_with_baremetal_tests': [
+      'webrtc_chromium_baremetal_gtests',
       'webrtc_chromium_gtests',
       'webrtc_chromium_simple_baremetal_gtests',
       'webrtc_chromium_simple_gtests',
@@ -7428,7 +7348,7 @@
     },
 
     'lacros_skylab_tests_amd64_generic_fyi': {
-      'lacros_skylab_poc': {
+      'lacros_skylab_amd64_fyi': {
         'variants': [
           'CROS_OCTOPUS_RELEASE_LKGM',
           'CROS_OCTOPUS_RELEASE_DEV',
@@ -7488,31 +7408,31 @@
     'linux_optional_gpu_tests_rel_gpu_telemetry_tests': {
       'gpu_common_and_optional_telemetry_tests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webcodecs_telemetry_test': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },
@@ -7521,7 +7441,7 @@
     'linux_optional_gpu_tests_rel_gtests': {
       'gpu_gles2_conform_gtests': {
         'variants': [
-          'LINUX_INTEL_HD_630_STABLE',
+          'LINUX_INTEL_UHD_630_STABLE',
           'LINUX_NVIDIA_GTX_1660_STABLE',
         ],
       },

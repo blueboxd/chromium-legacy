@@ -71,13 +71,15 @@ class MockJsFlowExecutorImplDelegate : public JsFlowExecutorImpl::Delegate {
       (override));
 };
 
-class JsFlowExecutorImplTest : public BaseBrowserTest {
+class JsFlowExecutorImplBrowserTest : public BaseBrowserTest {
  public:
   void SetUpOnMainThread() override {
     BaseBrowserTest::SetUpOnMainThread();
 
+    js_flow_devtools_wrapper_ =
+        std::make_unique<JsFlowDevtoolsWrapper>(shell()->web_contents());
     flow_executor_ = std::make_unique<JsFlowExecutorImpl>(
-        shell()->web_contents(), &mock_delegate_);
+        &mock_delegate_, js_flow_devtools_wrapper_.get());
   }
 
   // Overload, ignore result value, just return the client status.
@@ -92,7 +94,7 @@ class JsFlowExecutorImplTest : public BaseBrowserTest {
     base::RunLoop run_loop;
 
     flow_executor_->Start(
-        js_flow, base::BindOnce(&JsFlowExecutorImplTest::OnFlowFinished,
+        js_flow, base::BindOnce(&JsFlowExecutorImplBrowserTest::OnFlowFinished,
                                 base::Unretained(this), run_loop.QuitClosure(),
                                 &status, std::ref(result_value)));
     run_loop.Run();
@@ -111,20 +113,23 @@ class JsFlowExecutorImplTest : public BaseBrowserTest {
 
  protected:
   NiceMock<MockJsFlowExecutorImplDelegate> mock_delegate_;
+
   std::unique_ptr<JsFlowExecutorImpl> flow_executor_;
+  std::unique_ptr<JsFlowDevtoolsWrapper> js_flow_devtools_wrapper_;
 };
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, SmokeTest) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest, SmokeTest) {
   EXPECT_THAT(RunTest(std::string()),
               Property(&ClientStatus::proto_status, ACTION_APPLIED));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, InvalidJs) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest, InvalidJs) {
   EXPECT_THAT(RunTest("Not valid Javascript"),
               Property(&ClientStatus::proto_status, UNEXPECTED_JS_ERROR));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionWithReturnValue) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
+                       RunNativeActionWithReturnValue) {
   std::unique_ptr<base::Value> native_return_value =
       std::make_unique<base::Value>(std::move(*base::JSONReader::Read(
           R"(
@@ -184,7 +189,8 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionWithReturnValue) {
     )"));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionAsBase64String) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
+                       RunNativeActionAsBase64String) {
   EXPECT_CALL(mock_delegate_, RunNativeAction)
       .WillOnce([&](int action_id, const std::string& action, auto callback) {
         EXPECT_EQ(12, action_id);
@@ -193,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionAsBase64String) {
       });
 
   std::unique_ptr<base::Value> result;
-  EXPECT_THAT(RunTest(R"(
+  ASSERT_THAT(RunTest(R"(
       let [status, value] = await runNativeAction(12, "dGVzdA==" /*test*/);
       return status;
   )",
@@ -203,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionAsBase64String) {
   EXPECT_EQ(*result, base::Value(2));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
                        RunNativeActionAsSerializedProto) {
   EXPECT_CALL(mock_delegate_, RunNativeAction)
       .WillOnce([&](int action_id, const std::string& action, auto callback) {
@@ -215,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
       });
 
   std::unique_ptr<base::Value> result;
-  EXPECT_THAT(RunTest(R"(
+  ASSERT_THAT(RunTest(R"(
       let [status, value] = await runNativeAction(
           11, ["aa.msg", "my message"]);
       return status;
@@ -225,7 +231,8 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
   EXPECT_EQ(*result, base::Value(2));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunMultipleNativeActions) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
+                       RunMultipleNativeActions) {
   EXPECT_CALL(mock_delegate_, RunNativeAction)
       .WillOnce([&](int action_id, const std::string& action, auto callback) {
         EXPECT_EQ(1, action_id);
@@ -242,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunMultipleNativeActions) {
   // completed successfully, but the return value should hold
   // OTHER_ACTION_STATUS, i.e., 3.
   std::unique_ptr<base::Value> result;
-  EXPECT_THAT(RunTest(R"(
+  ASSERT_THAT(RunTest(R"(
                         let [status, value] = await runNativeAction(
                             1, "dGVzdDE=" /*test1*/);
                         if (status == 2) { // ACTION_APPLIED
@@ -257,14 +264,14 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunMultipleNativeActions) {
   EXPECT_EQ(*result, base::Value(3));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturnInteger) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest, ReturnInteger) {
   std::unique_ptr<base::Value> result;
   ClientStatus status = RunTest("return 12345;", result);
-  EXPECT_EQ(status.proto_status(), ACTION_APPLIED);
+  ASSERT_EQ(status.proto_status(), ACTION_APPLIED);
   EXPECT_EQ(*result, base::Value(12345));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturningStringFails) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest, ReturningStringFails) {
   // Return value checking is more comprehensively tested in
   // js_flow_util::ContainsOnlyAllowedValues. This test is just to ensure that
   // that util is actually used for JS flow return values.
@@ -274,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturningStringFails) {
   EXPECT_THAT(result, Eq(nullptr));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturnDictionary) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest, ReturnDictionary) {
   std::unique_ptr<base::Value> result;
   ClientStatus status = RunTest(
       R"(
@@ -289,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturnDictionary) {
           };
         )",
       result);
-  EXPECT_EQ(status.proto_status(), ACTION_APPLIED);
+  ASSERT_EQ(status.proto_status(), ACTION_APPLIED);
   EXPECT_EQ(*result, *base::JSONReader::Read(R"(
       {
         "keyA":12345,
@@ -303,14 +310,15 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturnDictionary) {
     )"));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturnNothing) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest, ReturnNothing) {
   std::unique_ptr<base::Value> result;
   ClientStatus status = RunTest("", result);
   EXPECT_EQ(status.proto_status(), ACTION_APPLIED);
   EXPECT_THAT(result, Eq(nullptr));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturnNonJsonObjectFails) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
+                       ReturnNonJsonObjectFails) {
   std::unique_ptr<base::Value> result;
   ClientStatus status = RunTest(R"(
     function test() {
@@ -323,14 +331,14 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturnNonJsonObjectFails) {
   EXPECT_THAT(result, Eq(nullptr));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ReturnNull) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest, ReturnNull) {
   std::unique_ptr<base::Value> result;
   ClientStatus status = RunTest("return null;", result);
-  EXPECT_EQ(status.proto_status(), ACTION_APPLIED);
+  ASSERT_EQ(status.proto_status(), ACTION_APPLIED);
   EXPECT_EQ(*result, *base::JSONReader::Read("null"));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ExceptionReporting) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest, ExceptionReporting) {
   std::unique_ptr<base::Value> result;
   ClientStatus status = RunTest("notdefined;", result);
   EXPECT_EQ(status.proto_status(), UNEXPECTED_JS_ERROR);
@@ -346,17 +354,18 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, ExceptionReporting) {
       ElementsAre(0));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunMultipleConsecutiveFlows) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
+                       RunMultipleConsecutiveFlows) {
   for (int i = 0; i < 10; ++i) {
     std::unique_ptr<base::Value> result;
     ClientStatus status =
         RunTest(base::StrCat({"return ", base::NumberToString(i)}), result);
-    EXPECT_EQ(status.proto_status(), ACTION_APPLIED);
+    ASSERT_EQ(status.proto_status(), ACTION_APPLIED);
     EXPECT_EQ(*result, base::Value(i));
   }
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
                        UnserializableRunNativeActionString) {
   std::unique_ptr<base::Value> result;
   EXPECT_CALL(mock_delegate_, RunNativeAction).Times(0);
@@ -371,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
   EXPECT_EQ(status.proto_status(), INVALID_ACTION);
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
                        UnserializableRunNativeActionId) {
   std::unique_ptr<base::Value> result;
   EXPECT_CALL(mock_delegate_, RunNativeAction).Times(0);
@@ -386,7 +395,8 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
   EXPECT_EQ(status.proto_status(), INVALID_ACTION);
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, StartWhileAlreadyRunningFails) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
+                       StartWhileAlreadyRunningFails) {
   EXPECT_CALL(mock_delegate_, RunNativeAction)
       .WillOnce(WithArg<2>([&](auto callback) {
         // Starting a second flow while the first one is running should fail.
@@ -403,18 +413,31 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, StartWhileAlreadyRunningFails) {
       return status;
       )",
       result);
-  EXPECT_EQ(status.proto_status(), ACTION_APPLIED);
+  ASSERT_EQ(status.proto_status(), ACTION_APPLIED);
   EXPECT_EQ(*result, base::Value(2));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
                        EnvironmentIsPreservedBetweenRuns) {
   EXPECT_EQ(RunTest("globalFlowState.i = 5;").proto_status(), ACTION_APPLIED);
 
   std::unique_ptr<base::Value> result;
-  EXPECT_EQ(RunTest("return globalFlowState.i;", result).proto_status(),
+  ASSERT_EQ(RunTest("return globalFlowState.i;", result).proto_status(),
             ACTION_APPLIED);
   EXPECT_EQ(*result, base::Value(5));
+}
+
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplBrowserTest,
+                       JsFlowLibraryIsAvailable) {
+  js_flow_devtools_wrapper_->SetJsFlowLibrary("const status = 2;");
+
+  std::unique_ptr<base::Value> result;
+  ASSERT_THAT(RunTest(R"(
+      return status;
+  )",
+                      result),
+              Property(&ClientStatus::proto_status, ACTION_APPLIED));
+  EXPECT_EQ(*result, base::Value(2));
 }
 
 }  // namespace

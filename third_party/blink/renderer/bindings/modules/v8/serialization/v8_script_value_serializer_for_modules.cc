@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/serialized_track_params.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/web_crypto_sub_tags.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_crop_target.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_dom_file_system.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_directory_handle.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_file_handle.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_landmark.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_source_handle.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_point_2d.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_certificate.h"
@@ -31,6 +33,10 @@
 #include "third_party/blink/renderer/modules/crypto/crypto_key.h"
 #include "third_party/blink/renderer/modules/file_system_access/file_system_handle.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_attachment_supplement.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_handle_attachment.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_handle_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/crop_target.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame.h"
@@ -238,6 +244,35 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return WriteMediaStreamTrack(wrappable->ToImpl<MediaStreamTrack>(),
                                  exception_state);
   }
+  if (wrapper_type_info == V8CropTarget::GetWrapperTypeInfo() &&
+      RuntimeEnabledFeatures::RegionCaptureEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    if (IsForStorage()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "A CropTarget cannot be serialized for storage.");
+      return false;
+    }
+
+    return WriteCropTarget(wrappable->ToImpl<CropTarget>());
+  }
+
+  if (wrapper_type_info == V8MediaSourceHandle::GetWrapperTypeInfo() &&
+      RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(
+          ExecutionContext::From(GetScriptState())) &&
+      RuntimeEnabledFeatures::MediaSourceInWorkersUsingHandleEnabled(
+          ExecutionContext::From(GetScriptState()))) {
+    if (IsForStorage()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "A MediaSourceHandle cannot be serialized for storage.");
+      return false;
+    }
+
+    return WriteMediaSourceHandle(wrappable->ToImpl<MediaSourceHandleImpl>(),
+                                  exception_state);
+  }
+
   return false;
 }
 
@@ -523,6 +558,59 @@ bool V8ScriptValueSerializerForModules::WriteMediaStreamTrack(
   WriteUint32Enum(SerializeContentHint(track->Component()->ContentHint()));
   WriteUint32Enum(
       SerializeReadyState(track->Component()->Source()->GetReadyState()));
+  return true;
+}
+
+bool V8ScriptValueSerializerForModules::WriteCropTarget(
+    CropTarget* crop_target) {
+  WriteTag(kCropTargetTag);
+  WriteUTF8String(crop_target->GetCropId());
+  return true;
+}
+
+bool V8ScriptValueSerializerForModules::WriteMediaSourceHandle(
+    MediaSourceHandleImpl* handle,
+    ExceptionState& exception_state) {
+  if (handle->is_serialized()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataCloneError,
+        "MediaSourceHandle is already serialized.");
+    return false;
+  }
+
+  if (handle->is_used()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                      "MediaSourceHandle has been used as "
+                                      "srcObject of media element already.");
+    return false;
+  }
+
+  // The collection of handle-attachment involved in serialization.
+  auto* attachment = GetSerializedScriptValue()
+                         ->GetOrCreateAttachment<MediaSourceHandleAttachment>();
+
+  // The collection of underlying scoped_refptr<MediaSourceAttachmentProvider>
+  // and internal object URLs involved in serialization. Each is the internal
+  // state of a MediaSourceHandleImpl. Add the internal state of |handle| to it
+  // and serialize it using the index of that state in the vector.
+  auto& attachments = attachment->Attachments();
+
+  scoped_refptr<HandleAttachmentProvider> media_source_attachment_provider =
+      handle->TakeAttachmentProvider();
+  // The two handle checks, above, (!is_serialized() and !is_used()) should
+  // prevent us from ever having a missing |media_source_attachment_provider|
+  // here.
+  DCHECK(media_source_attachment_provider);
+
+  attachments.push_back(MediaSourceHandleAttachment::HandleInternals{
+      .attachment_provider = std::move(media_source_attachment_provider),
+      .internal_blob_url = handle->GetInternalBlobURL()});
+  handle->mark_serialized();
+  const uint32_t index = static_cast<uint32_t>(attachments.size() - 1);
+
+  WriteTag(kMediaSourceHandleTag);
+  WriteUint32(index);
+
   return true;
 }
 

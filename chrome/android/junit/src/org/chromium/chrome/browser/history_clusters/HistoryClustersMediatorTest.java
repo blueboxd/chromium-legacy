@@ -16,7 +16,11 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,11 +37,10 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Function;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Promise;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.history_clusters.HistoryCluster.MatchPosition;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersItemProperties.ItemType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.favicon.LargeIconBridge;
@@ -83,8 +86,6 @@ public class HistoryClustersMediatorTest {
     @Mock
     private GURL mMockGurl;
     @Mock
-    private Function<GURL, Intent> mUrlIntentCreator;
-    @Mock
     private HistoryClustersMediator.Clock mClock;
     @Mock
     private TemplateUrlService mTemplateUrlService;
@@ -106,26 +107,56 @@ public class HistoryClustersMediatorTest {
     private ModelList mModelList;
     private PropertyModel mToolbarModel;
     private Intent mIntent = new Intent();
-    private Supplier<Intent> mHistoryActivityIntentFactory = () -> mIntent;
-    private Supplier<Tab> mTabSupplier = () -> mTab;
     private HistoryClustersMediator mMediator;
+    private boolean mIsSeparateActivity;
+    private HistoryClustersDelegate mHistoryClustersDelegate;
 
     @Before
     public void setUp() {
         ContextUtils.initApplicationContextForTests(mContext);
         doReturn(mResources).when(mContext).getResources();
         doReturn(ITEM_URL_SPEC).when(mMockGurl).getSpec();
-        doReturn(mIntent).when(mUrlIntentCreator).apply(mMockGurl);
         doReturn(mLayoutManager).when(mRecyclerView).getLayoutManager();
         mModelList = new ModelList();
         mToolbarModel = new PropertyModel(HistoryClustersToolbarProperties.ALL_KEYS);
+
+        mHistoryClustersDelegate = new HistoryClustersDelegate() {
+            @Override
+            public boolean isSeparateActivity() {
+                return mIsSeparateActivity;
+            }
+
+            @Override
+            public Tab getTab() {
+                return mTab;
+            }
+
+            @Override
+            public Intent getHistoryActivityIntent() {
+                return mIntent;
+            }
+
+            @Override
+            public Intent getOpenUrlIntent(GURL gurl) {
+                return mIntent;
+            }
+
+            @Override
+            public ViewGroup getToggleView(ViewGroup parent) {
+                return null;
+            }
+        };
+
         mMediator = new HistoryClustersMediator(mBridge, mLargeIconBridge, mContext, mResources,
-                mModelList, mToolbarModel, mHistoryActivityIntentFactory, mTabSupplier, false,
-                mUrlIntentCreator, mClock, mTemplateUrlService);
-        mVisit1 = new ClusterVisit(1.0F, mGurl1, "Title 1");
-        mVisit2 = new ClusterVisit(1.0F, mGurl2, "Title 2");
-        mVisit3 = new ClusterVisit(1.0F, mGurl3, "Title 3");
-        mVisit4 = new ClusterVisit(1.0F, mGurl3, "Title 4");
+                mModelList, mToolbarModel, mHistoryClustersDelegate, mClock, mTemplateUrlService);
+        mVisit1 = new ClusterVisit(
+                1.0F, mGurl1, "Title 1", "url1.com/", new ArrayList<>(), new ArrayList<>());
+        mVisit2 = new ClusterVisit(
+                1.0F, mGurl2, "Title 2", "url2.com/", new ArrayList<>(), new ArrayList<>());
+        mVisit3 = new ClusterVisit(
+                1.0F, mGurl3, "Title 3", "url3.com/", new ArrayList<>(), new ArrayList<>());
+        mVisit4 = new ClusterVisit(
+                1.0F, mGurl3, "Title 4", "url3.com/foo", new ArrayList<>(), new ArrayList<>());
         mCluster1 = new HistoryCluster(Arrays.asList("foo"), Arrays.asList(mVisit1, mVisit2),
                 "label1", new ArrayList<>(), 456L, Arrays.asList("search 1", "search 2"));
         mCluster2 = new HistoryCluster(Arrays.asList("bar", "baz"), Arrays.asList(mVisit3),
@@ -254,13 +285,8 @@ public class HistoryClustersMediatorTest {
 
     @Test
     public void testNavigateSeparateActivity() {
-        HistoryClustersMediator standaloneMediator =
-                new HistoryClustersMediator(mBridge, mLargeIconBridge, mContext, mResources,
-                        mModelList, mToolbarModel, mHistoryActivityIntentFactory, mTabSupplier,
-                        true, mUrlIntentCreator, mClock, mTemplateUrlService);
-        standaloneMediator.navigateToItemUrl(mMockGurl);
-
-        verify(mUrlIntentCreator).apply(mMockGurl);
+        mIsSeparateActivity = true;
+        mMediator.navigateToItemUrl(mMockGurl);
         verify(mContext).startActivity(mIntent);
     }
 
@@ -340,6 +366,22 @@ public class HistoryClustersMediatorTest {
         // There should have been no further calls to loadMoreClusters since the current result
         // specifies that it has no more data.
         verify(mBridge).loadMoreClusters("query");
+    }
+
+    @Test
+    public void testBolding() {
+        String text = "this is fun";
+        List<MatchPosition> matchPositions =
+                Arrays.asList(new MatchPosition(0, 5), new MatchPosition(8, 10));
+        SpannableString result = mMediator.applyBolding(text, matchPositions);
+
+        StyleSpan[] styleSpans = result.getSpans(0, 5, StyleSpan.class);
+        assertEquals(styleSpans.length, 1);
+        assertEquals(styleSpans[0].getStyle(), Typeface.BOLD);
+
+        styleSpans = result.getSpans(8, 10, StyleSpan.class);
+        assertEquals(styleSpans.length, 1);
+        assertEquals(styleSpans[0].getStyle(), Typeface.BOLD);
     }
 
     private <T> void fulfillPromise(Promise<T> promise, T result) {

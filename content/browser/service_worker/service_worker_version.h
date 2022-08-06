@@ -103,6 +103,8 @@ FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StallInStopping_DetachThenStart);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StartRequestWithNullContext);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest,
                      WorkerLifetimeWithExternalRequest);
+FORWARD_DECLARE_TEST(ServiceWorkerVersionTest,
+                     DefaultTimeoutRequestDoesNotAffectMaxTimeoutRequest);
 }  // namespace service_worker_version_unittest
 
 FORWARD_DECLARE_TEST(ServiceWorkerRegistryTest, ScriptResponseTime);
@@ -729,6 +731,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_version_unittest::ServiceWorkerVersionTest,
       WorkerLifetimeWithExternalRequest);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_version_unittest::ServiceWorkerVersionTest,
+      DefaultTimeoutRequestDoesNotAffectMaxTimeoutRequest);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerRegistryTest, ScriptResponseTime);
 
   // Contains timeout info for InflightRequest.
@@ -883,6 +888,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                bool is_browser_startup_complete,
                                blink::ServiceWorkerStatusCode status);
 
+  // The caller of MaybeTimeoutRequest must increase reference count of |this|
+  // to avoid it deleted during the execution.
   bool MaybeTimeoutRequest(const InflightRequestTimeoutInfo& info);
   void SetAllRequestExpirations(const base::TimeTicks& expiration);
 

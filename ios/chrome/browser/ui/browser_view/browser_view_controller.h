@@ -23,7 +23,7 @@
 @protocol ActivityServicePositioner;
 class Browser;
 @class BrowserContainerViewController;
-@class BrowserViewControllerDependencyFactory;
+@class BrowserViewControllerHelper;
 @class BubblePresenter;
 @class CommandDispatcher;
 @protocol CRWResponderInputView;
@@ -32,10 +32,32 @@ class Browser;
 // TODO(crbug.com/1331229): Remove all use of the download manager coordinator
 // from BVC
 @class DownloadManagerCoordinator;
+@class KeyCommandsProvider;
 // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
+@protocol PopupMenuUIUpdating;
 class PrerenderService;
+@class PrimaryToolbarCoordinator;
+@class SecondaryToolbarCoordinator;
+@class TabStripCoordinator;
+@class TabStripLegacyCoordinator;
 @class ToolbarAccessoryPresenter;
+@protocol ToolbarCoordinating;
 @protocol IncognitoReauthCommands;
+
+// TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
+// TODO(crbug.com/1331229): Remove all use of the download manager coordinator
+// from BVC
+typedef struct {
+  PrerenderService* prerenderService;
+  BubblePresenter* bubblePresenter;
+  DownloadManagerCoordinator* downloadManagerCoordinator;
+  id<ToolbarCoordinating> toolbarInterface;
+  id<PopupMenuUIUpdating> UIUpdater;
+  PrimaryToolbarCoordinator* primaryToolbarCoordinator;
+  SecondaryToolbarCoordinator* secondaryToolbarCoordinator;
+  TabStripCoordinator* tabStripCoordinator;
+  TabStripLegacyCoordinator* legacyTabStripCoordinator;
+} BrowserViewControllerDependencies;
 
 // The top-level view controller for the browser UI. Manages other controllers
 // which implement the interface.
@@ -54,25 +76,20 @@ class PrerenderService;
 
 // Initializes a new BVC.
 // |browser| is the browser whose tabs this BVC will display.
-// |factory| is the dependency factory created for this BVC instance.
 // |browserContainerViewController| is the container object this BVC will exist
 // inside.
-// |dispatcher| is the dispatcher instance this BVC will use.
+// `dispatcher` is the dispatcher instance this BVC will use.
 // TODO(crbug.com/992582): Remove references to model objects -- including
 //   |browser| and |dispatcher| -- from this class.
-// TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
-// TODO(crbug.com/1331229): Remove all use of the download manager coordinator
-// from BVC
 - (instancetype)initWithBrowser:(Browser*)browser
-                 dependencyFactory:
-                     (BrowserViewControllerDependencyFactory*)factory
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
+       browserViewControllerHelper:
+           (BrowserViewControllerHelper*)browserViewControllerHelper
                         dispatcher:(CommandDispatcher*)dispatcher
-                  prerenderService:(PrerenderService*)prerenderService
-                   bubblePresenter:(BubblePresenter*)bubblePresenter
-        downloadManagerCoordinator:
-            (DownloadManagerCoordinator*)downloadManagerCoordinator
+               keyCommandsProvider:(KeyCommandsProvider*)keyCommandsProvider
+                      dependencies:
+                          (BrowserViewControllerDependencies)dependencies
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
@@ -128,12 +145,12 @@ class PrerenderService;
 // Called when the user explicitly opens the tab switcher.
 - (void)userEnteredTabSwitcher;
 
-// Opens a new tab as if originating from |originPoint| and |focusOmnibox|.
+// Opens a new tab as if originating from `originPoint` and `focusOmnibox`.
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox
                     inheritOpener:(BOOL)inheritOpener;
 
-// Adds |tabAddedCompletion| to the completion block (if any) that will be run
+// Adds `tabAddedCompletion` to the completion block (if any) that will be run
 // the next time a tab is added to the Browser this object was initialized
 // with.
 - (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion;

@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">Выдаліць існуючыя даныя.</translation>
 <translation id="1147031633655575115">Вы ўвайшлі як <ph name="USER" /></translation>
 <translation id="1154984953698510061">Паглядзець іншыя ўкладкі</translation>
+<translation id="1161340988127985692">Запытваць дазвол на адкрыццё спасылак з іншых праграм у рэжыме інкогніта</translation>
 <translation id="1164064664035028907">Выкарыстоўвайце надзейны пароль:</translation>
 <translation id="1165039591588034296">Памылка</translation>
 <translation id="1172898394251786223">Наступнае поле</translation>
@@ -65,6 +66,7 @@
 <translation id="1434356225517321998">Ваш браўзер знаходзіцца пад кіраваннем. <ph name="BEGIN_LINK" />Падрабязныя звесткі<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Схаваць пароль</translation>
 <translation id="145015347812617860">Элементаў: <ph name="COUNT" /></translation>
+<translation id="1450170672351507823">Стандартная абарона ўключана. Каб павысіць бяспеку, выкарыстоўвайце Палепшаную абарону.</translation>
 <translation id="149095475893949513">Гэты вэб-сайт спрабуе спампаваць профіль канфігурацыі.</translation>
 <translation id="1491277525950327607">Каб уключыць або выключыць наладу, двойчы дакраніцеся</translation>
 <translation id="1492417797159476138">Вы ўжо захавалі гэта імя карыстальніка для гэтага сайта</translation>
@@ -162,6 +164,7 @@
 <translation id="236977714248711277">Сайты не могуць выкарыстоўваць файлы cookie для паляпшэння сваёй функцыянальнасці: напрыклад, для захавання інфармацыі пра тое, што вы ўвайшлі ва ўліковы запіс, або каб запамінаць тавары ў кошыку.
 
 Сайты не могуць выкарыстоўваць файлы cookie для адсочвання вашых дзеянняў у браўзеры на розных сайтах, напрыклад, каб персаналізаваць рэкламу.</translation>
+<translation id="2375243552872247702">Змесціва для вас</translation>
 <translation id="2381405137052800939">Асновы</translation>
 <translation id="2386793615875593361">1 выбрана</translation>
 <translation id="2421004566762153674">Блакіроўка старонніх файлаў cookie</translation>
@@ -290,6 +293,7 @@
 <translation id="3443810440409579745">Атрымана ўкладка.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> хв</translation>
 <translation id="3448016392200048164">Раздзелены кадр</translation>
+<translation id="3450502512529866925">Дадаць гэту старонку ў закладкі</translation>
 <translation id="345565170154308620">Кіраваць паролямі...</translation>
 <translation id="3469166899695866866">Спыніць спампоўку?</translation>
 <translation id="3470502288861289375">Ідзе капіраванне...</translation>
@@ -404,6 +408,7 @@
 <translation id="4502566650163919158">Праверыць</translation>
 <translation id="4505980578794259603">Апошняя праверка: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Закрыць рэкламны элемент уваходу</translation>
+<translation id="4511669830082467224">Пошук відарыса ў Google</translation>
 <translation id="4526249700380860531">Праглядзець захаваныя паролі і кіраваць імі можна на старонцы <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Праверыць сінхранізаваныя даныя</translation>
 <translation id="4536418791685807335">Увайдзіце яшчэ раз.</translation>
@@ -481,6 +486,7 @@
 <translation id="5090832849094901128">Пры выдаленні гэтага пароля ўліковы запіс на сайце <ph name="WEBSITE" /> не выдаліцца.</translation>
 <translation id="5092117651143801290">Захоўвайце старонкі, каб вяртацца да іх пазней або чытаць іх без падключэння да інтэрнэту. Перш чым захоўваць доўгія старонкі, Chrome будзе адпраўляць вам запыт.</translation>
 <translation id="5094827893301452931">Твіт апублікаваны.</translation>
+<translation id="509789154667432072">Дадаць закладку</translation>
 <translation id="5118713593561876160">Інтарэсы</translation>
 <translation id="5118764316110575523">Выключана</translation>
 <translation id="5127805178023152808">Сінхранізацыя выключана</translation>
@@ -601,6 +607,7 @@
 <translation id="6136914049981179737">с таму</translation>
 <translation id="6144589619057374135">Адкрыць ${url} у рэжыме інкогніта</translation>
 <translation id="6149061208933997199">Выкарыстаць пароль</translation>
+<translation id="6152406514676263192">Каб атрымліваць найбольш адпаведнае змесціва на падставе сваіх інтарэсаў, уключыце сінхранізацыю.</translation>
 <translation id="6159839020698489198">неабавязкова</translation>
 <translation id="6177442314419606057">Шукаць у Chrome</translation>
 <translation id="6184086493125982861">Паказваць укладкі</translation>
@@ -738,6 +745,7 @@
 <translation id="7099761977003084116">Нядаўнія ўкладкі</translation>
 <translation id="7102005569666697658">Ідзе спампоўванне… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Схаваць</translation>
+<translation id="7108762695052995889">Наведаць сайт</translation>
 <translation id="7133798577887235672">Поўнае імя</translation>
 <translation id="7136892417564438900">Камера недаступная</translation>
 <translation id="7153999225810839758">Час чытання: <ph name="TIME" /> хв</translation>
@@ -748,6 +756,7 @@
 <translation id="7189598951263744875">Абагуліць...</translation>
 <translation id="7192050974311852563">Пачаць вядзенне журнала</translation>
 <translation id="7203585745079012652">Агучваць атрыманыя адказы</translation>
+<translation id="7207023858769244910">Каб атрымліваць змесціва на падставе сваіх інтарэсаў, уключыце сінхранізацыю.</translation>
 <translation id="7207383424303353046">Навінка. Зрабіце Chrome стандартным браўзерам, каб сайты адкрываліся ў ім аўтаматычна. <ph name="BEGIN_LINK" />Адкрыць Налады<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Несапраўдны псеўданім карткі</translation>
 <translation id="722454870747268814">Новая ўкладка ў рэжыме інкогніта</translation>
@@ -767,6 +776,7 @@
 <translation id="7400418766976504921">URL-адрас</translation>
 <translation id="7409985198648820906">Непрачытаных артыкулаў: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="7412027924265291969">Працягнуць</translation>
+<translation id="7419565702166471774">Заўсёды выкарыстоўваць бяспечнае падключэнне</translation>
 <translation id="7425346204213733349">Змены ў закладках, гісторыі, паролях і іншых наладах больш не будуць сінхранізавацца з Уліковым запісам Google. Але існуючыя даныя застануцца ва Уліковым запісе Google.</translation>
 <translation id="7431991332293347422">Кіраванне тым, як ваша гісторыя прагляду сайтаў выкарыстоўваецца для персаналізацыі пошуку і ў іншых мэтах</translation>
 <translation id="7435356471928173109">Выключаны адміністратарам</translation>
@@ -806,7 +816,6 @@
 <translation id="7781069478569868053">Старонка новай укладкі</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="778855399387580014">Пачаць пошук у новай укладцы Chrome.</translation>
-<translation id="7790892308048519147">Намагацца карыстацца бяспечнымі тыпамі падключэння</translation>
 <translation id="7791543448312431591">Дадаць</translation>
 <translation id="7807060072011926525">Ад кампаніі Google</translation>
 <translation id="7839985698273989086">Пазасеткавая старонка</translation>

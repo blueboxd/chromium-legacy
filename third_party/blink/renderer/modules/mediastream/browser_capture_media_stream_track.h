@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_BROWSER_CAPTURE_MEDIA_STREAM_TRACK_H_
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/mediastream/crop_target.h"
 #include "third_party/blink/renderer/modules/mediastream/focusable_media_stream_track.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
@@ -34,20 +35,11 @@ class MODULES_EXPORT BrowserCaptureMediaStreamTrack final
   void Trace(Visitor*) const override;
 #endif
 
-  ScriptPromise cropTo(ScriptState*, const String&, ExceptionState&);
+  ScriptPromise cropTo(ScriptState*, CropTarget*, ExceptionState&);
 
   BrowserCaptureMediaStreamTrack* clone(ScriptState*) override;
 
  private:
-  // Given a partially built MediaStreamTrack, finishes the job of making it
-  // into a clone of |this|.
-  // Useful for sub-classes (caveat below), as they need to clone both state
-  // from this class as well as of their own class.
-  // Caveat: This class is final, and has no sub-classes. We continue the
-  // pattern from the parent classes for clarity, and to make things easier
-  // if we do in the future sub-class further.
-  void CloneInternal(BrowserCaptureMediaStreamTrack*);
-
 #if !BUILDFLAG(IS_ANDROID)
   // Resolves the Promise associated with |crop_version|.
   void ResolveCropPromise(uint32_t crop_version,
@@ -63,7 +55,6 @@ class MODULES_EXPORT BrowserCaptureMediaStreamTrack final
   // Note that frames before the first call to cropTo() will be associated
   // with a version of 0, both here and in Viz.
   HeapHashMap<uint32_t, Member<ScriptPromiseResolver>> pending_promises_;
-  uint32_t current_crop_version_ = 0;
 #endif  // !BUILDFLAG(IS_ANDROID)
 };
 

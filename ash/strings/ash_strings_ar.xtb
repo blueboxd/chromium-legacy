@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">تقويم</translation>
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
 <translation id="1165712434476988950">عليك إعادة تشغيل الجهاز لتطبيق التحديث.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />، <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">‏قد لا يتم توصيل الكابل المزوَّد بمنفذ USB-C بالشاشات بشكل صحيح.</translation>
 <translation id="1175572348579024023">التمرير</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">التطبيقات المستخدمة مؤخرًا</translation>
 <translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">ما حالة الطقس؟</translation>
-<translation id="1262870540683925850">‏من <ph name="START_TIME" /> إلى 
-        <ph name="END_TIME" />، 
-         بتوقيت <ph name="TIME_ZONE" />، 
-        <ph name="EVENT_SUMMARY" />. اختَر حدثًا لعرض مزيد من التفاصيل في "تقويم Google".</translation>
 <translation id="1267032506238418139">تغيير الاختصار</translation>
 <translation id="1269405891096105529">الأجهزة الملحقة غير متاحة للاستخدام في وضع الضيف.</translation>
 <translation id="1270290102613614947">تم إيقاف لوحة المفاتيح على الشاشة</translation>
@@ -125,6 +122,7 @@
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1632985212731562677">يمكن إيقاف ميزة "الوصول عبر مفتاح التحويل" في "الإعدادات" &gt; "أدوات تمكين الوصول".</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> جهاز</translation>
+<translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="1654477262762802994">بدء طلب بحث صوتي</translation>
 <translation id="1668469839109562275">الشبكة الافتراضية الخاصة المُدمجة</translation>
 <translation id="1677472565718498478">الوقت المتبقي <ph name="TIME" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2359808026110333948">متابعة</translation>
 <translation id="2367186422933365202">‏يتعذّر تسجيل الدخول إلى جهاز Chromebook.</translation>
 <translation id="2369165858548251131">"مرحبًا" باللغة الصينية</translation>
+<translation id="2375445874393996153">‏ميزة البحث عن المحتوى الذي يظهر على الشاشة باستخدام "مساعد Google" تم إيقافها نهائيًا.</translation>
 <translation id="2390318262976603432">إعدادات اللغة</translation>
 <translation id="240006516586367791">عناصر التحكُّم في الوسائط</translation>
 <translation id="2402411679569069051">‏لفتح قفل جهاز Chromebook، استخدِم بصمة إصبعك أو افتح قفل هاتفك.</translation>
@@ -473,7 +472,8 @@
 <translation id="371370241367527062">الميكروفون الأمامي</translation>
 <translation id="3713734891607377840">فتح الملف بعد اكتمال تنزيله</translation>
 <translation id="3726171378575546917">التطبيقات <ph name="UNAVAILABLE_APPS_ONE" /> و<ph name="UNAVAILABLE_APPS_TWO" /> و<ph name="UNAVAILABLE_APPS_COUNT" /> غير مثبَّتة على هذا الجهاز.</translation>
-<translation id="3735740477244556633">ترتيب بحسب</translation>
+<translation id="3735740477244556633">الترتيب حسب
+</translation>
 <translation id="3742055079367172538">تم التقاط لقطة الشاشة</translation>
 <translation id="3761848338953536304">‏يطلب المشرف إيقاف ميزة قفل شريحة SIM.</translation>
 <translation id="3765841986579723851">تم تعديله اليوم.</translation>
@@ -506,6 +506,7 @@
 <translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{إعادة الجهاز إلى الإصدار السابق في غضون دقيقة واحدة}zero{إعادة الجهاز إلى الإصدار السابق في غضون # دقيقة}two{إعادة الجهاز إلى الإصدار السابق في غضون دقيقتين}few{إعادة الجهاز إلى الإصدار السابق في غضون # دقائق}many{إعادة الجهاز إلى الإصدار السابق في غضون # دقيقة}other{إعادة الجهاز إلى الإصدار السابق في غضون # دقيقة}}</translation>
 <translation id="3923494859158167397">ما مِن شبكات جوّال تم إعدادها.</translation>
+<translation id="3925540965556789199"><ph name="DATE" />، جارٍ تحميل الأحداث</translation>
 <translation id="3932043219784172185">لم يتم الاتصال بأي أجهزة</translation>
 <translation id="3934456833412894880">ميزة "الشحن التكيُّفي" مفعّلة. سيظلّ مستوى شحن البطارية عند %80 لإطالة عمرها، وسيتم شحنها بالكامل عندما تحتاج إلى ذلك.</translation>
 <translation id="3943857333388298514">لصق</translation>
@@ -705,6 +706,7 @@
 <translation id="5078796286268621944">رقم التعريف الشخصي غير صحيح</translation>
 <translation id="5083553833479578423">‏الاستفادة من المزيد من ميزات "مساعد Google"</translation>
 <translation id="509790653408515442">عند تشغيل تطبيقات هاتفك، سيتم عرضها هنا.</translation>
+<translation id="5098537242461068432">تمت إعادة فتح سطح المكتب والنوافذ.</translation>
 <translation id="5107522548814527560">الويب</translation>
 <translation id="5117590920725113268">عرض الشهر التالي</translation>
 <translation id="5136175204352732067">تم توصيل لوحة مفاتيح مختلفة</translation>
@@ -774,7 +776,7 @@
 <translation id="5532994612895037630">انقر في أي مكان للتسجيل في وضع ملء الشاشة.</translation>
 <translation id="5536723544185013515">التطبيقات المُستخدَمة مؤخرًا: يمكنك التنقّل باستخدام السهم المتّجه لليمين أو لليسار للوصول إلى التطبيقات المُستخدَمة مؤخرًا.</translation>
 <translation id="553675580533261935">جارٍ الخروج من الجلسة</translation>
-<translation id="5537725057119320332">إرسال</translation>
+<translation id="5537725057119320332">بث</translation>
 <translation id="554893713779400387">تبديل الإملاء</translation>
 <translation id="5560420195677022218">يمكنك عرض إشعارات هاتفك على جهاز <ph name="DEVICE_TYPE" />.</translation>
 <translation id="556042886152191864">زر</translation>
@@ -1049,7 +1051,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">إعادة التحميل</translation>
-<translation id="718361511487535372">‏فتح في "تقويم Google"</translation>
 <translation id="7188494361780961876">تم نقل القائمة إلى أعلى يمين الشاشة.</translation>
 <translation id="7189412385142492784">كم يبعد كوكب الزهرة؟</translation>
 <translation id="7198435252016571249">تم توجيه الكاميرا إلى الزاوية السفلية اليمنى. هناك تعارض مع مساحة عرض نظام آخر.</translation>
@@ -1058,6 +1059,10 @@
 <translation id="7258828758145722155">تم تعديله أمس.</translation>
 <translation id="726276584504105859">السحب هنا لاستخدام وضع تقسيم الشاشة</translation>
 <translation id="7262906531272962081">إنشاء تذكير</translation>
+<translation id="7297440678881127227">‏من <ph name="START_TIME" /> إلى
+        <ph name="END_TIME" />،
+        <ph name="TIME_ZONE" />،
+        <ph name="EVENT_SUMMARY" />. انقر على الحدث لعرض مزيد من التفاصيل في "تقويم Google".</translation>
 <translation id="7302889331339392448">ميزة "النسخ النصي التلقائي" غير مفعَّلة.</translation>
 <translation id="7303365578352795231">جارٍ الرد على جهاز آخر.</translation>
 <translation id="7305884605064981971">‏شبكة EDGE</translation>
@@ -1170,6 +1175,7 @@
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7911118814695487383">‏نظام التشغيل Linux</translation>
 <translation id="7930731167419639574">ميزة "التعرّف على الكلام" جاهزة للعمل الآن على جهازك، كما تعمل ميزة "الإملاء" بلا اتصال بالإنترنت.</translation>
+<translation id="7932451802722951285">‏فتح في "تقويم Google"</translation>
 <translation id="7933084174919150729">‏لا يتوفر مساعد Google إلا للملف الشخصي الأساسي.</translation>
 <translation id="79341161159229895">يُدير <ph name="FIRST_PARENT_EMAIL" /> و<ph name="SECOND_PARENT_EMAIL" /> الحساب.</translation>
 <translation id="793716872548410480">‏يُرجى الضغط على <ph name="SHORTCUT_KEY_NAME" /> + V للاطّلاع على الحافظة. تم حفظ آخر 5 عناصر نسختها إلى الحافظة.</translation>

@@ -101,9 +101,6 @@ const char kArcDisableMediaStoreMaintenance[] =
 // apps silently. Used in autotests to resolve racy conditions.
 const char kArcDisablePlayAutoInstall[] = "arc-disable-play-auto-install";
 
-// Used in autotest to disable TTS cache which is on by default.
-const char kArcDisableTtsCache[] = "arc-disable-tts-cache";
-
 // Flag that disables ureadahead completely, including host and guest parts.
 // See also |kArcVmUreadaheadMode|.
 const char kArcDisableUreadahead[] = "arc-disable-ureadahead";
@@ -675,6 +672,10 @@ const char kLoginUser[] = "login-user";
 
 // Specifies the user that the browser data migration should happen for.
 const char kBrowserDataMigrationForUser[] = "browser-data-migration-for-user";
+
+// Run move migration instead of copy. Passed with
+// `kBrowserDataMigrationForUser`.
+const char kBrowserDataMigrationMoveMode[] = "browser-data-migration-move-mode";
 
 // Force skip or force migration. Should only be used for testing.
 const char kForceBrowserDataMigrationForTesting[] =

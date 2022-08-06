@@ -32,7 +32,6 @@
 #include "net/http/http_transaction.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_source.h"
-#include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_private_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -285,9 +284,7 @@ void TestTransactionConsumer::OnIOComplete(int result) {
 
 MockNetworkTransaction::MockNetworkTransaction(RequestPriority priority,
                                                MockNetworkLayer* factory)
-    : priority_(priority),
-      transaction_factory_(factory->AsWeakPtr()),
-      socket_log_id_(NetLogSource::kInvalidId) {}
+    : priority_(priority), transaction_factory_(factory->AsWeakPtr()) {}
 
 MockNetworkTransaction::~MockNetworkTransaction() {
   // Use request_ as in ~HttpNetworkTransaction to make sure its valid and not
@@ -502,6 +499,8 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   response_.was_cached = false;
   response_.network_accessed = true;
   response_.remote_endpoint = t->transport_info.endpoint;
+  response_.was_fetched_via_proxy =
+      t->transport_info.type == TransportType::kProxied;
 
   response_.response_time = transaction_factory_->Now();
   if (!t->response_time.is_null())

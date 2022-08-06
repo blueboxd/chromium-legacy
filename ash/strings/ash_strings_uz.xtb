@@ -56,10 +56,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1247519845643687288">Oxirgi ilovalar</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> orqali quvvat olmoqda</translation>
 <translation id="1255033239764210633">Ob-havo qanday?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> – 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Google Taqvimda tafsilotlarini koʻrish uchun tadbirni tanlang.</translation>
 <translation id="1267032506238418139">Tugmalar birikmasini o‘zgartirish</translation>
 <translation id="1269405891096105529">Mehmon rejimida tashqi qurilmalar ishlamaydi</translation>
 <translation id="1270290102613614947">Ekran klaviaturasi o‘chirib qo‘yilgan</translation>
@@ -125,6 +121,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Switch Access funksiyasini Sozlamalar &gt; Maxsus imkoniyatlar orqali faolsizlantirish mumkin.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> ta qurilma</translation>
+<translation id="1639239467298939599">Yuklanmoqda</translation>
 <translation id="1654477262762802994">Ovozli qidiruvni boshlash</translation>
 <translation id="1668469839109562275">Ichki oʻrnatilgan VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> qoldi</translation>
@@ -240,6 +237,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="2359808026110333948">Davom etish</translation>
 <translation id="2367186422933365202">Chromebook hisobiga kirilmadi</translation>
 <translation id="2369165858548251131">Xitoy tilida “Salom”</translation>
+<translation id="2375445874393996153">Endi Google Assistent yordamida ekrandagi narsalar qidirilmaydi.</translation>
 <translation id="2390318262976603432">Mahalliy sozlamalar</translation>
 <translation id="240006516586367791">Media boshqaruvi</translation>
 <translation id="2402411679569069051">Chromebook qulfini ochish uchun barmoq izi yoki telefondan foydalaning</translation>
@@ -506,6 +504,7 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> tarmog‘iga ulanilmoqda</translation>
 <translation id="3922427723338465344">{0,plural, =1{Qurilma tizimini 1 daqiqa ichida eski versiyaga qaytaring}other{Qurilma tizimini # daqiqa ichida eski versiyaga qaytaring}}</translation>
 <translation id="3923494859158167397">Mobil tarmoqlar sozlanmagan</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Tadbirlar yuklanmoqda.</translation>
 <translation id="3932043219784172185">Hech qaysi qurilma ulanmagan!</translation>
 <translation id="3934456833412894880">Moslashuvchan quvvatlash yoniq. Batareyaning xizmat muddatini uzaytirish maqsadida batareya 80% gacha quvvatlang hamda zarur boʻlganda uni toʻliq quvvatlashingiz mumkin.</translation>
 <translation id="3943857333388298514">Joylash</translation>
@@ -705,6 +704,7 @@ Qurilmani quvvat manbaiga ulang.</translation>
 <translation id="5078796286268621944">Noto‘g‘ri PIN-kod</translation>
 <translation id="5083553833479578423">Assistentning boshqa imkoniyatlarini oching.</translation>
 <translation id="509790653408515442">Telefon ilovalari namoyish qilinganda ular shu yerda chiqadi</translation>
+<translation id="5098537242461068432">Ish stoli va oynalar qaytadan ochildi</translation>
 <translation id="5107522548814527560">Veb</translation>
 <translation id="5117590920725113268">Keyingi oyni ko‘rsatish</translation>
 <translation id="5136175204352732067">Boshqa klaviatura ulandi</translation>
@@ -1049,7 +1049,6 @@ yangi oʻrnatilgan</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Avvalgi ekran hajmiga qaytishga <ph name="TIMEOUT_SECONDS" /> qoldi.</translation>
 <translation id="7180611975245234373">Yangilash</translation>
-<translation id="718361511487535372">Google Taqvim orqali ochish</translation>
 <translation id="7188494361780961876">Menyu ekranning yuqori chap burchagiga surildi.</translation>
 <translation id="7189412385142492784">Venera qanchalik uzoq</translation>
 <translation id="7198435252016571249">Kamera pastki oʻng burchakka joylandi. Tizim platfromasi bilan muammo chiqdi.</translation>
@@ -1058,6 +1057,10 @@ yangi oʻrnatilgan</translation>
 <translation id="7258828758145722155">Kecha tahrirlangan</translation>
 <translation id="726276584504105859">Ekranni bo‘lish xususiyatidan foydalanish uchun bu yerga torting</translation>
 <translation id="7262906531272962081">Eslatma yaratish</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> –
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Google Taqvimda tafsilotlarini koʻrish uchun tadbirni tanlang.</translation>
 <translation id="7302889331339392448">Jonli izoh yoqilmagan.</translation>
 <translation id="7303365578352795231">Boshqa qurilmada javob berilmoqda</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1170,6 +1173,7 @@ yangi oʻrnatilgan</translation>
 <translation id="7904094684485781019">Administrator bu hisobga boshqa hisoblar bilan birdaniga kirishni taqiqlab qo‘ygan.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Nutq qurilmada qayta ishlanadi va ovoz bilan yozish internetsiz ishlaydi</translation>
+<translation id="7932451802722951285">Google Taqvim orqali ochish</translation>
 <translation id="7933084174919150729">Google Assistent faqat asosiy profilda ishlaydi xolos.</translation>
 <translation id="79341161159229895">Hisobni <ph name="FIRST_PARENT_EMAIL" /> va <ph name="SECOND_PARENT_EMAIL" /> boshqaradi</translation>
 <translation id="793716872548410480">Klipbordni ochish uchun <ph name="SHORTCUT_KEY_NAME" /> + V tugmalarini bosing. Nusxalangan oxirgi 5 ta element klipbordga saqlandi.</translation>

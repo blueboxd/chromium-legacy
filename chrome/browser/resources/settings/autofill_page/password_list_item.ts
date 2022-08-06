@@ -22,7 +22,7 @@ import {routes} from '../route.js';
 import {Router} from '../router.js';
 
 import {getTemplate} from './password_list_item.html.js';
-import {PasswordViewPageUrlParams} from './password_view.js';
+import {PasswordViewPageInteractions, PasswordViewPageUrlParams, recordPasswordViewInteraction} from './password_view.js';
 import {ShowPasswordMixin, ShowPasswordMixinInterface} from './show_password_mixin.js';
 
 export type PasswordMoreActionsClickedEvent = CustomEvent<{
@@ -53,10 +53,10 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
 
   static get properties() {
     return {
-      isPasswordNotesEnabled_: {
+      isPasswordViewPageEnabled_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('enablePasswordNotes');
+          return loadTimeData.getBoolean('enablePasswordViewPage');
         },
       },
 
@@ -68,7 +68,7 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
       shouldShowSubpageButton_: {
         type: Boolean,
         computed: 'computeShouldShowSubpageButton_(' +
-            'isPasswordNotesEnabled_, shouldHideActionButtons)',
+            'isPasswordViewPageEnabled_, shouldHideActionButtons)',
         reflectToAttribute: true,
       },
 
@@ -82,16 +82,16 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
     };
   }
 
-  private isPasswordNotesEnabled_: boolean;
+  private isPasswordViewPageEnabled_: boolean;
   private shouldShowSubpageButton_: boolean;
   shouldHideActionButtons: boolean;
 
   private computeShouldShowSubpageButton_(): boolean {
-    return !this.shouldHideActionButtons && this.isPasswordNotesEnabled_;
+    return !this.shouldHideActionButtons && this.isPasswordViewPageEnabled_;
   }
 
   private shouldHideMoreActionsButton_(): boolean {
-    return this.isPasswordNotesEnabled_ || this.shouldHideActionButtons;
+    return this.isPasswordViewPageEnabled_ || this.shouldHideActionButtons;
   }
 
   /**
@@ -123,6 +123,8 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
         params.set(PasswordViewPageUrlParams.ON_DEVICE, 'true');
       }
     }
+    recordPasswordViewInteraction(
+        PasswordViewPageInteractions.CREDENTIAL_ROW_CLICKED);
     Router.getInstance().navigateTo(routes.PASSWORD_VIEW, params);
   }
 

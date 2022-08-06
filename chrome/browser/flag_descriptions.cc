@@ -164,6 +164,11 @@ const char kPasswordNotesName[] = "Password notes in settings";
 const char kPasswordNotesDescription[] =
     "Enables a note section for each password in the settings page.";
 
+const char kPasswordViewPageInSettingsName[] = "Password view page in settings";
+const char kPasswordViewPageInSettingsDescription[] =
+    "Enables a new password details subpage in the settings password "
+    "management UI.";
+
 const char kEnableBluetoothSerialPortProfileInSerialApiName[] =
     "Enable Bluetooth Serial Port Profile in Serial API";
 const char kEnableBluetoothSerialPortProfileInSerialApiDescription[] =
@@ -324,11 +329,16 @@ const char kAutofillTypeSpecificPopupWidthDescription[] =
     "Controls if different width limits are used for the popup that provides "
     "Autofill suggestions, depending on the type of data that is filled.";
 
-const char kAutofillEnableMerchantBoundVirtualCardsName[] =
-    "Offer merchant bound virtual cards in Autofill";
-const char kAutofillEnableMerchantBoundVirtualCardsDescription[] =
-    "When enabled, Autofill will offer to use merchant bound virtual cards in "
-    "payment forms.";
+const char kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName[] =
+    "Enable parsing of the GetDetailsForEnrollResponseDetails in the "
+    "UploadCardResponseDetails";
+const char
+    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription[] =
+        "When enabled, the GetDetailsForEnrollResponseDetails in the "
+        "UploadCardResponseDetails will be parsed, which will allow the "
+        "Virtual Card Enrollment flow to skip making a new GetDetailsForEnroll "
+        "request. This is an optimization to improve the latency of the "
+        "Virtual Card Enrollment flow.";
 
 const char kAutofillEnableManualFallbackForVirtualCardsName[] =
     "Show manual fallback for virtual cards";
@@ -415,12 +425,6 @@ const char kAutofillEnableVirtualCardMetadataName[] =
 const char kAutofillEnableVirtualCardMetadataDescription[] =
     "When enabled, Chrome will show metadata together with other card "
     "information when the virtual card is presented to users.";
-
-const char kAutofillEnableVirtualCardsRiskBasedAuthenticationName[] =
-    "Enable risk based authentication for Autofill Virtual Card Numbers";
-const char kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription[] =
-    "When enabled, risk based authentication is used before autofilling "
-    "Virtual Card information into forms.";
 
 const char kAutofillEnforceDelaysInStrikeDatabaseName[] =
     "Enforce delay between offering Autofill opportunities in the strike "
@@ -599,6 +603,10 @@ const char kClosedTabCacheDescription[] =
     "Enables closed tab cache to instantaneously restore recently closed tabs. "
     "NOTE: This feature is higly experimental and will lead to various "
     "breakages, enable at your own risk.";
+
+const char kCommerceHintAndroidName[] = "Commerce Hint Android";
+const char kCommerceHintAndroidDescription[] =
+    "Enables commerce hint detection on Android.";
 
 const char kConsolidatedSiteStorageControlsName[] =
     "Consolidated Site Storage Controls";
@@ -2128,10 +2136,9 @@ const char kPermissionPredictionsDescription[] =
 
 const char kPermissionQuietChipName[] = "Quiet Permission Chip Experiment";
 const char kPermissionQuietChipDescription[] =
-    "Enables an experimental permission prompt that uses the quiet chip "
-    "instead of the right-hand side address bar icon for quiet permission "
-    "prompts. Requires chrome://flags/#quiet-notification-prompts to be "
-    "enabled.";
+    "Enables a permission prompt that uses the quiet chip instead of the "
+    "right-hand side address bar icon for quiet permission prompts. Requires "
+    "chrome://flags/#quiet-notification-prompts to be enabled.";
 
 const char kPersistentQuotaIsTemporaryQuotaName[] =
     "window.PERSISTENT is temporary quota.";
@@ -3291,6 +3298,10 @@ const char kFeedStampDescription[] = "Enables StAMP cards in the feed.";
 const char kFeedIsAblatedName[] = "Feed ablation";
 const char kFeedIsAblatedDescription[] = "Enables feed ablation.";
 
+const char kFeedCloseRefreshName[] = "Feed-close refresh";
+const char kFeedCloseRefreshDescription[] =
+    "Enables scheduling a background refresh of the feed following feed use.";
+
 const char kGridTabSwitcherForTabletsName[] = "Grid tab switcher for tablets";
 const char kGridTabSwitcherForTabletsDescription[] =
     "Enable grid tab switcher for tablets, replacing the tab strip.";
@@ -3416,6 +3427,11 @@ const char kNetworkServiceInProcessName[] =
 const char kNetworkServiceInProcessDescription[] =
     "When enabled, the network service runs on the browser process. Otherwise, "
     "it runs on a dedicated process.";
+
+const char kNewInstanceFromDraggedLinkName[] =
+    "New instance creation from a dragged link";
+const char kNewInstanceFromDraggedLinkDescription[] =
+    "Enables creation of a new instance when a link is dragged out of Chrome.";
 
 const char kNewWindowAppMenuName[] = "Show a menu item 'New Window'";
 const char kNewWindowAppMenuDescription[] =
@@ -4973,8 +4989,7 @@ const char kFilesAppExperimentalDescription[] =
 
 const char kFilesArchivemount2Name[] = "Archivemount in Files App (2nd Tier)";
 const char kFilesArchivemount2Description[] =
-    "Enable mounting additional archive formats in File Manager. This has no "
-    "effect unless #files-archivemount is also enabled.";
+    "Enable mounting additional archive formats in File Manager.";
 
 const char kFilesExtractArchiveName[] = "Extract archive in Files app";
 const char kFilesExtractArchiveDescription[] =

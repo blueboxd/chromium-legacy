@@ -853,8 +853,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
 
       // TODO(pdr): There is additional logic in
       // FragmentPaintPropertyTreeBuilder::UpdateTransform that likely needs to
-      // be included here, such as setting animation_is_axis_aligned and setting
-      // additional compositing reasons (kAdditionalCompositingTrigger).
+      // be included here, such as setting animation_is_axis_aligned.
       state.direct_compositing_reasons =
           direct_compositing_reasons & CompositingReasonsForTransformProperty();
       state.flags.flattens_inherited_transform =
@@ -1116,12 +1115,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
       }
 
       if (handling_transform_property) {
-        // If a transform node exists, add an additional direct compositing
-        // reason for 3d transforms and will-change to ensure it is composited.
-        state.direct_compositing_reasons |=
-            (full_context_.direct_compositing_reasons &
-             CompositingReason::kAdditionalCompositingTrigger);
-
         if (object_.HasHiddenBackface()) {
           state.backface_visibility =
               TransformPaintPropertyNode::BackfaceVisibility::kHidden;
@@ -1470,10 +1463,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           CompositingReason::kDirectReasonsForEffectProperty;
 
       // If an effect node exists, add an additional direct compositing reason
-      // for 3d transforms and will-change to ensure it is composited.
+      // for 3d transforms and will-change:transform to ensure it is composited.
       state.direct_compositing_reasons |=
           (full_context_.direct_compositing_reasons &
-           CompositingReason::kAdditionalCompositingTrigger);
+           CompositingReason::kAdditionalEffectCompositingTrigger);
 
       // We may begin to composite our subtree prior to an animation starts, but
       // a compositor element ID is only needed when an animation is current.
@@ -1726,10 +1719,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
           CompositingReason::kDirectReasonsForFilterProperty;
 
       // If a filter node exists, add an additional direct compositing reason
-      // for 3d transforms and will-change to ensure it is composited.
+      // for 3d transforms and will-change:transform to ensure it is composited.
       state.direct_compositing_reasons |=
           (full_context_.direct_compositing_reasons &
-           CompositingReason::kAdditionalCompositingTrigger);
+           CompositingReason::kAdditionalEffectCompositingTrigger);
 
       state.compositor_element_id =
           GetCompositorElementId(CompositorElementIdNamespace::kEffectFilter);
@@ -2583,7 +2576,7 @@ static PhysicalRect BoundingBoxInPaginationContainer(
       // because it doesn't have contents visual overflow.
       !object.IsTableSection()) {
     const auto* layer = To<LayoutBoxModelObject>(object).Layer();
-    if (layer->ShouldFragmentCompositedBounds()) {
+    if (layer->EnclosingPaginationLayer()) {
       ClipRect clip;
       layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
           .CalculateBackgroundClipRect(
@@ -2797,7 +2790,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
       // Determine whether we're inside block fragmentation or not. OOF
       // descendants need special treatment inside block fragmentation.
       context_.current.is_in_block_fragmentation =
-          pre_paint_info_->fragmentainer_idx != WTF::kNotFound &&
+          pre_paint_info_->fragmentainer_is_oof_containing_block &&
           box->GetNGPaginationBreakability() != LayoutBox::kForbidBreaks;
     } else {
       // TODO(pdr): Several calls in this function walk back up the tree to
@@ -3138,8 +3131,15 @@ void PaintPropertyTreeBuilder::InitFragmentPaintPropertiesForLegacy(
     PaintPropertyTreeBuilderFragmentContext& context) {
   DCHECK(!IsInNGFragmentTraversal());
   InitFragmentPaintProperties(fragment, needs_paint_properties, context);
-  fragment.SetLegacyPaginationOffset(pagination_offset);
-  fragment.SetLogicalTopInFlowThread(context.logical_top_in_flow_thread);
+  if (context.current.fragmentainer_idx == WTF::kNotFound) {
+    fragment.SetLegacyPaginationOffset(pagination_offset);
+    fragment.SetLogicalTopInFlowThread(context.logical_top_in_flow_thread);
+  } else {
+    // We're inside (monolithic) legacy content, but further out there's an NG
+    // fragmentation context. Use the fragmentainer index, just like we do for
+    // NG objects.
+    fragment.SetFragmentID(context.current.fragmentainer_idx);
+  }
 }
 
 void PaintPropertyTreeBuilder::InitFragmentPaintPropertiesForNG(
@@ -3148,6 +3148,8 @@ void PaintPropertyTreeBuilder::InitFragmentPaintPropertiesForNG(
     context_.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
   else
     context_.fragments.resize(1);
+  context_.fragments[0].current.fragmentainer_idx =
+      pre_paint_info_->fragmentainer_idx;
   InitFragmentPaintProperties(*pre_paint_info_->fragment_data,
                               needs_paint_properties, context_.fragments[0]);
 }
@@ -3171,14 +3173,7 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
   // should also skip any fragment clip created by the skipped pagination
   // container. We also need to skip fragment clip if the layer doesn't allow
   // fragmentation.
-  bool skip_fragment_clip_for_composited_layer = false;
-  if (object_.HasLayer()) {
-    const auto* layer = To<LayoutBoxModelObject>(object_).Layer();
-    skip_fragment_clip_for_composited_layer =
-        layer->EnclosingPaginationLayer() &&
-        !layer->ShouldFragmentCompositedBounds();
-  }
-  if (!skip_fragment_clip_for_composited_layer && !object_.IsColumnSpanAll())
+  if (!object_.IsColumnSpanAll())
     return;
 
   const auto* pagination_layer_in_tree_hierarchy =
@@ -3190,13 +3185,6 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
       pagination_layer_in_tree_hierarchy->GetLayoutObject();
   const auto* properties = clip_container.FirstFragment().PaintProperties();
   if (!properties || !properties->FragmentClip())
-    return;
-
-  // Skip fragment clip for composited layer only when there are no other clips.
-  // TODO(crbug.com/803649): This is still incorrect if this object first
-  // appear in the second or later fragment of its parent.
-  if (skip_fragment_clip_for_composited_layer &&
-      properties->FragmentClip() != context_.fragments[0].current.clip)
     return;
 
   // However, because we don't allow an object's clip to escape the
@@ -3216,56 +3204,6 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
 
   // Skip the fragment clip.
   context_.fragments[0].current.clip = properties->FragmentClip()->Parent();
-}
-
-void PaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
-  DCHECK(!IsInNGFragmentTraversal());
-
-  const auto* enclosing_pagination_layer =
-      context_.painting_layer->EnclosingPaginationLayer();
-  if (!enclosing_pagination_layer)
-    return;
-
-  // We reach here because context_.painting_layer is in a composited layer
-  // under the pagination layer. SPv1* doesn't fragment composited layers,
-  // but we still need to set correct pagination offset for correct paint
-  // offset calculation.
-  DCHECK(!context_.painting_layer->ShouldFragmentCompositedBounds());
-  FragmentData& first_fragment =
-      object_.GetMutableForPainting().FirstFragment();
-  bool may_use_self_pagination_offset = false;
-  const PaintLayer* parent_pagination_offset_layer =
-      context_.painting_layer->EnclosingCompositedScrollingLayerUnderPagination(
-          kIncludeSelf);
-  if (parent_pagination_offset_layer->GetLayoutObject() == object_) {
-    may_use_self_pagination_offset = true;
-    parent_pagination_offset_layer =
-        parent_pagination_offset_layer
-            ->EnclosingCompositedScrollingLayerUnderPagination(kExcludeSelf);
-  }
-
-  if (may_use_self_pagination_offset &&
-      (!parent_pagination_offset_layer ||
-       !parent_pagination_offset_layer->EnclosingPaginationLayer())) {
-    // |object_| establishes the top level composited layer under the
-    // pagination layer.
-    FragmentainerIterator iterator(
-        To<LayoutFlowThread>(enclosing_pagination_layer->GetLayoutObject()),
-        BoundingBoxInPaginationContainer(object_, *enclosing_pagination_layer)
-            .ToLayoutRect());
-    if (!iterator.AtEnd()) {
-      first_fragment.SetLegacyPaginationOffset(
-          PhysicalOffsetToBeNoop(iterator.PaginationOffset()));
-      first_fragment.SetLogicalTopInFlowThread(
-          iterator.FragmentainerLogicalTopInFlowThread());
-    }
-  } else if (parent_pagination_offset_layer) {
-    // All objects under the composited layer use the same pagination offset.
-    const auto& fragment =
-        parent_pagination_offset_layer->GetLayoutObject().FirstFragment();
-    first_fragment.SetLegacyPaginationOffset(fragment.LegacyPaginationOffset());
-    first_fragment.SetLogicalTopInFlowThread(fragment.LogicalTopInFlowThread());
-  }
 }
 
 void PaintPropertyTreeBuilder::
@@ -3925,11 +3863,10 @@ void PaintPropertyTreeBuilder::UpdateFragments() {
 
     if (IsRepeatingInPagedMedia()) {
       CreateFragmentDataForRepeatingInPagedMedia(needs_paint_properties);
-    } else if (context_.painting_layer->ShouldFragmentCompositedBounds()) {
+    } else if (context_.painting_layer->EnclosingPaginationLayer()) {
       CreateFragmentContextsInFlowThread(needs_paint_properties);
     } else {
       InitSingleFragmentFromParent(needs_paint_properties);
-      UpdateCompositedLayerPaginationOffset();
       context_.is_repeating_fixed_position = false;
       context_.repeating_table_section = nullptr;
     }

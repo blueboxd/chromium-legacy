@@ -145,6 +145,8 @@ class SigninMetricsTest : public ::testing::Test {
         return "SendTabToSelfPromo";
       case AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
         return "NTPFeedTopPromo";
+      case AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
+        return "SettingsSyncOffRow";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";
@@ -237,28 +239,6 @@ TEST_F(SigninMetricsTest, RecordSigninImpressionUserAction) {
                      "Signin_Impression_From" + GetAccessPointDescription(ap)));
   }
 }
-
-#if !BUILDFLAG(IS_IOS)
-TEST_F(SigninMetricsTest, RecordSigninImpressionWithAccountUserAction) {
-  for (const AccessPoint& ap : kAccessPointsThatSupportPersonalizedPromos) {
-    base::UserActionTester user_action_tester;
-    RecordSigninImpressionWithAccountUserActionForAccessPoint(ap, true);
-    EXPECT_EQ(1, user_action_tester.GetActionCount(
-                     "Signin_ImpressionWithAccount_From" +
-                     GetAccessPointDescription(ap)));
-  }
-}
-
-TEST_F(SigninMetricsTest, RecordSigninImpressionWithNoAccountUserAction) {
-  for (const AccessPoint& ap : kAccessPointsThatSupportPersonalizedPromos) {
-    base::UserActionTester user_action_tester;
-    RecordSigninImpressionWithAccountUserActionForAccessPoint(ap, false);
-    EXPECT_EQ(1, user_action_tester.GetActionCount(
-                     "Signin_ImpressionWithNoAccount_From" +
-                     GetAccessPointDescription(ap)));
-  }
-}
-#endif  // !BUILDFLAG(IS_IOS)
 
 }  // namespace
 }  // namespace signin_metrics

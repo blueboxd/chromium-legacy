@@ -347,6 +347,7 @@
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
 #include "ash/webui/scanning/url_constants.h"
@@ -373,6 +374,7 @@
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
+#include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "components/crash/core/app/breakpad_linux.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -1357,6 +1359,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
       prefs::kSuppressDifferentOriginSubframeJSDialogs, true);
   registry->RegisterBooleanPref(
       policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled, false);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kUnthrottledNestedTimeoutEnabled, false);
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(prefs::kWebXRImmersiveArEnabled, true);
 #endif
@@ -2387,6 +2391,18 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                 ? blink::switches::kSetTimeoutWithout1MsClampPolicy_ForceEnable
                 : blink::switches::
                       kSetTimeoutWithout1MsClampPolicy_ForceDisable);
+      }
+      // Override MaxUnthrottledTimeoutNestingLevel feature if its Enterprise
+      // Policy is specified.
+      if (prefs->HasPrefPath(
+              policy::policy_prefs::kUnthrottledNestedTimeoutEnabled)) {
+        command_line->AppendSwitchASCII(
+            blink::switches::kUnthrottledNestedTimeoutPolicy,
+            prefs->GetBoolean(
+                policy::policy_prefs::kUnthrottledNestedTimeoutEnabled)
+                ? blink::switches::kUnthrottledNestedTimeoutPolicy_ForceEnable
+                : blink::switches::
+                      kUnthrottledNestedTimeoutPolicy_ForceDisable);
       }
 
       // The IntensiveWakeUpThrottling feature is typically managed via a
@@ -5931,8 +5947,7 @@ std::string ChromeContentBrowserClient::GetUserAgentBasedOnPolicy(
   switch (user_agent_reduction) {
     case embedder_support::UserAgentReductionEnterprisePolicyState::
         kForceDisabled:
-      return embedder_support::GetFullUserAgent(force_major_version_to_minor,
-                                                user_agent_reduction);
+      return embedder_support::GetFullUserAgent(force_major_version_to_minor);
     case embedder_support::UserAgentReductionEnterprisePolicyState::
         kForceEnabled:
       return embedder_support::GetReducedUserAgent(
@@ -6519,23 +6534,6 @@ bool ChromeContentBrowserClient::ShouldDisableOriginAgentClusterDefault(
               ->GetBoolean(prefs::kOriginAgentClusterDefaultEnabled);
 }
 
-bool ChromeContentBrowserClient::IsFirstPartySetsEnabled() {
-  if (!base::FeatureList::IsEnabled(features::kFirstPartySets)) {
-    return false;
-  }
-  if (!g_browser_process) {
-    // If browser process doesn't exist (e.g. in minimal mode on android),
-    // default to the feature value which is true since we didn't return above.
-    return true;
-  }
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state ||
-      !local_state->FindPreference(first_party_sets::kFirstPartySetsEnabled)) {
-    return true;
-  }
-  return local_state->GetBoolean(first_party_sets::kFirstPartySetsEnabled);
-}
-
 bool ChromeContentBrowserClient::WillProvidePublicFirstPartySets() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableComponentUpdate) &&
@@ -6580,4 +6578,39 @@ ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
   }
 
   return web_app::GetOfflinePageInfo(url, render_frame_host, browser_context);
+}
+
+bool ChromeContentBrowserClient::OpenExternally(
+    content::RenderFrameHost* opener,
+    const GURL& url,
+    WindowOpenDisposition disposition) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // If Lacros is the primary browser, we intercept requests from Ash WebUIs and
+  // redirect them to Lacros via crosapi. This is to make window.open and <a
+  // href target="_blank"> links in WebUIs (e.g. ChromeOS Settings app) open in
+  // Lacros rather than in Ash. NOTE: This is breaking change for calls to
+  // window.open, as the return value will always be null. By excluding popups
+  // and devtools:// and chrome:// URLs, we exclude the existing uses of
+  // window.open that make use of the return value (these will have to be dealt
+  // with separately) as well as some existing links that currently must remain
+  // in Ash.
+  bool should_open_in_lacros =
+      crosapi::lacros_startup_state::IsLacrosEnabled() &&
+      crosapi::lacros_startup_state::IsLacrosPrimaryEnabled() &&
+      opener->GetWebUI() != nullptr &&
+      disposition != WindowOpenDisposition::NEW_POPUP &&
+      !url.SchemeIs(content::kChromeDevToolsScheme) &&
+      !url.SchemeIs(content::kChromeUIScheme) &&
+      // Terminal's tabs must remain in Ash.
+      !url.SchemeIs(content::kChromeUIUntrustedScheme) &&
+      // OS Settings's Accessibility section links to chrome-extensions:// URLs
+      // for Text-to-Speech engines that are installed in Ash.
+      !url.SchemeIs(extensions::kExtensionScheme);
+  if (should_open_in_lacros) {
+    ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+        url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
+    return true;
+  }
+#endif
+  return false;
 }

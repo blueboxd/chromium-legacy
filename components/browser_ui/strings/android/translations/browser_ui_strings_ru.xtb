@@ -123,6 +123,7 @@
 <translation id="3967822245660637423">Скачивание завершено.</translation>
 <translation id="3987993985790029246">Копировать ссылку</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> из ?</translation>
+<translation id="3992684624889376114">Об этой странице</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="4008040567710660924">Разрешить определенному сайту сохранять файлы cookie</translation>
 <translation id="4046123991198612571">Следующий трек</translation>
@@ -197,7 +198,7 @@
 <translation id="5689516760719285838">Геоданные</translation>
 <translation id="5690795753582697420">Камера выключена в настройках Android.</translation>
 <translation id="5719847187258001597">Будут удалены все данные и файлы cookie, которые сохранены сайтом <ph name="ORIGIN" /> или его приложением, добавленным на главный экран.</translation>
-<translation id="5771720122942595109">Заблокировано: <ph name="PERMISSION_1" /></translation>
+<translation id="5771720122942595109"><ph name="PERMISSION_1" />: заблокировано</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="5876056640971328065">Приостановить видео</translation>
@@ -300,7 +301,7 @@
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
 <translation id="8154912474061769055">Функции многих сайтов могут стать недоступными</translation>
-<translation id="8197286292360124385">Разрешено: <ph name="PERMISSION_1" /></translation>
+<translation id="8197286292360124385"><ph name="PERMISSION_1" />: разрешено</translation>
 <translation id="8200772114523450471">Возобновить</translation>
 <translation id="8206354486702514201">Этот параметр включен администратором.</translation>
 <translation id="8211406090763984747">Безопасное подключение</translation>

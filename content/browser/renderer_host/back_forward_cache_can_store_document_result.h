@@ -61,8 +61,8 @@ class CONTENT_EXPORT BackForwardCacheCanStoreDocumentResult {
   void NoDueToDisableForRenderFrameHostCalled(
       const std::set<BackForwardCache::DisabledReason>& reasons);
   void NoDueToDisallowActivation(uint64_t reason);
+  // TODO(crbug.com/1341507): Remove this function.
   void NoDueToAXEvents(const std::vector<ui::AXEvent>& events);
-  void RecordAXEvent(ax::mojom::Event event_type);
 
   // The conditions for storing and restoring the pages are different in that
   // pages with cache-control:no-store can enter back/forward cache depending on

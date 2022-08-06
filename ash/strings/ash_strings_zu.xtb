@@ -31,6 +31,7 @@ Nazi ezinye zezinto ongazama ukuziqalisa.</translation>
 <translation id="1150989369772528668">Ikhalenda</translation>
 <translation id="1153356358378277386">Amadivaysi abhanqene</translation>
 <translation id="1165712434476988950">Ukuqala kabusha idivayisi kudingekile ukuze usebenzise isibuyekezo.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Ikhebuli lakho le-USB-C lingase lingaxhumi kahle kwizibonisi</translation>
 <translation id="1175572348579024023">Skrola</translation>
 <translation id="1178581264944972037">Misa isikhashana</translation>
@@ -55,10 +56,6 @@ Nazi ezinye zezinto ongazama ukuziqalisa.</translation>
 <translation id="1247519845643687288">Ama-app wakamuva</translation>
 <translation id="1252999807265626933">Ishaja kusuka ku-<ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Sithini isimo sezulu?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> ku 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Khetha mayelana nemininingwane eminingi ku-Google Calendar.</translation>
 <translation id="1267032506238418139">Ukushintsha isinqamuleli</translation>
 <translation id="1269405891096105529">I-peripheral ayisekelwa Kumodi Yesivakashi</translation>
 <translation id="1270290102613614947">Ikhibhodi ekusikrini ikhutshaziwe</translation>
@@ -124,6 +121,7 @@ Nazi ezinye zezinto ongazama ukuziqalisa.</translation>
 <translation id="1620510694547887537">Ikhamela</translation>
 <translation id="1632985212731562677">Ukushintsha ukufinyelela kungakhutshazwa kokuthi Izilungiselelo &gt; Ukufinyeleleka.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> amadivayisi</translation>
+<translation id="1639239467298939599">Iyalayisha</translation>
 <translation id="1654477262762802994">Qalisa umbuzo wezwi</translation>
 <translation id="1668469839109562275">I-VPN eyakhelwe ngaphakathi</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> esele</translation>
@@ -239,6 +237,7 @@ Nazi ezinye zezinto ongazama ukuziqalisa.</translation>
 <translation id="2359808026110333948">Qhubeka</translation>
 <translation id="2367186422933365202">Ayikwazi ukungena ngemvume ku-Chromebook yakho</translation>
 <translation id="2369165858548251131">"Sawubona" ngesi-Chinese</translation>
+<translation id="2375445874393996153">Ukusesha okusesikrinini sami nge-Google Assistant akusasekelwa.</translation>
 <translation id="2390318262976603432">Izilungiselelo Zesifunda</translation>
 <translation id="240006516586367791">Izilawuli zemidiya</translation>
 <translation id="2402411679569069051">Ukuze uvule i-Chromebook yakho, sebenzisa isigxivizo somunwe wakho noma uvule ifoni yakho</translation>
@@ -505,6 +504,7 @@ Xhuma idivayisi yakho emandleni.</translation>
 <translation id="3901991538546252627">Ixhumeka ku-<ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Shintsha idivayisi ibe wuhlobo lwangaphambilini phakathi nomzuzu o-1}one{Shintsha idivayisi ibe wuhlobo lwangaphambilini phakathi nemizuzu ezingu-#}other{Shintsha idivayisi ibe wuhlobo lwangaphambilini phakathi nemizuzu ezingu-#}}</translation>
 <translation id="3923494859158167397">Akukho ukusethwa kwenethiwekhi yeselula</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Ilayisha imicimbi.</translation>
 <translation id="3932043219784172185">Ayikho idivayisi exhunyiwe</translation>
 <translation id="3934456833412894880">Ukushaja okuzivumelana nezimo kuvuliwe. Ibhethri yakho izohlala ku-80% ukuze kunwetshwe impilo yebhethri, futhi izoshajwa ngokugcwele uma udinga ukuthi ishajwe.</translation>
 <translation id="3943857333388298514">Namathisela</translation>
@@ -704,6 +704,7 @@ Xhuma idivayisi yakho emandleni.</translation>
 <translation id="5078796286268621944">Iphinikhodi engalungile</translation>
 <translation id="5083553833479578423">Vula izici eziningi zomsizi.</translation>
 <translation id="509790653408515442">Uma usakaza ama-app efoni yakho, azovela lapha</translation>
+<translation id="5098537242461068432">Itafula namawindi kuvulwe kabusha</translation>
 <translation id="5107522548814527560">Iwebhu</translation>
 <translation id="5117590920725113268">Bonisa inyanga elandelayo</translation>
 <translation id="5136175204352732067">Ikhibhodi ehlukile ixhunyiwe</translation>
@@ -1048,7 +1049,6 @@ Ukufaka okusha</translation>
 <translation id="7165278925115064263">I-Alt+Shift+K</translation>
 <translation id="7168224885072002358">Ibuyela ekulungisweni okudala ngo-<ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Qala kabusha</translation>
-<translation id="718361511487535372">Vula ku-Google calendar</translation>
 <translation id="7188494361780961876">Imenyu iyiswe phezulu ekhoneni elingakwesobunxele sesikrini.</translation>
 <translation id="7189412385142492784">Ikude kangakanani i-Venus</translation>
 <translation id="7198435252016571249">Ikhamera iqondaniswe ekhoneni elingezansi ngakwesokudla. Ukungqubuzana nendawo yesistimu.</translation>
@@ -1057,6 +1057,10 @@ Ukufaka okusha</translation>
 <translation id="7258828758145722155">Kuhlelwe izolo</translation>
 <translation id="726276584504105859">Hudulela lapha ukuze usebenzise ukuhlukanisa kwesikrini</translation>
 <translation id="7262906531272962081">Dala isikhumbuzi</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> ku-
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Khetha mayelana nemininingwane eminingi ku-Google Calendar.</translation>
 <translation id="7302889331339392448">Okushuthwe Bukhoma kuvaliwe.</translation>
 <translation id="7303365578352795231">Ukuphendula kwenye idivayisi.</translation>
 <translation id="7305884605064981971">I-EDGE</translation>
@@ -1169,6 +1173,7 @@ Ukufaka okusha</translation>
 <translation id="7904094684485781019">Umlawuli wale akhawunti uyekise ukuvumela ukungena ngemvume okuningi.</translation>
 <translation id="7911118814695487383">I-Linux</translation>
 <translation id="7930731167419639574">Inkulumo manje iyaphroseswa endaweni futhi Ukubizela kusebenza ngokungaxhunyiwe ku-inthanethi</translation>
+<translation id="7932451802722951285">Vula ku-Google Calendar</translation>
 <translation id="7933084174919150729">Umsizi we-Google utholakalela kuphela iphrofayela eyinhloko.</translation>
 <translation id="79341161159229895">I-akhawunti iphethwe ngu-<ph name="FIRST_PARENT_EMAIL" /> no-<ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Cindezela u-<ph name="SHORTCUT_KEY_NAME" /> + V ukubuka ibhodi lakho lokunamathisela. Izinto ezi-5 zokugcina ozikopishile zilondolozwe ebhodini lakho lokunamathisela.</translation>

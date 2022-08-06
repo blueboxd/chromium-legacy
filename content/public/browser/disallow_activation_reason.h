@@ -35,7 +35,7 @@ enum DisallowActivationReasonId : uint64_t {
   kAXSetFocus = 11,
   kAXGetNativeView = 12,
   kAXGetNativeViewForWindow = 13,
-  kAXWebContents = 14,
+  // kAXWebContents = 14 is no longer blocking.
   kCertificateErrors = 15,
   kCreateChildFrame = 16,
   kCommitSameDocumentNavigation = 17,

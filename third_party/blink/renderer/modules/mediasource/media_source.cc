@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/chromeos_buildflags.h"
 #include "media/base/audio_decoder_config.h"
@@ -33,6 +34,8 @@
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
 #include "third_party/blink/renderer/modules/mediasource/cross_thread_media_source_attachment.h"
+#include "third_party/blink/renderer/modules/mediasource/handle_attachment_provider.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_handle_impl.h"
 #include "third_party/blink/renderer/modules/mediasource/same_thread_media_source_attachment.h"
 #include "third_party/blink/renderer/modules/mediasource/same_thread_media_source_tracer.h"
 #include "third_party/blink/renderer/modules/mediasource/source_buffer_track_base_supplement.h"
@@ -40,6 +43,7 @@
 #include "third_party/blink/renderer/modules/webcodecs/video_decoder.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -49,6 +53,7 @@
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/filters/h264_to_annex_b_bitstream_converter.h"
@@ -1195,6 +1200,80 @@ void MediaSource::ClearLiveSeekableRange_Locked(
   SendUpdatedInfoToMainThreadCache();
 }
 
+MediaSourceHandleImpl* MediaSource::getHandle(ExceptionState& exception_state) {
+  MutexLocker lock(attachment_link_lock_);
+
+  DVLOG(3) << __func__;
+
+  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(
+             GetExecutionContext()) &&
+         RuntimeEnabledFeatures::MediaSourceInWorkersUsingHandleEnabled(
+             GetExecutionContext()));
+
+  // Per https://github.com/w3c/media-source/pull/306:
+  // 1. If the implementation does not support creating a handle for this
+  //    MediaSource, then throw a NotSupportedError exception and abort these
+  //    steps.
+  // TODO(crbug.com/506273): Support MediaSource srcObject attachment idiom for
+  // main-thread-owned MediaSource objects.
+  if (IsMainThread() ||
+      !GetExecutionContext()->IsDedicatedWorkerGlobalScope()) {
+    LogAndThrowDOMException(exception_state,
+                            DOMExceptionCode::kNotSupportedError,
+                            "MediaSourceHandle creation is currently supported "
+                            "only in a dedicated worker.");
+    return nullptr;
+  }
+
+  // Per https://github.com/w3c/media-source/pull/306:
+  // 2. If the readyState attribute is not "closed" then throw an
+  //     InvalidStateError exception and abort these steps.
+  if (!IsClosed()) {
+    LogAndThrowDOMException(exception_state,
+                            DOMExceptionCode::kInvalidStateError,
+                            "The MediaSource's readyState is not 'closed'.");
+    return nullptr;
+  }
+
+  // Per https://github.com/w3c/media-source/pull/306:
+  // 3. If [[handle already retrieved]] is true, then throw an InvalidStateError
+  //    exception and abort these steps.
+  if (handle_already_retrieved_) {
+    LogAndThrowDOMException(
+        exception_state, DOMExceptionCode::kInvalidStateError,
+        "The MediaSourceHandle has already been retrieved.");
+    return nullptr;
+  }
+
+  // Per https://github.com/w3c/media-source/pull/306:
+  // 4. Create a new MediaSourceHandle object and associated resources, and link
+  //    it internally to this MediaSource.
+  // 5. Set [[handle already retrieved]] to be true.
+  // 6. Return the new object.
+  // TODO(crbug.com/506273): Support MediaSource srcObject attachment idiom for
+  // main-thread-owned MediaSource objects.
+  DCHECK(GetExecutionContext()->IsDedicatedWorkerGlobalScope());
+
+  // PassKey provider usage here ensures that we are allowed to call the
+  // attachment constructor.
+  scoped_refptr<CrossThreadMediaSourceAttachment> attachment =
+      base::MakeRefCounted<CrossThreadMediaSourceAttachment>(
+          this, AttachmentCreationPassKeyProvider::GetPassKey());
+  scoped_refptr<HandleAttachmentProvider> attachment_provider =
+      base::MakeRefCounted<HandleAttachmentProvider>(std::move(attachment));
+  handle_already_retrieved_ = true;
+
+  // Create, but don't "register" an internal blob URL with the security origin
+  // of for the worker's execution context for use later in a window thread
+  // media element's attachment to the MediaSource leveraging existing URL
+  // security checks and logging for legacy MSE object URLs.
+  SecurityOrigin* origin = GetExecutionContext()->GetMutableSecurityOrigin();
+  String internal_blob_url = BlobURL::CreatePublicURL(origin).GetString();
+  DCHECK(!internal_blob_url.IsEmpty());
+  return MakeGarbageCollected<MediaSourceHandleImpl>(
+      std::move(attachment_provider), std::move(internal_blob_url));
+}
+
 bool MediaSource::IsOpen() const {
   return ready_state_ == ReadyState::kOpen;
 }
@@ -1361,16 +1440,16 @@ void MediaSource::OpenIfInEndedState() {
 bool MediaSource::HasPendingActivity() const {
   // Note that an unrevoked MediaSource objectUrl for an otherwise inactive,
   // unreferenced HTMLME with MSE still attached will prevent GC of the whole
-  // group of objects. This is unfortunate, because it's conceivable that the
-  // app may actually still have a "reference" to the underlying MediaSource if
-  // it has the objectUrl in a string somewhere, for example. This is yet
-  // further motivation for apps to properly revokeObjectUrl and for the MSE
-  // spec, implementations and API users to transition to using HTMLME srcObject
-  // for MSE attachment instead of objectUrl. For at least
-  // SameThreadMediaSourceAttachments, the RevokeMediaSourceObjectURLOnAttach
-  // feature assists in automating this case. But for
-  // CrossThreadMediaSourceAttachments, the attachment holds strong references
-  // to each side until explicitly detached (or contexts destroyed).
+  // group of objects. This is yet further motivation for apps to properly
+  // revokeObjectUrl and for the MSE spec, implementations and API users to
+  // transition to using HTMLME srcObject for MSE attachment instead of
+  // objectUrl. For at least SameThreadMediaSourceAttachments, the
+  // RevokeMediaSourceObjectURLOnAttach feature assists in automating this case.
+  // But for CrossThreadMediaSourceAttachments, the attachment holds strong
+  // references to each side until explicitly detached (or contexts destroyed).
+  // The latter applies similarly when using MediaSourceHandle for srcObject
+  // attachment of a worker MediaSource: the handle object has a scoped_refptr
+  // to the underlying attachment until the handle is GC'ed.
   return async_event_queue_->HasPendingEvents();
 }
 

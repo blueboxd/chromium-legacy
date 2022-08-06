@@ -37,7 +37,7 @@ namespace {
 // automatically dismissed.
 const int kAutomaticSigninPromoViewDismissCount = 20;
 
-// Returns true if the sign-in promo is supported for |access_point|.
+// Returns true if the sign-in promo is supported for `access_point`.
 bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
   switch (access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
@@ -77,6 +77,7 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return false;
   }
@@ -136,6 +137,7 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -197,6 +199,7 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -258,6 +261,7 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -265,7 +269,7 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
   }
 }
 
-// Returns the DisplayedCount preference key string for |access_point|.
+// Returns the DisplayedCount preference key string for `access_point`.
 const char* DisplayedCountPreferenceKey(
     signin_metrics::AccessPoint access_point) {
   switch (access_point) {
@@ -308,12 +312,13 @@ const char* DisplayedCountPreferenceKey(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
 }
 
-// Returns AlreadySeen preference key string for |access_point|.
+// Returns AlreadySeen preference key string for `access_point`.
 const char* AlreadySeenSigninViewPreferenceKey(
     signin_metrics::AccessPoint access_point) {
   switch (access_point) {
@@ -356,6 +361,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
     case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS_SYNC_OFF_ROW:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
@@ -618,7 +624,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
   self.signinInProgress = NO;
 }
 
-// Starts sign-in process with the Chrome identity from |identity|.
+// Starts sign-in process with the Chrome identity from `identity`.
 - (void)showSigninWithIdentity:(ChromeIdentity*)identity
                    promoAction:(signin_metrics::PromoAction)promoAction {
   self.signinPromoViewState = ios::SigninPromoViewState::UsedAtLeastOnce;
@@ -643,7 +649,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
                                 completion:completion];
   } else {
     ShowSigninCommand* command = [[ShowSigninCommand alloc]
-        initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
+        initWithOperation:AuthenticationOperationSigninAndSync
                  identity:identity
               accessPoint:self.accessPoint
               promoAction:promoAction

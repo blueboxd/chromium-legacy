@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">পূর্বে থকা ডেটা মচক।</translation>
 <translation id="1147031633655575115"><ph name="USER" /> হিচাপে ছাইন ইন কৰিছে</translation>
 <translation id="1154984953698510061">অন্য টেবসমূহ চাওক</translation>
+<translation id="1161340988127985692">ইনক’গনিট’ত অন্য এপৰ পৰা লিংক খুলিবলৈ অনুমতি বিচাৰক</translation>
 <translation id="1164064664035028907">বিশ্বস্ত পাছৱৰ্ড ব্যৱহাৰ কৰক:</translation>
 <translation id="1165039591588034296">আসোঁৱাহ</translation>
 <translation id="1172898394251786223">পৰৱৰ্তী ক্ষেত্ৰ</translation>
@@ -292,6 +293,7 @@
 <translation id="3443810440409579745">টেব পাইছে।</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> মিনিট</translation>
 <translation id="3448016392200048164">স্প্লিট ভিউ ম’ড</translation>
+<translation id="3450502512529866925">এই পৃষ্ঠাখন বুকমাৰ্ক কৰক</translation>
 <translation id="345565170154308620">পাছৱৰ্ডসমূহ পৰিচালনা কৰক...</translation>
 <translation id="3469166899695866866">ডাউনল’ড কৰা বন্ধ কৰিবনে?</translation>
 <translation id="3470502288861289375">প্ৰতিলিপি কৰি থকা হৈছে…</translation>
@@ -406,6 +408,7 @@
 <translation id="4502566650163919158">এতিয়াই পৰীক্ষা কৰক</translation>
 <translation id="4505980578794259603">অন্তিমবাৰ <ph name="TIME" /> পূৰ্বে পৰীক্ষা কৰা হৈছিল।</translation>
 <translation id="4508750114462689118">ছাইন প্ৰ’ম’ বন্ধ কৰক</translation>
+<translation id="4511669830082467224">Googleৰ জৰিয়তে প্ৰতিচ্ছবি সন্ধান কৰক</translation>
 <translation id="4526249700380860531">ছেভ কৰি থোৱা পাছৱৰ্ডসমূহ <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />ত চাওক আৰু পৰিচালনা কৰক</translation>
 <translation id="452750746583162491">আপোনাৰ ছিংক কৰা ডেটা পর্যালোচনা কৰক</translation>
 <translation id="4536418791685807335">পুনৰ ছাইন ইন কৰি চাওক।</translation>
@@ -483,6 +486,7 @@
 <translation id="5090832849094901128">এই পাছৱৰ্ডটো মচাৰ ফলত <ph name="WEBSITE" />ত থকা আপোনাৰ একাউণ্টটো মচি পেলোৱা নহ’ব।</translation>
 <translation id="5092117651143801290">আপুনি পাছত অথবা অফলাইনত পঢ়িবলৈ পৃষ্ঠাসমূহ ছেভ কৰিব পাৰে। আপুনি দীঘল পৃষ্ঠাসমূহ ছেভ কৰিব বিচাৰে নেকি সেয়া Chromeএ সুধিব।</translation>
 <translation id="5094827893301452931">টুইট সম্পূর্ণ হ'ল</translation>
+<translation id="509789154667432072">বুকমাৰ্ক যোগ দিয়ক</translation>
 <translation id="5118713593561876160">আগ্ৰহ</translation>
 <translation id="5118764316110575523">অফ আছে</translation>
 <translation id="5127805178023152808">ছিংক অফ কৰা আছে</translation>
@@ -741,6 +745,7 @@
 <translation id="7099761977003084116">শেহতীয়া টেব</translation>
 <translation id="7102005569666697658">ডাউনল’ড কৰি থকা হৈছে… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">লুকুৱাওক</translation>
+<translation id="7108762695052995889">ছাইটটোলৈ যাওক</translation>
 <translation id="7133798577887235672">সম্পূৰ্ণ নাম</translation>
 <translation id="7136892417564438900">কেমেৰা উপলব্ধ নহয়</translation>
 <translation id="7153999225810839758">পঢ়িবলৈ আনুমানিক <ph name="TIME" /> মিনিট লাগে</translation>
@@ -771,6 +776,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" />টা নপঢ়া প্ৰবন্ধ।</translation>
 <translation id="7412027924265291969">অব্যাহত ৰাখক</translation>
+<translation id="7419565702166471774">সদায় সুৰক্ষিত সংযোগ ব্যৱহাৰ কৰক</translation>
 <translation id="7425346204213733349">আপোনাৰ বুকমাৰ্ক, ইতিহাস, পাছৱৰ্ড আৰু অন্য ছেটিংসমূহত কৰা সলনি কার্যসমূহ আপোনাৰ Google একাউণ্টত আৰু ছিংক কৰা নহয়। তথাপিও, আপোনাৰ পূর্বে থকা ডেটাসমূহ নিজৰ Google একাউণ্টত সঞ্চিত হৈ থাকিব।</translation>
 <translation id="7431991332293347422">আপোনাক Search আৰু অন্য সেৱাসমূহত ব্যক্তিগতকৰণ কৰা অভিজ্ঞতা প্ৰদান কৰিবলৈ কেনেকৈ আপোনাৰ ব্ৰাউজিংৰ ইতিহাস ব্যৱহাৰ কৰা হয় সেয়া নিয়ন্ত্ৰণ কৰক</translation>
 <translation id="7435356471928173109">আপোনাৰ প্ৰশাসকে অফ কৰিছে</translation>
@@ -810,7 +816,6 @@
 <translation id="7781069478569868053">নতুন টেব পৃষ্ঠা</translation>
 <translation id="7781829728241885113">কালি</translation>
 <translation id="778855399387580014">Chromeৰ নতুন টেবত সন্ধান আৰম্ভ কৰক।</translation>
-<translation id="7790892308048519147">সুৰক্ষিত সংযোগ ব্যৱহাৰ কৰাৰ চেষ্টা কৰক</translation>
 <translation id="7791543448312431591">যোগ কৰক</translation>
 <translation id="7807060072011926525">Googleএ প্ৰদান কৰিছে</translation>
 <translation id="7839985698273989086">অফলাইন পৃষ্ঠা</translation>

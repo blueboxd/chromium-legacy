@@ -1084,7 +1084,6 @@ void UiController::OnOverlayColorsChanged(
     const ExecutionDelegate::OverlayColors& colors) {}
 void UiController::OnClientSettingsChanged(const ClientSettings& settings) {}
 void UiController::OnShouldShowOverlayChanged(bool should_show) {}
-void UiController::OnShutdown(Metrics::DropOutReason reason) {}
 
 void UiController::OnExecuteScript(const std::string& start_message) {
   if (!start_message.empty())
@@ -1180,7 +1179,8 @@ bool UiController::SupportsExternalActions() {
 
 void UiController::ExecuteExternalAction(
     const external::Action& external_action,
-    base::OnceCallback<void()> start_dom_checks_callback,
+    base::OnceCallback<void(ExternalActionDelegate::DomUpdateCallback)>
+        start_dom_checks_callback,
     base::OnceCallback<void(const external::Result& result)>
         end_action_callback) {
   NOTREACHED() << "Flows using default UI don't support external actions.";

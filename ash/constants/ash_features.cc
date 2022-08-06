@@ -115,7 +115,7 @@ const base::FeatureParam<AmbientAnimationTheme> kAmbientModeAnimationThemeParam{
 // Controls whether to launch the animated screensaver (as opposed to the
 // existing photo slideshow) when entering ambient mode.
 const base::Feature kAmbientModeAnimationFeature{
-    "ChromeOSAmbientModeAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChromeOSAmbientModeAnimation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to allow Dev channel to use Prod server feature.
 const base::Feature kAmbientModeDevUseProdFeature{
@@ -268,7 +268,7 @@ const base::Feature kManagedTermsOfService{"ManagedTermsOfService",
 // Enable or disable calendar view from the system tray. Also enables the system
 // tray to show date in the shelf when the screen is sufficiently large.
 const base::Feature kCalendarView{"CalendarView",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable debug mode for CalendarModel.
 const base::Feature kCalendarModelDebugMode{"CalendarModelDebugMode",
@@ -430,6 +430,12 @@ const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
 const base::Feature kCryptohomeRecoveryFlow{"CryptohomeRecoveryFlow",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the UI to enable or disable cryptohome recovery in the settings
+// page. Also guards the wiring of cryptohome recovery settings to the
+// cryptohome backend.
+const base::Feature kCryptohomeRecoverySetup{"CryptohomeRecoverySetup",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDemoModeSWA{"DemoModeSWA",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -562,7 +568,7 @@ const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
 // diagnostics app routines, network events, and system snapshot.
 // TODO(ashleydp): Remove this after the feature is launched.
 const base::Feature kEnableLogControllerForDiagnosticsApp{
-    "EnableLogControllerForDiagnosticsApp", base::FEATURE_ENABLED_BY_DEFAULT};
+    "EnableLogControllerForDiagnosticsApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the networking cards will be shown in the diagnostics app.
 const base::Feature kEnableNetworkingInDiagnosticsApp{
@@ -586,6 +592,10 @@ const base::Feature kOobeAddPersonPolymer3{"OobeAddPersonPolymer3",
 // Enables Kiosk enrollment option in OOBE.
 const base::Feature kEnableKioskEnrollmentInOobe{
     "EnableKioskEnrollmentInOobe", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables Kiosk UI in Login screen.
+const base::Feature kEnableKioskLoginScreen{"EnableKioskLoginScreen",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables skipping of network screen.
 const base::Feature kEnableOobeNetworkScreenSkip{
@@ -697,7 +707,7 @@ const base::Feature kFilesAppExperimental{"FilesAppExperimental",
 // flag controls the second tier, whose support is more experimental.
 // https://crbug.com/1216245
 const base::Feature kFilesArchivemount2{"FilesArchivemount2",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the simple archive extraction.
 // https://crbug.com/953256
@@ -950,7 +960,7 @@ const base::Feature kLauncherDismissButtonsOnSortNudgeAndToast{
 // and recent apps context menu that allow the user to hide the continue
 // section.
 const base::Feature kLauncherHideContinueSection{
-    "LauncherHideContinueSection", base::FEATURE_ENABLED_BY_DEFAULT};
+    "LauncherHideContinueSection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Uses short intervals for launcher nudge for testing if enabled.
 const base::Feature kLauncherNudgeShortInterval{
@@ -1073,7 +1083,7 @@ const base::Feature kNotificationsInContextMenu{
 
 // Enables new notifications UI and grouped notifications.
 const base::Feature kNotificationsRefresh{"NotificationsRefresh",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable on-device grammar check service.
 const base::Feature kOnDeviceGrammarCheck{"OnDeviceGrammarCheck",
@@ -1413,7 +1423,7 @@ const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
 // Enables or disables using the system input engine for physical typing in
 // Chinese.
 const base::Feature kSystemChinesePhysicalTyping{
-    "SystemChinesePhysicalTyping", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SystemChinesePhysicalTyping", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the System Extensions platform.
 const base::Feature kSystemExtensions{"SystemExtensions",
@@ -1473,7 +1483,7 @@ const base::Feature kUsbNotificationController{
 // Uses new  AuthSession-based API in cryptohome to authenticate users during
 // sign-in.
 const base::Feature kUseAuthsessionAuthentication{
-    "UseAuthsessionAuthentication", base::FEATURE_ENABLED_BY_DEFAULT};
+    "UseAuthsessionAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
@@ -1578,12 +1588,13 @@ const base::Feature kDeviceActiveClient{"DeviceActiveClient",
 // Enables or disables PSM CheckMembership for daily device active pings
 // on ChromeOS.
 const base::Feature kDeviceActiveClientDailyCheckMembership{
-    "DeviceActiveClientDailyCheckMembership", base::FEATURE_ENABLED_BY_DEFAULT};
+    "DeviceActiveClientDailyCheckMembership",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables PSM CheckIn for the monthly device active pings
 // on ChromeOS.
 const base::Feature kDeviceActiveClientMonthlyCheckIn{
-    "DeviceActiveClientMonthlyCheckIn", base::FEATURE_ENABLED_BY_DEFAULT};
+    "DeviceActiveClientMonthlyCheckIn", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables PSM CheckMembership for monthly device active pings
 // on ChromeOS.
@@ -1640,7 +1651,8 @@ bool IsAllowAmbientEQEnabled() {
 }
 
 bool IsAmbientModeAnimationEnabled() {
-  return base::FeatureList::IsEnabled(kAmbientModeAnimationFeature);
+  return base::FeatureList::IsEnabled(kAmbientModeAnimationFeature) &&
+         IsPersonalizationHubEnabled();
 }
 
 bool IsAmbientModeDevUseProdEnabled() {
@@ -1750,9 +1762,12 @@ bool IsCryptohomeRecoveryFlowEnabled() {
   return base::FeatureList::IsEnabled(kCryptohomeRecoveryFlow);
 }
 
+bool IsCryptohomeRecoverySetupEnabled() {
+  return base::FeatureList::IsEnabled(kCryptohomeRecoverySetup);
+}
+
 bool IsDarkLightModeEnabled() {
-  return base::FeatureList::IsEnabled(kNotificationsRefresh) ||
-         chromeos::features::IsDarkLightModeEnabled();
+  return chromeos::features::IsDarkLightModeEnabled();
 }
 
 bool IsDemoModeSWAEnabled() {
@@ -2028,14 +2043,8 @@ bool IsNotificationsInContextMenuEnabled() {
   return base::FeatureList::IsEnabled(kNotificationsInContextMenu);
 }
 
-// True if `kNotificationsRefresh` or `kDarkLightMode` is enabled. Showing the
-// new notifications UI if the D/L mode feature is enabled, since the new
-// notifications UI supports D/L mode. These two features will be launched at
-// the same time, or the new notifications UI will be launched earlier than D/L
-// mode, so it is safe to do this.
 bool IsNotificationsRefreshEnabled() {
-  return base::FeatureList::IsEnabled(kNotificationsRefresh) ||
-         IsDarkLightModeEnabled();
+  return base::FeatureList::IsEnabled(kNotificationsRefresh);
 }
 
 bool IsOobeChromeVoxHintEnabled() {
@@ -2057,6 +2066,10 @@ bool IsOobeAddPersonPolymer3Enabled() {
 
 bool IsKioskEnrollmentInOobeEnabled() {
   return base::FeatureList::IsEnabled(kEnableKioskEnrollmentInOobe);
+}
+
+bool IsKioskLoginScreenEnabled() {
+  return base::FeatureList::IsEnabled(kEnableKioskLoginScreen);
 }
 
 bool IsOobeNetworkScreenSkipEnabled() {

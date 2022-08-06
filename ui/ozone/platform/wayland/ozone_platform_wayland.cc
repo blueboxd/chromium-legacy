@@ -20,6 +20,7 @@
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
@@ -38,13 +39,13 @@
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_exchange_data_provider.h"
+#include "ui/ozone/platform/wayland/host/wayland_input_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_menu_utils.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/wayland_utils.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
-#include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_menu_utils.h"
 #include "ui/ozone/public/system_input_injector.h"
@@ -234,7 +235,7 @@ class OzonePlatformWayland : public OzonePlatform,
 #else
     cursor_factory_ = std::make_unique<WaylandCursorFactory>(connection_.get());
 #endif
-    input_controller_ = CreateStubInputController();
+    input_controller_ = CreateWaylandInputController(connection_.get());
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     supported_buffer_formats_ =
@@ -281,13 +282,14 @@ class OzonePlatformWayland : public OzonePlatform,
       properties->set_parent_for_non_top_level_windows = true;
       properties->app_modal_dialogs_use_event_blocker = true;
 
-      // By design, clients are disallowed to manipulate global screen
-      // coordinates, instead only surface-local ones are supported.
+      // Xdg/Wl shell protocol does not disallow clients to manipulate global
+      // screen coordinates, instead only surface-local ones are supported.
       // Non-toplevel surfaces, for example, must be positioned relative to
       // their parents. As for toplevel surfaces, clients simply don't know
       // their position on screens and always assume they are located at some
       // arbitrary position.
-      properties->supports_global_screen_coordinates = false;
+      properties->supports_global_screen_coordinates =
+          features::IsWaylandScreenCoordinatesEnabled();
 
       initialised = true;
     }

@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">Удалить сохраненные данные</translation>
 <translation id="1147031633655575115">Вы вошли как <ph name="USER" /></translation>
 <translation id="1154984953698510061">Посмотреть другие вкладки</translation>
+<translation id="1161340988127985692">Спрашивать, открывать ли ссылки из других приложений в инкогнито</translation>
 <translation id="1164064664035028907">Используйте надежный пароль:</translation>
 <translation id="1165039591588034296">Ошибка</translation>
 <translation id="1172898394251786223">Следующее поле</translation>
@@ -65,6 +66,7 @@
 <translation id="1434356225517321998">Этот браузер управляется администратором. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Скрыть пароль</translation>
 <translation id="145015347812617860">Закладок: <ph name="COUNT" /></translation>
+<translation id="1450170672351507823">Стандартная защита включена. Для большей безопасности используйте улучшенную защиту.</translation>
 <translation id="149095475893949513">Этот сайт пытается скачать профиль конфигурации.</translation>
 <translation id="1491277525950327607">Для переключения нажмите дважды</translation>
 <translation id="1492417797159476138">Вы уже сохранили это имя пользователя для данного сайта.</translation>
@@ -162,6 +164,7 @@
 <translation id="236977714248711277">Сайты не могут использовать файлы cookie для вашего удобства, например сохранять информацию о товарах в корзине или о том, что вы вошли в аккаунт.
 
 Сайты не могут использовать файлы cookie, чтобы получать данные о ваших действиях в браузере, например для показа персонализированной рекламы.</translation>
+<translation id="2375243552872247702">Контент для вас</translation>
 <translation id="2381405137052800939">Основные</translation>
 <translation id="2386793615875593361">Выбрана 1 фотография</translation>
 <translation id="2421004566762153674">Блокировать сторонние файлы cookie</translation>
@@ -290,6 +293,7 @@
 <translation id="3443810440409579745">Вкладка получена.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин.</translation>
 <translation id="3448016392200048164">Режим Split View</translation>
+<translation id="3450502512529866925">Добавить страницу в закладки</translation>
 <translation id="345565170154308620">Настроить пароли</translation>
 <translation id="3469166899695866866">Остановить скачивание?</translation>
 <translation id="3470502288861289375">Копирование…</translation>
@@ -331,7 +335,7 @@
 <translation id="3789841737615482174">Установить</translation>
 <translation id="380329542618494757">Имя</translation>
 <translation id="3803696231112616155">Предлагать переводить этот сайт</translation>
-<translation id="3810973564298564668">Перейти</translation>
+<translation id="3810973564298564668">Управление</translation>
 <translation id="3819183753496523827">Нет подключения к интернету. Проверьте соединение и повторите попытку.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858860766373142691">Название</translation>
@@ -404,6 +408,7 @@
 <translation id="4502566650163919158">Проверить сейчас</translation>
 <translation id="4505980578794259603">Последняя проверка: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Закрыть сообщение о входе</translation>
+<translation id="4511669830082467224">Искать по изображению в Google</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Проверить синхронизированные данные</translation>
 <translation id="4536418791685807335">Войдите в аккаунт снова.</translation>
@@ -481,6 +486,7 @@
 <translation id="5090832849094901128">Это действие не приведет к удалению вашего аккаунта на сайте <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Сохраняйте страницы, чтобы прочитать их позже или в офлайн-режиме. Перед сохранением в Chrome длинных материалов вам будет предложено подтвердить это действие.</translation>
 <translation id="5094827893301452931">Опубликовано в Твиттере.</translation>
+<translation id="509789154667432072">Добавить закладку</translation>
 <translation id="5118713593561876160">Интересы</translation>
 <translation id="5118764316110575523">ВЫКЛ</translation>
 <translation id="5127805178023152808">Синхронизация выключена</translation>
@@ -601,6 +607,7 @@
 <translation id="6136914049981179737">только что</translation>
 <translation id="6144589619057374135">Открыть ${url} в режиме инкогнито</translation>
 <translation id="6149061208933997199">Использовать пароль</translation>
+<translation id="6152406514676263192">Чтобы получать контент на основе своих интересов, включите синхронизацию.</translation>
 <translation id="6159839020698489198">(необязательно)</translation>
 <translation id="6177442314419606057">Поиск в Chrome</translation>
 <translation id="6184086493125982861">Показать вкладки</translation>
@@ -738,6 +745,7 @@
 <translation id="7099761977003084116">Недавние вкладки</translation>
 <translation id="7102005569666697658">Скачивание… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Скрыть</translation>
+<translation id="7108762695052995889">Перейти на сайт</translation>
 <translation id="7133798577887235672">Полное имя</translation>
 <translation id="7136892417564438900">Камера недоступна</translation>
 <translation id="7153999225810839758">Чтение займет около <ph name="TIME" /> мин.</translation>
@@ -748,6 +756,7 @@
 <translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7192050974311852563">Начать запись журнала</translation>
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
+<translation id="7207023858769244910">Включите синхронизацию и смотрите интересный контент.</translation>
 <translation id="7207383424303353046">Новинка! Чтобы автоматически открывать сайты в Chrome, сделайте его браузером по умолчанию. <ph name="BEGIN_LINK" />Перейти в настройки<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Недопустимое название карты</translation>
 <translation id="722454870747268814">Новая вкладка инкогнито</translation>
@@ -767,6 +776,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906">Непрочитанных статей: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="7412027924265291969">Продолжить</translation>
+<translation id="7419565702166471774">Всегда использовать безопасные соединения</translation>
 <translation id="7425346204213733349">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это не повлияет на данные, сохраненные в аккаунте ранее.</translation>
 <translation id="7431991332293347422">Укажите, как Google может использовать историю браузера для персонализации Поиска и других сервисов.</translation>
 <translation id="7435356471928173109">Функцию отключил администратор.</translation>
@@ -806,7 +816,6 @@
 <translation id="7781069478569868053">Страница быстрого доступа</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Запускайте поиск в новой вкладке Chrome.</translation>
-<translation id="7790892308048519147">Использовать безопасное соединение</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="7807060072011926525">Данные от Google</translation>
 <translation id="7839985698273989086">Офлайн-версия страницы</translation>

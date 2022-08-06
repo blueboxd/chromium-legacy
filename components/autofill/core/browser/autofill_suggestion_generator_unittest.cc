@@ -19,7 +19,9 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -33,8 +35,6 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
   AutofillSuggestionGeneratorTest() = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillEnableMerchantBoundVirtualCards);
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     personal_data_.Init(/*profile_database=*/database_,
                         /*account_database=*/nullptr,
@@ -405,7 +405,7 @@ TEST_F(AutofillSuggestionGeneratorTest, ShouldShowVirtualCardOption) {
 }
 
 TEST_F(AutofillSuggestionGeneratorTest,
-       GetPromoCodeSuggestionsFromPromoCodeOffers) {
+       GetPromoCodeSuggestionsFromPromoCodeOffers_ValidPromoCodes) {
   std::vector<const AutofillOfferData*> promo_code_offers;
 
   base::Time expiry = AutofillClock::Now() + base::Days(2);
@@ -414,7 +414,8 @@ TEST_F(AutofillSuggestionGeneratorTest,
   display_strings.value_prop_text = "test_value_prop_text_1";
   std::string promo_code = "test_promo_code_1";
   AutofillOfferData offer1 = AutofillOfferData::FreeListingCouponOffer(
-      /*offer_id=*/1, expiry, merchant_origins, /*offer_details_url=*/GURL(),
+      /*offer_id=*/1, expiry, merchant_origins,
+      /*offer_details_url=*/GURL("https://offer-details-url.com/"),
       display_strings, promo_code);
 
   promo_code_offers.push_back(&offer1);
@@ -423,7 +424,8 @@ TEST_F(AutofillSuggestionGeneratorTest,
   display_strings2.value_prop_text = "test_value_prop_text_2";
   std::string promo_code2 = "test_promo_code_2";
   AutofillOfferData offer2 = AutofillOfferData::FreeListingCouponOffer(
-      /*offer_id=*/2, expiry, merchant_origins, /*offer_details_url=*/GURL(),
+      /*offer_id=*/2, expiry, merchant_origins,
+      /*offer_details_url=*/GURL("https://offer-details-url.com/"),
       display_strings2, promo_code2);
 
   promo_code_offers.push_back(&offer2);
@@ -431,7 +433,7 @@ TEST_F(AutofillSuggestionGeneratorTest,
   std::vector<Suggestion> promo_code_suggestions =
       AutofillSuggestionGenerator::GetPromoCodeSuggestionsFromPromoCodeOffers(
           promo_code_offers);
-  EXPECT_TRUE(promo_code_suggestions.size() == 2);
+  EXPECT_TRUE(promo_code_suggestions.size() == 3);
 
   EXPECT_EQ(promo_code_suggestions[0].main_text.value, u"test_promo_code_1");
   EXPECT_EQ(promo_code_suggestions[0].label, u"test_value_prop_text_1");
@@ -443,6 +445,37 @@ TEST_F(AutofillSuggestionGeneratorTest,
   EXPECT_EQ(promo_code_suggestions[1].label, u"test_value_prop_text_2");
   EXPECT_EQ(absl::get<std::string>(promo_code_suggestions[1].payload), "2");
   EXPECT_EQ(promo_code_suggestions[1].frontend_id,
+            POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY);
+
+  EXPECT_EQ(promo_code_suggestions[2].main_text.value,
+            l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_PROMO_CODE_SUGGESTIONS_FOOTER_TEXT));
+  EXPECT_EQ(absl::get<GURL>(promo_code_suggestions[2].payload),
+            offer1.GetOfferDetailsUrl().spec());
+  EXPECT_EQ(promo_code_suggestions[2].frontend_id,
+            POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS);
+}
+
+TEST_F(AutofillSuggestionGeneratorTest,
+       GetPromoCodeSuggestionsFromPromoCodeOffers_InvalidPromoCodeURL) {
+  std::vector<const AutofillOfferData*> promo_code_offers;
+  AutofillOfferData offer;
+  offer.SetPromoCode("test_promo_code_1");
+  offer.SetValuePropTextInDisplayStrings("test_value_prop_text_1");
+  offer.SetOfferIdForTesting(1);
+  offer.SetOfferDetailsUrl(GURL("invalid-url"));
+  promo_code_offers.push_back(&offer);
+
+  std::vector<Suggestion> promo_code_suggestions =
+      AutofillSuggestionGenerator::GetPromoCodeSuggestionsFromPromoCodeOffers(
+          promo_code_offers);
+  EXPECT_TRUE(promo_code_suggestions.size() == 1);
+
+  EXPECT_EQ(promo_code_suggestions[0].main_text.value, u"test_promo_code_1");
+  EXPECT_EQ(promo_code_suggestions[0].label, u"test_value_prop_text_1");
+  EXPECT_FALSE(
+      absl::holds_alternative<GURL>(promo_code_suggestions[0].payload));
+  EXPECT_EQ(promo_code_suggestions[0].frontend_id,
             POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY);
 }
 

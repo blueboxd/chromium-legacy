@@ -321,6 +321,10 @@ void AutofillClientImpl::ExecuteCommand(int id) {
   NOTREACHED();
 }
 
+void AutofillClientImpl::OpenPromoCodeOfferDetailsURL(const GURL& url) {
+  NOTREACHED();
+}
+
 void AutofillClientImpl::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
   NOTREACHED();

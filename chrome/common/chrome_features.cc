@@ -806,8 +806,14 @@ const base::Feature kPwaUpdateDialogForIcon{"PwaUpdateDialogForIcon",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Shows a confirmation dialog when updates to a PWAs name has been detected.
-const base::Feature kPwaUpdateDialogForName{"PwaUpdateDialogForName",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPwaUpdateDialogForName {
+  "PwaUpdateDialogForName",
+#if BUILDFLAG(IS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enables using quiet prompts for notification permission requests.
 const base::Feature kQuietNotificationPrompts{"QuietNotificationPrompts",
@@ -866,7 +872,7 @@ constexpr base::FeatureParam<double> kSCTAuditingSamplingRate{
 // about an SCT seen in the wild. If it hasn't been seen, then it is considered
 // a security incident and uploaded to Google.
 const base::Feature kSCTAuditingHashdance{"SCTAuditingHashdance",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // An estimated high bound for the time it takes Google to ingest updates to an
 // SCT log. Chrome will wait for at least this time plus the Log's Maximum Merge

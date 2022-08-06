@@ -99,7 +99,7 @@ const base::Feature kBackForwardCacheMediaSessionService{
 // Enable back/forward cache for screen reader users. This flag should be
 // removed once the https://crbug.com/1271450 is resolved.
 const base::Feature kEnableBackForwardCacheForScreenReader{
-    "EnableBackForwardCacheForScreenReader", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableBackForwardCacheForScreenReader", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // BackForwardCache is disabled on low memory devices. The threshold is defined
 // via a field trial param: "memory_threshold_for_back_forward_cache_in_mb"
@@ -702,7 +702,7 @@ const base::Feature kPrivateNetworkAccessRespectPreflightResults = {
 // Enables sending CORS preflight requests ahead of private network requests.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
 const base::Feature kPrivateNetworkAccessSendPreflights = {
-    "PrivateNetworkAccessSendPreflights", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PrivateNetworkAccessSendPreflights", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the ProactivelySwapBrowsingInstance experiment. A browsing instance
 // represents a set of frames that can script each other. Currently, Chrome does

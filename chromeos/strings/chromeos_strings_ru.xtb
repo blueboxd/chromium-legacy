@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">Этим устройством <ph name="DEVICE_TYPE" /> управляет <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Средний (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Удалить</translation>
+<translation id="1190378975642195988">Акселерометр корпуса</translation>
 <translation id="1195447618553298278">Неизвестная ошибка.</translation>
 <translation id="1196959502276349371">Версия <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Воспроизведение/пауза</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">Сохранить на USB-накопитель</translation>
 <translation id="1468664791493211953">Предложения</translation>
 <translation id="1476467821656042872">Этим устройством управляет <ph name="MANAGER" />. Ваши действия могут отслеживаться.</translation>
+<translation id="147809995039451286">Не удалось скачать обновление.</translation>
 <translation id="1478594628797167447">Сканер</translation>
 <translation id="1491076385728777984"><ph name="DEVICE_NAME" />: обновление встроенного ПО…</translation>
 <translation id="1499900233129743732">Этим аккаунтом управляет <ph name="MANAGER" />. Администратор может отслеживать действия пользователя, а также удаленно изменять настройки.</translation>
@@ -95,6 +97,7 @@
 <translation id="1717874160321062422">Под управлением <ph name="FIRST_MANAGER" /> и <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Серверы имен</translation>
 <translation id="1731082422893354635">Сенсорная панель Bluetooth</translation>
+<translation id="1745577949879301685">Не удалось загрузить изображения. Проверьте подключение к сети и повторите попытку.</translation>
 <translation id="1751249301761991853">Персональные настройки</translation>
 <translation id="1753496554272155572">Выйти из предпросмотра обоев</translation>
 <translation id="175763766237925754">Хороший (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -124,6 +127,7 @@
 <translation id="1999615961760456652">Страница входа</translation>
 <translation id="2006864819935886708">Подключение</translation>
 <translation id="2008685064673031089">Поиск простых чисел</translation>
+<translation id="2011174342667534258">Версия SDK:</translation>
 <translation id="2016697457005847575">Инструкции по устранению неполадок</translation>
 <translation id="2016848882344942759">Без бренда</translation>
 <translation id="202500043506723828">EID</translation>
@@ -155,6 +159,7 @@
 <translation id="225692081236532131">Статус активации</translation>
 <translation id="2271469253353559191">Расписание тёмной темы</translation>
 <translation id="2275586345903859204">Ремонт завершен</translation>
+<translation id="2276999893457278469">Самый популярный справочный контент</translation>
 <translation id="2287186687001756809">Изображений нет. Добавить фотографии можно на сайте <ph name="LINK" />.</translation>
 <translation id="2294753434210277304">Вставьте внешний накопитель, например USB-устройство или SD-карту, на который скачан образ Утилиты восстановления Chromebook.</translation>
 <translation id="2307344026739914387">Использовать текущую пару ключей</translation>
@@ -176,6 +181,7 @@
 <translation id="2418150275289244458">Перейти к настройкам</translation>
 <translation id="2421798028054665193">Изображение: <ph name="CURRENT_PAGE" /> из <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Точность чисел с плавающей запятой</translation>
+<translation id="2447969267935997922">Установка завершена. Извлеките USB-накопитель или SD-карту.</translation>
 <translation id="2448312741937722512">Тип</translation>
 <translation id="2461822463642141190">Расход энергии</translation>
 <translation id="2480034874476596812">Отключить вручную</translation>
@@ -187,6 +193,7 @@
 <translation id="2517472476991765520">Сканировать</translation>
 <translation id="2526590354069164005">Рабочий стол</translation>
 <translation id="253029298928638905">Перезапуск…</translation>
+<translation id="2533048460510040082">Рекомендованный справочный контент</translation>
 <translation id="2536159006530886390">Ошибка подключения к Интернету.</translation>
 <translation id="2570743873672969996">Запуск теста "<ph name="TEST_NAME" />"…</translation>
 <translation id="2584559707064218956">Чтобы задать конфигурацию сети, перейдите в настройки.</translation>
@@ -213,7 +220,6 @@
 <translation id="2878387241690264070">Батарея разрядилась на <ph name="RATE" /> за <ph name="NUM_SECONDS" /> сек.</translation>
 <translation id="291142119251986300">Некачественные комплектующие</translation>
 <translation id="2926057806159140518">Введите имя пользователя и пароль или отсканируйте QR-код.</translation>
-<translation id="2928420929544864228">Установка завершена.</translation>
 <translation id="3008341117444806826">ОБНОВИТЬ</translation>
 <translation id="3009958530611748826">Выберите папку для сохранения</translation>
 <translation id="3017079585324758401">Фон</translation>
@@ -267,6 +273,7 @@
 <translation id="3484914941826596830">Пока выполняется обновление встроенного ПО, не отключайте внешнее устройство и не выключайте компьютер. Это окно можно свернуть. Обновление займет несколько минут, в течение которых внешнее устройство может не работать.</translation>
 <translation id="3486220673238053218">узнать определение</translation>
 <translation id="3488065109653206955">Частично активировано</translation>
+<translation id="3492982278147736083">Гироскоп крышки</translation>
 <translation id="3517001332549868749">Обновление Chrome OS</translation>
 <translation id="3527036260304016759">Сбой: неизвестная ошибка</translation>
 <translation id="3532980081107202182">Осталось примерно <ph name="MIN_REMAINING" /> мин.</translation>
@@ -286,6 +293,7 @@
 <translation id="3621202678540785336">Вход</translation>
 <translation id="3632579075709132555">Включение экрана конфиденциальности</translation>
 <translation id="3643810137582748570">Пропустить калибровку</translation>
+<translation id="3651050199673793219">Выбрать единицу измерения температуры</translation>
 <translation id="3678765385266369662">Выберите способ отключения защиты от записи</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />: тестирование</translation>
 <translation id="370665806235115550">Загрузка...</translation>
@@ -300,9 +308,12 @@
 <translation id="3820172043799983114">Неверный PIN-код.</translation>
 <translation id="3838338534323494292">Новый пароль</translation>
 <translation id="385051799172605136">Назад</translation>
+<translation id="3856304145690230735">Гироскоп корпуса</translation>
 <translation id="385832974417157471">Прежде чем выключить устройство, воспользуйтесь на нем функцией Powerwash. Если на устройстве есть крышка, не закрывайте ее до завершения работы Powerwash. Этот процесс может занять около минуты.</translation>
 <translation id="3858860766373142691">Название</translation>
+<translation id="3862598938296403232">Введите описание.</translation>
 <translation id="3865414814144988605">Разрешение</translation>
+<translation id="3866249974567520381">Описание</translation>
 <translation id="387301095347517405">Количество полных циклов зарядки батареи</translation>
 <translation id="3885327323343477505">Изменить заставку</translation>
 <translation id="3923184630988645767">Передача данных</translation>
@@ -370,6 +381,7 @@
 <translation id="4472575034687746823">Начать</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Не удалось выполнить проверку ping сетевого шлюза, не заданного по умолчанию.</translation>
+<translation id="4500213108254186382">Акселерометр крышки</translation>
 <translation id="4503223151711056411">Стрелка влево</translation>
 <translation id="4511264077854731334">Портал</translation>
 <translation id="4521826082652183069">Совпадение с альтернативным именем субъекта</translation>
@@ -381,6 +393,7 @@
 <translation id="4561801978359312462">SIM-карта разблокирована</translation>
 <translation id="4562494484721939086">Сеть не найдена</translation>
 <translation id="4568938274596692027">Установка завершена. Подготовка к перезапуску…</translation>
+<translation id="4576943788798178439">Поддержка стилуса</translation>
 <translation id="458794348635939462">Не удалось преобразовать имена всех хостов.</translation>
 <translation id="4593212453765072419">Требуется аутентификация на прокси-сервере</translation>
 <translation id="4609350030397390689">Уменьшение яркости клавиатуры</translation>
@@ -429,6 +442,7 @@
 <translation id="4915052247106771211">Будут восстановлены заводские настройки устройства (Powerwash)</translation>
 <translation id="4917385247580444890">Сильный</translation>
 <translation id="4917889632206600977">Печать прервана: нет бумаги</translation>
+<translation id="491791267030419270">Советы по написанию отзывов</translation>
 <translation id="4921665434385737356">Батарея зарядилась на <ph name="RATE" /> за <ph name="NUM_SECONDS" /> сек.</translation>
 <translation id="4930320165497208503">Чтобы задать или изменить параметры подключения, перейдите в <ph name="BEGIN_LINK" />настройки<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Дата</translation>
@@ -535,6 +549,7 @@
 <translation id="5866840822086176774">Очень сильный</translation>
 <translation id="588258955323874662">Полноэкранный режим</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
+<translation id="5898758006340607522">Кнопка питания</translation>
 <translation id="5901630391730855834">Желтый</translation>
 <translation id="5903200662178656908">Устройство представляет собой комплект из мыши и клавиатуры.</translation>
 <translation id="5916084858004523819">Запрещено</translation>
@@ -670,6 +685,7 @@
 <translation id="7143207342074048698">Подключение</translation>
 <translation id="7144878232160441200">Повторить</translation>
 <translation id="714876143603641390">Подключение к локальной сети</translation>
+<translation id="7154020516215182599">Оставьте отзыв или опишите проблему. Если возможно, укажите действия для воспроизведения проблемы.</translation>
 <translation id="7155171745945906037">Фото с камеры или из галереи</translation>
 <translation id="7162487448488904999">Галерея</translation>
 <translation id="7170236477717446850">Фото профиля</translation>
@@ -847,6 +863,7 @@
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="8863170912498892583">Использовать тёмную тему</translation>
 <translation id="8863888432376731307">Как <ph name="INTENT" /> "<ph name="QUERY" />" и не только</translation>
+<translation id="8864415976656252616">Нет рекомендованных материалов. Посмотрите самый популярный справочный контент.</translation>
 <translation id="8868741746785112895">Глобальный уникальный идентификатор</translation>
 <translation id="8876270629542503161">Это планшет.</translation>
 <translation id="8881098542468797602">Проверка пройдена</translation>
@@ -857,6 +874,7 @@
 <translation id="8919792139048574232">Позволяет смотреть исправления</translation>
 <translation id="8919837981463578619">Сбой: нет лотка для бумаги</translation>
 <translation id="8923267550422472772">День месяца для сброса показателя</translation>
+<translation id="8925613211674558308">Кешированные данные о продукте (VPD)</translation>
 <translation id="8928727111548978589">Сбой: закончилась бумага</translation>
 <translation id="8930521118335213258">Пользователь</translation>
 <translation id="8930622219860340959">Беспроводная связь</translation>
@@ -898,6 +916,7 @@
 <translation id="922179502584117429">Текущая версия <ph name="VERSION_NUMBER" /> устарела</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">Отправить отзыв</translation>
 <translation id="952992212772159698">Не активировано</translation>
 <translation id="960719561871045870">Код оператора</translation>
 <translation id="982713511914535780">Запустить проверку расхода заряда</translation>

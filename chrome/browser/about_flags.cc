@@ -2155,6 +2155,26 @@ const FeatureEntry::FeatureParam kFeedPositionAndroid_push_down_feed_large[] = {
 const FeatureEntry::FeatureParam kFeedPositionAndroid_pull_up_feed[] = {
     {"pull_up_feed", "true"}};
 
+const FeatureEntry::FeatureParam
+    kFeedPositionAndroid_push_down_feed_large_target_feed_active[] = {
+        {"push_down_feed_large", "true"},
+        {"feed_active_targeting", "active"}};
+
+const FeatureEntry::FeatureParam
+    kFeedPositionAndroid_push_down_feed_large_target_non_feed_active[] = {
+        {"push_down_feed_large", "true"},
+        {"feed_active_targeting", "non-active"}};
+
+const FeatureEntry::FeatureParam
+    kFeedPositionAndroid_pull_up_feed_target_feed_active[] = {
+        {"pull_up_feed", "true"},
+        {"feed_active_targeting", "active"}};
+
+const FeatureEntry::FeatureParam
+    kFeedPositionAndroid_pull_up_feed_target_non_feed_active[] = {
+        {"pull_up_feed", "true"},
+        {"feed_active_targeting", "non-active"}};
+
 const FeatureEntry::FeatureVariation kFeedPositionAndroidVariations[] = {
     {"Push down Feed (small)", kFeedPositionAndroid_push_down_feed_small,
      std::size(kFeedPositionAndroid_push_down_feed_small), nullptr},
@@ -2162,6 +2182,23 @@ const FeatureEntry::FeatureVariation kFeedPositionAndroidVariations[] = {
      std::size(kFeedPositionAndroid_push_down_feed_large), nullptr},
     {"Pull up Feed", kFeedPositionAndroid_pull_up_feed,
      std::size(kFeedPositionAndroid_pull_up_feed), nullptr},
+    {"Push down Feed (large) with targeting Feed active users",
+     kFeedPositionAndroid_push_down_feed_large_target_feed_active,
+     std::size(kFeedPositionAndroid_push_down_feed_large_target_feed_active),
+     nullptr},
+    {"Push down Feed (large) with targeting non-Feed active users",
+     kFeedPositionAndroid_push_down_feed_large_target_non_feed_active,
+     std::size(
+         kFeedPositionAndroid_push_down_feed_large_target_non_feed_active),
+     nullptr},
+    {"Pull up Feed with targeting Feed active users",
+     kFeedPositionAndroid_pull_up_feed_target_feed_active,
+     std::size(kFeedPositionAndroid_pull_up_feed_target_feed_active), nullptr},
+    {"Pull up Feed with targeting non-Feed active users",
+     kFeedPositionAndroid_pull_up_feed_target_non_feed_active,
+     std::size(kFeedPositionAndroid_pull_up_feed_target_non_feed_active),
+     nullptr},
+
 };
 
 const FeatureEntry::FeatureParam kFeatureNotificationGuide_low_engaged[] = {
@@ -2228,6 +2265,19 @@ const FeatureEntry::FeatureVariation kWebFeedAwarenessVariations[] = {
      std::size(kWebFeedAwareness_new_animation), nullptr},
     {"IPH and dot", kWebFeedAwareness_IPH, std::size(kWebFeedAwareness_IPH),
      nullptr},
+};
+
+const FeatureEntry::FeatureParam kFeedCloseRefresh_Open[] = {
+    {"require_interaction", "false"}};
+
+const FeatureEntry::FeatureParam kFeedCloseRefresh_Interact[] = {
+    {"require_interaction", "true"}};
+
+const FeatureEntry::FeatureVariation kFeedCloseRefreshVariations[] = {
+    {"Open", kFeedCloseRefresh_Open, std::size(kFeedCloseRefresh_Open),
+     nullptr},
+    {"Interact", kFeedCloseRefresh_Interact,
+     std::size(kFeedCloseRefresh_Interact), nullptr},
 };
 
 const FeatureEntry::FeatureParam kConditionalTabStripAndroid_Immediate[] = {
@@ -3107,10 +3157,17 @@ const FeatureEntry::FeatureVariation kUseMultipleOverlaysVariations[] = {
 const FeatureEntry::FeatureParam kGridTabSwitcherForTabletsPolished[] = {
     {"enable_launch_polish", "true"}};
 
+const FeatureEntry::FeatureParam kGridTabSwitcherForTabletsDelayCreation[] = {
+    {"delay_creation", "true"},
+    {"enable_launch_polish", "true"}};
+
 const FeatureEntry::FeatureVariation kGridTabSwitcherForTabletsVariations[] = {
     {"(Polished)", kGridTabSwitcherForTabletsPolished,
      std::size(kGridTabSwitcherForTabletsPolished), nullptr},
+    {"(DelayCreatePolish)", kGridTabSwitcherForTabletsDelayCreation,
+     std::size(kGridTabSwitcherForTabletsDelayCreation), nullptr},
 };
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -4035,8 +4092,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualPageActionsWithPriceTrackingName,
      flag_descriptions::kContextualPageActionsWithPriceTrackingDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(segmentation_platform::features::
-                            kContextualPageActionsWithPriceTracking)},
+     FEATURE_VALUE_TYPE(
+         segmentation_platform::features::kContextualPageActionPriceTracking)},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
@@ -4647,6 +4704,11 @@ const FeatureEntry kFeatureEntries[] = {
          kInterestFeedV2ClickAndViewActionsConditionalUploadDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2ClicksAndViewsConditionalUpload)},
+    {"feed-close-refresh", flag_descriptions::kFeedCloseRefreshName,
+     flag_descriptions::kFeedCloseRefreshDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(feed::kFeedCloseRefresh,
+                                    kFeedCloseRefreshVariations,
+                                    "FeedCloseRefresh")},
 #endif  // BUILDFLAG(IS_ANDROID)
     {"password-import", flag_descriptions::kPasswordImportName,
      flag_descriptions::kPasswordImportDescription, kOsAll,
@@ -5499,10 +5561,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-cache-one-google-bar", flag_descriptions::kNtpCacheOneGoogleBarName,
      flag_descriptions::kNtpCacheOneGoogleBarDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kCacheOneGoogleBar)},
-
-    {"ntp-modules", flag_descriptions::kNtpModulesName,
-     flag_descriptions::kNtpModulesDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kModules)},
 
     {"ntp-drive-module", flag_descriptions::kNtpDriveModuleName,
      flag_descriptions::kNtpDriveModuleDescription, kOsDesktop,
@@ -7292,6 +7350,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMuteCompromisedPasswordsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(password_manager::features::kMuteCompromisedPasswords)},
 
+    {"password-view-page-in-settings",
+     flag_descriptions::kPasswordViewPageInSettingsName,
+     flag_descriptions::kPasswordViewPageInSettingsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kPasswordViewPageInSettings)},
+
     {"password-notes", flag_descriptions::kPasswordNotesName,
      flag_descriptions::kPasswordNotesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordNotes)},
@@ -7825,15 +7889,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillParseMerchantPromoCodeFields)},
 
-    {"autofill-enable-virtual-cards-risk-based-authentication",
-     flag_descriptions::kAutofillEnableVirtualCardsRiskBasedAuthenticationName,
-     flag_descriptions::
-         kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::
-             kAutofillEnableVirtualCardsRiskBasedAuthentication)},
-
     {"autofill-highlight-only-changed-value-in-preview-mode",
      flag_descriptions::kAutofillHighlightOnlyChangedValuesInPreviewModeName,
      flag_descriptions::
@@ -7862,13 +7917,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableInputEventLoggingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnableInputEventLogging)},
 #endif
-
-    {"autofill-enable-merchant-bound-virtual-cards",
-     flag_descriptions::kAutofillEnableMerchantBoundVirtualCardsName,
-     flag_descriptions::kAutofillEnableMerchantBoundVirtualCardsDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnableMerchantBoundVirtualCards)},
 
     {"autofill-enable-sticky-manual-fallback-for-cards",
      flag_descriptions::kAutofillEnableStickyManualFallbackForCardsName,
@@ -7900,7 +7948,7 @@ const FeatureEntry kFeatureEntries[] = {
     {flag_descriptions::kEnableLensFullscreenSearchFlagId,
      flag_descriptions::kEnableLensFullscreenSearchName,
      flag_descriptions::kEnableLensFullscreenSearchDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(lens::features::kLensFullscreenSearch)},
+     FEATURE_VALUE_TYPE(lens::features::kLensSearchOptimizations)},
     {flag_descriptions::kEnableLensStandaloneFlagId,
      flag_descriptions::kEnableLensStandaloneName,
      flag_descriptions::kEnableLensStandaloneDescription, kOsDesktop,
@@ -8457,6 +8505,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTouchDragAndContextMenuName,
      flag_descriptions::kTouchDragAndContextMenuDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kTouchDragAndContextMenu)},
+
+    {"new-instance-from-dragged-link",
+     flag_descriptions::kNewInstanceFromDraggedLinkName,
+     flag_descriptions::kNewInstanceFromDraggedLinkDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kNewInstanceFromDraggedLink)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"autofill-enable-update-virtual-card-enrollment",
@@ -8788,6 +8841,23 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDmTokenDeletionDescription, kOsAll,
      FEATURE_VALUE_TYPE(policy::features::kDmTokenDeletion)},
 #endif  // !BUILDFLAG(IS_CHROMEOS)
+
+    {"autofill-enable-get-details-for-enroll-parsing-in-upload-card-response",
+     flag_descriptions::
+         kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName,
+     flag_descriptions::
+         kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponse)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"enable-commerce-hint-android",
+     flag_descriptions::kCommerceHintAndroidName,
+     flag_descriptions::kCommerceHintAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(commerce::kCommerceHintAndroid)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

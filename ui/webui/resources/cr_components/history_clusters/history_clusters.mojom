@@ -162,6 +162,9 @@ interface PageHandler {
   // The ClustersBrowserProxy singleton calls this when it's first initialized.
   SetPage(pending_remote<Page> page);
 
+  // Notify the backend that the side panel UI is ready to be shown.
+  ShowSidePanelUI();
+
   // Toggles the visibility of the History Clusters. The returned Promise echos
   // the given value for `visible`. The page uses the returned value to update
   // its state once the request is fulfilled by the browser.
@@ -209,4 +212,7 @@ interface Page {
   // Called with the set of removed visits when the last accepted call to
   // `RemoveVisits()` succeeds. `removed_visits` will be used to update the UI.
   OnVisitsRemoved(array<URLVisit> removed_visits);
+
+  // Called when History is deleted from a different tab.
+  OnHistoryDeleted();
 };

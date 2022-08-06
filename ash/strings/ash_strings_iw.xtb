@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">יומן</translation>
 <translation id="1153356358378277386">מכשירים מותאמים</translation>
 <translation id="1165712434476988950">יש להפעיל מחדש את המכשיר כדי להחיל את העדכון.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">‏יכול להיות שכבל ה-USB-C שלך לא יתחבר למסכים כמו שצריך</translation>
 <translation id="1175572348579024023">גלילה</translation>
 <translation id="1178581264944972037">השהיה</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">אפליקציות אחרונות</translation>
 <translation id="1252999807265626933">טעינה מ-<ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">מה מזג האוויר?</translation>
-<translation id="1262870540683925850">‏<ph name="START_TIME" /> עד 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. צריך לבחור אירוע כדי לראות פרטים נוספים ביומן Google.</translation>
 <translation id="1267032506238418139">שינוי מקש קיצור</translation>
 <translation id="1269405891096105529">אין תמיכה בציוד היקפי במצב אורח</translation>
 <translation id="1270290102613614947">המקלדת שמופיעה במסך מושבתת</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1632985212731562677">ניתן להשבית את התכונה 'גישה באמצעות מתג' דרך 'הגדרות' &gt; 'נגישות'.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> מכשירים</translation>
+<translation id="1639239467298939599">בטעינה</translation>
 <translation id="1654477262762802994">הפעלה של שאילתה קולית</translation>
 <translation id="1668469839109562275">‏רשתות VPN מובנות</translation>
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2367186422933365202">‏לא ניתן להיכנס אל ה-Chromebook</translation>
 <translation id="2369165858548251131">"שלום" בסינית</translation>
+<translation id="2375445874393996153">‏אין יותר תמיכה בחיפוש של מה שמוצג במסך באמצעות Google Assistant.</translation>
 <translation id="2390318262976603432">הגדרות שילוב של שפה ואזור</translation>
 <translation id="240006516586367791">פקדי מדיה</translation>
 <translation id="2402411679569069051">‏כדי לבטל את נעילת ה-Chromebook, עליך להשתמש בטביעת האצבע או לבטל את נעילת הטלפון שלך</translation>
@@ -505,6 +504,7 @@
 <translation id="3901991538546252627">מתבצעת התחברות אל: <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{שינוי המכשיר לגרסה קודמת בתוך דקה}two{שינוי המכשיר לגרסה קודמת בתוך # דקות}many{שינוי המכשיר לגרסה קודמת בתוך # דקות}other{שינוי המכשיר לגרסה קודמת בתוך # דקות}}</translation>
 <translation id="3923494859158167397">לא הוגדרו רשתות סלולריות</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, האירועים בטעינה.</translation>
 <translation id="3932043219784172185">אין מכשיר מחובר</translation>
 <translation id="3934456833412894880">הטעינה הדינמית מופעלת. רמת הטעינה של הסוללה תישאר על 80% כדי להאריך את חיי הסוללה, ותתבצע טעינה מלאה כשיהיה בכך צורך.</translation>
 <translation id="3943857333388298514">הדבקה</translation>
@@ -704,6 +704,7 @@
 <translation id="5078796286268621944">‏PIN שגוי</translation>
 <translation id="5083553833479578423">‏אפשר להפעיל תכונות Assistant נוספות.</translation>
 <translation id="509790653408515442">כשמשדרים את האפליקציות של הטלפון, הן מופיעות כאן</translation>
+<translation id="5098537242461068432">שולחן העבודה הווירטואלי והחלונות נפתחו מחדש</translation>
 <translation id="5107522548814527560">אינטרנט</translation>
 <translation id="5117590920725113268">הצגת החודש הבא</translation>
 <translation id="5136175204352732067">חוברה מקלדת אחרת</translation>
@@ -1048,7 +1049,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">תבוצע חזרה לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">רענון</translation>
-<translation id="718361511487535372">‏פתיחה ביומן Google</translation>
 <translation id="7188494361780961876">התפריט הועבר לפינה הימנית העליונה של המסך.</translation>
 <translation id="7189412385142492784">מה המרחק בין כדור הארץ לנוגה</translation>
 <translation id="7198435252016571249">המצלמה מוצמדת לפינה השמאלית התחתונה. התנגשות עם תצוגת המערכת.</translation>
@@ -1057,6 +1057,10 @@
 <translation id="7258828758145722155">נערך אתמול</translation>
 <translation id="726276584504105859">לשימוש במסך מפוצל יש לגרור לכאן</translation>
 <translation id="7262906531272962081">יצירת תזכורת</translation>
+<translation id="7297440678881127227">‏<ph name="START_TIME" /> עד
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. צריך לבחור אירוע כדי לראות פרטים נוספים ביומן Google.</translation>
 <translation id="7302889331339392448">התכונה 'כתוביות מיידיות' מושבתת.</translation>
 <translation id="7303365578352795231">התשובה מתקבלת במכשיר אחר.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1171,6 +1175,7 @@
 <translation id="7904094684485781019">מנהל החשבון הזה אסר על כניסה עם מספר חשבונות.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">העיבוד של דיבור נעשה עכשיו באופן מקומי ותכונת ההכתבה פועלת אופליין.</translation>
+<translation id="7932451802722951285">‏פתיחה ביומן Google</translation>
 <translation id="7933084174919150729">‏Google Assistant זמינה רק לפרופיל ראשי.</translation>
 <translation id="79341161159229895">החשבון מנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">‏לצפייה בלוח העריכה, יש ללחוץ על <ph name="SHORTCUT_KEY_NAME" /> + V. בלוח העריכה שמורים חמשת הפריטים האחרונים שהעתקת.</translation>

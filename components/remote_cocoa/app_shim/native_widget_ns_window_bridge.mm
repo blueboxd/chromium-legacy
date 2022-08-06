@@ -1224,13 +1224,21 @@ void NativeWidgetNSWindowBridge::FullscreenControllerTransitionComplete(
 void NativeWidgetNSWindowBridge::FullscreenControllerSetFrame(
     const gfx::Rect& frame,
     bool animate,
-    base::TimeDelta& transition_time) {
+    base::OnceCallback<void()> completion_callback) {
   NSRect ns_frame = gfx::ScreenRectToNSRect(frame);
+  base::TimeDelta transition_time = base::Seconds(0);
   if (animate)
     transition_time = base::Seconds([window_ animationResizeTime:ns_frame]);
-  else
-    transition_time = base::Seconds(0);
-  [window_ setFrame:ns_frame display:NO animate:animate];
+
+  __block base::OnceCallback<void()> complete = std::move(completion_callback);
+  [NSAnimationContext
+      runAnimationGroup:^(NSAnimationContext* context) {
+        [context setDuration:transition_time.InSecondsF()];
+        [[window_ animator] setFrame:ns_frame display:YES animate:animate];
+      }
+      completionHandler:^{
+        std::move(complete).Run();
+      }];
 }
 
 void NativeWidgetNSWindowBridge::FullscreenControllerToggleFullscreen() {
@@ -1251,7 +1259,11 @@ void NativeWidgetNSWindowBridge::FullscreenControllerToggleFullscreen() {
     return;
   }
 
+  bool is_key_window = [window_ isKeyWindow];
   [window_ toggleFullScreen:nil];
+  // Ensure the transitioning window maintains focus (crbug.com/1338659).
+  if (is_key_window)
+    [window_ makeKeyAndOrderFront:nil];
 }
 
 void NativeWidgetNSWindowBridge::FullscreenControllerCloseWindow() {
@@ -1267,7 +1279,10 @@ gfx::Rect NativeWidgetNSWindowBridge::FullscreenControllerGetFrameForDisplay(
   display::Display display;
   if (display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
                                                             &display)) {
-    return display.work_area();
+    // Use the current window size to avoid unexpected window resizes on
+    // subsequent cross-screen window drag and drops; see crbug.com/1338664
+    return gfx::Rect(display.work_area().origin(),
+                     FullscreenControllerGetFrame().size());
   }
   return gfx::Rect();
 }

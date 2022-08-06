@@ -31,6 +31,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1150989369772528668">Calendar</translation>
 <translation id="1153356358378277386">Dispozitive asociate</translation>
 <translation id="1165712434476988950">Pentru aplicarea actualizării este necesară repornirea dispozitivului.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" /> <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Cablul USB-C poate să nu se conecteze corespunzător la ecrane</translation>
 <translation id="1175572348579024023">Derulează</translation>
 <translation id="1178581264944972037">Întrerupe</translation>
@@ -55,10 +56,6 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1247519845643687288">Aplicații recente</translation>
 <translation id="1252999807265626933">Se încarcă de la <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Cum este vremea?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> – 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Selectează pentru mai multe detalii în Google Calendar.</translation>
 <translation id="1267032506238418139">Modificarea comenzii rapide</translation>
 <translation id="1269405891096105529">Dispozitivul periferic nu este acceptat în modul pentru invitați</translation>
 <translation id="1270290102613614947">Tastatură pe ecran dezactivată</translation>
@@ -124,6 +121,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1620510694547887537">Cameră</translation>
 <translation id="1632985212731562677">Accesul prin comutare poate fi dezactivat din Setări &gt; Accesibilitate.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispozitive</translation>
+<translation id="1639239467298939599">Se încarcă</translation>
 <translation id="1654477262762802994">Începe o interogare vocală</translation>
 <translation id="1668469839109562275">Rețea VPN încorporată</translation>
 <translation id="1677472565718498478">Timp rămas: <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2367186422933365202">Nu te poți conecta la Chromebook</translation>
 <translation id="2369165858548251131">„Bună” în chineză</translation>
+<translation id="2375445874393996153">Nu se mai acceptă căutarea conținutului de pe ecran cu Asistentul Google.</translation>
 <translation id="2390318262976603432">Setări de limbă</translation>
 <translation id="240006516586367791">Comenzi media</translation>
 <translation id="2402411679569069051">Pentru a debloca Chromebookul, folosește amprenta sau deblochează telefonul</translation>
@@ -505,6 +504,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="3901991538546252627">Se conectează la <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Treci la versiunea anterioară a dispozitivului în cel mult un minut}few{Treci la versiunea anterioară a dispozitivului în # minute}other{Treci la versiunea anterioară a dispozitivului în # de minute}}</translation>
 <translation id="3923494859158167397">Nu a fost configurată nicio rețea mobilă</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Se încarcă evenimentele.</translation>
 <translation id="3932043219784172185">Niciun dispozitiv conectat</translation>
 <translation id="3934456833412894880">S-a activat încărcarea adaptabilă. Bateria va rămâne la 80 % pentru o autonomie mai mare și se va încărca la capacitate maximă când ai nevoie.</translation>
 <translation id="3943857333388298514">Inserează</translation>
@@ -704,6 +704,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="5078796286268621944">Cod PIN incorect</translation>
 <translation id="5083553833479578423">Deblochează mai multe funcții ale Asistentului.</translation>
 <translation id="509790653408515442">Când redai în stream aplicații de pe telefon, ele vor apărea aici</translation>
+<translation id="5098537242461068432">Desktopul și ferestrele s-au redeschis</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Afișează luna următoare</translation>
 <translation id="5136175204352732067">Altă tastatură conectată</translation>
@@ -1048,7 +1049,6 @@ Instalare nouă</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Actualizați</translation>
-<translation id="718361511487535372">Deschide în Google Calendar</translation>
 <translation id="7188494361780961876">Meniul a fost mutat în colțul din stânga sus al ecranului.</translation>
 <translation id="7189412385142492784">Cât de departe este Venus</translation>
 <translation id="7198435252016571249">Camera foto este aliniată cu colțul din dreapta jos. Conflict cu platforma de sistem.</translation>
@@ -1057,6 +1057,10 @@ Instalare nouă</translation>
 <translation id="7258828758145722155">Editat ieri</translation>
 <translation id="726276584504105859">Trage aici pentru a folosi ecranul împărțit</translation>
 <translation id="7262906531272962081">Creează un memento</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> –
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Selectează pentru mai multe detalii în Google Calendar.</translation>
 <translation id="7302889331339392448">Funcția Subtitrări live este dezactivată.</translation>
 <translation id="7303365578352795231">Se răspunde pe alt dispozitiv.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@ Instalare nouă</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Vorbirea este acum procesată local și Dictarea funcționează offline</translation>
+<translation id="7932451802722951285">Deschide în Google Calendar</translation>
 <translation id="7933084174919150729">Asistentul Google este disponibil numai pentru profilul principal.</translation>
 <translation id="79341161159229895">Cont gestionat de <ph name="FIRST_PARENT_EMAIL" /> și de <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Apasă <ph name="SHORTCUT_KEY_NAME" /> + V pentru a vedea clipboardul. Ultimele cinci elemente pe care le-ai copiat sunt salvate în clipboard.</translation>

@@ -54,6 +54,7 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/popup_menu/public/features.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
@@ -348,8 +349,10 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 - (void)setLocalStatePrefs:(PrefService*)localStatePrefs {
   _localStatePrefs = localStatePrefs;
 
-  _destinationUsageHistory =
-      [[DestinationUsageHistory alloc] initWithPrefService:localStatePrefs];
+  if (!self.isIncognito) {
+    _destinationUsageHistory =
+        [[DestinationUsageHistory alloc] initWithPrefService:localStatePrefs];
+  }
 }
 
 - (void)setEngagementTracker:(feature_engagement::Tracker*)engagementTracker {
@@ -570,11 +573,13 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
       self.followAction = action;
     }
 
-    self.addBookmarkAction = CreateOverflowMenuAction(
-        IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS, kAddBookmarkActionSymbol, YES,
-        kToolsMenuAddToBookmarks, ^{
-          [weakSelf addOrEditBookmark];
-        });
+    NSInteger addBookmarkStringID = GetBookmarkStringID();
+
+    self.addBookmarkAction =
+        CreateOverflowMenuAction(addBookmarkStringID, kAddBookmarkActionSymbol,
+                                 YES, kToolsMenuAddToBookmarks, ^{
+                                   [weakSelf addOrEditBookmark];
+                                 });
 
     self.editBookmarkAction = CreateOverflowMenuAction(
         IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK, kEditActionSymbol, YES,
@@ -690,8 +695,10 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
       self.followAction = action;
     }
 
+    NSInteger addBookmarkStringID = GetBookmarkStringID();
+
     self.addBookmarkAction = CreateOverflowMenuAction(
-        IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS, @"overflow_menu_action_bookmark",
+        addBookmarkStringID, @"overflow_menu_action_bookmark",
         kToolsMenuAddToBookmarks, ^{
           [weakSelf addOrEditBookmark];
         });
@@ -842,7 +849,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     self.settingsDestination,
   ];
 
-  if (IsSmartSortingNewOverflowMenuEnabled()) {
+  if (self.destinationUsageHistory && IsSmartSortingNewOverflowMenuEnabled()) {
     baseDestinations = [self.destinationUsageHistory
         generateDestinationsList:baseDestinations];
   }

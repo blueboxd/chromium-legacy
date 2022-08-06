@@ -936,8 +936,6 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
   if (state.Style()->HasGlyphRelativeUnits())
     UseCounter::Count(GetDocument(), WebFeature::kHasGlyphRelativeUnits);
 
-  state.Style()->SetInlineStyleLostCascade(cascade.InlineStyleLost());
-
   state.LoadPendingResources();
 
   // Now return the style.
@@ -1216,7 +1214,8 @@ void StyleResolver::ApplyBaseStyleNoCache(
   }
 
   // TODO(obrufau): support styling nested pseudo-elements
-  if (style_request.IsPseudoStyleRequest() && element->IsPseudoElement()) {
+  if (style_request.rules_to_include == StyleRequest::kUAOnly ||
+      (style_request.IsPseudoStyleRequest() && element->IsPseudoElement())) {
     MatchUARules(*element, collector);
   } else {
     MatchAllRules(
@@ -1847,6 +1846,8 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
 
       // If the child style is a cache hit, we'll never reach StyleBuilder::
       // ApplyProperty, hence we'll never set the flag on the parent.
+      // (We do the same thing for independently inherited properties in
+      // Element::RecalcOwnStyle().)
       if (state.Style()->HasExplicitInheritance())
         state.ParentStyle()->SetChildHasExplicitInheritance();
       is_non_inherited_cache_hit = true;
@@ -2060,6 +2061,10 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
     UseCountLegacyOverlapping(GetDocument(), *non_legacy_style,
                               state.StyleRef());
   }
+
+  // NOTE: This flag needs to be set before the entry is added to the
+  // matched properties cache, or it will be wrong on cache hits.
+  state.Style()->SetInlineStyleLostCascade(cascade.InlineStyleLost());
 
   MaybeAddToMatchedPropertiesCache(state, cache_success, result);
 

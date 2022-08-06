@@ -24,7 +24,7 @@ inline constexpr base::Feature kCacheBaseEntitySpecificsInMetadata{
     "CacheBaseEntitySpecificsInMetadata", base::FEATURE_DISABLED_BY_DEFAULT};
 
 inline constexpr base::Feature kEnableSyncImmediatelyInFRE{
-    "EnableSyncImmediatelyInFRE", base::FEATURE_ENABLED_BY_DEFAULT};
+    "EnableSyncImmediatelyInFRE", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Causes Sync to ignore updates encrypted with keys that have been missing for
 // too long from this client; Sync will proceed normally as if those updates
@@ -120,6 +120,19 @@ inline constexpr base::FeatureParam<base::TimeDelta>
     kTrustedVaultServiceThrottlingDuration{
         &kSyncTrustedVaultPassphraseRecovery,
         "TrustedVaultServiceThrottlingDuration", base::Days(1)};
+
+// Enables logging a UMA metric that requires first communicating with the
+// trusted vault server, in order to verify that the local notion of the device
+// being registered is consistent with the server-side state.
+inline constexpr base::Feature kSyncTrustedVaultVerifyDeviceRegistration{
+    "SyncTrustedVaultVerifyDeviceRegistration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Triggers another device registration attempt if the device was registered
+// before this feature was introduced.
+inline constexpr base::Feature kSyncTrustedVaultRedoDeviceRegistration{
+    "SyncTrustedVaultRedoDeviceRegistration",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the device will register with FCM and listen to new
 // invalidations. Also, FCM token will be set in DeviceInfo, which signals to

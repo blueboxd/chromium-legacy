@@ -26,10 +26,6 @@ namespace calendar_utils {
 // Number of days in one week.
 constexpr int kDateInOneWeek = 7;
 
-// First day of the week index in string, which is returned from the
-// `DateFormat`.
-constexpr char16_t kFirstDayOfWeekString[] = u"1";
-
 // Milliseconds per minute.
 constexpr int kMillisecondsPerMinute = 60000;
 
@@ -44,7 +40,7 @@ constexpr auto kDateCellInsets =
 
 // Duration of opacity animation for visibility changes.
 constexpr base::TimeDelta kAnimationDurationForVisibility =
-    base::Milliseconds(100);
+    base::Milliseconds(200);
 
 // Fade-out and fade-in duration for resetting to today animation.
 constexpr base::TimeDelta kResetToTodayFadeAnimationDuration =
@@ -52,6 +48,10 @@ constexpr base::TimeDelta kResetToTodayFadeAnimationDuration =
 
 // Duration of moving animation.
 constexpr base::TimeDelta kAnimationDurationForMoving = base::Milliseconds(300);
+
+// Duration of month moving animation.
+constexpr base::TimeDelta kAnimationDurationForMonthMoving =
+    base::Milliseconds(600);
 
 // This duration is added to a midnight `base::Time` to adjust the DST when
 // adding days by `base::Day`.
@@ -218,6 +218,11 @@ base::Time GetFirstDayOfWeekLocalMidnight(base::Time date);
 // test of this method in calendar_utils_unittest.cc for examples.
 ASH_EXPORT const std::pair<base::Time, base::Time> GetFetchStartEndTimes(
     base::Time start_of_month_local_midnight);
+
+// Gets the int index of this day in the week, starts from 1. This number is
+// different for different languages. If cannot find this local's day in a week,
+// returns its time exploded's `day_of_week`;
+int GetDayOfWeekInt(const base::Time date);
 
 }  // namespace calendar_utils
 

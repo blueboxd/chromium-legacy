@@ -30,6 +30,10 @@ constexpr int kRecencyWindow = 7;  // days (inclusive)
 // places.
 constexpr double kDampening = 1.1;
 
+// kInitialBufferNumClicks represents the minimum number of clicks a destination
+// must have before the user notices a visible change in the carousel sort.
+constexpr int kInitialBufferNumClicks = 3;  // clicks
+
 // The dictionary key used for storing rankings.
 const std::string kRankingKey = "ranking";
 
@@ -102,7 +106,7 @@ overflow_menu::Destination LowestShown(
     int numVisibleDestinations,
     base::Value::Dict& flatHistory) {
   std::vector<overflow_menu::Destination> shown(
-      ranking.begin(), ranking.begin() + numVisibleDestinations);
+      ranking.begin(), ranking.begin() + (numVisibleDestinations - 1));
   return SortByUsage(shown, flatHistory, true).front();
 }
 
@@ -112,7 +116,7 @@ overflow_menu::Destination HighestUnshown(
     int numVisibleDestinations,
     base::Value::Dict& flatHistory) {
   std::vector<overflow_menu::Destination> unshown(
-      ranking.begin() + numVisibleDestinations, ranking.end());
+      ranking.begin() + (numVisibleDestinations - 1), ranking.end());
   return SortByUsage(unshown, flatHistory, false).front();
 }
 
@@ -233,9 +237,10 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
   if (!self.prefService)
     return;
 
-  const base::Value* pref = self.prefService->GetDictionary(
-      prefs::kOverflowMenuDestinationUsageHistory);
-  const base::Value::Dict* history = pref->GetIfDict();
+  const base::Value::Dict* history =
+      self.prefService
+          ->GetDictionary(prefs::kOverflowMenuDestinationUsageHistory)
+          ->GetIfDict();
   const std::string path = base::NumberToString(TodaysDay()) + "." +
                            overflow_menu::StringNameForDestination(destination);
 
@@ -245,17 +250,45 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
                               prefs::kOverflowMenuDestinationUsageHistory);
   update->SetIntPath(path, numClicks);
 
+  // User's very first time using Smart Sorting.
+  if (history->size() == 0)
+    [self injectDefaultNumClicksForAllDestinations];
+
   // Calculate new ranking and store to prefs; Calculate the new ranking
   // ahead of time so overflow menu presentation needn't run ranking algorithm
   // each time it presents.
   const base::Value::List* currentRanking = [self fetchCurrentRanking];
-  base::Value::List newRanking =
+  const base::Value::List newRanking =
       [self calculateNewRanking:currentRanking
           numAboveFoldDestinations:numAboveFoldDestinations];
   update->SetKey(kRankingKey, base::Value(newRanking.Clone()));
 }
 
 #pragma mark - Private
+
+// Injects a default number of clicks for all destinations in the history
+// dictonary.
+- (void)injectDefaultNumClicksForAllDestinations {
+  DCHECK_GT(kDampening, 1.0);
+  DCHECK_GT(kInitialBufferNumClicks, 1);
+
+  int defaultNumClicks =
+      (kInitialBufferNumClicks - 1) * (kDampening - 1.0) * 100.0;
+  std::string today = base::NumberToString(TodaysDay());
+  DictionaryPrefUpdate update(self.prefService,
+                              prefs::kOverflowMenuDestinationUsageHistory);
+  const base::Value::Dict* history =
+      self.prefService
+          ->GetDictionary(prefs::kOverflowMenuDestinationUsageHistory)
+          ->GetIfDict();
+
+  for (overflow_menu::Destination destination : kDefaultRanking) {
+    const std::string path =
+        today + "." + overflow_menu::StringNameForDestination(destination);
+    update->SetIntPath(path, history->FindIntByDottedPath(path).value_or(0) +
+                                 defaultNumClicks);
+  }
+}
 
 // Delete expired usage data (data older than |kDataExpirationWindow| days) and
 // saves back to prefs. Returns true if expired usage data was found/removed,
@@ -306,9 +339,15 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 // Runs the ranking algorithm given a |previousRanking|. If |previousRanking| is
 // invalid or doesn't exist, use the default ranking, based on statistical usage
 // of the old overflow menu.
-- (base::Value::List)calculateNewRanking:
-                         (const base::Value::List*)previousRanking
-                numAboveFoldDestinations:(int)numAboveFoldDestinations {
+- (const base::Value::List)calculateNewRanking:
+                               (const base::Value::List*)previousRanking
+                      numAboveFoldDestinations:(int)numAboveFoldDestinations {
+  if (!previousRanking)
+    return List(kDefaultRanking);
+
+  if (numAboveFoldDestinations >= static_cast<int>(previousRanking->size()))
+    return previousRanking->Clone();
+
   std::vector<overflow_menu::Destination> prevRanking =
       previousRanking ? Vector(previousRanking) : kDefaultRanking;
   std::vector<overflow_menu::Destination> newRanking =

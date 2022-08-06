@@ -62,6 +62,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/content_suggestions:public",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/icons:symbols",
+    "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common:string_util",
@@ -100,7 +101,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_suggestions_header_item_unittest.mm",
-    "content_suggestions_most_visited_item_unittest.mm",
     "content_suggestions_tile_layout_util_unittest.mm",
     "content_suggestions_whats_new_item_unittest.mm",
   ]

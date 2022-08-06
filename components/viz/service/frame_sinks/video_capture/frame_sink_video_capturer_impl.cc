@@ -250,6 +250,7 @@ void FrameSinkVideoCapturerImpl::SetResolvedTarget(
     resolved_target_->AttachCaptureClient(this);
     RefreshEntireSourceNow();
   } else {
+    MaybeInformConsumerOfEmptyRegion();
     // The capturer will remain idle until either: 1) the requested target is
     // re-resolved by the |frame_sink_manager_|, or 2) a new target is set via a
     // call to ChangeTarget().
@@ -580,7 +581,7 @@ void FrameSinkVideoCapturerImpl::RefreshInternal(
     // If the capture region is empty, it means one of two things: the first
     // frame has not been composited yet or the current region selected for
     // capture has a current size of zero. We schedule a frame refresh here,
-    // although its not useful in all circumstances.
+    // although it's not useful in all circumstances.
     MaybeScheduleRefreshFrame();
     return;
   }
@@ -769,7 +770,8 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   DVLOG(3) << __func__
            << ": compositor_frame_region=" << compositor_frame_region.ToString()
            << ", capture_region=" << capture_region.ToString()
-           << ", capture_size=" << capture_size.ToString();
+           << ", capture_size=" << capture_size.ToString()
+           << ", event=" << event;
 
   const bool can_resurrect_content = CanResurrectFrame(capture_size);
   scoped_refptr<VideoFrame> frame;
@@ -969,7 +971,17 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     return;
   }
 
-  if (absl::holds_alternative<RegionCaptureCropId>(target_->sub_target)) {
+  // If the target is in a different renderer than the root renderer (indicated
+  // by having a different frame sink ID), we currently cannot provide
+  // reasonable metadata about the region capture rect. For more context, see
+  // https://crbug.com/1327560.
+  //
+  // TODO(https://crbug.com/1335175): Provide accurate bounds for elements
+  // embedded in different renderers.
+  const bool is_same_frame_sink_as_requested =
+      resolved_target_->GetFrameSinkId() == target_->frame_sink_id;
+  if (absl::holds_alternative<RegionCaptureCropId>(target_->sub_target) &&
+      is_same_frame_sink_as_requested) {
     const float scale_factor = frame_metadata.device_scale_factor;
     metadata.region_capture_rect =
         scale_factor ? ScaleToEnclosingRect(capture_region, 1.0f / scale_factor)
@@ -1000,7 +1012,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     // parts of the frame that have changed whenever possible.
     blit_request =
         BlitRequest(content_rect.origin(), LetterboxingBehavior::kLetterbox,
-                    mailbox_holders);
+                    mailbox_holders, true);
 
     // We haven't captured the frame yet, but let's pretend that we did for the
     // sake of blend information computation. We will be asking for an entire

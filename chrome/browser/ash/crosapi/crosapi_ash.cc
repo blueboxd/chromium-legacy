@@ -72,6 +72,7 @@
 #include "chrome/browser/ash/crosapi/search_provider_ash.h"
 #include "chrome/browser/ash/crosapi/select_file_ash.h"
 #include "chrome/browser/ash/crosapi/sharesheet_ash.h"
+#include "chrome/browser/ash/crosapi/speech_recognition_ash.h"
 #include "chrome/browser/ash/crosapi/structured_metrics_service_ash.h"
 #include "chrome/browser/ash/crosapi/system_display_ash.h"
 #include "chrome/browser/ash/crosapi/task_manager_ash.h"
@@ -80,6 +81,7 @@
 #include "chrome/browser/ash/crosapi/video_capture_device_factory_ash.h"
 #include "chrome/browser/ash/crosapi/vpn_extension_observer_ash.h"
 #include "chrome/browser/ash/crosapi/vpn_service_ash.h"
+#include "chrome/browser/ash/crosapi/wallpaper_ash.h"
 #include "chrome/browser/ash/crosapi/web_app_service_ash.h"
 #include "chrome/browser/ash/crosapi/web_page_info_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -206,6 +208,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       search_provider_ash_(std::make_unique<SearchProviderAsh>()),
       select_file_ash_(std::make_unique<SelectFileAsh>()),
       sharesheet_ash_(std::make_unique<SharesheetAsh>()),
+      speech_recognition_ash_(std::make_unique<SpeechRecognitionAsh>()),
 #if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
       stable_video_decoder_factory_ash_(
           std::make_unique<media::StableVideoDecoderFactoryService>()),
@@ -221,6 +224,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
           std::make_unique<VideoCaptureDeviceFactoryAsh>()),
       vpn_extension_observer_ash_(std::make_unique<VpnExtensionObserverAsh>()),
       vpn_service_ash_(std::make_unique<VpnServiceAsh>()),
+      wallpaper_ash_(std::make_unique<WallpaperAsh>()),
       web_app_service_ash_(std::make_unique<WebAppServiceAsh>()),
       web_page_info_factory_ash_(std::make_unique<WebPageInfoFactoryAsh>()) {
   receiver_set_.set_disconnect_handler(base::BindRepeating(
@@ -438,6 +442,11 @@ void CrosapiAsh::BindSharesheet(
   sharesheet_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindSpeechRecognition(
+    mojo::PendingReceiver<mojom::SpeechRecognition> receiver) {
+  speech_recognition_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindScreenManager(
     mojo::PendingReceiver<mojom::ScreenManager> receiver) {
   screen_manager_ash_->BindReceiver(std::move(receiver));
@@ -643,6 +652,11 @@ void CrosapiAsh::BindResourceManager(
 void CrosapiAsh::BindUrlHandler(
     mojo::PendingReceiver<mojom::UrlHandler> receiver) {
   url_handler_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindWallpaper(
+    mojo::PendingReceiver<mojom::Wallpaper> receiver) {
+  wallpaper_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindMachineLearningService(

@@ -17,6 +17,8 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
@@ -126,15 +128,10 @@ class DocumentTransitionStyleTracker::ImageWrapperPseudoElement
                             const DocumentTransitionStyleTracker* style_tracker)
       : DocumentTransitionPseudoElementBase(parent,
                                             pseudo_id,
-                                            document_transition_tag),
-        style_tracker_(style_tracker) {}
+                                            document_transition_tag,
+                                            style_tracker) {}
 
   ~ImageWrapperPseudoElement() override = default;
-
-  void Trace(Visitor* visitor) const override {
-    PseudoElement::Trace(visitor);
-    visitor->Trace(style_tracker_);
-  }
 
  private:
   bool CanGeneratePseudoElement(PseudoId pseudo_id) const override {
@@ -158,8 +155,6 @@ class DocumentTransitionStyleTracker::ImageWrapperPseudoElement
     }
     return snapshot_id.IsValid();
   }
-
-  Member<const DocumentTransitionStyleTracker> style_tracker_;
 };
 
 DocumentTransitionStyleTracker::DocumentTransitionStyleTracker(
@@ -467,6 +462,8 @@ bool DocumentTransitionStyleTracker::Start() {
   // new elements in the DOM.
   InvalidateStyle();
 
+  if (auto* page = document_->GetPage())
+    page->Animator().SetHasSharedElementTransition(true);
   return true;
 }
 
@@ -491,6 +488,8 @@ void DocumentTransitionStyleTracker::EndTransition() {
   pending_shared_element_tags_.clear();
   set_element_sequence_id_ = 0;
   document_->GetStyleEngine().SetDocumentTransitionTags({});
+  if (auto* page = document_->GetPage())
+    page->Animator().SetHasSharedElementTransition(false);
 }
 
 void DocumentTransitionStyleTracker::UpdateElementIndicesAndSnapshotId(
@@ -538,7 +537,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
     case kPseudoIdPageTransition:
     case kPseudoIdPageTransitionContainer:
       return MakeGarbageCollected<DocumentTransitionPseudoElementBase>(
-          parent, pseudo_id, document_transition_tag);
+          parent, pseudo_id, document_transition_tag, this);
     case kPseudoIdPageTransitionImageWrapper:
       return MakeGarbageCollected<ImageWrapperPseudoElement>(
           parent, pseudo_id, document_transition_tag, this);
@@ -571,7 +570,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
       auto* pseudo_element =
           MakeGarbageCollected<DocumentTransitionContentElement>(
               parent, pseudo_id, document_transition_tag, snapshot_id,
-              /*is_live_content_element=*/false);
+              /*is_live_content_element=*/false, this);
       pseudo_element->SetIntrinsicSize(size);
       return pseudo_element;
     }
@@ -590,7 +589,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
       auto* pseudo_element =
           MakeGarbageCollected<DocumentTransitionContentElement>(
               parent, pseudo_id, document_transition_tag, snapshot_id,
-              /*is_live_content_element=*/true);
+              /*is_live_content_element=*/true, this);
       pseudo_element->SetIntrinsicSize(size);
       return pseudo_element;
     }
@@ -809,6 +808,22 @@ bool DocumentTransitionStyleTracker::IsSharedElement(Element* element) const {
 bool DocumentTransitionStyleTracker::IsReservedTransitionTag(
     const StringView& value) {
   return value == RootTag();
+}
+
+StyleRequest::RulesToInclude
+DocumentTransitionStyleTracker::StyleRulesToInclude() const {
+  switch (state_) {
+    case State::kIdle:
+    case State::kCapturing:
+    case State::kCaptured:
+      return StyleRequest::kUAOnly;
+    case State::kStarted:
+    case State::kFinished:
+      return StyleRequest::kAll;
+  }
+
+  NOTREACHED();
+  return StyleRequest::kAll;
 }
 
 void DocumentTransitionStyleTracker::InvalidateStyle() {

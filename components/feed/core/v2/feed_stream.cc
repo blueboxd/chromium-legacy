@@ -34,6 +34,7 @@
 #include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/prefs.h"
 #include "components/feed/core/v2/protocol_translator.h"
+#include "components/feed/core/v2/public/common_enums.h"
 #include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/feed_service.h"
 #include "components/feed/core/v2/public/feed_stream_surface.h"
@@ -106,6 +107,16 @@ ContentOrder GetValidWebFeedContentOrder(const PrefService& pref_service) {
     return ContentOrder::kReverseChron;
   // Defaults to grouped, encompassing finch_order == "grouped".
   return ContentOrder::kGrouped;
+}
+
+LoadType RequestScheduleTypeToLoadType(RequestSchedule::Type type) {
+  switch (type) {
+    case RequestSchedule::Type::kFeedCloseRefresh:
+      return LoadType::kFeedCloseBackgroundRefresh;
+    case RequestSchedule::Type::kScheduledRefresh:
+    default:
+      return LoadType::kBackgroundRefresh;
+  }
 }
 
 }  // namespace
@@ -574,6 +585,8 @@ void FeedStream::ManualRefresh(const StreamType& stream_type,
                             base::BindOnce(&FeedStream::StreamLoadComplete,
                                            base::Unretained(this))));
   }
+
+  last_refresh_scheduled_on_interaction_time_ = base::TimeTicks();
 }
 
 void FeedStream::ExecuteOperations(
@@ -667,6 +680,15 @@ bool FeedStream::WasUrlRecentlyNavigatedFromFeed(const GURL& url) {
   return std::find(recent_feed_navigations_.begin(),
                    recent_feed_navigations_.end(),
                    url) != recent_feed_navigations_.end();
+}
+
+void FeedStream::InvalidateContentCacheFor(StreamKind stream_kind) {
+  if (StreamKind::kForYou == stream_kind) {
+    SetStreamStale(kForYouStream, true);
+  }
+  if (StreamKind::kFollowing == stream_kind) {
+    SetStreamStale(kWebFeedStream, true);
+  }
 }
 
 DebugStreamData FeedStream::GetDebugStreamData() {
@@ -1021,14 +1043,17 @@ void FeedStream::ExecuteRefreshTask(RefreshTaskId task_id) {
       ShouldAttemptLoad(stream_type, LoadType::kBackgroundRefresh)
           .load_stream_status;
 
+  RequestSchedule request_schedule =
+      feed::prefs::GetRequestSchedule(task_id, *profile_prefs_);
+  LoadType load_type = RequestScheduleTypeToLoadType(request_schedule.type);
+
   // If `do_not_attempt_reason` indicates the stream shouldn't be loaded, it's
   // unlikely that criteria will change, so we skip rescheduling.
   if (do_not_attempt_reason == LoadStreamStatus::kNoStatus ||
       do_not_attempt_reason == LoadStreamStatus::kModelAlreadyLoaded) {
     // Schedule the next refresh attempt. If a new refresh schedule is returned
     // through this refresh, it will be overwritten.
-    SetRequestSchedule(
-        task_id, feed::prefs::GetRequestSchedule(task_id, *profile_prefs_));
+    SetRequestSchedule(task_id, std::move(request_schedule));
   }
 
   if (do_not_attempt_reason != LoadStreamStatus::kNoStatus) {
@@ -1039,7 +1064,7 @@ void FeedStream::ExecuteRefreshTask(RefreshTaskId task_id) {
 
   LoadStreamTask::Options options;
   options.stream_type = stream_type;
-  options.load_type = LoadType::kBackgroundRefresh;
+  options.load_type = load_type;
   options.refresh_even_when_not_stale = true;
   task_queue_.AddTask(FROM_HERE,
                       std::make_unique<LoadStreamTask>(
@@ -1247,6 +1272,7 @@ void FeedStream::ReportOpenAction(const GURL& url,
     privacy_notice_card_tracker_.OnOpenAction(
         stream.model->FindContentId(ToContentRevision(slice_id)));
   }
+  ScheduleFeedCloseRefreshOnInteraction(stream_type);
 }
 void FeedStream::ReportOpenVisitComplete(base::TimeDelta visit_time) {
   metrics_reporter_->OpenVisitComplete(visit_time);
@@ -1268,6 +1294,7 @@ void FeedStream::ReportOpenInNewTabAction(const GURL& url,
     privacy_notice_card_tracker_.OnOpenAction(
         stream.model->FindContentId(ToContentRevision(slice_id)));
   }
+  ScheduleFeedCloseRefreshOnInteraction(stream_type);
 }
 
 void FeedStream::ReportSliceViewed(SurfaceId surface_id,
@@ -1310,8 +1337,14 @@ void FeedStream::ReportFeedViewed(const StreamType& stream_type,
   metrics_reporter_->FeedViewed(surface_id);
 
   Stream& stream = GetStream(stream_type);
-  stream.surfaces.FeedViewed(surface_id);
 
+  // Skip feed-close refresh scheduling if this surface was already viewed.
+  // entry should never be null, but if it is, we will skip rescheduling.
+  StreamSurfaceSet::Entry* entry = stream.surfaces.FindSurface(surface_id);
+  if (entry && !entry->feed_viewed)
+    ScheduleFeedCloseRefreshOnFirstView(stream_type);
+
+  stream.surfaces.FeedViewed(surface_id);
   MaybeNotifyHasUnreadContent(stream_type);
 }
 
@@ -1321,6 +1354,8 @@ void FeedStream::ReportPageLoaded() {
 void FeedStream::ReportStreamScrolled(const StreamType& stream_type,
                                       int distance_dp) {
   metrics_reporter_->StreamScrolled(stream_type, distance_dp);
+  if (GetStream(stream_type).surfaces.HasSurfaceShowingContent())
+    ScheduleFeedCloseRefreshOnInteraction(stream_type);
 }
 void FeedStream::ReportStreamScrollStart() {
   metrics_reporter_->StreamScrollStart();
@@ -1409,6 +1444,37 @@ ContentOrder FeedStream::GetContentOrderFromPrefs(
     return ContentOrder::kUnspecified;
   }
   return prefs::GetWebFeedContentOrder(*profile_prefs_);
+}
+
+void FeedStream::ScheduleFeedCloseRefreshOnInteraction(const StreamType& type) {
+  if (!base::FeatureList::IsEnabled(kFeedCloseRefresh))
+    return;
+  ScheduleFeedCloseRefresh(type);
+}
+
+void FeedStream::ScheduleFeedCloseRefreshOnFirstView(const StreamType& type) {
+  if (!base::FeatureList::IsEnabled(kFeedCloseRefresh) ||
+      kFeedCloseRefreshRequireInteraction.Get()) {
+    return;
+  }
+  ScheduleFeedCloseRefresh(type);
+}
+
+void FeedStream::ScheduleFeedCloseRefresh(const StreamType& type) {
+  // To avoid causing jank, only schedule the refresh once every several
+  // minutes.
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (now - last_refresh_scheduled_on_interaction_time_ < base::Minutes(5))
+    return;
+
+  last_refresh_scheduled_on_interaction_time_ = now;
+
+  base::TimeDelta delay = base::Minutes(kFeedCloseRefreshDelayMinutes.Get());
+  RequestSchedule schedule;
+  schedule.anchor_time = base::Time::Now();
+  schedule.refresh_offsets = {delay, delay * 2, delay * 3};
+  schedule.type = RequestSchedule::Type::kFeedCloseRefresh;
+  SetRequestSchedule(type, std::move(schedule));
 }
 
 }  // namespace feed

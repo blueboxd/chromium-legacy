@@ -31,6 +31,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Saamgebinde toestelle</translation>
 <translation id="1165712434476988950">Die toestel moet herbegin word om die opdatering toe te pas.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Jou USB-C-kabel koppel dalk nie behoorlik aan skerms nie</translation>
 <translation id="1175572348579024023">Rollees</translation>
 <translation id="1178581264944972037">Laat wag</translation>
@@ -55,10 +56,6 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="1247519845643687288">Onlangse programme</translation>
 <translation id="1252999807265626933">Laai vanaf <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hoe lyk die weer?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> tot 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Kies om meer besonderhede in Google Kalender te kry.</translation>
 <translation id="1267032506238418139">Kortpadverandering</translation>
 <translation id="1269405891096105529">Randtoestel word nie in Gasmodus gesteun nie</translation>
 <translation id="1270290102613614947">Opskerm-sleutelbord gedeaktiveer</translation>
@@ -124,6 +121,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Skakelaartoegang kan in Instellings &gt; Toeganklikheid gedeaktiveer word.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> toestelle</translation>
+<translation id="1639239467298939599">Laai tans</translation>
 <translation id="1654477262762802994">Begin 'n stemnavraag</translation>
 <translation id="1668469839109562275">Ingeboude VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> oor</translation>
@@ -507,6 +505,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="3901991538546252627">Koppel tans aan <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Verander toestel binne 1 minuut na vorige weergawe}other{Verander toestel binne # minute na vorige weergawe}}</translation>
 <translation id="3923494859158167397">Geen selnetwerke is opgestel nie</translation>
+<translation id="3925540965556789199"><ph name="DATE" />; laai tans geleenthede.</translation>
 <translation id="3932043219784172185">Geen toestel is gekoppel nie</translation>
 <translation id="3934456833412894880">Aanpasbare laaiproses is aan. Jou battery sal op 80% bly om batterylewe te verleng, en heeltemal laai wanneer jy dit nodig het.</translation>
 <translation id="3943857333388298514">Plak</translation>
@@ -706,6 +705,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="5078796286268621944">Verkeerde PIN</translation>
 <translation id="5083553833479578423">Ontsluit meer Assistent-kenmerke.</translation>
 <translation id="509790653408515442">Wanneer jy jou foon se programme stroom, sal hulle hier verskyn</translation>
+<translation id="5098537242461068432">Lessenaar en vensters is heropen</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Wys volgende maand</translation>
 <translation id="5136175204352732067">Ander sleutelbord is gekoppel</translation>
@@ -1050,7 +1050,6 @@ Nuwe installasie</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Stel oor <ph name="TIMEOUT_SECONDS" /> terug na ou resolusie</translation>
 <translation id="7180611975245234373">Herlaai</translation>
-<translation id="718361511487535372">Maak in Google Kalender oop</translation>
 <translation id="7188494361780961876">Kieslys is na die skerm se hoek links onder geskuif.</translation>
 <translation id="7189412385142492784">Hoe ver is Venus</translation>
 <translation id="7198435252016571249">Kamera is geglip na hoek onder regs. Konflik met stelseloppervlak.</translation>
@@ -1059,6 +1058,10 @@ Nuwe installasie</translation>
 <translation id="7258828758145722155">Gister gewysig</translation>
 <translation id="726276584504105859">Sleep hierheen om verdeelde skerm te gebruik</translation>
 <translation id="7262906531272962081">Skep herinnering</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> tot
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Kies om meer besonderhede in Google Kalender te kry.</translation>
 <translation id="7302889331339392448">Intydse onderskrifte is af.</translation>
 <translation id="7303365578352795231">Antwoord tans op 'n ander toestel.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1171,6 +1174,7 @@ Nuwe installasie</translation>
 <translation id="7904094684485781019">Die administrateur vir hierdie rekening laat nie meer veelvuldige aanmeldings toe nie.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Spraak word nou plaaslik verwerk en dikteer werk vanlyn</translation>
+<translation id="7932451802722951285">Maak in Google Kalender oop</translation>
 <translation id="7933084174919150729">Die Google Assistent is net beskikbaar vir die primêre profiel.</translation>
 <translation id="79341161159229895">Rekening word bestuur deur <ph name="FIRST_PARENT_EMAIL" /> en <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Druk <ph name="SHORTCUT_KEY_NAME" /> + V om jou knipbord te bekyk. Die laaste 5 items wat jy gekopieer het, word op jou knipbord gestoor.</translation>

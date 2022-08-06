@@ -397,15 +397,6 @@ namespace {
   self.discoverFeedWrapperViewController = nil;
   self.discoverFeedViewController = nil;
   self.feedMetricsRecorder = nil;
-  if (IsContentSuggestionsHeaderMigrationEnabled()) {
-    // Unfocus omnibox, to prevent it from lingering when it should be dismissed
-    // (for example, when navigating away or when changing feed visibility).
-    // Do this after the MVC classes are deallocated so no reset animations are
-    // fired in response to this cancel.
-    id<OmniboxCommands> omniboxCommandHandler = HandlerForProtocol(
-        self.browser->GetCommandDispatcher(), OmniboxCommands);
-    [omniboxCommandHandler cancelOmniboxEdit];
-  }
 
   [self.feedExpandedPref setObserver:nil];
   self.feedExpandedPref = nil;
@@ -604,6 +595,18 @@ namespace {
   }
 }
 
+- (void)handleFeedModelDidEndUpdates:(FeedType)feedType {
+  DCHECK(self.ntpViewController);
+  if (!self.discoverFeedViewController) {
+    return;
+  }
+  // When the visible feed has been updated, recalculate the minimum NTP height.
+  if (![self isFollowingFeedAvailable] ||
+      ([self isFollowingFeedAvailable] && feedType == self.selectedFeed)) {
+    [self.ntpViewController updateFeedInsetsForMinimumHeight];
+  }
+}
+
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
     if (visible && self.started) {
@@ -618,6 +621,15 @@ namespace {
         self.feedMetricsRecorder.feedControlDelegate = self;
         self.feedMetricsRecorder.followDelegate = self;
       }
+    }
+    if (!visible) {
+      // Unfocus omnibox, to prevent it from lingering when it should be
+      // dismissed (for example, when navigating away or when changing feed
+      // visibility). Do this after the MVC classes are deallocated so no reset
+      // animations are fired in response to this cancel.
+      id<OmniboxCommands> omniboxCommandHandler = HandlerForProtocol(
+          self.browser->GetCommandDispatcher(), OmniboxCommands);
+      [omniboxCommandHandler cancelOmniboxEdit];
     }
   }
   self.viewPresented = visible;
@@ -646,9 +658,11 @@ namespace {
   [self updateNTPForFeed];
   [self updateFeedLayout];
 
+  [self.ntpViewController updateFeedInsetsForMinimumHeight];
+
   // Scroll position resets when changing the feed, so we set it back to what it
   // was.
-  [self.ntpViewController setContentOffsetUpToTopOfFeed:scrollPosition];
+  [self.ntpViewController setContentOffsetToTopOfFeed:scrollPosition];
 }
 
 - (void)handleSortTypeForFollowingFeed:(FollowingFeedSortType)sortType {
@@ -656,6 +670,10 @@ namespace {
   self.prefService->SetInteger(prefs::kNTPFollowingFeedSortType, sortType);
   self.discoverFeedService->SetFollowingFeedSortType(sortType);
   self.feedHeaderViewController.followingFeedSortType = sortType;
+
+  // Changing the sort type affects the scroll position, so update the feed
+  // layout.
+  [self updateFeedLayout];
 }
 
 - (BOOL)shouldFeedBeVisible {
@@ -1104,8 +1122,9 @@ namespace {
 
 // Creates, configures and returns a Discover feed view controller.
 - (UIViewController*)discoverFeed {
-  if (tests_hook::DisableDiscoverFeed())
+  if (tests_hook::DisableDiscoverFeed()) {
     return nil;
+  }
 
   UIViewController* discoverFeed =
       self.discoverFeedService->NewDiscoverFeedViewControllerWithConfiguration(
@@ -1115,8 +1134,9 @@ namespace {
 
 // Creates, configures and returns a Following feed view controller.
 - (UIViewController*)followingFeed {
-  if (tests_hook::DisableDiscoverFeed())
+  if (tests_hook::DisableDiscoverFeed()) {
     return nil;
+  }
 
   UIViewController* followingFeed =
       self.discoverFeedService->NewFollowingFeedViewControllerWithConfiguration(

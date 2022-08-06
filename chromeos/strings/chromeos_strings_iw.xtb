@@ -18,6 +18,7 @@
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> זה מנוהל על-ידי <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">ממוצע (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">הסרה</translation>
+<translation id="1190378975642195988">מד תאוצה — בסיס</translation>
 <translation id="1195447618553298278">שגיאה לא ידועה.</translation>
 <translation id="1196959502276349371">גרסה <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">הפעלה/השהיה</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">‏שמירה בכונן USB</translation>
 <translation id="1468664791493211953">מבצעים</translation>
 <translation id="1476467821656042872">הניהול של המכשיר הזה נעשה מהדומיין <ph name="MANAGER" /> וייתכן שאפשר יהיה לעקוב ממנו אחר הפעילות שלך.</translation>
+<translation id="147809995039451286">לא ניתן היה להוריד את העדכון</translation>
 <translation id="1478594628797167447">סורק</translation>
 <translation id="1491076385728777984">מתבצע עדכון קושחה ב-<ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732">המשתמש הזה מנוהל על ידי <ph name="MANAGER" />. הדומיין הזה עשוי לנהל מרחוק את ההגדרות ולעקוב אחר פעילות המשתמש.</translation>
@@ -95,6 +97,7 @@
 <translation id="1717874160321062422">מנוהל על ידי <ph name="FIRST_MANAGER" /> ועל ידי <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">שרתי שמות</translation>
 <translation id="1731082422893354635">‏לוח מגע של Bluetooth</translation>
+<translation id="1745577949879301685">לא ניתן היה לטעון את התמונות. כדאי לבדוק את החיבור לרשת או לנסות לטעון את התמונות שוב.</translation>
 <translation id="1751249301761991853">התאמה אישית</translation>
 <translation id="1753496554272155572">יציאה מהתצוגה המקדימה של הטפט</translation>
 <translation id="175763766237925754">טוב (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -124,6 +127,7 @@
 <translation id="1999615961760456652">פורטל שבוי</translation>
 <translation id="2006864819935886708">קישוריות</translation>
 <translation id="2008685064673031089">חיפוש מספרים ראשוניים</translation>
+<translation id="2011174342667534258">‏גרסת SDK:</translation>
 <translation id="2016697457005847575">להוראות לפתרון בעיות</translation>
 <translation id="2016848882344942759">--לא מכשיר גנרי--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -155,6 +159,7 @@
 <translation id="225692081236532131">סטטוס הפעלה</translation>
 <translation id="2271469253353559191">תזמון מצב כהה</translation>
 <translation id="2275586345903859204">התיקון הסתיים</translation>
+<translation id="2276999893457278469">תוכן עזרה מוביל</translation>
 <translation id="2287186687001756809">אין תמונה זמינה. כדי להוסיף תמונה, צריך לעבור אל <ph name="LINK" /></translation>
 <translation id="2294753434210277304">‏יש להכניס התקן אחסון חיצוני, כמו כונן USB או כרטיס SD, עם התמונה שהורדת של כלי שחזור ה-Chromebook</translation>
 <translation id="2307344026739914387">שימוש בזוג המפתחות הנוכחי</translation>
@@ -176,6 +181,7 @@
 <translation id="2418150275289244458">פתיחה בהגדרות</translation>
 <translation id="2421798028054665193">תמונה <ph name="CURRENT_PAGE" /> מתוך <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">‏רמת הדיוק של נקודה צפה (floating-point)</translation>
+<translation id="2447969267935997922">‏ההתקנה הסתיימה. עכשיו אפשר להסיר את כונן ה-USB או את כרטיס ה-SD.</translation>
 <translation id="2448312741937722512">סוג</translation>
 <translation id="2461822463642141190">כרגע</translation>
 <translation id="2480034874476596812">כיבוי ידני</translation>
@@ -187,6 +193,7 @@
 <translation id="2517472476991765520">סריקה</translation>
 <translation id="2526590354069164005">שולחן עבודה</translation>
 <translation id="253029298928638905">מתבצעת הפעלה מחדש…</translation>
+<translation id="2533048460510040082">הצעות לתוכן עזרה</translation>
 <translation id="2536159006530886390">לא ניתן להתחבר לאינטרנט.</translation>
 <translation id="2570743873672969996">הבדיקה של <ph name="TEST_NAME" /> בתהליך…</translation>
 <translation id="2584559707064218956">כדי להגדיר את הרשת, צריך לעבור להגדרות</translation>
@@ -213,7 +220,6 @@
 <translation id="2878387241690264070">בוצעה פריקה של <ph name="RATE" /> ב-<ph name="NUM_SECONDS" /> שניות.</translation>
 <translation id="291142119251986300">רכיבים לא מתאימים</translation>
 <translation id="2926057806159140518">‏צריך להזין את שם המשתמש והסיסמה או לסרוק את קוד ה-QR</translation>
-<translation id="2928420929544864228">ההתקנה הושלמה.</translation>
 <translation id="3008341117444806826">רענון</translation>
 <translation id="3009958530611748826">בחירת תיקייה לשמירה</translation>
 <translation id="3017079585324758401">רקע</translation>
@@ -267,6 +273,7 @@
 <translation id="3484914941826596830">במהלך עדכון הקושחה אין לנתק את המכשיר החיצוני הזה או לכבות את המחשב. אפשר למזער את החלון הזה. העדכון הזה עשוי לקחת כמה דקות ויכול להיות שהמכשיר החיצוני לא יפעל במהלכו.</translation>
 <translation id="3486220673238053218">הגדרה</translation>
 <translation id="3488065109653206955">מופעל חלקית</translation>
+<translation id="3492982278147736083">ג'ירוסקופ — מסך</translation>
 <translation id="3517001332549868749">‏עדכון של ChromeOS</translation>
 <translation id="3527036260304016759">נכשלה – שגיאה לא ידועה</translation>
 <translation id="3532980081107202182">נותרו <ph name="MIN_REMAINING" /> דקות בערך</translation>
@@ -286,6 +293,7 @@
 <translation id="3621202678540785336">קלט</translation>
 <translation id="3632579075709132555">לחצן להחלפת מצב של מסך הפרטיות</translation>
 <translation id="3643810137582748570">דילוג על הכיול</translation>
+<translation id="3651050199673793219">בחירת יחידת מידה לטמפרטורה</translation>
 <translation id="3678765385266369662">‏בחירת הדרך לכיבוי Write Protect</translation>
 <translation id="3689839747745352263">בדיקת <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">בטעינה...</translation>
@@ -300,9 +308,12 @@
 <translation id="3820172043799983114">‏PIN לא חוקי.</translation>
 <translation id="3838338534323494292">סיסמה חדשה</translation>
 <translation id="385051799172605136">חזרה</translation>
+<translation id="3856304145690230735">ג'ירוסקופ — בסיס</translation>
 <translation id="385832974417157471">‏לפני הכיבוי, צריך לבצע Powerwash במכשיר. אם למכשיר יש מכסה, צריך לחכות לסיום ה-Powerwash לפני שסוגרים את המכסה. פעולת ה-Powerwash עשויה להימשך כדקה.</translation>
 <translation id="3858860766373142691">שם</translation>
+<translation id="3862598938296403232">יש להזין תיאור</translation>
 <translation id="3865414814144988605">רזולוציה</translation>
+<translation id="3866249974567520381">תיאור</translation>
 <translation id="387301095347517405">מספר הפעמים שבהן הסוללה נטענה במלואה</translation>
 <translation id="3885327323343477505">החלפת שומר המסך</translation>
 <translation id="3923184630988645767">שימוש בחבילת הגלישה</translation>
@@ -370,6 +381,7 @@
 <translation id="4472575034687746823">תחילת העבודה</translation>
 <translation id="4479639480957787382">אתרנט</translation>
 <translation id="4483049906298469269">לא ניתן היה לבצע פינג לשער הרשת שאינה מוגדרת כברירת מחדל.</translation>
+<translation id="4500213108254186382">מד תאוצה – מסך</translation>
 <translation id="4503223151711056411">חץ שמאלה</translation>
 <translation id="4511264077854731334">פורטל</translation>
 <translation id="4521826082652183069">התאמה של שמות נושאים חלופיים</translation>
@@ -381,6 +393,7 @@
 <translation id="4561801978359312462">‏נעילת כרטיס ה-SIM בוטלה</translation>
 <translation id="4562494484721939086">אין שירות</translation>
 <translation id="4568938274596692027">ההתקנה הסתיימה. בהכנה להפעלה מחדש…</translation>
+<translation id="4576943788798178439">תמיכה בסטיילוס</translation>
 <translation id="458794348635939462">לא ניתן היה להתאים את הנתונים של כל המארחים</translation>
 <translation id="4593212453765072419">‏יש צורך באימות שרת ה-proxy</translation>
 <translation id="4609350030397390689">הפחתת הבהירות של המקלדת</translation>
@@ -429,6 +442,7 @@
 <translation id="4915052247106771211">‏המכשיר יאופס להגדרות המקוריות (Powerwash).</translation>
 <translation id="4917385247580444890">חזק</translation>
 <translation id="4917889632206600977">הפסיקה – הנייר נגמר</translation>
+<translation id="491791267030419270">טיפים לכתיבת משוב</translation>
 <translation id="4921665434385737356">התבצעה טעינה של <ph name="RATE" /> ב-<ph name="NUM_SECONDS" /> שניות.</translation>
 <translation id="4930320165497208503">כדי להגדיר או לעדכן חיבור, צריך לעבור ל<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">תאריך</translation>
@@ -535,6 +549,7 @@
 <translation id="5866840822086176774">חזק מאוד</translation>
 <translation id="588258955323874662">מסך מלא</translation>
 <translation id="5895138241574237353">הפעלה מחדש</translation>
+<translation id="5898758006340607522">לחצן הפעלה</translation>
 <translation id="5901630391730855834">צהוב</translation>
 <translation id="5903200662178656908">המכשיר משלב מקלדת ועכבר.</translation>
 <translation id="5916084858004523819">אסור</translation>
@@ -670,6 +685,7 @@
 <translation id="7143207342074048698">מתבצע חיבור</translation>
 <translation id="7144878232160441200">יש לנסות שוב</translation>
 <translation id="714876143603641390">‏קישוריות LAN</translation>
+<translation id="7154020516215182599">נשמח לקבל ממך משוב או תיאור של הבעיה. אם אפשר, יש לכלול את השלבים לשחזור הבעיה.</translation>
 <translation id="7155171745945906037">תמונה קיימת ממצלמה או מקובץ</translation>
 <translation id="7162487448488904999">גלריה</translation>
 <translation id="7170236477717446850">תמונת פרופיל</translation>
@@ -847,6 +863,7 @@
 <translation id="885701979325669005">אחסון</translation>
 <translation id="8863170912498892583">הפעלת העיצוב הכהה</translation>
 <translation id="8863888432376731307">לקבלת ה<ph name="INTENT" /> עבור "<ph name="QUERY" />" ועוד</translation>
+<translation id="8864415976656252616">אין הצעות לתוכן. להצגת תוכן עזרה מוביל.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">המכשיר הוא טאבלט.</translation>
 <translation id="8881098542468797602">הבדיקה הושלמה בהצלחה</translation>
@@ -857,6 +874,7 @@
 <translation id="8919792139048574232">הצגת התיקונים שבוצעו</translation>
 <translation id="8919837981463578619">נכשלה – המגש לא נמצא</translation>
 <translation id="8923267550422472772">היום בחודש לאיפוס</translation>
+<translation id="8925613211674558308">‏VPD במטמון</translation>
 <translation id="8928727111548978589">נכשלה – הנייר נגמר</translation>
 <translation id="8930521118335213258">קצה</translation>
 <translation id="8930622219860340959">אלחוטי</translation>
@@ -898,6 +916,7 @@
 <translation id="922179502584117429">הגרסה הנוכחית שמספרה <ph name="VERSION_NUMBER" /> לא מעודכנת</translation>
 <translation id="932327136139879170">בית</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254"> שליחת משוב</translation>
 <translation id="952992212772159698">לא פעיל</translation>
 <translation id="960719561871045870">קוד ספק</translation>
 <translation id="982713511914535780">הפעלת בדיקה של פריקת הסוללה</translation>

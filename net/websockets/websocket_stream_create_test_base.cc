@@ -92,8 +92,7 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
   base::OnceClosure done_callback_;
 };
 
-WebSocketStreamCreateTestBase::WebSocketStreamCreateTestBase()
-    : has_failed_(false), ssl_fatal_(false), url_request_(nullptr) {}
+WebSocketStreamCreateTestBase::WebSocketStreamCreateTestBase() = default;
 
 WebSocketStreamCreateTestBase::~WebSocketStreamCreateTestBase() = default;
 

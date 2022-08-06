@@ -42,12 +42,14 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wm/wm_event.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "base/i18n/base_i18n_switches.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
@@ -1330,6 +1332,7 @@ ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
       const user_manager::User* user = user_manager->GetActiveUser();
       result->SetStringKey("email", user->GetAccountId().GetUserEmail());
       result->SetStringKey("displayEmail", user->display_email());
+      result->SetStringKey("displayName", user->display_name());
 
       std::string user_image;
       switch (user->image_index()) {
@@ -3565,7 +3568,21 @@ AutotestPrivateGetAllInstalledAppsFunction::Run() {
 
     api::autotest_private::App app;
     app.app_id = update.AppId();
-    app.name = update.Name();
+
+    // Assume that when `switches::kForceDirectionRTL` is enabled, the system
+    // language still follows the left-to-right fashion. Because the app names
+    // carried by `update` are adapted to RTL by inserting extra characters that
+    // indicate the text direction, we should recover the original app names
+    // before returning them as the result.
+    if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kForceUIDirection) == switches::kForceDirectionRTL) {
+      std::u16string name = base::UTF8ToUTF16(update.Name());
+      base::i18n::UnadjustStringForLocaleDirection(&name);
+      app.name = base::UTF16ToUTF8(name);
+    } else {
+      app.name = update.Name();
+    }
+
     app.short_name = update.ShortName();
     app.publisher_id = update.PublisherId();
     app.additional_search_terms = update.AdditionalSearchTerms();
@@ -5695,6 +5712,31 @@ AutotestPrivateAddLoginEventForTestingFunction::Run() {
       /*marker_name=*/"AutotestPrivateTestMarker",
       /*send_to_uma=*/false,
       /*write_to_file=*/false);
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateForceAutoThemeModeFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateForceAutoThemeModeFunction::
+    AutotestPrivateForceAutoThemeModeFunction() = default;
+
+AutotestPrivateForceAutoThemeModeFunction::
+    ~AutotestPrivateForceAutoThemeModeFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateForceAutoThemeModeFunction::Run() {
+  DVLOG(1) << "AutotestPrivateForceAutoThemeModeFunction";
+
+  std::unique_ptr<api::autotest_private::ForceAutoThemeMode::Params> params(
+      api::autotest_private::ForceAutoThemeMode::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  ash::AshColorProvider* color_provider = ash::AshColorProvider::Get();
+  DCHECK(color_provider);
+
+  color_provider->SetDarkModeEnabledForTest(params->dark_mode_enabled);
   return RespondNow(NoArguments());
 }
 

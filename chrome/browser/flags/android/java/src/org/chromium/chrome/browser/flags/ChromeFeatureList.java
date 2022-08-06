@@ -247,6 +247,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY =
             "CCTIncognitoAvailableToThirdParty";
     public static final String CCT_NEW_DOWNLOAD_TAB = "CCTNewDownloadTab";
+    public static final String CCT_PACKAGE_NAME_RECORDING = "CCTPackageNameRecording";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
     public static final String CCT_REDIRECT_PRECONNECT = "CCTRedirectPreconnect";
     public static final String CCT_REMOVE_REMOTE_VIEW_IDS = "CCTRemoveRemoteViewIds";
@@ -256,6 +257,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_RESIZABLE_FOR_FIRST_PARTIES = "CCTResizableForFirstParties";
     public static final String CCT_RESIZABLE_FOR_THIRD_PARTIES = "CCTResizableForThirdParties";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
+    public static final String CCT_RETAINING_STATE = "CCTRetainingState";
     public static final String CCT_REPORT_PARALLEL_REQUEST_STATUS =
             "CCTReportParallelRequestStatus";
     public static final String CCT_TOOLBAR_CUSTOMIZATIONS = "CCTToolbarCustomizations";
@@ -286,8 +288,9 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXT_MENU_TRANSLATE_WITH_GOOGLE_LENS =
             "ContextMenuTranslateWithGoogleLens";
     public static final String LENS_CAMERA_ASSISTED_SEARCH = "LensCameraAssistedSearch";
-    public static final String CONTEXTUAL_PAGE_ACTIONS_PRICE_TRACKING =
-            "ContextualPageActionsWithPriceTracking";
+    public static final String CONTEXTUAL_PAGE_ACTIONS = "ContextualPageActions";
+    public static final String CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING =
+            "ContextualPageActionPriceTracking";
     /** Used only in native code. */
     public static final String CONTEXTUAL_SEARCH_DEBUG = "ContextualSearchDebug";
     public static final String CONTEXTUAL_SEARCH_DELAYED_INTELLIGENCE =
@@ -321,6 +324,8 @@ public abstract class ChromeFeatureList {
     public static final String CRITICAL_PERSISTED_TAB_DATA = "CriticalPersistedTabData";
     public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =
             "DarkenWebsitesCheckboxInThemesSetting";
+    public static final String DELAY_TOOLBAR_UPDATE_ON_LOAD_STARTED =
+            "DelayToolbarUpdateOnLoadStarted";
     public static final String DETAILED_LANGUAGE_SETTINGS = "DetailedLanguageSettings";
     public static final String DIRECT_ACTIONS = "DirectActions";
     public static final String DISABLE_COMPOSITED_PROGRESS_BAR = "DisableCompositedProgressBar";
@@ -413,6 +418,7 @@ public abstract class ChromeFeatureList {
     public static final String METRICS_SETTINGS_ANDROID = "MetricsSettingsAndroid";
     public static final String MOST_RECENT_TAB_ON_BACKGROUND_CLOSE_TAB =
             "MostRecentTabOnBackgroundCloseTab";
+    public static final String NEW_INSTANCE_FROM_DRAGGED_LINK = "NewInstanceFromDraggedLink";
     public static final String NEW_WINDOW_APP_MENU = "NewWindowAppMenu";
     public static final String NOTIFICATION_PERMISSION_VARIANT = "NotificationPermissionVariant";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";

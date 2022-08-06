@@ -1353,6 +1353,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       A partir de la versión 91, ya no se le pueden asignar los valores "tls1" o "tls1.1" a esta política. Ya no es posible ocultar la advertencia TLS 1.0/1.1.</translation>
 <translation id="2364639863953745682">Modo de la experiencia de incorporación del Asistente</translation>
 <translation id="2366301887862414321">Permitir hosts de mensajes nativos a nivel de sistema y a nivel de usuario</translation>
+<translation id="2382672620906337383">setTimeout() de JavaScript no se restringirá hasta alcanzar un umbral de anidación superior.</translation>
 <translation id="2384233438419344179">Si se habilita esta política, los elementos de sitios web que no pertenezcan al dominio que aparece en la barra de direcciones del navegador no podrán establecer cookies. Si se inhabilita esta política, estos elementos podrán establecer cookies y los usuarios no podrán cambiar esta opción.
 
       Si no se le asigna ningún valor, las cookies de terceros estarán activadas, pero los usuarios podrán cambiar esta opción.</translation>
@@ -1780,6 +1781,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="283478052049914107">Si se asigna el valor "Enabled" a esta política y se introduce un puerto no estándar (es decir, cualquier puerto que no sea el 80 ni el 443), ese puerto se incluirá en el SPN de Kerberos generado.
 
       Si se le asigna el valor "Disabled" o no se le asigna ninguno, el SPN de Kerberos no incluirá ningún puerto.</translation>
+<translation id="2835686964326214400">Definir un horario personalizado para reiniciar dispositivos</translation>
 <translation id="2838830882081735096">No permitir la migración de datos ni ARC</translation>
 <translation id="2839294585867804686">Configuración de uso compartido de archivos del sistema</translation>
 <translation id="284288632677954003">URL de un archivo XML que contiene URLs que nunca deben activar un cambio de navegador.</translation>
@@ -1859,6 +1861,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 
       Si no se le asigna ningún valor, se aplicará la política <ph name="ASK_GEOLOCATION_POLICY_NAME" />, pero los usuarios podrán cambiar esta opción.</translation>
 <translation id="2922511125678964398">Permitir que la autenticación de portales cautivos ignore la configuración de proxy</translation>
+<translation id="2926813071464307947">Inhabilitar el entorno aislado del contenedor de aplicaciones del renderizador</translation>
 <translation id="2931888116345994552">Si se habilita o no se establece, se habilitarán las actualizaciones de todos los componentes de <ph name="PRODUCT_NAME" />.
 
       Si se inhabilita, se desactivarán las actualizaciones de los componentes. Sin embargo, algunos componentes quedan exentos de esta política: las actualizaciones de los componentes que no contengan código ejecutable o que sean esenciales para proteger la seguridad del navegador no se inhabilitarán.
@@ -2304,6 +2307,11 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
           Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo y su propietario (o un usuario del dominio que gestiona el dispositivo) podrá cambiarlo. El nombre tiene un límite de 24 caracteres.</translation>
 <translation id="3329063005964041553">Bloquear la API File Handling en estas aplicaciones web</translation>
 <translation id="3329401415394648069">Permitir el uso de la API U2F Security Key.</translation>
+<translation id="3329976499753286262">Si se habilita esta política o no se establece, la configuración del contenedor de aplicaciones del renderizador se habilitará en las plataformas compatibles.
+
+      Si se inhabilita esta política, se reducirán la seguridad y la estabilidad de <ph name="PRODUCT_NAME" />, ya que se debilitará el entorno aislado que utilizan los procesos del renderizador. Inhabilita la política solo si hay problemas de compatibilidad con un software de terceros que deba ejecutarse en los procesos del renderizador.
+
+      Nota: Consulta más información sobre las políticas de mitigación de procesos en la página https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies.</translation>
 <translation id="3339271789059866414">Configura la disponibilidad del servicio de proxy del sistema y las credenciales de proxy para los servicios del sistema.
       Si no se establece esta política, el servicio de proxy del sistema no estará disponible.</translation>
 <translation id="3348799281602260763">Si se habilita la política, las conexiones de punto a punto WebRTC podrán cambiar a versiones
@@ -2341,6 +2349,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="3387211681524224831">Si la política se habilita, no se almacenará el historial de navegación y se inhabilitará la sincronización de pestañas. Los usuarios no pueden cambiar esta opción.
 
       Si esta política se inhabilita o no se define, se guardará el historial de navegación.</translation>
+<translation id="3387999258705169775">Comportamiento predeterminado de la restricción anidada de la función setTimeout().</translation>
 <translation id="3389088527709746815">Habilitar la autenticación gnubby para el host de acceso remoto</translation>
 <translation id="3391457705621770207">Si se define esta política, determinará la cantidad de tiempo (en milisegundos) que debe pasar sin actividad de usuario para que se inicie sesión automáticamente en la cuenta local del dispositivo especificada en la política <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" />.
 
@@ -3024,6 +3033,16 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 
           Si no se le asigna ningún valor, el resaltado del símbolo de intercalación se inhabilitará inicialmente en la pantalla de inicio de sesión, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
+<translation id="4186244263855283575">Permite definir un horario personalizado para reiniciar dispositivos. Cuando se le asigne el valor True, el dispositivo se reiniciará según el horario. Se debe quitar esta política para cancelar el resto de reinicios programados.
+
+      En las sesiones de usuario y en las sesiones de invitado, se aplica lo siguiente:
+
+        * Se notificará a los usuarios sobre el reinicio programado 1 hora antes de la hora programada. Podrán elegir entre reiniciar el dispositivo en ese momento o esperar hasta el reinicio programado. El reinicio programado no se puede aplazar.
+
+        * Hay un periodo de gracia de 1 hora después de iniciar el dispositivo. Los reinicios programados se omiten durante este periodo y se reprograman para el día, la semana o el mes siguiente, en función de la configuración.
+
+      En las sesiones de Kiosco, no hay periodo de gracia ni notificaciones sobre el reinicio.
+</translation>
 <translation id="4187576366596772431">Bloquea la API WebHID en estos sitios</translation>
 <translation id="4192388905594723944">URL para validar el token de autenticación de clientes de acceso remoto</translation>
 <translation id="4203055629055264833">Si se habilita esta política o no se establece, los usuarios podrán mostrar su página más reciente de resultados del buscador predeterminado en un panel lateral mediante la activación de un icono en la barra de herramientas.
@@ -3051,13 +3070,6 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 <translation id="4228745249339680042">Si se define esta política, se especificarán las URL y los dominios para los que no se muestra ningún mensaje cuando se solicitan certificados de atestación de las llaves de seguridad. Asimismo, se envía una señal a la llave de seguridad para indicar que es posible que se utilice esa atestación individual. Sin esta política, se muestra un mensaje a los usuarios de <ph name="PRODUCT_NAME" /> versión 65 y versiones posteriores cuando los sitios web solicitan la atestación de las llaves de seguridad.
 
       Las URL solo se identifican como appIDs U2F. Los dominios se identifican únicamente como IDs RP de WebAuthn. Por ello, para incluir tanto las API WebAuthn como U2F, se deben indicar la URL appID y el dominio de un determinado sitio web.</translation>
-<translation id="4239112794240794697">Esta política concede permiso a Projector para crear y transcribir grabaciones de pantalla y subirlas a Drive para los usuarios de empresa.
-      Esta política no afecta a los usuarios de Family Link.
-      Esta política no afecta a la política <ph name="PROJECTOR_DOGFOOD_FOR_FAMILY_LINK_ENABLED_POLICY_NAME" /> para usuarios de Family Link.
-
-      Si se habilita esta política, se habilitará Projector.
-      Si se inhabilita esta política, se inhabilitará Projector.
-      Si no se establece esta política, Projector se inhabilitará de forma predeterminada.</translation>
 <translation id="4239720644496144453">La caché no se utiliza en las aplicaciones para Android. Si varios usuarios instalan la misma aplicación para Android, se descargará una nueva para cada uno de ellos.</translation>
 <translation id="4247914291127524388">Si se asigna el valor "Habilitada" a esta política, se desactivará la sincronización de <ph name="GOOGLE_DRIVE_NAME" /> en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /> cuando se utilice una conexión de datos móviles. Los datos solos se sincronizarán con Drive si el dispositivo está conectado a una red Wi-Fi o Ethernet.
 
@@ -3112,14 +3124,6 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
       Si el dispositivo no está gestionado o solo hay un usuario, esta política se ignorará y siempre se mostrará la notificación.
 
       Si hay varias cuentas de usuario en un dispositivo gestionado, la notificación solo se mostrará si esta política está habilitada.</translation>
-<translation id="4293593564662654474">Esta política se proporciona como método para inhabilitar la función Conjuntos propios.
-
-                  Si esta política se habilita o no se define, se habilitará la función Conjuntos propios.
-
-                  Si esta política se inhabilita, se inhabilitará la función Conjuntos propios.
-
-                  El estado de la función Conjuntos propios determina si Chrome recupera la lista de Conjuntos propios.
-                  También controla si Chrome admite funciones relacionadas con Conjuntos propios (por ejemplo, el atributo de cookies SameParty).</translation>
 <translation id="4311195029067684288">Llena</translation>
 <translation id="4313767483634435271">Dirección MAC designada de la base del dispositivo</translation>
 <translation id="4314538398999793073">Inhabilitar la búsqueda de CNAME durante la autenticación Kerberos</translation>
@@ -3255,7 +3259,7 @@ Si se define esta política, <ph name="PRODUCT_OS_NAME" /> solo permitirá que l
 <translation id="4508728400492074981">Controla políticas para la función Conjuntos propios.</translation>
 <translation id="4510923771103268849">El usuario puede tener acceso root a los contenedores de Crostini</translation>
 <translation id="4512407512989846472">Permitir bloquear la copia en el portapapeles en URLs especificadas</translation>
-<translation id="4513691822411041977">No forzar el uso de Búsqueda Segura en la Búsqueda de Google ni en el modo restringido de YouTube</translation>
+<translation id="4513691822411041977">No forzar el uso de Búsqueda Segura en la Búsqueda de Google ni en el modo Restringido de YouTube</translation>
 <translation id="4515404363392014383">Habilitar Navegación segura en fuentes de confianza</translation>
 <translation id="4518251772179446575">Preguntar siempre que un sitio quiera hacer un seguimiento de la ubicación física de los usuarios</translation>
 <translation id="4521193243799782295">Durante el inicio de sesión, <ph name="PRODUCT_OS_NAME" /> puede realizar la autenticación a través de un servidor (con conexión) o una contraseña almacenada en caché (sin conexión).
@@ -3365,6 +3369,7 @@ Si se define esta política, <ph name="PRODUCT_OS_NAME" /> solo permitirá que l
 <translation id="4632343302005518762">Permitir que <ph name="PRODUCT_FRAME_NAME" /> procese los tipos de contenido mostrados</translation>
 <translation id="4632566332417930481">No permite el uso de las herramientas para desarrolladores en extensiones instaladas por la política de empresa, pero sí permite su uso en otros contextos</translation>
 <translation id="4635284822166984665">Hora a la que el dispositivo empezará a cargarse, interpretada en la zona horaria local del dispositivo.</translation>
+<translation id="4638532652671131094">Controla el umbral de anidación antes del cual se empezará a restringir la función setTimeout() de JavaScript.</translation>
 <translation id="4646626362889216307">Si se establece la política, se permitirá la combinación de las políticas seleccionadas cuando procedan de fuentes distintas, con los mismos permisos y el mismo nivel. Esta combinación está en las claves de primer nivel del diccionario de cada fuente. La clave procedente de la fuente con más prioridad prevalecerá.
 
       Usa el carácter comodín "*" para permitir la combinación de todas las políticas de diccionarios admitidas.
@@ -3794,13 +3799,13 @@ Si se define esta política, <ph name="PRODUCT_OS_NAME" /> solo permitirá que l
       </translation>
 <translation id="51859390023061147">Inhabilitar la función de restauración completa</translation>
 <translation id="5189360528842591274">Permitir conectarse solo a los servicios Bluetooth de la lista</translation>
-<translation id="5190426551516379357">Si la política se define, se aplica un modo restringido mínimo en YouTube y se evita que los usuarios seleccionen un modo menos restringido. Cuando se asignan estos valores:
+<translation id="5190426551516379357">Si la política se define, se aplica un modo Restringido mínimo en YouTube y se evita que los usuarios seleccionen un modo menos restringido. Cuando se asignan estos valores:
 
-      * Estricto: el modo restringido estricto siempre está activo en YouTube.
+      * Estricto: el modo Restringido estricto siempre está activo en YouTube.
 
-      * Moderado: el usuario solo puede seleccionar los modos restringidos moderado y estricto en YouTube, pero no puede desactivar el modo restringido.
+      * Moderado: el usuario solo puede seleccionar los modos restringidos moderado y estricto en YouTube, pero no puede desactivar el modo Restringido.
 
-      * Desactivado, o si no se define: Chrome no aplica el modo restringido en YouTube. Políticas externas, como las de YouTube, pueden seguir aplicando el modo restringido.</translation>
+      * Desactivado, o si no se define: Chrome no aplica el modo Restringido en YouTube. Políticas externas, como las de YouTube, pueden seguir aplicando el modo Restringido.</translation>
 <translation id="5191476996923842491">Comportamiento predeterminado del redondeo de la función setTimeout().</translation>
 <translation id="519247340330463721">Configura las políticas relacionadas con la función Navegación segura</translation>
 <translation id="5196520640744454600">Habilitar las teclas persistentes en la pantalla de inicio de sesión</translation>
@@ -4224,6 +4229,7 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 <translation id="5625771176514429288">Se permitirá ejecutar aplicaciones de Chrome en estas plataformas.</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5633871703004128675">Habilitar la función de accesibilidad de resaltado del símbolo de intercalación de texto</translation>
+<translation id="5634032995857968056">Habilitar el entorno aislado del contenedor de aplicaciones del renderizador</translation>
 <translation id="5639454129004500060">Si se establece esta política, contendrá información para descargar un archivo de plantilla de escritorio.  Este archivo contiene una plantilla de escritorio que se proporcionará al usuario actual.
       Si no se establece esta política, no se incluirá ninguna plantilla de escritorio preconfigurada en la lista de plantillas de escritorio.  Si la política <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" />
       no tiene asignado el valor true, no tendrá efecto.</translation>
@@ -4517,7 +4523,7 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
       Si se le asigna el valor <ph name="BR_UNDER_USER_CONTROL" />, se preguntará a los usuarios si quieren usar los servicios de ubicación de Google. Si los usuarios activan los servicios de ubicación de Google, las aplicaciones Android usarán estos servicios para consultar la ubicación del dispositivo y enviar datos de ubicación anónimos a Google.
 
       Tras la configuración inicial, los usuarios podrán activar y desactivar los servicios de ubicación de Google.</translation>
-<translation id="5908808391744484238">Cuando se habilita o no se establece, el filtro de parámetros de URL puede quitar algunos parámetros cuando un usuario selecciona "Abrir enlace en una ventana de incógnito" desde el menú contextual.
+<translation id="5908808391744484238">Cuando se habilita o no se establece, el filtro de parámetros de URL puede quitar algunos parámetros cuando un usuario selecciona "Abrir enlace en una ventana de Incógnito" desde el menú contextual.
       Cuando se inhabilita, no se aplica ningún filtro.
       Esta política es temporal y podría retirarse en una versión posterior.</translation>
 <translation id="5910810837616572201">Si se utiliza <ph name="PRINTERS_BLACKLIST" /> para la política <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME" />, al establecer la política <ph name="NATIVE_PRINTERS_BULK_BLACKLIST_POLICY_NAME" />, esta especifica qué impresoras no pueden utilizar los usuarios. El usuario podrá utilizar todas las impresoras, excepto aquellas con los ID indicados en la política. Los ID deben coincidir con los campos <ph name="ID_FIELD" /> o <ph name="GUID_FIELD" /> del archivo definido en la política <ph name="BULK_PRINTERS_POLICY_NAME" />.
@@ -4736,6 +4742,13 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
       Si se asigna un color hexadecimal válido a esta política, se generará y se aplicará de forma automática un tema basado en ese color al navegador. Los usuarios no podrán cambiar el tema definido por la política.
 
       Si no se asigna ningún valor a la política, los usuarios podrán cambiar al tema que prefieran en su navegador.</translation>
+<translation id="619376519309703699">Esta política se proporciona como método para inhabilitar la función de conjuntos propios.
+
+                  Si esta política se habilita o no se define, se habilitará la función de conjuntos propios.
+
+                  Si esta política se inhabilita, se inhabilitará la función de conjuntos propios.
+
+                  Controla si Chrome admite funciones relacionadas con conjuntos propios (por ejemplo, el atributo de cookies SameParty).</translation>
 <translation id="6195802366906945965">Determina si se utilizará el verificador de certificados integrado para verificar los certificados de los servidores</translation>
 <translation id="6198947200418556248">Esta política está obsoleta. Si necesitas que las cookies tengan el comportamiento antiguo, usa <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" />. Te permite revertir todas las cookies al comportamiento antiguo de <ph name="ATTRIBUTE_SAMESITE_NAME" />. Si restableces el comportamiento antiguo, las cookies que no especifiquen un atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> se tratarán como si fueran <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />. Además, se eliminará el requisito de que las cookies <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> tengan el atributo <ph name="ATTRIBUTE_SECURE_NAME" /> y se omitirá la comparación de esquemas cuando se evalúe si dos sitios son iguales. Para ver la descripción completa, consulta https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
@@ -4943,6 +4956,12 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
       Si se inhabilita la política, se inhabilitará la optimización de WPAD, lo que hará que <ph name="PRODUCT_NAME" /> tenga que esperar más tiempo la respuesta de los servidores WPAD basados en DNS.
 
       Independientemente de si se establece o no esta política, los usuarios no podrán cambiar la opción de configuración de WPAD.</translation>
+<translation id="6365249741643189510">Esta política concede permiso a Projector para crear y transcribir grabaciones de pantalla y subirlas a Drive para los usuarios de empresa.
+      Esta política no afecta a los usuarios de Family Link.
+      Esta política no afecta a la política <ph name="PROJECTOR_DOGFOOD_FOR_FAMILY_LINK_ENABLED_POLICY_NAME" /> para los usuarios de Family Link.
+
+      Si se habilita esta política o no se establece, se habilitará Projector.
+      Si se inhabilita esta política, se inhabilitará Projector.</translation>
 <translation id="6366574325767783825">Si se le asigna el valor "Habilitada" a esta política o no se le asigna ninguno, <ph name="PRODUCT_NAME" /> aceptará contenidos web de tipo Signed HTTP Exchanges.
 
       Si se le asigna el valor "Inhabilitada", los Signed HTTP Exchanges no se podrán cargar.</translation>
@@ -5313,6 +5332,17 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
 
       Si se inhabilita o no se le asigna ningún valor, los sitios solo podrán usar SharedArrayBuffers si están aislados de otros orígenes.</translation>
 <translation id="6735701345096330595">Forzar que se habilite el corrector ortográfico de idiomas</translation>
+<translation id="6740299900063889926">setTimeout(…, 0) se suele usar para dividir tareas largas de JavaScript.
+          Si se habilita esta política, los valores de setTimeout y setInterval que tengan un intervalo inferior a 4 ms no se redondearán de forma tan agresiva.
+          Esto mejora el rendimiento a corto plazo. Sin embargo, en los sitios web que hagan un uso inadecuado de la API, se redondearán los valores de setTimeout de todos modos.
+
+          Es posible que esto cambie el orden de las tareas en una página web, lo que podría provocar un comportamiento inesperado en sitios que dependan, de algún modo, de un orden determinado.
+          También puede afectar a sitios que usen mucho la función setTimeout() con un tiempo de espera de 0 ms (por ejemplo, podría aumentar la carga de la CPU).
+
+          Para los usuarios que no tengan esta política configurada, Chrome lanzará el cambio de forma gradual en el canal estable.
+
+          Esta es una política temporal y se prevé que se elimine en la versión 107 de Chrome. Este plazo puede ampliarse si lo necesitan las empresas.
+          </translation>
 <translation id="6740611636377710500">Permite al usuario ejecutar PluginVm.
 
       Si se le asigna el valor "false" a esta política o no se le asigna ninguno, <ph name="PLUGIN_VM_NAME" /> no estará habilitado para el usuario.
@@ -5504,7 +5534,7 @@ Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no utilizará notific
       * Complementa la política <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" /> y las configuraciones de impresora individuales de los usuarios
 
       Si no se establece, no habrá impresoras de dispositivo y se ignorarán las otras políticas <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />.</translation>
-<translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
+<translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imágenes para el proveedor de búsquedas predeterminado</translation>
 <translation id="6953102253399571439">Habilitar de manera predeterminada la impresión con PIN</translation>
 <translation id="6956272732789158625">No permitir que los sitios utilicen la generación de claves</translation>
 <translation id="6961602002757991199">Si se define esta política como una URL válida, <ph name="PRODUCT_NAME" /> descargará la lista de sitios web de esa URL y aplicará las reglas como si se hubieran configurado con la política <ph name="BROWSER_SWITCHER_URL_GREYLIST_POLICY_NAME" />. Estas políticas evitarán que <ph name="PRODUCT_NAME" /> y el navegador alternativo se abran entre sí.
@@ -5625,7 +5655,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si no le asignas ningún valor, la estantería se colocará en la parte inferior de la pantalla de forma predeterminada y el usuario podrá cambiar su posición.</translation>
 <translation id="7039815268521168329">Mostrar el flujo de Voice Match del Asistente de Google durante la configuración inicial</translation>
 <translation id="7040229947030068419">Valor de ejemplo:</translation>
-<translation id="7041170641363384736">Permite definir un horario personalizado para reiniciar dispositivos. En este momento, la política solo se aplica a los dispositivos que hayan habilitado el inicio automático de aplicaciones en la sesión del kiosco. Cuando se le asigne el valor True, el dispositivo se reiniciará según el horario. Se debe quitar esta política para cancelar el resto de reinicios programados.</translation>
 <translation id="7044883996351280650">Controlar el servicio de copia de seguridad y restauración de Android</translation>
 <translation id="7047495632846973438">Especifica si se comprobará o se saltará la política de permisos mostrar-capturar.</translation>
 <translation id="7066292150801784098">Inhabilitar la interacción de los usuarios remotos con ventanas con permisos de administrador en sesiones de asistencia remota</translation>
@@ -6604,7 +6633,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
           Si se asigna un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
 
           Si no se le asigna ningún valor, el resaltado del cursor se inhabilitará al inicio, pero el usuario podrá habilitarlo en cualquier momento.</translation>
-<translation id="8161536598508377155">Definir un horario personalizado para reiniciar dispositivos de kiosco</translation>
 <translation id="8164144100557223371">Inhabilitar el punto de entrada de las funciones experimentales de la barra de herramientas del navegador</translation>
 <translation id="8164687848393015214">Si se habilita la política, se enviarán paquetes de red de monitorización (<ph name="HEARTBEATS_TERM" />) al servidor de administración para monitorizar el estado de la conexión y permitir que el servidor detecte si el dispositivo está sin conexión.
 
@@ -6886,7 +6914,7 @@ OverrideSecurityRestrictionsOnInsecureOrigin. Si ambas políticas están present
 <translation id="8455551509936646199">Día de la semana en el que se debe reiniciar, interpretado en la zona horaria local del dispositivo. Solo se utiliza si el valor de "frequency" (frecuencia) es "WEEKLY" (semanal).</translation>
 <translation id="8461914792118322307">Proxy</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
-<translation id="8470317291588703478">No forzar el modo restringido de YouTube</translation>
+<translation id="8470317291588703478">No forzar el modo Restringido de YouTube</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8479032202539686055">WebRTC usará todas las interfaces disponibles al buscar la mejor ruta.</translation>
 <translation id="8483004350080020634">Elimina las partes de las URL de tipo https:// que contienen información sensible de seguridad y privacidad antes de que se transfieran a las secuencias de comandos de configuración automática de proxy que utiliza <ph name="PRODUCT_NAME" /> durante la resolución de proxy.
@@ -6964,7 +6992,7 @@ OverrideSecurityRestrictionsOnInsecureOrigin. Si ambas políticas están present
       Si se combina con <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />, podrá restablecerse una versión anterior concreta del dispositivo.
 
       Advertencia: No se recomienda configurar las restricciones de versiones, ya que podrían impedir que los usuarios reciban actualizaciones de software y correcciones de seguridad críticas. Limitar las actualizaciones a una versión concreta puede poner en riesgo a los usuarios.</translation>
-<translation id="8520064498689833152">Forzar el uso de Búsqueda Segura en la Búsqueda de Google y que el modo restringido de YouTube se aplique en la opción moderada como mínimo</translation>
+<translation id="8520064498689833152">Forzar el uso de Búsqueda Segura en la Búsqueda de Google y que el modo Restringido de YouTube se aplique en la opción moderada como mínimo</translation>
 <translation id="8524334245528364388">URL de un archivo JSON con una lista de servidores de impresión.</translation>
 <translation id="8525526490824335042">Contenedor de Linux</translation>
 <translation id="8526745614158856826">Establecer esta política permite definir una lista de sitios a los que se les concederá permiso automáticamente para acceder a todos los dispositivos disponibles.
@@ -7106,7 +7134,7 @@ OverrideSecurityRestrictionsOnInsecureOrigin. Si ambas políticas están present
 <translation id="8676959842615154675">Si se habilita esta política, el host de acceso remoto comparará el nombre del usuario local al que está asociado el host con el nombre de la cuenta de Google registrado como el propietario del host; por ejemplo, "juanmartinez" si el host pertenece a la cuenta de Google juanmartinez@example.com. Este host no se iniciará si el nombre del propietario del host es diferente al nombre del usuario local al que está asociado el host. Para establecer que la cuenta de Google del propietario se asocie a un dominio específico, usa esta política junto a <ph name="REMOTE_ACCESS_HOST_DOMAIN_POLICY_NAME" />.
 
       Si se inhabilita esta política o no se le asigna ningún valor, el host de acceso remoto podrá asociarse a cualquier usuario local.</translation>
-<translation id="867708016260789630">Forzar que el modo restringido de YouTube se aplique en la opción moderada como mínimo</translation>
+<translation id="867708016260789630">Forzar que el modo Restringido de YouTube se aplique en la opción moderada como mínimo</translation>
 <translation id="8677853537025397834">Permite la API WebHID en estos sitios</translation>
 <translation id="8685024486845674965">La advertencia de protección de contraseña se activa al reutilizar la contraseña</translation>
 <translation id="8685680544554917389">Si se asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> reproducirá automáticamente el contenido multimedia. Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no podrá reproducir automáticamente el contenido multimedia.
@@ -7169,6 +7197,7 @@ Si se configura la política, los usuarios no podrán cambiar esta función. Si 
 <translation id="8749536858950505376">Si se le asigna el valor "true" a esta política, el cursor grande permanece activado. Si se le asigna el valor "false", el cursor grande permanece desactivado.
 
       Si se configura esta política, los usuarios no pueden cambiar la función. Si no se le asigna ningún valor, el cursor grande está desactivado en un principio, pero los usuarios pueden activarlo en cualquier momento.</translation>
+<translation id="8750941317035081777">setTimeout() de JavaScript se restringirá tras un umbral de anidamiento normal.</translation>
 <translation id="8753264624162178499">Opción Imprimir como imagen disponible para que el usuario permita la rasterización de PDF antes de enviar un trabajo de impresión al destino.</translation>
 <translation id="8757552286070680084">Configuración de Wilco DTC</translation>
 <translation id="8758831693895931466">Activar el registro obligatorio en la gestión en la nube</translation>
@@ -7176,6 +7205,7 @@ Si se configura la política, los usuarios no podrán cambiar esta función. Si 
 <translation id="8763716376920670835">WebSQL está habilitado de forma predeterminada desde la versión M101, pero puede inhabilitarse mediante una marca de Chrome.
           Si se asigna el valor false a esta política o no se le asigna ningún valor, WebSQL se podrá inhabilitar.
           Si se le asigna el valor true, WebSQL no se podrá inhabilitar.</translation>
+<translation id="8766910236040529804">Habilitar el contenedor de aplicaciones del renderizador</translation>
 <translation id="8767743923206070405">Si se habilita esta política, se mostrará el botón de página principal en la barra de herramientas de <ph name="PRODUCT_NAME" />. Si se inhabilita esta política, no se mostrará el botón de página principal.
 
       Si se le asigna un valor a esta política, los usuarios no podrán cambiarlo en <ph name="PRODUCT_NAME" />. Si no se le asigna ningún valor, los usuarios podrán decidir si quieren que se muestre el botón de página principal.</translation>

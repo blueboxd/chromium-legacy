@@ -604,7 +604,7 @@ Se você desativar a política, essa rolagem será desativada.</translation>
 
       Se a política não for definida, todos os recursos do <ph name="PRODUCT_OS_NAME" /> ficarão ativados por padrão, e o usuário poderá usar qualquer um deles.
 
-      Observação: no momento, o recurso de digitalização está desativado por padrão por uma sinalização de recurso. Se o usuário ativá-lo pela sinalização, o recurso ainda pode estar desativado por esta política.</translation>
+      Observação: no momento, o recurso de digitalização está desativado por padrão por uma flag de recurso. Se o usuário ativá-lo pela sinalização, o recurso ainda pode estar desativado por esta política.</translation>
 <translation id="1645793986494086629">Esquema:</translation>
 <translation id="1647558381546345298">Definir a política configura o tamanho do cache usado pelo <ph name="PRODUCT_NAME" /> para armazenar arquivos de mídia em cache no disco, independentemente de o usuário ter especificado ou não a sinalização "--media-cache-size". O valor especificado na política não é um limite rígido, mas sim uma sugestão para o sistema de armazenamento em cache. Valores abaixo de alguns megabytes serão arredondados para cima.
 
@@ -1346,6 +1346,7 @@ Web e PWAs. No momento, com suporte apenas no
       A definição da política como "tls1" ou "tls1.1" foi removida na versão 91. Não é mais possível suprimir o aviso de TLS 1.0/1.1.</translation>
 <translation id="2364639863953745682">Modo da experiência de integração do Assistente</translation>
 <translation id="2366301887862414321">Permitir hosts de mensagens nativas no nível do usuário e do sistema</translation>
+<translation id="2382672620906337383">A função setTimeout() do JavaScript não será ajustada até um limite de aninhamento maior.</translation>
 <translation id="2384233438419344179">Se a política for definida como "Ativada", os cookies não poderão ser definidos por elementos de página da Web que não sejam do domínio que está na barra de endereço do navegador. Se a política for definida como "Desativada", os cookies poderão ser definidos por esses elementos e os usuários serão impedidos de mudar essa configuração.
 
       Se ela não for definida, os cookies de terceiros serão ativados, mas os usuários poderão mudar essa configuração.</translation>
@@ -1376,7 +1377,7 @@ Web e PWAs. No momento, com suporte apenas no
 
       Observe que as origens isoladas por esta política não poderão criar scripts de outras origens no mesmo site, ação que é possível quando dois documentos do mesmo site modificam os valores de document.domain para que sejam correspondentes. Os administradores precisam confirmar se esse comportamento incomum não está sendo usado em uma origem antes de isolá-la.
 
-      Se a política for desativada, toda forma de isolamento de sites deixará de funcionar, inclusive em sites confidenciais e nas versões de teste de IsolateOriginsAndroid, SitePerProcessAndroid e outros modos de isolamento. Os usuários ainda poderão ativar IsolateOrigins manualmente com a sinalização de linha de comando.
+      Se a política for desativada, toda forma de isolamento de sites deixará de funcionar, inclusive em sites confidenciais e nas versões de teste de IsolateOriginsAndroid, SitePerProcessAndroid e outros modos de isolamento. Os usuários ainda poderão ativar IsolateOrigins manualmente com a flag de linha de comando.
 
       Se a política não for definida, o usuário poderá mudar essa configuração.
 
@@ -1772,6 +1773,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="283478052049914107">Definir a política como "Ativada" e inserir uma porta não padrão (ou seja, uma porta diferente de 80 ou 443) a inclui no SPN do Kerberos gerado.
 
       Definir a política como "Desativada" ou deixá-la sem definição faz com que o SPN do Kerberos gerado não inclua uma porta.</translation>
+<translation id="2835686964326214400">Definir uma programação personalizada para reiniciar dispositivos</translation>
 <translation id="2838830882081735096">Bloquear migração de dados e ARC</translation>
 <translation id="2839294585867804686">Configurações do Compartilhamento de arquivos de rede</translation>
 <translation id="284288632677954003">URL de um arquivo XML contendo URLs que nunca devem acionar uma troca de navegador.</translation>
@@ -1851,6 +1853,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 
       Se a política não for definida, a <ph name="ASK_GEOLOCATION_POLICY_NAME" /> será aplicada, mas os usuários poderão mudar essa configuração.</translation>
 <translation id="2922511125678964398">Permitir que a autenticação do portal cativo ignore as configurações de proxy</translation>
+<translation id="2926813071464307947">Desativar o sandbox do contêiner do app Renderer</translation>
 <translation id="2931888116345994552">Se a política for ativada ou deixada sem definição, as atualizações para todos os componentes no <ph name="PRODUCT_NAME" /> serão ativadas.
 
       Se a política for desativada, as atualizações dos componentes também serão desativadas. No entanto, alguns componentes estarão isentos desta política: as atualizações de componentes que não contenham código executável e sejam essenciais para a segurança do navegador não serão desativadas.
@@ -2292,6 +2295,11 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
           Se essa política for definida como uma string não vazia, essa string será usada como o nome do destino do <ph name="PRODUCT_NAME" />. Caso contrário, o nome do destino será o nome do dispositivo. Se essa política não for definida, o nome do destino será o nome do dispositivo, e o proprietário do dispositivo (ou um usuário do domínio que está gerenciando o dispositivo) poderá alterá-lo. O nome é limitado a 24 caracteres.</translation>
 <translation id="3329063005964041553">Bloquear a API File Handling nesses apps da Web</translation>
 <translation id="3329401415394648069">Permitir o uso da API U2F Security Key descontinuada.</translation>
+<translation id="3329976499753286262">Se a política for ativada ou deixada sem definição, a configuração do contêiner do app Renderer será ativada em plataformas com suporte.
+
+      Se ela for desativada, a segurança e a estabilidade do <ph name="PRODUCT_NAME" /> serão prejudicadas, porque ela vai enfraquecer o sandbox usado pelos processos do renderizador. Só desative a política se softwares de terceiros que precisam ser executados nos processos do renderizador apresentarem problemas de compatibilidade.
+
+      Observação: leia mais sobre as políticas de mitigação de processos em https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies.</translation>
 <translation id="3339271789059866414">Configura a disponibilidade do serviço de proxy do sistema e as credenciais de proxy para os serviços do sistema.
       Se a política não for definida, o serviço de proxy do sistema não estará disponível.</translation>
 <translation id="3348799281602260763">Se ativadas, as conexões de ponto WebRTC podem fazer downgrade para versões
@@ -2324,11 +2332,12 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 
       Acesse https://support.google.com/chrome/a?p=Supported_directory_variables para ver uma lista das variáveis que podem ser usadas.
 
-      Se esta política for deixada sem definição, o caminho padrão do perfil será usado, e o usuário poderá substituí-lo pela sinalização de linha de comando "--user-data-dir".</translation>
+      Se esta política for deixada sem definição, o caminho padrão do perfil será usado, e o usuário poderá substituí-lo pela flag de linha de comando "--user-data-dir".</translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
 <translation id="3387211681524224831">Se a política for definida como "Ativada" o histórico de navegação não será salvo, a sincronização de guias será desativada e os usuários não poderão mudar essa configuração.
 
       Se a política for definida como "Desativada" ou não for definida, o histórico de navegação será salvo.</translation>
+<translation id="3387999258705169775">Comportamento padrão do ajuste aninhado da função setTimeout().</translation>
 <translation id="3389088527709746815">Ativar a autenticação gnubby para o host de acesso remoto</translation>
 <translation id="3391457705621770207">A definição da política determina o tempo (em milissegundos) sem atividade do usuário até o login automático na conta local do dispositivo especificada pela <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" />.
 
@@ -2369,7 +2378,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 
       Esta configuração é útil para clientes corporativos que estão usando soluções de SSO incompatíveis com o novo fluxo de login in-line.
       Se você ativar esta configuração, o antigo fluxo de login baseado na Web será usado.
-      Se você desativar ou não definir esta configuração, o novo fluxo de login in-line será usado por padrão. Os usuários podem ativar o antigo fluxo de login baseado na Web com a sinalização de linha de comando --enable-web-based-signin.
+      Se você desativar ou não definir esta configuração, o novo fluxo de login in-line será usado por padrão. Os usuários podem ativar o antigo fluxo de login baseado na Web com a flag de linha de comando --enable-web-based-signin.
 
       A configuração experimental será removida no futuro, quando o login in-line for compatível com todos os fluxos de login SSO.</translation>
 <translation id="3435796032110614169">Permite a exclusão do histórico de trabalhos de impressão</translation>
@@ -3008,6 +3017,16 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 
           Se esta política não for definida, o destaque de circunflexos ficará desativado na tela de login, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="4183229833636799228">Configuração padrão de <ph name="FLASH_PLUGIN_NAME" /></translation>
+<translation id="4186244263855283575">Permite configurar uma programação personalizada para reiniciar dispositivos. Se ela for definida como verdadeira, o dispositivo será reiniciado de acordo com a programação. A política precisa ser removida para cancelar outras reinicializações programadas.
+
+      Nas sessões de usuário e de visitante, o seguinte se aplica:
+
+        * Uma hora antes do horário programado, os usuários são notificados de que a reinicialização vai ocorrer. Eles podem reiniciar o app ou esperar a reinicialização programada. A reinicialização programada não pode ser adiada.
+
+        * Existe um período de carência de uma hora após a inicialização do dispositivo. As reinicializações programadas são ignoradas durante esse período e reprogramadas para o próximo dia, semana ou mês, dependendo da configuração.
+
+      Nas sessões de quiosque, não há um período de carência nem notificações sobre a reinicialização.
+</translation>
 <translation id="4187576366596772431">Bloquear a API WebHID nesses sites</translation>
 <translation id="4192388905594723944">URL para validação do token de autenticação do cliente de acesso remoto</translation>
 <translation id="4203055629055264833">Se a política for definida como "Ativada" ou for deixada sem definição, os usuários vão poder ver a página de resultados mais recente do mecanismo de pesquisa padrão em um painel lateral ao ativar um ícone na barra de ferramentas.
@@ -3035,13 +3054,6 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 <translation id="4228745249339680042">A definição da política especifica os URLs e domínios para os quais nenhuma solicitação será exibida quando os certificados de atestado das chaves de segurança forem solicitados. Além disso, um sinal será enviado para a chave de segurança indicando que o atestado individual pode ser usado. Se a política não for definida, os usuários receberão uma solicitação no <ph name="PRODUCT_NAME" /> 65 ou versões mais recentes quando os sites solicitarem o atestado das chaves de segurança.
 
       Os URLs serão interpretados apenas como U2F appIDs. Os domínios serão interpretados apenas como webauthn RP IDs. Sendo assim, para abranger as APIs U2F e webauthn, tanto o domínio quanto o URL do appID precisam ser listados para um site.</translation>
-<translation id="4239112794240794697">Esta política concede ao Projector permissão para criar, transcrever e fazer upload de gravações de tela para o Drive para usuários corporativos.
-      Esta política não afeta usuários do Family Link.
-      Esta política não afeta a política <ph name="PROJECTOR_DOGFOOD_FOR_FAMILY_LINK_ENABLED_POLICY_NAME" /> para usuários do Family Link.
-
-      Se ela for ativada, o Projector será ativado.
-      Se ela for desativada, o Projector será desativado.
-      Se a política for deixada sem definição, o Projector será desativado por padrão.</translation>
 <translation id="4239720644496144453">O cache não é usado para apps Android. Se vários usuários instalarem o mesmo app Android, o download dele será feito novamente para cada usuário.</translation>
 <translation id="4247914291127524388">Se a política for definida como ativada, a sincronização do <ph name="GOOGLE_DRIVE_NAME" /> no app Arquivos do <ph name="PRODUCT_OS_NAME" /> será desativada quando estiver em uma conexão celular. Os dados serão sincronizados com o Drive apenas quando houver conexão a uma rede Wi-Fi ou de Ethernet.
 
@@ -3096,14 +3108,6 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
       Esta política é ignorada e a notificação é sempre mostrada se o dispositivo não é gerenciado ou se há apenas um usuário.
 
       Se houver várias contas de usuário em um dispositivo gerenciado, a notificação será exibida apenas quando a política estiver definida como "Ativada".</translation>
-<translation id="4293593564662654474">Esta política é fornecida como uma forma de desativar o recurso First-Party Sets.
-
-                  Quando ela é deixada sem definição ou é ativada, o recurso First-Party Sets fica ativado.
-
-                  Quando ela é desativada, o recurso fica desativado.
-
-                  O estado do recurso determina se o Chrome recupera a lista de First-Party Sets.
-                  Ele também controla se o Chrome oferece suporte para recursos relacionados ao First-Party Sets (como o atributo de cookies SameParty).</translation>
 <translation id="4311195029067684288">Completa</translation>
 <translation id="4313767483634435271">Endereço MAC designado da base para o dispositivo</translation>
 <translation id="4314538398999793073">Desativar a consulta CNAME ao negociar a autenticação do Kerberos</translation>
@@ -3349,6 +3353,7 @@ Quando a política for definida, o <ph name="PRODUCT_OS_NAME" /> permitirá que 
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo listados</translation>
 <translation id="4632566332417930481">Não permite o uso das Ferramentas para Desenvolvedores em extensões instaladas por uma política corporativa; permite o uso das Ferramentas para desenvolvedores em outros contextos</translation>
 <translation id="4635284822166984665">Horário em que o carregamento do dispositivo será iniciado, interpretado no fuso horário local do dispositivo.</translation>
+<translation id="4638532652671131094">Controla o limite de aninhamento antes que a função setTimeout() do JavaScript comece a ser ajustada.</translation>
 <translation id="4646626362889216307">Se a política for definida, será possível mesclar as políticas selecionadas quando elas vierem de origens diferentes com os mesmos escopos e níveis. Essa mesclagem ocorre nas chaves de primeiro nível do dicionário de cada origem. A chave da origem de maior prioridade tem precedência.
 
       Use o caractere curinga "*" para permitir a mescla de todas as políticas de dicionário com suporte.
@@ -4049,7 +4054,7 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 
       Se ela for definida como falsa, o <ph name="PRODUCT_NAME" /> não poderá mostrar informações do produto como conteúdo em guia cheia.
 
-      Esta política controla a apresentação das informações promocionais em uma guia inteira. Isso inclui conteúdo como as páginas de boas-vindas que ajudam os usuários a fazer login em <ph name="PRODUCT_NAME" />, definir <ph name="PRODUCT_NAME" /> como navegador padrão ou descobrir os recursos do produto.</translation>
+      Esta política controla a apresentação das informações promocionais em uma guia inteira. Isso inclui conteúdo como as páginas de recepção que ajudam os usuários a fazer login em <ph name="PRODUCT_NAME" />, definir <ph name="PRODUCT_NAME" /> como navegador padrão ou descobrir os recursos do produto.</translation>
 <translation id="544654037134815017">Esta política controla a visibilidade de cards na página Nova guia. Os cards exibem pontos de entrada para inicializar jornadas de usuário comuns com base no comportamento de navegação do usuário.
 
       Se a política for definida como "Ativada", a página Nova guia exibirá os cards caso haja conteúdo disponível.
@@ -4205,6 +4210,7 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 <translation id="5625771176514429288">A execução de apps do Chrome será permitida nestas plataformas.</translation>
 <translation id="5630352020869108293">Restaurar a última sessão</translation>
 <translation id="5633871703004128675">Ativar o recurso de acessibilidade que destaca o cursor</translation>
+<translation id="5634032995857968056">Ativar o sandbox do contêiner do app Renderer</translation>
 <translation id="5639454129004500060">Se definida, esta política contém informações para download de um arquivo de modelo de espaço de trabalho.  O arquivo contém um modelo de espaço de trabalho a ser fornecido para o usuário atual.
       Se a política não for definida, nenhum modelo de espaço de trabalho pré-configurado será incluído na lista.  Se a política <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" />
       não for definida como verdadeira, esta política não terá efeito.</translation>
@@ -4715,6 +4721,13 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
       Se a política for definida como uma cor hexadecimal válida, um tema baseado nessa cor será gerado automaticamente e aplicado ao navegador. O usuário não poderá mudar o tema definido pela política.
 
       Se a política for deixada sem definição, o usuário poderá mudar o tema do navegador como quiser.</translation>
+<translation id="619376519309703699">Esta política é fornecida como uma forma de desativar o recurso de conjuntos primários.
+
+                  Quando ela é deixada sem definição ou é ativada, os conjuntos primários ficam ativados.
+
+                  Quando ela é desativada, eles também ficam desativados.
+
+                  Essa política controla se o Chrome oferece suporte a recursos relacionados aos conjuntos primários, como o atributo de cookies SameParty.</translation>
 <translation id="6195802366906945965">Determina se o verificador integrado de certificados será usado para verificar os certificados do servidor</translation>
 <translation id="6198947200418556248">Esta política foi descontinuada. Se você ainda precisa de um comportamento de cookies legado, use a <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" />. Com ela, é possível reverter todos os cookies para o comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> legado. A reversão para o comportamento legado faz com que os cookies que não especificam um atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> sejam tratados como <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />, remove o requisito de que cookies <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> precisam ter o atributo <ph name="ATTRIBUTE_SECURE_NAME" /> e ignora a comparação do esquema ao avaliar se dois sites são o mesmo. Para ver uma descrição completa, consulte https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies (em inglês).
 
@@ -4919,6 +4932,12 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
       Se a política for definida como "Desativada", a otimização da WPAD será desativada e o <ph name="PRODUCT_NAME" /> precisará esperar mais por servidores de WPAD baseados em DNS.
 
       Em qualquer um dos casos, não será possível mudar a configuração de otimização da WPAD.</translation>
+<translation id="6365249741643189510">Esta política concede ao Projector permissão para criar, transcrever e fazer upload de gravações de tela para o Drive para usuários corporativos.
+      Esta política não afeta usuários do Family Link.
+      Esta política não afeta a política <ph name="PROJECTOR_DOGFOOD_FOR_FAMILY_LINK_ENABLED_POLICY_NAME" /> para usuários do Family Link.
+
+      Se ela não for definida, o Projector vai ser ativado.
+      Se ela for desativada, o Projector vai ser desativado.</translation>
 <translation id="6366574325767783825">Se a política for definida como verdadeira ou não for definida, o <ph name="PRODUCT_NAME" /> aceitará conteúdos da Web exibidos como Signed HTTP Exchanges.
 
       Se ela for definida como falsa, conteúdos Signed HTTP Exchanges não serão carregados.</translation>
@@ -5289,6 +5308,17 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
       Se ela for desativada ou deixada sem definição, os sites só poderão usar os SharedArrayBuffers em isolamento de origem cruzada.</translation>
 <translation id="6735701345096330595">Forçar a ativação da correção ortográfica de idiomas</translation>
+<translation id="6740299900063889926">setTimeout(…, 0) normalmente é usado para dividir tarefas longas de JavaScript.
+          Quando a política for ativada, as funções setTimeouts e setIntervals com um intervalo menor que 4ms não serão ajustadas de forma tão agressiva.
+          Isso melhora a performance no curto prazo, mas os sites que abusam da API ainda têm os setTimeouts ajustados.
+
+          É possível que a ordem das tarefas em uma página da Web mude, levando a um comportamento inesperado em sites que dependem de uma ordem específica.
+          Também é possível que isso afete sites com muitas funções setTimeout() com um tempo limite de uso de 0ms, por exemplo, aumentando a carga da CPU.
+
+          Para usuários em que essa política não está definida, o Chrome vai lançar a mudança gradualmente no Canal Stable.
+
+          Essa é uma política temporária e tem remoção planejada para a versão 107 do Chrome. Esse prazo pode ser prorrogado caso as empresas precisem de mais tempo.
+          </translation>
 <translation id="6740611636377710500">Permitir que este usuário execute o PluginVm.
 
       Se esta política for definida como falsa ou não for definida, o <ph name="PLUGIN_VM_NAME" /> não será ativado para o usuário.
@@ -5578,7 +5608,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="7032813174556919004">Desativar DNS sobre HTTPS</translation>
 <translation id="7033778618670823541">Se a política for definida, será possível especificar uma lista de origens (URLs) ou padrões de nome de host (como *.example.com) aos quais as restrições de segurança de origens inseguras não serão aplicadas. As organizações podem especificar origens para aplicativos legados que não possam implantar TLS ou configurar um servidor de preparo para desenvolvimento da Web interno. Dessa forma, os desenvolvedores podem testar recursos que necessitam de contextos seguros sem precisar implantar o TLS no servidor de preparo. Essa política também impede que origens sejam marcadas como "Não seguras" na barra de endereço.
 
-      A definição de uma lista de URLs nesta política tem o mesmo efeito que configurar a sinalização de linha de comando --unsafely-treat-insecure-origin-as-secure para uma lista dos mesmos URLs separados por vírgulas. A política modificará a sinalização de linha de comando e UnsafelyTreatInsecureOriginAsSecure, se estiver presente.
+      A definição de uma lista de URLs nesta política tem o mesmo efeito que configurar a flag de linha de comando --unsafely-treat-insecure-origin-as-secure para uma lista dos mesmos URLs separados por vírgulas. A política modificará a flag de linha de comando e UnsafelyTreatInsecureOriginAsSecure, se estiver presente.
 
       Para ver mais informações sobre contextos seguros, consulte "Secure Contexts" (https://www.w3.org/TR/secure-contexts) (em inglês).</translation>
 <translation id="703672323011778742">Esta política foi suspensa na versão M88. O Flash não é mais compatível com o Chrome. Se a política for definida como 1, você poderá definir se todos os sites poderão executar automaticamente o plug-in <ph name="FLASH_PLUGIN_NAME" />. Se ela for definida como 2, esse plug-in será negado em todos os sites. O "Clique para ver" permite que o plug-in <ph name="FLASH_PLUGIN_NAME" /> seja executado, mas os usuários precisam clicar no marcador para iniciar a execução.
@@ -5599,7 +5629,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Se esta política não for definida, a estante será posicionada na parte inferior da tela por padrão, e o usuário poderá mudar a posição da estante.</translation>
 <translation id="7039815268521168329">Mostrar o fluxo do Voice Match do Google Assistente durante a configuração inicial</translation>
 <translation id="7040229947030068419">Exemplo de valor:</translation>
-<translation id="7041170641363384736">Permite configurar uma programação personalizada para reiniciar dispositivos. No momento, esta política se aplica apenas a dispositivos que ativaram a abertura automática de apps na sessão de quiosque. Se ela for definida como verdadeira, o dispositivo será reiniciado de acordo com a programação. A política precisa ser removida para cancelar outras reinicializações programadas.</translation>
 <translation id="7044883996351280650">Controlar o serviço de backup e restauração do Android</translation>
 <translation id="7047495632846973438">Especifica se a política de permissões de captura de tela foi marcada ou ignorada.</translation>
 <translation id="7066292150801784098">Desativar a interação de usuários remotos com janelas elevadas em sessões de assistência remota</translation>
@@ -6569,7 +6598,6 @@ Se a política não for definida, a tela de privacidade ficará inicialmente des
           Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
 
           Se esta política não for definida, o destaque do cursor ficará desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
-<translation id="8161536598508377155">Definir programação personalizada para reiniciar dispositivos em quiosques</translation>
 <translation id="8164144100557223371">Desativar o ponto de entrada da barra de ferramentas de recursos experimentais do navegador</translation>
 <translation id="8164687848393015214">Se a política estiver definida como "Ativada", ela enviará pacotes de monitoramento de rede (<ph name="HEARTBEATS_TERM" />) para o servidor de gerenciamento. Com isso, o status de conexão é monitorado e o servidor consegue detectar se o dispositivo está off-line.
 
@@ -6655,7 +6683,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       O objetivo é permitir que as organizações autorizem origens para aplicativos legados que não implantam TLS ou que elas configurem um servidor de preparo para o desenvolvimento da Web interno, de modo que os desenvolvedores possam testar recursos que exigem contextos seguros sem precisar implantar TLS no servidor de preparo. Esta política também vai impedir que a origem seja rotulada como "Não segura" na omnibox.
 
-      Definir uma lista de URLs nesta política tem o mesmo efeito que definir a sinalização de linha de comando "--unsafely-treat-insecure-origin-as-secure" para uma lista com os mesmos URLs separados por vírgula. Se a política for definida, ela vai substituir a sinalização de linha de comando.
+      Definir uma lista de URLs nesta política tem o mesmo efeito que definir a flag de linha de comando "--unsafely-treat-insecure-origin-as-secure" para uma lista com os mesmos URLs separados por vírgula. Se a política for definida, ela vai substituir a flag de linha de comando.
 
       Esta política foi descontinuada na versão M69 para implementar a OverrideSecurityRestrictionsOnInsecureOrigin. Se as duas políticas estiverem presentes, a OverrideSecurityRestrictionsOnInsecureOrigin substituirá esta.
 
@@ -7132,6 +7160,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8749536858950505376">Se esta política for definida como verdadeira, o cursor grande será ativado. Se esta política for definida como falsa, o cursor grande será desativado.
 
       Se você definir a política, os usuários não poderão mudar o recurso. Se a política não for definida, o cursor grande será desativado inicialmente, mas os usuários poderão ativá-lo quando quiserem.</translation>
+<translation id="8750941317035081777">A função setTimeout() do JavaScript será ajustada após um limite de aninhamento normal.</translation>
 <translation id="8753264624162178499">A opção "Imprimir como imagem" está disponível para permitir que o usuário rasterize o PDF antes de enviar o trabalho de impressão ao destino.</translation>
 <translation id="8757552286070680084">Configuração do DTC wilco</translation>
 <translation id="8758831693895931466">Permite a inscrição obrigatória no gerenciamento em nuvem</translation>
@@ -7139,6 +7168,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8763716376920670835">O WebSQL é ativado por padrão desde a versão M101, mas pode ser desativado por uma sinalização do Chrome.
           Se a política é definida como "false" ou deixada sem definição, o WebSQL pode ser desativado.
           Se a política é definida como "true", o WebSQL não pode ser desativado.</translation>
+<translation id="8766910236040529804">Ativar contêiner do app Renderer</translation>
 <translation id="8767743923206070405">Se a política for definida como "Ativada", o botão "Início" será exibido na barra de ferramentas do <ph name="PRODUCT_NAME" />. Se a política for definida como "Desativada", o botão "Início" não será exibido.
 
       Se você definir a política, os usuários não poderão mudá-la no <ph name="PRODUCT_NAME" />. Se não defini-la, os usuários poderão decidir se o botão "Início" será exibido.</translation>

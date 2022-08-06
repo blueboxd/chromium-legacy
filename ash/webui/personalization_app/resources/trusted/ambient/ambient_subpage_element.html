@@ -4,6 +4,7 @@
   }
   #container {
     height: 100%;
+    margin-block-end: 48px;
   }
   #mainSettings {
     display: grid;
@@ -118,7 +119,8 @@
   }
 </style>
 <div id="container">
-  <template is="dom-if" if="[[shouldShowMainSettings_(path)]]">
+  <!-- restamp to avoid layout issues with iron-list resizing while hidden -->
+  <template is="dom-if" if="[[shouldShowMainSettings_(path)]]" restamp>
     <div id="mainSettings">
       <template is="dom-if" if="[[loadingAmbientMode_(ambientModeEnabled_)]]">
         <div id="toggleRowPlaceholder" class="ambient-toggle-row-container">
@@ -128,7 +130,7 @@
         </div>
       </template>
       <template is="dom-if" if="[[!loadingAmbientMode_(ambientModeEnabled_)]]">
-        <toggle-row checked="[[ambientModeEnabled_]]"
+        <toggle-row id="ambientToggleRow" checked="[[ambientModeEnabled_]]"
             on-click="onClickAmbientModeButton_" on-change="onToggleStateChanged_">
         </toggle-row>
       </template>
@@ -176,8 +178,11 @@
           </div>
         </template>
         <template is="dom-if" if="[[!loadingSettings_]]">
-          <animation-theme-list selected-animation-theme="[[animationTheme_]]">
-          </animation-theme-list>
+          <template is="dom-if" if="[[isAmbientModeAnimationEnabled_]]">
+            <animation-theme-list
+                selected-animation-theme="[[animationTheme_]]">
+            </animation-theme-list>
+          </template>
           <topic-source-list selected-topic-source="[[topicSource_]]"
               has-google-photos-albums="[[hasGooglePhotosAlbums_(albums_)]]">
           </topic-source-list>
@@ -191,7 +196,8 @@
       </template>
     </div>
   </template>
-  <template is="dom-if" if="[[shouldShowAlbums_(path)]]">
+  <!-- restamp to avoid layout issues with iron-list resizing while hidden -->
+  <template is="dom-if" if="[[shouldShowAlbums_(path)]]" restamp>
     <div id="albumsSubpage">
       <albums-subpage topic-source="[[getTopicSource_(queryParams)]]"
           albums="[[getAlbums_(albums_, queryParams)]]">

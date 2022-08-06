@@ -31,6 +31,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="1150989369772528668">Kalendārs</translation>
 <translation id="1153356358378277386">Pārī savienotās ierīces</translation>
 <translation id="1165712434476988950">Lai lietotu atjauninājumu, ir jārestartē ierīce.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" /> — <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Iespējams, jūsu USB-C vads nevarēs nodrošināt pareizu savienojumu ar displejiem.</translation>
 <translation id="1175572348579024023">Ritināt</translation>
 <translation id="1178581264944972037">Pauzēt</translation>
@@ -55,10 +56,6 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="1247519845643687288">Pēdējās izmantotās lietotnes</translation>
 <translation id="1252999807265626933">Uzlādes avots: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Kādi ir laikapstākļi?</translation>
-<translation id="1262870540683925850">No <ph name="START_TIME" /> līdz 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Atlasiet pasākumu, lai skatītu plašāku informāciju Google kalendārā.</translation>
 <translation id="1267032506238418139">Īsinājumtaustiņš mainīts</translation>
 <translation id="1269405891096105529">Perifērā ierīce netiek atbalstīta viesa režīmā.</translation>
 <translation id="1270290102613614947">Ekrāna tastatūra atspējota</translation>
@@ -124,6 +121,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Slēdžu piekļuvi var atspējot sadaļā Iestatījumi &gt; Pieejamība.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> ierīces</translation>
+<translation id="1639239467298939599">Notiek ielāde</translation>
 <translation id="1654477262762802994">Sākt balss vaicājumu</translation>
 <translation id="1668469839109562275">Iebūvēts VPN</translation>
 <translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@ Tālāk ir norādīti daži ieteikumi darba sākšanai.</translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2367186422933365202">Nevar pierakstīties Chromebook datorā.</translation>
 <translation id="2369165858548251131">“Sveiki!” ķīniešu valodā</translation>
+<translation id="2375445874393996153">Vairs netiek atbalstīta ekrānā redzamā satura meklēšana, izmantojot Google asistentu.</translation>
 <translation id="2390318262976603432">Lokalizācijas iestatījumi</translation>
 <translation id="240006516586367791">Multivides vadīklas</translation>
 <translation id="2402411679569069051">Lai atbloķētu Chromebook datoru, izmantojiet pirksta nospiedumu vai atbloķējiet tālruni.</translation>
@@ -505,6 +504,7 @@ Pievienojiet ierīci barošanas avotam.</translation>
 <translation id="3901991538546252627">Notiek savienojuma izveide ar <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Atjaunojiet ierīcē iepriekšējo versiju pēc vienas minūtes}zero{Atjaunojiet ierīcē iepriekšējo versiju pēc # minūtēm}one{Atjaunojiet ierīcē iepriekšējo versiju pēc # minūtes}other{Atjaunojiet ierīcē iepriekšējo versiju pēc # minūtēm}}</translation>
 <translation id="3923494859158167397">Nav iestatīts neviens mobilais tīkls</translation>
+<translation id="3925540965556789199"><ph name="DATE" />: notiek pasākumu ielāde.</translation>
 <translation id="3932043219784172185">Nav pievienota neviena ierīce</translation>
 <translation id="3934456833412894880">Adaptīvā uzlāde ir ieslēgta. Akumulators tiks uzlādēts līdz 80%, lai paildzinātu tā darbību, taču varat to pilnībā uzlādēt, kad tas ir nepieciešams.</translation>
 <translation id="3943857333388298514">Ielīmēt</translation>
@@ -704,6 +704,7 @@ Pievienojiet ierīci barošanas avotam.</translation>
 <translation id="5078796286268621944">Nepareizs PIN</translation>
 <translation id="5083553833479578423">Piekļūstiet citām Asistenta funkcijām</translation>
 <translation id="509790653408515442">Šeit būs redzamas jūsu tālruņa lietotnes, kad tās straumēsiet.</translation>
+<translation id="5098537242461068432">Darbvieta un logi atkārtoti atvērti</translation>
 <translation id="5107522548814527560">Tīmeklis</translation>
 <translation id="5117590920725113268">Rādīt nākamo mēnesi</translation>
 <translation id="5136175204352732067">Ir pievienota cita tastatūra</translation>
@@ -1048,7 +1049,6 @@ Jauna instalācija</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Iepriekšējā izšķirtspēja tiks atgriezta pēc <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
-<translation id="718361511487535372">Atvērt Google kalendārā</translation>
 <translation id="7188494361780961876">Izvēlne pārvietota uz ekrāna augšējo kreiso malu.</translation>
 <translation id="7189412385142492784">Cik tālu atrodas Venera?</translation>
 <translation id="7198435252016571249">Kamera pārnesta uz labo apakšējo stūri. Konflikts ar sistēmas virsmu.</translation>
@@ -1057,6 +1057,10 @@ Jauna instalācija</translation>
 <translation id="7258828758145722155">Rediģēts vakar</translation>
 <translation id="726276584504105859">Velciet šeit, lai izmantotu ekrāna sadalīšanu.</translation>
 <translation id="7262906531272962081">Izveidot atgādinājumu</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> līdz
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Atlasiet pasākumu, lai skatītu plašāku informāciju Google kalendārā.</translation>
 <translation id="7302889331339392448">Subtitri reāllaikā ir izslēgti.</translation>
 <translation id="7303365578352795231">Tiek atbildēts citā ierīcē.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@ Jauna instalācija</translation>
 <translation id="7904094684485781019">Šī konta administrators nav atļāvis vairākkārtēju pierakstīšanos.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Runa tiek apstrādāta lokāli, un diktēšana darbojas bezsaistē.</translation>
+<translation id="7932451802722951285">Atvērt Google kalendārā</translation>
 <translation id="7933084174919150729">Google asistents ir pieejams tikai galvenajam profilam.</translation>
 <translation id="79341161159229895">Kontu pārvalda <ph name="FIRST_PARENT_EMAIL" /> un <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Lai skatītu starpliktuvi, nospiediet <ph name="SHORTCUT_KEY_NAME" /> + V. Pēdējie pieci nokopētie vienumi ir saglabāti starpliktuvē.</translation>

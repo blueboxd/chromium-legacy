@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">Bu <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> tərəfindən idarə olunur.</translation>
 <translation id="1175951029573070619">Orta (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Silin</translation>
+<translation id="1190378975642195988">Baza Akselerometri</translation>
 <translation id="1195447618553298278">Naməlum xəta.</translation>
 <translation id="1196959502276349371">Versiya <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Oxudun/Durdurun</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">USB'də saxlayın</translation>
 <translation id="1468664791493211953">Təkliflər</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> bu cihazı idarə edir və fəaliyyətinizə nəzarət edə bilər.</translation>
+<translation id="147809995039451286">Güncəlləməni endirmək mümkün olmadı</translation>
 <translation id="1478594628797167447">Skaner</translation>
 <translation id="1491076385728777984"><ph name="DEVICE_NAME" /> cihazında proqram güncəllənir</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> bu istifadəçini idarə edir və ayarları məsafədən idarə edə və istifadəçinin fəaliyyətini izləyə bilər.</translation>
@@ -125,6 +127,7 @@
 <translation id="1999615961760456652">Giriş Portalı</translation>
 <translation id="2006864819935886708">Bağlantı</translation>
 <translation id="2008685064673031089">Əsas axtarış</translation>
+<translation id="2011174342667534258">SDK Versiyası:</translation>
 <translation id="2016697457005847575">Nasazlıqların aradan qaldırılması addımlarını sınayın</translation>
 <translation id="2016848882344942759">--ağ etiketsiz--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -156,6 +159,7 @@
 <translation id="225692081236532131">Aktivləşdirmə statusu</translation>
 <translation id="2271469253353559191">Qaranlıq rejim cədvəli</translation>
 <translation id="2275586345903859204">Təmir tamamlandı</translation>
+<translation id="2276999893457278469">Populyar yardım məzmunu</translation>
 <translation id="2287186687001756809">Əlçatan şəkil yoxdur. Foto əlavə etmək üçün <ph name="LINK" /> ünvanına keçin</translation>
 <translation id="2294753434210277304">Endirilmiş Chromebook Bərpa Utilit şəkli ilə USB disk və ya SD kart kimi xarici yaddaşı daxil edin</translation>
 <translation id="2307344026739914387">Cari açar cütündən istifadə edin</translation>
@@ -177,6 +181,7 @@
 <translation id="2418150275289244458">Ayarlarda açın</translation>
 <translation id="2421798028054665193">Şəkil <ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Dəyişən nöqtə dəqiqliyi</translation>
+<translation id="2447969267935997922">Quraşdırma tamamlandı. İndi USB diski və ya SD kartınızı çıxara bilərsiniz.</translation>
 <translation id="2448312741937722512">Növ</translation>
 <translation id="2461822463642141190">Cari</translation>
 <translation id="2480034874476596812">Manual olaraq deaktiv edin</translation>
@@ -188,6 +193,7 @@
 <translation id="2517472476991765520">Skan edin</translation>
 <translation id="2526590354069164005">Masaüstü</translation>
 <translation id="253029298928638905">Yenidən başladılır...</translation>
+<translation id="2533048460510040082">Təklif olunan yardım məzmunu</translation>
 <translation id="2536159006530886390">İnternetə qoşulmaq olmur.</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> testi icra edilir...</translation>
 <translation id="2584559707064218956">Ayarlamaq üçün Ayarlara keçin</translation>
@@ -214,7 +220,6 @@
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> saniyədə <ph name="RATE" /> deşarj edilib.</translation>
 <translation id="291142119251986300">Uyğun olmayan komponentlər</translation>
 <translation id="2926057806159140518">İstifadəçi adınızı və parolunuzu daxil edin və ya QR kodunuzu skan edin</translation>
-<translation id="2928420929544864228">Quraşdırma tamamlandı.</translation>
 <translation id="3008341117444806826">YENİLƏYİN</translation>
 <translation id="3009958530611748826">Yadda saxlamaq üçün qovluq seçin</translation>
 <translation id="3017079585324758401">Arxa fon</translation>
@@ -268,6 +273,7 @@
 <translation id="3484914941826596830">Proqram güncəllənərkən bu xarici cihazı ayırmayın və ya kompüterinizi söndürməyin. Bu pəncərəni kiçildə bilərsiniz. Bu güncəlləmə bir neçə dəqiqə çəkə bilər və xarici cihazınız bu müddət ərzində işləməyə bilər.</translation>
 <translation id="3486220673238053218">təsvir</translation>
 <translation id="3488065109653206955">Qismən aktivləşdirilib</translation>
+<translation id="3492982278147736083">Ekran Giroskopu</translation>
 <translation id="3517001332549868749">ChromeOS güncəlləməsi</translation>
 <translation id="3527036260304016759">Alınmadı - Naməlum xəta</translation>
 <translation id="3532980081107202182">Təxminən <ph name="MIN_REMAINING" /> dəqiqə qalıb</translation>
@@ -287,6 +293,7 @@
 <translation id="3621202678540785336">Daxiletmə</translation>
 <translation id="3632579075709132555">Məxfilik ekranı keçiricisi</translation>
 <translation id="3643810137582748570">Tənzimləməni keçin</translation>
+<translation id="3651050199673793219">Temperatur vahidi seçin</translation>
 <translation id="3678765385266369662">Yazıdan Qorunmanı necə deaktiv etmək istədiyinizi seçin</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> testi</translation>
 <translation id="370665806235115550">Yüklənir...</translation>
@@ -301,9 +308,12 @@
 <translation id="3820172043799983114">Yanlış PIN.</translation>
 <translation id="3838338534323494292">Yeni parol</translation>
 <translation id="385051799172605136">Geri</translation>
+<translation id="3856304145690230735">Baza Giroskopu</translation>
 <translation id="385832974417157471">Söndürməzdən əvvəl cihazınızı yenidən formaylayın. Cihazınızın qapağı varsa, qapağı bağlamazdan əvvəl yenidən formatlamanın tamamlanmasını gözləyin. Yenidən formatlamanın tamamlanması bir dəqiqə çəkə bilər.</translation>
 <translation id="3858860766373142691">Ad</translation>
+<translation id="3862598938296403232">Təsvir tələb olunur</translation>
 <translation id="3865414814144988605">Dəqiqlik</translation>
+<translation id="3866249974567520381">Təsvir</translation>
 <translation id="387301095347517405">Batareyanızın tam şarj edilmə sayı</translation>
 <translation id="3885327323343477505">Ekran qoruyucunu dəyişdirin</translation>
 <translation id="3923184630988645767">Data istifadəsi</translation>
@@ -371,6 +381,7 @@
 <translation id="4472575034687746823">Başlayın</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Qeyri-defolt şəbəkə girişini yoxlamaq alınmadı</translation>
+<translation id="4500213108254186382">Ekran Akselerometr</translation>
 <translation id="4503223151711056411">Sol ox</translation>
 <translation id="4511264077854731334">Portal</translation>
 <translation id="4521826082652183069">Subyektin alternativ adının uyğunluğu</translation>
@@ -382,6 +393,7 @@
 <translation id="4561801978359312462">SIM Kilidi Açılıb</translation>
 <translation id="4562494484721939086">Xidmət yoxdur</translation>
 <translation id="4568938274596692027">Quraşdırma tamamlandı. Yenidən başladılmağa hazırlanır...</translation>
+<translation id="4576943788798178439">Qələm dəstəyi</translation>
 <translation id="458794348635939462">Bütün hostları həll etmək alınmadı</translation>
 <translation id="4593212453765072419">Proksi doğrulama tələb olunur</translation>
 <translation id="4609350030397390689">Klaviatura parlaqlığını azaldın</translation>
@@ -430,6 +442,7 @@
 <translation id="4915052247106771211">Cihazı zavod ayarlarına sıfırlanacaq (Powerwash).</translation>
 <translation id="4917385247580444890">Güclü</translation>
 <translation id="4917889632206600977">Dayanıb - Kağız yoxdur</translation>
+<translation id="491791267030419270">Rəy yazmaq üzrə məsləhətlər</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> saniyədə <ph name="RATE" /> şarj edilib.</translation>
 <translation id="4930320165497208503">Bağlantını ayarlamaq və ya güncəlləmək üçün <ph name="BEGIN_LINK" />Ayarlara<ph name="END_LINK" /> keçin.</translation>
 <translation id="4932733599132424254">Tarix</translation>
@@ -535,6 +548,7 @@
 <translation id="5866840822086176774">Çox güclü</translation>
 <translation id="588258955323874662">Tam ekran</translation>
 <translation id="5895138241574237353">Yenidən başladın</translation>
+<translation id="5898758006340607522">Qidalanma Düyməsi</translation>
 <translation id="5901630391730855834">Sarı</translation>
 <translation id="5903200662178656908">Cihaz klaviatura və maus kombinidir.</translation>
 <translation id="5916084858004523819">Qadağan olunub</translation>
@@ -670,6 +684,7 @@
 <translation id="7143207342074048698">Qoşulur</translation>
 <translation id="7144878232160441200">Yenidən cəhd edin</translation>
 <translation id="714876143603641390">Lan Bağlantısı</translation>
+<translation id="7154020516215182599">Rəyinizi paylaşın və ya probleminizi təsvir edin. Mümkünsə, probleminizi təkrarlamaq üçün addımlar əlavə edin.</translation>
 <translation id="7155171745945906037">Kamera və ya fayldan mövcud foto</translation>
 <translation id="7162487448488904999">Qalereya</translation>
 <translation id="7170236477717446850">Profil şəkli</translation>
@@ -847,6 +862,7 @@
 <translation id="885701979325669005">Yaddaş</translation>
 <translation id="8863170912498892583">Qaranlıq temanı aktiv edin</translation>
 <translation id="8863888432376731307">"<ph name="QUERY" />" və daha çoxu üçün <ph name="INTENT" /> əldə edin</translation>
+<translation id="8864415976656252616">Təklif olunan məzmun yoxdur. Populyar yardım məzmununa baxın.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Cihaz planşetdir.</translation>
 <translation id="8881098542468797602">Test uğurlu oldu</translation>
@@ -857,6 +873,7 @@
 <translation id="8919792139048574232">Düzəlişlərə baxın</translation>
 <translation id="8919837981463578619">Alınmadı - Altlıq yoxdur</translation>
 <translation id="8923267550422472772">Sıfırlamaq üçün ayın günü</translation>
+<translation id="8925613211674558308">Keşlənmiş Vpd</translation>
 <translation id="8928727111548978589">Alınmadı - Kağız yoxdur</translation>
 <translation id="8930521118335213258">Eynisəviyyəli tətbiq</translation>
 <translation id="8930622219860340959">Simsiz</translation>
@@ -898,6 +915,7 @@
 <translation id="922179502584117429">Cari versiya <ph name="VERSION_NUMBER" /> köhnəlib</translation>
 <translation id="932327136139879170">Ev</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">Geri əlaqə göndərin</translation>
 <translation id="952992212772159698">Aktiv edilməyib</translation>
 <translation id="960719561871045870">Operator kodu</translation>
 <translation id="982713511914535780">Deşarj testi icra edin</translation>

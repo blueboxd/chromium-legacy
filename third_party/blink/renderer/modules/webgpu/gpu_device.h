@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_format.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
@@ -59,6 +60,7 @@ class GPUDevice final : public EventTargetWithInlineData,
                         public ExecutionContextClient,
                         public DawnObject<WGPUDevice> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(GPUDevice, Dispose);
 
  public:
   explicit GPUDevice(ExecutionContext* execution_context,
@@ -122,7 +124,8 @@ class GPUDevice final : public EventTargetWithInlineData,
   GPUCommandEncoder* createCommandEncoder(
       const GPUCommandEncoderDescriptor* descriptor);
   GPURenderBundleEncoder* createRenderBundleEncoder(
-      const GPURenderBundleEncoderDescriptor* descriptor);
+      const GPURenderBundleEncoderDescriptor* descriptor,
+      ExceptionState& exception_state);
 
   GPUQuerySet* createQuerySet(const GPUQuerySetDescriptor* descriptor);
 
@@ -143,11 +146,17 @@ class GPUDevice final : public EventTargetWithInlineData,
   void AddActiveExternalTexture(GPUExternalTexture* external_texture);
   void RemoveActiveExternalTexture(GPUExternalTexture* external_texture);
 
+  bool ValidateTextureFormatUsage(V8GPUTextureFormat format,
+                                  ExceptionState& exception_state);
+
  private:
   using LostProperty =
       ScriptPromiseProperty<Member<GPUDeviceLostInfo>, ToV8UndefinedGenerator>;
 
   void DestroyExternalTexturesMicrotask();
+
+  // Used by USING_PRE_FINALIZER.
+  void Dispose();
 
   void DestroyAllExternalTextures();
 

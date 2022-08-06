@@ -219,6 +219,21 @@ const NGPhysicalBoxFragment* NGPhysicalBoxFragment::Create(
 }
 
 // static
+const NGPhysicalBoxFragment* NGPhysicalBoxFragment::Clone(
+    const NGPhysicalBoxFragment& other) {
+  // The size of the new fragment shouldn't differ from the old one.
+  wtf_size_t num_fragment_items = other.Items() ? other.Items()->Size() : 0;
+  size_t byte_size = AdditionalByteSize(
+      num_fragment_items, other.const_num_children_, other.has_layout_overflow_,
+      other.has_borders_, other.has_padding_, other.has_inflow_bounds_,
+      other.const_has_rare_data_);
+
+  return MakeGarbageCollected<NGPhysicalBoxFragment>(
+      AdditionalBytes(byte_size), PassKey(), other, other.HasLayoutOverflow(),
+      other.LayoutOverflow());
+}
+
+// static
 const NGPhysicalBoxFragment*
 NGPhysicalBoxFragment::CloneWithPostLayoutFragments(
     const NGPhysicalBoxFragment& other,
@@ -1298,15 +1313,15 @@ void NGPhysicalBoxFragment::AddOutlineRects(
     // additional_offset to be an offset from containing_block.
     // Since containing_block is our layout object, offset must be 0,0.
     // https://crbug.com/968019
-    Vector<PhysicalRect> children_rects;
+    const wtf_size_t size_before = outline_rects->size();
     AddOutlineRectsForNormalChildren(
-        &children_rects, PhysicalOffset(), outline_type,
+        outline_rects, PhysicalOffset(), outline_type,
         To<LayoutBoxModelObject>(GetLayoutObject()));
     if (!additional_offset.IsZero()) {
-      for (auto& rect : children_rects)
+      for (PhysicalRect& rect :
+           base::make_span(*outline_rects).subspan(size_before))
         rect.offset += additional_offset;
     }
-    outline_rects->AppendVector(children_rects);
     for (const auto& child : PostLayoutChildren()) {
       if (child->IsOutOfFlowPositioned()) {
         AddOutlineRectsForDescendant(

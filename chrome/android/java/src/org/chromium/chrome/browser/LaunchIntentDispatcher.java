@@ -368,6 +368,10 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Create and fire a launch intent.
         Intent launchIntent = createCustomTabActivityIntent(mActivity, mIntent);
+        Uri extraReferrer = mActivity.getReferrer();
+        if (extraReferrer != null) {
+            launchIntent.putExtra(IntentHandler.EXTRA_ACTIVITY_REFERRER, extraReferrer.toString());
+        }
 
         // Allow disk writes during startActivity() to avoid strict mode violations on some
         // Samsung devices, see https://crbug.com/796548.
@@ -433,6 +437,11 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                 mActivity.getApplicationContext().getPackageName(), targetActivityClassName);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+
+        if ((mIntent.getFlags() & Intent.FLAG_ACTIVITY_MULTIPLE_TASK) != 0) {
+            newIntent.setFlags(newIntent.getFlags() | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+        }
+
         Uri uri = newIntent.getData();
         boolean isContentScheme = false;
         if (uri != null && UrlConstants.CONTENT_SCHEME.equals(uri.getScheme())) {

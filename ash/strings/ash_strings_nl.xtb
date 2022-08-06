@@ -31,6 +31,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1150989369772528668">Agenda</translation>
 <translation id="1153356358378277386">Gekoppelde apparaten</translation>
 <translation id="1165712434476988950">Start het apparaat opnieuw op om de update toe te passen.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Je USB-C-kabel sluit misschien niet goed aan op schermen</translation>
 <translation id="1175572348579024023">Scrollen</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
@@ -55,7 +56,6 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1247519845643687288">Recente apps</translation>
 <translation id="1252999807265626933">Opladen via <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Wat voor weer is het?</translation>
-<translation id="1262870540683925850">Van <ph name="START_TIME" /> tot <ph name="END_TIME" /> <ph name="TIME_ZONE" />, <ph name="EVENT_SUMMARY" />. Selecteer de afspraak voor meer informatie in Google Agenda.</translation>
 <translation id="1267032506238418139">Sneltoets gewijzigd</translation>
 <translation id="1269405891096105529">Randapparaat wordt niet ondersteund in de gastmodus</translation>
 <translation id="1270290102613614947">Schermtoetsenbord staat uit</translation>
@@ -121,6 +121,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1632985212731562677">Je kunt Toegang via schakelaar uitzetten via Instellingen &gt; Toegankelijkheid.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> apparaten</translation>
+<translation id="1639239467298939599">Laden</translation>
 <translation id="1654477262762802994">Een gesproken zoekopdracht starten</translation>
 <translation id="1668469839109562275">Ingebouwde VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> resterend</translation>
@@ -236,6 +237,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2367186422933365202">Kan niet inloggen op je Chromebook</translation>
 <translation id="2369165858548251131">Chinees voor 'hallo'</translation>
+<translation id="2375445874393996153">Inhoud van mijn scherm doorzoeken met de Google Assistent wordt niet meer ondersteund.</translation>
 <translation id="2390318262976603432">Landinstellingen</translation>
 <translation id="240006516586367791">Mediabediening</translation>
 <translation id="2402411679569069051">Gebruik je vingerafdruk of ontgrendel je telefoon om je Chromebook te ontgrendelen</translation>
@@ -502,6 +504,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="3901991538546252627">Verbinding maken met <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Zet het apparaat binnen 1 minuut terug naar een oudere versie}other{Zet het apparaat binnen # minuten terug naar een oudere versie}}</translation>
 <translation id="3923494859158167397">Geen mobiele netwerken ingesteld</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, afspraken laden.</translation>
 <translation id="3932043219784172185">Geen apparaat aangesloten</translation>
 <translation id="3934456833412894880">Aangepast opladen staat aan. Je batterij blijft op 80% om de batterijduur te verlengen en wordt volledig opgeladen wanneer je dat nodig hebt.</translation>
 <translation id="3943857333388298514">Plak</translation>
@@ -701,6 +704,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="5078796286268621944">Onjuiste pincode</translation>
 <translation id="5083553833479578423">Ontgrendel meer functies van de Assistent.</translation>
 <translation id="509790653408515442">Als je de apps van je telefoon streamt, zie je ze hier</translation>
+<translation id="5098537242461068432">Bureau en vensters weer geopend</translation>
 <translation id="5107522548814527560">Internet</translation>
 <translation id="5117590920725113268">Volgende maand bekijken</translation>
 <translation id="5136175204352732067">Ander toetsenbord aangesloten</translation>
@@ -998,7 +1002,7 @@ Nieuwe installatie</translation>
 <translation id="6886172995547742638">Je <ph name="DEVICE_TYPE" /> kan slechtere prestaties leveren. Gebruik een gecertificeerde USB-C-voedingsadapter van <ph name="PREFERRED_MINIMUM_POWER" /> W of hoger.</translation>
 <translation id="688631446150864480">Druk op de pijl-omlaag om tussen vensters te schakelen</translation>
 <translation id="6891721121089053234">Recente foto's, media en apps van je telefoon bekijken op je <ph name="DEVICE_TYPE" /></translation>
-<translation id="6896758677409633944">Kopieer</translation>
+<translation id="6896758677409633944">Kopiëren</translation>
 <translation id="6901883536534621389">Gebaren gebruiken om te navigeren</translation>
 <translation id="6919251195245069855">Je smartkaart wordt niet herkend. Probeer het opnieuw.</translation>
 <translation id="6921188888306725546">Sneltoetsen zijn verbeterd</translation>
@@ -1045,7 +1049,6 @@ Nieuwe installatie</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
-<translation id="718361511487535372">Openen in Google Agenda</translation>
 <translation id="7188494361780961876">Menu verplaatst naar linksboven in het scherm.</translation>
 <translation id="7189412385142492784">Hoe ver weg is Venus</translation>
 <translation id="7198435252016571249">Camera uitgelijnd op de rechterbenedenhoek. Conflict met systeemoppervlak.</translation>
@@ -1054,6 +1057,7 @@ Nieuwe installatie</translation>
 <translation id="7258828758145722155">Gisteren bewerkt</translation>
 <translation id="726276584504105859">Sleep hier naartoe om het scherm te splitsen</translation>
 <translation id="7262906531272962081">Herinnering maken</translation>
+<translation id="7297440678881127227">Van <ph name="START_TIME" /> tot <ph name="END_TIME" /> <ph name="TIME_ZONE" />, <ph name="EVENT_SUMMARY" />. Selecteer de afspraak voor meer informatie in Google Agenda.</translation>
 <translation id="7302889331339392448">Live ondertiteling staat uit.</translation>
 <translation id="7303365578352795231">Je vraag wordt beantwoord op een ander apparaat.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1166,6 +1170,7 @@ Nieuwe installatie</translation>
 <translation id="7904094684485781019">De beheerder van dit account heeft toegang tot meerdere accounts niet toegestaan.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Spraak wordt nu lokaal verwerkt en Dicteren werkt offline</translation>
+<translation id="7932451802722951285">Openen in Google Agenda</translation>
 <translation id="7933084174919150729">De Google Assistent is alleen beschikbaar voor het primaire profiel.</translation>
 <translation id="79341161159229895">Account wordt beheerd door <ph name="FIRST_PARENT_EMAIL" /> en <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Druk op <ph name="SHORTCUT_KEY_NAME" /> + V om het klembord te bekijken. De laatste 5 items die je hebt gekopieerd, worden opgeslagen op het klembord.</translation>
@@ -1363,7 +1368,7 @@ Nieuwe installatie</translation>
 <translation id="9085962983642906571">Je batterij wordt op 80% gehouden terwijl deze is aangesloten om de batterijduur te verlengen.</translation>
 <translation id="9089416786594320554">Invoermethoden</translation>
 <translation id="9091626656156419976">Scherm <ph name="DISPLAY_NAME" /> is verwijderd</translation>
-<translation id="9098969848082897657">Geluid van telefoon uitzetten</translation>
+<translation id="9098969848082897657">Telefoon dempen</translation>
 <translation id="9099154003160514616">Lacros-update beschikbaar</translation>
 <translation id="9100887602489003640">Profiel toevoegen. Wacht een paar minuten.</translation>
 <translation id="9105450214093926548">Een tweede gebruiker inloggen wordt niet ondersteund als de Lacros-browser actief is. Gebruik in plaats daarvan een tweede browserprofiel in Lacros of sluit Lacros en probeer het opnieuw.</translation>

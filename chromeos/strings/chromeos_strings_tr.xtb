@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">Bu <ph name="DEVICE_TYPE" />, <ph name="MANAGER" /> tarafından yönetiliyor.</translation>
 <translation id="1175951029573070619">Ortalama (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Kaldır</translation>
+<translation id="1190378975642195988">Tabandaki İvme Ölçer</translation>
 <translation id="1195447618553298278">Bilinmeyen hata.</translation>
 <translation id="1196959502276349371">Sürüm <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Oynat/Duraklat</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">USB'ye kaydet</translation>
 <translation id="1468664791493211953">Teklifler</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> bu cihazı yönetiyor ve etkinliklerinizi izleyebilir.</translation>
+<translation id="147809995039451286">Güncelleme indirilemedi</translation>
 <translation id="1478594628797167447">Tarayıcı</translation>
 <translation id="1491076385728777984"><ph name="DEVICE_NAME" /> cihazındaki donanım yazılımı güncelleniyor</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" />, bu kullanıcıyı yönetir ve hem ayarları uzaktan yönetebilir hem de kullanıcı etkinliğini izleyebilir.</translation>
@@ -95,6 +97,7 @@
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" /> ve <ph name="SECOND_MANAGER" /> tarafından yönetiliyor</translation>
 <translation id="1726100011689679555">Ad sunucuları</translation>
 <translation id="1731082422893354635">Bluetooth dokunmatik alan</translation>
+<translation id="1745577949879301685">Resimler yüklenemedi. Ağ bağlantınızı kontrol edin veya resimleri tekrar yüklemeyi deneyin.</translation>
 <translation id="1751249301761991853">Kişisel</translation>
 <translation id="1753496554272155572">Duvar kağıdı önizlemesinden çık</translation>
 <translation id="175763766237925754">İyi (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -124,6 +127,7 @@
 <translation id="1999615961760456652">Giriş Portalı</translation>
 <translation id="2006864819935886708">Bağlantı</translation>
 <translation id="2008685064673031089">Birincil arama</translation>
+<translation id="2011174342667534258">SDK Sürümü:</translation>
 <translation id="2016697457005847575">Sorun giderme adımlarını deneyin</translation>
 <translation id="2016848882344942759">--beyaz etiket yok--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -155,6 +159,7 @@
 <translation id="225692081236532131">Etkinleştirme durumu</translation>
 <translation id="2271469253353559191">Koyu mod programı</translation>
 <translation id="2275586345903859204">Onarım tamamlandı</translation>
+<translation id="2276999893457278469">En çok görüntülenen yardım içeriği</translation>
 <translation id="2287186687001756809">Resim yok. Fotoğraf eklemek için <ph name="LINK" /> adresine gidin</translation>
 <translation id="2294753434210277304">İndirilen Chromebook Kurtarma Yardımcı Programı görüntüsünü içeren USB sürücü veya SD kart gibi bir harici depolama cihazı takın</translation>
 <translation id="2307344026739914387">Mevcut anahtar çiftini kullanın</translation>
@@ -176,6 +181,7 @@
 <translation id="2418150275289244458">Ayarlarda aç</translation>
 <translation id="2421798028054665193"><ph name="TOTAL_PAGES" /> resimden <ph name="CURRENT_PAGE" />.</translation>
 <translation id="2446553403094072641">Kayan nokta doğruluğu</translation>
+<translation id="2447969267935997922">Yükleme tamamlandı. Artık USB sürücünüzü veya SD kartınızı çıkarabilirsiniz.</translation>
 <translation id="2448312741937722512">Tür</translation>
 <translation id="2461822463642141190">Mevcut güç tüketimi</translation>
 <translation id="2480034874476596812">Manuel olarak devre dışı bırakın</translation>
@@ -187,6 +193,7 @@
 <translation id="2517472476991765520">Tara</translation>
 <translation id="2526590354069164005">Masaüstü</translation>
 <translation id="253029298928638905">Yeniden başlatılıyor…</translation>
+<translation id="2533048460510040082">Önerilen yardım içeriği</translation>
 <translation id="2536159006530886390">İnternete bağlanamıyor.</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> adlı test çalıştırılıyor...</translation>
 <translation id="2584559707064218956">Kurulum yapmak için Ayarlar'a gidin</translation>
@@ -213,7 +220,6 @@
 <translation id="2878387241690264070">Şarj, <ph name="NUM_SECONDS" /> saniye içinde <ph name="RATE" /> boşaldı.</translation>
 <translation id="291142119251986300">Uygun olmayan bileşenler</translation>
 <translation id="2926057806159140518">Kullanıcı adınızı ve şifrenizi girin ya da QR kodunuzu tarayın</translation>
-<translation id="2928420929544864228">Yükleme tamamlandı.</translation>
 <translation id="3008341117444806826">YENİLE</translation>
 <translation id="3009958530611748826">Kaydedilecek bir klasör seçin</translation>
 <translation id="3017079585324758401">Arka plan</translation>
@@ -267,6 +273,7 @@
 <translation id="3484914941826596830">Donanım yazılımı güncellenirken bu harici cihazı çıkarmayın ya da bilgisayarınızı kapatmayın. Bu pencereyi simge durumuna küçültebilirsiniz. Güncelleme birkaç dakika sürebilir ve bu süre boyunca harici cihazınız çalışmayabilir.</translation>
 <translation id="3486220673238053218">tanım</translation>
 <translation id="3488065109653206955">Kısmen etkinleştirildi</translation>
+<translation id="3492982278147736083">Kapaktaki Jiroskop</translation>
 <translation id="3517001332549868749">ChromeOS güncellemesi</translation>
 <translation id="3527036260304016759">İşlem başarısız - Bilinmeyen hata</translation>
 <translation id="3532980081107202182">Yaklaşık <ph name="MIN_REMAINING" /> dakika kaldı</translation>
@@ -286,6 +293,7 @@
 <translation id="3621202678540785336">Giriş</translation>
 <translation id="3632579075709132555">Gizlilik ekranını aç/kapat</translation>
 <translation id="3643810137582748570">Kalibrasyonu atla</translation>
+<translation id="3651050199673793219">Bir sıcaklık birimi seçin</translation>
 <translation id="3678765385266369662">Yazma korumayı nasıl devre dışı bırakmak istediğinizi seçin</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> testi</translation>
 <translation id="370665806235115550">Yükleniyor...</translation>
@@ -300,9 +308,12 @@
 <translation id="3820172043799983114">Geçersiz PIN.</translation>
 <translation id="3838338534323494292">Yeni şifre</translation>
 <translation id="385051799172605136">Geri</translation>
+<translation id="3856304145690230735">Tabandaki Jiroskop</translation>
 <translation id="385832974417157471">Cihazınızı kapatmadan önce powerwash işlemi yapın. Cihazınızın kapağı varsa kapağı kapatmadan önce powerwash işleminin tamamlanmasını bekleyin. Powerwash işleminin tamamlanması bir dakika kadar sürebilir.</translation>
 <translation id="3858860766373142691">Ad</translation>
+<translation id="3862598938296403232">Açıklama gerekli</translation>
 <translation id="3865414814144988605">Çözünürlük</translation>
+<translation id="3866249974567520381">Açıklama</translation>
 <translation id="387301095347517405">Pilinizin tam şarj döngüsünden geçme sayısı</translation>
 <translation id="3885327323343477505">Ekran koruyucuyu değiştir</translation>
 <translation id="3923184630988645767">Veri kullanımı</translation>
@@ -370,6 +381,7 @@
 <translation id="4472575034687746823">Başlayın</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Varsayılan olmayan ağ geçidi pinglenemedi</translation>
+<translation id="4500213108254186382">Kapaktaki İvme Ölçer</translation>
 <translation id="4503223151711056411">Sol ok</translation>
 <translation id="4511264077854731334">Portal</translation>
 <translation id="4521826082652183069">Alternatif konu adı eşleşmesi</translation>
@@ -381,6 +393,7 @@
 <translation id="4561801978359312462">SIM Kilidi Açıldı</translation>
 <translation id="4562494484721939086">Hizmet yok</translation>
 <translation id="4568938274596692027">Yükleme tamamlandı. Yeniden başlatmaya hazırlanılıyor...</translation>
+<translation id="4576943788798178439">Ekran Kalemi Desteği</translation>
 <translation id="458794348635939462">Tüm ana makineler çözümlenemedi</translation>
 <translation id="4593212453765072419">Proxy kimlik doğrulaması gerekli</translation>
 <translation id="4609350030397390689">Klavye parlaklığını azalt</translation>
@@ -429,6 +442,7 @@
 <translation id="4915052247106771211">Bu işlemden sonra cihaz fabrika ayarlarına sıfırlanır (Powerwash).</translation>
 <translation id="4917385247580444890">Güçlü</translation>
 <translation id="4917889632206600977">Durduruldu - Kağıt bitti</translation>
+<translation id="491791267030419270">Geri bildirim yazmayla ilgili ipuçları</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> saniyede <ph name="RATE" /> şarj oldu</translation>
 <translation id="4930320165497208503">Bir bağlantıyı kurmak veya güncellemek için <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'a gidin.</translation>
 <translation id="4932733599132424254">Tarih</translation>
@@ -535,6 +549,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="5866840822086176774">Çok güçlü</translation>
 <translation id="588258955323874662">Tam ekran</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
+<translation id="5898758006340607522">Güç Düğmesi</translation>
 <translation id="5901630391730855834">Sarı</translation>
 <translation id="5903200662178656908">Bu cihaz bir klavye ile fare kombinasyonudur.</translation>
 <translation id="5916084858004523819">Yasak</translation>
@@ -670,6 +685,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="7143207342074048698">Bağlanıyor</translation>
 <translation id="7144878232160441200">Yeniden dene</translation>
 <translation id="714876143603641390">LAN Bağlantısı</translation>
+<translation id="7154020516215182599">Geri bildiriminizi paylaşın veya sorununuzu açıklayın. Mümkünse karşılaştığınız sorunu yeniden oluşturmak için gereken adımları da ekleyin.</translation>
 <translation id="7155171745945906037">Kameradan veya dosyadan mevcut fotoğraf</translation>
 <translation id="7162487448488904999">Galeri</translation>
 <translation id="7170236477717446850">Profil resmi</translation>
@@ -847,6 +863,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="885701979325669005">Depolama</translation>
 <translation id="8863170912498892583">Koyu temayı etkinleştir</translation>
 <translation id="8863888432376731307">"<ph name="QUERY" />" için <ph name="INTENT" /> ve daha fazlasını alın</translation>
+<translation id="8864415976656252616">Önerilen içerik yok. En çok görüntülenen yardım içeriğine bakın.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Cihazın türü tablet.</translation>
 <translation id="8881098542468797602">Test başarılı oldu</translation>
@@ -857,6 +874,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="8919792139048574232">Düzeltilen noktalara göz atın</translation>
 <translation id="8919837981463578619">İşlem başarısız - Tepsi yok</translation>
 <translation id="8923267550422472772">Aylık sıfırlama günü</translation>
+<translation id="8925613211674558308">Önbelleğe Alınan Vpd</translation>
 <translation id="8928727111548978589">İşlem başarısız - Kağıt yok</translation>
 <translation id="8930521118335213258">Eş</translation>
 <translation id="8930622219860340959">WiFi (Kablosuz)</translation>
@@ -898,6 +916,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="922179502584117429">Mevcut sürüm olan <ph name="VERSION_NUMBER" /> güncel değil</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">Geri bildirim gönder</translation>
 <translation id="952992212772159698">Etkin değil</translation>
 <translation id="960719561871045870">Operatör kodu</translation>
 <translation id="982713511914535780">Deşarj testini çalıştır</translation>

@@ -14,6 +14,7 @@
 #include "components/password_manager/core/browser/fake_password_store_backend.h"
 #include "components/password_manager/core/browser/mock_password_store_backend.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry.h"
@@ -26,9 +27,11 @@
 
 using ::testing::Eq;
 using ::testing::Invoke;
+using ::testing::IsEmpty;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::UnorderedElementsAreArray;
+using ::testing::VariantWith;
 using ::testing::WithArg;
 
 namespace password_manager {
@@ -321,6 +324,81 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
   EXPECT_CALL(mock_reply,
               Run(LoginsResultsOrErrorAre(&expected_logins_built_in_backend)));
   android_backend().GetAllLoginsAsync(mock_reply.Get());
+  RunUntilIdle();
+}
+
+// Tests that migration removes blocklisted entries with non-empty username or
+// values from the built in backlend before writing to the Android backend.
+TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
+       MigrationClearsBlocklistedCredentials) {
+  feature_list().InitAndEnableFeatureWithParameters(
+      /*enabled_feature=*/features::kUnifiedPasswordManagerAndroid,
+      {{"migration_version", "1"}, {"stage", "0"}});
+
+  Init();
+  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
+      .WillRepeatedly(Return(true));
+
+  // Add two incorrect entries to the local database to check if they will be
+  // removed before writing to the android backend
+  PasswordForm form_1 = CreateTestPasswordForm(1);
+  form_1.blocked_by_user = true;
+  form_1.username_value.clear();
+  built_in_backend().AddLoginAsync(form_1, base::DoNothing());
+
+  PasswordForm form_2 = CreateTestPasswordForm(2);
+  form_2.blocked_by_user = true;
+  form_1.password_value.clear();
+  built_in_backend().AddLoginAsync(form_2, base::DoNothing());
+
+  migrator()->StartMigrationIfNecessary();
+  RunUntilIdle();
+
+  base::MockCallback<LoginsOrErrorReply> mock_reply;
+  // Credentials should be cleaned in both android and built in backends.
+  EXPECT_CALL(mock_reply, Run(VariantWith<LoginsResult>((IsEmpty())))).Times(2);
+  android_backend().GetAllLoginsAsync(mock_reply.Get());
+  built_in_backend().GetAllLoginsAsync(mock_reply.Get());
+  RunUntilIdle();
+}
+
+// Tests that migration does not affect username and password for
+// non-blocklisted entries.
+TEST_F(BuiltInBackendToAndroidBackendMigratorTest,
+       MigrationDoesNotClearNonBlocklistedCredentials) {
+  feature_list().InitAndEnableFeatureWithParameters(
+      /*enabled_feature=*/features::kUnifiedPasswordManagerAndroid,
+      {{"migration_version", "1"}, {"stage", "0"}});
+
+  Init();
+  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
+      .WillRepeatedly(Return(true));
+
+  // Add two incorrect entries to the local database to check if they will be
+  // fixed before writing to the android backend
+  PasswordForm form_1 = CreateTestPasswordForm(1);
+  built_in_backend().AddLoginAsync(form_1, base::DoNothing());
+
+  PasswordForm form_2 = CreateTestPasswordForm(2);
+  built_in_backend().AddLoginAsync(form_2, base::DoNothing());
+
+  // Add one form to be updated.
+  android_backend().AddLoginAsync(form_1, base::DoNothing());
+  RunUntilIdle();
+
+  migrator()->StartMigrationIfNecessary();
+  RunUntilIdle();
+
+  base::MockCallback<LoginsOrErrorReply> mock_reply;
+  std::vector<std::unique_ptr<PasswordForm>> expected_logins;
+  expected_logins.push_back(std::make_unique<PasswordForm>(form_1));
+  expected_logins.push_back(std::make_unique<PasswordForm>(form_2));
+
+  // Credentials should be cleaned in both android and built in backends.
+  EXPECT_CALL(mock_reply, Run(LoginsResultsOrErrorAre(&expected_logins)))
+      .Times(2);
+  android_backend().GetAllLoginsAsync(mock_reply.Get());
+  built_in_backend().GetAllLoginsAsync(mock_reply.Get());
   RunUntilIdle();
 }
 
@@ -672,14 +750,14 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorWithMockAndroidBackendTest,
   built_in_backend().AddLoginAsync(CreateTestPasswordForm(/*index=*/2),
                                    base::DoNothing());
 
-  // Simulate an Android backend that fails to write by returning an empty
-  // changelist.
+  // Simulate an Android backend that fails to write.
   ON_CALL(android_backend_, UpdateLoginAsync)
       .WillByDefault(
-          WithArg<1>(Invoke([](PasswordStoreChangeListReply callback) -> void {
+          WithArg<1>(Invoke([](PasswordChangesOrErrorReply callback) -> void {
             base::SequencedTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE,
-                base::BindOnce(std::move(callback), PasswordStoreChangeList()));
+                base::BindOnce(std::move(callback),
+                               PasswordStoreBackendError::kUnspecified));
           })));
 
   // Once one UpdateLoginAsync() call fails, all consecutive ones will not be
@@ -719,14 +797,14 @@ TEST_F(BuiltInBackendToAndroidBackendMigratorWithMockAndroidBackendTest,
             FROM_HERE, base::BindOnce(std::move(reply), LoginsResult()));
       })));
 
-  // Simulate an Android backend that fails to write by returning an empty
-  // changelist.
+  // Simulate an Android backend that fails to write.
   ON_CALL(android_backend_, AddLoginAsync)
       .WillByDefault(
-          WithArg<1>(Invoke([](PasswordStoreChangeListReply callback) -> void {
+          WithArg<1>(Invoke([](PasswordChangesOrErrorReply callback) -> void {
             base::SequencedTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE,
-                base::BindOnce(std::move(callback), PasswordStoreChangeList()));
+                base::BindOnce(std::move(callback),
+                               PasswordStoreBackendError::kUnspecified));
           })));
 
   // Once one AddLoginAsync() call fails, all consecutive ones will not be

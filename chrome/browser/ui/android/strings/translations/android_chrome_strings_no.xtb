@@ -348,6 +348,7 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2856503607207334158">Pålogging mislyktes</translation>
 <translation id="2860954141821109167">Kontrollér at en telefon-app er påslått på denne enheten</translation>
+<translation id="2861923151411510142">Enkelte Chrome-funksjoner kommer ikke til å være tilgjengelige lenger</translation>
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2871733351037274014">Forhåndslasting av sider</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
@@ -526,7 +527,6 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="3845098929839618392">Åpne i inkognitofane</translation>
 <translation id="3856096718352044181">Verifiser at dette er en gyldig leverandør, eller prøv på nytt senere</translation>
 <translation id="3858860766373142691">Navn</translation>
-<translation id="3859206958100234503">Synkroniser for å få passordene dine, bokmerkene dine med mer på alle enhetene dine.</translation>
 <translation id="3861633093716975811">Populære videoer</translation>
 <translation id="3892148308691398805">Kopiér teksten</translation>
 <translation id="3894427358181296146">Legg til en mappe</translation>
@@ -565,6 +565,7 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="4095146165863963773">Slette appdataene?</translation>
 <translation id="4096227151372679484">Flyt for lagring av bokmerke er åpnet i halv høyde</translation>
 <translation id="4099578267706723511">Gjør Chrome bedre ved å sende bruksstatistikk og programstopprapporter til Google.</translation>
+<translation id="4101475238162928417">Synkroniser for å få passordene dine, bokmerkene dine med mer på andre enheter du bruker.</translation>
 <translation id="410351446219883937">Autoavspilling</translation>
 <translation id="4106587138345390261">Chrome utforsker nye funksjoner som gjør det mulig for nettsteder å bruke mindre av informasjonen din og likevel gi deg den samme nettlesingsopplevelsen</translation>
 <translation id="4108314971463891922">Følg</translation>
@@ -587,6 +588,7 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="4227318652298512614">Følg de nettstedene du vil</translation>
 <translation id="4242533952199664413">Åpne innstillingene</translation>
 <translation id="4248098802131000011">Beskytt passordene dine mot databrudd og andre sikkerhetsproblemer</translation>
+<translation id="424864128008805179">Vil du logge av Chrome?</translation>
 <translation id="4249955472157341256">Sorter etter nyeste</translation>
 <translation id="4250229828105606438">Skjermdump</translation>
 <translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
@@ -654,7 +656,6 @@ Google-kontoen din kan ha andre former for nettleserlogger, for eksempel søk og
 <translation id="4594952190837476234">Denne siden uten nett er fra <ph name="CREATION_TIME" /> og kan avvike fra nettversjonen.</translation>
 <translation id="4616150815774728855">Åpne <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">Bekreft at det er deg</translation>
-<translation id="4627165777145349100">Mer om denne siden</translation>
 <translation id="4634124774493850572">Bruk passord</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 passord er utsatt for sikkerhetsbrudd}other{# passord er utsatt for sikkerhetsbrudd}}</translation>
 <translation id="4650364565596261010">Systemstandard</translation>
@@ -793,7 +794,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5342314432463739672">Tillatelsesforespørsler</translation>
 <translation id="5355191726083956201">Økt beskyttelse er på</translation>
 <translation id="5368227114232678694">For å surfe privat på denne enheten, prøv Inkognito</translation>
-<translation id="5371717687506906963">Privacy Sandbox-forespørsel</translation>
 <translation id="5375577065097716013">Søk etter bildet med Google Lens <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="5376898820269806588">Reaksjonen er endret</translation>
 <translation id="5401851137404501592">For at du skal kunne fortsette, må <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> dele navnet ditt, e-postadressen din og profilbildet ditt med dette nettstedet.</translation>
@@ -892,6 +892,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5869522115854928033">Lagrede passord</translation>
 <translation id="5869789175361934029">Fortsett på en annen enhet</translation>
 <translation id="587735546353481577">For å følge et nettsted, gå til nettstedet, åpne Chrome-menyen og trykk på Følg.</translation>
+<translation id="5879072387416556377">Få bedre forslag</translation>
 <translation id="5880748256563468367">Gå til feeden</translation>
 <translation id="5884076754568147479">For å hjelpe deg med å fullføre oppgaver mottar Google nettadressene til og innholdet på nettsteder der du bruker assistenten, i tillegg til informasjon som du sender inn gjennom assistenten</translation>
 <translation id="5906513782029855931">Ved å vite nettadressene til nettsteder kan Google-assistenten hjelpe deg med å utføre oppgaver. Du kan slå av assistenten i Chrome-innstillingene.</translation>
@@ -1195,6 +1196,7 @@ Tillitstokener gir bedre personvern på nettet og kan ikke brukes til å finne u
 <translation id="749294055653435199">Google Lens er ikke tilgjengelig på denne enheten</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (oppdatert <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Vent litt</translation>
+<translation id="7502234197872745058">For å logge av Google-kontoen din på alle nettsteder, <ph name="BEGIN_LINK1" />logg av Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Oppdateringer er ikke tilgjengelige</translation>
 <translation id="7507207699631365376">Se denne leverandørens <ph name="BEGIN_LINK" />personvernerklæring<ph name="END_LINK" /></translation>
 <translation id="7514365320538308">Last ned</translation>
@@ -1219,7 +1221,7 @@ Tillitstokener gir bedre personvern på nettet og kan ikke brukes til å finne u
 <translation id="7630202231528827509">Leverandørens nettadresse</translation>
 <translation id="7634280112532283638">Reduksjon i nettsøppel og svindel</translation>
 <translation id="7638584964844754484">Feil passordfrase</translation>
-<translation id="7641339528570811325">Slett nettleserdata</translation>
+<translation id="7641339528570811325">Slett nettlesingsdata</translation>
 <translation id="7646772052135772216">Passordsynkronisering fungerer ikke</translation>
 <translation id="7655900163790317559">Slår på Bluetooth …</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -1234,6 +1236,7 @@ Tillitstokener gir bedre personvern på nettet og kan ikke brukes til å finne u
 <translation id="770741401784017797">Oppretter GIF</translation>
 <translation id="7707922173985738739">Bruk mobildata</translation>
 <translation id="7709094866268987903">Interesser du fjerner, vises her</translation>
+<translation id="7709918231054955894">Hent alle fanene dine</translation>
 <translation id="7725024127233776428">Sider du setter som bokmerker, vises her</translation>
 <translation id="7757787379047923882">Tekst delt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Velg dato og klokkeslett</translation>
@@ -1291,7 +1294,7 @@ Tillitstokener gir bedre personvern på nettet og kan ikke brukes til å finne u
 <translation id="8006818846907410687">Blokkér mens du er inkognito</translation>
 <translation id="8013372441983637696">Fjern også Chrome-dataene dine fra denne enheten</translation>
 <translation id="8015452622527143194">Tilbakestill alt på siden til standardstørrelsen</translation>
-<translation id="8026334261755873520">Slett nettleserdata</translation>
+<translation id="8026334261755873520">Slett nettlesingsdata</translation>
 <translation id="8027863900915310177">Velg hvor du vil laste ned til</translation>
 <translation id="8032569120109842252">Følger</translation>
 <translation id="8035133914807600019">Ny mappe</translation>
@@ -1429,6 +1432,7 @@ Tillitstokener gir bedre personvern på nettet og kan ikke brukes til å finne u
 <translation id="8656747343598256512">Logg på dette nettstedet og Chrome med Google-kontoen din. Du kan slå på synkronisering senere.</translation>
 <translation id="8659579665266920523">Slik søker du med Chrome</translation>
 <translation id="8662811608048051533">Logger deg av de fleste nettsteder.</translation>
+<translation id="8664215986015753476">Bruk Chrome på din måte</translation>
 <translation id="8664979001105139458">Filnavnet finnes allerede</translation>
 <translation id="8666759526542103597">Om nettleserbasert personlig tilpasning av annonser</translation>
 <translation id="8667760277771450375">Vi utforsker hvordan vi kan begrense sporing på tvers av nettsteder, samtidig som vi gjør nettsteder i stand til å stanse søppelannonser og svindel.</translation>

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "components/autofill_assistant/browser/js_flow_devtools_wrapper.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
 #include "components/autofill_assistant/browser/public/external_script_controller.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -317,9 +318,9 @@ class ActionDelegate {
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() const = 0;
 
-  // Get dummy web contents that can be used for JS execution. The web contents
-  // is created on the first call.
-  virtual content::WebContents* GetWebContentsForJsExecution() = 0;
+  // Get the wrapper that owns the web contents and devtools client for js
+  // flows.
+  virtual JsFlowDevtoolsWrapper* GetJsFlowDevtoolsWrapper() const = 0;
 
   // Get the ElementStore.
   virtual ElementStore* GetElementStore() const = 0;
@@ -481,7 +482,8 @@ class ActionDelegate {
   // Executes the |external_action|.
   virtual void RequestExternalAction(
       const ExternalActionProto& external_action,
-      base::OnceCallback<void()> start_dom_checks_callback,
+      base::OnceCallback<void(ExternalActionDelegate::DomUpdateCallback)>
+          start_dom_checks_callback,
       base::OnceCallback<void(const external::Result& result)>
           end_action_callback) = 0;
 

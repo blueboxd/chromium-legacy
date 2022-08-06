@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">Η διαχείριση της συσκευής <ph name="DEVICE_TYPE" /> γίνεται από <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Μέτριο (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
+<translation id="1190378975642195988">Επιταχύμετρο βάσης</translation>
 <translation id="1195447618553298278">Άγνωστο σφάλμα.</translation>
 <translation id="1196959502276349371">Έκδοση <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Αναπαραγωγή/Παύση</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">Αποθήκευση σε USB</translation>
 <translation id="1468664791493211953">Προσφορές</translation>
 <translation id="1476467821656042872">Ο τομέας <ph name="MANAGER" /> διαχειρίζεται αυτήν τη συσκευή και μπορεί να έχει τη δυνατότητα να παρακολουθεί τη δραστηριότητά σας.</translation>
+<translation id="147809995039451286">Δεν ήταν δυνατή η λήψη της ενημέρωσης</translation>
 <translation id="1478594628797167447">Σαρωτής</translation>
 <translation id="1491076385728777984">Ενημέρωση υλικολογισμικού στη συσκευή <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732">Ο τομέας <ph name="MANAGER" /> διαχειρίζεται αυτόν τον χρήστη και ενδέχεται να διαχειρίζεται απομακρυσμένα τις ρυθμίσεις και να παρακολουθεί τη δραστηριότητα του χρήστη.</translation>
@@ -125,6 +127,7 @@
 <translation id="1999615961760456652">Πύλη υποδοχής</translation>
 <translation id="2006864819935886708">Συνδεσιμότητα</translation>
 <translation id="2008685064673031089">Αναζήτηση Prime</translation>
+<translation id="2011174342667534258">Έκδοση SDK:</translation>
 <translation id="2016697457005847575">Δοκιμή βημάτων αντιμετώπισης προβλημάτων</translation>
 <translation id="2016848882344942759">--χωρίς λευκή ετικέτα--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -156,6 +159,7 @@
 <translation id="225692081236532131">Κατάσταση ενεργοποίησης</translation>
 <translation id="2271469253353559191">Πρόγραμμα λειτουργίας χαμηλού φωτισμού</translation>
 <translation id="2275586345903859204">Η επισκευή ολοκληρώθηκε</translation>
+<translation id="2276999893457278469">Κορυφαίο περιεχόμενο βοήθειας</translation>
 <translation id="2287186687001756809">Δεν υπάρχει διαθέσιμη εικόνα. Για προσθήκη φωτογραφιών, μεταβείτε στη διεύθυνση <ph name="LINK" /></translation>
 <translation id="2294753434210277304">Εισαγάγετε εξωτερικό αποθηκευτικό χώρο, όπως μια μονάδα USB ή μια κάρτα SD, με τη ληφθείσα εικόνα του Εργαλείου ανάκτησης Chromebook.</translation>
 <translation id="2307344026739914387">Χρήση τρέχοντος ζεύγους κλειδιών</translation>
@@ -177,6 +181,7 @@
 <translation id="2418150275289244458">Άνοιγμα στις Ρυθμίσεις</translation>
 <translation id="2421798028054665193">Εικόνα <ph name="CURRENT_PAGE" /> από <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Ακρίβεια κινητής υποδιαστολής</translation>
+<translation id="2447969267935997922">Η εγκατάσταση ολοκληρώθηκε. Πλέον, μπορείτε να αφαιρέσετε τη μονάδα USB ή την κάρτα SD.</translation>
 <translation id="2448312741937722512">Τύπος</translation>
 <translation id="2461822463642141190">Τρέχουσα</translation>
 <translation id="2480034874476596812">Μη αυτόματη απενεργοποίηση</translation>
@@ -188,6 +193,7 @@
 <translation id="2517472476991765520">Σάρωση</translation>
 <translation id="2526590354069164005">Επιφάνεια εργασίας</translation>
 <translation id="253029298928638905">Επανεκκίνηση…</translation>
+<translation id="2533048460510040082">Προτεινόμενο περιεχόμενο βοήθειας</translation>
 <translation id="2536159006530886390">Δεν είναι δυνατή η σύνδεση στο διαδίκτυο.</translation>
 <translation id="2570743873672969996">Εκτέλεση δοκιμής <ph name="TEST_NAME" />…</translation>
 <translation id="2584559707064218956">Για να ρυθμίσετε το δίκτυο, μεταβείτε στις Ρυθμίσεις.</translation>
@@ -214,7 +220,6 @@
 <translation id="2878387241690264070">Εκφόρτιση <ph name="RATE" /> σε <ph name="NUM_SECONDS" /> δευτερόλεπτα.</translation>
 <translation id="291142119251986300">Ακατάλληλα στοιχεία</translation>
 <translation id="2926057806159140518">Εισαγάγετε το όνομα χρήστη και τον κωδικό πρόσβασής σας ή σαρώστε τον κωδικό QR σας</translation>
-<translation id="2928420929544864228">Η εγκατάσταση ολοκληρώθηκε.</translation>
 <translation id="3008341117444806826">ΑΝΑΝΕΩΣΗ</translation>
 <translation id="3009958530611748826">Επιλέξτε έναν φάκελο στον οποίο θέλετε να γίνεται αποθήκευση.</translation>
 <translation id="3017079585324758401">Φόντο</translation>
@@ -268,6 +273,7 @@
 <translation id="3484914941826596830">Κατά την ενημέρωση του υλικολογισμικού, μην αποσυνδέσετε αυτήν την εξωτερική συσκευή και μην τερματίσετε τη λειτουργία του υπολογιστή. Μπορείτε να ελαχιστοποιήσετε αυτό το παράθυρο. Μπορεί να χρειαστούν λίγα λεπτά για αυτήν την ενημέρωση και η εξωτερική συσκευή σας μπορεί να μην λειτουργεί αυτό το διάστημα.</translation>
 <translation id="3486220673238053218">ορισμός</translation>
 <translation id="3488065109653206955">Μερικώς ενεργοποιημένο</translation>
+<translation id="3492982278147736083">Γυροσκόπιο καπακιού</translation>
 <translation id="3517001332549868749">Ενημέρωση ChromeOS</translation>
 <translation id="3527036260304016759">Σφάλμα - Άγνωστο σφάλμα</translation>
 <translation id="3532980081107202182">Απομένουν περίπου <ph name="MIN_REMAINING" /> λεπτά</translation>
@@ -287,6 +293,7 @@
 <translation id="3621202678540785336">Είσοδος</translation>
 <translation id="3632579075709132555">Εναλλαγή οθόνης απορρήτου</translation>
 <translation id="3643810137582748570">Παράβλεψη βαθμονόμησης</translation>
+<translation id="3651050199673793219">Επιλέξτε μια μονάδα θερμοκρασίας</translation>
 <translation id="3678765385266369662">Επιλογή τρόπου απενεργοποίησης της Προστασίας εγγραφής</translation>
 <translation id="3689839747745352263">Δοκιμή <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Φόρτωση...</translation>
@@ -301,9 +308,12 @@
 <translation id="3820172043799983114">Μη έγκυρο PIN.</translation>
 <translation id="3838338534323494292">Νέος κωδικός πρόσβασης</translation>
 <translation id="385051799172605136">Πίσω</translation>
+<translation id="3856304145690230735">Γυροσκόπιο βάσης</translation>
 <translation id="385832974417157471">Πριν από την απενεργοποίηση, κάντε Powerwash της συσκευής σας. Εάν η συσκευή σας έχει καπάκι, πριν το κλείσετε, περιμένετε να ολοκληρωθεί το Powerwash. Η ολοκλήρωση του Powerwash μπορεί να διαρκέσει έως και ένα λεπτό.</translation>
 <translation id="3858860766373142691">Όνομα</translation>
+<translation id="3862598938296403232">Η περιγραφή απαιτείται</translation>
 <translation id="3865414814144988605">Ανάλυση</translation>
+<translation id="3866249974567520381">Περιγραφή</translation>
 <translation id="387301095347517405">Ο αριθμός των φορών που η μπαταρία σας ολοκλήρωσε έναν πλήρη κύκλο φόρτισης</translation>
 <translation id="3885327323343477505">Αλλαγή προφύλαξης οθόνης</translation>
 <translation id="3923184630988645767">Χρήση δεδομένων</translation>
@@ -371,6 +381,7 @@
 <translation id="4472575034687746823">Έναρξη</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Αποτυχία ping της μη προεπιλεγμένης πύλης δικτύου.</translation>
+<translation id="4500213108254186382">Επιταχύμετρο καπακιού</translation>
 <translation id="4503223151711056411">Αριστερό βέλος</translation>
 <translation id="4511264077854731334">Πύλη</translation>
 <translation id="4521826082652183069">Αντιστοιχία εναλλακτικού ονόματος υποκειμένου</translation>
@@ -382,6 +393,7 @@
 <translation id="4561801978359312462">Ξεκλείδωτη SIM</translation>
 <translation id="4562494484721939086">Εκτός υπηρεσίας</translation>
 <translation id="4568938274596692027">Η εγκατάσταση ολοκληρώθηκε. Προετοιμασία επανεκκίνησης...</translation>
+<translation id="4576943788798178439">Υποστήριξη γραφίδας</translation>
 <translation id="458794348635939462">Αποτυχία επίλυσης όλων των κεντρικών υπολογιστών.</translation>
 <translation id="4593212453765072419">Απαιτείται έλεγχος ταυτότητας του διακομιστή μεσολάβησης</translation>
 <translation id="4609350030397390689">Μείωση φωτεινότητας πληκτρολογίου</translation>
@@ -430,6 +442,7 @@
 <translation id="4915052247106771211">Αυτή η ενέργεια θα επαναφέρει τη συσκευή στις εργοστασιακές ρυθμίσεις (Powerwash).</translation>
 <translation id="4917385247580444890">Ισχυρό</translation>
 <translation id="4917889632206600977">Διακοπή - Τελείωσε το χαρτί</translation>
+<translation id="491791267030419270">Συμβουλές για τη σύνταξη σχολίων</translation>
 <translation id="4921665434385737356">Φόρτιση κατά <ph name="RATE" /> σε <ph name="NUM_SECONDS" /> δευτερόλεπτα.</translation>
 <translation id="4930320165497208503">Για να ρυθμίσετε ή να ενημερώσετε μια σύνδεση, μεταβείτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Ημερομηνία</translation>
@@ -536,6 +549,7 @@
 <translation id="5866840822086176774">Πολύ ισχυρό</translation>
 <translation id="588258955323874662">Πλήρης οθόνη</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
+<translation id="5898758006340607522">Κουμπί λειτουργίας</translation>
 <translation id="5901630391730855834">Κίτρινο</translation>
 <translation id="5903200662178656908">Η συσκευή είναι ένας συνδυασμός πληκτρολογίου και ποντικιού.</translation>
 <translation id="5916084858004523819">Απαγορεύεται</translation>
@@ -671,6 +685,7 @@
 <translation id="7143207342074048698">Σύνδεση</translation>
 <translation id="7144878232160441200">Επανάληψη</translation>
 <translation id="714876143603641390">Συνδεσιμότητα LAN</translation>
+<translation id="7154020516215182599">Μοιραστείτε τα σχόλιά σας ή περιγράψτε το πρόβλημά σας. Εάν είναι δυνατόν, συμπεριλάβετε βήματα για την αναπαραγωγή του προβλήματός σας.</translation>
 <translation id="7155171745945906037">Υπάρχουσα φωτογραφία από την κάμερα ή το αρχείο</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7170236477717446850">Φωτογραφία προφίλ</translation>
@@ -848,6 +863,7 @@
 <translation id="885701979325669005">Αποθήκευση</translation>
 <translation id="8863170912498892583">Ενεργοποίηση σκούρου θέματος</translation>
 <translation id="8863888432376731307">Αποκτήστε το <ph name="INTENT" /> για "<ph name="QUERY" />" και περισσότερα</translation>
+<translation id="8864415976656252616">Δεν υπάρχει προτεινόμενο περιεχόμενο. Ανατρέξτε στο κορυφαίο περιεχόμενο βοήθειας.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Η συσκευή είναι tablet.</translation>
 <translation id="8881098542468797602">Επιτυχία δοκιμής</translation>
@@ -858,6 +874,7 @@
 <translation id="8919792139048574232">Δείτε τι διορθώθηκε</translation>
 <translation id="8919837981463578619">Σφάλμα - Λείπει δίσκος</translation>
 <translation id="8923267550422472772">Ημέρα του μήνα για επαναφορά</translation>
+<translation id="8925613211674558308">Δεδομένα VPD αποθηκευμένα στην κρυφή μνήμη</translation>
 <translation id="8928727111548978589">Σφάλμα - Τελείωσε το χαρτί</translation>
 <translation id="8930521118335213258">Ομότιμη</translation>
 <translation id="8930622219860340959">Ασύρματο</translation>
@@ -899,6 +916,7 @@
 <translation id="922179502584117429">Η τρέχουσα έκδοση <ph name="VERSION_NUMBER" /> δεν είναι ενημερωμένη</translation>
 <translation id="932327136139879170">Αρχική σελίδα</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">Αποστολή σχολίων</translation>
 <translation id="952992212772159698">Μη ενεργοποιημένο</translation>
 <translation id="960719561871045870">Κωδικός τελεστή</translation>
 <translation id="982713511914535780">Εκτέλεση δοκιμής αποφόρτισης</translation>

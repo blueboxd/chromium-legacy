@@ -660,6 +660,18 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   if (!AllowRequestForThisFrame(request))
     return;
 
+  // Block renderer-initiated loads of filesystem: URLs.
+  if (url.ProtocolIs("filesystem") &&
+      !base::FeatureList::IsEnabled(features::kFileSystemUrlNavigation)) {
+    frame_->GetDocument()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kSecurity,
+            mojom::blink::ConsoleMessageLevel::kError,
+            "Not allowed to navigate to " + url.Protocol() +
+                " URL: " + url.ElidedString()));
+    return;
+  }
+
   // Block renderer-initiated loads of data: and filesystem: URLs in the top
   // frame (unless they are reload requests).
   //
@@ -677,8 +689,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
         network_utils::IsDataURLMimeTypeSupported(url)))) {
     frame_->GetDocument()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kSecurity,
-            mojom::ConsoleMessageLevel::kError,
+            mojom::blink::ConsoleMessageSource::kSecurity,
+            mojom::blink::ConsoleMessageLevel::kError,
             "Not allowed to navigate top frame to " + url.Protocol() +
                 " URL: " + url.ElidedString()));
     return;
@@ -1054,6 +1066,44 @@ void FrameLoader::CommitNavigation(
       commit_reason == CommitReason::kJavascriptUrl) {
     DCHECK(!extra_data);
     extra_data = document_loader_->TakeExtraData();
+  }
+
+  // Fenced frame reporting metadata persists across same-origin navigations
+  // initiated from inside the fenced frame. Embedder-initiated navigations
+  // use a unique origin (in `FencedFrame::Navigate`), so the requestor is
+  // always considered cross-origin by the check (in MPArch).
+  bool is_requestor_same_origin =
+      !navigation_params->requestor_origin.IsNull() &&
+      navigation_params->requestor_origin.IsSameOriginWith(
+          WebSecurityOrigin::Create(navigation_params->url));
+  if (is_requestor_same_origin) {
+    for (const WebNavigationParams::RedirectInfo& redirect :
+         navigation_params->redirects) {
+      is_requestor_same_origin &=
+          navigation_params->requestor_origin.IsSameOriginWith(
+              WebSecurityOrigin::Create(redirect.new_url));
+    }
+  }
+  if (is_requestor_same_origin) {
+    const mojom::blink::FencedFrameReportingPtr& old_fenced_frame_reporting =
+        document_loader_->FencedFrameReporting();
+    // TODO(crbug.com/1342301): When we disable FF self urn navigations, add
+    // this DCHECK:
+    // DCHECK(!navigation_params->fenced_frame_reporting);
+    // and remove the condition from the `if` below.
+    if (old_fenced_frame_reporting &&
+        !navigation_params->fenced_frame_reporting) {
+      navigation_params->fenced_frame_reporting.emplace();
+      for (const auto& [destination, event_type_url] :
+           old_fenced_frame_reporting->metadata) {
+        base::flat_map<WebString, WebURL> data;
+        for (const auto& [event_type, url] : event_type_url) {
+          data.emplace(event_type, url);
+        }
+        navigation_params->fenced_frame_reporting->metadata.emplace(
+            destination, std::move(data));
+      }
+    }
   }
 
   // Create the OldDocumentInfoForCommit for the old document (that might be in

@@ -407,9 +407,9 @@ TEST_F(DisplayResourceProviderSkiaTest,
       gpu_commands_completed_fence->passed = true;
     } else {
       gfx::GpuFenceHandle fake_handle;
-      // Making a fake fence fd doesn't work on android. The test just crashes.
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
-      fake_handle.owned_fd.reset({1});
+#if BUILDFLAG(IS_POSIX)
+      const int32_t kFenceFd = dup(1);
+      fake_handle.owned_fd.reset(kFenceFd);
 #endif
       release_fence->SetReleaseFence(std::move(fake_handle));
     }
@@ -418,7 +418,7 @@ TEST_F(DisplayResourceProviderSkiaTest,
                                                       ResourceIdSet());
     EXPECT_EQ(1u, returned_to_child.size());
 
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_POSIX)
     if (release_fence)
       EXPECT_FALSE(returned_to_child.begin()->release_fence.is_null());
     else

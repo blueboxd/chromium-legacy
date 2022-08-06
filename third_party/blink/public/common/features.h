@@ -598,6 +598,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kMaxUnthrottledTimeoutNestingLevel;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kMaxUnthrottledTimeoutNestingLevelParam;
+BLINK_COMMON_EXPORT void ClearUnthrottledNestedTimeoutOverrideCacheForTesting();
 BLINK_COMMON_EXPORT bool IsMaxUnthrottledTimeoutNestingLevelEnabled();
 BLINK_COMMON_EXPORT int GetMaxUnthrottledTimeoutNestingLevel();
 
@@ -769,6 +770,19 @@ BLINK_COMMON_EXPORT extern const base::Feature kSimulateClickOnAXFocus;
 
 // If enabled, allows the use of WebSQL in non-secure contexts.
 BLINK_COMMON_EXPORT extern const base::Feature kWebSQLNonSecureContextAccess;
+
+// Switch to temporary turn back on file system url navigation.
+// TODO(https://crbug.com/1332598): Remove this feature.
+BLINK_COMMON_EXPORT extern const base::Feature kFileSystemUrlNavigation;
+
+// Early exit when the style or class attribute of an element is set to the same
+// value as before.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kEarlyExitOnNoopClassOrStyleChange;
+
+// If enabled, the HTMLDocumentParser will use a budget based on elapsed time
+// rather than token count.
+BLINK_COMMON_EXPORT extern const base::Feature kTimedHTMLParserBudget;
 
 }  // namespace features
 }  // namespace blink

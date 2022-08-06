@@ -13,6 +13,8 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/service-workers/cache-storage/crashtests/cache-response-clone.https.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/cache-storage/crashtests/cache-response-clone.https.html [ Timeout ]
 crbug.com/626703 external/wpt/preload/preload-referrer-policy.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/floats-aspect-ratio-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-move-into-script-disabled-iframe.html [ Timeout ]
@@ -234,6 +236,7 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-frag
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-046.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-050.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-054.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-057.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-008.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-014.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-015.html [ Failure ]
@@ -245,6 +248,7 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmen
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-024.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-032.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-037.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-040.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/float-005.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/float-006.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/float-007.html [ Failure ]
@@ -1780,6 +1784,11 @@ crbug.com/1303102 external/wpt/css/css-images/object-view-box* [ Skip ]
 
 crbug.com/1321217 virtual/document-transition/wpt_internal/document-transition/old-content-with-overflow.html [ Skip ]
 crbug.com/1321217 virtual/document-transition/wpt_internal/document-transition/new-content-with-overflow.html [ Skip ]
+
+# The following failures are due to a bug in object-view-box implementation specific to layoutng being disabled.
+crbug.com/1310798 virtual/document-transition/wpt_internal/document-transition/old-content-object-view-box-clip-path.html [ Failure ]
+crbug.com/1310798 virtual/document-transition/wpt_internal/document-transition/old-content-object-view-box-clip-path-reference.html [ Failure ]
+crbug.com/1310798 virtual/document-transition/wpt_internal/document-transition/old-content-object-view-box-overflow.html [ Failure ]
 
 # only NGHighlightPainter has the ability to paint decorations added by ::target-text
 crbug.com/1223918 wpt_internal/css/css-pseudo/target-text-001.html [ Failure ]

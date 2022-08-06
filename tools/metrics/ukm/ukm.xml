@@ -1612,6 +1612,20 @@ be describing additional metrics about the same event.
       filled if the credit card on file was complete.
     </summary>
   </metric>
+  <metric name="Fillable.AfterSecurity.Visible.Bitmask"
+      enum="AutofillCreditCardSeamlessnessBitmask">
+    <summary>
+      Logs the field types which Autofill would have filled into visible fields
+      if the credit card on file was complete.
+    </summary>
+  </metric>
+  <metric name="Fillable.AfterSecurity.Visible.Qualitative"
+      enum="CreditCardSeamlessFill">
+    <summary>
+      Logs a qualitative summary of the field types which Autofill would have
+      filled into visible fields if the credit card on file was complete.
+    </summary>
+  </metric>
   <metric name="Fillable.BeforeSecurity.Bitmask"
       enum="AutofillCreditCardSeamlessnessBitmask">
     <summary>
@@ -1627,6 +1641,21 @@ be describing additional metrics about the same event.
       policy.
     </summary>
   </metric>
+  <metric name="Fillable.BeforeSecurity.Visible.Bitmask"
+      enum="AutofillCreditCardSeamlessnessBitmask">
+    <summary>
+      Logs the field types which Autofill would have filled into visible fields
+      if the credit card on file was complete and there was no security policy.
+    </summary>
+  </metric>
+  <metric name="Fillable.BeforeSecurity.Visible.Qualitative"
+      enum="CreditCardSeamlessFill">
+    <summary>
+      Logs a qualitative summary of the field types which Autofill would have
+      filled into visible fields if the credit card on file was complete and
+      there was no security policy.
+    </summary>
+  </metric>
   <metric name="Filled.AfterSecurity.Bitmask"
       enum="AutofillCreditCardSeamlessnessBitmask">
     <summary>
@@ -1637,6 +1666,19 @@ be describing additional metrics about the same event.
     <summary>
       Logs a qualitative summary of the field types which Autofill actually
       filled.
+    </summary>
+  </metric>
+  <metric name="Filled.AfterSecurity.Visible.Bitmask"
+      enum="AutofillCreditCardSeamlessnessBitmask">
+    <summary>
+      Logs the field types which Autofill actually filled into visible fields.
+    </summary>
+  </metric>
+  <metric name="Filled.AfterSecurity.Visible.Qualitative"
+      enum="CreditCardSeamlessFill">
+    <summary>
+      Logs a qualitative summary of the field types which Autofill actually
+      filled into visible fields.
     </summary>
   </metric>
   <metric name="Filled.BeforeSecurity.Bitmask"
@@ -1651,6 +1693,20 @@ be describing additional metrics about the same event.
     <summary>
       Logs a qualitative summary of the field types which Autofill would have
       filled if there was no security policy.
+    </summary>
+  </metric>
+  <metric name="Filled.BeforeSecurity.Visible.Bitmask"
+      enum="AutofillCreditCardSeamlessnessBitmask">
+    <summary>
+      Logs the field types which Autofill would have filled into visible fields
+      if there was no security policy.
+    </summary>
+  </metric>
+  <metric name="Filled.BeforeSecurity.Visible.Qualitative"
+      enum="CreditCardSeamlessFill">
+    <summary>
+      Logs a qualitative summary of the field types which Autofill would have
+      filled into visible fields if there was no security policy.
     </summary>
   </metric>
   <metric name="FormSignature">
@@ -3313,6 +3369,14 @@ be describing additional metrics about the same event.
       The time taken for accessibility for the main frame in microseconds during
       the sampled frame.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="AccessibilityBeginMainFrame">
     <summary>
@@ -13057,7 +13121,8 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PageLoad" singular="True">
-  <owner>bmcquade@chromium.org</owner>
+  <owner>sullivan@chromium.org</owner>
+  <owner>chrome-metrics-team@google.com</owner>
   <summary>
     Core metrics associated with web page loads.
   </summary>
@@ -14701,7 +14766,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PageLoad.FromGoogleSearch" singular="True">
-  <owner>bmcquade@chromium.org</owner>
+  <owner>sullivan@chromium.org</owner>
   <owner>mushan@chromium.org</owner>
   <summary>
     Recorded for page loads that were navigated to via Google Search.
@@ -18089,6 +18154,51 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Shopping.CartExtraction">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <summary>
+    Metrics related to performance of cart content extraction in ChromeCart.
+  </summary>
+  <metric name="ExtractionElapsedTime">
+    <summary>
+      Logged when cart content extraction is executed for ChromeCart and records
+      the elapsed time within the JavaScript, so script parsing/compilation time
+      is excluded. Shopping.CartExtraction.ExtractionExecutionTime is measured
+      in native, and is the end-to-end elapsed time. This is expressed in
+      milliseconds.
+    </summary>
+  </metric>
+  <metric name="ExtractionExecutionTime">
+    <summary>
+      Logged when cart content extraction is executed for ChromeCart and records
+      the elapsed time between the start and the end of the extraction
+      JavaScript request execution. This includes script parsing/compilation
+      time and sleeping time. This is expressed in milliseconds.
+    </summary>
+  </metric>
+  <metric name="ExtractionLongestTaskTime">
+    <summary>
+      Logged when cart content extraction is executed for ChromeCart and records
+      the time span of the longest task blocking the main thread of the renderer
+      process. This is expressed in milliseconds.
+    </summary>
+  </metric>
+  <metric name="ExtractionTimedOut" enum="Boolean">
+    <summary>
+      Logged when cart content extraction is executed for ChromeCart and records
+      whether the cart content extraction has timed out.
+    </summary>
+  </metric>
+  <metric name="ExtractionTotalTasksTime">
+    <summary>
+      Logged when cart content extraction is executed for ChromeCart and records
+      the time spent on execution, excluding sleeping time. This is expressed in
+      milliseconds.
+    </summary>
+  </metric>
+</event>
+
 <event name="Shopping.ChromeCart">
   <owner>wychen@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
@@ -18487,7 +18597,6 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="SubresourceFilter" singular="True">
-  <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Recorded for page loads where subresource filtering policy was evaluated.

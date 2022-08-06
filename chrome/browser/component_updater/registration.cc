@@ -18,6 +18,7 @@
 #include "chrome/browser/component_updater/autofill_regex_remover.h"
 #include "chrome/browser/component_updater/chrome_client_side_phishing_component_installer.h"
 #include "chrome/browser/component_updater/chrome_origin_trials_component_installer.h"
+#include "chrome/browser/component_updater/commerce_heuristics_component_installer.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/crowd_deny_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
@@ -64,8 +65,6 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/component_updater/commerce_heuristics_component_installer.h"
-#include "chrome/browser/component_updater/desktop_screenshot_editor_component_installer.h"
 #include "chrome/browser/component_updater/desktop_sharing_hub_component_installer.h"
 #include "chrome/browser/component_updater/zxcvbn_data_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -206,10 +205,8 @@ void RegisterComponentsForUpdate() {
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-  RegisterDesktopScreenshotEditorComponent(cus);
   RegisterDesktopSharingHubComponent(cus);
   RegisterZxcvbnDataComponent(cus);
-  RegisterCommerceHeuristicsComponent(cus);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -225,6 +222,7 @@ void RegisterComponentsForUpdate() {
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   RegisterUrlParamClassificationComponent(cus);
+  RegisterCommerceHeuristicsComponent(cus);
 }
 
 }  // namespace component_updater

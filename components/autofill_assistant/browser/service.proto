@@ -28,7 +28,7 @@ message FieldTrialProto {
 }
 
 // Context contains client environment details.
-// Next ID: 22
+// Next ID: 24
 message ClientContextProto {
   message Chrome {
     optional string chrome_version = 1;
@@ -142,6 +142,9 @@ message ClientContextProto {
     optional int64 model_version = 1;
   }
   optional AnnotateDomModelContextProto annotate_dom_model_context = 22;
+
+  // Set if the client has the JS flow library needed for JS flow execution.
+  optional bool js_flow_library_loaded = 23;
 
   reserved 19, 21;
 }
@@ -748,6 +751,11 @@ message ActionsResponseProto {
   message UpdateScriptListProto { repeated SupportedScriptProto scripts = 1; }
   optional UpdateScriptListProto update_script_list = 5;
 
+  // Needs to be evaluated before each JS flow action. Contains function
+  // definitions that js flows might call.
+  // Only set if ClientContextProto::js_flow_library_loaded is false.
+  optional string js_flow_library = 13;
+
   // Id of the current run.
   optional uint64 run_id = 12;
 
@@ -1243,6 +1251,18 @@ message UnexpectedErrorInfoProto {
   // JavaScript exception class name, if reporting a JavaScript error.
   optional string js_exception_classname = 3;
 
+  enum JsExceptionLocation {
+    UNKNOWN = 0;
+    // Corresponds to ActionsResponseProto::js_flow_library
+    JS_FLOW_LIBRARY = 1;
+    // Corresponds to JsFlowProto::js_flow
+    JS_FLOW = 2;
+  }
+
+  // The location that caused the JavaScript exception. Guaranteed to have the
+  // same number of entries as js_exception_line_numbers and
+  // js_exception_column_numbers.
+  repeated JsExceptionLocation js_exception_locations = 8 [packed = true];
   // JavaScript exception line numbers, within the js snippet that was sent to
   // devtools runtime by the client, if reporting a JavaScript error. Together
   // with |js_exception_column_numbers| this forms a stack trace.
@@ -3428,7 +3448,9 @@ message JsFlowProto {
     // field will be empty and the action will return INVALID_ACTION.
     optional string result_json = 1;
   }
-  // The JS flow to execute in a sandbox.
+
+  // The JS flow to execute in a sandbox. If present
+  // ActionsResponseProto::js_flow_library needs to be evaluated first.
   optional string js_flow = 1;
 }
 
@@ -3446,6 +3468,17 @@ message ExternalActionProto {
   // Whether interrupts should be executed while Autofill Assistant is in prompt
   // state.
   optional bool allow_interrupt = 3;
+
+  // A condition on the DOM. Whenever its status changes a notification is sent
+  // to the external caller.
+  message ExternalCondition {
+    // The identifier to be used in the external notification.
+    optional int32 id = 1;
+
+    // The condition to be checked internally.
+    optional ElementConditionProto element_condition = 2;
+  }
+  repeated ExternalCondition conditions = 4;
 
   message Result {
     optional external.ResultInfo result_info = 1;

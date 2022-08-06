@@ -226,6 +226,8 @@ PictureInPictureResult VideoPictureInPictureWindowControllerImpl::StartSession(
   if (active_session_)
     active_session_->Disconnect();
 
+  source_bounds_ = source_bounds;
+
   active_session_ = std::make_unique<PictureInPictureSession>(
       service, player_id, std::move(player_remote),
       session_remote->InitWithNewPipeAndPassReceiver(), std::move(observer));
@@ -241,11 +243,12 @@ PictureInPictureResult VideoPictureInPictureWindowControllerImpl::StartSession(
 
   // If the window is closed by the system, then the picture in picture session
   // will end. The renderer must call `StartSession()` again.
-  source_bounds_ = source_bounds;
   EmbedSurface(surface_id, natural_size);
   SetShowPlayPauseButton(show_play_pause_button);
   Show();
 
+  // TODO(crbug.com/1331248): Rather than set this synchronously, we should call
+  // back with the bounds once the window provides them.
   *window_size = GetSize();
   return result;
 }

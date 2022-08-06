@@ -71,6 +71,10 @@ export class OnboardingSelectComponentsPageElement extends
     };
   }
 
+  static get observers() {
+    return ['updateIsFirstClickableComponent_(componentCheckboxes_.*)'];
+  }
+
   constructor() {
     super();
     /** @private {ShimlessRmaServiceInterface} */
@@ -136,7 +140,7 @@ export class OnboardingSelectComponentsPageElement extends
         this, () => this.shimlessRmaService_.reworkMainboard());
   }
 
-  /** @return {!Promise<!StateResult>} */
+  /** @return {!Promise<!{stateResult: !StateResult}>} */
   onNextButtonClick() {
     return this.shimlessRmaService_.setComponentList(
         this.getComponentRepairStateList_());
@@ -164,6 +168,16 @@ export class OnboardingSelectComponentsPageElement extends
    */
   isComponentDisabled_(componentDisabled) {
     return this.allButtonsDisabled || componentDisabled;
+  }
+
+  /** @private */
+  updateIsFirstClickableComponent_() {
+    const firstClickableComponent =
+        this.componentCheckboxes_.find(component => !component.disabled);
+    this.componentCheckboxes_.forEach(component => {
+      component.isFirstClickableComponent =
+          (component === firstClickableComponent) ? true : false;
+    });
   }
 }
 

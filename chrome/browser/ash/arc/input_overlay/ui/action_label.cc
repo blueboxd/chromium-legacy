@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -29,7 +30,8 @@ constexpr char kFontStyle[] = "Google Sans";
 constexpr int kFontSize = 16;
 
 // About colors.
-constexpr SkColor kViewModeBgColor = SkColorSetA(SK_ColorGRAY, 0x99);
+constexpr SkColor kViewModeForeColor = SkColorSetA(SK_ColorBLACK, 0x29);
+constexpr SkColor kViewModeBackColor = SkColorSetA(gfx::kGoogleGrey800, 0xCC);
 constexpr SkColor kEditModeBgColor = SK_ColorWHITE;
 constexpr SkColor kEditedUnboundBgColor = gfx::kGoogleRed300;
 constexpr SkColor kViewTextColor = SK_ColorWHITE;
@@ -50,6 +52,8 @@ constexpr float kHaloThickness = 4;
 constexpr base::StringPiece kEditErrorSameKey("Same key");
 constexpr base::StringPiece kEditInfoMessage(
     "Click on any key, then press a keyboard key to customize");
+constexpr base::StringPiece kEditErrorUnbound(
+    "Key is missing. Press a keyboard key to customize.");
 
 // Arrow symbols for arrow keys.
 constexpr char kLeftArrow[] = "←";
@@ -188,8 +192,8 @@ void ActionLabel::SetImageActionLabel(MouseAction mouse_action) {
 }
 
 void ActionLabel::SetDisplayMode(DisplayMode mode) {
-  DCHECK(mode != DisplayMode::kMenu);
-  if (mode == DisplayMode::kMenu)
+  DCHECK(mode != DisplayMode::kMenu && mode != DisplayMode::kPreMenu);
+  if (mode == DisplayMode::kMenu || mode == DisplayMode::kPreMenu)
     return;
 
   switch (mode) {
@@ -211,13 +215,27 @@ void ActionLabel::SetDisplayMode(DisplayMode mode) {
       SetToEditError();
       break;
     case DisplayMode::kRestore:
-      if (!ClearFocus())
-        SetToEditDefault();
+      SetToEditDefault();
       break;
     default:
       NOTREACHED();
       break;
   }
+}
+
+bool ActionLabel::ClearFocus() {
+  auto* focus_manager = GetFocusManager();
+  bool has_focus = false;
+  if (focus_manager) {
+    has_focus = HasFocus();
+    focus_manager->ClearFocus();
+
+    // When it has to clear focus explicitly, set focused view back to its
+    // parent, so it can find the focused view when Tab traversal key is
+    // pressed.
+    focus_manager->SetFocusedView(static_cast<ActionView*>(parent()));
+  }
+  return has_focus;
 }
 
 gfx::Size ActionLabel::CalculatePreferredSize() const {
@@ -251,23 +269,17 @@ void ActionLabel::OnMouseExited(const ui::MouseEvent& event) {
 void ActionLabel::OnFocus() {
   SetToEditFocus();
   LabelButton::OnFocus();
-  auto* parent_view = static_cast<ActionView*>(parent());
-  parent_view->ShowInfoMsg(kEditInfoMessage, this);
+  if (IsUnbound()) {
+    static_cast<ActionView*>(parent())->ShowErrorMsg(kEditErrorUnbound, this);
+  } else {
+    static_cast<ActionView*>(parent())->ShowInfoMsg(kEditInfoMessage, this);
+  }
 }
 
 void ActionLabel::OnBlur() {
   SetToEditDefault();
   LabelButton::OnBlur();
-}
-
-bool ActionLabel::ClearFocus() {
-  auto* focus_manager = GetFocusManager();
-  bool has_focus = false;
-  if (focus_manager) {
-    has_focus = HasFocus();
-    focus_manager->ClearFocus();
-  }
-  return has_focus;
+  static_cast<ActionView*>(parent())->RemoveMessage();
 }
 
 void ActionLabel::SetToViewMode() {
@@ -289,8 +301,10 @@ void ActionLabel::SetToViewMode() {
     }
   }
 
-  SetBackground(
-      views::CreateRoundedRectBackground(kViewModeBgColor, kCornerRadiusView));
+  SetBackground(views::CreateRoundedRectBackground(
+      color_utils::GetResultingPaintColor(kViewModeForeColor,
+                                          kViewModeBackColor),
+      kCornerRadiusView));
   SetPreferredSize(CalculatePreferredSize());
 }
 

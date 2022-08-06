@@ -737,6 +737,7 @@ void InspectorCSSAgent::FontsUpdated(
           .setFontVariant(font->variant())
           .setFontWeight(font->weight())
           .setFontStretch(font->stretch())
+          .setFontDisplay(font->display())
           .setUnicodeRange(font->unicodeRange())
           .setSrc(src)
           .setPlatformFontFamily(
@@ -1028,6 +1029,10 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
                 InspectorDOMAgent::ProtocolPseudoElementType(match->pseudo_id))
             .setMatches(BuildArrayForMatchedRuleList(match->matched_rules))
             .build());
+    if (match->document_transition_tag) {
+      pseudo_id_matches->fromJust()->back()->setPseudoIdentifier(
+          match->document_transition_tag);
+    }
   }
 
   // Inherited styles.
@@ -1064,6 +1069,10 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
               .setMatches(
                   BuildArrayForMatchedRuleList(pseudo_match->matched_rules))
               .build());
+      if (pseudo_match->document_transition_tag) {
+        parent_pseudo_element_matches->back()->setPseudoIdentifier(
+            pseudo_match->document_transition_tag);
+      }
     }
 
     std::unique_ptr<protocol::CSS::InheritedPseudoElementMatches>
@@ -1881,7 +1890,7 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
     bool has_expression_items = false;
     for (wtf_size_t j = 0; j < expressions.size(); ++j) {
       const MediaQueryExp& media_query_exp = expressions.at(j);
-      MediaQueryExpValue exp_value = media_query_exp.ExpValue();
+      MediaQueryExpValue exp_value = media_query_exp.Bounds().right.value;
       if (!exp_value.IsNumeric())
         continue;
       const char* value_name =

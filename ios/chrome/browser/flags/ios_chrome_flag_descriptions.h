@@ -99,6 +99,11 @@ extern const char kBreakpadNoDelayInitialUploadDescription[];
 extern const char kBubbleRichIPHName[];
 extern const char kBubbleRichIPHDescription[];
 
+// Title and description for the flag to change the string of the "Bookmark"
+// action in the overflow menu.
+extern const char kBookmarkStringName[];
+extern const char kBookmarkStringDescription[];
+
 // Title and description for the flag to enable experience kit calendar events.
 extern const char kCalendarExperienceKitName[];
 extern const char kCalendarExperienceKitDescription[];
@@ -170,6 +175,10 @@ extern const char kDiscoverFeedInNtpDescription[];
 extern const char kEnableDiscoverFeedTopSyncPromoName[];
 extern const char kEnableDiscoverFeedTopSyncPromoDescription[];
 
+// Title and description for the flag to enable DMToken deletion.
+extern const char kDmTokenDeletionName[];
+extern const char kDmTokenDeletionDescription[];
+
 // Title and description for the flag to enable Calendar support.
 extern const char kDownloadCalendarName[];
 extern const char kDownloadCalendarDescription[];
@@ -208,6 +217,11 @@ extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 // in long-press feed context menu.
 extern const char kEnableDiscoverFeedPreviewName[];
 extern const char kEnableDiscoverFeedPreviewDescription[];
+
+// Title and description for the flag to show ghost cards when refreshing the
+// discover feed.
+extern const char kEnableDiscoverFeedGhostCardsName[];
+extern const char kEnableDiscoverFeedGhostCardsDescription[];
 
 // Title and description for the flag to shorten the cache.
 extern const char kEnableDiscoverFeedShorterCacheName[];
@@ -257,6 +271,10 @@ extern const char kEnableShortenedPasswordAutoFillInstructionDescription[];
 // iPad.
 extern const char kEnableSuggestionsScrollingOnIPadName[];
 extern const char kEnableSuggestionsScrollingOnIPadDescription[];
+
+// Title and description for the flag to enable user policies.
+extern const char kEnableUserPolicyName[];
+extern const char kEnableUserPolicyDescription[];
 
 // Title and description for the flag to introduce following web channels on
 // Chrome iOS.

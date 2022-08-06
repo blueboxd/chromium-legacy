@@ -20,8 +20,9 @@
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
+#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_parser_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
@@ -33,7 +34,7 @@
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
-#include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
+#include "third_party/blink/public/common/attribution_reporting/constants.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -126,9 +127,15 @@ class AttributionSimulatorInputParser {
 
   template <typename T>
   void ParseList(T&& values,
-                 base::RepeatingCallback<void(decltype(values))> callback) {
+                 base::RepeatingCallback<void(decltype(values))> callback,
+                 size_t max_size = 0) {
     if (!values.is_list()) {
       *Error() << "must be a list";
+      return;
+    }
+
+    if (max_size > 0 && values.GetList().size() > max_size) {
+      *Error() << "too many elements";
       return;
     }
 
@@ -242,7 +249,7 @@ class AttributionSimulatorInputParser {
     int64_t priority = 0;
     base::TimeDelta expiry;
     AttributionFilterData filter_data;
-    AttributionAggregatableSource aggregatable_source;
+    AttributionAggregationKeys aggregation_keys;
 
     if (!ParseAttributionEvent(
             source_dict, "Attribution-Reporting-Register-Source",
@@ -255,7 +262,7 @@ class AttributionSimulatorInputParser {
               filter_data = ParseFilterData(
                   dict, "filter_data",
                   &AttributionFilterData::FromSourceFilterValues);
-              aggregatable_source = ParseAggregatableSource(dict);
+              aggregation_keys = ParseAggregationKeys(dict);
             }))) {
       return;
     }
@@ -270,7 +277,7 @@ class AttributionSimulatorInputParser {
             source_time,
             CommonSourceInfo::GetExpiryTime(expiry, source_time, *source_type),
             *source_type, priority, std::move(filter_data), debug_key,
-            std::move(aggregatable_source))),
+            std::move(aggregation_keys))),
         std::move(source));
   }
 
@@ -289,7 +296,8 @@ class AttributionSimulatorInputParser {
     absl::optional<uint64_t> debug_key;
     AttributionFilterData filters;
     std::vector<AttributionTrigger::EventTriggerData> event_triggers;
-    AttributionAggregatableTrigger aggregatable_trigger;
+    std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data;
+    AttributionAggregatableValues aggregatable_values;
 
     if (!ParseAttributionEvent(
             trigger_dict,
@@ -302,7 +310,10 @@ class AttributionSimulatorInputParser {
                       &AttributionFilterData::FromTriggerFilterValues);
                   event_triggers = ParseEventTriggers(dict);
 
-                  aggregatable_trigger = ParseAggregatableTrigger(dict);
+                  aggregatable_trigger_data =
+                      ParseAggregatableTriggerData(dict);
+
+                  aggregatable_values = ParseAggregatableValues(dict);
                 }))) {
       return;
     }
@@ -315,7 +326,8 @@ class AttributionSimulatorInputParser {
             .trigger = AttributionTrigger(
                 std::move(destination_origin), std::move(reporting_origin),
                 std::move(filters), debug_key, std::move(event_triggers),
-                std::move(aggregatable_trigger)),
+                std::move(aggregatable_trigger_data),
+                std::move(aggregatable_values)),
             .time = trigger_time,
         },
         std::move(trigger));
@@ -361,7 +373,8 @@ class AttributionSimulatorInputParser {
           event_triggers.emplace_back(trigger_data, priority, dedup_key,
                                       std::move(filters),
                                       std::move(not_filters));
-        }));
+        }),
+        /*max_size=*/blink::kMaxAttributionEventTriggerData);
 
     return event_triggers;
   }
@@ -558,7 +571,7 @@ class AttributionSimulatorInputParser {
     return expiry;
   }
 
-  absl::uint128 ParseAggregatableKey(const base::Value& key_value) {
+  absl::uint128 ParseAggregationKey(const base::Value& key_value) {
     const std::string* s = key_value.GetIfString();
 
     absl::uint128 value = 0;
@@ -568,42 +581,41 @@ class AttributionSimulatorInputParser {
     return value;
   }
 
-  AttributionAggregatableSource ParseAggregatableSource(
+  AttributionAggregationKeys ParseAggregationKeys(
       const base::Value::Dict& cfg) {
     static constexpr char kKey[] = "aggregation_keys";
 
     const base::Value* value = cfg.Find(kKey);
     if (!value)
-      return AttributionAggregatableSource();
+      return AttributionAggregationKeys();
 
     auto context = PushContext(kKey);
 
     if (!EnsureDictionary(*value))
-      return AttributionAggregatableSource();
+      return AttributionAggregationKeys();
 
-    AttributionAggregatableSource::Keys::container_type keys;
+    AttributionAggregationKeys::Keys::container_type keys;
 
     for (auto [id, key_value] : value->GetDict()) {
       auto key_context = PushContext(id);
-      absl::uint128 key = ParseAggregatableKey(key_value);
+      absl::uint128 key = ParseAggregationKey(key_value);
       if (!has_error())
         keys.emplace_back(std::move(id), key);
     }
 
-    absl::optional<AttributionAggregatableSource> aggregatable_source =
-        AttributionAggregatableSource::FromKeys(std::move(keys));
-    if (!aggregatable_source)
+    absl::optional<AttributionAggregationKeys> aggregation_keys =
+        AttributionAggregationKeys::FromKeys(std::move(keys));
+    if (!aggregation_keys)
       *Error() << "invalid";
 
-    return std::move(aggregatable_source)
-        .value_or(AttributionAggregatableSource());
+    return std::move(aggregation_keys).value_or(AttributionAggregationKeys());
   }
 
-  std::vector<std::string> ParseAggregatableTriggerDataSourceKeys(
+  base::flat_set<std::string> ParseAggregatableTriggerDataSourceKeys(
       const base::Value::Dict& dict) {
     static constexpr char kKey[] = "source_keys";
 
-    std::vector<std::string> source_keys;
+    base::flat_set<std::string> source_keys;
 
     auto context = PushContext(kKey);
 
@@ -618,19 +630,18 @@ class AttributionSimulatorInputParser {
                 if (!value.is_string()) {
                   *Error() << "must be a string";
                 } else {
-                  source_keys.emplace_back(value.GetString());
+                  source_keys.emplace(value.GetString());
                 }
               }));
 
     return source_keys;
   }
 
-  std::vector<blink::mojom::AttributionAggregatableTriggerDataPtr>
-  ParseAggregatableTriggerData(const base::Value::Dict& dict) {
+  std::vector<AttributionAggregatableTriggerData> ParseAggregatableTriggerData(
+      const base::Value::Dict& dict) {
     static constexpr char kKey[] = "aggregatable_trigger_data";
 
-    std::vector<blink::mojom::AttributionAggregatableTriggerDataPtr>
-        aggregatable_triggers;
+    std::vector<AttributionAggregatableTriggerData> aggregatable_triggers;
 
     const base::Value* values = dict.Find(kKey);
     if (!values)
@@ -647,7 +658,7 @@ class AttributionSimulatorInputParser {
               const base::Value::Dict& trigger_dict =
                   aggregatable_trigger.GetDict();
 
-              std::vector<std::string> source_keys =
+              base::flat_set<std::string> source_keys =
                   ParseAggregatableTriggerDataSourceKeys(trigger_dict);
 
               absl::uint128 key;
@@ -656,7 +667,7 @@ class AttributionSimulatorInputParser {
                 auto key_context = PushContext(kKeyKeyPiece);
                 const base::Value* key_piece = trigger_dict.Find(kKeyKeyPiece);
                 if (key_piece) {
-                  key = ParseAggregatableKey(*key_piece);
+                  key = ParseAggregationKey(*key_piece);
                 } else {
                   *Error() << "must be present";
                 }
@@ -670,37 +681,36 @@ class AttributionSimulatorInputParser {
                   trigger_dict, "not_filters",
                   &AttributionFilterData::FromTriggerFilterValues);
 
+              auto trigger_data = AttributionAggregatableTriggerData::Create(
+                  key, std::move(source_keys), std::move(filters),
+                  std::move(not_filters));
+              if (!trigger_data)
+                *Error() << "invalid";
+
               if (has_error())
                 return;
 
-              aggregatable_triggers.push_back(
-                  blink::mojom::AttributionAggregatableTriggerData::New(
-                      key, std::move(source_keys),
-                      blink::mojom::AttributionFilterData::New(
-                          std::move(filters.filter_values())),
-                      blink::mojom::AttributionFilterData::New(
-                          std::move(not_filters.filter_values()))));
-            }));
+              aggregatable_triggers.push_back(std::move(*trigger_data));
+            }),
+        blink::kMaxAttributionAggregatableTriggerDataPerTrigger);
 
     return aggregatable_triggers;
   }
 
-  AttributionAggregatableTrigger::Values ParseAggregatableValues(
+  AttributionAggregatableValues ParseAggregatableValues(
       const base::Value::Dict& dict) {
     static constexpr char kKey[] = "aggregatable_values";
 
-    AttributionAggregatableTrigger::Values aggregatable_values;
-
     const base::Value* value = dict.Find(kKey);
     if (!value)
-      return aggregatable_values;
+      return AttributionAggregatableValues();
 
     auto context = PushContext(kKey);
 
     if (!EnsureDictionary(*value))
-      return aggregatable_values;
+      return AttributionAggregatableValues();
 
-    AttributionAggregatableTrigger::Values::container_type container;
+    AttributionAggregatableValues::Values::container_type container;
 
     for (auto [id, key_value] : value->GetDict()) {
       auto key_context = PushContext(id);
@@ -711,21 +721,12 @@ class AttributionSimulatorInputParser {
       }
     }
 
-    return container;
-  }
-
-  AttributionAggregatableTrigger ParseAggregatableTrigger(
-      const base::Value::Dict& dict) {
-    auto mojo = blink::mojom::AttributionAggregatableTrigger::New(
-        ParseAggregatableTriggerData(dict), ParseAggregatableValues(dict));
-
-    absl::optional<AttributionAggregatableTrigger> aggregatable_trigger =
-        AttributionAggregatableTrigger::FromMojo(std::move(mojo));
-    if (!aggregatable_trigger)
+    absl::optional<AttributionAggregatableValues> aggregatable_values =
+        AttributionAggregatableValues::FromValues(std::move(container));
+    if (!aggregatable_values.has_value())
       *Error() << "invalid";
 
-    return std::move(aggregatable_trigger)
-        .value_or(AttributionAggregatableTrigger());
+    return aggregatable_values.value_or(AttributionAggregatableValues());
   }
 
   bool EnsureDictionary(const base::Value& value) {

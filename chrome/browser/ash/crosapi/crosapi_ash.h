@@ -80,12 +80,14 @@ class ScreenManagerAsh;
 class SearchProviderAsh;
 class SelectFileAsh;
 class SharesheetAsh;
+class SpeechRecognitionAsh;
 class StructuredMetricsServiceAsh;
 class SystemDisplayAsh;
 class TaskManagerAsh;
 class TimeZoneServiceAsh;
 class TtsAsh;
 class VpnServiceAsh;
+class WallpaperAsh;
 class WebAppServiceAsh;
 class WebPageInfoFactoryAsh;
 class UrlHandlerAsh;
@@ -229,6 +231,8 @@ class CrosapiAsh : public mojom::Crosapi {
       override;
   void BindSharesheet(
       mojo::PendingReceiver<mojom::Sharesheet> receiver) override;
+  void BindSpeechRecognition(
+      mojo::PendingReceiver<mojom::SpeechRecognition> receiver) override;
   void BindStableVideoDecoderFactory(
       mojo::GenericPendingReceiver receiver) override;
   void BindHidManager(
@@ -273,6 +277,8 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindVpnExtensionObserver(
       mojo::PendingReceiver<crosapi::mojom::VpnExtensionObserver> receiver)
       override;
+  void BindWallpaper(
+      mojo::PendingReceiver<crosapi::mojom::Wallpaper> receiver) override;
   void BindWebAppPublisher(
       mojo::PendingReceiver<mojom::AppPublisher> receiver) override;
   void BindNetworkSettingsService(
@@ -317,6 +323,8 @@ class CrosapiAsh : public mojom::Crosapi {
   SearchProviderAsh* search_provider_ash() {
     return search_provider_ash_.get();
   }
+
+  WallpaperAsh* wallpaper_ash() { return wallpaper_ash_.get(); }
 
   WebAppServiceAsh* web_app_service_ash() { return web_app_service_ash_.get(); }
 
@@ -430,6 +438,7 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<SearchProviderAsh> search_provider_ash_;
   std::unique_ptr<SelectFileAsh> select_file_ash_;
   std::unique_ptr<SharesheetAsh> sharesheet_ash_;
+  std::unique_ptr<SpeechRecognitionAsh> speech_recognition_ash_;
 #if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
   std::unique_ptr<media::StableVideoDecoderFactoryService>
       stable_video_decoder_factory_ash_;
@@ -444,6 +453,7 @@ class CrosapiAsh : public mojom::Crosapi {
       video_capture_device_factory_ash_;
   std::unique_ptr<VpnExtensionObserverAsh> vpn_extension_observer_ash_;
   std::unique_ptr<VpnServiceAsh> vpn_service_ash_;
+  std::unique_ptr<WallpaperAsh> wallpaper_ash_;
   std::unique_ptr<WebAppServiceAsh> web_app_service_ash_;
   std::unique_ptr<WebPageInfoFactoryAsh> web_page_info_factory_ash_;
 

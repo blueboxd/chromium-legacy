@@ -29,7 +29,6 @@ ThreadControllerImpl::ThreadControllerImpl(
     const TickClock* time_source)
     : funneled_sequence_manager_(funneled_sequence_manager),
       task_runner_(task_runner),
-      associated_thread_(AssociatedThreadId::CreateUnbound()),
       message_loop_task_runner_(funneled_sequence_manager
                                     ? funneled_sequence_manager->GetTaskRunner()
                                     : nullptr),
@@ -47,14 +46,13 @@ ThreadControllerImpl::ThreadControllerImpl(
   // Unlike ThreadControllerWithMessagePumpImpl, ThreadControllerImpl isn't
   // explicitly Run(). Rather, DoWork() will be invoked at some point in the
   // future when the associated thread begins pumping messages.
-  main_sequence_only().run_level_tracker.OnRunLoopStarted(
-      RunLevelTracker::kIdle);
+  run_level_tracker_.OnRunLoopStarted(RunLevelTracker::kIdle);
 }
 
 ThreadControllerImpl::~ThreadControllerImpl() {
   // Balances OnRunLoopStarted() in the constructor to satisfy the exit criteria
   // of ~RunLevelTracker().
-  main_sequence_only().run_level_tracker.OnRunLoopEnded();
+  run_level_tracker_.OnRunLoopEnded();
 }
 
 ThreadControllerImpl::MainSequenceOnly::MainSequenceOnly() = default;
@@ -184,17 +182,21 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
 
   WeakPtr<ThreadControllerImpl> weak_ptr = weak_factory_.GetWeakPtr();
   for (int i = 0; i < main_sequence_only().work_batch_size_; i++) {
+    // Include SelectNextTask() in the scope of the work item. This ensures it's
+    // covered in tracing and hang reports. This is particularly important when
+    // SelectNextTask() finds no work immediately after a wakeup, otherwise the
+    // power-inefficient wakeup is invisible in tracing.
+    DCHECK_GT(run_level_tracker_.num_run_levels(), 0U);
+    run_level_tracker_.OnTaskStarted();
+
     LazyNow lazy_now(recent_time, time_source_);
     absl::optional<SequencedTaskSource::SelectedTask> selected_task =
         sequence_->SelectNextTask(lazy_now);
-    if (!selected_task)
+    if (!selected_task) {
+      run_level_tracker_.OnTaskEnded();
       break;
+    }
 
-    // [OnTaskStarted(), OnTaskEnded()] must outscope all other tracing calls
-    // so that the "ThreadController active" trace event lives on top of all
-    // "run task" events.
-    DCHECK_GT(main_sequence_only().run_level_tracker.num_run_levels(), 0U);
-    main_sequence_only().run_level_tracker.OnTaskStarted();
     {
       // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
       // to determine long tasks.
@@ -228,7 +230,7 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
         recent_time.reset();
       }
     }
-    main_sequence_only().run_level_tracker.OnTaskEnded();
+    run_level_tracker_.OnTaskEnded();
 
     // NOTE: https://crbug.com/828835.
     // When we're running inside a nested RunLoop it may quit anytime, so any
@@ -241,7 +243,7 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
     // to disable this batching optimization while nested.
     // Implementing MessagePump::Delegate ourselves will help to resolve this
     // issue.
-    if (main_sequence_only().run_level_tracker.num_run_levels() > 1)
+    if (run_level_tracker_.num_run_levels() > 1)
       break;
   }
 
@@ -274,7 +276,7 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
   }
 
   // No more immediate work.
-  main_sequence_only().run_level_tracker.OnIdle();
+  run_level_tracker_.OnIdle();
 
   // Any future work?
   if (!next_wake_up) {
@@ -313,14 +315,8 @@ void ThreadControllerImpl::RemoveNestingObserver(
   RunLoop::RemoveNestingObserverOnCurrentThread(this);
 }
 
-const scoped_refptr<AssociatedThreadId>&
-ThreadControllerImpl::GetAssociatedThread() const {
-  return associated_thread_;
-}
-
 void ThreadControllerImpl::OnBeginNestedRunLoop() {
-  main_sequence_only().run_level_tracker.OnRunLoopStarted(
-      RunLevelTracker::kSelectingNextTask);
+  run_level_tracker_.OnRunLoopStarted(RunLevelTracker::kInBetweenTasks);
 
   // Just assume we have a pending task and post a DoWork to make sure we don't
   // grind to a halt while nested.
@@ -334,7 +330,7 @@ void ThreadControllerImpl::OnBeginNestedRunLoop() {
 void ThreadControllerImpl::OnExitNestedRunLoop() {
   if (nesting_observer_)
     nesting_observer_->OnExitNestedRunLoop();
-  main_sequence_only().run_level_tracker.OnRunLoopEnded();
+  run_level_tracker_.OnRunLoopEnded();
 }
 
 void ThreadControllerImpl::SetWorkBatchSize(int work_batch_size) {

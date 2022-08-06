@@ -31,6 +31,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Perangkat dihubungkan</translation>
 <translation id="1165712434476988950">Perlu memulai ulang perangkat untuk menerapkan update.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Kabel USB-C mungkin tidak terhubung dengan benar ke layar</translation>
 <translation id="1175572348579024023">Scroll</translation>
 <translation id="1178581264944972037">Jeda</translation>
@@ -55,10 +56,6 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1247519845643687288">Aplikasi terbaru</translation>
 <translation id="1252999807265626933">Mengisi daya dari <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Gimana kondisi cuaca?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> sampai 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Pilih acara untuk mengetahui detail selengkapnya di Google Kalender.</translation>
 <translation id="1267032506238418139">Perubahan pintasan</translation>
 <translation id="1269405891096105529">Periferal tidak didukung dalam mode Tamu</translation>
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
@@ -124,6 +121,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Tombol Akses dapat dinonaktifkan di Setelan &gt; Aksesibilitas.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> perangkat</translation>
+<translation id="1639239467298939599">Memuat</translation>
 <translation id="1654477262762802994">Mulai kueri suara</translation>
 <translation id="1668469839109562275">VPN bawaan</translation>
 <translation id="1677472565718498478">Sisa waktu <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2367186422933365202">Tidak dapat login ke Chromebook</translation>
 <translation id="2369165858548251131">"Halo" dalam bahasa China</translation>
+<translation id="2375445874393996153">Penelusuran konten layar dengan Asisten Google tidak lagi didukung.</translation>
 <translation id="2390318262976603432">Setelan Lokal</translation>
 <translation id="240006516586367791">Kontrol media</translation>
 <translation id="2402411679569069051">Untuk membuka kunci Chromebook, gunakan sidik jari atau buka kunci ponsel</translation>
@@ -505,6 +504,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="3901991538546252627">Menghubungkan ke <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Ubah perangkat ke versi sebelumnya dalam 1 menit}other{Ubah perangkat ke versi sebelumnya dalam # menit}}</translation>
 <translation id="3923494859158167397">Tidak ada jaringan seluler yang disiapkan</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Memuat acara.</translation>
 <translation id="3932043219784172185">Tidak ada perangkat yang terhubung</translation>
 <translation id="3934456833412894880">Pengisian daya adaptif aktif. Daya baterai Anda hanya akan diisi sampai 80% untuk memperpanjang masa pakai baterai, dan diisi penuh jika Anda memerlukannya.</translation>
 <translation id="3943857333388298514">Sisipkan</translation>
@@ -704,6 +704,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="5078796286268621944">PIN salah</translation>
 <translation id="5083553833479578423">Dapatkan lebih banyak fitur Asisten.</translation>
 <translation id="509790653408515442">Jika Anda menstreaming aplikasi ponsel, aplikasi akan muncul di sini</translation>
+<translation id="5098537242461068432">Desktop dan jendela dibuka kembali</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Tampilkan bulan berikutnya</translation>
 <translation id="5136175204352732067">Keyboard yang berbeda terhubung</translation>
@@ -1048,7 +1049,6 @@ Baru diinstal</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Perbarui</translation>
-<translation id="718361511487535372">Buka di Google Kalender</translation>
 <translation id="7188494361780961876">Menu dipindahkan ke pojok kiri atas layar.</translation>
 <translation id="7189412385142492784">Seberapa jauh Venus</translation>
 <translation id="7198435252016571249">Kamera dipaskan ke pojok kanan bawah. Bertentangan dengan platform sistem.</translation>
@@ -1057,6 +1057,10 @@ Baru diinstal</translation>
 <translation id="7258828758145722155">Diedit kemarin</translation>
 <translation id="726276584504105859">Tarik ke sini untuk menggunakan layar terpisah</translation>
 <translation id="7262906531272962081">Buat pengingat</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> sampai
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Pilih acara untuk mengetahui detail selengkapnya di Google Kalender.</translation>
 <translation id="7302889331339392448">Teks Otomatis nonaktif.</translation>
 <translation id="7303365578352795231">Menjawab di perangkat lain.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@ Baru diinstal</translation>
 <translation id="7904094684485781019">Administrator untuk akun ini menonaktifkan fitur masuk banyak akun.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Ucapan sekarang diproses secara lokal dan Dikte berfungsi secara offline</translation>
+<translation id="7932451802722951285">Buka di Google Kalender</translation>
 <translation id="7933084174919150729">Asisten Google hanya tersedia untuk profil utama.</translation>
 <translation id="79341161159229895">Akun dikelola oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Tekan <ph name="SHORTCUT_KEY_NAME" /> + V untuk menampilkan papan klip. Lima item terakhir yang disalin akan disimpan ke papan klip.</translation>

@@ -50,8 +50,8 @@ using ::testing::Pointee;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 
-MATCHER_P(AggregatableKeyIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.key, result_listener);
+MATCHER_P(AggregationKeyPieceIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.key_piece, result_listener);
 }
 
 MATCHER_P(SourceKeysAre, matcher, "") {
@@ -147,40 +147,86 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest, SourceRegistered) {
   EXPECT_THAT(source_data.front()->aggregation_keys, IsEmpty());
 }
 
-IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest, SourceRegistered_Script) {
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       SourceRegisteredViaEligibilityHeader) {
+  const char* kTestCases[] = {
+      "createAttributionEligibleImgSrc($1);", "createAttributionSrcScript($1);",
+      "doAttributionEligibleFetch($1);", "doAttributionEligibleXHR($1);"};
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+
+  for (const char* registration_js : kTestCases) {
+    EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+    std::unique_ptr<MockDataHost> data_host;
+    base::RunLoop loop;
+    EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
+        .WillOnce(
+            [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
+              data_host = GetRegisteredDataHost(std::move(host));
+              loop.Quit();
+            });
+
+    GURL register_url =
+        https_server()->GetURL("c.test", "/register_source_headers.html");
+
+    EXPECT_TRUE(
+        ExecJs(web_contents(), JsReplace(registration_js, register_url)));
+    if (!data_host)
+      loop.Run();
+    data_host->WaitForSourceData(/*num_source_data=*/1);
+    const auto& source_data = data_host->source_data();
+
+    EXPECT_EQ(source_data.size(), 1u);
+    EXPECT_EQ(source_data.front()->source_event_id, 5UL);
+    EXPECT_EQ(source_data.front()->destination,
+              url::Origin::Create(GURL("https://d.test")));
+    EXPECT_EQ(source_data.front()->priority, 0);
+    EXPECT_EQ(source_data.front()->expiry, absl::nullopt);
+    EXPECT_FALSE(source_data.front()->debug_key);
+    EXPECT_THAT(source_data.front()->filter_data->filter_values, IsEmpty());
+    EXPECT_THAT(source_data.front()->aggregation_keys, IsEmpty());
+  }
+}
+
+// TODO(johnidel): Remove when redirect chains consistently register sources or
+// triggers. Currently, responses not handled via attributionsrc="url" use
+// their own independent data host, so we do not enforce consistency on
+// these redirect chains.
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       SourceTriggerRegistered_ImgSrc) {
   GURL page_url =
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
 
-  std::unique_ptr<MockDataHost> data_host;
-  base::RunLoop loop;
+  std::unique_ptr<MockDataHost> source_data_host;
+  std::unique_ptr<MockDataHost> trigger_data_host;
+  base::RunLoop source_loop;
+  base::RunLoop trigger_loop;
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
-      .WillOnce(
+      .WillRepeatedly(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
-            data_host = GetRegisteredDataHost(std::move(host));
-            loop.Quit();
+            if (!source_data_host) {
+              source_data_host = GetRegisteredDataHost(std::move(host));
+              source_loop.Quit();
+            } else {
+              trigger_data_host = GetRegisteredDataHost(std::move(host));
+              trigger_loop.Quit();
+            }
           });
 
-  GURL register_url =
-      https_server()->GetURL("c.test", "/register_source_headers.html");
+  GURL register_url = https_server()->GetURL(
+      "c.test", "/register_source_trigger_redirect_chain.html");
 
   EXPECT_TRUE(
       ExecJs(web_contents(),
-             JsReplace("createAttributionSrcScript($1);", register_url)));
-  if (!data_host)
-    loop.Run();
-  data_host->WaitForSourceData(/*num_source_data=*/1);
-  const auto& source_data = data_host->source_data();
+             JsReplace("createAttributionEligibleImgSrc($1);", register_url)));
+  if (!source_data_host)
+    source_loop.Run();
+  source_data_host->WaitForSourceData(/*num_source_data=*/1);
 
-  EXPECT_EQ(source_data.size(), 1u);
-  EXPECT_EQ(source_data.front()->source_event_id, 5UL);
-  EXPECT_EQ(source_data.front()->destination,
-            url::Origin::Create(GURL("https://d.test")));
-  EXPECT_EQ(source_data.front()->priority, 0);
-  EXPECT_EQ(source_data.front()->expiry, absl::nullopt);
-  EXPECT_FALSE(source_data.front()->debug_key);
-  EXPECT_THAT(source_data.front()->filter_data->filter_values, IsEmpty());
-  EXPECT_THAT(source_data.front()->aggregation_keys, IsEmpty());
+  if (!trigger_data_host)
+    trigger_loop.Run();
+  trigger_data_host->WaitForTriggerData(/*num_trigger_data=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -260,6 +306,40 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   // AttributionsBrowserTest.
 }
 
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       AnchorClickEmptyAttributionSrc_ImpressionReceived) {
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  EXPECT_CALL(mock_attribution_host(), RegisterNavigationDataHost).Times(0);
+
+  SourceObserver source_observer(web_contents());
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+  createAndClickAttributionSrcAnchor({url: 'page_with_conversion_redirect.html',
+                                      attributionsrc: ''});)"));
+
+  // Wait for the impression to be seen by the observer.
+  blink::Impression last_impression = source_observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       WindowOpenAttributionSrc_ImpressionReceived) {
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  EXPECT_CALL(mock_attribution_host(), RegisterNavigationDataHost).Times(0);
+
+  SourceObserver source_observer(web_contents());
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+  window.open("page_with_conversion_redirect.html", "_top",
+  "attributionsrc=");)"));
+
+  // Wait for the impression to be seen by the observer.
+  blink::Impression last_impression = source_observer.Wait();
+}
+
 // See crbug.com/1322450
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
                        AttributionSrcWindowOpen_URLEncoded_SourceRegistered) {
@@ -296,6 +376,81 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
 
   EXPECT_EQ(register_response->http_request()->relative_url,
             "/register_source?a=b&c=d");
+}
+
+// See crbug.com/1338698
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       AttributionSrcWindowOpen_RetainsOriginalURLCase) {
+  // Create a separate server as we cannot register a `ControllableHttpResponse`
+  // after the server starts.
+  auto https_server = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server->ServeFilesFromSourceDirectory(
+      "content/test/data/attribution_reporting");
+
+  auto register_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server.get(), "/register_source?a=B&C=d");
+  ASSERT_TRUE(https_server->Start());
+
+  GURL page_url =
+      https_server->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  TestNavigationObserver observer(web_contents());
+
+  // This attributionsrc will only be handled properly if the URL's original
+  // case is retained before being passed to the attributionsrc loader.
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+  window.open("page_with_conversion_redirect.html", "_top",
+  "attributionsrc=register_source%3Fa%3DB%26C%3Dd");)"));
+
+  register_response->WaitForRequest();
+  register_response->Done();
+
+  // TODO(crbug.com/1322525): Remove this once we use a pure mock.
+  observer.Wait();
+
+  EXPECT_EQ(register_response->http_request()->relative_url,
+            "/register_source?a=B&C=d");
+}
+
+// See crbug.com/1338698
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       AttributionSrcWindowOpen_NonAsciiUrl) {
+  // Create a separate server as we cannot register a `ControllableHttpResponse`
+  // after the server starts.
+  auto https_server = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server->ServeFilesFromSourceDirectory(
+      "content/test/data/attribution_reporting");
+
+  auto register_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server.get(), "/%F0%9F%98%80");
+  ASSERT_TRUE(https_server->Start());
+
+  GURL page_url =
+      https_server->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  TestNavigationObserver observer(web_contents());
+
+  // Ensure that the special handling of the original case for attributionsrc
+  // features works with non-ASCII characters.
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+  window.open("page_with_conversion_redirect.html", "_top",
+  "attributionsrc=😀");)"));
+
+  register_response->WaitForRequest();
+  register_response->Done();
+
+  // TODO(crbug.com/1322525): Remove this once we use a pure mock.
+  observer.Wait();
+
+  EXPECT_EQ(register_response->http_request()->relative_url, "/%F0%9F%98%80");
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -610,6 +765,38 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       ImgSrcWithAttributionSrc_SetsEligibleHeader) {
+  // Create a separate server as we cannot register a `ControllableHttpResponse`
+  // after the server starts.
+  auto https_server = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  net::test_server::RegisterDefaultHandlers(https_server.get());
+  https_server->ServeFilesFromSourceDirectory(
+      "content/test/data/attribution_reporting");
+  https_server->ServeFilesFromSourceDirectory("content/test/data");
+
+  auto register_response1 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server.get(), "/register_source1");
+  ASSERT_TRUE(https_server->Start());
+
+  GURL page_url =
+      https_server->GetURL("b.test", "/page_with_impression_creator.html");
+  ASSERT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  GURL register_url = https_server->GetURL("d.test", "/register_source1");
+  ASSERT_TRUE(
+      ExecJs(web_contents(),
+             JsReplace("createAttributionEligibleImgSrc($1);", register_url)));
+
+  register_response1->WaitForRequest();
+  ASSERT_EQ(register_response1->http_request()->headers.at(
+                "Attribution-Reporting-Eligible"),
+            "event-source, trigger");
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
                        ReferrerPolicy_RespectsDocument) {
   // Create a separate server as we cannot register a `ControllableHttpResponse`
   // after the server starts.
@@ -691,9 +878,8 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBasicTriggerBrowserTest,
   EXPECT_THAT(
       trigger_data.front()->event_triggers.front()->not_filters->filter_values,
       IsEmpty());
-  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->trigger_data,
-              IsEmpty());
-  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values, IsEmpty());
+  EXPECT_THAT(trigger_data.front()->aggregatable_trigger_data, IsEmpty());
+  EXPECT_THAT(trigger_data.front()->aggregatable_values, IsEmpty());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -769,12 +955,12 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
       event_trigger_datas.back()->not_filters->filter_values,
       ElementsAre(Pair("d", ElementsAre("e", "f")), Pair("g", IsEmpty())));
 
-  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->trigger_data,
-              ElementsAre(Pointee(AllOf(
-                  AggregatableKeyIs(absl::MakeUint128(/*high=*/0, /*low=*/1)),
-                  SourceKeysAre(ElementsAre("key"))))));
+  EXPECT_THAT(trigger_data.front()->aggregatable_trigger_data,
+              ElementsAre(Pointee(AllOf(AggregationKeyPieceIs(absl::MakeUint128(
+                                            /*high=*/0, /*low=*/1)),
+                                        SourceKeysAre(ElementsAre("key"))))));
 
-  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values,
+  EXPECT_THAT(trigger_data.front()->aggregatable_values,
               ElementsAre(Pair("key", 123)));
 }
 
@@ -810,24 +996,24 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_THAT(trigger_data.front()->event_triggers, IsEmpty());
 
   EXPECT_THAT(
-      trigger_data.front()->aggregatable_trigger->trigger_data,
+      trigger_data.front()->aggregatable_trigger_data,
       ElementsAre(
           Pointee(AllOf(
-              AggregatableKeyIs(absl::MakeUint128(/*high=*/0, /*low=*/1)),
+              AggregationKeyPieceIs(absl::MakeUint128(/*high=*/0, /*low=*/1)),
               SourceKeysAre(ElementsAre("key1")),
               FiltersAre(Pointee(
                   FilterValuesAre(ElementsAre(Pair("a", ElementsAre("b")))))),
               NotFiltersAre(Pointee(
                   FilterValuesAre(ElementsAre(Pair("c", IsEmpty()))))))),
           Pointee(AllOf(
-              AggregatableKeyIs(absl::MakeUint128(/*high=*/0, /*low=*/0)),
+              AggregationKeyPieceIs(absl::MakeUint128(/*high=*/0, /*low=*/0)),
               SourceKeysAre(IsEmpty()),
               FiltersAre(Pointee(FilterValuesAre(IsEmpty()))),
               NotFiltersAre(Pointee(
                   FilterValuesAre(ElementsAre(Pair("d", ElementsAre("e", "f")),
                                               Pair("g", IsEmpty())))))))));
 
-  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values,
+  EXPECT_THAT(trigger_data.front()->aggregatable_values,
               ElementsAre(Pair("key1", 123), Pair("key2", 456)));
 }
 
@@ -916,9 +1102,8 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
 
   // Only the second trigger is registered.
   EXPECT_EQ(trigger_data.size(), 1u);
-  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->trigger_data,
-              SizeIs(2));
-  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values, SizeIs(2));
+  EXPECT_THAT(trigger_data.front()->aggregatable_trigger_data, SizeIs(2));
+  EXPECT_THAT(trigger_data.front()->aggregatable_values, SizeIs(2));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,

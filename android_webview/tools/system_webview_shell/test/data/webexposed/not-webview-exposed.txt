@@ -119,12 +119,14 @@ interface MediaDevices : EventTarget
     method getDisplayMedia
     method setCaptureHandleConfig
 
-# Because getDisplayMedia() is not supported on Android,
-# dependent features such as Capture Handle are also unsupported.
+# Because getDisplayMedia() is not supported on Android, dependent features
+# such as Capture Handle and Region Capture are also unsupported.
 interface MediaStreamTrack : EventTarget
   getter oncapturehandlechange
   setter oncapturehandlechange
   method getCaptureHandle
+interface BrowserCaptureMediaStreamTrack : MediaStreamTrack
+interface CropTarget
 
 # WebAuthN API should not be exposed in WebView, crbug.com/828168
 interface AuthenticatorAssertionResponse : AuthenticatorResponse
@@ -257,6 +259,10 @@ interface LaunchQueue
 # Local Font Access API is not implemented in WebView (or Android).
 # crbug.com/1326898
 interface FontData
+
+# Event.path is disabled in pre-Beta channels to help the deprecation.
+interface Event
+    getter path                        # crbug.com/1277431
 
 [GLOBAL OBJECT]
     method openDatabase

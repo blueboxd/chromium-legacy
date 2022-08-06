@@ -161,6 +161,8 @@ void AddStrings(content::WebUIDataSource* source) {
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_UNSELECTED_ROW},
       {"ambientModeWeatherTitle",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_TITLE},
+      {"ambientModeAriaDescriptionWeather",
+       IDS_PERSONALIZATION_APP_ARIA_DESCRIPTION_AMBIENT_MODE_WEATHER},
       {"ambientModeWeatherUnitFahrenheit",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_FAHRENHEIT},
       {"ambientModeWeatherUnitCelsius",
@@ -259,6 +261,9 @@ void AddBooleans(content::WebUIDataSource* source) {
 
   source->AddBoolean("isPersonalizationHubEnabled",
                      features::IsPersonalizationHubEnabled());
+
+  source->AddBoolean("isAmbientModeAnimationEnabled",
+                     features::IsAmbientModeAnimationEnabled());
 
   source->AddBoolean("isDarkLightModeEnabled",
                      features::IsDarkLightModeEnabled());

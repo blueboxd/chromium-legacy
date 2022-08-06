@@ -31,6 +31,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="1150989369772528668">Calendario</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
 <translation id="1165712434476988950">É necesario reiniciar o dispositivo para que se aplique a actualización.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">O teu cable USB-C non pode conectarse a pantallas de maneira adecuada</translation>
 <translation id="1175572348579024023">Desprazarse</translation>
 <translation id="1178581264944972037">Pausar</translation>
@@ -55,10 +56,6 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="1247519845643687288">Aplicacións recentes</translation>
 <translation id="1252999807265626933">Cargando a través de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Que tempo fai?</translation>
-<translation id="1262870540683925850">De <ph name="START_TIME" /> a 
-<ph name="END_TIME" />, 
-<ph name="TIME_ZONE" />, 
-<ph name="EVENT_SUMMARY" />. Seleccionar para ver máis detalles en Google Calendar.</translation>
 <translation id="1267032506238418139">Cambio de atallos</translation>
 <translation id="1269405891096105529">O periférico non está dispoñible no modo de convidado</translation>
 <translation id="1270290102613614947">Teclado en pantalla desactivado</translation>
@@ -124,6 +121,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1632985212731562677">A función Acceso con interruptores pódese desactivar en Configuración &gt; Accesibilidade.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositivos</translation>
+<translation id="1639239467298939599">Cargando</translation>
 <translation id="1654477262762802994">Iniciar unha consulta de voz</translation>
 <translation id="1668469839109562275">VPN integrada</translation>
 <translation id="1677472565718498478">Tempo restante: <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2367186422933365202">Non se puido iniciar sesión no Chromebook</translation>
 <translation id="2369165858548251131">"Ola" en chinés</translation>
+<translation id="2375445874393996153">A función de buscar co Asistente de Google o que aparece na pantalla xa non está dispoñible.</translation>
 <translation id="2390318262976603432">Opcións de configuración local</translation>
 <translation id="240006516586367791">Controis multimedia</translation>
 <translation id="2402411679569069051">Para desbloquear o Chromebook, utiliza a impresión dixital ou desbloquea o teléfono</translation>
@@ -506,6 +505,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="3901991538546252627">Conectando con <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Cambia o dispositivo a unha versión anterior no prazo de 1 minuto}other{Cambia o dispositivo a unha versión anterior no prazo de # minutos}}</translation>
 <translation id="3923494859158167397">Non se configurou ningunha rede móbil</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, cargando eventos.</translation>
 <translation id="3932043219784172185">Ningún dispositivo conectado</translation>
 <translation id="3934456833412894880">A función Carga intelixente está activada A batería completará o 80 % da carga para aumentar a súa duración e cargarase por completo cando o necesites.</translation>
 <translation id="3943857333388298514">Pegar</translation>
@@ -705,6 +705,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="5078796286268621944">PIN incorrecto</translation>
 <translation id="5083553833479578423">Desbloquea máis funcións do Asistente.</translation>
 <translation id="509790653408515442">Cando emitas as aplicacións do teu teléfono, aparecerán aquí</translation>
+<translation id="5098537242461068432">Abríronse de novo o escritorio e as ventás</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Mostrar mes seguinte</translation>
 <translation id="5136175204352732067">Conectouse un teclado diferente</translation>
@@ -1049,7 +1050,6 @@ Nova instalación</translation>
 <translation id="7165278925115064263">Alt+Maiús+K</translation>
 <translation id="7168224885072002358">Volvendo á resolución anterior dentro de <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Actualizar</translation>
-<translation id="718361511487535372">Abrir en Google Calendar</translation>
 <translation id="7188494361780961876">O menú moveuse á esquina superior esquerda da pantalla.</translation>
 <translation id="7189412385142492784">A que distancia está Venus?</translation>
 <translation id="7198435252016571249">Cámara axustada á esquina inferior dereita. Conflito coa plataforma do sistema.</translation>
@@ -1058,6 +1058,10 @@ Nova instalación</translation>
 <translation id="7258828758145722155">Editouse onte</translation>
 <translation id="726276584504105859">Arrastra aquí a ventá para usar a vista dividida</translation>
 <translation id="7262906531272962081">Crear recordatorio</translation>
+<translation id="7297440678881127227">De <ph name="START_TIME" /> a
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Seleccionar para ver máis detalles en Google Calendar.</translation>
 <translation id="7302889331339392448">A función Subtítulos instantáneos está desactivada.</translation>
 <translation id="7303365578352795231">Respondendo consulta noutro dispositivo.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1170,6 +1174,7 @@ Nova instalación</translation>
 <translation id="7904094684485781019">O administrador desta conta non permitiu o inicio de sesión múltiple.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">O que se diga procésase de xeito local e o ditado funciona sen conexión</translation>
+<translation id="7932451802722951285">Abrir en Google Calendar</translation>
 <translation id="7933084174919150729">O Asistente de Google só está dispoñible para o perfil principal.</translation>
 <translation id="79341161159229895">A conta está xestionada por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Preme <ph name="SHORTCUT_KEY_NAME" /> + V para ver o portapapeis. Nel gárdanse os últimos 5 elementos que copiaches.</translation>

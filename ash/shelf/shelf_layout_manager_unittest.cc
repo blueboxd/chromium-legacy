@@ -3727,9 +3727,6 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EnterOverview();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
 
   base::HistogramTester histogram_tester;
   HotseatStateWatcher watcher(GetShelfLayoutManager());
@@ -3742,15 +3739,28 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
       true /* is_fling */,
       -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
 
-  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   watcher.CheckEqual({HotseatState::kExtended});
 
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeUpToShow, 1);
 
-  // The same fling gesture should transition to home if the hotseat is in
-  // extended state.
+  // The same fling gesture should transition to overview since the hotseat is
+  // in extended state.
+  StartScroll(shelf_widget_bounds.bottom_right());
+  UpdateScroll(-shelf_size - 1.5f * hotseat_size - hotseat_padding_size);
+  EndScroll(
+      true /* is_fling */,
+      -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
+
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+
+  watcher.CheckEqual({HotseatState::kExtended});
+
+  // The same fling gesture should transition to home since overview mode
+  // is active.
   StartScroll(shelf_widget_bounds.bottom_right());
   UpdateScroll(-shelf_size - 1.5f * hotseat_size - hotseat_padding_size);
   EndScroll(
@@ -3791,7 +3801,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingHomeInSplitModeWithOverview) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EnterOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 
   base::HistogramTester histogram_tester;
   HotseatStateWatcher watcher(GetShelfLayoutManager());
@@ -4456,8 +4466,10 @@ TEST_F(ShelfLayoutManagerTest, VerifyAutoHideBehaviorOnMultipleDisplays) {
 
 // Tests that pinned app icons are visible on non-primary displays.
 TEST_F(ShelfLayoutManagerTest, ShelfShowsPinnedAppsOnOtherDisplays) {
-  // Create three displays.
-  UpdateDisplay("600x400,1000x700,800x900");
+  // Create three displays. Should use 600+ pixel as the horizontal display
+  // size, otherwise there's no enough space to show both the date tray and
+  // unified system tray on the screen.
+  UpdateDisplay("700x400,1000x700,800x900");
   const unsigned int display_count = 3U;
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(display_count, root_windows.size());
@@ -4511,6 +4523,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfShowsPinnedAppsOnOtherDisplays) {
                                    .GetViewAt(app_count - 1)
                                    ->GetBoundsInScreen()
                                    .right_center();
+
       EXPECT_EQ(left.x() - display.bounds().x(),
                 display.bounds().right() - right.x())
           << "Apps on either end should be at the same distance from the "
@@ -4645,8 +4658,8 @@ TEST_F(NoSessionShelfLayoutManagerTest, UpdateShelfVisibilityAfterLogin) {
   GetSessionControllerClient()->SetUserPrefService(kUserAccount,
                                                    std::move(pref_service));
 
-  // Create a window that covers the full height of the display.
-  constexpr int kExpectedWindowHeight = 800;
+  // Create a window that covers the full height of the in-session work area.
+  const int kExpectedWindowHeight = 800 - ShelfConfig::Get()->shelf_size();
   auto window = CreateTestWindow(gfx::Rect(400, kExpectedWindowHeight));
 
   // Simulate login.

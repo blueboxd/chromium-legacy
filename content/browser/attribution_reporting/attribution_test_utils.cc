@@ -550,9 +550,9 @@ SourceBuilder& SourceBuilder::SetDedupKeys(std::vector<uint64_t> dedup_keys) {
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetAggregatableSource(
-    AttributionAggregatableSource aggregatable_source) {
-  aggregatable_source_ = std::move(aggregatable_source);
+SourceBuilder& SourceBuilder::SetAggregationKeys(
+    AttributionAggregationKeys aggregation_keys) {
+  aggregation_keys_ = std::move(aggregation_keys);
   return *this;
 }
 
@@ -561,7 +561,7 @@ CommonSourceInfo SourceBuilder::BuildCommonInfo() const {
       source_event_id_, impression_origin_, conversion_origin_,
       reporting_origin_, impression_time_,
       /*expiry_time=*/impression_time_ + expiry_, source_type_, priority_,
-      filter_data_, debug_key_, aggregatable_source_);
+      filter_data_, debug_key_, aggregation_keys_);
 }
 
 StorableSource SourceBuilder::Build() const {
@@ -633,9 +633,15 @@ TriggerBuilder& TriggerBuilder::SetDebugKey(
   return *this;
 }
 
-TriggerBuilder& TriggerBuilder::SetAggregatableTrigger(
-    AttributionAggregatableTrigger aggregatable_trigger) {
-  aggregatable_trigger_ = std::move(aggregatable_trigger);
+TriggerBuilder& TriggerBuilder::SetAggregatableTriggerData(
+    std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data) {
+  aggregatable_trigger_data_ = std::move(aggregatable_trigger_data);
+  return *this;
+}
+
+TriggerBuilder& TriggerBuilder::SetAggregatableValues(
+    AttributionAggregatableValues aggregatable_values) {
+  aggregatable_values_ = std::move(aggregatable_values);
   return *this;
 }
 
@@ -656,7 +662,8 @@ AttributionTrigger TriggerBuilder::Build() const {
 
   return AttributionTrigger(destination_origin_, reporting_origin_,
                             AttributionFilterData(), debug_key_,
-                            std::move(event_triggers), aggregatable_trigger_);
+                            std::move(event_triggers),
+                            aggregatable_trigger_data_, aggregatable_values_);
 }
 
 AttributionInfoBuilder::AttributionInfoBuilder(StoredSource source)
@@ -757,7 +764,8 @@ bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
   const auto tie = [](const AttributionTrigger& t) {
     return std::make_tuple(t.destination_origin(), t.reporting_origin(),
                            t.filters(), t.debug_key(), t.event_triggers(),
-                           t.aggregatable_trigger());
+                           t.aggregatable_trigger_data(),
+                           t.aggregatable_values());
   };
   return tie(a) == tie(b);
 }
@@ -774,7 +782,7 @@ bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b) {
                            source.reporting_origin(), source.impression_time(),
                            source.expiry_time(), source.source_type(),
                            source.priority(), source.filter_data(),
-                           source.debug_key(), source.aggregatable_source());
+                           source.debug_key(), source.aggregation_keys());
   };
   return tie(a) == tie(b);
 }
@@ -874,20 +882,15 @@ bool operator==(const SendResult& a, const SendResult& b) {
 bool operator==(const AttributionAggregatableTriggerData& a,
                 const AttributionAggregatableTriggerData& b) {
   const auto tie = [](const AttributionAggregatableTriggerData& trigger_data) {
-    return std::make_tuple(trigger_data.key(), trigger_data.source_keys(),
+    return std::make_tuple(trigger_data.key_piece(), trigger_data.source_keys(),
                            trigger_data.filters(), trigger_data.not_filters());
   };
   return tie(a) == tie(b);
 }
 
-bool operator==(const AttributionAggregatableTrigger& a,
-                const AttributionAggregatableTrigger& b) {
-  const auto tie =
-      [](const AttributionAggregatableTrigger& aggregatable_trigger) {
-        return std::make_tuple(aggregatable_trigger.trigger_data(),
-                               aggregatable_trigger.values());
-      };
-  return tie(a) == tie(b);
+bool operator==(const AttributionAggregatableValues& a,
+                const AttributionAggregatableValues& b) {
+  return a.values() == b.values();
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -1056,7 +1059,18 @@ std::ostream& operator<<(std::ostream& out,
     separator = ", ";
   }
 
-  return out << "]}";
+  out << "],aggregatable_trigger_data=[";
+
+  separator = "";
+  for (const auto& aggregatable_trigger_data :
+       conversion.aggregatable_trigger_data()) {
+    out << separator << aggregatable_trigger_data;
+    separator = ", ";
+  }
+
+  out << "],aggregatable_values=" << conversion.aggregatable_values();
+
+  return out << "}";
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -1092,7 +1106,7 @@ std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
              << ",filter_data=" << source.filter_data() << ",debug_key="
              << (source.debug_key() ? base::NumberToString(*source.debug_key())
                                     : "null")
-             << ",aggregatable_source=" << source.aggregatable_source() << "}";
+             << ",aggregation_keys=" << source.aggregation_keys() << "}";
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -1239,7 +1253,7 @@ std::ostream& operator<<(std::ostream& out, StorableSource::Result status) {
 std::ostream& operator<<(
     std::ostream& out,
     const AttributionAggregatableTriggerData& trigger_data) {
-  out << "{key=" << trigger_data.key() << ",source_keys=[";
+  out << "{key_piece=" << trigger_data.key_piece() << ",source_keys=[";
 
   const char* separator = "";
   for (const auto& key : trigger_data.source_keys()) {
@@ -1251,26 +1265,16 @@ std::ostream& operator<<(
              << ",not_filters=" << trigger_data.not_filters() << "}";
 }
 
-std::ostream& operator<<(
-    std::ostream& out,
-    const AttributionAggregatableTrigger& aggregatable_trigger) {
-  out << "{trigger_data=[";
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionAggregatableValues& values) {
+  out << "{";
 
   const char* separator = "";
-  for (const auto& trigger_data : aggregatable_trigger.trigger_data()) {
-    out << separator << trigger_data;
-    separator = ", ";
-  }
-
-  out << "],values=[";
-
-  separator = "";
-  for (const auto& [key, value] : aggregatable_trigger.values()) {
+  for (const auto& [key, value] : values.values()) {
     out << separator << key << ":" << value;
     separator = ", ";
   }
-
-  return out << "]}";
+  return out << "}";
 }
 
 AttributionFilterSizeTestCase::Map AttributionFilterSizeTestCase::AsMap()
@@ -1288,22 +1292,21 @@ AttributionFilterSizeTestCase::Map AttributionFilterSizeTestCase::AsMap()
   return map;
 }
 
-bool operator==(const AttributionAggregatableSource& a,
-                const AttributionAggregatableSource& b) {
+bool operator==(const AttributionAggregationKeys& a,
+                const AttributionAggregationKeys& b) {
   return a.keys() == b.keys();
 }
 
-std::ostream& operator<<(
-    std::ostream& out,
-    const AttributionAggregatableSource& aggregatable_source) {
-  out << "{keys=[";
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionAggregationKeys& aggregation_keys) {
+  out << "{";
 
   const char* separator = "";
-  for (const auto& [key_id, key] : aggregatable_source.keys()) {
+  for (const auto& [key_id, key] : aggregation_keys.keys()) {
     out << separator << key_id << ":" << key;
     separator = ", ";
   }
-  return out << "]}";
+  return out << "}";
 }
 
 EventTriggerDataMatcherConfig::EventTriggerDataMatcherConfig(
@@ -1386,13 +1389,13 @@ std::unique_ptr<MockDataHost> GetRegisteredDataHost(
 }
 
 TestAggregatableSourceProvider::TestAggregatableSourceProvider(size_t size) {
-  AttributionAggregatableSource::Keys::container_type keys;
+  AttributionAggregationKeys::Keys::container_type keys;
   keys.reserve(size);
   for (size_t i = 0; i < size; ++i) {
     keys.emplace_back(base::NumberToString(i), i);
   }
 
-  auto source = AttributionAggregatableSource::FromKeys(std::move(keys));
+  auto source = AttributionAggregationKeys::FromKeys(std::move(keys));
   DCHECK(source.has_value());
   source_ = std::move(*source);
 }
@@ -1401,29 +1404,30 @@ TestAggregatableSourceProvider::~TestAggregatableSourceProvider() = default;
 
 SourceBuilder TestAggregatableSourceProvider::GetBuilder(
     base::Time source_time) const {
-  return SourceBuilder(source_time).SetAggregatableSource(source_);
+  return SourceBuilder(source_time).SetAggregationKeys(source_);
 }
 
 TriggerBuilder DefaultAggregatableTriggerBuilder(
     const std::vector<uint32_t>& histogram_values) {
-  auto trigger_mojo = blink::mojom::AttributionAggregatableTrigger::New();
+  std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data;
+
+  AttributionAggregatableValues::Values aggregatable_values;
 
   for (size_t i = 0; i < histogram_values.size(); ++i) {
     std::string key_id = base::NumberToString(i);
-    trigger_mojo->trigger_data.push_back(
-        blink::mojom::AttributionAggregatableTriggerData::New(
+    aggregatable_trigger_data.push_back(
+        AttributionAggregatableTriggerData::CreateForTesting(
             absl::MakeUint128(/*high=*/i, /*low=*/0),
-            std::vector<std::string>{key_id},
-            blink::mojom::AttributionFilterData::New(),
-            blink::mojom::AttributionFilterData::New()));
-    trigger_mojo->values.emplace(std::move(key_id), histogram_values[i]);
+            /*source_keys=*/base::flat_set<std::string>{key_id},
+            /*filters=*/AttributionFilterData(),
+            /*not_filters=*/AttributionFilterData()));
+    aggregatable_values.emplace(std::move(key_id), histogram_values[i]);
   }
 
-  auto trigger =
-      AttributionAggregatableTrigger::FromMojo(std::move(trigger_mojo));
-  DCHECK(trigger.has_value());
-
-  return TriggerBuilder().SetAggregatableTrigger(*trigger);
+  return TriggerBuilder()
+      .SetAggregatableTriggerData(std::move(aggregatable_trigger_data))
+      .SetAggregatableValues(AttributionAggregatableValues::CreateForTesting(
+          std::move(aggregatable_values)));
 }
 
 std::vector<AggregatableHistogramContribution>

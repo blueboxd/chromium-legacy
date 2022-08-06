@@ -6,8 +6,10 @@
 
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/types/pass_key.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/modules/mediasource/attachment_creation_pass_key_provider.h"
 #include "third_party/blink/renderer/modules/mediasource/media_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
@@ -33,7 +35,7 @@ std::ostream& operator<<(
 
 CrossThreadMediaSourceAttachment::CrossThreadMediaSourceAttachment(
     MediaSource* media_source,
-    base::PassKey<URLMediaSource> /* passkey */)
+    AttachmentCreationPassKeyProvider::PassKey /* passkey */)
     : registered_media_source_(media_source),
       // To use scheduling priority that is the same as postMessage, we use
       // kPostedMessage here instead of, say, kMediaElementEvent.
@@ -492,6 +494,11 @@ void CrossThreadMediaSourceAttachment::Unregister() {
     MutexLocker lock(attachment_state_lock_);
     DCHECK(registered_media_source_);
 
+    // MSE-in-Worker using MediaSourceHandle for attachment does NOT use object
+    // URLs, so we must not be called if MediaSourceHandle feature is enabled.
+    DCHECK(!RuntimeEnabledFeatures::MediaSourceInWorkersUsingHandleEnabled(
+        registered_media_source_->GetExecutionContext()));
+
     // The only expected caller is a MediaSourceRegistryImpl on the main thread
     // (or possibly on the worker thread, if MediaSourceInWorkers is enabled).
     DCHECK(IsMainThread() ||
@@ -526,10 +533,21 @@ CrossThreadMediaSourceAttachment::StartAttachingToMediaElement(
     // Prevent sequential re-use of this attachment for multiple successful
     // attachments. See declaration of |have_ever_attached_|.
     if (have_ever_attached_) {
-      DVLOG(1) << __func__ << " this=" << this << ", element=" << element
-               << ": failed: reuse of MediaSource object URL by disabling "
-                  "RevokeMediaSourceObjectURLOnAttach is not supported for "
-                  "MSE-in-Workers";
+      if (RuntimeEnabledFeatures::MediaSourceInWorkersUsingHandleEnabled(
+              element->GetExecutionContext())) {
+        // With current restrictions on ability to only ever obtain at most one
+        // MediaSourceHandle per MediaSource and only allow loading to succeed
+        // at most once per each MediaSourceHandle, fail if there is attempt to
+        // reuse either in a load.
+        DVLOG(1) << __func__ << " this=" << this << ", element=" << element
+                 << ": failed: reuse of MediaSource for more than one load "
+                    "is not supported for MSE-in-Workers";
+      } else {
+        DVLOG(1) << __func__ << " this=" << this << ", element=" << element
+                 << ": failed: reuse of MediaSource object URL by disabling "
+                    "RevokeMediaSourceObjectURLOnAttach is not supported for "
+                    "MSE-in-Workers";
+      }
       *success = false;
       return nullptr;
     }

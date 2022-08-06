@@ -1028,7 +1028,10 @@ gfx::SizeF LocalFrameView::LargeViewportSizeForViewportUnits() const {
     // controls height, compensating for page scale as well, since we want to
     // use the viewport with browser controls hidden for vh (to match Safari).
     int viewport_width = frame_->GetPage()->GetVisualViewport().Size().width();
-    if (frame_->IsMainFrame() && layout_size.width() && viewport_width) {
+    // TODO(bokan): IsOutermostMainFrame may need to be reevaluated for
+    // portals.
+    if (frame_->IsOutermostMainFrame() && layout_size.width() &&
+        viewport_width) {
       float page_scale_at_layout_width = viewport_width / layout_size.width();
       layout_size.Enlarge(0, (browser_controls.TotalHeight() -
                               browser_controls.TotalMinHeight()) /
@@ -1294,15 +1297,17 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
       frame_->GetDocument()->Lifecycle().LifecyclePostponed())
     return;
 
-  if (frame_->IsMainFrame())
+  if (frame_->IsOutermostMainFrame())
     layout_shift_tracker_->NotifyViewportSizeChanged();
 
   auto* layout_view = GetLayoutView();
   if (layout_view) {
-    // If this is the main frame, we might have got here by hiding/showing the
-    // top controls.  In that case, layout won't be triggered, so we need to
-    // clamp the scroll offset here.
-    if (GetFrame().IsMainFrame()) {
+    // If this is the outermost main frame, we might have got here by
+    // hiding/showing the top controls. In that case, layout won't be
+    // triggered, so we need to clamp the scroll offset here.
+    // TODO(bokan): IsOutermostMainFrame may need to be reevaluated for
+    // portals.
+    if (GetFrame().IsOutermostMainFrame()) {
       layout_view->Layer()->UpdateSize();
       if (auto* scrollable_area = layout_view->GetScrollableArea())
         scrollable_area->ClampScrollOffsetAfterOverflowChange();
@@ -1936,6 +1941,8 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
       auto& context = element->EnsureDisplayLockContext();
       context.SetRequestedState(EContentVisibility::kAuto);
     }
+    DEFERRED_SHAPING_VLOG(1)
+        << "Deferred " << deferred_to_be_locked_.size() << " elements";
     deferred_to_be_locked_.resize(0);
     UseCounter::Count(document, WebFeature::kDeferredShapingWorked);
   }

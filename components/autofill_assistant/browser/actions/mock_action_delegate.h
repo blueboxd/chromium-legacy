@@ -135,7 +135,10 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_CONST_METHOD0(GetPasswordChangeSuccessTracker,
                      password_manager::PasswordChangeSuccessTracker*());
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
-  MOCK_METHOD0(GetWebContentsForJsExecution, content::WebContents*());
+  MOCK_METHOD(JsFlowDevtoolsWrapper*,
+              GetJsFlowDevtoolsWrapper,
+              (),
+              (const override));
   MOCK_CONST_METHOD0(GetWebController, WebController*());
   MOCK_CONST_METHOD0(GetEmailAddressForAccessTokenAccount, std::string());
   MOCK_CONST_METHOD0(GetUkmRecorder, ukm::UkmRecorder*());
@@ -216,11 +219,13 @@ class MockActionDelegate : public ActionDelegate {
            base::OnceCallback<void(bool, const GetUserDataResponseProto&)>
                callback));
   MOCK_METHOD0(SupportsExternalActions, bool());
-  MOCK_METHOD3(RequestExternalAction,
-               void(const ExternalActionProto& external_action,
-                    base::OnceCallback<void()> start_dom_checks_callback,
-                    base::OnceCallback<void(const external::Result& result)>
-                        end_action_callback));
+  MOCK_METHOD3(
+      RequestExternalAction,
+      void(const ExternalActionProto& external_action,
+           base::OnceCallback<void(ExternalActionDelegate::DomUpdateCallback)>
+               start_dom_checks_callback,
+           base::OnceCallback<void(const external::Result& result)>
+               end_action_callback));
   MOCK_CONST_METHOD0(MustUseBackendData, bool());
   MOCK_METHOD1(MaybeSetPreviousAction,
                void(const ProcessedActionProto& processed_action));

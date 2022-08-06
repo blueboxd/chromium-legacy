@@ -100,7 +100,10 @@ constexpr int kTitleRowSpacing = 6;
 
 constexpr auto kHeaderRowExpandedPadding = gfx::Insets::TLBR(4, 0, 8, 0);
 constexpr auto kHeaderRowCollapsedPadding = gfx::Insets::TLBR(0, 0, 8, 0);
-constexpr auto kRightContentPadding = gfx::Insets::TLBR(12, 16, 0, 0);
+constexpr auto kRightContentCollapsedPadding = gfx::Insets::TLBR(12, 0, 0, 16);
+constexpr auto kRightContentExpandedPadding = gfx::Insets::TLBR(20, 0, 0, 16);
+constexpr auto kTimeStampInCollapsedStatePadding =
+    gfx::Insets::TLBR(0, 0, 0, 16);
 
 // Bullet character. The divider symbol between the title and the timestamp.
 constexpr char16_t kTitleRowDivider[] = u"\u2022";
@@ -113,6 +116,8 @@ constexpr int kTitleCharacterLimit =
     message_center::kNotificationWidth * message_center::kMaxTitleLines /
     message_center::kMinPixelsPerTitleCharacter;
 constexpr int kTitleLabelSize = 14;
+constexpr int kTitleLabelExpandedMaxLines = 2;
+constexpr int kTitleLabelCollapsedMaxLines = 1;
 constexpr int kTimestampInCollapsedViewSize = 12;
 constexpr int kMessageLabelSize = 13;
 // The size for `icon_view_`, which is the icon within right content (between
@@ -270,10 +275,15 @@ AshNotificationView::NotificationTitleRow::NotificationTitleRow(
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetDefault(views::kMarginsKey,
                    gfx::Insets::TLBR(0, 0, 0, kTitleRowSpacing));
+  timestamp_in_collapsed_view_->SetProperty(views::kMarginsKey,
+                                            kTimeStampInCollapsedStatePadding);
   title_view_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                views::MaximumFlexSizeRule::kPreferred));
+  title_view_->SetMultiLine(true);
+  title_view_->SetAllowCharacterBreak(true);
+  title_view_->SetMaxLines(kTitleLabelExpandedMaxLines);
 
   ConfigureLabelStyle(title_row_divider_, kTimestampInCollapsedViewSize,
                       /*is_color_primary=*/false);
@@ -395,7 +405,8 @@ AshNotificationView::AshNotificationView(
                                    views::MinimumFlexSizeRule::kPreferred,
                                    views::MaximumFlexSizeRule::kUnbounded))
                   .AddChild(CreateRightContentBuilder().SetProperty(
-                      views::kMarginsKey, kRightContentPadding))
+                      views::kCrossAxisAlignmentKey,
+                      views::LayoutAlignment::kStart))
                   .AddChild(
                       views::Builder<views::FlexLayoutView>()
                           .SetOrientation(views::LayoutOrientation::kVertical)
@@ -422,9 +433,8 @@ AshNotificationView::AshNotificationView(
                                   .SetCallback(base::BindRepeating(
                                       &AshNotificationView::ToggleExpand,
                                       base::Unretained(this)))
-                                  .SetProperty(
-                                      views::kCrossAxisAlignmentKey,
-                                      views::LayoutAlignment::kStart))));
+                                  .SetProperty(views::kCrossAxisAlignmentKey,
+                                               views::LayoutAlignment::kEnd))));
 
   // Main right view contains all the views besides control buttons, app icon,
   // grouped container and action buttons.
@@ -608,9 +618,6 @@ void AshNotificationView::AnimateSingleToGroup(
   ash::message_center_utils::InitLayerForAnimations(image_container_view());
   ash::message_center_utils::InitLayerForAnimations(action_buttons_row());
 
-  message_center::Notification* parent_notification =
-      message_center::MessageCenter::Get()->FindNotificationById(parent_id);
-
   auto on_animation_ended = base::BindOnce(
       [](base::WeakPtr<ash::AshNotificationView> parent,
          views::View* left_content, views::View* right_content,
@@ -618,9 +625,14 @@ void AshNotificationView::AnimateSingleToGroup(
          views::View* image_container_view, views::View* action_buttons_row,
          AshNotificationExpandButton* expand_button,
          NotificationGroupingController* grouping_controller,
-         const std::string& notification_id, std::string parent_id,
-         message_center::Notification* parent_notification) {
+         const std::string& notification_id, std::string parent_id) {
         if (!parent)
+          return;
+
+        auto* parent_notification =
+            message_center::MessageCenter::Get()->FindNotificationById(
+                parent_id);
+        if (!parent_notification)
           return;
 
         grouping_controller->ConvertFromSingleToGroupNotificationAfterAnimation(
@@ -643,7 +655,7 @@ void AshNotificationView::AnimateSingleToGroup(
       weak_factory_.GetWeakPtr(), left_content_, right_content(),
       message_label_in_expanded_state_, image_container_view(),
       action_buttons_row(), expand_button_, grouping_controller,
-      notification_id, parent_id, parent_notification);
+      notification_id, parent_id);
 
   std::pair<base::OnceClosure, base::OnceClosure> split =
       base::SplitOnceCallback(std::move(on_animation_ended));
@@ -806,8 +818,19 @@ void AshNotificationView::PopulateGroupNotifications(
 
 void AshNotificationView::RemoveGroupNotification(
     const std::string& notification_id) {
-  AshNotificationView* to_be_removed = static_cast<AshNotificationView*>(
-      FindGroupNotificationView(notification_id));
+  auto* child_view = FindGroupNotificationView(notification_id);
+  if (!child_view)
+    return;
+
+  base::WeakPtr<AshNotificationView> to_be_removed =
+      static_cast<AshNotificationView*>(child_view)->weak_factory_.GetWeakPtr();
+  if (to_be_removed) {
+    // Abort any previously queued animations, if a remove animation was in
+    // progress this will cause `to_be_removed` to be deleted. Because of this
+    // we need to use a weakptr to ensure we do not try to animate an already
+    // deleted view.
+    to_be_removed->layer()->GetAnimator()->AbortAllAnimations();
+  }
 
   if (!to_be_removed)
     return;
@@ -831,12 +854,32 @@ void AshNotificationView::RemoveGroupNotification(
       },
       weak_factory_.GetWeakPtr(), notification_id);
 
+  auto on_animation_aborted = base::BindRepeating(
+      [](base::WeakPtr<AshNotificationView> self,
+         const std::string& notification_id) {
+        if (!self)
+          return;
+
+        views::View* to_be_removed =
+            self->FindGroupNotificationView(notification_id);
+        if (!to_be_removed)
+          return;
+
+        self->total_grouped_notifications_--;
+        self->expand_button_->UpdateGroupedNotificationsCount(
+            self->total_grouped_notifications_);
+
+        self->grouped_notifications_container_->RemoveChildViewT(to_be_removed);
+        self->PreferredSizeChanged();
+      },
+      weak_factory_.GetWeakPtr(), notification_id);
+
   // If the removed notification has a layer transform it has already been slid
   // out (For example user swiped it by dragging). We only need to animate a
   // slide out if there is no transform.
-  if (to_be_removed->layer()->transform().IsIdentity()) {
+  if (to_be_removed && to_be_removed->layer()->transform().IsIdentity()) {
     message_center_utils::SlideOutView(
-        to_be_removed, on_notification_slid_out,
+        to_be_removed.get(), on_notification_slid_out, on_animation_aborted,
         /*delay_in_ms=*/0,
         /*duration_in_ms=*/kSlideOutGroupedNotificationAnimationDurationMs,
         gfx::Tween::LINEAR,
@@ -864,6 +907,9 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
   if (title_row_) {
     title_row_->UpdateVisibility(is_grouped_child_view_ ||
                                  (IsExpandable() && !expanded));
+    title_row_->title_view()->SetMaxLines(
+        expanded ? kTitleLabelExpandedMaxLines : kTitleLabelCollapsedMaxLines);
+    title_row_->title_view()->SetMaximumWidth(GetExpandedTitleLabelWidth());
   }
 
   if (message_label()) {
@@ -878,6 +924,11 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
   app_icon_view_->SetProperty(views::kMarginsKey,
                               use_expanded_padding ? kAppIconExpandedPadding
                                                    : kAppIconCollapsedPadding);
+
+  right_content()->SetProperty(
+      views::kMarginsKey, use_expanded_padding ? kRightContentExpandedPadding
+                                               : kRightContentCollapsedPadding);
+
   expand_button_->SetProperty(
       views::kMarginsKey, use_expanded_padding ? kExpandButtonExpandedPadding
                                                : kExpandButtonCollapsedPadding);
@@ -1184,8 +1235,13 @@ void AshNotificationView::ToggleInlineSettings(const ui::Event& event) {
   NotificationViewBase::ToggleInlineSettings(event);
 
   if (is_grouped_parent_view_) {
-    grouped_notifications_scroll_view_->SetVisible(
-        !should_show_inline_settings);
+    if (shown_in_popup_) {
+      grouped_notifications_scroll_view_->SetVisible(
+          !should_show_inline_settings);
+    } else {
+      grouped_notifications_container_->SetVisible(
+          !should_show_inline_settings);
+    }
   } else {
     // In settings UI, we only show the app icon and header row along with the
     // inline settings UI.
@@ -1347,6 +1403,16 @@ void AshNotificationView::UpdateBackground(int top_radius, int bottom_radius) {
           top_radius_, bottom_radius_, background_color_)));
 }
 
+int AshNotificationView::GetExpandedTitleLabelWidth() {
+  int notification_width = shown_in_popup_ ? message_center::kNotificationWidth
+                                           : kNotificationInMessageCenterWidth;
+
+  return notification_width - kNotificationViewPadding.width() -
+         kAppIconViewSize - kMainRightViewChildPadding.width() -
+         kAppIconViewSize - kRightContentExpandedPadding.width() -
+         kMessageLabelInExpandedStatePadding.width();
+}
+
 int AshNotificationView::GetExpandedMessageLabelWidth() {
   int notification_width = shown_in_popup_ ? message_center::kNotificationWidth
                                            : kNotificationInMessageCenterWidth;
@@ -1455,11 +1521,13 @@ void AshNotificationView::AnimateResizeAfterRemoval(
       grouped_notifications_container_->height();
   int removed_index =
       grouped_notifications_container_->GetIndexOf(to_be_removed);
+  LOG(ERROR) << "Removed after animation";
   grouped_notifications_container_->RemoveChildViewT(to_be_removed).reset();
 
-  message_center_utils::GetActiveNotificationViewControllerForNotificationView(
-      this)
-      ->AnimateResize();
+  auto* notification_view_controller = message_center_utils::
+      GetActiveNotificationViewControllerForNotificationView(this);
+  if (notification_view_controller)
+    notification_view_controller->AnimateResize();
 
   if (shown_in_popup_) {
     grouped_notifications_scroll_view_->Layout();

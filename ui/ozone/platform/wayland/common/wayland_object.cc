@@ -26,6 +26,7 @@
 #include <surface-augmenter-client-protocol.h>
 #include <text-input-extension-unstable-v1-client-protocol.h>
 #include <text-input-unstable-v1-client-protocol.h>
+#include <touchpad-haptics-unstable-v1-client-protocol.h>
 #include <viewporter-client-protocol.h>
 #include <wayland-client-core.h>
 #include <wayland-cursor.h>
@@ -48,6 +49,14 @@ void delete_data_device(wl_data_device* data_device) {
     wl_data_device_release(data_device);
   } else {
     wl_data_device_destroy(data_device);
+  }
+}
+
+void delete_output(wl_output* output) {
+  if (wl::get_version_of_object(output) >= WL_OUTPUT_RELEASE_SINCE_VERSION) {
+    wl_output_release(output);
+  } else {
+    wl_output_destroy(output);
   }
 }
 
@@ -148,7 +157,7 @@ IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_data_offer)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_data_source)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_drm)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS_WITH_DELETER(wl_keyboard, delete_keyboard)
-IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_output)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS_WITH_DELETER(wl_output, delete_output)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS_WITH_DELETER(wl_pointer, delete_pointer)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_registry)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_region)
@@ -184,6 +193,7 @@ IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_pointer_stylus_v2)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_touch_stylus_v2)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_stylus_v2)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_text_input_extension_v1)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_touchpad_haptics_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_blending_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_alpha_compositing_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zwp_idle_inhibit_manager_v1)

@@ -843,12 +843,16 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method clearLiveSeekableRange
 [Worker]     method constructor
 [Worker]     method endOfStream
+[Worker]     method getHandle
 [Worker]     method removeSourceBuffer
 [Worker]     method setLiveSeekableRange
 [Worker]     setter duration
 [Worker]     setter onsourceclose
 [Worker]     setter onsourceended
 [Worker]     setter onsourceopen
+[Worker] interface MediaSourceHandle
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
 [Worker] interface MessageChannel
 [Worker]     attribute @@toStringTag
 [Worker]     getter port1

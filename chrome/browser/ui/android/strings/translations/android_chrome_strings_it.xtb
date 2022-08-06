@@ -110,6 +110,7 @@ Quando elimini la cronologia di navigazione (l'intera cronologia o soltanto quel
 <translation id="1513352483775369820">Preferiti e cronologia web</translation>
 <translation id="1513814250881909472">Attiva la sincronizzazione per recuperare le schede dagli altri tuoi dispositivi</translation>
 <translation id="1513858653616922153">Elimina la password</translation>
+<translation id="1514552811327923157">Richiesta Privacy Sandbox aperta a schermo intero</translation>
 <translation id="1518421282666914498">GIF emozione <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">Attivo oggi</translation>
 <translation id="1538801903729528855">Vivi un'esperienza vocale migliore sul Web</translation>
@@ -321,6 +322,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="2711073837061989559">Prove</translation>
 <translation id="2718352093833049315">Solo su Wi-Fi</translation>
 <translation id="2718846868787000099">Per mostrare i contenuti nelle tue lingue preferite, i siti che visiti possono vedere le tue preferenze</translation>
+<translation id="2722945394406572875">Richiesta Privacy Sandbox chiusa</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732063072010454421">Ottieni un'esperienza di ricerca vocale migliore</translation>
 <translation id="2739256783402597439">2G</translation>
@@ -346,6 +348,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="2842985007712546952">Cartella principale</translation>
 <translation id="2856503607207334158">Accesso non riuscito</translation>
 <translation id="2860954141821109167">Assicurati che su questo dispositivo ci sia un'app per telefono attiva</translation>
+<translation id="2861923151411510142">Alcune funzionalità di Chrome non saranno più disponibili</translation>
 <translation id="2870560284913253234">Sito</translation>
 <translation id="2871733351037274014">Precarica le pagine</translation>
 <translation id="2888126860611144412">Informazioni su Chrome</translation>
@@ -524,7 +527,6 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3845098929839618392">Apri in scheda incognito</translation>
 <translation id="3856096718352044181">Verifica che questo fornitore sia valido e riprova più tardi</translation>
 <translation id="3858860766373142691">Nome</translation>
-<translation id="3859206958100234503">Attiva la sincronizzazione per recuperare password, preferiti e altri contenuti salvati su tutti i tuoi dispositivi</translation>
 <translation id="3861633093716975811">Video più visti</translation>
 <translation id="3892148308691398805">Copia testo</translation>
 <translation id="3894427358181296146">Aggiungi cartella</translation>
@@ -563,6 +565,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="4095146165863963773">Eliminare i dati delle app?</translation>
 <translation id="4096227151372679484">Flusso di salvataggio dei preferiti aperto nella parte inferiore dello schermo</translation>
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e report sugli arresti anomali.</translation>
+<translation id="4101475238162928417">Attiva la sincronizzazione per recuperare password, preferiti e altri contenuti salvati sugli altri tuoi dispositivi</translation>
 <translation id="410351446219883937">Riproduzione automatica</translation>
 <translation id="4106587138345390261">Chrome sta esaminando nuove funzionalità che consentono ai siti di offrire la stessa esperienza di navigazione utilizzando meno informazioni personali</translation>
 <translation id="4108314971463891922">Segui</translation>
@@ -585,6 +588,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="4227318652298512614">Segui tutti i siti che vuoi</translation>
 <translation id="4242533952199664413">Apri le impostazioni</translation>
 <translation id="4248098802131000011">Proteggi le tue password da violazioni dei dati e altri problemi di sicurezza</translation>
+<translation id="424864128008805179">Uscire da Chrome?</translation>
 <translation id="4249955472157341256">Ordina per Più recenti</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Licenze open source</translation>
@@ -652,7 +656,6 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4594952190837476234">Questa pagina offline risale al giorno <ph name="CREATION_TIME" /> e potrebbe essere diversa dalla versione online.</translation>
 <translation id="4616150815774728855">Apri <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">Verifica la tua identità</translation>
-<translation id="4627165777145349100">Scopri di più su questa pagina</translation>
 <translation id="4634124774493850572">Utilizza password</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 password compromessa}other{# password compromesse}}</translation>
 <translation id="4650364565596261010">Predefinito</translation>
@@ -889,11 +892,13 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5869522115854928033">Password salvate</translation>
 <translation id="5869789175361934029">Continua da un altro dispositivo</translation>
 <translation id="587735546353481577">Per seguire un sito, aprilo, vai al menu Chrome e tocca Segui.</translation>
+<translation id="5879072387416556377">Ricevi suggerimenti migliori</translation>
 <translation id="5880748256563468367">Vai al feed</translation>
 <translation id="5884076754568147479">Per aiutarti a completare le attività, Google riceverà gli URL e i contenuti dei siti su cui utilizzi l'assistente, oltre alle informazioni che invii attraverso l'assistente</translation>
 <translation id="5906513782029855931">Conoscere gli URL dei siti consente all'Assistente Google di aiutarti a completare le attività. Puoi disattivare l'assistente nelle impostazioni di Chrome.</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5919204609460789179">Aggiorna <ph name="PRODUCT_NAME" /> per avviare la sincronizzazione</translation>
+<translation id="593625682991400408">Durante le prove, Chrome esamina dei metodi per limitare spam, attività fraudolente e la condivisione tra siti. Inoltre, Chrome <ph name="BEGIN_LINK" />stima i tuoi interessi<ph name="END_LINK" /> che i siti possono utilizzare per mostrarti annunci. Puoi gestire i tuoi interessi nelle impostazioni.</translation>
 <translation id="5938820472109305350">Aggiungi <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Google in uso per la ricerca</translation>
 <translation id="5945035219773565305">Consiglio corrente: <ph name="RECOMMENDATION" /></translation>
@@ -909,10 +914,10 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="6000203700195075278">Segui di nuovo</translation>
 <translation id="6002122790816966947">I tuoi dispositivi</translation>
 <translation id="6005538289190791541">Password consigliata</translation>
-<translation id="6032091552407840792">Questa prova è attiva soltanto in <ph name="BEGIN_LINK" />alcune aree geografiche<ph name="END_LINK" />.</translation>
+<translation id="6032091552407840792">Questa prova è attiva soltanto in <ph name="BEGIN_LINK" />alcune regioni<ph name="END_LINK" />.</translation>
 <translation id="6033245666633565791">Con <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" />, Chrome sviluppa nuove tecnologie che ti tutelano dai meccanismi di tracciamento tra siti salvaguardando al contempo il Web aperto.
 
-Le prove di Privacy Sandbox sono ancora in fase di sviluppo attivo e sono disponibili soltanto in alcune aree geografiche. Per il momento i siti possono provare Privacy Sandbox continuando a usare le attuali tecnologie web quali i cookie di terze parti.</translation>
+Le prove di Privacy Sandbox sono ancora in fase di sviluppo attivo e sono disponibili soltanto in alcune regioni. Per il momento i siti possono provare Privacy Sandbox continuando a usare le attuali tecnologie web quali i cookie di terze parti.</translation>
 <translation id="6039379616847168523">Vai alla scheda successiva</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="604124094241169006">Automatico</translation>
@@ -1191,6 +1196,7 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="749294055653435199">Google Lens non è disponibile su questo dispositivo</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Attendi…</translation>
+<translation id="7502234197872745058">Per uscire dal tuo Account Google su tutti i siti web, <ph name="BEGIN_LINK1" />esci da Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Aggiornamenti non disponibili</translation>
 <translation id="7507207699631365376">Vedi le <ph name="BEGIN_LINK" />norme sulla privacy<ph name="END_LINK" /> del fornitore di servizi</translation>
 <translation id="7514365320538308">Scarica</translation>
@@ -1230,6 +1236,7 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="770741401784017797">Creazione GIF in corso…</translation>
 <translation id="7707922173985738739">Verranno utilizzati i dati mobili</translation>
 <translation id="7709094866268987903">Gli interessi che rimuovi verranno visualizzati qui</translation>
+<translation id="7709918231054955894">Visualizza tutte le tue schede</translation>
 <translation id="7725024127233776428">Le pagine aggiunte ai preferiti saranno mostrate qui</translation>
 <translation id="7757787379047923882">Testo condiviso da <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Scegli data e ora</translation>
@@ -1425,6 +1432,7 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="8656747343598256512">Accedi a questo sito e a Chrome con il tuo Account Google. Puoi attivare la sincronizzazione in un secondo momento.</translation>
 <translation id="8659579665266920523">Come eseguire ricerche con Chrome</translation>
 <translation id="8662811608048051533">Verrai disconnesso dalla maggior parte dei siti.</translation>
+<translation id="8664215986015753476">Usa Chrome a modo tuo</translation>
 <translation id="8664979001105139458">Nome file già esistente</translation>
 <translation id="8666759526542103597">Informazioni sull'impostazione Personalizzazione degli annunci basata sul browser</translation>
 <translation id="8667760277771450375">Stiamo esaminando dei metodi per limitare il tracciamento tra siti e consentire ai siti di contrastare spam negli annunci e attività fraudolente.</translation>
@@ -1512,6 +1520,7 @@ I token attendibili migliorano la privacy sul Web e non possono essere usati per
 <translation id="9106148373857059373">Flusso di salvataggio dei preferiti chiuso</translation>
 <translation id="9108312223223904744">Assistenza relativa a Telefono come token di sicurezza</translation>
 <translation id="9108808586816295166">Il sistema DNS sicuro potrebbe non essere sempre disponibile</translation>
+<translation id="9128984223251192329">Richiesta Privacy Sandbox aperta nella parte inferiore dello schermo</translation>
 <translation id="9133397713400217035">Esplora offline</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9148126808321036104">Esegui di nuovo l'accesso</translation>

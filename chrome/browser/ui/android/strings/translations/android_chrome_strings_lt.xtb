@@ -110,12 +110,13 @@ Ištrindami naršymo istoriją (visą ar konkrečios svetainės) taip pat galite
 <translation id="1513352483775369820">Žymių ir žiniatinklio istorija</translation>
 <translation id="1513814250881909472">Sinchronizuokite, kad gautumėte skirtukus iš kitų įrenginių</translation>
 <translation id="1513858653616922153">Ištrinti slaptažodį</translation>
+<translation id="1514552811327923157">Privatumo „sandbox“ (smėlio dėžės) raginimas atidarytas per visą ekrano aukštį</translation>
 <translation id="1518421282666914498">Emocijos GIF <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">Aktyvus šiandien</translation>
 <translation id="1538801903729528855">Dar geriau išnaudokite veiksmų balsu galimybes žiniatinklyje</translation>
 <translation id="1544826120773021464">Jei norite tvarkyti „Google“ paskyrą, palieskite mygtuką „Tvarkyti“</translation>
 <translation id="1549000191223877751">Perkelti į kitą langą</translation>
-<translation id="1553358976309200471">Atnaujinkite „Chrome“</translation>
+<translation id="1553358976309200471">Atnaujinti „Chrome“</translation>
 <translation id="1554532453982918912">Padėkite tobulinti „Chrome“ žmonėms, naudojantiems ją kaip jūs</translation>
 <translation id="1558391695376153246">Uždaryti inkogn. skirtukus</translation>
 <translation id="1571304935088121812">Kopijuoti naudotojo vardą</translation>
@@ -321,6 +322,7 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="2711073837061989559">Bandomieji laikotarpiai</translation>
 <translation id="2718352093833049315">Tik su „Wi–Fi“</translation>
 <translation id="2718846868787000099">Kad turinys būtų rodomas pageidaujamomis kalbomis, svetainės, kuriose lankotės, gali matyti jūsų nuostatas</translation>
+<translation id="2722945394406572875">Privatumo „sandbox“ (smėlio dėžės) raginimas uždarytas</translation>
 <translation id="2723001399770238859">garso įrašas</translation>
 <translation id="2732063072010454421">Ieškoti balsu gali būti dar patogiau</translation>
 <translation id="2739256783402597439">2G</translation>
@@ -346,6 +348,7 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="2842985007712546952">Viršaplankis</translation>
 <translation id="2856503607207334158">Nepavyko prisijungti</translation>
 <translation id="2860954141821109167">Įsitikinkite, kad šiame įrenginyje įgalinta telefono programa</translation>
+<translation id="2861923151411510142">Kai kurios „Chrome“ funkcijos nebebus pasiekiamos</translation>
 <translation id="2870560284913253234">Svetainė</translation>
 <translation id="2871733351037274014">Puslapių įkėlimas iš anksto</translation>
 <translation id="2888126860611144412">Apie „Chrome“</translation>
@@ -524,7 +527,6 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="3845098929839618392">Atidaryti inkognito skirtuke</translation>
 <translation id="3856096718352044181">Patvirtinkite, kad tai yra tinkamas paslaugų teikėjas, arba vėliau bandykite dar kartą</translation>
 <translation id="3858860766373142691">Pavadinimas</translation>
-<translation id="3859206958100234503">Sinchronizuokite, kad gautumėte slaptažodžius, žymes ir kitą turinį visuose savo įrenginiuose</translation>
 <translation id="3861633093716975811">Populiarūs vaizdo įrašai</translation>
 <translation id="3892148308691398805">Kopijuoti tekstą</translation>
 <translation id="3894427358181296146">Aplanko pridėjimas</translation>
@@ -563,6 +565,7 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="4095146165863963773">Ištrinti programos duomenis?</translation>
 <translation id="4096227151372679484">Žymių išsaugojimo srautas atidarytas iki pusės ekrano aukščio</translation>
 <translation id="4099578267706723511">Padėkite tobulinti „Chrome“ siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
+<translation id="4101475238162928417">Sinchronizuokite, kad gautumėte slaptažodžius, žymes ir kitą turinį visuose kituose įrenginiuose</translation>
 <translation id="410351446219883937">Automatinis paleidimas</translation>
 <translation id="4106587138345390261">„Chrome“ tyrinėja naujas funkcijas, leidžiančias svetainėms teikti tas pačias naršymo funkcijas, naudojant mažiau jūsų informacijos</translation>
 <translation id="4108314971463891922">Stebėti</translation>
@@ -585,6 +588,7 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="4227318652298512614">Stebėkite bet kokias svetaines</translation>
 <translation id="4242533952199664413">Atidaryti nustatymus</translation>
 <translation id="4248098802131000011">Apsaugokite slaptažodžius nuo duomenų saugos pažeidimų ir kitų saugos problemų</translation>
+<translation id="424864128008805179">Atsijungti nuo „Chrome“?</translation>
 <translation id="4249955472157341256">Rūšiuoti pagal naujausią</translation>
 <translation id="4250229828105606438">Ekrano kopija</translation>
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
@@ -652,7 +656,6 @@ Adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> gali 
 <translation id="4594952190837476234">Šis neprisijungus naudojamas puslapis sukurtas <ph name="CREATION_TIME" />, todėl gali skirtis nuo prisijungus pateiktos versijos.</translation>
 <translation id="4616150815774728855">Atidaryti „<ph name="WEBAPK_NAME" />“</translation>
 <translation id="4619564267100705184">Patvirtinti tapatybę</translation>
-<translation id="4627165777145349100">Daugiau apie šį puslapį</translation>
 <translation id="4634124774493850572">Naudoti slaptažodį</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 pažeistas slaptažodis}one{# pažeistas slaptažodis}few{# pažeisti slaptažodžiai}many{# pažeisto slaptažodžio}other{# pažeistų slaptažodžių}}</translation>
 <translation id="4650364565596261010">Sistemos numatytasis nustatymas</translation>
@@ -889,11 +892,13 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5869522115854928033">Išsaugoti slaptažodžiai</translation>
 <translation id="5869789175361934029">Tęsti kitu įrenginiu</translation>
 <translation id="587735546353481577">Jei norite stebėti svetainę, eikite į svetainę, atidarykite „Chrome“ meniu ir palieskite „Stebėti“.</translation>
+<translation id="5879072387416556377">Gaukite geresnių pasiūlymų</translation>
 <translation id="5880748256563468367">Eiti į sklaidos kanalą</translation>
 <translation id="5884076754568147479">Kad padėtų atlikti užduotis, „Google“ gaus svetainių, kuriose naudojate Padėjėją, URL ir turinį bei informaciją, kurią pateikiate naudodami Padėjėją.</translation>
 <translation id="5906513782029855931">Žinodamas svetainių URL, „Google“ padėjėjas gali padėti jums atlikti užduotis. Padėjėją galite išjungti „Chrome“ nustatymuose.</translation>
 <translation id="5916664084637901428">Įjungta</translation>
 <translation id="5919204609460789179">Atnaujinkite „<ph name="PRODUCT_NAME" />“, kad galėtumėte pradėti sinchronizuoti</translation>
+<translation id="593625682991400408">Per bandomuosius laikotarpius „Chrome“ ieško būdų, kaip apriboti šlamštą, apgaules ir bendrinimą tarp svetainių. Be to, „Chrome“ <ph name="BEGIN_LINK" />atsižvelgia į jūsų pomėgius<ph name="END_LINK" />, kuriuos svetainės gali naudoti skelbimams rodyti. Galite tvarkyti savo pomėgius nustatymuose.</translation>
 <translation id="5938820472109305350">Pridėti „<ph name="INTEREST" />“</translation>
 <translation id="5942872142862698679">Atliekant paiešką naudojama „Google“</translation>
 <translation id="5945035219773565305">Dabartinė rekomendacija: <ph name="RECOMMENDATION" /></translation>
@@ -1191,6 +1196,7 @@ Patikimi prieigos raktai pagerina privatumą žiniatinklyje ir negali būti naud
 <translation id="749294055653435199">„Google Lens“ nepasiekiama šiame įrenginyje</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atnaujinta <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Palaukite…</translation>
+<translation id="7502234197872745058">Jei norite atsijungti nuo „Google“ paskyros visose svetainėse, <ph name="BEGIN_LINK1" />atsijunkite nuo „Chrome“<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Naujiniai nepasiekiami</translation>
 <translation id="7507207699631365376">Žr. šio teikėjo <ph name="BEGIN_LINK" />privatumo politiką<ph name="END_LINK" /></translation>
 <translation id="7514365320538308">Atsisiųsti</translation>
@@ -1230,6 +1236,7 @@ Patikimi prieigos raktai pagerina privatumą žiniatinklyje ir negali būti naud
 <translation id="770741401784017797">Kuriamas GIF</translation>
 <translation id="7707922173985738739">Naudoti mobiliojo ryšio duomenis</translation>
 <translation id="7709094866268987903">Čia bus rodomi jūsų pašalinti pomėgiai</translation>
+<translation id="7709918231054955894">Gaukite visus savo skirtukus</translation>
 <translation id="7725024127233776428">Pažymėti puslapiai rodomi čia</translation>
 <translation id="7757787379047923882">Tekstas bendrinamas iš „<ph name="DEVICE_NAME" />“</translation>
 <translation id="7761849928583394409">Pasirinkti datą ir laiką</translation>
@@ -1425,6 +1432,7 @@ Patikimi prieigos raktai pagerina privatumą žiniatinklyje ir negali būti naud
 <translation id="8656747343598256512">Prisijunkite prie šios svetainės ir „Chrome“ naudodami „Google“ paskyrą. Sinchronizavimą galėsite įjungti vėliau.</translation>
 <translation id="8659579665266920523">Kaip ieškoti naudojant „Chrome“</translation>
 <translation id="8662811608048051533">Būsite atjungti nuo daugelio svetainių.</translation>
+<translation id="8664215986015753476">Suasmeninkite „Chrome“ naudojimą</translation>
 <translation id="8664979001105139458">Failas pavadinimas jau yra</translation>
 <translation id="8666759526542103597">Apie skelbimų suasmeninimą pagal naršyklę</translation>
 <translation id="8667760277771450375">Ieškome būdų apriboti veiklos skirtingose svetainėse stebėjimą, leisdami svetainėms išvengti skelbimų šlamšto ir apgaulių.</translation>
@@ -1512,6 +1520,7 @@ Patikimi prieigos raktai pagerina privatumą žiniatinklyje ir negali būti naud
 <translation id="9106148373857059373">Žymių išsaugojimo srautas uždarytas</translation>
 <translation id="9108312223223904744">Telefonas kaip saugos raktas</translation>
 <translation id="9108808586816295166">Saugi DNS gali būti pasiekiama ne visą laiką</translation>
+<translation id="9128984223251192329">Privatumo „sandbox“ (smėlio dėžės) raginimas atidarytas iki pusės ekrano aukščio</translation>
 <translation id="9133397713400217035">Naršyti neprisijungus</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9148126808321036104">Prisijungti dar kartą</translation>

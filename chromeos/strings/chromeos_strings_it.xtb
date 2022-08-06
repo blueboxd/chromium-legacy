@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">Questo dispositivo <ph name="DEVICE_TYPE" /> è gestito da <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Nella media (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
+<translation id="1190378975642195988">Accelerometro base</translation>
 <translation id="1195447618553298278">Errore sconosciuto.</translation>
 <translation id="1196959502276349371">Versione <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Riproduci/Pausa</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">Salva su USB</translation>
 <translation id="1468664791493211953">Offerte</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> gestisce questo dispositivo e potrebbe essere in grado di monitorare le tue attività.</translation>
+<translation id="147809995039451286">Impossibile scaricare l'aggiornamento</translation>
 <translation id="1478594628797167447">Scanner</translation>
 <translation id="1491076385728777984">Aggiornamento del firmware su <ph name="DEVICE_NAME" /> in corso…</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> gestisce questo utente e potrebbe gestire le impostazioni e monitorare l'attività utente da remoto.</translation>
@@ -95,6 +97,7 @@
 <translation id="1717874160321062422">Dispositivo gestito da <ph name="FIRST_MANAGER" /> e <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Server dei nomi</translation>
 <translation id="1731082422893354635">Touchpad Bluetooth</translation>
+<translation id="1745577949879301685">Impossibile caricare le immagini. Controlla la connessione di rete o riprova a caricare le immagini.</translation>
 <translation id="1751249301761991853">Personali</translation>
 <translation id="1753496554272155572">Esci dall'anteprima dello sfondo</translation>
 <translation id="175763766237925754">Buono (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -124,6 +127,7 @@
 <translation id="1999615961760456652">Captive portal</translation>
 <translation id="2006864819935886708">Connettività</translation>
 <translation id="2008685064673031089">Prime search</translation>
+<translation id="2011174342667534258">Versione SDK:</translation>
 <translation id="2016697457005847575">Prova i passaggi per la risoluzione dei problemi</translation>
 <translation id="2016848882344942759">--no white-label--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -155,6 +159,7 @@
 <translation id="225692081236532131">Stato attivazione</translation>
 <translation id="2271469253353559191">Programmazione modalità Buio</translation>
 <translation id="2275586345903859204">La riparazione è stata completata</translation>
+<translation id="2276999893457278469">Contenuti Help principali</translation>
 <translation id="2287186687001756809">Nessuna immagine disponibile. Per aggiungere foto, visita la pagina <ph name="LINK" />.</translation>
 <translation id="2294753434210277304">Inserisci l'unità di archiviazione esterna, come un'unità USB o una scheda SD, con l'immagine Utilità ripristino Chromebook scaricata</translation>
 <translation id="2307344026739914387">Utilizza coppia di chiavi corrente</translation>
@@ -176,6 +181,7 @@
 <translation id="2418150275289244458">Apri nelle impostazioni</translation>
 <translation id="2421798028054665193">Immagine <ph name="CURRENT_PAGE" /> di <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Precisione rappresentazione in virgola mobile</translation>
+<translation id="2447969267935997922">Installazione completa. Ora puoi rimuovere l'unità USB o la scheda SD.</translation>
 <translation id="2448312741937722512">Tipo</translation>
 <translation id="2461822463642141190">Attuale</translation>
 <translation id="2480034874476596812">Disattiva manualmente</translation>
@@ -187,6 +193,7 @@
 <translation id="2517472476991765520">Scansiona</translation>
 <translation id="2526590354069164005">Desktop</translation>
 <translation id="253029298928638905">Riavvio in corso…</translation>
+<translation id="2533048460510040082">Contenuti Help suggeriti</translation>
 <translation id="2536159006530886390">Impossibile connettersi a Internet.</translation>
 <translation id="2570743873672969996">Esecuzione del test <ph name="TEST_NAME" /> in corso…</translation>
 <translation id="2584559707064218956">Vai alle Impostazioni per la configurazione</translation>
@@ -213,7 +220,6 @@
 <translation id="2878387241690264070">Riduzione della carica: <ph name="RATE" /> in <ph name="NUM_SECONDS" /> secondi.</translation>
 <translation id="291142119251986300">Componenti non idonei</translation>
 <translation id="2926057806159140518">Inserisci il tuo nome utente e la password o scansiona il codice QR</translation>
-<translation id="2928420929544864228">Installazione completata.</translation>
 <translation id="3008341117444806826">AGGIORNA</translation>
 <translation id="3009958530611748826">Seleziona una cartella in cui salvare i file</translation>
 <translation id="3017079585324758401">Sfondo</translation>
@@ -267,6 +273,7 @@
 <translation id="3484914941826596830">Durante l'aggiornamento del firmware, non scollegare questo dispositivo esterno o non arrestare il computer. Puoi ridurre a icona questa finestra. Questo aggiornamento potrebbe richiedere qualche minuto e nel frattempo il dispositivo esterno potrebbe non funzionare.</translation>
 <translation id="3486220673238053218">definizione</translation>
 <translation id="3488065109653206955">Attivato parzialmente</translation>
+<translation id="3492982278147736083">Giroscopio coperchio</translation>
 <translation id="3517001332549868749">Aggiornamento Chrome OS</translation>
 <translation id="3527036260304016759">Operazione non riuscita - Errore sconosciuto</translation>
 <translation id="3532980081107202182">Mancano circa <ph name="MIN_REMAINING" /> minuti</translation>
@@ -286,6 +293,7 @@
 <translation id="3621202678540785336">Ingresso</translation>
 <translation id="3632579075709132555">Attivazione/disattivazione della Schermata privata</translation>
 <translation id="3643810137582748570">Salta calibrazione</translation>
+<translation id="3651050199673793219">Seleziona un'unità di temperatura</translation>
 <translation id="3678765385266369662">Specifica come vuoi disattivare la protezione della scrittura</translation>
 <translation id="3689839747745352263">Test <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Caricamento in corso...</translation>
@@ -300,9 +308,12 @@
 <translation id="3820172043799983114">PIN non valido.</translation>
 <translation id="3838338534323494292">Nuova password</translation>
 <translation id="385051799172605136">Indietro</translation>
+<translation id="3856304145690230735">Giroscopio base</translation>
 <translation id="385832974417157471">Prima di procedere con l'arresto, esegui il Powerwash del dispositivo. Se il dispositivo ha un coperchio, attendi il completamento del Powerwash prima di chiuderlo. Potrebbe essere necessario fino a un minuto prima che il Powerwash venga completato.</translation>
 <translation id="3858860766373142691">Nome</translation>
+<translation id="3862598938296403232">La descrizione è obbligatoria</translation>
 <translation id="3865414814144988605">Risoluzione</translation>
+<translation id="3866249974567520381">Descrizione</translation>
 <translation id="387301095347517405">Il numero di cicli di ricarica completi della batteria</translation>
 <translation id="3885327323343477505">Cambia salvaschermo</translation>
 <translation id="3923184630988645767">Utilizzo dei dati</translation>
@@ -370,6 +381,7 @@
 <translation id="4472575034687746823">Come iniziare</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">impossibile eseguire il ping del gateway di rete non predefinito</translation>
+<translation id="4500213108254186382">Accelerometro coperchio</translation>
 <translation id="4503223151711056411">Freccia sinistra</translation>
 <translation id="4511264077854731334">Portale</translation>
 <translation id="4521826082652183069">Corrispondenza nome alternativo del soggetto</translation>
@@ -381,6 +393,7 @@
 <translation id="4561801978359312462">SIM sbloccata</translation>
 <translation id="4562494484721939086">Nessun servizio</translation>
 <translation id="4568938274596692027">Installazione completa. Preparazione al riavvio in corso…</translation>
+<translation id="4576943788798178439">Supporto per stilo</translation>
 <translation id="458794348635939462">impossibile risolvere tutti gli host</translation>
 <translation id="4593212453765072419">Autenticazione proxy richiesta</translation>
 <translation id="4609350030397390689">Riduci la luminosità della tastiera</translation>
@@ -429,6 +442,7 @@
 <translation id="4915052247106771211">Verranno ripristinate le impostazioni di fabbrica del dispositivo (Powerwash).</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4917889632206600977">Operazione interrotta - Carta esaurita</translation>
+<translation id="491791267030419270">Suggerimenti sulla scrittura di un feedback</translation>
 <translation id="4921665434385737356">Ricarica del <ph name="RATE" /> in <ph name="NUM_SECONDS" /> secondi.</translation>
 <translation id="4930320165497208503">Per configurare o aggiornare una connessione, vai alle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Data</translation>
@@ -535,6 +549,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="5866840822086176774">Molto forte</translation>
 <translation id="588258955323874662">Schermo intero</translation>
 <translation id="5895138241574237353">Riavvia</translation>
+<translation id="5898758006340607522">Tasto di accensione</translation>
 <translation id="5901630391730855834">Giallo</translation>
 <translation id="5903200662178656908">Il dispositivo è una combinazione di tastiera e mouse.</translation>
 <translation id="5916084858004523819">Non consentito</translation>
@@ -670,6 +685,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="7143207342074048698">Connessione</translation>
 <translation id="7144878232160441200">Riprova</translation>
 <translation id="714876143603641390">Connettività LAN</translation>
+<translation id="7154020516215182599">Condividi il tuo feedback o descrivi il problema. Se possibile, includi i passaggi per riprodurre il problema.</translation>
 <translation id="7155171745945906037">Foto esistente da fotocamera o file</translation>
 <translation id="7162487448488904999">Galleria</translation>
 <translation id="7170236477717446850">Immagine del profilo</translation>
@@ -847,6 +863,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="885701979325669005">Dati memorizzati dai siti</translation>
 <translation id="8863170912498892583">Abilita il tema scuro</translation>
 <translation id="8863888432376731307">Ricevi <ph name="INTENT" /> per "<ph name="QUERY" />" e non solo</translation>
+<translation id="8864415976656252616">Nessun contenuto suggerito. Visualizza i contenuti Help principali.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Il dispositivo è un tablet.</translation>
 <translation id="8881098542468797602">Test effettuato correttamente</translation>
@@ -857,6 +874,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="8919792139048574232">Visualizza i componenti riparati</translation>
 <translation id="8919837981463578619">Operazione non riuscita - Vassoio mancante</translation>
 <translation id="8923267550422472772">Giorno del mese per la reimpostazione</translation>
+<translation id="8925613211674558308">VPN memorizzati nella cache</translation>
 <translation id="8928727111548978589">Operazione non riuscita - Carta esaurita</translation>
 <translation id="8930521118335213258">Peer</translation>
 <translation id="8930622219860340959">Wireless</translation>
@@ -898,6 +916,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="922179502584117429">La versione corrente (<ph name="VERSION_NUMBER" />) è obsoleta</translation>
 <translation id="932327136139879170">Home page</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">Invia feedback</translation>
 <translation id="952992212772159698">Non attivo</translation>
 <translation id="960719561871045870">Codice operatore</translation>
 <translation id="982713511914535780">Esegui test esaurimento batteria</translation>

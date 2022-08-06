@@ -1528,6 +1528,9 @@ See your search engine’s instructions for deleting your search history, if app
 
 Handoff must also be enabled in the General section of Settings, and your devices must use the same iCloud account.
       </message>
+      <message name="IDS_IOS_OPTIONS_ENABLE_INCOGNITO_INTERSTITIAL" desc="Title for the option to enable the Incognito interstitial, which lets users open links from other apps in Incognito. [iOS only]">
+        Ask to Open Links from Other Apps in Incognito
+      </message>
       <message name="IDS_IOS_OPTIONS_GENERAL_TAB_LABEL" desc="The title of the Basics section of the Settings page. [iOS only]" meaning="The title of the Basics section of the Settings page.">
         Basics
       </message>
@@ -2414,7 +2417,7 @@ Try to use a unique password for every site.
         Stay protected from dangerous websites
       </message>
       <message name="IDS_IOS_SETTINGS_HTTPS_ONLY_MODE_TITLE" desc="Title for HTTPS-Only Mode toggle in settings">
-        Try to use secure connections
+        Always use secure connections
       </message>
       <message name="IDS_IOS_SETTINGS_HTTPS_ONLY_MODE_DESCRIPTION" desc="Description text of HTTPS-Only Mode in  settings">
         Upgrade to HTTPS, when possible. Secure sites might embed content that isn't secure.
@@ -3112,11 +3115,20 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU" desc="The accessibility label for the iOS tools menu [iOS only]">
         Tools Menu
       </message>
-      <message name="IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS" desc="The iOS menu item for adding the current page to the bookmarks. This is a verb  [iOS only]" meaning="Add current page to bookmarks. [Verb]">
+      <message name="IDS_IOS_TOOLS_MENU_ADD_A_BOOKMARK" desc="The iOS menu item for adding the current page to the bookmarks. [iOS only]">
+        Add a Bookmark
+      </message>
+      <message name="IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS" desc="The iOS menu item for adding the current page to the bookmarks. [iOS only]">
+        Add to Bookmarks
+      </message>
+      <message name="IDS_IOS_TOOLS_MENU_BOOKMARK" desc="The iOS menu item for adding the current page to the bookmarks. This is a verb  [iOS only]" meaning="Add current page to bookmarks. [Verb]">
         Bookmark
       </message>
       <message name="IDS_IOS_TOOLS_MENU_BOOKMARKS" desc="The iOS menu item for opening the bookmarks manager [Length: 15em] [iOS only]">
         Bookmarks
+      </message>
+      <message name="IDS_IOS_TOOLS_MENU_BOOKMARK_THIS_PAGE" desc="The iOS menu item for adding the current page to the bookmarks. [iOS only]">
+        Bookmark This Page
       </message>
       <message name="IDS_IOS_TOOLS_MENU_CLEAR_BROWSING_DATA" desc="The iOS menu item to open the Clear Browsing Data screen [iOS only]" meaning="[Length: unlimited]">
         Clear Browsing Data

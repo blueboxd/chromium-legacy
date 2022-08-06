@@ -148,27 +148,6 @@ PdfViewPluginBase::PdfViewPluginBase() = default;
 
 PdfViewPluginBase::~PdfViewPluginBase() = default;
 
-void PdfViewPluginBase::InitializeBase(std::unique_ptr<PDFiumEngine> engine,
-                                       base::StringPiece src_url,
-                                       base::StringPiece original_url,
-                                       bool full_frame) {
-  full_frame_ = full_frame;
-
-  DCHECK(engine);
-  engine_ = std::move(engine);
-
-  // If we're in print preview mode we don't need to load the document yet.
-  // A `kJSResetPrintPreviewModeType` message will be sent to the plugin letting
-  // it know the url to load. By not loading here we avoid loading the same
-  // document twice.
-  if (IsPrintPreview())
-    return;
-
-  last_progress_sent_ = 0;
-  LoadUrl(src_url, base::BindOnce(&PdfViewPluginBase::DidOpen, GetWeakPtr()));
-  url_ = std::string(original_url);
-}
-
 void PdfViewPluginBase::ProposeDocumentLayout(const DocumentLayout& layout) {
   base::Value::Dict message;
   message.Set("type", "documentDimensions");
@@ -337,7 +316,7 @@ void PdfViewPluginBase::DocumentLoadComplete() {
   if (accessibility_state_ == AccessibilityState::kPending)
     LoadAccessibility();
 
-  if (!full_frame_)
+  if (!full_frame())
     return;
 
   DidStopLoading();
@@ -401,21 +380,15 @@ void PdfViewPluginBase::SetIsSelecting(bool is_selecting) {
 
 void PdfViewPluginBase::SelectionChanged(const gfx::Rect& left,
                                          const gfx::Rect& right) {
-  const gfx::Rect left_with_offset = left + plugin_offset_in_frame();
-  const gfx::Rect right_with_offset = right + plugin_offset_in_frame();
-
-  gfx::PointF left_point(left_with_offset.x() + available_area_.x(),
-                         left_with_offset.y());
-  gfx::PointF right_point(right_with_offset.x() + available_area_.x(),
-                          right_with_offset.y());
+  gfx::PointF left_point(left.x() + available_area_.x(), left.y());
+  gfx::PointF right_point(right.x() + available_area_.x(), right.y());
 
   const float inverse_scale = 1.0f / device_scale_;
   left_point.Scale(inverse_scale);
   right_point.Scale(inverse_scale);
 
-  NotifySelectionChanged(left_point, left_with_offset.height() * inverse_scale,
-                         right_point,
-                         right_with_offset.height() * inverse_scale);
+  NotifySelectionChanged(left_point, left.height() * inverse_scale, right_point,
+                         right.height() * inverse_scale);
 
   if (accessibility_state_ == AccessibilityState::kLoaded)
     PrepareAndSetAccessibilityViewportInfo();
@@ -598,6 +571,10 @@ void PdfViewPluginBase::DestroyEngine() {
 
 void PdfViewPluginBase::DestroyPreviewEngine() {
   preview_engine_.reset();
+}
+
+void PdfViewPluginBase::set_engine(std::unique_ptr<PDFiumEngine> engine) {
+  engine_ = std::move(engine);
 }
 
 void PdfViewPluginBase::InvalidateAfterPaintDone() {
@@ -836,9 +813,6 @@ void PdfViewPluginBase::PrepareAndSetAccessibilityPageInfo(int32_t page_index) {
 
 void PdfViewPluginBase::PrepareAndSetAccessibilityViewportInfo() {
   AccessibilityViewportInfo viewport_info;
-  viewport_info.scroll = gfx::ScaleToFlooredPoint(
-      gfx::PointAtOffsetFromOrigin(plugin_offset_in_frame()),
-      -1 / device_scale_);
   viewport_info.offset = gfx::ScaleToFlooredPoint(available_area_.origin(),
                                                   1 / (device_scale_ * zoom_));
   viewport_info.zoom = zoom_;
@@ -851,10 +825,6 @@ void PdfViewPluginBase::PrepareAndSetAccessibilityViewportInfo() {
                         &viewport_info.selection_end_char_index);
 
   SetAccessibilityViewportInfo(std::move(viewport_info));
-}
-
-gfx::Vector2d PdfViewPluginBase::plugin_offset_in_frame() const {
-  return plugin_rect_.OffsetFromOrigin();
 }
 
 void PdfViewPluginBase::SetZoom(double scale) {
@@ -1395,7 +1365,7 @@ gfx::Point PdfViewPluginBase::FrameToPdfCoordinates(
   // TODO(crbug.com/1288847): Use methods on `blink::WebPluginContainer`.
   return gfx::ToFlooredPoint(
              gfx::ScalePoint(frame_coordinates, device_scale_)) -
-         plugin_offset_in_frame() - gfx::Vector2d(available_area_.x(), 0);
+         gfx::Vector2d(available_area_.x(), 0);
 }
 
 }  // namespace chrome_pdf

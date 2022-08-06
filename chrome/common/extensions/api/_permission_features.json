@@ -349,10 +349,8 @@
     ]
   },
   "favicon": {
-    "channel": "canary",
-    "extension_types": [
-      "extension"
-    ]
+    "channel": "stable",
+    "extension_types": ["extension"]
   },
   "fileBrowserHandler": {
     "channel": "stable",
@@ -914,7 +912,7 @@
   "wallpaper": {
     "channel": "stable",
     "extension_types": ["platform_app", "extension"],
-    "platforms": ["chromeos"]
+    "platforms": ["chromeos", "lacros"]
   },
   "wallpaperPrivate": {
     "channel": "stable",

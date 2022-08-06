@@ -301,6 +301,10 @@ void AwAutofillClient::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
   NOTIMPLEMENTED();

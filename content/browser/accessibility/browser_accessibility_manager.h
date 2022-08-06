@@ -225,6 +225,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // Get the AXTreeData for this frame.
   const ui::AXTreeData& GetTreeData() const;
 
+  std::string ToString() const override;
+
   // Called to notify the accessibility manager that its associated native
   // view got focused.
   virtual void OnWindowFocused();
@@ -427,8 +429,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   static bool FindIndicesInCommonParent(const BrowserAccessibility& object1,
                                         const BrowserAccessibility& object2,
                                         BrowserAccessibility** common_parent,
-                                        int* child_index1,
-                                        int* child_index2);
+                                        size_t* child_index1,
+                                        size_t* child_index2);
 
   // Sets |out_is_before| to true if |object1| comes before |object2|
   // in tree order (pre-order traversal), and false if the objects are the

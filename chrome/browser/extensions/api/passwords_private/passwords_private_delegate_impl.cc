@@ -153,7 +153,7 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
                                      profile,
                                      ServiceAccessType::EXPLICIT_ACCESS)),
       password_manager_porter_(std::make_unique<PasswordManagerPorter>(
-          password_manager_presenter_.get(),
+          &saved_passwords_presenter_,
           base::BindRepeating(
               &PasswordsPrivateDelegateImpl::OnPasswordsExportProgress,
               base::Unretained(this)))),
@@ -382,8 +382,11 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
     api::passwords_private::PasswordUiEntry entry;
     entry.urls = CreateUrlCollectionFromForm(*form);
     entry.username = base::UTF16ToUTF8(form->username_value);
+    const auto& note_itr = base::ranges::find_if(
+        form->notes, &std::u16string::empty,
+        &password_manager::PasswordNote::unique_display_name);
     entry.password_note =
-        form->notes.empty() ? "" : base::UTF16ToUTF8(form->notes[0].value);
+        note_itr == form->notes.end() ? "" : base::UTF16ToUTF8(note_itr->value);
     entry.id = password_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
     entry.frontend_id = password_frontend_id_generator_.GenerateId(

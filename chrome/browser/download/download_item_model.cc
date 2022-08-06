@@ -97,6 +97,10 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
   // Whether the download is currently being revived.
   bool is_being_revived_;
 
+  // Whether the safe browsing download warning was shown (and recorded) earlier
+  // on the UI.
+  bool was_ui_warning_shown_ = false;
+
  private:
   DownloadItemModelData();
 
@@ -189,10 +193,7 @@ DownloadItemModel::~DownloadItemModel() {
 }
 
 ContentId DownloadItemModel::GetContentId() const {
-  bool off_the_record = content::DownloadItemUtils::GetBrowserContext(download_)
-                            ->IsOffTheRecord();
-  return ContentId(OfflineItemUtils::GetDownloadNamespacePrefix(off_the_record),
-                   download_->GetGuid());
+  return OfflineItemUtils::GetContentIdForDownload(download_);
 }
 
 Profile* DownloadItemModel::profile() const {
@@ -420,6 +421,16 @@ bool DownloadItemModel::WasUINotified() const {
 void DownloadItemModel::SetWasUINotified(bool was_ui_notified) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
   data->was_ui_notified_ = was_ui_notified;
+}
+
+bool DownloadItemModel::WasUIWarningShown() const {
+  const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
+  return data && data->was_ui_warning_shown_;
+}
+
+void DownloadItemModel::SetWasUIWarningShown(bool was_ui_warning_shown) {
+  DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
+  data->was_ui_warning_shown_ = was_ui_warning_shown;
 }
 
 bool DownloadItemModel::ShouldPreferOpeningInBrowser() const {
@@ -848,7 +859,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
           download_core_service->GetDownloadManagerDelegate();
       DCHECK(delegate);
       enterprise_connectors::AnalysisSettings settings;
-      settings.tags = {"malware"};
+      settings.tags = {{"malware", enterprise_connectors::TagSettings()}};
       protection_service->UploadForDeepScanning(
           download_,
           base::BindRepeating(

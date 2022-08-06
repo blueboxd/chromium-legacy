@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">Pinapamahalaan ng <ph name="MANAGER" /> ang <ph name="DEVICE_TYPE" /> na ito.</translation>
 <translation id="1175951029573070619">Katamtaman (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Alisin</translation>
+<translation id="1190378975642195988">Base Accelerometer</translation>
 <translation id="1195447618553298278">Hindi kilalang error.</translation>
 <translation id="1196959502276349371">Bersyon <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">I-play/I-pause</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">I-save sa USB</translation>
 <translation id="1468664791493211953">Mga Alok</translation>
 <translation id="1476467821656042872">Pinapamahalaan ng <ph name="MANAGER" /> ang device na ito at puwede nitong masubaybayan ang iyong aktibidad.</translation>
+<translation id="147809995039451286">Hindi ma-download ang update</translation>
 <translation id="1478594628797167447">Scanner</translation>
 <translation id="1491076385728777984">Nag-a-update ng firmware sa <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732">Pinapamahalaan ng <ph name="MANAGER" /> ang user na ito at puwede nitong pamahalaan ang mga setting at subaybayan ang aktibidad ng user sa remote na paraan.</translation>
@@ -125,6 +127,7 @@
 <translation id="1999615961760456652">Captive Portal</translation>
 <translation id="2006864819935886708">Pagkakakonekta</translation>
 <translation id="2008685064673031089">Prime na paghahanap</translation>
+<translation id="2011174342667534258">Bersyon ng SDK:</translation>
 <translation id="2016697457005847575">Subukan ang mga hakbang sa pag-troubleshoot</translation>
 <translation id="2016848882344942759">--walang white-label--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -156,6 +159,7 @@
 <translation id="225692081236532131">Status ng pag-activate</translation>
 <translation id="2271469253353559191">Iskedyul ng dark mode</translation>
 <translation id="2275586345903859204">Kumpleto na ang pag-aayos</translation>
+<translation id="2276999893457278469">Nangungunang content ng tulong</translation>
 <translation id="2287186687001756809">Walang available na larawan. Para magdagdag ng mga larawan, pumunta sa <ph name="LINK" /></translation>
 <translation id="2294753434210277304">Maglagay ng external storage, tulad ng USB drive o SD card, kasama ng na-download na larawan ng Chromebook Recovery Utility</translation>
 <translation id="2307344026739914387">Gamitin ang kasalukuyang keypair</translation>
@@ -177,6 +181,7 @@
 <translation id="2418150275289244458">Buksan sa mga setting</translation>
 <translation id="2421798028054665193">Larawan <ph name="CURRENT_PAGE" /> sa <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Katumpakan ng floating point</translation>
+<translation id="2447969267935997922">Tapos na ang pag-install. Puwede mo nang alisin ang iyong USB drive o SD card.</translation>
 <translation id="2448312741937722512">Uri</translation>
 <translation id="2461822463642141190">Kasalukuyan</translation>
 <translation id="2480034874476596812">Manual na i-off</translation>
@@ -188,6 +193,7 @@
 <translation id="2517472476991765520">I-scan</translation>
 <translation id="2526590354069164005">Desktop</translation>
 <translation id="253029298928638905">Nagre-restart...</translation>
+<translation id="2533048460510040082">Iminumungkahing content ng tulong</translation>
 <translation id="2536159006530886390">Hindi makakonekta sa internet.</translation>
 <translation id="2570743873672969996">Nagpapatakbo ng test sa <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">Para mag-set up, pumunta sa Mga Setting</translation>
@@ -214,7 +220,6 @@
 <translation id="2878387241690264070">Nag-discharge nang <ph name="RATE" /> sa loob ng <ph name="NUM_SECONDS" /> (na) segundo.</translation>
 <translation id="291142119251986300">Mga hindi kwalipikadong bahagi</translation>
 <translation id="2926057806159140518">Ilagay ang iyong username at password o i-scan ang iyong QR code</translation>
-<translation id="2928420929544864228">Tapos na ang pag-install.</translation>
 <translation id="3008341117444806826">I-REFRESH</translation>
 <translation id="3009958530611748826">Pumili ng folder kung saan magse-save</translation>
 <translation id="3017079585324758401">Background</translation>
@@ -268,6 +273,7 @@
 <translation id="3484914941826596830">Habang nag-a-update ang firmware, huwag alisin sa pagkakasaksak ang external device na ito o i-shut down ang iyong computer. Puwede mong i-minimize ang window na ito. Posibleng tumagal nang ilang minuto ang update na ito at posibleng hindi gumana ang iyong external device sa panahong ito.</translation>
 <translation id="3486220673238053218">kahulugan</translation>
 <translation id="3488065109653206955">Bahagyang na-activate</translation>
+<translation id="3492982278147736083">Lid Gyroscope</translation>
 <translation id="3517001332549868749">Update sa Chrome OS</translation>
 <translation id="3527036260304016759">Hindi na-print - Hindi kilalang error</translation>
 <translation id="3532980081107202182">Humigit-kumulang <ph name="MIN_REMAINING" /> (na) minuto ang natitira</translation>
@@ -287,6 +293,7 @@
 <translation id="3621202678540785336">Input</translation>
 <translation id="3632579075709132555">Toggle ng Privacy screen</translation>
 <translation id="3643810137582748570">Laktawan ang pag-calibrate</translation>
+<translation id="3651050199673793219">Pumili ng unit ng temperatura</translation>
 <translation id="3678765385266369662">Piliin kung paano mo gustong i-off ang Write Protect</translation>
 <translation id="3689839747745352263">Pagsusuri sa <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Naglo-load...</translation>
@@ -301,9 +308,12 @@
 <translation id="3820172043799983114">Di-wasto ang PIN.</translation>
 <translation id="3838338534323494292">Bagong password</translation>
 <translation id="385051799172605136">Bumalik</translation>
+<translation id="3856304145690230735">Base Gyroscope</translation>
 <translation id="385832974417157471">Bago mag-shut down, i-powerwash ang iyong device. Kung may takip ang device mo, hintaying makumpleto ang powerwash bago isara ang takip. Posibleng umabot ng hanggang isang minuto para makumpleto ang powerwash.</translation>
 <translation id="3858860766373142691">Pangalan</translation>
+<translation id="3862598938296403232">Kinakailangan ang paglalarawan</translation>
 <translation id="3865414814144988605">Resolution</translation>
+<translation id="3866249974567520381">Paglalarawan</translation>
 <translation id="387301095347517405">Ang dami ng beses na na-full charge ang iyong baterya</translation>
 <translation id="3885327323343477505">Palitan ang screen saver</translation>
 <translation id="3923184630988645767">Paggamit ng data</translation>
@@ -371,6 +381,7 @@
 <translation id="4472575034687746823">Magsimula</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Hindi na-ping ang hindi default na network gateway</translation>
+<translation id="4500213108254186382">Lid Accelerometer</translation>
 <translation id="4503223151711056411">Kaliwang arrow</translation>
 <translation id="4511264077854731334">Portal</translation>
 <translation id="4521826082652183069">Pagtugma sa alternatibong pangalan ng subject</translation>
@@ -382,6 +393,7 @@
 <translation id="4561801978359312462">Na-unlock ang SIM</translation>
 <translation id="4562494484721939086">Walang serbisyo</translation>
 <translation id="4568938274596692027">Tapos na ang pag-install. Naghahandang mag-restart...</translation>
+<translation id="4576943788798178439">Suporta sa stylus</translation>
 <translation id="458794348635939462">Hindi nalutas ang lahat ng host</translation>
 <translation id="4593212453765072419">Kinakailangan ang pagpapatunay ng proxy</translation>
 <translation id="4609350030397390689">Babaan ang liwanag ng keyboard</translation>
@@ -430,6 +442,7 @@
 <translation id="4915052247106771211">Ire-reset nito ang device sa mga factory setting</translation>
 <translation id="4917385247580444890">Malakas</translation>
 <translation id="4917889632206600977">Huminto - Wala nang papel</translation>
+<translation id="491791267030419270">Mga tip sa pagsusulat ng feedback</translation>
 <translation id="4921665434385737356">Na-charge nang <ph name="RATE" /> sa loob ng <ph name="NUM_SECONDS" /> (na) segundo.</translation>
 <translation id="4930320165497208503">Para mag-set up o mag-update ng koneksyon, pumunta sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Petsa</translation>
@@ -536,6 +549,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5866840822086176774">Napakalakas</translation>
 <translation id="588258955323874662">Fullscreen</translation>
 <translation id="5895138241574237353">I-restart</translation>
+<translation id="5898758006340607522">Power Button</translation>
 <translation id="5901630391730855834">Dilaw</translation>
 <translation id="5903200662178656908">Pinagsamang keyboard at mouse ang device.</translation>
 <translation id="5916084858004523819">Ipinagbabawal</translation>
@@ -671,6 +685,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="7143207342074048698">Kumokonekta</translation>
 <translation id="7144878232160441200">Subukang muli</translation>
 <translation id="714876143603641390">Pagkakonekta sa Lan</translation>
+<translation id="7154020516215182599">Ibahagi ang iyong feedback o ilarawan ang isyu mo. Kung posible, magsama ng mga hakbang para gawan ng kopya ang iyong isyu.</translation>
 <translation id="7155171745945906037">Kasalukuyang larawan mula sa camera o file</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7170236477717446850">Larawan sa profile</translation>
@@ -848,6 +863,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="885701979325669005">Storage</translation>
 <translation id="8863170912498892583">I-enable ng madilim na tema</translation>
 <translation id="8863888432376731307">Kunin ang <ph name="INTENT" /> para sa "<ph name="QUERY" />" at higit pa</translation>
+<translation id="8864415976656252616">Walang iminumungkahing content. Tingnan ang nangungunang content ng tulong.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Tablet ang device.</translation>
 <translation id="8881098542468797602">Nagtagumpay ang pagsusuri</translation>
@@ -858,6 +874,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="8919792139048574232">Tingnan kung ano ang naayos</translation>
 <translation id="8919837981463578619">Hindi na-print - Walang tray</translation>
 <translation id="8923267550422472772">Petsa sa buwan para sa pag-reset</translation>
+<translation id="8925613211674558308">Naka-cache na Vpd</translation>
 <translation id="8928727111548978589">Hindi na-print - Wala nang papel</translation>
 <translation id="8930521118335213258">Peer</translation>
 <translation id="8930622219860340959">Wireless</translation>
@@ -899,6 +916,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="922179502584117429">Luma na ang kasalukuyang bersyong <ph name="VERSION_NUMBER" /></translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">Magpadala ng feedback</translation>
 <translation id="952992212772159698">Hindi na-activate</translation>
 <translation id="960719561871045870">Operator code</translation>
 <translation id="982713511914535780">Patakbuhin ang pagsusuri sa Discharge</translation>

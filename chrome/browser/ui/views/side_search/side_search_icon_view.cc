@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/side_search/side_search_icon_view.h"
 
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/side_search/side_search_config.h"
@@ -13,6 +14,9 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -36,13 +40,23 @@ SideSearchIconView::SideSearchIconView(
   image()->SetFlipCanvasOnPaintForRTLUI(false);
   SetProperty(views::kElementIdentifierKey, kSideSearchButtonElementId);
   SetVisible(false);
-  SetLabel(l10n_util::GetStringUTF16(
-      IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
+  SetLabel(l10n_util::GetStringUTF16(IDS_SIDE_SEARCH_ENTRYPOINT_LABEL));
   SetUpForInOutAnimation();
   SetPaintLabelOverSolidBackground(true);
+  browser_->tab_strip_model()->AddObserver(this);
 }
 
-SideSearchIconView::~SideSearchIconView() = default;
+SideSearchIconView::~SideSearchIconView() {
+  browser_->tab_strip_model()->RemoveObserver(this);
+}
+
+void SideSearchIconView::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (selection.active_tab_changed())
+    HidePageActionLabel();
+}
 
 void SideSearchIconView::SetLabelVisibilityForTesting(bool visible) {
   label()->SetVisible(visible);
@@ -65,16 +79,29 @@ void SideSearchIconView::UpdateImpl() {
   if (!tab_contents_helper)
     return;
 
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   const bool was_visible = GetVisible();
   const bool should_show =
       tab_contents_helper->CanShowSidePanelForCommittedNavigation() &&
       !tab_contents_helper->toggled_open();
   SetVisible(should_show);
 
-  if (should_show && !was_visible && ShouldShowPageActionLabel()) {
-    SetPageActionLabelShown();
-    should_extend_label_shown_duration_ = true;
-    AnimateIn(absl::nullopt);
+  if (should_show && !was_visible) {
+    if (ShouldShowPageActionLabel()) {
+      SetPageActionLabelShown();
+      should_extend_label_shown_duration_ = true;
+      AnimateIn(absl::nullopt);
+    } else if (tab_contents_helper->returned_to_previous_srp()) {
+      // If we are not animating-in the label text make a request to show the
+      // IPH if we detect the user may be engaging in a pogo-sticking journey.
+      browser_view->MaybeShowFeaturePromo(
+          feature_engagement::kIPHSideSearchFeature);
+    }
+  }
+
+  if (!should_show) {
+    HidePageActionLabel();
+    browser_view->CloseFeaturePromo(feature_engagement::kIPHSideSearchFeature);
   }
 }
 
@@ -86,10 +113,14 @@ void SideSearchIconView::OnExecuting(PageActionIconView::ExecuteSource source) {
                             : SideSearchPageActionLabelVisibility::kNotVisible);
 
   // Reset the slide animation if in progress.
-  UnpauseAnimation();
-  ResetSlideAnimation(false);
+  HidePageActionLabel();
 
   side_search_browser_controller->ToggleSidePanel();
+
+  auto* tracker = feature_engagement::TrackerFactory::GetForBrowserContext(
+      browser_->profile());
+  if (tracker)
+    tracker->NotifyEvent(feature_engagement::events::kSideSearchOpened);
 }
 
 views::BubbleDialogDelegate* SideSearchIconView::GetBubble() const {
@@ -140,23 +171,26 @@ bool SideSearchIconView::ShouldShowPageActionLabel() const {
       SideSearchTabContentsHelper::FromWebContents(active_contents);
   DCHECK(tab_contents_helper);
 
-  switch (features::kSideSearchPageActionLabelAnimationFrequency.Get()) {
-    case features::kSideSearchLabelAnimationFrequencyOption::kOncePerProfile: {
-      // Only checking the per-profile bit in the config is necessary.
+  if (!tab_contents_helper->GetAndResetCanShowPageActionLabel())
+    return false;
+
+  const int max_label_show_count =
+      features::kSideSearchPageActionLabelAnimationMaxCount.Get();
+
+  switch (features::kSideSearchPageActionLabelAnimationType.Get()) {
+    case features::kSideSearchLabelAnimationTypeOption::kProfile: {
       auto* side_search_config =
           SideSearchConfig::Get(active_contents->GetBrowserContext());
-      return !side_search_config->page_action_label_shown();
+      return side_search_config->page_action_label_shown_count() <
+             max_label_show_count;
     }
-    case features::kSideSearchLabelAnimationFrequencyOption::kOncePerWindow: {
-      // Show the label for the current window only if it hasn't been shown
-      // already for the active tab. This covers the case where the user drags
-      // a tab with the side search page action icon active into a new window.
-      return !page_action_label_shown_ &&
-             !tab_contents_helper->page_action_label_shown();
+    case features::kSideSearchLabelAnimationTypeOption::kWindow: {
+      return page_action_label_shown_count_ < max_label_show_count;
     }
-    case features::kSideSearchLabelAnimationFrequencyOption::kOncePerTab:
-      // Only checking the per-tab bit is necessary.
-      return !tab_contents_helper->page_action_label_shown();
+    case features::kSideSearchLabelAnimationTypeOption::kTab: {
+      return tab_contents_helper->page_action_label_shown_count() <
+             max_label_show_count;
+    }
   }
 }
 
@@ -164,19 +198,21 @@ void SideSearchIconView::SetPageActionLabelShown() {
   content::WebContents* active_contents = GetWebContents();
   DCHECK(active_contents);
 
-  // Set the shown bit at the profile level.
   auto* side_search_config =
       SideSearchConfig::Get(active_contents->GetBrowserContext());
-  side_search_config->set_page_action_label_shown(true);
+  side_search_config->DidShowPageActionLabel();
 
-  // Set the shown bit at the browser level.
-  page_action_label_shown_ = true;
+  ++page_action_label_shown_count_;
 
-  // Set the shown bit at the tab level.
   auto* tab_contents_helper =
       SideSearchTabContentsHelper::FromWebContents(active_contents);
   DCHECK(tab_contents_helper);
-  tab_contents_helper->set_page_action_label_shown(true);
+  tab_contents_helper->DidShowPageActionLabel();
+}
+
+void SideSearchIconView::HidePageActionLabel() {
+  UnpauseAnimation();
+  ResetSlideAnimation(false);
 }
 
 BEGIN_METADATA(SideSearchIconView, PageActionIconView)

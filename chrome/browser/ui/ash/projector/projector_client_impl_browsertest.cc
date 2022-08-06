@@ -333,17 +333,24 @@ class ProjectorClientManagedTest
 };
 
 IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest,
-                       CantOpenProjectorAppWithoutPolicy) {
+                       OpenProjectorAppWithoutPolicy) {
   auto* profile = browser()->profile();
   ash::SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
 
   client()->OpenProjectorApp();
   web_app::FlushSystemWebAppLaunchesForTesting(profile);
 
-  // Verify that Projector App is not opened.
+  // Verify that Projector App is opened.
   Browser* app_browser = web_app::FindSystemWebAppBrowser(
       profile, ash::SystemWebAppType::PROJECTOR);
-  EXPECT_FALSE(app_browser);
+
+  if (is_child()) {
+    // Can't open for Family Link account.
+    EXPECT_FALSE(app_browser);
+  } else {
+    // Can open for other managed account.
+    EXPECT_TRUE(app_browser);
+  }
 }
 
 // Prevents a regression to b/230779397.
@@ -370,6 +377,12 @@ IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest, DisableThenEnablePolicy) {
   profile->GetPrefs()->SetBoolean(GetPolicy(), false);
   // The Projector app immediately closes to prevent further access.
   EXPECT_TRUE(app_browser->IsAttemptingToCloseBrowser());
+
+  auto* web_app_provider = web_app::WebAppProvider::GetForTest(profile);
+  base::RunLoop loop;
+  web_app_provider->on_registry_ready().Post(FROM_HERE, loop.QuitClosure());
+  loop.Run();
+
   // We can't uninstall the Projector SWA until the next session, but the icon
   // is greyed out and disabled.
   EXPECT_EQ(apps::Readiness::kDisabledByPolicy,
@@ -380,6 +393,11 @@ IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest, DisableThenEnablePolicy) {
   // The app can re-enable too if it's already installed and the policy flips to
   // true.
   profile->GetPrefs()->SetBoolean(GetPolicy(), true);
+
+  base::RunLoop loop2;
+  web_app_provider->on_registry_ready().Post(FROM_HERE, loop2.QuitClosure());
+  loop2.Run();
+
   EXPECT_EQ(apps::Readiness::kReady,
             GetAppReadiness(kChromeUITrustedProjectorSwaAppId));
   EXPECT_FALSE(apps::IconEffects::kBlocked &

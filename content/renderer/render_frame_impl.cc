@@ -4264,11 +4264,9 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request,
   // a navigation concept. We pass ui::PAGE_TRANSITION_LINK as default one.
   WillSendRequestInternal(request, /*for_outermost_main_frame=*/false,
                           ui::PAGE_TRANSITION_LINK, for_redirect);
-#if !BUILDFLAG(IS_ANDROID)
   for (auto& observer : observers_) {
     observer.WillSendRequest(request);
   }
-#endif
 }
 
 void RenderFrameImpl::WillSendRequestInternal(
@@ -6017,6 +6015,7 @@ RenderFrameImpl::CreateURLLoaderFactory() {
     }
     // At this point we can't create anything.
     NOTREACHED();
+    CHECK(false);
     return nullptr;
   }
   return std::make_unique<FrameURLLoaderFactory>(weak_factory_.GetWeakPtr());

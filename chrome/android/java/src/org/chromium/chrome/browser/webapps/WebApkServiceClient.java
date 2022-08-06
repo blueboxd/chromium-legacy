@@ -30,12 +30,17 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.intents.WebApkExtras;
 import org.chromium.chrome.browser.browserservices.metrics.WebApkUmaRecorder;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.InstalledWebappPermissionManager;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.PermissionStatus;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 import org.chromium.webapk.lib.runtime_library.IWebApkApi;
@@ -68,7 +73,7 @@ public class WebApkServiceClient {
 
     @VisibleForTesting
     public static final String CATEGORY_WEBAPK_API = "android.intent.category.WEBAPK_API";
-    private static final String TAG = "WebApk";
+    private static final String TAG = "WebApkServiceClient";
 
     // An intent extra for a {@link Messenger}.
     private static final String EXTRA_MESSENGER = "messenger";
@@ -151,7 +156,7 @@ public class WebApkServiceClient {
      * to display. Handing over the notification makes the notification look like it originated from
      * the WebAPK - not Chrome - in the Android UI.
      */
-    public void notifyNotification(final String webApkPackage,
+    public void notifyNotification(final String originString, final String webApkPackage,
             final NotificationBuilderBase notificationBuilder, final String platformTag,
             final int platformID) {
         connect(webApkPackage, api -> {
@@ -160,9 +165,30 @@ public class WebApkServiceClient {
 
             @ContentSettingValues
             int settingValue = toContentSettingValue(api.checkNotificationPermission());
+
+            // See http://crbug.com/1340854. Temporary fallback in case the shell has not yet been
+            // updated to support checkNotificationPermission(). Delete this after shell v154 has
+            // been fully launched.
+            if (settingValue != ContentSettingValues.ALLOW && api.notificationPermissionEnabled()) {
+                Log.d(TAG, "Fallback to notificationPermissionEnabled().");
+                settingValue = ContentSettingValues.ALLOW;
+            }
+
             WebApkUmaRecorder.recordNotificationPermissionStatus(settingValue);
 
             if (settingValue != ContentSettingValues.ALLOW) {
+                Origin origin = Origin.create(originString);
+                if (origin == null) {
+                    Log.w(TAG, "String (%s) could not be parsed as Origin.", originString);
+                    return;
+                }
+                if (BuildInfo.isAtLeastT()
+                        && CachedFeatureFlags.isEnabled(
+                                ChromeFeatureList
+                                        .TRUSTED_WEB_ACTIVITY_NOTIFICATION_PERMISSION_DELEGATION)) {
+                    InstalledWebappPermissionManager.get().updatePermission(
+                            origin, webApkPackage, ContentSettingsType.NOTIFICATIONS, settingValue);
+                }
                 return;
             }
 

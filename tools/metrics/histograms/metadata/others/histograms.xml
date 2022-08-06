@@ -73,6 +73,11 @@ chromium-metrics-reviews@google.com.
                enabled"/>
 </variants>
 
+<variants name="DIPSRedirectType">
+  <variant name="Client" summary="client-side"/>
+  <variant name="Server" summary="server-side"/>
+</variants>
+
 <variants name="GridTabSwitcherMessageTypes">
   <variant name="PriceAlertsMessageCard"
       summary="the promo message for price notifications"/>
@@ -126,6 +131,16 @@ chromium-metrics-reviews@google.com.
 
   <variant name="UtilityProcess" summary=""/>
   <variant name="WorkerProcess" summary=""/>
+</variants>
+
+<variants name="UrlParamFilterClassificationRole">
+  <variant name=".Destination"
+      summary="parameters classified as having the destination role"/>
+  <variant name=".Invalid"
+      summary="parameters with an unknown role, likely indicating a
+               compatibility issue"/>
+  <variant name=".Source"
+      summary="parameters classified as having the source role"/>
 </variants>
 
 <variants name="VoiceIntentTargetVariant">
@@ -3022,6 +3037,27 @@ chromium-metrics-reviews@google.com.
     Whether or not Lens is supported, and if not, the reason why. Recorded only
     if the feature is enabled when the long-press context menu is shown for an
     image.
+  </summary>
+</histogram>
+
+<histogram name="ContextMenu.iOS.LensWebUploadStatus"
+    enum="IOSLensWebUploadStatus" expires_after="2023-06-23">
+  <owner>hujasonx@google.com</owner>
+  <owner>lens-in-bling-team@google.com</owner>
+  <summary>
+    The status of the upload of image data to Lens. Recorded only when the Lens
+    feature is triggered via the context menu entry from an image long-press.
+  </summary>
+</histogram>
+
+<histogram name="ContextMenu.iOS.LensWebUploadTime" units="ms"
+    expires_after="2023-06-28">
+  <owner>hujasonx@google.com</owner>
+  <owner>lens-in-bling-team@google.com</owner>
+  <summary>
+    Logs the time it takes to upload image data to the Lens Web servers.
+    Recorded only when the Lens feature is triggered via the context menu entry
+    from an image long-press.
   </summary>
 </histogram>
 

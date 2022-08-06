@@ -27,6 +27,7 @@ Seu mecanismo de pesquisa é o <ph name="DSE_NAME" />. Veja as instruções para
 <translation id="1145536944570833626">Excluir os dados atuais.</translation>
 <translation id="1147031633655575115">Conta conectada: <ph name="USER" /></translation>
 <translation id="1154984953698510061">Ver outras guias</translation>
+<translation id="1161340988127985692">Pedir para abrir links de outros apps na navegação anônima</translation>
 <translation id="1164064664035028907">Use uma senha forte:</translation>
 <translation id="1165039591588034296">Erro</translation>
 <translation id="1172898394251786223">Próximo campo</translation>
@@ -163,6 +164,7 @@ Seu mecanismo de pesquisa é o <ph name="DSE_NAME" />. Veja as instruções para
 <translation id="236977714248711277">Os sites não podem usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras.
 
 Eles também não podem usar cookies para ver sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios.</translation>
+<translation id="2375243552872247702">Tenha acesso a conteúdo personalizado</translation>
 <translation id="2381405137052800939">Conceitos básicos</translation>
 <translation id="2386793615875593361">Uma selecionada</translation>
 <translation id="2421004566762153674">Bloqueando cookies de terceiros</translation>
@@ -291,6 +293,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="3443810440409579745">Guia recebida.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> minutos</translation>
 <translation id="3448016392200048164">Visualização dividida</translation>
+<translation id="3450502512529866925">Adicionar esta página aos favoritos</translation>
 <translation id="345565170154308620">Gerenciar senhas…</translation>
 <translation id="3469166899695866866">Interromper o download?</translation>
 <translation id="3470502288861289375">Copiando...</translation>
@@ -405,6 +408,7 @@ Siga estas etapas:</translation>
 <translation id="4502566650163919158">Verificar agora</translation>
 <translation id="4505980578794259603">Última verificação <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Fechar promoção de login</translation>
+<translation id="4511669830082467224">Pesquisar imagem com o Google</translation>
 <translation id="4526249700380860531">Ver e gerenciar as senhas salvas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Revisar dados sincronizados</translation>
 <translation id="4536418791685807335">Tente fazer login novamente.</translation>
@@ -482,6 +486,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5090832849094901128">Remover a senha não excluirá a conta em <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Você pode salvar páginas para ler mais tarde ou off-line. O Chrome perguntará se você quer salvar páginas longas.</translation>
 <translation id="5094827893301452931">Tweet concluído.</translation>
+<translation id="509789154667432072">Adicionar um favorito</translation>
 <translation id="5118713593561876160">Interesses</translation>
 <translation id="5118764316110575523">Desativado</translation>
 <translation id="5127805178023152808">Sincronização desativada</translation>
@@ -602,6 +607,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6136914049981179737">Segundos atrás</translation>
 <translation id="6144589619057374135">Abrir ${url} na navegação anônima</translation>
 <translation id="6149061208933997199">Usar senha</translation>
+<translation id="6152406514676263192">Sincronize para receber conteúdo mais relevante com base nos seus interesses.</translation>
 <translation id="6159839020698489198">opcional</translation>
 <translation id="6177442314419606057">Pesquisar no Chrome</translation>
 <translation id="6184086493125982861">Mostrar guias</translation>
@@ -739,6 +745,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7099761977003084116">Guias recentes</translation>
 <translation id="7102005569666697658">Fazendo o download… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Ocultar</translation>
+<translation id="7108762695052995889">Visitar site</translation>
 <translation id="7133798577887235672">Nome completo</translation>
 <translation id="7136892417564438900">A câmera não está disponível</translation>
 <translation id="7153999225810839758">Tempo de leitura: <ph name="TIME" />min</translation>
@@ -749,6 +756,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7189598951263744875">Compartilhar...</translation>
 <translation id="7192050974311852563">Iniciar registro</translation>
 <translation id="7203585745079012652">Falar as respostas</translation>
+<translation id="7207023858769244910">Sincronize para receber conteúdo com base nos seus interesses.</translation>
 <translation id="7207383424303353046">Novidade: defina o Chrome como seu navegador padrão para abrir sites automaticamente nele. <ph name="BEGIN_LINK" />Abrir Configurações<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Apelido do cartão inválido</translation>
 <translation id="722454870747268814">Nova guia anônima</translation>
@@ -768,6 +776,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> artigos não lidos.</translation>
 <translation id="7412027924265291969">Continuar</translation>
+<translation id="7419565702166471774">Sempre usar conexões seguras</translation>
 <translation id="7425346204213733349">Alterações feitas nos seus favoritos, histórico, senhas e outras configurações não serão mais sincronizadas com sua Conta do Google. No entanto, os dados já existentes permanecerão armazenados na Conta do Google.</translation>
 <translation id="7431991332293347422">Controla como o histórico de navegação é usado para personalizar a Pesquisa e muito mais</translation>
 <translation id="7435356471928173109">Desativado pelo administrador</translation>
@@ -807,7 +816,6 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7781069478569868053">Página "Nova guia"</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="778855399387580014">Inicie uma pesquisa em uma nova guia do Chrome.</translation>
-<translation id="7790892308048519147">Tente usar conexões seguras</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="7807060072011926525">Fornecido pelo Google</translation>
 <translation id="7839985698273989086">Página offline</translation>

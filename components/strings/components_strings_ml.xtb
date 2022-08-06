@@ -291,6 +291,7 @@
 <translation id="1662550410081243962">പേയ്‌മെന്റ് രീതികൾ സംരക്ഷിച്ച് സ്വമേധയാ പൂരിപ്പിക്കുക</translation>
 <translation id="1663943134801823270">കാർഡുകളും വിലാസങ്ങളും Chrome-ൽ നിന്നുള്ളതാണ്. നിങ്ങൾക്ക് അവ <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> മാനേജ് ചെയ്യാം.</translation>
 <translation id="1671391448414634642">ഇനിമുതൽ <ph name="SOURCE_LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ <ph name="TARGET_LANGUAGE" /> ഭാഷയിലേക്ക് വിവർത്തനം ചെയ്യപ്പെടും.</translation>
+<translation id="1673886523110456987">ഓഫർ ഉപയോഗിക്കാൻ <ph name="CARD_DETAIL" /> എന്നതുമായി പരിശോധിക്കുക</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> എന്നതിൽ നിന്ന് <ph name="TARGET_LANGUAGE" /> എന്നതിലേക്ക്</translation>
 <translation id="1682696192498422849">നീളം കുറഞ്ഞ അരിക് ആദ്യം</translation>
 <translation id="168693727862418163">ഈ നയ മൂല്യം അതിന്റെ സ്‌കീമയുമായി സാധൂകരിക്കാൻ കഴിയാത്തതിനാൽ അത് അവഗണിക്കപ്പെടും.</translation>
@@ -589,6 +590,7 @@
 <translation id="2523886232349826891">ഈ ഉപകരണത്തിൽ മാത്രം സംരക്ഷിക്കപ്പെടും</translation>
 <translation id="2524461107774643265">കൂടുതൽ വിവരങ്ങൾ ചേർക്കുക</translation>
 <translation id="2529899080962247600">ഈ ഫീൽഡിൽ <ph name="MAX_ITEMS_LIMIT" />-ൽ കൂടുതൽ എൻ‌ട്രികൾ ഉണ്ടാകരുത്. തുടർന്നുള്ള എല്ലാ എൻ‌ട്രികളും നിരസിക്കും.</translation>
+<translation id="253493526287553278">പ്രമോ കോഡ് വിശദാംശങ്ങൾ കാണുക</translation>
 <translation id="2535585790302968248">സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ പുതിയ അദൃശ്യ ടാബ് തുറക്കുക</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{എന്നതും മറ്റൊരെണ്ണവും}other{എന്നതും മറ്റ് # എണ്ണവും}}</translation>
 <translation id="2536110899380797252">വിലാസം ചേർക്കുക</translation>
@@ -705,7 +707,6 @@
 <translation id="2854764410992194509">ഇന്റര്‍നെറ്റ് സേവന ദാതാക്കൾ (ISPs)</translation>
 <translation id="2856444702002559011"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> എന്നതിൽ നിന്ന് നിങ്ങളുടെ വിവരം മോഷ്‌ടിക്കാൻ അക്രമികൾ ശ്രമിക്കുന്നുണ്ടാവാം (ഉദാഹരണത്തിന്, പാസ്‌വേഡുകൾ, സന്ദേശങ്ങൾ, അല്ലെങ്കിൽ ക്രെഡിറ്റ് കാർഡുകൾ). <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2859806420264540918">ഈ സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങൾ കാണിക്കുന്നു.</translation>
-<translation id="286512204874376891">വഞ്ചിക്കപ്പെടാനുള്ള സാധ്യതകളിൽ നിന്ന് നിങ്ങളെ പരിരക്ഷിക്കുന്നതിന് വെർച്വൽ കാർഡ് നിങ്ങളുടെ യഥാർത്ഥ കാർഡ് വിവരങ്ങൾ മറയ്ക്കുന്നു. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="287596039013813457">സൗഹാർദ്ദപരം</translation>
 <translation id="28761159517501904">സിനിമകൾ</translation>
 <translation id="2876489322757410363">ബാഹ്യ ആപ്പ് വഴി പണമടയ്‌ക്കാൻ അദൃശ്യ മോഡിൽ നിന്ന് പുറത്തുകടക്കുന്നു. തുടരണോ?</translation>
@@ -932,6 +933,7 @@
 <translation id="3477679029130949506">സിനിമാ വിവരങ്ങളും തിയറ്റർ പ്രദർശന സമയവും</translation>
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="3484560055331845446">നിങ്ങളുടെ Google അക്കൗണ്ടിലേക്കുള്ള ആക്‌സസ് നഷ്‌ടപ്പെടാനിടയുണ്ട്. ഇപ്പോൾ തന്നെ പാസ്‌വേഡ് മാറ്റാൻ Chrome ശുപാർശ ചെയ്യുന്നു. സൈൻ ഇൻ ചെയ്യാൻ നിങ്ങളോട് ആവശ്യപ്പെടും.</translation>
+<translation id="3484861421501147767">റിമൈൻഡർ: സംരക്ഷിച്ചിരിക്കുന്ന പ്രമോ കോഡ് ലഭ്യമാണ്</translation>
 <translation id="3487845404393360112">ട്രേ 4</translation>
 <translation id="3495081129428749620">പേജിൽ കണ്ടെത്തുക
     <ph name="PAGE_TITLE" /></translation>
@@ -1105,6 +1107,7 @@
 <translation id="3986705137476756801">തത്സമയ ക്യാപ്ഷൻ ഇപ്പോഴത്തേക്ക് ഓഫാക്കുക</translation>
 <translation id="3987940399970879459">ഒരു MB-യിൽ കുറവാണ്</translation>
 <translation id="3990250421422698716">ജോഗ് ഓഫ്‌സെറ്റ്</translation>
+<translation id="3992684624889376114">ഈ പേജിനെക്കുറിച്ച്</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> എന്ന സൈറ്റിലേക്കുള്ള എല്ലാ അഭ്യർത്ഥനകൾക്കും ഒരു ഉറവിട നയം
     ബാധകമാകുമെന്ന് ഇത് അഭ്യർത്ഥിച്ചിരിക്കുന്നു, എന്നാൽ ഈ നയം ഇപ്പോൾ ബാധകമാക്കാനാവില്ല.</translation>
 <translation id="4006465311664329701">Google Pay ഉപയോഗിക്കുന്ന പേയ്മെന്റ് രീതികളും ഓഫറുകളും വിലാസങ്ങളും</translation>
@@ -1278,6 +1281,7 @@
 <translation id="4435702339979719576">പോസ്‌റ്റ്‌ കാർഡ്)</translation>
 <translation id="443673843213245140">പ്രോക്‌സി ഉപയോഗം അപ്രാപ്‌തമാക്കി പക്ഷെ ഒരു വ്യക്തമായ പ്രോക്‌സി കോൺഫിഗറേഷൻ നിർദ്ദേശിച്ചു.</translation>
 <translation id="4441832193888514600">ക്ലൗഡ് ഉപയോക്തൃ നയം ആയി മാത്രമേ നയം സജ്ജീകരിക്കാനാകൂ എന്നതിനാൽ അവഗണിക്കൂ.</translation>
+<translation id="4442470707340296952">Chrome ടാബുകൾ</translation>
 <translation id="4450893287417543264">വീണ്ടും കാണിക്കരുത്</translation>
 <translation id="4451135742916150903">HID ഉപകരണങ്ങളിലേക്ക് കണക്‌റ്റ് ചെയ്യാൻ ആവശ്യപ്പെടാം</translation>
 <translation id="4452328064229197696">നിങ്ങൾ ഇപ്പോൾ ഉപയോഗിച്ച പാസ്‌വേഡ് ഡാറ്റാ ലംഘനത്തിൽ കണ്ടെത്തിയിരിക്കുന്നു. നിങ്ങളുടെ അക്കൗണ്ടുകൾ സുരക്ഷിതമാക്കാൻ, സംരക്ഷിച്ച പാസ്‌വേഡുകൾ പരിശോധിക്കാൻ Google പാസ്‌വേഡ് മാനേജർ നിർദ്ദേശിക്കുന്നു.</translation>
@@ -1335,7 +1339,6 @@
 <translation id="4607603470419975064">'Chrome നുറുങ്ങുകൾ കാണുക' ബട്ടൺ, Chrome ഫീച്ചറുകളെ കുറിച്ച് അറിയാൻ Enter അമർത്തുക</translation>
 <translation id="4607608436550361748">Chrome നുറുങ്ങുകൾ കാണുക</translation>
 <translation id="4617273035598175554">ഗ്രാഫിക്സും ആനിമേഷൻ സോഫ്റ്റ്‌വെയറും</translation>
-<translation id="4627165777145349100">ഈ പേജിനെ കുറിച്ചുള്ള കൂടുതൽ വിവരങ്ങൾ</translation>
 <translation id="4627675673814409125">ഈ നയം Chrome പ്രൊഫൈൽ നിലയിൽ സജ്ജീകരിക്കാനാകാത്തതിനാൽ ഇത് ഒഴിവാക്കും.</translation>
 <translation id="4628948037717959914">ഫോട്ടോ</translation>
 <translation id="4631649115723685955">ക്യാഷ് ബാക്ക് ലിങ്ക് ചെയ്‌തു</translation>
@@ -1553,6 +1556,7 @@
 <translation id="5171045022955879922">തിരയുക അല്ലെങ്കിൽ URL ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="5171689220826475070">ഫാൻഫോൾഡ്-യൂറോപ്യന്‍‌</translation>
 <translation id="5172758083709347301">മെഷീൻ</translation>
+<translation id="5177076414499237632">ഈ പേജിന്റെ ഉറവിടത്തെയും വിഷയത്തെയും കുറിച്ച് അറിയുക</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> എന്നതില്‍‌ ഇല്ലേ? ഈ പിശക് റിപ്പോര്‍‌ട്ട് ചെയ്യുക</translation>
 <translation id="518639307526414276">വളർത്തുമൃഗങ്ങളുടെ ഭക്ഷണവും വളർത്തുമൃഗ പരിചരണ സാമഗ്രികളും</translation>
 <translation id="5190835502935405962">ബുക്ക്‌മാര്‍‌ക്ക് ബാര്‍‌</translation>
@@ -1870,7 +1874,6 @@
 <translation id="6061154937977953833">ഗുസ്‌തി</translation>
 <translation id="6064217302520318294">സ്ക്രീൻ ലോക്ക്</translation>
 <translation id="6064602040258638498">കൂപ്പണുകളും ഡിസ്‌കൗണ്ട് ഓഫറുകളും</translation>
-<translation id="6078813287646374487">ഈ പേജിനെ കുറിച്ചുള്ള കൂടുതൽ വിവരങ്ങൾ കാണിക്കുക</translation>
 <translation id="6080696365213338172">അഡ്‌മിനിസ്‌ട്രേറ്റർ നൽകിയ സർട്ടിഫിക്കറ്റ് ഉപയോഗിച്ച് നിങ്ങൾ ഉള്ളടക്കം ആക്‌സസ് ചെയ്‌തു. നിങ്ങൾ <ph name="DOMAIN" /> എന്നതിലേക്ക് നൽകുന്ന ഡാറ്റ അഡ്‌മിനിസ്‌ട്രേറ്റർക്ക് തടയാനാവും.</translation>
 <translation id="6087312102907839798">അനുബന്ധ തിരയലുകൾ</translation>
 <translation id="6094273045989040137">അനോട്ടേറ്റ് ചെയ്യുക</translation>
@@ -2217,6 +2220,7 @@
             <ph name="LIST_ITEM" />ഫോമുകളിൽ നൽകുന്ന വിവരങ്ങൾ<ph name="END_LIST_ITEM" />
           <ph name="END_LIST" /></translation>
 <translation id="7129409597930077180">ഈ വിലാസത്തിലേക്ക് ഷിപ്പ് ചെയ്യാൻ കഴിയില്ല. മറ്റൊരു വിലാസം തിരഞ്ഞെടുക്കുക.</translation>
+<translation id="7129809579943936035"><ph name="VALUE_PROP" /> <ph name="DETAILS" /></translation>
 <translation id="7132939140423847331">ഈ ഡാറ്റ പകർത്തുന്നത് നിങ്ങളുടെ അഡ്‌മിൻ നിരോധിച്ചിരിക്കുന്നു.</translation>
 <translation id="7135130955892390533">സ്‌റ്റാറ്റസ് കാണിക്കുക</translation>
 <translation id="7138472120740807366">ഡെലിവറി രീതി</translation>
@@ -2572,6 +2576,7 @@
 <translation id="8074253406171541171">10x13 (എൻവലപ്പ്)</translation>
 <translation id="8075736640322370409">പുതിയൊരു Google ഷീറ്റ് വേഗത്തിൽ സൃഷ്ടിക്കുക</translation>
 <translation id="8075898834294118863">സൈറ്റ് ക്രമീകരണം മാനേജ് ചെയ്യുക</translation>
+<translation id="8076492880354921740">ടാബുകള്‍‌</translation>
 <translation id="8078141288243656252">തിരിക്കുമ്പോൾ അനോട്ടേറ്റ് ചെയ്യാനാവില്ല</translation>
 <translation id="8079031581361219619">സൈറ്റ് റീലോഡ് ചെയ്യണോ?</translation>
 <translation id="8081087320434522107">സെഡാൻ കാറുകൾ</translation>
@@ -2792,6 +2797,7 @@
 <translation id="8742371904523228557"><ph name="ORIGIN" /> എന്നതിന്റെ നിങ്ങളുടെ കോഡ് <ph name="ONE_TIME_CODE" /> ആണ്</translation>
 <translation id="874918643257405732">ഈ ടാബ് ബുക്ക്‌മാർക്ക് ചെയ്യുക</translation>
 <translation id="8751426954251315517">പിന്നീട് വീണ്ടും ശ്രമിക്കുക</translation>
+<translation id="8757526089434340176">Google Pay ഓഫർ ലഭ്യം</translation>
 <translation id="8758885506338294482">മത്സരിച്ച് കളിക്കാവുന്ന വീഡിയോ ഗെയിമിംഗ്</translation>
 <translation id="8759274551635299824">ഈ കാർഡ് കാലഹരണപ്പെട്ടു</translation>
 <translation id="87601671197631245">ഈ സൈറ്റ് കാലഹരണപ്പെട്ട സുരക്ഷാ കോൺഫിഗറേഷൻ ഉപയോഗിക്കുന്നതിനാൽ നിങ്ങളുടെ വിവരങ്ങൾ (ഉദാഹരണത്തിന്, പാസ്‌വേഡുകൾ, സന്ദേശങ്ങൾ, ക്രെഡിറ്റ് കാർഡുകൾ) ഈ സൈറ്റിലേക്ക് അയച്ചാൽ അവ വെളിപ്പെട്ടേക്കാം.</translation>
@@ -2992,6 +2998,7 @@
 <translation id="988159990683914416">ഡെവലപ്പർ പതിപ്പ്</translation>
 <translation id="989988560359834682">വിലാസം എഡിറ്റുചെയ്യുക</translation>
 <translation id="991413375315957741">ചലന അല്ലെങ്കിൽ പ്രകാശ സെൻസറുകൾ</translation>
+<translation id="992110854164447044">വഞ്ചിക്കപ്പെടാനിടയുള്ള സാഹചര്യങ്ങളിൽ നിന്ന് പരിരക്ഷിക്കാൻ സഹായിക്കുന്നതിന് വെർച്വൽ കാർഡ് നിങ്ങളുടെ യഥാർത്ഥ കാർഡ് വിവരങ്ങൾ മറയ്ക്കുന്നു. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">പിങ്ക്</translation>
 <translation id="992432478773561401">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ അല്ലെങ്കിൽ നെറ്റ്‍വര്‍ക്കിൽ "<ph name="SOFTWARE_NAME" />" ശരിയായി ഇൻസ്‌റ്റാൾ ചെയ്‌തിട്ടില്ല:

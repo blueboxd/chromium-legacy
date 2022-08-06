@@ -17828,7 +17828,7 @@
         "policies": {},
         "prefs": {
           "ash.projector.allow_by_policy": {
-            "default_value": false
+            "default_value": true
           }
         }
       },
@@ -17891,7 +17891,7 @@
         "note": "Check default values (no policies set)",
         "prefs": {
           "first_party_sets.enabled": {
-            "location": "local_state",
+            "location": "user_profile",
             "default_value": true
           }
         }
@@ -17903,7 +17903,7 @@
         },
         "prefs": {
           "first_party_sets.enabled": {
-            "location": "local_state",
+            "location": "user_profile",
             "value": true
           }
         }
@@ -17915,7 +17915,7 @@
         },
         "prefs": {
           "first_party_sets.enabled": {
-            "location": "local_state",
+            "location": "user_profile",
             "value": false
           }
         }
@@ -18367,6 +18367,28 @@
       }
     ]
   },
+  "UnthrottledNestedTimeoutEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "UnthrottledNestedTimeoutEnabled": true
+        },
+        "prefs": {
+          "policy.unthrottled_nested_timeout": {
+            "location": "user_profile"
+          }
+        }
+      }
+    ]
+  },
   "WarnBeforeQuittingEnabled": {
     "os": [
       "mac"
@@ -18467,13 +18489,13 @@
         },
         "prefs": {
           "ash.dark_mode.enabled": {
-            "check_for_mandatory": true,
-            "check_for_recommended": false,
+            "check_for_mandatory": false,
+            "check_for_recommended": true,
             "value": false
           },
           "ash.dark_mode.schedule_type": {
-            "check_for_mandatory": true,
-            "check_for_recommended": false,
+            "check_for_mandatory": false,
+            "check_for_recommended": true,
             "value": 0
           }
         }

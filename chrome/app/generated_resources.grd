@@ -768,7 +768,7 @@ are declared in tools/grit/grit_rule.gni.
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for image
           </message>
           <message name="IDS_CONTENT_CONTEXT_SEARCHLENSFORIMAGE" desc="The name of the Search Lens for Image command in the content area context menu">
-            Search image with Google Lens
+            Search image with <ph name="VISUAL_SEARCH_PROVIDER">$1<ex>Google Lens</ex></ph>
           </message>
           <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1" desc="The name of the Lens Region Search command in the content area context menu">
             Search page with <ph name="VISUAL_SEARCH_PROVIDER">$1<ex>Google Lens</ex></ph>
@@ -1025,7 +1025,7 @@ are declared in tools/grit/grit_rule.gni.
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for Image
           </message>
           <message name="IDS_CONTENT_CONTEXT_SEARCHLENSFORIMAGE" desc="In Title Case: The name of the Search Lens for Image command in the content area context menu">
-            Search Image with Google Lens
+            Search Image with <ph name="VISUAL_SEARCH_PROVIDER">$1<ex>Google Lens</ex></ph>
           </message>
           <message name="IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1" desc="In Title Case: The name of the Lens Region Search command in the content area context menu">
             Search Page with <ph name="VISUAL_SEARCH_PROVIDER">$1<ex>Google</ex></ph>
@@ -3000,6 +3000,12 @@ are declared in tools/grit/grit_rule.gni.
         -->
         <message name="IDS_BLUETOOTH_DEVICE_CREDENTIALS_LABEL" desc="Label of the text prompt for Bluetooth device credentials.">
           Enter Bluetooth Passkey for device <ph name="DEVICE">$1</ph>
+        </message>
+        <message name="IDS_BLUETOOTH_DEVICE_PAIR_CONFIRM_TITLE" desc="Title of the Bluetooth device pair confirmation prompt dialog.">
+          Pair Confirmation
+        </message>
+        <message name="IDS_BLUETOOTH_DEVICE_PAIR_CONFIRM_LABEL" desc="Label of the text prompt for Bluetooth device pair confirmation.">
+          Bluetooth device <ph name="DEVICE">$1</ph> would like permission to pair.
         </message>
       </if>
 
@@ -6688,6 +6694,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_MODULES_PHOTOS_MEMORIES_WELCOME_EXAMPLE" desc="Example of a memory title for the Google Photos module in the new tab page.">
         2 years ago
       </message>
+      <message name="IDS_NTP_MODULES_PHOTOS_BALOON_ILLUSTRATION_TITLE" desc="Memory title for the Baloon illustration shown in Google Photos module in the new tab page.">
+        Your trip
+      </message>
       <message name="IDS_NTP_MODULES_PHOTOS_NEW" desc="Text shown on the header chip of Google Photos module.">
         New
       </message>
@@ -8059,10 +8068,10 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
 
       <!-- Tab Context Menu -->
       <if expr="not use_titlecase">
-        <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="The label of the 'New Tab to the Right' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="The label of the 'New Tab to the Right' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           New tab to the right
         </message>
-        <message name="IDS_TAB_CXMENU_NEWTABTOLEFT" desc="The label of the 'New Tab to the Left' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_NEWTABTOLEFT" desc="The label of the 'New Tab to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           New tab to the left
         </message>
         <message name="IDS_TAB_CXMENU_RELOAD" desc="The label of the 'Reload' Tab context menu item.">
@@ -8077,10 +8086,10 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="The label of the 'Close Other Tabs' Tab context menu item.">
           Close other tabs
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close tabs to the right
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="The label of the 'Close Tabs to the Left' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="The label of the 'Close Tabs to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close tabs to the left
         </message>
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="The label of the 'Focus this tab' Tab context menu item.">
@@ -8156,10 +8165,10 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </if>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="In Title Case: The label of the 'New Tab to the Right' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_NEWTABTORIGHT" desc="In Title Case: The label of the 'New Tab to the Right' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           New Tab to the Right
         </message>
-        <message name="IDS_TAB_CXMENU_NEWTABTOLEFT" desc="In Title Case: The label of the 'New Tab to the Left' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_NEWTABTOLEFT" desc="In Title Case: The label of the 'New Tab to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           New Tab to the Left
         </message>
         <message name="IDS_TAB_CXMENU_RELOAD" desc="In Title Case: The label of the 'Reload' Tab context menu item.">
@@ -8174,10 +8183,10 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="In Title Case: The label of the 'Close Other Tabs' Tab context menu item.">
           Close Other Tabs
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close Tabs to the Right
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="In Title Case: The label of the 'Close Tabs to the Left' Tab context menu item.">
+        <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="In Title Case: The label of the 'Close Tabs to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close Tabs to the Left
         </message>
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="In Title Case: The label of the 'Focus This Tab' Tab context menu item.">
@@ -12477,6 +12486,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SIDE_SEARCH_PROMO" desc="Promo UI shown next to the side search button to encourage its use.">
         See more search results in side panel
       </message>
+      <message name="IDS_SIDE_SEARCH_ENTRYPOINT_LABEL" desc="The label text that is animated-in when the omnibox entrypoint is first shown.">
+        See more search results
+      </message>
       <message name="IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED" desc="The tooltip for the side search toolbar button when the button is active and the side panel is open.">
         Close search in side panel
       </message>
@@ -13035,6 +13047,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA" desc="Generic feature name during alpha phase, to be displayed in educational and settigns UI.">
         Game controls
       </message>
+      <message name="IDS_INPUT_OVERLAY_EDUCATIONAL_TITLE_ALPHA" desc="Feature title via Educational menu.">
+        Game controls now available
+      </message>
       <message name="IDS_INPUT_OVERLAY_ACCESSIBILITY_ALPHA" desc="Text tied to the close button on Settings menu, readable via Chromevox.">
         Close game controls
       </message>
@@ -13050,8 +13065,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_INPUT_OVERLAY_MENU_CUSTOMIZE_BUTTON" desc="Text displayed to engage in key binding edition.">
         Customize
       </message>
+      <message name="IDS_INPUT_OVERLAY_MENU_EDIT_BUTTON" desc="Text displayed to engage in key binding edition.">
+        Edit
+      </message>
       <message name="IDS_INPUT_OVERLAY_MENU_SHOW_HINT_OVERLAY" desc="Text shown next to the toggle to enable/disable the display overlay to the user.">
         Show hint overlay
+      </message>
+      <message name="IDS_INPUT_OVERLAY_MENU_SHOW_KEY_MAPPING" desc="Text tied to the key-mapping toggle on Settings UI.">
+        Show key mapping
       </message>
       <message name="IDS_INPUT_OVERLAY_MENU_SEND_FEEDBACK" desc="Entry point to send feedback regarding input-overlay.">
         Send feedback
@@ -13083,6 +13104,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_INPUT_OVERLAY_EDUCATIONAL_DESCRIPTION" desc="Text on the educational dialog describing the funcionality introduced by this feature.">
         You’ve been invited to try out keyboard control for this game.
       </message>
+      <message name="IDS_INPUT_OVERLAY_EDUCATIONAL_DESCRIPTION_ALPHA" desc="Text shown on the educational dialog during alpha relase.">
+        Play using your Chromebook keyboard. You can customize keys to specific actions.
+      </message>
       <message name="IDS_INPUT_OVERLAY_EDUCATIONAL_ACCEPT_BUTTON" desc="Educational dialog's accept button text.">
         Got it
       </message>
@@ -13094,6 +13118,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_INPUT_OVERLAY_SETTINGS_NUDGE" desc="Label displayed next to the Settings UI's entry point so the user is aware.">
         Click here to customize controls
+      </message>
+      <message name="IDS_INPUT_OVERLAY_SETTINGS_NUDGE_ALPHA" desc="Label displayed next to Settings UI's entry point during alpha phase.">
+        Click to customize your game controls
       </message>
       <message name="IDS_INPUT_OVERLAY_CLOSE_MENU" desc="Accessibility name tied to the close button.">
         Close menu
@@ -13110,14 +13137,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_BODY_HEADER_1"  desc="1 of 2 subtitles on the page. We want to write for users who skim the page. That means that the page title, the sub titles, and the button label all work well together as a mini story: 1) Help us build a more private web How? 2) Limit sharing between sites 3) More control over the ads you see 4) Yes, I’ll try it">
       Limited sharing between sites
     </message>
-    <message name="IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION" desc="The body text of the bubble. * “During the trials”: The trials happen in addition to today’s current system (which is based on third-party cookies). In other words, even by agreeing to or remaining in a trial, the user’s core experience doesn’t change much. This is an experiment, and we need the user to understand as much. ">
-      During trials, Chrome is exploring ways to limit spam, fraud, and sharing between sites. Chrome also <ph name="ESTIMATE_INTERESTS_LINK">$1<ex>estimates your interests</ex></ph> that sites can use to show you ads. You can manage your interests in settings.
+    <message name="IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION" desc="The body text of the bubble. * “ad spam”: spam related to web advertising">
+      Chrome is exploring ways to limit ad spam, fraud, and sharing between sites. Chrome also <ph name="ESTIMATE_INTERESTS_LINK">$1<ex>estimates your interests</ex></ph> that sites can use to show you ads. You can manage your interests in settings.
     </message>
     <message name="IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_SETTINGS_LINK" desc="The user can choose “Go to settings” to visit chrome://settings/privacySandbox. If they do, they’ll find the toggle on for Sandbox trials, which include everything they’ve read above. They can leave trials on or turn them off on this page. Choosing “Go to settings”, the user will navigate away from this page and won’t be able to return here.">
       Go to settings
     </message>
     <message name="IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION_ESTIMATES_INTERESTS_LINK" desc="This will be inserted as a link in IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION instead of ESTIMATE_INTERESTS_LINK placeholder. * “estimate your interests”: Topics of interest include things like “Live comedy” and “Rock music”. Chrome estimates these interests based on the sites users visit. It’s an “estimation”, and we don’t want to suggest that we know with certainty the user’s interests. Avoid words like “guess”, “establish”, “define”, etc. (in place of “estimate”). ">
       estimates your interests
+    </message>
+    <message name="IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION_ESTIMATES_INTERESTS_LINK_A11Y_NAME" desc="The accessible text read for IDS_PRIVACY_SANDBOX_BUBBLE_NOTICE_DESCRIPTION_ESTIMATES_INTERESTS_LINK. * “estimate your interests”: Topics of interest include things like “Live comedy” and “Rock music”. Chrome estimates these interests based on the sites users visit. It’s an “estimation”, and we don’t want to suggest that we know with certainty the user’s interests. Avoid words like “guess”, “establish”, “define”, etc. (in place of “estimate”). ">
+      estimates your interests - Chrome can estimate your interests
     </message>
     <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_BODY_DESCRIPTION_1" desc="* “restrict” means to lessen. We don’t want to suggest that we’re “eliminating” cross-site tracking. * “cross-site tracking”: An example: a user visits site A and then site B. Based on how third-party cookies work today, when that user later visits site C, site C can be aware that the user visited sites A and B, and can even have some sense for what they did on those sites. * “stop ad spam and fraud”:  This feature isn’t really related to restricting cross-site tracking but we combined these features in the same sentence / section for structural reasons.">
       We’re exploring ways to restrict cross-site tracking while enabling sites to stop ad spam and fraud.

@@ -89,7 +89,6 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/skia_conversions.h"
-#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
@@ -238,18 +237,23 @@ bool PdfViewWebPlugin::InitializeCommon() {
   is_print_preview_ = (embedder_origin == kChromePrintHost);
   CHECK(IsPrintPreview() || embedder_origin == kChromeExtensionHost);
 
+  full_frame_ = params->full_frame;
   background_color_ = params->background_color;
 
-  InitializeBase(CreateEngine(this, params->script_option),
-                 /*src_url=*/params->src_url,
-                 /*original_url=*/params->original_url,
-                 /*full_frame=*/params->full_frame);
+  set_engine(CreateEngine(this, params->script_option));
+  DCHECK(engine());
 
   SendSetSmoothScrolling();
 
-  // Skip the remaining initialization when in Print Preview mode.
+  // Skip the remaining initialization when in Print Preview mode. Loading will
+  // continue after the plugin receives a "resetPrintPreviewMode" message.
   if (IsPrintPreview())
     return true;
+
+  set_last_progress_sent(0);
+  LoadUrl(params->src_url,
+          base::BindOnce(&PdfViewWebPlugin::DidOpen, GetWeakPtr()));
+  set_url(params->original_url);
 
   // Not all edits go through the PDF plugin's form filler. The plugin instance
   // can be restarted by exiting annotation mode on ChromeOS, which can set the
@@ -713,7 +717,7 @@ void PdfViewWebPlugin::DidFormOpen(int32_t result) {
 }
 
 std::unique_ptr<UrlLoader> PdfViewWebPlugin::CreateUrlLoader() {
-  if (full_frame()) {
+  if (full_frame_) {
     DidStartLoading();
 
     // Disable save and print until the document is fully loaded, since they
@@ -996,10 +1000,7 @@ void PdfViewWebPlugin::SetFormTextFieldInFocus(bool in_focus) {
 }
 
 void PdfViewWebPlugin::SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityDocInfo,
-                     weak_factory_.GetWeakPtr(), std::move(doc_info)));
+  pdf_accessibility_data_handler_->SetAccessibilityDocInfo(std::move(doc_info));
 }
 
 void PdfViewWebPlugin::SetAccessibilityPageInfo(
@@ -1007,19 +1008,15 @@ void PdfViewWebPlugin::SetAccessibilityPageInfo(
     std::vector<AccessibilityTextRunInfo> text_runs,
     std::vector<AccessibilityCharInfo> chars,
     AccessibilityPageObjects page_objects) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityPageInfo,
-                                weak_factory_.GetWeakPtr(),
-                                std::move(page_info), std::move(text_runs),
-                                std::move(chars), std::move(page_objects)));
+  pdf_accessibility_data_handler_->SetAccessibilityPageInfo(
+      std::move(page_info), std::move(text_runs), std::move(chars),
+      std::move(page_objects));
 }
 
 void PdfViewWebPlugin::SetAccessibilityViewportInfo(
     AccessibilityViewportInfo viewport_info) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityViewportInfo,
-                     weak_factory_.GetWeakPtr(), std::move(viewport_info)));
+  pdf_accessibility_data_handler_->SetAccessibilityViewportInfo(
+      std::move(viewport_info));
 }
 
 void PdfViewWebPlugin::SetContentRestrictions(int content_restrictions) {
@@ -1060,8 +1057,9 @@ void PdfViewWebPlugin::UserMetricsRecordAction(const std::string& action) {
   client_->RecordComputedAction(action);
 }
 
-gfx::Vector2d PdfViewWebPlugin::plugin_offset_in_frame() const {
-  return gfx::Vector2d();
+// TODO(crbug.com/1302059): Delete after merging with `PdfViewPluginBase`.
+bool PdfViewWebPlugin::full_frame() const {
+  return full_frame_;
 }
 
 void PdfViewWebPlugin::OnViewportChanged(
@@ -1142,34 +1140,6 @@ void PdfViewWebPlugin::HandleImeCommit(const blink::WebString& text) {
 
 void PdfViewWebPlugin::OnInvokePrintDialog() {
   client_->Print();
-}
-
-void PdfViewWebPlugin::OnSetAccessibilityDocInfo(
-    AccessibilityDocInfo doc_info) {
-  if (!pdf_accessibility_data_handler_)
-    return;
-  pdf_accessibility_data_handler_->SetAccessibilityDocInfo(doc_info);
-  // `this` may be deleted. Don't do anything else.
-}
-
-void PdfViewWebPlugin::OnSetAccessibilityPageInfo(
-    AccessibilityPageInfo page_info,
-    std::vector<AccessibilityTextRunInfo> text_runs,
-    std::vector<AccessibilityCharInfo> chars,
-    AccessibilityPageObjects page_objects) {
-  if (!pdf_accessibility_data_handler_)
-    return;
-  pdf_accessibility_data_handler_->SetAccessibilityPageInfo(
-      page_info, text_runs, chars, page_objects);
-  // `this` may be deleted. Don't do anything else.
-}
-
-void PdfViewWebPlugin::OnSetAccessibilityViewportInfo(
-    AccessibilityViewportInfo viewport_info) {
-  if (!pdf_accessibility_data_handler_)
-    return;
-  pdf_accessibility_data_handler_->SetAccessibilityViewportInfo(viewport_info);
-  // `this` may be deleted. Don't do anything else.
 }
 
 void PdfViewWebPlugin::ResetRecentlySentFindUpdate() {

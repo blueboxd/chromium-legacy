@@ -12,10 +12,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
+#include "components/autofill/core/browser/mock_merchant_promo_code_manager.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
@@ -52,6 +52,7 @@ class TestAutofillClient : public AutofillClient {
   version_info::Channel GetChannel() const override;
   TestPersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
+  MerchantPromoCodeManager* GetMerchantPromoCodeManager() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
@@ -78,8 +79,7 @@ class TestAutofillClient : public AutofillClient {
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
-  raw_ptr<VirtualCardEnrollmentManager> GetVirtualCardEnrollmentManager()
-      override;
+  VirtualCardEnrollmentManager* GetVirtualCardEnrollmentManager() override;
   void ShowVirtualCardEnrollDialog(
       const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
       base::OnceClosure accept_virtual_card_callback,
@@ -167,6 +167,7 @@ class TestAutofillClient : public AutofillClient {
   bool ShouldShowSigninPromo() override;
   bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
+  void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
 
   // RiskDataLoader:
   void LoadRiskData(
@@ -267,6 +268,11 @@ class TestAutofillClient : public AutofillClient {
     return &mock_autocomplete_history_manager_;
   }
 
+  ::testing::NiceMock<MockMerchantPromoCodeManager>*
+  GetMockMerchantPromoCodeManager() {
+    return &mock_merchant_promo_code_manager_;
+  }
+
   void set_migration_card_selections(
       const std::vector<std::string>& migration_card_selection) {
     migration_card_selection_ = migration_card_selection;
@@ -292,6 +298,8 @@ class TestAutofillClient : public AutofillClient {
   TestAddressNormalizer test_address_normalizer_;
   ::testing::NiceMock<MockAutocompleteHistoryManager>
       mock_autocomplete_history_manager_;
+  ::testing::NiceMock<MockMerchantPromoCodeManager>
+      mock_merchant_promo_code_manager_;
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;

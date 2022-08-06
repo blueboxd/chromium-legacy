@@ -54,8 +54,7 @@ class MerchantPromoCodeManager : public SingleFieldFormFiller,
   // is a profile-scope data manager used to retrieve promo code offers from the
   // local autofill table. |is_off_the_record| indicates whether the user is
   // currently operating in an off-the-record context (i.e. incognito).
-  void Init(raw_ptr<PersonalDataManager> personal_data_manager,
-            bool is_off_the_record);
+  void Init(PersonalDataManager* personal_data_manager, bool is_off_the_record);
 
   // Returns a weak pointer to the current MerchantPromoCodeManager
   // instance.
@@ -69,6 +68,29 @@ class MerchantPromoCodeManager : public SingleFieldFormFiller,
       MerchantPromoCodeManagerTest,
       DoesNotShowPromoCodeOffersIfPersonalDataManagerDoesNotExist);
 
+  // Records metrics related to the offers suggestions popup.
+  class UMARecorder {
+   public:
+    UMARecorder() = default;
+
+    UMARecorder(const UMARecorder&) = delete;
+    UMARecorder& operator=(const UMARecorder&) = delete;
+
+    ~UMARecorder() = default;
+
+    void OnOffersSuggestionsShown(
+        const std::u16string& name,
+        std::vector<const AutofillOfferData*>& offers);
+    void OnOfferSuggestionSelected(int frontend_id);
+
+   private:
+    // The name of the field that most recently had suggestions shown.
+    std::u16string most_recent_suggestions_shown_field_name_;
+
+    // The name of the field that most recently had a suggestion selected.
+    std::u16string most_recent_suggestion_selected_field_name_;
+  };
+
   // Sends suggestions for |promo_code_offers| to the |query_handler|'s handler
   // for display in the associated Autofill popup.
   void SendPromoCodeSuggestions(
@@ -78,6 +100,8 @@ class MerchantPromoCodeManager : public SingleFieldFormFiller,
   raw_ptr<PersonalDataManager> personal_data_manager_ = nullptr;
 
   bool is_off_the_record_ = false;
+
+  UMARecorder uma_recorder_;
 
   base::WeakPtrFactory<MerchantPromoCodeManager> weak_ptr_factory_{this};
 };

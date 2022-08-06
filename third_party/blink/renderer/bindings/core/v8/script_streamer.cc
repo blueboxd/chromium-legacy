@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -1057,8 +1058,12 @@ class InlineSourceStream final
   ~InlineSourceStream() override = default;
 
   size_t GetMoreData(const uint8_t** src) override {
-    if (!text_)
+    if (!text_) {
+      // The V8 scanner requires a valid pointer when using TWO_BYTE sources,
+      // even if the length is 0.
+      *src = new uint8_t[0];
       return 0;
+    }
 
     size_t size = text_.CharactersSizeInBytes();
     auto data_copy = std::make_unique<uint8_t[]>(size);
@@ -1117,7 +1122,10 @@ v8::ScriptCompiler::StreamedSource* BackgroundInlineScriptStreamer::Source(
       base::Milliseconds(20)};
   // Make sure the script has finished compiling in the background. See comment
   // above in Run().
-  if (!event_.TimedWait(kWaitTimeoutParam.Get()))
+  bool signaled = event_.TimedWait(kWaitTimeoutParam.Get());
+  base::UmaHistogramBoolean("WebCore.Scripts.InlineStreamerTimedOut",
+                            !signaled);
+  if (!signaled)
     return nullptr;
   return source_.get();
 }

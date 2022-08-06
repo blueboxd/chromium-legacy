@@ -31,6 +31,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1150989369772528668">Kalendari</translation>
 <translation id="1153356358378277386">Pajisjet e çiftuara</translation>
 <translation id="1165712434476988950">Kërkohet rinisja e pajisjes për të zbatuar përditësimin.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Kablloja jote USB-C mund të mos lidhet siç duhet me ekranet</translation>
 <translation id="1175572348579024023">Lëviz</translation>
 <translation id="1178581264944972037">Pauzë</translation>
@@ -55,10 +56,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1247519845643687288">Aplikacionet e fundit</translation>
 <translation id="1252999807265626933">Po karikohet nga <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Si është moti?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> deri në 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Zgjidh për më shumë detaje në "Kalendarin e Google".</translation>
 <translation id="1267032506238418139">Ndryshim në shkurtore</translation>
 <translation id="1269405891096105529">Pajisja periferike nuk mbështetet në modalitetin "vizitor"</translation>
 <translation id="1270290102613614947">Tastiera në ekran u çaktivizua</translation>
@@ -124,6 +121,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">"Qasja me çelës" mund të çaktivizohet te Cilësimet &gt; Qasshmëria.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> pajisje</translation>
+<translation id="1639239467298939599">Po ngarkohet...</translation>
 <translation id="1654477262762802994">Nis një pyetje me zë</translation>
 <translation id="1668469839109562275">VPN e integruar</translation>
 <translation id="1677472565718498478">Koha e mbetur <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2359808026110333948">Vazhdo</translation>
 <translation id="2367186422933365202">Nuk mund të identifikohesh në Chromebook-un tënd</translation>
 <translation id="2369165858548251131">"Përshëndetje" në kinezisht</translation>
+<translation id="2375445874393996153">Kërkimi i gjërave në ekranin tim me "Asistentin e Google" nuk mbështetet më.</translation>
 <translation id="2390318262976603432">Cilësimet rajonale</translation>
 <translation id="240006516586367791">Kontrollet e medias</translation>
 <translation id="2402411679569069051">Për të shkyçur Chromebook-un tënd, përdor gjurmën e gishtit ose shkyç telefonin</translation>
@@ -505,6 +504,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="3901991538546252627">Po lidhet me <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Kalo pajisjen në versionin e mëparshëm brenda 1 minute}other{Kalo pajisjen në versionin e mëparshëm brenda # minutash}}</translation>
 <translation id="3923494859158167397">Nuk ka asnjë rrjet celular të konfiguruar</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, ngjarjet po ngarkohen.</translation>
 <translation id="3932043219784172185">Nuk është lidhur asnjë pajisje</translation>
 <translation id="3934456833412894880">"Karikimi me përshtatje" është aktiv. Bateria jote do të qëndrojë në 80% për të rritur kohëzgjatjen e saj dhe do të karikohet plotësisht kur të të nevojitet.</translation>
 <translation id="3943857333388298514">Ngjite</translation>
@@ -704,6 +704,7 @@ Lidhe pajisjen me një burim të energjisë elektrike.</translation>
 <translation id="5078796286268621944">Kod i pasaktë PIN</translation>
 <translation id="5083553833479578423">Shkyç më shumë funksione të "Asistentit".</translation>
 <translation id="509790653408515442">Kur transmeton aplikacionet e telefonit tënd, ato do të shfaqen këtu</translation>
+<translation id="5098537242461068432">Tavolina e punës dhe dritaret u rihapën</translation>
 <translation id="5107522548814527560">Ueb</translation>
 <translation id="5117590920725113268">Trego muajin e ardhshëm</translation>
 <translation id="5136175204352732067">Është lidhur një tastierë tjetër</translation>
@@ -1048,7 +1049,6 @@ Instalim i ri</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Po rikthehet te rezolucioni i vjetër për <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Rifresko</translation>
-<translation id="718361511487535372">Hap në kalendarin e Google</translation>
 <translation id="7188494361780961876">Menyja u zhvendos në këndin lart majtas të ekranit.</translation>
 <translation id="7189412385142492784">Sa larg është Afërdita</translation>
 <translation id="7198435252016571249">Pamja paraprake e kamerës ka kaluar në këndin e poshtëm djathtas. Në konflikt me sipërfaqen e sistemit.</translation>
@@ -1057,6 +1057,10 @@ Instalim i ri</translation>
 <translation id="7258828758145722155">Modifikuar dje</translation>
 <translation id="726276584504105859">Zvarrit këtu për të përdorur ekranin e ndarë</translation>
 <translation id="7262906531272962081">Krijo alarm rikujtues</translation>
+<translation id="7297440678881127227">Nga <ph name="START_TIME" /> deri në
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Zgjidh për më shumë detaje në "Kalendarin e Google".</translation>
 <translation id="7302889331339392448">"Titrat në çast" janë joaktivë.</translation>
 <translation id="7303365578352795231">Po përgjigjet në një pajisje tjetër</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@ Instalim i ri</translation>
 <translation id="7904094684485781019">Administratori për këtë faqe ka ndaluar identifikimin e shumëfishtë.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Ligjërimi përpunohet tani lokalisht dhe "Diktimi" punon jashtë linje</translation>
+<translation id="7932451802722951285">Hap në "Kalendarin e Google"</translation>
 <translation id="7933084174919150729">"Asistenti i Google" ofrohet vetëm për profilin kryesor.</translation>
 <translation id="79341161159229895">Llogaria menaxhohet nga <ph name="FIRST_PARENT_EMAIL" /> dhe <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Shtyp <ph name="SHORTCUT_KEY_NAME" /> + V për të parë kujtesën tënde të fragmenteve. 5 artikujt e fundit që ke kopjuar janë ruajtur në kujtesën tënde të fragmenteve.</translation>

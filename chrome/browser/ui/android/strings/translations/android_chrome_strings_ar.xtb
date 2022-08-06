@@ -110,6 +110,7 @@
 <translation id="1513352483775369820">الإشارات المرجعية وسجلّ الويب</translation>
 <translation id="1513814250881909472">يمكنك تفعيل المزامنة للحصول على علامات التبويب من أجهزتك الأخرى.</translation>
 <translation id="1513858653616922153">حذف كلمة المرور</translation>
+<translation id="1514552811327923157">تم فتح إشعار "مبادرة حماية الخصوصية" بطول الشاشة.</translation>
 <translation id="1518421282666914498">‏رمز تعبيري بتنسيق GIF <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">نشط اليوم</translation>
 <translation id="1538801903729528855">الحصول على تجربة صوت أفضل على الإنترنت</translation>
@@ -289,7 +290,8 @@
 <translation id="2534155362429831547">تم حذف <ph name="NUMBER_OF_ITEMS" /> من العناصر</translation>
 <translation id="2534582914273493287">‏يتم إرسال عناوين URL التي تزورها إلى Google</translation>
 <translation id="2536728043171574184">عرض نسخة بلا اتصال من هذه الصفحة</translation>
-<translation id="2546283357679194313">ملفات تعريف الارتباط وبيانات المواقع</translation>
+<translation id="2546283357679194313">ملفات تعريف الارتباط وبيانات المواقع الإلكترونية
+</translation>
 <translation id="2549516196460093976">‏يمكنك استخدام هذا الجهاز اللوحي لتسجيل الدخول إلى حساب Google على جهاز الكمبيوتر الذي يعرض رمز الاستجابة السريعة هذا.</translation>
 <translation id="2558569818338050235">يؤثر سجلّ تصفّحك في الإعلانات التي تظهر لك.</translation>
 <translation id="2561519700418191927">معاينات الفيديوهات</translation>
@@ -321,6 +323,7 @@
 <translation id="2711073837061989559">الإصدارات التجريبية</translation>
 <translation id="2718352093833049315">‏باستخدام شبكة Wi-Fi فقط</translation>
 <translation id="2718846868787000099">يمكن للمواقع التي تزورها الاطّلاع على إعداداتك المفضّلة لتتمكن من عرض المحتوى بلغاتك المفضّلة.</translation>
+<translation id="2722945394406572875">تم إغلاق إشعار "مبادرة حماية الخصوصية".</translation>
 <translation id="2723001399770238859">الصوت</translation>
 <translation id="2732063072010454421">تحسين تجربة البحث الصوتي</translation>
 <translation id="2739256783402597439">شبكة الجيل الثاني</translation>
@@ -346,6 +349,7 @@
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2856503607207334158">تعذَّر تسجيل الدخول.</translation>
 <translation id="2860954141821109167">يُرجى التأكُّد من تفعيل تطبيق هاتف على هذا الجهاز.</translation>
+<translation id="2861923151411510142">‏لن تتوفّر بعض ميزات Chrome بعد الآن.</translation>
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2871733351037274014">تحميل الصفحات مُسبقًا</translation>
 <translation id="2888126860611144412">‏لمحة عن Chrome</translation>
@@ -502,7 +506,7 @@
 <translation id="371230970611282515">توقّع الأحداث الخطيرة قبل حدوثها والتحذير منها</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3716182511346448902">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أوقفها Chrome مؤقتًا.</translation>
-<translation id="3721119614952978349">‏علاقتك مع Google</translation>
+<translation id="3721119614952978349">‏أنت وGoogle</translation>
 <translation id="3737319253362202215">إعدادات الترجمة</translation>
 <translation id="3737402728074743863">عليك ضبط قفل الشاشة لاستخدام هذا الجهاز كمفتاح أمان.</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
@@ -524,7 +528,6 @@
 <translation id="3845098929839618392">فتح في علامة تبويب تصفّح متخفي</translation>
 <translation id="3856096718352044181">يُرجى إثبات صلاحية مقدّم الخدمة أو المحاولة مجددًا.</translation>
 <translation id="3858860766373142691">الاسم</translation>
-<translation id="3859206958100234503">يمكنك تفعيل المزامنة للحصول على كلمات المرور والإشارات المرجعية وغيرها الكثير على جميع أجهزتك.</translation>
 <translation id="3861633093716975811">الفيديوهات الرائجة</translation>
 <translation id="3892148308691398805">نسخ النص</translation>
 <translation id="3894427358181296146">إضافة مجلد</translation>
@@ -563,6 +566,7 @@
 <translation id="4095146165863963773">هل ترغب في حذف بيانات التطبيق؟</translation>
 <translation id="4096227151372679484">تم فتح مسار حفظ الإشارات المرجعية في نصف الشاشة.</translation>
 <translation id="4099578267706723511">‏يمكنك المساعدة في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
+<translation id="4101475238162928417">يمكنك تفعيل المزامنة للحصول على كلمات المرور والإشارات المرجعية وغيرها الكثير على أجهزتك الأخرى.</translation>
 <translation id="410351446219883937">التشغيل التلقائي</translation>
 <translation id="4106587138345390261">‏يعمل Chrome على استكشاف ميزات جديدة تتيح للمواقع الإلكترونية توفير تجربة التصفّح ذاتها باستخدام قدر أقل من المعلومات.</translation>
 <translation id="4108314971463891922">متابعة</translation>
@@ -585,6 +589,7 @@
 <translation id="4227318652298512614">تابِع المواقع الإلكترونية التي تريدها.</translation>
 <translation id="4242533952199664413">فتح الإعدادات</translation>
 <translation id="4248098802131000011">لحماية كلمة المرور من عمليات اختراق البيانات ومشاكل الأمان الأخرى</translation>
+<translation id="424864128008805179">‏هل تريد تسجيل الخروج من Chrome؟</translation>
 <translation id="4249955472157341256">الترتيب حسب الأحدث</translation>
 <translation id="4250229828105606438">لقطة شاشة</translation>
 <translation id="4256782883801055595">تراخيص البرامج المفتوحة المصدر</translation>
@@ -652,7 +657,6 @@
 <translation id="4594952190837476234">تم إنشاء هذه الصفحة المتوفّرة بلا اتصال بالإنترنت في <ph name="CREATION_TIME" />، وقد تختلف عن النسخة المتوفِّرة على الإنترنت.</translation>
 <translation id="4616150815774728855">فتح <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">إثبات هويّتك</translation>
-<translation id="4627165777145349100">مزيد من المعلومات حول هذه الصفحة</translation>
 <translation id="4634124774493850572">استخدام كلمة المرور</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{كلمة مرورٍ واحدة محتمَل تعرّضها للاختراق}zero{# كلمة مرور محتمَل تعرّضها للاختراق}two{كلمتا مرورٍ محتمَل تعرّضهما للاختراق}few{# كلمات مرورٍ محتمَل تعرّضها للاختراق}many{# كلمة مرورٍ محتمَل تعرّضها للاختراق}other{# كلمة مرورٍ محتمَل تعرّضها للاختراق}}</translation>
 <translation id="4650364565596261010">الإعداد التلقائي للنظام</translation>
@@ -889,11 +893,13 @@
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
 <translation id="5869789175361934029">متابعة من جهاز آخر</translation>
 <translation id="587735546353481577">‏لمتابعة موقع إلكتروني، انتقِل إلى الموقع الإلكتروني وافتح قائمة Chrome وانقر على "متابعة".</translation>
+<translation id="5879072387416556377">الحصول على اقتراحات أفضل</translation>
 <translation id="5880748256563468367">الانتقال إلى الخلاصة</translation>
 <translation id="5884076754568147479">‏لمساعدتك على إنجاز المهام، ستتلقى Google عناوين URL للمواقع الإلكترونية ومحتواها عند استخدامك "مساعد Google" على تلك المواقع، بالإضافة إلى المعلومات التي يتم إرسالها من خلال "مساعد Google".</translation>
 <translation id="5906513782029855931">‏عند معرفة عناوين URL الخاصة بالمواقع الإلكترونية، يَسهُل على "مساعد Google" مساعدتك في إكمال المهام. ويمكنك إيقاف "مساعد Google" في إعدادات Chrome.</translation>
 <translation id="5916664084637901428">مفعّل</translation>
 <translation id="5919204609460789179">تحديث <ph name="PRODUCT_NAME" /> لبدء المزامنة</translation>
+<translation id="593625682991400408">‏يعمل Chrome خلال الفترات التجريبية على إيجاد طرق للحد من المحتوى غير المرغوب فيه وعمليات الاحتيال وعمليات مشاركة البيانات بين المواقع الإلكترونية. ويقدِّم Chrome أيضًا <ph name="BEGIN_LINK" />تقديرات حول اهتماماتك<ph name="END_LINK" /> التي يمكن للمواقع الإلكترونية استخدامها لعرض إعلانات لك. ويمكنك إدارة اهتماماتك من خلال الإعدادات.</translation>
 <translation id="5938820472109305350">إضافة <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">‏استخدام محرك Google للبحث</translation>
 <translation id="5945035219773565305">الاقتراح الحالي:  <ph name="RECOMMENDATION" /></translation>
@@ -1191,6 +1197,7 @@
 <translation id="749294055653435199">‏لا تتوفّر ميزة "عدسة Google" على هذا الجهاز.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
+<translation id="7502234197872745058">‏لتسجيل الخروج من حسابك على Google في جميع المواقع الإلكترونية، <ph name="BEGIN_LINK1" />سجِّل الخروج من متصفِّح Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">ميزة تلقّي آخر الأخبار غير متاحة.</translation>
 <translation id="7507207699631365376">الاطّلاع على <ph name="BEGIN_LINK" />سياسة خصوصية<ph name="END_LINK" /> مقدّم الخدمة</translation>
 <translation id="7514365320538308">تنزيل</translation>
@@ -1230,6 +1237,7 @@
 <translation id="770741401784017797">‏جارٍ إنشاء ملف GIF</translation>
 <translation id="7707922173985738739">استخدام بيانات الجوّال</translation>
 <translation id="7709094866268987903">ستظهر الاهتمامات التي حذفتها هنا.</translation>
+<translation id="7709918231054955894">الحصول على جميع علامات التبويب الخاصة بك</translation>
 <translation id="7725024127233776428">يتم عرض الصفحات التي يتم وضع إشارة عليها هنا.</translation>
 <translation id="7757787379047923882">تمت مشاركة النص من <ph name="DEVICE_NAME" />.</translation>
 <translation id="7761849928583394409">اختيار التاريخ والوقت</translation>
@@ -1425,6 +1433,7 @@
 <translation id="8656747343598256512">‏سيتم تسجيل الدخول إلى هذا الموقع الإلكتروني وإلى Chrome باستخدام حسابك على Google. يمكنك تفعيل المزامنة لاحقًا.</translation>
 <translation id="8659579665266920523">‏كيفية البحث باستخدام Chrome</translation>
 <translation id="8662811608048051533">الخروج من معظم المواقع الإلكترونية.</translation>
+<translation id="8664215986015753476">‏استخدام Chrome بإعداداتك الخاصة</translation>
 <translation id="8664979001105139458">اسم الملف موجود</translation>
 <translation id="8666759526542103597">لمحة عن تخصيص الإعلانات المستند إلى المتصفِّح</translation>
 <translation id="8667760277771450375">نحن نستكشف طرقًا للحد من تتبُّع الاستخدام بين مواقع إلكترونية مختلفة، مع السماح لهذه المواقع بحظر الرسائل الإعلانية غير المرغوب فيها ومنع الاحتيال.</translation>
@@ -1512,6 +1521,7 @@
 <translation id="9106148373857059373">تم إغلاق مسار حفظ الإشارات المرجعية.</translation>
 <translation id="9108312223223904744">إتاحة استخدام الهاتف كمفتاح أمان</translation>
 <translation id="9108808586816295166">قد لا يكون نظام أسماء النطاقات الآمن متاحًا طوال الوقت.</translation>
+<translation id="9128984223251192329">تم فتح إشعار "مبادرة حماية الخصوصية" في نصف الشاشة.</translation>
 <translation id="9133397713400217035">الاطّلاع بلا اتصال بالإنترنت</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>

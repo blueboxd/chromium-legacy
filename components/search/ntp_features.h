@@ -33,7 +33,8 @@ extern const base::Feature kNtpOneGoogleBar;
 extern const base::Feature kNtpLogo;
 extern const base::Feature kNtpShortcuts;
 extern const base::Feature kNtpMiddleSlotPromo;
-extern const base::Feature kModules;
+extern const base::Feature kNtpModulesLoadTimeoutMilliseconds;
+extern const base::Feature kNtpModulesOrder;
 extern const base::Feature kNtpModulesLoad;
 extern const base::Feature kNtpRecipeTasksModule;
 extern const base::Feature kNtpChromeCartModule;
@@ -48,6 +49,7 @@ extern const base::Feature kNtpPhotosModuleSoftOptOut;
 
 extern const base::Feature kNtpPhotosModuleCustomizedOptInTitle;
 extern const base::Feature kNtpPhotosModuleCustomizedOptInArtWork;
+extern const base::Feature kNtpPhotosModuleSplitSvgOptInArtWork;
 extern const base::Feature kNtpSafeBrowsingModule;
 extern const base::Feature kNtpModulesDragAndDrop;
 extern const base::Feature kNtpModulesFirstRunExperience;

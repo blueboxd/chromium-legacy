@@ -31,6 +31,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1150989369772528668">Kalendaryo</translation>
 <translation id="1153356358378277386">Mga nakapares na device</translation>
 <translation id="1165712434476988950">Kailangang mag-restart ng device para mailapat ang update.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Posibleng hindi kumonekta nang maayos sa mga display ang iyong USB-C cable</translation>
 <translation id="1175572348579024023">Mag-scroll</translation>
 <translation id="1178581264944972037">I-pause</translation>
@@ -55,10 +56,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1247519845643687288">Mga kamakailang app</translation>
 <translation id="1252999807265626933">Nagcha-charge mula sa <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Ano'ng lagay ng panahon?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> hanggang 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Piliin para sa higit pang detalye sa Google Calendar.</translation>
 <translation id="1267032506238418139">Pagbabago ng shortcut</translation>
 <translation id="1269405891096105529">Hindi sinusuportahan ang peripheral sa Guest mode</translation>
 <translation id="1270290102613614947">Naka-disable ang on-screen na keyboard</translation>
@@ -124,6 +121,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1632985212731562677">Puwedeng i-disable ang Switch Access sa Mga Setting &gt; Accessibility.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> (na) device</translation>
+<translation id="1639239467298939599">Naglo-load</translation>
 <translation id="1654477262762802994">Magsimula ng query gamit ang boses</translation>
 <translation id="1668469839109562275">Built-in na VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> na lang ang natitira</translation>
@@ -506,6 +504,7 @@ Isaksak ang iyong device.</translation>
 <translation id="3901991538546252627">Kumokonekta sa <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Ibalik sa nakaraang bersyon ang device sa loob ng 1 minuto}one{Ibalik sa nakaraang bersyon ang device sa loob ng # minuto}other{Ibalik sa nakaraang bersyon ang device sa loob ng # na minuto}}</translation>
 <translation id="3923494859158167397">Walang naka-set up na mobile network</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Nilo-load ang mga event.</translation>
 <translation id="3932043219784172185">Walang nakakonektang device</translation>
 <translation id="3934456833412894880">Naka-on ang adaptive na pag-charge. Mananatili ang iyong baterya sa 80% para mapahaba ang buhay ng baterya, at ganap na na-charge kapag kailangan mo ito.</translation>
 <translation id="3943857333388298514">I-paste</translation>
@@ -705,6 +704,7 @@ Isaksak ang iyong device.</translation>
 <translation id="5078796286268621944">Maling PIN</translation>
 <translation id="5083553833479578423">Mag-unlock ng higit pang feature ng Assistant.</translation>
 <translation id="509790653408515442">Kapag na-stream mo ang mga app sa iyong telepono, lalabas ang mga ito dito</translation>
+<translation id="5098537242461068432">Binuksan ulit ang desk at mga window</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Ipakita ang susunod na buwan</translation>
 <translation id="5136175204352732067">Ibang keyboard ang nakakonekta</translation>
@@ -1049,7 +1049,6 @@ Kaka-install lang</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">I-refresh</translation>
-<translation id="718361511487535372">Buksan sa Google calendar</translation>
 <translation id="7188494361780961876">Inilipat ang menu sa kaliwang sulok sa itaas ng screen.</translation>
 <translation id="7189412385142492784">Gaano kalayo ang Venus</translation>
 <translation id="7198435252016571249">Nag-snap ang camera sa kanang sulok sa ibaba. Pagsasalungat sa surface ng system.</translation>
@@ -1058,6 +1057,10 @@ Kaka-install lang</translation>
 <translation id="7258828758145722155">Na-edit kahapon</translation>
 <translation id="726276584504105859">I-drag dito upang magamit ang split screen</translation>
 <translation id="7262906531272962081">Gumawa ng paalala</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> hanggang
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Piliin para sa higit pang detalye sa Google Calendar.</translation>
 <translation id="7302889331339392448">Naka-off ang Instant Caption</translation>
 <translation id="7303365578352795231">Sinasagot sa ibang device.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1170,6 +1173,7 @@ Kaka-install lang</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Lokal nang ipinoproseso ang speech at gumagana offline ang Dictation.</translation>
+<translation id="7932451802722951285">Buksan sa Google Calendar</translation>
 <translation id="7933084174919150729">Available lang ang Google Assistant para sa pangunahing profile.</translation>
 <translation id="79341161159229895">Pinamamahalaan nina <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /> ang account</translation>
 <translation id="793716872548410480">Pindutin ang <ph name="SHORTCUT_KEY_NAME" /> + V para tingnan ang iyong clipboard. Naka-save sa iyong clipboard ang huling 5 item na kinopya mo.</translation>

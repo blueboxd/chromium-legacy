@@ -31,6 +31,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="1150989369772528668">Kalendár</translation>
 <translation id="1153356358378277386">Spárované zariadenia</translation>
 <translation id="1165712434476988950">Uplatnenie aktualizácie vyžaduje reštartovanie zariadenia.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Kábel USB‑C sa možno nedá správne pripojiť k obrazovkám</translation>
 <translation id="1175572348579024023">Posúvanie</translation>
 <translation id="1178581264944972037">Pozastaviť</translation>
@@ -55,10 +56,6 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="1247519845643687288">Nedávne aplikácie</translation>
 <translation id="1252999807265626933">Nabíja sa zo <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Aké je počasie?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> až 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Výberom zobrazíte v Kalendári Google ďalšie podrobnosti.</translation>
 <translation id="1267032506238418139">Zmena skratky</translation>
 <translation id="1269405891096105529">Periféria nie je v režime pre hostí podporovaná</translation>
 <translation id="1270290102613614947">Klávesnica na obrazovke je zakázaná</translation>
@@ -124,6 +121,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Ovládanie prepínačmi je možné deaktivovať v sekcii Nastavenia &gt; Dostupnosť.</translation>
 <translation id="1637505162081889933">Zariadenia: <ph name="NUM_DEVICES" /></translation>
+<translation id="1639239467298939599">Prebieha načítavanie</translation>
 <translation id="1654477262762802994">Spustiť hlasový dopyt</translation>
 <translation id="1668469839109562275">Vstavaná sieť VPN</translation>
 <translation id="1677472565718498478">Zostávajúci čas: <ph name="TIME" /></translation>
@@ -506,6 +504,7 @@ Pripojte svoje zariadenie k napájaniu.</translation>
 <translation id="3901991538546252627">Pripája sa k sieti <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Do minúty obnovte v zariadení predchádzajúcu verziu}few{Do # minút obnovte v zariadení predchádzajúcu verziu}many{Do # minúty obnovte v zariadení predchádzajúcu verziu}other{Do # minút obnovte v zariadení predchádzajúcu verziu}}</translation>
 <translation id="3923494859158167397">Žiadne nastavené mobilné siete</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, načítavajú sa udalosti.</translation>
 <translation id="3932043219784172185">Nie je pripojené žiadne zariadenie</translation>
 <translation id="3934456833412894880">Je zapnuté adaptívne nabíjanie. Batéria zostane nabitá na 80 %, čím sa predĺži jej výdrž, a úplne sa nabije, keď to budete potrebovať.</translation>
 <translation id="3943857333388298514">Prilepiť</translation>
@@ -705,6 +704,7 @@ Pripojte svoje zariadenie k napájaniu.</translation>
 <translation id="5078796286268621944">Nesprávny kód PIN</translation>
 <translation id="5083553833479578423">Odblokujte ďalšie funkcie Asistenta.</translation>
 <translation id="509790653408515442">Tu sa zobrazia aplikácie streamované z telefónu</translation>
+<translation id="5098537242461068432">Plocha a okná boli znova otvorené</translation>
 <translation id="5107522548814527560">Internet</translation>
 <translation id="5117590920725113268">Zobraziť ďalší mesiac</translation>
 <translation id="5136175204352732067">Bola pripojená iná klávesnica</translation>
@@ -1049,7 +1049,6 @@ Nová inštalácia</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Vrátenie starého rozlíšenia prebehne o <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Obnoviť</translation>
-<translation id="718361511487535372">Otvorte v Kalendári Google</translation>
 <translation id="7188494361780961876">Ponuka bola presunutá do ľavého horného rohu obrazovky.</translation>
 <translation id="7189412385142492784">Ako ďaleko je Venuša</translation>
 <translation id="7198435252016571249">Kamera bola prichytená do pravého dolného rohu. Konflikt s platformou systému.</translation>
@@ -1058,6 +1057,10 @@ Nová inštalácia</translation>
 <translation id="7258828758145722155">Upravené včera</translation>
 <translation id="726276584504105859">Presuňte okno sem a použite tak rozdelenú obrazovku</translation>
 <translation id="7262906531272962081">Vytvoriť pripomenutie</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> až
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Výberom zobrazíte v Kalendári Google ďalšie podrobnosti.</translation>
 <translation id="7302889331339392448">Živý prepis je vypnutý.</translation>
 <translation id="7303365578352795231">Odpoveď dostanete v inom zariadení.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1170,6 +1173,7 @@ Nová inštalácia</translation>
 <translation id="7904094684485781019">Správca tohto účtu zakázal viacnásobné prihlásenie.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Reč sa teraz spracúva miestne a diktovanie funguje offline</translation>
+<translation id="7932451802722951285">Otvoriť v Kalendári Google</translation>
 <translation id="7933084174919150729">Asistent Google je k dispozícii iba pre primárny profil.</translation>
 <translation id="79341161159229895">Správcovia účtu: <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Schránku zobrazíte klávesmi <ph name="SHORTCUT_KEY_NAME" /> + V. Posledných päť skopírovaných položiek sa uloží do vašej schránky.</translation>

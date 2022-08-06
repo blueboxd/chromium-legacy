@@ -27,6 +27,7 @@ Your search engine is <ph name="DSE_NAME" />. See their instructions for deletin
 <translation id="1145536944570833626">Delete existing data.</translation>
 <translation id="1147031633655575115">Signed in as <ph name="USER" /></translation>
 <translation id="1154984953698510061">See other tabs</translation>
+<translation id="1161340988127985692">Ask to open links from other apps in Incognito</translation>
 <translation id="1164064664035028907">Use strong password:</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1172898394251786223">Next field</translation>
@@ -74,7 +75,7 @@ Your search engine is <ph name="DSE_NAME" />. See their instructions for deletin
 <translation id="1509960214886564027">Features on many sites may break</translation>
 <translation id="152234381334907219">Never saved</translation>
 <translation id="1523341279170789507">Allow All Cookies</translation>
-<translation id="1524563461097350801">No, thanks</translation>
+<translation id="1524563461097350801">No, Thanks</translation>
 <translation id="1535268707340844072">Your current setting may cause some sites to break. To manage cookies for all sites, see <ph name="BEGIN_LINK" />Cookie settings<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Address 1</translation>
 <translation id="1545749641540134597">Scan QR Code</translation>
@@ -163,7 +164,7 @@ Your search engine is <ph name="DSE_NAME" />. See their instructions for deletin
 <translation id="236977714248711277">Sites can't use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping basket.
 
 Sites can't use cookies to see your browsing activity across different sites, for example, to personalise ads.</translation>
-<translation id="2375243552872247702">See content for you</translation>
+<translation id="2375243552872247702">See Content for You</translation>
 <translation id="2381405137052800939">Basics</translation>
 <translation id="2386793615875593361">1 selected</translation>
 <translation id="2421004566762153674">Blocking third-party cookies</translation>
@@ -185,7 +186,7 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="2600682495497606169">Clear site cookies</translation>
 <translation id="2625189173221582860">Password copied</translation>
 <translation id="2626236249646841566">Check your connection and try signing in again.</translation>
-<translation id="2637313651144986786">Search tabs…</translation>
+<translation id="2637313651144986786">Search Tabs…</translation>
 <translation id="2647269890314209800">Cookies in Use</translation>
 <translation id="2648803196158606475">Delete Read</translation>
 <translation id="2653659639078652383">Submit</translation>
@@ -244,7 +245,7 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="2989805286512600854">Open in New Tab</translation>
 <translation id="3020183492814296499">Shortcuts</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
-<translation id="3039722182465315531">Don't sign in</translation>
+<translation id="3039722182465315531">Don't Sign In</translation>
 <translation id="3076846064362030967">You won't be signed out of your Google Account. <ph name="BEGIN_LINK" />Other forms of activity<ph name="END_LINK" /> may be saved in your Google Account when you’re signed in. You can delete them at any time.
 
 
@@ -257,7 +258,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="3131206671572504478">Block all</translation>
 <translation id="313283613037595347">Create new Incognito tab.</translation>
 <translation id="3153862085237805241">Save Card</translation>
-<translation id="3157387275655328056">Add to Reading List</translation>
+<translation id="3157387275655328056">Add to reading list</translation>
 <translation id="3157684681743766797">Mark All…</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">You can also use saved passwords on your other devices.</translation>
@@ -292,6 +293,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="3443810440409579745">Tab received.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Split View</translation>
+<translation id="3450502512529866925">Bookmark this page</translation>
 <translation id="345565170154308620">Manage passwords…</translation>
 <translation id="3469166899695866866">Stop download?</translation>
 <translation id="3470502288861289375">Copying...</translation>
@@ -406,6 +408,7 @@ Follow the steps below:</translation>
 <translation id="4502566650163919158">Check now</translation>
 <translation id="4505980578794259603">Last checked <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Close sign-in promo</translation>
+<translation id="4511669830082467224">Search image with Google</translation>
 <translation id="4526249700380860531">View and manage saved passwords at <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Review your synced data</translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
@@ -435,7 +438,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="4737560986434232178">Search recent tabs</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="4747097190499141774">Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you will need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
-<translation id="4751645464639803239">New Incognito tab</translation>
+<translation id="4751645464639803239">New incognito tab</translation>
 <translation id="4775879719735953715">Default Browser</translation>
 <translation id="4778644898150334464">Use other password</translation>
 <translation id="4802417911091824046">Passphrase encryption doesn’t include payment methods and addresses from Google Pay.
@@ -464,7 +467,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4901778704868714008">Save...</translation>
 <translation id="4904877109095351937">Mark Read</translation>
 <translation id="4908869848243824489">Discover by Google</translation>
-<translation id="4930714375720679147">Turn on</translation>
+<translation id="4930714375720679147">Turn On</translation>
 <translation id="4941089862236492464">Sorry, there was a problem sharing your item.</translation>
 <translation id="4944543191714094452">Find in page…</translation>
 <translation id="4945756290001680296">Access password settings</translation>
@@ -474,7 +477,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4989542687859782284">Unavailable</translation>
 <translation id="5005498671520578047">Copy password</translation>
 <translation id="5017828934289857214">Remind me later</translation>
-<translation id="5037676449506322593">Select all</translation>
+<translation id="5037676449506322593">Select All</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5056446788882570708">Issues found <ph name="TIME" />.</translation>
 <translation id="5059136629401106827">OK</translation>
@@ -483,6 +486,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5090832849094901128">Deleting this password will not delete your account on <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">You can save pages to read later or offline. Chrome will ask if you want to save long pages.</translation>
 <translation id="5094827893301452931">Tweet completed.</translation>
+<translation id="509789154667432072">Add a bookmark</translation>
 <translation id="5118713593561876160">Interests</translation>
 <translation id="5118764316110575523">Off</translation>
 <translation id="5127805178023152808">Sync is off</translation>
@@ -710,7 +714,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="683022620450280906">You can use saved passwords on any device. They're saved to Google Password Manager for <ph name="EMAIL" /></translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6842136130964845393">To make sure that you can always access your saved passwords, verify that it's you</translation>
-<translation id="6851516051005285358">Request Desktop Site</translation>
+<translation id="6851516051005285358">Request desktop site</translation>
 <translation id="6858855187367714033">Scanned</translation>
 <translation id="6859944681507688231">To scan a QR code or credit card, enable the camera from settings.</translation>
 <translation id="6867369562105931222">password</translation>
@@ -755,7 +759,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="7207023858769244910">Sync to get content based on your interests.</translation>
 <translation id="7207383424303353046">New: Open sites in Chrome automatically by making it your default browser app. <ph name="BEGIN_LINK" />Open settings<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">Invalid card nickname</translation>
-<translation id="722454870747268814">New Incognito Tab</translation>
+<translation id="722454870747268814">New incognito tab</translation>
 <translation id="7265758999917665941">Never for this site</translation>
 <translation id="7272437679830969316">Can't verify your identity. Password not copied.</translation>
 <translation id="7291368939935408496">Preparing Passwords…</translation>
@@ -766,12 +770,13 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="734758817008927353">Options to save card</translation>
 <translation id="7348502496356775519">Bookmark</translation>
 <translation id="7353432112255316844">Verify that it's you</translation>
-<translation id="7383797227493018512">Reading List</translation>
+<translation id="7383797227493018512">Reading list</translation>
 <translation id="7398893703713203428">Create link</translation>
 <translation id="739941347996872055">Previous tab</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> unread articles.</translation>
 <translation id="7412027924265291969">Continue</translation>
+<translation id="7419565702166471774">Always use secure connections</translation>
 <translation id="7425346204213733349">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google Account.</translation>
 <translation id="7431991332293347422">Control how your browsing history is used to personalise Search and more</translation>
 <translation id="7435356471928173109">Turned off by your administrator</translation>
@@ -781,7 +786,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="7464701184726199289">This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="746684838091935575">3. Select Chrome</translation>
 <translation id="7472734401283673885">Company Name</translation>
-<translation id="7473891865547856676">No, thanks</translation>
+<translation id="7473891865547856676">No, Thanks</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="750493650310597496">0 selected</translation>
 <translation id="7508728395076009983">To lock your incognito tabs, set up touch ID, face ID or a passcode.</translation>
@@ -811,7 +816,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="7781069478569868053">New Tab Page</translation>
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="778855399387580014">Start a search in a new Chrome tab.</translation>
-<translation id="7790892308048519147">Try to use secure connections</translation>
 <translation id="7791543448312431591">Add</translation>
 <translation id="7807060072011926525">Provided by Google</translation>
 <translation id="7839985698273989086">Offline page</translation>

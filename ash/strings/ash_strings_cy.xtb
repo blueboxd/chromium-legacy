@@ -31,6 +31,7 @@ Dyma rai pethau y gallwch eu gwneud i roi cychwyn arni.</translation>
 <translation id="1150989369772528668">Calendar</translation>
 <translation id="1153356358378277386">Dyfeisiau sydd wedi'u paru</translation>
 <translation id="1165712434476988950">Mae angen ailgychwyn y ddyfais i gymhwyso'r diweddariad.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Mae'n bosib na fydd eich cebl USB-C yn cysylltu â sgriniau'n iawn</translation>
 <translation id="1175572348579024023">Sgrolio</translation>
 <translation id="1178581264944972037">Seibio</translation>
@@ -55,10 +56,6 @@ Dyma rai pethau y gallwch eu gwneud i roi cychwyn arni.</translation>
 <translation id="1247519845643687288">Apiau diweddar</translation>
 <translation id="1252999807265626933">Wrthi'n newid o <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Beth yw'r tywydd?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> i 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Dewiswch i weld rhagor o fanylion yn Google Calendar.</translation>
 <translation id="1267032506238418139">Newid llwybr byr</translation>
 <translation id="1269405891096105529">Ni chefnogir y perifferol yn y modd Gwestai</translation>
 <translation id="1270290102613614947">Analluogwyd y bysellfwrdd ar y sgrîn</translation>
@@ -124,6 +121,7 @@ Dyma rai pethau y gallwch eu gwneud i roi cychwyn arni.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1632985212731562677">Gellir analluogi Switsh Mynediad yn y Gosodiadau &gt; Hygyrchedd.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> o ddyfeisiau</translation>
+<translation id="1639239467298939599">Wrthi'n llwytho</translation>
 <translation id="1654477262762802994">Dechrau ymholiad llais</translation>
 <translation id="1668469839109562275">VPN integredig</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ar ôl</translation>
@@ -239,6 +237,7 @@ Dyma rai pethau y gallwch eu gwneud i roi cychwyn arni.</translation>
 <translation id="2359808026110333948">Parhau</translation>
 <translation id="2367186422933365202">Methu â mewngofnodi i'ch Chromebook</translation>
 <translation id="2369165858548251131">"Helo" yn Tsieinëeg</translation>
+<translation id="2375445874393996153">Nid yw chwilio beth sydd ar fy sgrîn gyda Google Assistant yn cael ei gefnogi mwyach.</translation>
 <translation id="2390318262976603432">Gosodiadau Lle</translation>
 <translation id="240006516586367791">Rheolaethau cyfryngau</translation>
 <translation id="2402411679569069051">I ddatgloi eich Chromebook, defnyddiwch eich olion bysedd neu datglowch eich ffôn</translation>
@@ -505,6 +504,7 @@ Cysylltwch eich dyfais â phŵer.</translation>
 <translation id="3901991538546252627">Cysylltu â <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Newid dyfais i'r fersiwn flaenorol o fewn 1 funud}zero{Newid dyfais i'r fersiwn flaenorol o fewn # munud}two{Newid dyfais i'r fersiwn flaenorol o fewn # funud}few{Newid dyfais i'r fersiwn flaenorol o fewn # munud}many{Newid dyfais i'r fersiwn flaenorol o fewn # munud}other{Newid dyfais i'r fersiwn flaenorol o fewn # munud}}</translation>
 <translation id="3923494859158167397">Ni osodwyd unrhyw rwydweithiau symudol</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Wrthi'n llwytho digwyddiadau.</translation>
 <translation id="3932043219784172185">Ni chysylltwyd dyfais</translation>
 <translation id="3934456833412894880">Mae gwefru addasedig wedi'i droi ymlaen. Bydd eich batri yn aros ar 80% i ymestyn oes y batri ac yn gwefru'n llawn pan fydd ei angen arnoch.</translation>
 <translation id="3943857333388298514">Gludo</translation>
@@ -704,6 +704,7 @@ Cysylltwch eich dyfais â phŵer.</translation>
 <translation id="5078796286268621944">PIN anghywir</translation>
 <translation id="5083553833479578423">Datgloi rhagor o nodweddion Assistant.</translation>
 <translation id="509790653408515442">Pan fyddwch yn ffrydio apiau eich ffôn, byddant yn ymddangos yma</translation>
+<translation id="5098537242461068432">Desg a ffenestri wedi'u hailagor</translation>
 <translation id="5107522548814527560">Y We</translation>
 <translation id="5117590920725113268">Dangos y mis nesaf</translation>
 <translation id="5136175204352732067">Mae bysellfwrdd gwahanol wedi'i gysylltu</translation>
@@ -1048,7 +1049,6 @@ Gosodiad newydd</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Wrthi'n dychwelyd i'r hen gyfraniad yn <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Ail-lwytho</translation>
-<translation id="718361511487535372">Agor yn Google Calendar</translation>
 <translation id="7188494361780961876">Cafodd y ddewislen ei symud i gornel chwith uchaf y sgrîn.</translation>
 <translation id="7189412385142492784">Pa mor bell yw'r blaned Gwener</translation>
 <translation id="7198435252016571249">Mae'r camera wedi'i snapio i'r gornel dde isaf. Gwrthdaro ag arwyneb y system.</translation>
@@ -1057,6 +1057,10 @@ Gosodiad newydd</translation>
 <translation id="7258828758145722155">Golygwyd ddoe</translation>
 <translation id="726276584504105859">Llusgwch yma i ddefnyddio sgrîn hollt</translation>
 <translation id="7262906531272962081">Creu nodyn atgoffa</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> i
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Dewiswch i weld rhagor o fanylion yn Google Calendar.</translation>
 <translation id="7302889331339392448">Mae Capsiynau Byw wedi'u diffodd.</translation>
 <translation id="7303365578352795231">Yn ateb ar ddyfais arall.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@ Gosodiad newydd</translation>
 <translation id="7904094684485781019">Mae gweinyddwr y cyfrif hwn wedi gwrthod mewngofnodi i fwy nag un cyfrif.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Mae Llefarydd bellach yn cael ei brosesu'n lleol ac mae Arddweud yn gweithio all-lein</translation>
+<translation id="7932451802722951285">Agor yn Google Calendar</translation>
 <translation id="7933084174919150729">Dim ond ar gyfer y prif broffil y mae Google Assistant ar gael.</translation>
 <translation id="79341161159229895">Rheolir y cyfrif gan <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Pwyswch <ph name="SHORTCUT_KEY_NAME" /> a V i weld eich clipfwrdd. Mae'r 5 eitem ddiwethaf a gopïoch wedi'u cadw i'ch clipfwrdd.</translation>

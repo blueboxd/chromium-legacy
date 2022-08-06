@@ -302,7 +302,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "named_caches": [
@@ -362,7 +362,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "named_caches": [
@@ -405,8 +405,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -430,8 +430,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -453,7 +453,7 @@
           "--expected-vendor-id",
           "8086",
           "--expected-device-id",
-          "5912"
+          "9bc5"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -471,8 +471,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -506,8 +506,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -543,8 +543,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -580,8 +580,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -817,8 +817,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -844,8 +844,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -869,8 +869,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -894,8 +894,8 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
+              "gpu": "8086:9bc5-20.0.8",
+              "os": "Ubuntu-18.04.6",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1792,7 +1792,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -1817,7 +1817,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1859,7 +1859,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -1897,7 +1897,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -1936,7 +1936,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -1974,7 +1974,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -2012,7 +2012,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -2050,7 +2050,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "idempotent": false,
@@ -2087,7 +2087,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-11.5.2"
+              "os": "Mac-11.5.2|Mac-12.4"
             }
           ],
           "idempotent": false,

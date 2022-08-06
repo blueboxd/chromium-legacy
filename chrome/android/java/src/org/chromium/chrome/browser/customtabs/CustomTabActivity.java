@@ -90,8 +90,8 @@ public class CustomTabActivity extends BaseCustomTabActivity {
     protected BaseCustomTabActivityComponent createComponent(
             ChromeActivityCommonsModule commonsModule) {
         BaseCustomTabActivityComponent component = super.createComponent(commonsModule);
-        mOpenTimeRecorder = new CustomTabsOpenTimeRecorder(
-                getLifecycleDispatcher(), mNavigationController, this::isFinishing);
+        mOpenTimeRecorder = new CustomTabsOpenTimeRecorder(getLifecycleDispatcher(),
+                mNavigationController, this::isFinishing, mIntentDataProvider);
         return component;
     }
 
@@ -224,7 +224,7 @@ public class CustomTabActivity extends BaseCustomTabActivity {
     @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == R.id.bookmark_this_page_id) {
-            addOrEditBookmark(getActivityTab());
+            mTabBookmarkerSupplier.get().addOrEditBookmark(getActivityTab());
             RecordUserAction.record("MobileMenuAddToBookmarks");
             return true;
         } else if (id == R.id.open_in_browser_id) {

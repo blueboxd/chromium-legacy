@@ -352,6 +352,7 @@
     },
     {
       name: "CapabilityDelegationFullscreenRequest",
+      status: "stable",
     },
     {
       name: "CaptureHandle",
@@ -384,7 +385,7 @@
     },
     {
       name: "ClipboardCustomFormats",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ClipboardSvg",
@@ -448,7 +449,6 @@
       name: "ConditionalFocus",
       origin_trial_feature_name: "ConditionalFocus",
       status: {"Android": "", "default": "experimental"},
-      implied_by: ["RegionCapture"],
     },
     {
       name: "ConsolidatedMovementXY",
@@ -670,8 +670,7 @@
     },
     {
       name: "CSSObjectViewBox",
-      status: "experimental",
-      implied_by: ["DocumentTransition"],
+      status: "stable",
     },
     {
       name: "CSSOffsetPathRay",
@@ -939,6 +938,7 @@
       // Document transitions, including shared element transitions.
       // See https://github.com/WICG/shared-element-transitions
       name: "DocumentTransition",
+      origin_trial_feature_name: "DocumentTransitionV2",
     },
     {
       name: "DocumentWrite",
@@ -1098,7 +1098,7 @@
     },
     {
       name: "FixedElementsDontOverscroll",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "Fledge",
@@ -1326,6 +1326,7 @@
     {
       // crbug.com/989916
       name: "LayoutNGForeignObject",
+      status: "test",
     },
     {
       // Block fragmentation support in the grid layout algorithm.
@@ -1486,6 +1487,13 @@
       name: "MediaSourceInWorkers",
       status: "experimental",
       origin_trial_feature_name: "MediaSourceInWorkers",
+    },
+    {
+      // Availability of this feature depends on MediaSourceInWorkers also
+      // being enabled. MediaSourceInWorkers is an OT feature, so this cannot
+      // use the "depends_on" key.
+      name: "MediaSourceInWorkersUsingHandle",
+      status: "experimental",
     },
     {
       name: "MediaSourceNewAbortAndDuration",
@@ -1951,7 +1959,7 @@
     {
       name: "RegionCapture",
       origin_trial_feature_name: "RegionCapture",
-      status: "experimental",
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "RemotePlayback",

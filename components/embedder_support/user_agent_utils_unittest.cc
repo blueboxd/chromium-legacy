@@ -15,6 +15,7 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -324,6 +325,15 @@ bool ContainsBrandVersion(const blink::UserAgentBrandList& brand_list,
 class UserAgentUtilsTest : public testing::Test,
                            public testing::WithParamInterface<bool> {
  public:
+  // The minor version in the reduced UA string is always "0.0.0".
+  static constexpr char kReducedMinorVersion[] = "0.0.0";
+  // The minor version in the ReduceUserAgentMinorVersion experiment is always
+  // "0.X.0", where X is the frozen build version.
+  const std::string kReduceUserAgentMinorVersion =
+      "0." +
+      std::string(blink::features::kUserAgentFrozenBuildVersion.Get().data()) +
+      ".0";
+
   std::string MajorToMinorVersionNumber() {
     const base::Version version = version_info::GetVersion();
     std::string version_str;
@@ -339,6 +349,46 @@ class UserAgentUtilsTest : public testing::Test,
         version_str.append(base::NumberToString(components[i]));
     }
     return version_str;
+  }
+
+  std::string GetUserAgentMinorVersion(const std::string& user_agent_value) {
+    // A regular expression that matches Chrome/{major_version}.{minor_version}
+    // in the User-Agent string, where the {minor_version} is captured.
+    static constexpr char kChromeVersionRegex[] =
+        "Chrome/[0-9]+\\.([0-9]+\\.[0-9]+\\.[0-9]+)";
+    std::string minor_version;
+    EXPECT_TRUE(re2::RE2::PartialMatch(user_agent_value, kChromeVersionRegex,
+                                       &minor_version));
+    return minor_version;
+  }
+
+  void VerifyFullUserAgent() {
+    EXPECT_EQ(
+        GetUserAgent(ForceMajorVersionToMinorPosition::kForceEnabled),
+        GetFullUserAgent(ForceMajorVersionToMinorPosition::kForceEnabled));
+    EXPECT_EQ(
+        GetUserAgent(ForceMajorVersionToMinorPosition::kForceDisabled),
+        GetFullUserAgent(ForceMajorVersionToMinorPosition::kForceDisabled));
+    EXPECT_EQ(GetUserAgent(), GetFullUserAgent());
+    EXPECT_NE(GetUserAgentMinorVersion(GetFullUserAgent()),
+              kReducedMinorVersion);
+  }
+
+  void VerifyGetUserAgentFunctions() {
+    // 1) GetUserAgent should return user agent depends on
+    // kReduceUserAgentMinorVersion feature.
+    // 2) GetReducedUserAgent should return reduced user agent.
+    // 3) GetFullUserAgent should return full user agent.
+    if (base::FeatureList::IsEnabled(
+            blink::features::kReduceUserAgentMinorVersion)) {
+      EXPECT_EQ(GetUserAgentMinorVersion(GetUserAgent()), kReducedMinorVersion);
+    } else {
+      EXPECT_NE(GetUserAgentMinorVersion(GetUserAgent()), kReducedMinorVersion);
+    }
+    EXPECT_EQ(GetUserAgentMinorVersion(GetReducedUserAgent()),
+              kReducedMinorVersion);
+    EXPECT_NE(GetUserAgentMinorVersion(GetFullUserAgent()),
+              kReducedMinorVersion);
   }
 
  private:
@@ -488,7 +538,7 @@ TEST_F(UserAgentUtilsTest, UserAgentStringFull) {
       {blink::features::kFullUserAgent,
        blink::features::kForceMajorVersionInMinorPositionInUserAgent},
       {});
-  { EXPECT_EQ(GetUserAgent(), GetFullUserAgent()); }
+  { VerifyFullUserAgent(); }
 
   // Verify that the full user agent string when both reduced and full UA
   // feature enabled respects
@@ -498,7 +548,36 @@ TEST_F(UserAgentUtilsTest, UserAgentStringFull) {
       {blink::features::kFullUserAgent, blink::features::kReduceUserAgent,
        blink::features::kForceMajorVersionInMinorPositionInUserAgent},
       {});
-  { EXPECT_EQ(GetUserAgent(), GetFullUserAgent()); }
+  { VerifyFullUserAgent(); }
+
+  // Verify that the full user agent string still returns the full user agent
+  // even turns on kReduceUserAgentMinorVersion
+  scoped_feature_list.Reset();
+  scoped_feature_list.InitWithFeatures(
+      {blink::features::kFullUserAgent,
+       blink::features::kReduceUserAgentMinorVersion},
+      {});
+  { VerifyFullUserAgent(); }
+
+  // Verify that three user agent functions return the correct user agent string
+  // when kReduceUserAgentMinorVersion turns on.
+  scoped_feature_list.Reset();
+  scoped_feature_list.InitWithFeatures(
+      {blink::features::kReduceUserAgentMinorVersion}, {});
+  { VerifyGetUserAgentFunctions(); }
+
+  // Verify that three user agent functions return the correct user agent
+  // when kReduceUserAgentMinorVersion turns off.
+  scoped_feature_list.Reset();
+  scoped_feature_list.InitWithFeatures(
+      {}, {blink::features::kReduceUserAgentMinorVersion});
+  { VerifyGetUserAgentFunctions(); }
+
+  // Verify that three user agent functions return the correct user agent
+  // without explicit features turn on.
+  scoped_feature_list.Reset();
+  scoped_feature_list.InitWithFeatures({}, {});
+  { VerifyGetUserAgentFunctions(); }
 }
 
 TEST_F(UserAgentUtilsTest, UserAgentMetadata) {
@@ -608,12 +687,35 @@ TEST_F(UserAgentUtilsTest, UserAgentMetadata) {
 #endif
   // This makes sure no extra information is added to the platform version.
   EXPECT_EQ(metadata.platform_version.find(";"), std::string::npos);
-  // TODO(crbug.com/1103047): This can be removed/re-refactored once we use
-  // "macOS" by default
-#if BUILDFLAG(IS_MAC)
+  // If you're here because your change to GetOSType broke this test, it likely
+  // means that GetPlatformForUAMetadata needs a new special case to prevent
+  // breaking client hints. Check with the code owners for further guidance.
+#if BUILDFLAG(IS_WIN)
+  EXPECT_EQ(metadata.platform, "Windows");
+#elif BUILDFLAG(IS_IOS)
+  EXPECT_EQ(metadata.platform, "iOS");
+#elif BUILDFLAG(IS_MAC)
   EXPECT_EQ(metadata.platform, "macOS");
+#elif BUILDFLAG(IS_CHROMEOS)
+# if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_EQ(metadata.platform, "Chrome OS");
+# else
+  EXPECT_EQ(metadata.platform, "Chromium OS");
+# endif
+#elif BUILDFLAG(IS_ANDROID)
+  EXPECT_EQ(metadata.platform, "Android");
+#elif BUILDFLAG(IS_LINUX)
+  EXPECT_EQ(metadata.platform, "Linux");
+#elif BUILDFLAG(IS_FREEBSD)
+  EXPECT_EQ(metadata.platform, "FreeBSD");
+#elif BUILDFLAG(IS_OPENBSD)
+  EXPECT_EQ(metadata.platform, "OpenBSD");
+#elif BUILDFLAG(IS_SOLARIS)
+  EXPECT_EQ(metadata.platform, "Solaris");
+#elif BUILDFLAG(IS_FUCHSIA)
+  EXPECT_EQ(metadata.platform, "Fuchsia");
 #else
-  EXPECT_EQ(metadata.platform, version_info::GetOSType());
+  EXPECT_EQ(metadata.platform, "Unknown");
 #endif
   EXPECT_EQ(metadata.architecture, content::GetCpuArchitecture());
   EXPECT_EQ(metadata.model, content::BuildModelInfo());
@@ -631,10 +733,10 @@ TEST_F(UserAgentUtilsTest, GenerateBrandVersionListUnbranded) {
       blink::UserAgentBrandVersionType::kFullVersion);
   // 1. verify major version
   std::string brand_list = metadata.SerializeBrandMajorVersionList();
-  EXPECT_EQ(R"("/Not=A?Brand";v="8", "Chromium";v="84")", brand_list);
+  EXPECT_EQ(R"(" Not A;Brand";v="99", "Chromium";v="84")", brand_list);
   // 2. verify full version
   std::string brand_list_w_fv = metadata.SerializeBrandFullVersionList();
-  EXPECT_EQ(R"("/Not=A?Brand";v="8.0.0.0", "Chromium";v="84.0.0.0")",
+  EXPECT_EQ(R"(" Not A;Brand";v="99.0.0.0", "Chromium";v="84.0.0.0")",
             brand_list_w_fv);
 }
 
@@ -658,18 +760,19 @@ TEST_F(UserAgentUtilsTest, GenerateBrandVersionListUnbrandedVerifySeedChanges) {
   // Make sure the lists are different for different seeds (84 vs 85).
   // 1. verify major version
   std::string brand_list_diff = metadata.SerializeBrandMajorVersionList();
-  EXPECT_EQ(R"("Chromium";v="85", ")Not?A_Brand";v="99")", brand_list_diff);
+  EXPECT_EQ(R"("Chromium";v="85", " Not;A Brand";v="99")", brand_list_diff);
   EXPECT_NE(brand_list, brand_list_diff);
   // 2.verify full version
   std::string brand_list_diff_w_fv = metadata.SerializeBrandFullVersionList();
-  EXPECT_EQ(R"("Chromium";v="85.0.0.0", ")Not?A_Brand";v="99.0.0.0")",
+  EXPECT_EQ(R"("Chromium";v="85.0.0.0", " Not;A Brand";v="99.0.0.0")",
             brand_list_diff_w_fv);
   EXPECT_NE(brand_list_w_fv, brand_list_diff_w_fv);
 }
 
 TEST_F(UserAgentUtilsTest, GenerateBrandVersionListWithGreaseBrandOverride) {
   blink::UserAgentMetadata metadata;
-  // The GREASE generation algorithm should respond to experiment overrides.
+  // The old GREASE generation algorithm should not respond to experiment
+  // overrides.
   metadata.brand_version_list = GenerateBrandVersionList(
       84, absl::nullopt, "84", "Clean GREASE", absl::nullopt, true,
       blink::UserAgentBrandVersionType::kMajorVersion);
@@ -679,12 +782,12 @@ TEST_F(UserAgentUtilsTest, GenerateBrandVersionListWithGreaseBrandOverride) {
   // 1. verify major version
   std::string brand_list_grease_override =
       metadata.SerializeBrandMajorVersionList();
-  EXPECT_EQ(R"("Clean GREASE";v="8", "Chromium";v="84")",
+  EXPECT_EQ(R"(" Not A;Brand";v="99", "Chromium";v="84")",
             brand_list_grease_override);
   // 2. verify full version
   std::string brand_list_grease_override_fv =
       metadata.SerializeBrandFullVersionList();
-  EXPECT_EQ(R"("Clean GREASE";v="8.0.0.0", "Chromium";v="84.0.0.0")",
+  EXPECT_EQ(R"(" Not A;Brand";v="99.0.0.0", "Chromium";v="84.0.0.0")",
             brand_list_grease_override_fv);
 }
 
@@ -701,12 +804,12 @@ TEST_F(UserAgentUtilsTest,
   // 1. verify major version
   std::string brand_list_and_version_grease_override =
       metadata.SerializeBrandMajorVersionList();
-  EXPECT_EQ(R"("Clean GREASE";v="1024", "Chromium";v="84")",
+  EXPECT_EQ(R"(" Not A;Brand";v="99", "Chromium";v="84")",
             brand_list_and_version_grease_override);
   // 2. verify full version
   std::string brand_list_and_version_grease_override_fv =
       metadata.SerializeBrandFullVersionList();
-  EXPECT_EQ(R"("Clean GREASE";v="1024.0.0.0", "Chromium";v="84.0.0.0")",
+  EXPECT_EQ(R"(" Not A;Brand";v="99.0.0.0", "Chromium";v="84.0.0.0")",
             brand_list_and_version_grease_override_fv);
 }
 
@@ -722,12 +825,12 @@ TEST_F(UserAgentUtilsTest, GenerateBrandVersionListWithGreaseVersionOverride) {
   // 1. verify major version
   std::string brand_version_grease_override =
       metadata.SerializeBrandMajorVersionList();
-  EXPECT_EQ(R"("/Not=A?Brand";v="1024", "Chromium";v="84")",
+  EXPECT_EQ(R"(" Not A;Brand";v="99", "Chromium";v="84")",
             brand_version_grease_override);
   // 2. verify full version
   std::string brand_version_grease_override_fv =
       metadata.SerializeBrandFullVersionList();
-  EXPECT_EQ(R"("/Not=A?Brand";v="1024.0.0.0", "Chromium";v="84.0.0.0")",
+  EXPECT_EQ(R"(" Not A;Brand";v="99.0.0.0", "Chromium";v="84.0.0.0")",
             brand_version_grease_override_fv);
 }
 
@@ -742,11 +845,11 @@ TEST_F(UserAgentUtilsTest, GenerateBrandVersionListWithBrand) {
   // 1. verify major version
   std::string brand_list_w_brand = metadata.SerializeBrandMajorVersionList();
   EXPECT_EQ(
-      R"("/Not=A?Brand";v="8", "Chromium";v="84", "Totally A Brand";v="84")",
+      R"(" Not A;Brand";v="99", "Chromium";v="84", "Totally A Brand";v="84")",
       brand_list_w_brand);
   // 2. verify full version
   std::string brand_list_w_brand_fv = metadata.SerializeBrandFullVersionList();
-  EXPECT_EQ(base::StrCat({"\"/Not=A?Brand\";v=\"8.0.0.0\", ",
+  EXPECT_EQ(base::StrCat({"\" Not A;Brand\";v=\"99.0.0.0\", ",
                           "\"Chromium\";v=\"84.0.0.0\", ",
                           "\"Totally A Brand\";v=\"84.0.0.0\""}),
             brand_list_w_brand_fv);
@@ -763,11 +866,6 @@ TEST_F(UserAgentUtilsTest, GenerateBrandVersionListInvalidSeed) {
 }
 
 TEST_F(UserAgentUtilsTest, GetGreasedUserAgentBrandVersionOldAlgorithm) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  // Test to ensure the old algorithm is respected when opted into.
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kGreaseUACH, {{"updated_algorithm", "false"}});
-
   std::vector<int> permuted_order{0, 1, 2};
   blink::UserAgentBrandVersion greased_bv = GetGreasedUserAgentBrandVersion(
       permuted_order, 84, absl::nullopt, absl::nullopt, true,
@@ -784,10 +882,6 @@ TEST_F(UserAgentUtilsTest, GetGreasedUserAgentBrandVersionOldAlgorithm) {
 
 TEST_F(UserAgentUtilsTest,
        GetGreasedUserAgentBrandVersionOldAlgorithmIgnoresBrandOverrides) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  // Test to ensure the old algorithm is respected when the flag is not set.
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kGreaseUACH, {{"updated_algorithm", "false"}});
   // With the new algorithm disabled, we want to avoid experiment params
   // ("WhatIsGrease", 1024) from taking an effect.
   std::vector<int> permuted_order{0, 1, 2};
@@ -806,10 +900,6 @@ TEST_F(UserAgentUtilsTest,
 
 TEST_F(UserAgentUtilsTest,
        GetGreasedUserAgentBrandVersionOldAlgorithmIgnoresVersionOverrides) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  // Test to ensure the old algorithm is respected when the flag is not set.
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kGreaseUACH, {{"updated_algorithm", "false"}});
   // With the new algorithm disabled, we want to avoid experiment params
   // ("WhatIsGrease", 1024) from taking an effect.
   std::vector<int> permuted_order{0, 1, 2};
@@ -829,10 +919,6 @@ TEST_F(UserAgentUtilsTest,
 TEST_F(
     UserAgentUtilsTest,
     GetGreasedUserAgentBrandVersionOldAlgorithmIgnoresBrandAndVersionOverrides) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  // Test to ensure the old algorithm is respected when the flag is not set.
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kGreaseUACH, {{"updated_algorithm", "false"}});
   // With the new algorithm disabled, we want to avoid experiment params
   // ("WhatIsGrease", 1024) from taking an effect.
   std::vector<int> permuted_order{0, 1, 2};
@@ -851,6 +937,9 @@ TEST_F(
 
 // Tests to ensure the new algorithm works and is still overridable.
 TEST_F(UserAgentUtilsTest, GetGreasedUserAgentBrandVersionNewAlgorithm) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kGreaseUACH, {{"updated_algorithm", "true"}});
   std::vector<int> permuted_order{0, 1, 2};
   blink::UserAgentBrandVersion greased_bv = GetGreasedUserAgentBrandVersion(
       permuted_order, 84, absl::nullopt, absl::nullopt, true,
@@ -867,6 +956,9 @@ TEST_F(UserAgentUtilsTest, GetGreasedUserAgentBrandVersionNewAlgorithm) {
 
 TEST_F(UserAgentUtilsTest,
        GetGreasedUserAgentBrandVersionNewAlgorithmBrandOverride) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kGreaseUACH, {{"updated_algorithm", "true"}});
   std::vector<int> permuted_order{0, 1, 2};
   blink::UserAgentBrandVersion greased_bv = GetGreasedUserAgentBrandVersion(
       permuted_order, 84, "WhatIsGrease", absl::nullopt, true,
@@ -883,6 +975,9 @@ TEST_F(UserAgentUtilsTest,
 
 TEST_F(UserAgentUtilsTest,
        GetGreasedUserAgentBrandVersionNewAlgorithmVersionOverride) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kGreaseUACH, {{"updated_algorithm", "true"}});
   std::vector<int> permuted_order{0, 1, 2};
   blink::UserAgentBrandVersion greased_bv = GetGreasedUserAgentBrandVersion(
       permuted_order, 84, absl::nullopt, "1024", true,
@@ -899,6 +994,9 @@ TEST_F(UserAgentUtilsTest,
 
 TEST_F(UserAgentUtilsTest,
        GetGreasedUserAgentBrandVersionNewAlgorithmBrandAndVersionOverride) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kGreaseUACH, {{"updated_algorithm", "true"}});
   std::vector<int> permuted_order{0, 1, 2};
   blink::UserAgentBrandVersion greased_bv = GetGreasedUserAgentBrandVersion(
       permuted_order, 84, "WhatIsGrease", "1024", true,
@@ -918,27 +1016,27 @@ TEST_F(UserAgentUtilsTest, GetGreasedUserAgentBrandVersionFullVersions) {
   blink::UserAgentBrandVersion greased_bv = GetGreasedUserAgentBrandVersion(
       permuted_order, 86, absl::nullopt, absl::nullopt, true,
       blink::UserAgentBrandVersionType::kMajorVersion);
-  EXPECT_EQ(greased_bv.brand, ";Not_A Brand");
-  EXPECT_EQ(greased_bv.version, "24");
+  EXPECT_EQ(greased_bv.brand, ";Not A Brand");
+  EXPECT_EQ(greased_bv.version, "99");
 
   greased_bv = GetGreasedUserAgentBrandVersion(
       permuted_order, 86, absl::nullopt, absl::nullopt, true,
       blink::UserAgentBrandVersionType::kFullVersion);
-  EXPECT_EQ(greased_bv.brand, ";Not_A Brand");
-  EXPECT_EQ(greased_bv.version, "24.0.0.0");
+  EXPECT_EQ(greased_bv.brand, ";Not A Brand");
+  EXPECT_EQ(greased_bv.version, "99.0.0.0");
 
   // Test the greasy input with full version
   greased_bv = GetGreasedUserAgentBrandVersion(
       permuted_order, 84, absl::nullopt, "1024.0.0.0", true,
       blink::UserAgentBrandVersionType::kMajorVersion);
-  EXPECT_EQ(greased_bv.brand, "/Not=A?Brand");
-  EXPECT_EQ(greased_bv.version, "1024");
+  EXPECT_EQ(greased_bv.brand, ";Not A Brand");
+  EXPECT_EQ(greased_bv.version, "99");
 
   greased_bv = GetGreasedUserAgentBrandVersion(
       permuted_order, 84, absl::nullopt, "1024.0.0.0", true,
       blink::UserAgentBrandVersionType::kFullVersion);
-  EXPECT_EQ(greased_bv.brand, "/Not=A?Brand");
-  EXPECT_EQ(greased_bv.version, "1024.0.0.0");
+  EXPECT_EQ(greased_bv.brand, ";Not A Brand");
+  EXPECT_EQ(greased_bv.version, "99.0.0.0");
 }
 
 TEST_F(UserAgentUtilsTest, GetGreasedUserAgentBrandVersionEnterpriseOverride) {
@@ -978,6 +1076,9 @@ TEST_F(
 }
 
 TEST_F(UserAgentUtilsTest, GetGreasedUserAgentBrandVersionNoLeadingWhitespace) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kGreaseUACH, {{"updated_algorithm", "true"}});
   std::vector<int> permuted_order = {0, 1, 2};
   blink::UserAgentBrandVersion greased_bv;
   // Go up to 110 based on the 11 total chars * 10 possible first chars.

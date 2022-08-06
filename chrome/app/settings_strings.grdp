@@ -667,6 +667,9 @@
   <message name="IDS_SETTINGS_PASSWORD_COPIED_TO_CLIPBOARD" desc="Label for a tooltip following copying a password to the clipboard.">
     Password copied to clipboard
   </message>
+  <message name="IDS_SETTINGS_PASSWORD_USERNAME_COPIED_TO_CLIPBOARD" desc="Label for a tooltip following copying a username of a credential to the clipboard.">
+    Username copied to clipboard
+  </message>
   <message name="IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT" desc="Message displayed in the moving multiple passwords to the user Google Account banner.">
     To easily use them on all your devices, you can move them to your Google Account
   </message>
@@ -2815,6 +2818,11 @@
   <message name="IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT" desc="Label for the toggle that allows the user to automatically delete their cookies and site data when they close all browser windows.">
     Clear cookies and site data when you close all windows
   </message>
+  <if expr="chromeos_lacros">
+    <message name="IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT_DESC" desc="Secondary text for the toggle that allows the user to automatically delete their cookies and site data when they close all browser windows. This sublabel clarifies that when the toggle is enabled the user won't be signed out of Chrome each time they close all Chrome windows.">
+      Signs you out of most sites. You won't be signed out of your Google Account.
+    </message>
+  </if>
   <message name="IDS_SETTINGS_COOKIES_ALL_SITES_LINK" desc="Label for the link row which takes the user to the page listing all sites with storage and permissions">
     See all site data and permissions
   </message>

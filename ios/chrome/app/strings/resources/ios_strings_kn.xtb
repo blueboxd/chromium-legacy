@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">ಪ್ರಸ್ತುತ ಡೇಟಾ ಅಳಿಸಿ.</translation>
 <translation id="1147031633655575115"><ph name="USER" /> ಎಂಬ ಹೆಸರಿನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1154984953698510061">ಇತರ ಟ್ಯಾಬ್‌ಗಳನ್ನು ನೋಡಿ</translation>
+<translation id="1161340988127985692">ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ಇತರ ಆ್ಯಪ್‌ಗಳಿಂದ ಲಿಂಕ್‌ಗಳನ್ನು ತೆರೆಯಲು ಕೇಳಿ</translation>
 <translation id="1164064664035028907">ಸದೃಢ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ:</translation>
 <translation id="1165039591588034296">ದೋಷ</translation>
 <translation id="1172898394251786223">ಮುಂದಿನ ಕ್ಷೇತ್ರ</translation>
@@ -163,6 +164,7 @@
 <translation id="236977714248711277">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು, ಉದಾಹರಣೆಗೆ, ನಿಮ್ಮನ್ನು ಸೈನ್ ಇನ್ ಆಗಿರಿಸಲು ಅಥವಾ ನಿಮ್ಮ ಶಾಪಿಂಗ್ ಕಾರ್ಟ್‌ನಲ್ಲಿರುವ ಐಟಂಗಳನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳಲು ಕುಕೀಗಳನ್ನು ಬಳಸಲು, ಸೈಟ್‌ಗಳಿಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.
 
 ವಿವಿಧ ಸೈಟ್‌ಗಳಾದ್ಯಂತ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಚಟುವಟಿಕೆಯನ್ನು ನೋಡಲು, ಉದಾಹರಣೆಗೆ ಜಾಹೀರಾತುಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸುವುದಕ್ಕಾಗಿ, ಕುಕೀಗಳನ್ನು ಬಳಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="2375243552872247702">ನಿಮಗಾಗಿ ಆರಿಸಿರುವ ವಿಷಯವನ್ನು ನೋಡಿ</translation>
 <translation id="2381405137052800939">ಪ್ರಾಥಮಿಕ ಸಂಗತಿಗಳು</translation>
 <translation id="2386793615875593361">1 ಆಯ್ಕೆಮಾಡಿದೆ</translation>
 <translation id="2421004566762153674">ಥರ್ಡ್-ಪಾರ್ಟಿ ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸುವುದು</translation>
@@ -291,6 +293,7 @@
 <translation id="3443810440409579745">ಟ್ಯಾಬ್ ಅನ್ನು ಸ್ವೀಕರಿಸಲಾಗಿದೆ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ನಿಮಿಷ</translation>
 <translation id="3448016392200048164">ವಿಭಜಿತ ವೀಕ್ಷಣೆ</translation>
+<translation id="3450502512529866925">ಈ ಪುಟವನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ</translation>
 <translation id="345565170154308620">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
 <translation id="3469166899695866866">ಡೌನ್‌ಲೋಡ್ ನಿಲ್ಲಿಸಬೇಕೆ?</translation>
 <translation id="3470502288861289375">ನಕಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -405,6 +408,7 @@
 <translation id="4502566650163919158">ಈಗಲೇ ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="4505980578794259603">ಕೊನೆಯ ಬಾರಿ ಪರಿಶೀಲಿಸಿದ ಸಮಯ <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">ಸೈನ್-ಇನ್ ಪ್ರೋಮೋ ಮುಚ್ಚಿ</translation>
+<translation id="4511669830082467224">Google ಬಳಸಿಕೊಂಡು ಚಿತ್ರವನ್ನು ಹುಡುಕಿ</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="452750746583162491">ಸಿಂಕ್ ಮಾಡಲಾಗಿರುವ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="4536418791685807335">ಮತ್ತೊಮ್ಮೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -482,6 +486,7 @@
 <translation id="5090832849094901128">ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಅಳಿಸುವುದರಿಂದ <ph name="WEBSITE" /> ನಲ್ಲಿ ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5092117651143801290">ನೀವು ಪುಟಗಳನ್ನು ನಂತರ ಅಥವಾ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಓದಲು ಉಳಿಸಬಹುದು. ನೀವು ದೀರ್ಘ ಪುಟಗಳನ್ನು ಉಳಿಸಲು ಬಯಸುತ್ತೀರಾ ಎಂದು Chrome ಕೇಳುತ್ತದೆ.</translation>
 <translation id="5094827893301452931">Tweet ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
+<translation id="509789154667432072">ಬುಕ್‌ಮಾರ್ಕ್ ಅನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="5118713593561876160">ಆಸಕ್ತಿಗಳು</translation>
 <translation id="5118764316110575523">ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="5127805178023152808">ಸಿಂಕ್‌ ಆಫ್‌ ಆಗಿದೆ</translation>
@@ -602,6 +607,7 @@
 <translation id="6136914049981179737">ಸೆಕೆಂಡ್ ಹಿಂದೆ</translation>
 <translation id="6144589619057374135">${url} ಅನ್ನು ಅದೃಶ್ಯ ಮೋಡ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="6149061208933997199">ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ</translation>
+<translation id="6152406514676263192">ನಿಮ್ಮ ಆಸಕ್ತಿಗಳನ್ನು ಆಧರಿಸಿದ ಅತ್ಯಂತ ಸೂಕ್ತ ವಿಷಯವನ್ನು ಪಡೆಯಲು ಸಿಂಕ್ ಮಾಡಿ.</translation>
 <translation id="6159839020698489198">ಐಚ್ಛಿಕ</translation>
 <translation id="6177442314419606057">Chrome ನಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="6184086493125982861">ಟ್ಯಾಬ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
@@ -739,6 +745,7 @@
 <translation id="7099761977003084116">ಇತ್ತೀಚಿನ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="7102005569666697658">ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">ಮರೆಮಾಡಿ</translation>
+<translation id="7108762695052995889">ಸೈಟ್‌ಗೆ ಭೇಟಿ ನೀಡಿ</translation>
 <translation id="7133798577887235672">ಪೂರ್ಣ ಹೆಸರು</translation>
 <translation id="7136892417564438900">ಕ್ಯಾಮರಾ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="7153999225810839758"><ph name="TIME" /> ನಿಮಿಷ ಓದಲಾಗಿದೆ</translation>
@@ -749,6 +756,7 @@
 <translation id="7189598951263744875">ಹಂಚಿ...</translation>
 <translation id="7192050974311852563">ಲಾಗ್‌ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="7203585745079012652">ಉತ್ತರಗಳನ್ನು ಮತ್ತೆ ಮಾತನಾಡಿ</translation>
+<translation id="7207023858769244910">ನಿಮ್ಮ ಆಸಕ್ತಿಗಳನ್ನು ಆಧರಿಸಿದ ವಿಷಯವನ್ನು ಪಡೆಯಲು ಸಿಂಕ್ ಮಾಡಿ.</translation>
 <translation id="7207383424303353046">ಹೊಸತು: Chrome ಅನ್ನು ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆ್ಯಪ್ ಮಾಡಿಕೊಳ್ಳುವ ಮೂಲಕ ಅದರಲ್ಲಿ ಸೈಟ್‌ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ತೆರೆಯಿರಿ. <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="721597782417389033">ಕಾರ್ಡ್ ಅಡ್ಡಹೆಸರು ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="722454870747268814">ಹೊಸ ಅದೃಶ್ಯ ಟ್ಯಾಬ್</translation>
@@ -768,6 +776,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> ಓದದಿರುವ ಲೇಖನಗಳು.</translation>
 <translation id="7412027924265291969">ಮುಂದುವರಿಸಿ</translation>
+<translation id="7419565702166471774">ಯಾವಾಗಲೂ ಸುರಕ್ಷಿತವಾದ ಕನೆಕ್ಷನ್‌ಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="7425346204213733349">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಮಾಡಲಾಗುವ ಬದಲಾವಣೆಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಸಿಂಕ್‌ ಮಾಡಲಾಗುವುದಿಲ್ಲ. ಆದಾಗ್ಯೂ, ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಡೇಟಾ ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿಯೇ ಇರುತ್ತದೆ.</translation>
 <translation id="7431991332293347422">ಹುಡುಕಾಟ ಮತ್ತು ಇನ್ನೂ ಹೆಚ್ಚಿನವುಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೇಗೆ ಬಳಸಲಾಗುತ್ತದೆ ಎಂಬುದನ್ನು ನಿಯಂತ್ರಿಸಿ</translation>
 <translation id="7435356471928173109">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಆಫ್ ಮಾಡಿದ್ದಾರೆ</translation>
@@ -807,7 +816,6 @@
 <translation id="7781069478569868053">ಹೊಸ ಟ್ಯಾಬ್‌ ಪುಟ</translation>
 <translation id="7781829728241885113">ನಿನ್ನೆ</translation>
 <translation id="778855399387580014">ಹೊಸ Chrome ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಹುಡುಕಾಟವನ್ನು ಪ್ರಾರಂಭಿಸಿ.</translation>
-<translation id="7790892308048519147">ಸುರಕ್ಷಿತವಾದ ಕನೆಕ್ಷನ್‌ಗಳನ್ನು ಬಳಸಿ ನೋಡಿ</translation>
 <translation id="7791543448312431591">ಸೇರಿಸು</translation>
 <translation id="7807060072011926525">Google ಮೂಲಕ ಒದಗಿಸಲಾಗಿದೆ</translation>
 <translation id="7839985698273989086">ಆಫ್‌ಲೈನ್ ಪುಟ</translation>

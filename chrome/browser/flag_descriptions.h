@@ -121,6 +121,9 @@ extern const char kMuteCompromisedPasswordsDescription[];
 extern const char kPasswordNotesName[];
 extern const char kPasswordNotesDescription[];
 
+extern const char kPasswordViewPageInSettingsName[];
+extern const char kPasswordViewPageInSettingsDescription[];
+
 extern const char kEnableBluetoothSerialPortProfileInSerialApiName[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
 
@@ -191,8 +194,10 @@ extern const char kAutofillVisualImprovementsForSuggestionUiDescription[];
 extern const char kAutofillTypeSpecificPopupWidthName[];
 extern const char kAutofillTypeSpecificPopupWidthDescription[];
 
-extern const char kAutofillEnableMerchantBoundVirtualCardsName[];
-extern const char kAutofillEnableMerchantBoundVirtualCardsDescription[];
+extern const char
+    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName[];
+extern const char
+    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription[];
 
 extern const char kAutofillEnableManualFallbackForVirtualCardsName[];
 extern const char kAutofillEnableManualFallbackForVirtualCardsDescription[];
@@ -234,10 +239,6 @@ extern const char
 
 extern const char kAutofillEnableVirtualCardMetadataName[];
 extern const char kAutofillEnableVirtualCardMetadataDescription[];
-
-extern const char kAutofillEnableVirtualCardsRiskBasedAuthenticationName[];
-extern const char
-    kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription[];
 
 extern const char kAutofillEnforceDelaysInStrikeDatabaseName[];
 extern const char kAutofillEnforceDelaysInStrikeDatabaseDescription[];
@@ -328,6 +329,9 @@ extern const char kCheckOfflineCapabilityDescription[];
 
 extern const char kChromeLabsName[];
 extern const char kChromeLabsDescription[];
+
+extern const char kCommerceHintAndroidName[];
+extern const char kCommerceHintAndroidDescription[];
 
 extern const char kConsolidatedSiteStorageControlsName[];
 extern const char kConsolidatedSiteStorageControlsDescription[];
@@ -1859,6 +1863,9 @@ extern const char kFeedStampDescription[];
 extern const char kFeedIsAblatedName[];
 extern const char kFeedIsAblatedDescription[];
 
+extern const char kFeedCloseRefreshName[];
+extern const char kFeedCloseRefreshDescription[];
+
 extern const char kGridTabSwitcherForTabletsName[];
 extern const char kGridTabSwitcherForTabletsDescription[];
 
@@ -1944,6 +1951,9 @@ extern const char kMessagesForAndroidUpdatePasswordDescription[];
 
 extern const char kNetworkServiceInProcessName[];
 extern const char kNetworkServiceInProcessDescription[];
+
+extern const char kNewInstanceFromDraggedLinkName[];
+extern const char kNewInstanceFromDraggedLinkDescription[];
 
 extern const char kNewWindowAppMenuName[];
 extern const char kNewWindowAppMenuDescription[];

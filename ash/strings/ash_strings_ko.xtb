@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">캘린더</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
 <translation id="1165712434476988950">업데이트를 적용하려면 기기를 다시 시작해야 합니다.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">사용 중인 USB-C 케이블이 디스플레이에 제대로 연결되지 않을 수 있습니다.</translation>
 <translation id="1175572348579024023">스크롤</translation>
 <translation id="1178581264944972037">일시중지</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">최근 앱</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />에서 충전 중</translation>
 <translation id="1255033239764210633">날씨가 어때?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" />~
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Google Calendar에서 세부 사항을 선택하세요.</translation>
 <translation id="1267032506238418139">단축키 변경</translation>
 <translation id="1269405891096105529">게스트 모드에서는 주변기기가 지원되지 않습니다.</translation>
 <translation id="1270290102613614947">터치 키보드 사용 중지됨</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">카메라</translation>
 <translation id="1632985212731562677">설정 &gt; 접근성에서 스위치 제어를 사용 중지할 수 있습니다.</translation>
 <translation id="1637505162081889933">기기 <ph name="NUM_DEVICES" />대</translation>
+<translation id="1639239467298939599">로드 중</translation>
 <translation id="1654477262762802994">음성 검색 시작</translation>
 <translation id="1668469839109562275">기본 제공 VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 남음</translation>
@@ -239,6 +237,7 @@
 <translation id="2359808026110333948">계속</translation>
 <translation id="2367186422933365202">Chromebook에 로그인할 수 없음</translation>
 <translation id="2369165858548251131">중국어로 '안녕'</translation>
+<translation id="2375445874393996153">Google 어시스턴트로 화면에 표시된 내용을 검색하는 기능은 더 이상 지원되지 않습니다.</translation>
 <translation id="2390318262976603432">언어 설정</translation>
 <translation id="240006516586367791">미디어 컨트롤</translation>
 <translation id="2402411679569069051">Chromebook을 잠금 해제하려면 지문을 사용하거나 휴대전화를 잠금 해제하세요.</translation>
@@ -263,7 +262,7 @@
 <translation id="2542089167727451762">프로필 이미지 탭</translation>
 <translation id="255671100581129685">공개 세션에서는 Google 어시스턴트를 사용할 수 없습니다.</translation>
 <translation id="256712445991462162">고정 돋보기</translation>
-<translation id="2570734079541893434">설정 관리하기</translation>
+<translation id="2570734079541893434">설정 관리</translation>
 <translation id="2573588302192866788"><ph name="NAME" />에 연결할 수 없음</translation>
 <translation id="2575685495496069081">멀티 로그인이 사용 중지됨</translation>
 <translation id="2582112259361606227">업데이트하려면 다시 시작</translation>
@@ -505,6 +504,7 @@
 <translation id="3901991538546252627"><ph name="NAME" />에 연결 중</translation>
 <translation id="3922427723338465344">{0,plural, =1{1분 이내에 기기를 이전 버전으로 되돌리세요}other{#분 이내에 기기를 이전 버전으로 되돌리세요}}</translation>
 <translation id="3923494859158167397">설정된 모바일 네트워크 없음</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, 일정을 로드하는 중입니다.</translation>
 <translation id="3932043219784172185">연결된 기기 없음</translation>
 <translation id="3934456833412894880">자동 조절 충전이 사용 설정되었습니다. 배터리 수명 연장을 위해 80%까지 정상 속도로 충전 후 필요한 시점에 완충됩니다.</translation>
 <translation id="3943857333388298514">붙여넣기</translation>
@@ -704,6 +704,7 @@
 <translation id="5078796286268621944">잘못된 PIN</translation>
 <translation id="5083553833479578423">더 많은 어시스턴트 기능을 사용해 보세요.</translation>
 <translation id="509790653408515442">휴대전화의 앱을 스트리밍하면 여기 표시됩니다.</translation>
+<translation id="5098537242461068432">데스크 및 창 다시 열림</translation>
 <translation id="5107522548814527560">웹</translation>
 <translation id="5117590920725113268">다음 달 표시</translation>
 <translation id="5136175204352732067">다른 키보드 연결됨</translation>
@@ -1048,7 +1049,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
 <translation id="7180611975245234373">새로고침</translation>
-<translation id="718361511487535372">Google Calendar에서 열기</translation>
 <translation id="7188494361780961876">메뉴가 화면 왼쪽 상단으로 이동했습니다.</translation>
 <translation id="7189412385142492784">금성까지의 거리</translation>
 <translation id="7198435252016571249">카메라 미리보기가 오른쪽 하단으로 맞춰졌습니다. 시스템 표시 경로와 충돌합니다.</translation>
@@ -1057,6 +1057,10 @@
 <translation id="7258828758145722155">어제 수정됨</translation>
 <translation id="726276584504105859">화면 분할을 사용하려면 여기를 드래그하세요.</translation>
 <translation id="7262906531272962081">알림 만들기</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" />~
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Google Calendar에서 세부사항을 보려면 선택하세요.</translation>
 <translation id="7302889331339392448">실시간 자막이 꺼져 있습니다.</translation>
 <translation id="7303365578352795231">다른 기기에서 응답 중입니다.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">음성이 이제 로컬에서 처리되고 음성기록이 오프라인에서 작동합니다.</translation>
+<translation id="7932451802722951285">Google Calendar에서 열기</translation>
 <translation id="7933084174919150729">Google 어시스턴트는 기본 프로필에서만 사용할 수 있습니다.</translation>
 <translation id="79341161159229895">계정 관리자: <ph name="FIRST_PARENT_EMAIL" /> 및 <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">클립보드를 보려면 <ph name="SHORTCUT_KEY_NAME" /> + V 키를 누르세요. 최근 복사한 5개 항목이 클립보드에 저장되어 있습니다.</translation>

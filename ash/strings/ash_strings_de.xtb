@@ -31,6 +31,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
 <translation id="1165712434476988950">Das Gerät muss neu gestartet werden, um das Update zu installieren.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Dein USB-C-Kabel ist nicht zum Verbinden von Bildschirmen geeignet</translation>
 <translation id="1175572348579024023">Scrollen</translation>
 <translation id="1178581264944972037">Pause</translation>
@@ -55,7 +56,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1247519845643687288">Zuletzt verwendete Apps</translation>
 <translation id="1252999807265626933">Wird über ein <ph name="POWER_SOURCE" /> aufgeladen</translation>
 <translation id="1255033239764210633">Wie ist das Wetter?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> bis <ph name="END_TIME" />, <ph name="TIME_ZONE" />, <ph name="EVENT_SUMMARY" />. Für weitere Details Termin in Google Kalender auswählen.</translation>
 <translation id="1267032506238418139">Änderung der Tastenkombination</translation>
 <translation id="1269405891096105529">Peripheriegerät wird im Gastmodus nicht unterstützt</translation>
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
@@ -121,6 +121,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Der Schalterzugriff kann unter "Einstellungen" &gt; "Bedienungshilfen" deaktiviert werden.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> Geräte</translation>
+<translation id="1639239467298939599">Wird geladen...</translation>
 <translation id="1654477262762802994">Gesprochene Anfrage starten</translation>
 <translation id="1668469839109562275">Integriertes VPN</translation>
 <translation id="1677472565718498478">Noch <ph name="TIME" /> h</translation>
@@ -236,6 +237,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2367186422933365202">Anmeldung auf dem Chromebook nicht möglich</translation>
 <translation id="2369165858548251131">"Hallo" auf Chinesisch</translation>
+<translation id="2375445874393996153">Die Anfrage „Was wird auf meinem Bildschirm angezeigt?“ wird von Google Assistant nicht mehr unterstützt.</translation>
 <translation id="2390318262976603432">Spracheinstellungen</translation>
 <translation id="240006516586367791">Mediensteuerelemente</translation>
 <translation id="2402411679569069051">Zum Entsperren des Chromebooks Fingerabdruck verwenden oder Smartphone entsperren</translation>
@@ -502,6 +504,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="3901991538546252627">Verbindung mit <ph name="NAME" /> wird hergestellt.</translation>
 <translation id="3922427723338465344">{0,plural, =1{Gerät innerhalb von einer Minute auf eine frühere Version zurücksetzen}other{Gerät innerhalb von # Minuten auf eine frühere Version zurücksetzen}}</translation>
 <translation id="3923494859158167397">Es sind keine Mobilfunknetze eingerichtet</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Termine werden geladen.</translation>
 <translation id="3932043219784172185">Kein Gerät verbunden</translation>
 <translation id="3934456833412894880">Adaptives Laden ist aktiviert. Der Akku bleibt bei 80 %, um seine Lebensdauer zu verlängern. Er wird vollständig aufgeladen, wenn du einen vollen Akku brauchst.</translation>
 <translation id="3943857333388298514">Einfügen</translation>
@@ -701,6 +704,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="5078796286268621944">Falsche PIN</translation>
 <translation id="5083553833479578423">Möchtest du weitere Assistant-Funktionen freischalten?</translation>
 <translation id="509790653408515442">Wenn du Apps von deinem Smartphone streamst, werden sie hier angezeigt</translation>
+<translation id="5098537242461068432">Desktop und Fenster wieder geöffnet</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Nächsten Monat anzeigen</translation>
 <translation id="5136175204352732067">Andere Tastatur angeschlossen</translation>
@@ -1045,7 +1049,6 @@ Neuinstallation</translation>
 <translation id="7165278925115064263">Alt + Umschalttaste + K</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
-<translation id="718361511487535372">Im Google-Kalender öffnen</translation>
 <translation id="7188494361780961876">Menü wurde nach links oben auf dem Bildschirm verschoben.</translation>
 <translation id="7189412385142492784">Wie weit ist die Venus entfernt?</translation>
 <translation id="7198435252016571249">Kamera ist an der unteren rechten Ecke angepinnt. Konflikt mit der Systemoberfläche.</translation>
@@ -1054,6 +1057,10 @@ Neuinstallation</translation>
 <translation id="7258828758145722155">Gestern bearbeitet</translation>
 <translation id="726276584504105859">Hierher ziehen, um den Bildschirm zu teilen</translation>
 <translation id="7262906531272962081">Erinnerung erstellen</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> bis
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Für weitere Details Termin in Google Kalender auswählen.</translation>
 <translation id="7302889331339392448">Automatische Untertitel sind aus.</translation>
 <translation id="7303365578352795231">Antwort auf einem anderen Gerät.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1166,6 +1173,7 @@ Neuinstallation</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Die Sprachdateien werden nun lokal verarbeitet und die Spracheingabe funktioniert offline</translation>
+<translation id="7932451802722951285">In Google Kalender öffnen</translation>
 <translation id="7933084174919150729">Google Assistant ist nur für das Hauptprofil verfügbar.</translation>
 <translation id="79341161159229895">Konto verwaltet von <ph name="FIRST_PARENT_EMAIL" /> und <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Drücke „<ph name="SHORTCUT_KEY_NAME" /> + V“, um die Zwischenablage zu öffnen. In der Zwischenablage werden immer die letzten fünf Elemente, die du kopiert hast, gespeichert.</translation>
@@ -1233,7 +1241,7 @@ Neuinstallation</translation>
 <translation id="8364673525741149932">Shelf Party ein-/ausschalten. <ph name="STATE_TEXT" /></translation>
 <translation id="8369166482916924789">Gespeicherter Desktop, <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">Weiter um einen Buchstaben</translation>
-<translation id="8371991222807690464">Die Leistung von Peripheriegeräten kann im Gastmodus eingeschränkt sein</translation>
+<translation id="8371991222807690464">Die Leistung des Peripheriegeräts kann im Gastmodus eingeschränkt sein</translation>
 <translation id="8374601332003098278">Eingabetaste drücken, um einen Teil des Bildschirms aufzuzeichnen</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> und dein Smartphone werden automatisch miteinander verbunden</translation>
 <translation id="8380784334203145311">Gute Nacht,</translation>

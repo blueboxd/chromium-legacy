@@ -136,6 +136,22 @@ goma = struct(
     ),
 )
 
+reclient = struct(
+    instance = struct(
+        DEFAULT_TRUSTED = "rbe-chromium-trusted",
+        TEST_TRUSTED = "rbe-chromium-trusted-test",
+        DEFAULT_UNTRUSTED = "rbe-chromium-untrusted",
+        TEST_UNTRUSTED = "rbe-chromium-untrusted-test",
+    ),
+    jobs = struct(
+        DEFAULT = 250,
+        LOW_JOBS_FOR_CI = 80,
+        HIGH_JOBS_FOR_CI = 500,
+        LOW_JOBS_FOR_CQ = 80,
+        HIGH_JOBS_FOR_CQ = 500,
+    ),
+)
+
 def _rotation(name):
     return branches.value({branches.MAIN: [name]})
 
@@ -173,6 +189,15 @@ xcode = struct(
     x14betabots = xcode_enum("14a5228q"),
     # in use by ios-webkit-tot
     x13wk = xcode_enum("13a1030dwk"),
+)
+
+# Free disk space in a machine reserved for build tasks.
+# The values in this enum will be used to populate bot dimension "free_space",
+# and each bot will allocate a corresponding amount of free disk space based on
+# the value of the dimension through "bot_config.py".
+free_space = struct(
+    standard = "standard",
+    high = "high",
 )
 
 ################################################################################
@@ -301,6 +326,7 @@ defaults = args.defaults(
     auto_builder_dimension = args.COMPUTE,
     builder_group = None,
     builderless = args.COMPUTE,
+    free_space = None,
     cores = None,
     cpu = None,
     fully_qualified_builder_dimension = False,
@@ -349,6 +375,7 @@ def builder(
         triggered_by = args.DEFAULT,
         os = args.DEFAULT,
         builderless = args.DEFAULT,
+        free_space = args.DEFAULT,
         builder_cache_name = None,
         override_builder_dimension = None,
         auto_builder_dimension = args.DEFAULT,
@@ -429,6 +456,10 @@ def builder(
         builderless: a boolean indicating whether the builder runs on
             builderless machines. If True, emits a 'builderless:1' dimension. By
             default, considered True iff `os` refers to a linux OS.
+        free_space: an enum that indicates the amount of free disk space reserved
+            in a machine for incoming build tasks. This value is used to create
+            a "free_space" dimension, and this dimension is appended to only
+            builderless builders.
         override_builder_dimension: a string to assign to the "builder"
             dimension. Ignores any other "builder" and "builderless" dimensions
             that would have been assigned.
@@ -603,6 +634,12 @@ def builder(
             builderless = os != None and os.category in _DEFAULT_BUILDERLESS_OS_CATEGORIES
         if builderless:
             dimensions["builderless"] = "1"
+
+            free_space = defaults.get_value("free_space", free_space)
+            if free_space:
+                dimensions["free_space"] = free_space
+        elif free_space and free_space != args.DEFAULT:
+            fail("\'free_space\' dimension can only be specified for builderless builders")
 
         auto_builder_dimension = defaults.get_value(
             "auto_builder_dimension",
@@ -812,4 +849,5 @@ builders = struct(
     os = os,
     sheriff_rotations = sheriff_rotations,
     xcode = xcode,
+    free_space = free_space,
 )

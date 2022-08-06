@@ -209,6 +209,10 @@
     "label": "//ash:ash_unittests",
     "type": "windowed_test_launcher",
   },
+  "ash_pixeltests": {
+    "label": "//ash:ash_pixeltests",
+    "type": "windowed_test_launcher",
+  },
   "aura_unittests": {
     "label": "//ui/aura:aura_unittests",
     "type": "windowed_test_launcher",
@@ -306,6 +310,10 @@
     "label": "//chrome/test:browser_tests_apprtc",
     "type": "windowed_test_launcher",
     "executable": "browser_tests",
+  },
+  "build_junit_tests": {
+    "label": "//build/android:build_junit_tests",
+    "type": "junit_test",
   },
   "captured_sites_interactive_tests": {
     "label": "//chrome/test:captured_sites_interactive_tests",
@@ -950,10 +958,6 @@
     "label": "//headless:headless_unittests",
     "type": "console_test_launcher",
   },
-  "incremental_javac_junit_tests": {
-    "label": "//build/android/test:incremental_javac_junit_tests",
-    "type": "junit_test",
-  },
   "install_static_unittests": {
     "label": "//chrome/install_static:install_static_unittests",
     "type": "console_test_launcher",
@@ -1550,26 +1554,6 @@
   "remoting_unittests": {
     "label": "//remoting:remoting_unittests",
     "type": "console_test_launcher",
-  },
-  "rendering_representative_perf_tests": {
-    "args": [
-      "--output-format=csv",
-      "--browser=release",
-      "--upload-results",
-    ],
-    "label": "//chrome/test:rendering_representative_perf_tests",
-    "script": "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
-    "type": "script",
-  },
-  "rendering_representative_perf_tests_android_chrome": {
-    "args": [
-      "--output-format=csv",
-      "--browser=release",
-      "--upload-results",
-    ],
-    "label": "//chrome/test:rendering_representative_perf_tests_android_chrome",
-    "script": "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
-    "type": "script",
   },
   "resource_sizes_chrome_modern_public_minimal_apks": {
     "label": "//chrome/android:resource_sizes_chrome_modern_public_minimal_apks",

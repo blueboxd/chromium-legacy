@@ -9,12 +9,15 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/run_loop.h"
+#include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/tasks.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -27,7 +30,6 @@ struct PendingTask;
 namespace sequence_manager {
 namespace internal {
 
-class AssociatedThreadId;
 class SequencedTaskSource;
 
 // Implementation of this interface is used by SequenceManager to schedule
@@ -35,7 +37,8 @@ class SequencedTaskSource;
 // interface will become more concise.
 class ThreadController {
  public:
-  virtual ~ThreadController() = default;
+  ThreadController();
+  virtual ~ThreadController();
 
   // Sets the number of tasks executed in a single invocation of DoWork.
   // Increasing the batch size can reduce the overhead of yielding back to the
@@ -132,10 +135,14 @@ class ThreadController {
   virtual void RestoreDefaultTaskRunner() = 0;
   virtual void AddNestingObserver(RunLoop::NestingObserver* observer) = 0;
   virtual void RemoveNestingObserver(RunLoop::NestingObserver* observer) = 0;
-  virtual const scoped_refptr<AssociatedThreadId>& GetAssociatedThread()
-      const = 0;
+
+  const scoped_refptr<AssociatedThreadId>& GetAssociatedThread() const {
+    return associated_thread_;
+  }
 
  protected:
+  const scoped_refptr<AssociatedThreadId> associated_thread_;
+
   // Tracks the state of each run-level (main and nested ones) in its associated
   // ThreadController. It does so using two high-level principles:
   //  1) #task-in-task-implies-nested :
@@ -167,31 +174,32 @@ class ThreadController {
   //         #task-in-task-implies-nested triggers and the nested loop is
   //         visible.
   //     iii) Instrumented tasks run *and* current state is kIdle or
-  //          kSelectingNextTask ((A) is a task run by a native loop):
+  //          kInBetweenTasks ((A) is a task run by a native loop):
   //          #task-in-task-implies-nested doesn't trigger and tasks (iii) look
   //          like a non-nested continuation of tasks at the current RunLevel.
-  //  B) When task (A) exits its nested loop and completes, either:
+  //  B) When task (A) exits its nested loop and completes, respectively:
   //     i) The loop was invisible so no RunLevel was created for it and
   //        #done-task-while-not-running-implies-done-nested doesn't trigger so
   //        it balances out.
   //     ii) Instrumented tasks did run in which case |state_| is
-  //         kSelectingNextTask or kIdle. When the task in which (A) runs
-  //         completes #done-task-while-not-running-implies-done-nested triggers
-  //         and everything balances out.
-  //     iii) Same as (ii) but we're back to kSelectingNextTask or kIdle as
-  //          before and (A) was a no-op on the RunLevels.
+  //         kInBetweenTasks or kIdle. When the task in which (A) runs completes
+  //         #done-task-while-not-running-implies-done-nested triggers and
+  //         everything balances out.
+  //     iii) Nested instrumented tasks were visible but didn't appear nested,
+  //          state is now back to kInBetweenTasks or kIdle as before (A).
   class BASE_EXPORT RunLevelTracker {
    public:
     enum State {
-      // Waiting for work.
+      // Waiting for work (pending wakeup).
       kIdle,
       // Between two tasks but not idle.
-      kSelectingNextTask,
-      // Running and currently processing a unit of work.
+      kInBetweenTasks,
+      // Running and currently processing a unit of work (includes selecting the
+      // next task).
       kRunningTask,
     };
 
-    RunLevelTracker();
+    explicit RunLevelTracker(const ThreadController& outer);
     ~RunLevelTracker();
 
     void OnRunLoopStarted(State initial_state);
@@ -200,7 +208,10 @@ class ThreadController {
     void OnTaskEnded();
     void OnIdle();
 
-    size_t num_run_levels() const { return run_levels_.size(); }
+    size_t num_run_levels() const {
+      DCHECK_CALLED_ON_VALID_THREAD(outer_.associated_thread_->thread_checker);
+      return run_levels_.size();
+    }
 
     // Observers changes of state sent as trace-events so they can be tested.
     class TraceObserverForTesting {
@@ -237,10 +248,13 @@ class ThreadController {
       size_t thread_controller_active_id_ = 0;
     };
 
-    std::stack<RunLevel, std::vector<RunLevel>> run_levels_;
+    [[maybe_unused]] const ThreadController& outer_;
+
+    std::stack<RunLevel, std::vector<RunLevel>> run_levels_
+        GUARDED_BY_CONTEXT(outer_.associated_thread_->thread_checker);
 
     static TraceObserverForTesting* trace_observer_for_testing_;
-  };
+  } run_level_tracker_{*this};
 };
 
 }  // namespace internal

@@ -1619,6 +1619,10 @@ void FindFormElementUpShadowRoots(const WebElement& element,
 
 }  // namespace
 
+// TODO(crbug.com/1335257): This check is very similar to IsWebElementVisible()
+// (see the documentation there for the subtle differences: zoom factor and
+// scroll size). We can probably merge them but should do a Finch experiment
+// about it.
 bool IsVisibleIframe(const WebElement& element) {
   DCHECK(element.HasHTMLTagName("iframe"));
   // It is common for not-humanly-visible elements to have very small yet
@@ -1746,7 +1750,7 @@ bool IsSomeControlElementVisible(
       [&](const WebVector<WebFormControlElement>& fields) {
         return base::ranges::any_of(
             fields, [&](const WebFormControlElement& field) {
-              return IsWebElementVisible(field) &&
+              return IsWebElementFocusable(field) &&
                      base::Contains(control_elements,
                                     GetFieldRendererId(field));
             });
@@ -1799,6 +1803,10 @@ bool IsCheckableElement(const WebInputElement& element) {
   return element.IsCheckbox() || element.IsRadioButton();
 }
 
+bool IsCheckableElement(const WebElement& element) {
+  return IsCheckableElement(element.DynamicTo<WebInputElement>());
+}
+
 bool IsAutofillableInputElement(const WebInputElement& element) {
   return IsTextInput(element) || IsMonthInput(element) ||
          IsCheckableElement(element);
@@ -1810,8 +1818,18 @@ bool IsAutofillableElement(const WebFormControlElement& element) {
          IsSelectElement(element) || IsTextAreaElement(element);
 }
 
-bool IsWebElementVisible(const blink::WebElement& element) {
+bool IsWebElementFocusable(const blink::WebElement& element) {
   return element.IsFocusable();
+}
+
+bool IsWebElementVisible(blink::WebElement element) {
+  auto HasMinSize = [](auto size) {
+    constexpr int kMinPixelSize = 10;
+    return size.width() >= kMinPixelSize && size.height() >= kMinPixelSize;
+  };
+  return !element.IsNull() && IsWebElementFocusable(element) &&
+         (IsCheckableElement(element) || HasMinSize(element.GetClientSize()) ||
+          HasMinSize(element.GetScrollSize()));
 }
 
 std::u16string GetFormIdentifier(const WebFormElement& form) {
@@ -1948,7 +1966,8 @@ void WebFormControlElementToFormField(
       IsSelectElement(element)) {
     // The browser doesn't need to differentiate between preview and autofill.
     field->is_autofilled = element.IsAutofilled();
-    field->is_focusable = IsWebElementVisible(element);
+    field->is_focusable = IsWebElementFocusable(element);
+    field->is_visible = IsWebElementVisible(element);
     field->should_autocomplete = element.AutoComplete();
 
     field->text_direction = GetTextDirectionForElement(element);
@@ -2342,13 +2361,9 @@ ButtonTitleList GetButtonTitles(const WebFormElement& web_form,
   if (web_form.IsNull()) {
     const WebElement& body = document.Body();
     if (!body.IsNull()) {
-      SCOPED_UMA_HISTOGRAM_TIMER(
-          "PasswordManager.ButtonTitlePerformance.NoFormTag");
       button_titles = InferButtonTitlesForForm(body);
     }
   } else {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "PasswordManager.ButtonTitlePerformance.HasFormTag");
     button_titles = InferButtonTitlesForForm(web_form);
   }
   form_position->second = std::move(button_titles);

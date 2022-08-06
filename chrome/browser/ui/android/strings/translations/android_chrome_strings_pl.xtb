@@ -110,6 +110,7 @@ Jeśli usuniesz swoją historię przeglądania – całą lub dotyczącą okre�
 <translation id="1513352483775369820">Zakładki i historia online</translation>
 <translation id="1513814250881909472">Aby zobaczyć karty z innych urządzeń, włącz synchronizację</translation>
 <translation id="1513858653616922153">Usuń hasło</translation>
+<translation id="1514552811327923157">Okno Piaskownicy prywatności jest otwarte na całą wysokość</translation>
 <translation id="1518421282666914498">GIF z emotikonem <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="1521774566618522728">Aktywność: dzisiaj</translation>
 <translation id="1538801903729528855">Korzystaj z dodatkowych możliwości funkcji głosowych w internecie</translation>
@@ -321,6 +322,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="2711073837061989559">Wersje próbne</translation>
 <translation id="2718352093833049315">Tylko przez Wi-Fi</translation>
 <translation id="2718846868787000099">Odwiedzane witryny będą miały dostęp do Twoich ustawień, by mogły pokazywać zawartość w wybranym przez Ciebie języku</translation>
+<translation id="2722945394406572875">Okno piaskownicy prywatności zostało zamknięte</translation>
 <translation id="2723001399770238859">dźwięk</translation>
 <translation id="2732063072010454421">Wyszukiwanie głosowe może być jeszcze wygodniejsze</translation>
 <translation id="2739256783402597439">2G</translation>
@@ -346,6 +348,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="2842985007712546952">Folder nadrzędny</translation>
 <translation id="2856503607207334158">Błąd logowania</translation>
 <translation id="2860954141821109167">Sprawdź, czy na urządzeniu jest włączona aplikacja telefonu</translation>
+<translation id="2861923151411510142">Niektóre funkcje Chrome nie będą już dostępne</translation>
 <translation id="2870560284913253234">Witryna</translation>
 <translation id="2871733351037274014">Wstępnie wczytuj strony</translation>
 <translation id="2888126860611144412">Chrome – informacje</translation>
@@ -524,7 +527,6 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3845098929839618392">Otwórz w karcie incognito</translation>
 <translation id="3856096718352044181">Sprawdź, czy jest to prawidłowy dostawca, lub spróbuj ponownie później</translation>
 <translation id="3858860766373142691">Nazwa</translation>
-<translation id="3859206958100234503">Aby mieć dostęp do haseł, zakładek i innych danych na wszystkich swoich urządzeniach, włącz synchronizację.</translation>
 <translation id="3861633093716975811">Popularne filmy</translation>
 <translation id="3892148308691398805">Kopiuj tekst</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
@@ -563,6 +565,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="4095146165863963773">Usunąć dane aplikacji?</translation>
 <translation id="4096227151372679484">Procedura zapisywania zakładki została otwarta na połowę wysokości</translation>
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
+<translation id="4101475238162928417">Aby mieć dostęp do haseł, zakładek i innych danych na swoich pozostałych urządzeniach, włącz synchronizację</translation>
 <translation id="410351446219883937">Autoodtwarzanie</translation>
 <translation id="4106587138345390261">Testujemy nowe funkcje Chrome, dzięki którym witryny będą mogły zapewniać użytkownikom taką samą wygodę przeglądania treści przy wykorzystaniu mniejszej ilości informacji</translation>
 <translation id="4108314971463891922">Obserwuj</translation>
@@ -585,6 +588,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="4227318652298512614">Obserwuj strony, które lubisz</translation>
 <translation id="4242533952199664413">Otwórz ustawienia</translation>
 <translation id="4248098802131000011">Chroń swoje hasła przed naruszeniem bezpieczeństwa danych i innymi zagrożeniami</translation>
+<translation id="424864128008805179">Wylogować z Chrome?</translation>
 <translation id="4249955472157341256">Sortuj od najnowszego</translation>
 <translation id="4250229828105606438">Zrzut ekranu</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
@@ -652,7 +656,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4594952190837476234">Ta strona offline jest z <ph name="CREATION_TIME" /> i może różnić się od wersji online.</translation>
 <translation id="4616150815774728855">Otwórz <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">Potwierdź, że to Ty</translation>
-<translation id="4627165777145349100">Więcej informacji o tej stronie</translation>
 <translation id="4634124774493850572">Użyj hasła</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 przejęte hasło}few{# przejęte hasła}many{# przejętych haseł}other{# przejętego hasła}}</translation>
 <translation id="4650364565596261010">Ustawienie domyślne</translation>
@@ -889,11 +892,13 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5869522115854928033">Zapisane hasła</translation>
 <translation id="5869789175361934029">Kontynuuj przeglądanie zaczęte na innym urządzeniu</translation>
 <translation id="587735546353481577">Aby obserwować stronę, otwórz ją, otwórz menu Chrome i kliknij Obserwuj.</translation>
+<translation id="5879072387416556377">Otrzymuj lepsze sugestie</translation>
 <translation id="5880748256563468367">Przejdź do kart</translation>
 <translation id="5884076754568147479">Aby pomóc Ci w wykonywaniu zadań, Google będzie otrzymywać adresy URL i zawartość stron, na których używasz Asystenta, a także informacje, które przekazujesz za pomocą Asystenta</translation>
 <translation id="5906513782029855931">Znając adresy URL stron internetowych, Asystent Google będzie mógł pomagać Ci w wykonywaniu zadań. Możesz go wyłączyć w ustawieniach Chrome.</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5919204609460789179">Zaktualizuj przeglądarkę <ph name="PRODUCT_NAME" />, by rozpocząć synchronizację</translation>
+<translation id="593625682991400408">Podczas testów Chrome sprawdza, w jaki sposób można ograniczyć spam, oszustwa i udostępnianie treści między witrynami. Chrome <ph name="BEGIN_LINK" />określa w przybliżeniu Twoje zainteresowania<ph name="END_LINK" />, na podstawie których strony mogą wyświetlać Ci reklamy. Swoimi zainteresowaniami możesz zarządzać w ustawieniach.</translation>
 <translation id="5938820472109305350">Dodaj: <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Korzystam z wyszukiwarki Google</translation>
 <translation id="5945035219773565305">Obecne zalecenie: <ph name="RECOMMENDATION" /></translation>
@@ -1191,6 +1196,7 @@ Tokeny zaufania zwiększają prywatność w sieci i nie można za ich pomocą 
 <translation id="749294055653435199">Na tym urządzeniu Obiektyw Google jest niedostępny</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (zaktualizowana <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Czekaj…</translation>
+<translation id="7502234197872745058">Aby wylogować się z konta Google na wszystkich stronach, <ph name="BEGIN_LINK1" />wyloguj się z Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Aktualizacje są niedostępne</translation>
 <translation id="7507207699631365376">Zapoznaj się z <ph name="BEGIN_LINK" />polityką prywatności<ph name="END_LINK" /> tego dostawcy</translation>
 <translation id="7514365320538308">Pobierz</translation>
@@ -1230,6 +1236,7 @@ Tokeny zaufania zwiększają prywatność w sieci i nie można za ich pomocą 
 <translation id="770741401784017797">Tworzę GIF-a</translation>
 <translation id="7707922173985738739">Użycie mobilnej transmisji danych</translation>
 <translation id="7709094866268987903">Tutaj będą widoczne usunięte zainteresowania</translation>
+<translation id="7709918231054955894">Wyświetl wszystkie swoje karty</translation>
 <translation id="7725024127233776428">Tutaj pojawią się strony, które dodasz do zakładek</translation>
 <translation id="7757787379047923882">Tekst udostępniony z urządzenia <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Wybierz datę i godzinę</translation>
@@ -1425,6 +1432,7 @@ Tokeny zaufania zwiększają prywatność w sieci i nie można za ich pomocą 
 <translation id="8656747343598256512">Zaloguj się na swoje konto Google na tej stronie i w Chrome. Synchronizację możesz włączyć później.</translation>
 <translation id="8659579665266920523">Wyszukiwanie w Chrome</translation>
 <translation id="8662811608048051533">Wylogowuje z większości stron internetowych.</translation>
+<translation id="8664215986015753476">Używaj Chrome po swojemu</translation>
 <translation id="8664979001105139458">Ta nazwa pliku już istnieje</translation>
 <translation id="8666759526542103597">O personalizacji reklam na podstawie informacji z przeglądarki.</translation>
 <translation id="8667760277771450375">Pracujemy nad tym, jak ograniczyć śledzenie w witrynach, a jednocześnie umożliwić im zapobieganie oszustwom i spamowi reklamowemu.</translation>
@@ -1512,6 +1520,7 @@ Tokeny zaufania zwiększają prywatność w sieci i nie można za ich pomocą 
 <translation id="9106148373857059373">Procedura zapisywania zakładki została zamknięta</translation>
 <translation id="9108312223223904744">Telefon jako klucz bezpieczeństwa</translation>
 <translation id="9108808586816295166">Bezpieczny DNS może nie być dostępny przez cały czas</translation>
+<translation id="9128984223251192329">Okno Piaskownicy prywatności jest otwarte do połowy wysokości</translation>
 <translation id="9133397713400217035">Przeglądaj offline</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9148126808321036104">Zaloguj się ponownie</translation>

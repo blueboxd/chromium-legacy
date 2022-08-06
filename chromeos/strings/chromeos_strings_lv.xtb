@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">Šo <ph name="DEVICE_TYPE" /> ierīci pārvalda <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Vidējs (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Noņemt</translation>
+<translation id="1190378975642195988">Pamatnes akselerometrs</translation>
 <translation id="1195447618553298278">Nezināma kļūda.</translation>
 <translation id="1196959502276349371">Versija <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Atskaņot/pārtraukt</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">Saglabāt USB diskā</translation>
 <translation id="1468664791493211953">Piedāvājumi</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> pārvalda šo ierīci un, iespējams, var pārraudzīt jūsu darbību.</translation>
+<translation id="147809995039451286">Nevarēja lejupielādēt atjauninājumu.</translation>
 <translation id="1478594628797167447">Skeneris</translation>
 <translation id="1491076385728777984">Notiek ierīces “<ph name="DEVICE_NAME" />” aparātprogrammatūras atjaunināšana</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> pārvalda šo lietotāju un, iespējams, var attālināti pārvaldīt iestatījumus un pārraudzīt lietotāja darbības.</translation>
@@ -95,6 +97,7 @@
 <translation id="1717874160321062422">Pārvalda <ph name="FIRST_MANAGER" /> un <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Nosaukumu serveri</translation>
 <translation id="1731082422893354635">Bluetooth skārienpaliktnis</translation>
+<translation id="1745577949879301685">Nevarēja ielādēt attēlus. Pārbaudiet tīkla savienojumu vai vēlreiz mēģiniet ielādēt attēlus.</translation>
 <translation id="1751249301761991853">Personīgi</translation>
 <translation id="1753496554272155572">Aizvērt fona tapetes priekšskatījumu</translation>
 <translation id="175763766237925754">Labs (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -124,6 +127,7 @@
 <translation id="1999615961760456652">Caurlaides lapa</translation>
 <translation id="2006864819935886708">Savienojamība</translation>
 <translation id="2008685064673031089">Pirmskaitļu meklēšana</translation>
+<translation id="2011174342667534258">SDK versija:</translation>
 <translation id="2016697457005847575">Skatīt problēmu novēršanas darbības</translation>
 <translation id="2016848882344942759">--bez baltās etiķetes--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -155,6 +159,7 @@
 <translation id="225692081236532131">Aktivizācijas statuss</translation>
 <translation id="2271469253353559191">Tumšā režīma grafiks</translation>
 <translation id="2275586345903859204">Remonts ir pabeigts</translation>
+<translation id="2276999893457278469">Populārākais palīdzības saturs</translation>
 <translation id="2287186687001756809">Nav pieejams neviens attēls. Lai pievienotu fotoattēlus, pārejiet uz vietni <ph name="LINK" />.</translation>
 <translation id="2294753434210277304">Ievietojiet ārējās atmiņas ierīci, piemēram, USB disku vai SD karti, ar lejupielādēto Chromebook atkopšanas utilītprogrammas attēlu</translation>
 <translation id="2307344026739914387">Izmantot pašreizējo atslēgu pāri</translation>
@@ -176,6 +181,7 @@
 <translation id="2418150275289244458">Atvērt iestatījumos</translation>
 <translation id="2421798028054665193"><ph name="CURRENT_PAGE" />. no <ph name="TOTAL_PAGES" /> attēliem</translation>
 <translation id="2446553403094072641">Peldošā punkta precizitāte</translation>
+<translation id="2447969267935997922">Instalēšana ir pabeigta. Tagad varat izņemt USB disku vai SD karti.</translation>
 <translation id="2448312741937722512">Tips</translation>
 <translation id="2461822463642141190">Šobrīd</translation>
 <translation id="2480034874476596812">Manuāla izslēgšana</translation>
@@ -187,6 +193,7 @@
 <translation id="2517472476991765520">Meklēt</translation>
 <translation id="2526590354069164005">Darbvirsma</translation>
 <translation id="253029298928638905">Notiek restartēšana...</translation>
+<translation id="2533048460510040082">Ieteiktais palīdzības saturs</translation>
 <translation id="2536159006530886390">Nevar izveidot savienojumu ar internetu.</translation>
 <translation id="2570743873672969996">Notiek testa “<ph name="TEST_NAME" />” izpilde...</translation>
 <translation id="2584559707064218956">Lai iestatītu, pārejiet uz iestatījumiem.</translation>
@@ -213,7 +220,6 @@
 <translation id="2878387241690264070">Izlādes apjoms <ph name="NUM_SECONDS" /> s laikā: <ph name="RATE" />.</translation>
 <translation id="291142119251986300">Neatbilstoši komponenti</translation>
 <translation id="2926057806159140518">Ievadiet savu lietotājvārdu un paroli vai skenējiet kvadrātkodu</translation>
-<translation id="2928420929544864228">Instalēšana pabeigta.</translation>
 <translation id="3008341117444806826">ATSVAIDZINĀT</translation>
 <translation id="3009958530611748826">Atlasiet mapi, kurā saglabāt failus</translation>
 <translation id="3017079585324758401">Fons</translation>
@@ -267,6 +273,7 @@
 <translation id="3484914941826596830">Kamēr notiek aparātprogrammatūras atjaunināšana, neatvienojiet šo ārējo ierīci un neizslēdziet datoru. Varat minimizēt šo logu. Atjaunināšana var ilgt dažas minūtes, un jūsu ārējā ierīce šajā laikā var nedarboties.</translation>
 <translation id="3486220673238053218">definīcija</translation>
 <translation id="3488065109653206955">Daļēji aktivizēts</translation>
+<translation id="3492982278147736083">Vāka žiroskops</translation>
 <translation id="3517001332549868749">Chrome OS atjauninājums</translation>
 <translation id="3527036260304016759">Neizdevās — nezināma kļūda</translation>
 <translation id="3532980081107202182">Atlikušas aptuveni <ph name="MIN_REMAINING" /> minūtes</translation>
@@ -286,6 +293,7 @@
 <translation id="3621202678540785336">Ievade</translation>
 <translation id="3632579075709132555">Konfidencialitātes ekrāna slēdzis</translation>
 <translation id="3643810137582748570">Izlaist kalibrēšanu</translation>
+<translation id="3651050199673793219">Atlasīt temperatūras mērvienību</translation>
 <translation id="3678765385266369662">Atlasiet, kā vēlaties izslēgt aizsardzību pret rakstīšanu</translation>
 <translation id="3689839747745352263">Pārbaude: <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Notiek ielāde...</translation>
@@ -300,9 +308,12 @@
 <translation id="3820172043799983114">PIN nav derīgs.</translation>
 <translation id="3838338534323494292">Jaunā parole</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
+<translation id="3856304145690230735">Pamatnes žiroskops</translation>
 <translation id="385832974417157471">Pirms ierīces izslēgšanas izmantojiet tajā funkciju Powerwash. Ja jūsu ierīcei ir vāks, neaizveriet to, līdz funkcija Powerwash ir veikusi vajadzīgās darbības. Funkcijas Powerwash darbību izpilde var ilgt līdz pat vienai minūtei.</translation>
 <translation id="3858860766373142691">Nosaukums</translation>
+<translation id="3862598938296403232">Nepieciešams apraksts</translation>
 <translation id="3865414814144988605">Izšķirtspēja</translation>
+<translation id="3866249974567520381">Apraksts</translation>
 <translation id="387301095347517405">Cik pilnu uzlādes ciklu ir bijis jūsu akumulatoram</translation>
 <translation id="3885327323343477505">Mainīt ekrānsaudzētāju</translation>
 <translation id="3923184630988645767">Datu lietojums</translation>
@@ -370,6 +381,7 @@
 <translation id="4472575034687746823">Sākt darbu</translation>
 <translation id="4479639480957787382">tīkls Ethernet</translation>
 <translation id="4483049906298469269">Neizdevās ehotestēt tīkla vārteju, kas nav noklusējuma vārteja</translation>
+<translation id="4500213108254186382">Vāka akselerometrs</translation>
 <translation id="4503223151711056411">Kreisais bulttaustiņš</translation>
 <translation id="4511264077854731334">Portāls</translation>
 <translation id="4521826082652183069">Subjekta alternatīvā nosaukuma atbilstība</translation>
@@ -381,6 +393,7 @@
 <translation id="4561801978359312462">SIM karte atbloķēta</translation>
 <translation id="4562494484721939086">Nav pakalpojuma</translation>
 <translation id="4568938274596692027">Instalēšana ir pabeigta. Notiek gatavošanās restartēšanai…</translation>
+<translation id="4576943788798178439">Atbalsts skārienekrāna pildspalvai</translation>
 <translation id="458794348635939462">Neizdevās atrisināt visu saimniekdatoru nosaukumus</translation>
 <translation id="4593212453765072419">Nepieciešama starpniekservera autentifikācija</translation>
 <translation id="4609350030397390689">Samazināt tastatūras spilgtumu</translation>
@@ -429,6 +442,7 @@
 <translation id="4915052247106771211">Ierīcē tiks atjaunoti rūpnīcas iestatījumi (tiks izmantota funkcija Powerwash).</translation>
 <translation id="4917385247580444890">Spēcīgs</translation>
 <translation id="4917889632206600977">Apturēts — beidzies papīrs</translation>
+<translation id="491791267030419270">Padomi par atsauksmju rakstīšanu</translation>
 <translation id="4921665434385737356">Uzlādes apjoms: <ph name="RATE" /> <ph name="NUM_SECONDS" /> sekundēs.</translation>
 <translation id="4930320165497208503">Lai iestatītu vai atjauninātu savienojumu, pārejiet uz <ph name="BEGIN_LINK" />iestatījumiem<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Datums</translation>
@@ -535,6 +549,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="5866840822086176774">Ļoti spēcīgs</translation>
 <translation id="588258955323874662">Pilnekrāna</translation>
 <translation id="5895138241574237353">Restartēt</translation>
+<translation id="5898758006340607522">Barošanas poga</translation>
 <translation id="5901630391730855834">Dzeltena</translation>
 <translation id="5903200662178656908">Ierīce sastāv no tastatūras un peles.</translation>
 <translation id="5916084858004523819">Aizliegts</translation>
@@ -670,6 +685,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7143207342074048698">Notiek savienojuma izveide</translation>
 <translation id="7144878232160441200">Mēģināt vēlreiz</translation>
 <translation id="714876143603641390">LAN savienojamība</translation>
+<translation id="7154020516215182599">Sniedziet atsauksmes vai aprakstiet problēmu. Ja iespējams, norādiet darbības, ko veicāt, kad radās problēma.</translation>
 <translation id="7155171745945906037">Esošs fotoattēls no kameras vai faila</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7170236477717446850">Profila attēls</translation>
@@ -847,6 +863,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="885701979325669005">Krātuve</translation>
 <translation id="8863170912498892583">Iespējot tumšo motīvu</translation>
 <translation id="8863888432376731307">Pieejama informācija par vaicājumu “<ph name="QUERY" />”: <ph name="INTENT" /> un daudz kas cits</translation>
+<translation id="8864415976656252616">Nav ieteikta satura. Skatiet populārāko palīdzības saturu.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Ierīce ir planšetdators.</translation>
 <translation id="8881098542468797602">Pārbaude sekmīga</translation>
@@ -857,6 +874,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="8919792139048574232">Uzziniet, kas ir izlabots</translation>
 <translation id="8919837981463578619">Neizdevās — trūkst paliktņa</translation>
 <translation id="8923267550422472772">Mēneša diena, kad notiek atiestatīšana</translation>
+<translation id="8925613211674558308">Vpd Cached</translation>
 <translation id="8928727111548978589">Neizdevās — beidzies papīrs</translation>
 <translation id="8930521118335213258">Vienādranga ierīce</translation>
 <translation id="8930622219860340959">Bezvadu</translation>
@@ -898,6 +916,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="922179502584117429">Pašreizējā versija (<ph name="VERSION_NUMBER" />) ir novecojusi</translation>
 <translation id="932327136139879170">Sākums</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">Sūtīt atsauksmes</translation>
 <translation id="952992212772159698">Neaktivizēts</translation>
 <translation id="960719561871045870">Operatora kods</translation>
 <translation id="982713511914535780">Veikt izlādes pārbaudi</translation>

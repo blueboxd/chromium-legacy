@@ -881,7 +881,7 @@ bool GetRequiredAttribs(const base::Lock* va_lock,
     required_attribs->push_back({VAConfigAttribRateControl, VA_RC_CBR});
   if (mode == VaapiWrapper::kEncodeConstantQuantizationParameter)
     required_attribs->push_back({VAConfigAttribRateControl, VA_RC_CQP});
-  if (mode == VaapiWrapper::kEncodeConstantQuantizationParameter)
+  if (mode == VaapiWrapper::kEncodeVariableBitrate)
     required_attribs->push_back({VAConfigAttribRateControl, VA_RC_VBR});
 
   constexpr VAProfile kSupportedH264VaProfilesForEncoding[] = {
@@ -1518,12 +1518,7 @@ std::vector<SVCScalabilityMode> VaapiWrapper::GetSupportedScalabilityModes(
   }
 
   if (media_profile >= H264PROFILE_MIN && media_profile <= H264PROFILE_MAX) {
-    // TODO(b/199487660): Enable H.264 temporal layer encoding on AMD once their
-    // drivers support them.
-    VAImplementation implementation = VaapiWrapper::GetImplementationType();
-    if (base::FeatureList::IsEnabled(kVaapiH264TemporalLayerHWEncoding) &&
-        (implementation == VAImplementation::kIntelI965 ||
-         implementation == VAImplementation::kIntelIHD)) {
+    if (base::FeatureList::IsEnabled(kVaapiH264TemporalLayerHWEncoding)) {
       scalability_modes.push_back(SVCScalabilityMode::kL1T2);
       scalability_modes.push_back(SVCScalabilityMode::kL1T3);
     }

@@ -421,21 +421,6 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
   size_t error_count_ = 0;
 };
 
-// Tests that reports should not be sent when extended reporting is not opted
-// in.
-IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
-                       NotOptedIn_ShouldNotEnqueueReport) {
-  SetExtendedReportingEnabled(false);
-
-  // Visit an HTTPS page.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), https_server()->GetURL("a.test", "/")));
-
-  // Check that no reports are sent.
-  EXPECT_EQ(0u, requests_seen());
-  EXPECT_TRUE(FlushAndCheckZeroReports());
-}
-
 // Tests that reports should be sent when extended reporting is opted in.
 IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
                        OptedIn_ShouldEnqueueReport) {
@@ -493,15 +478,9 @@ IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
 }
 
 // Tests that disabling Extended Reporting causes the cache to be cleared.
-// TODO(crbug.com/1179504): Reenable. Flakes heavily on Linux, Win, and CrOS.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_OptingOutClearsSCTAuditingCache \
-  DISABLED_OptingOutClearsSCTAuditingCache
-#else
-#define MAYBE_OptingOutClearsSCTAuditingCache OptingOutClearsSCTAuditingCache
-#endif
+// TODO(crbug.com/1179504): Reenable. Flakes heavily on all platforms.
 IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
-                       MAYBE_OptingOutClearsSCTAuditingCache) {
+                       DISABLED_OptingOutClearsSCTAuditingCache) {
   // Enable SCT auditing and enqueue a report.
   SetExtendedReportingEnabled(true);
 

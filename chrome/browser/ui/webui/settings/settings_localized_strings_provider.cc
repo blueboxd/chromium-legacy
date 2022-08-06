@@ -1057,6 +1057,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"passwordDeletedFromAccountAndDevice",
        IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT_AND_DEVICE},
       {"passwordCopiedToClipboard", IDS_SETTINGS_PASSWORD_COPIED_TO_CLIPBOARD},
+      {"passwordUsernameCopiedToClipboard",
+       IDS_SETTINGS_PASSWORD_USERNAME_COPIED_TO_CLIPBOARD},
       {"passwordMovePasswordsToAccount",
        IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT},
       {"passwordMovePasswordsToAccountDialogBodyText",
@@ -2139,7 +2141,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"cookiePageBlockAllBulTwo", IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_TWO},
     {"cookiePageBlockAllBulThree", IDS_SETTINGS_COOKIES_BLOCK_ALL_BULLET_THREE},
     {"cookiePageClearOnExit", IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT},
-#if !BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"cookiePageClearOnExitDesc", IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT_DESC},
 #endif
     {"cookiePageAllSitesLink", IDS_SETTINGS_COOKIES_ALL_SITES_LINK},

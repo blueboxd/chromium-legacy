@@ -161,6 +161,7 @@
   self.suppressTableViewUpdates = YES;
   [self loadModel];
   self.suppressTableViewUpdates = NO;
+  [self.dataManager prepare];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -200,6 +201,7 @@
     self.navigationController.interactivePopGestureRecognizer.delegate = nil;
     self.overlayCoordinator = nil;
   }
+  [self.dataManager disconnect];
 }
 
 #pragma mark - UIGestureRecognizerDelegate

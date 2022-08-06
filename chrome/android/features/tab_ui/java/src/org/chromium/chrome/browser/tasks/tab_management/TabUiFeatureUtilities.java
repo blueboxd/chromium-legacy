@@ -106,6 +106,12 @@ public class TabUiFeatureUtilities {
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS,
                     GRID_TAB_SWITCHER_FOR_TABLETS_POLISH_PARAM, false);
 
+    // Field trial parameter for controlling delay grid tab switcher creation for tablets.
+    private static final String DELAY_GTS_CREATION_PARAM = "delay_creation";
+    public static final BooleanCachedFieldTrialParameter DELAY_GTS_CREATION =
+            new BooleanCachedFieldTrialParameter(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS,
+                    DELAY_GTS_CREATION_PARAM, false);
+
     // Field trial parameter for defining tab width for tab strip improvements.
     private static final String TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM = "min_tab_width";
     public static final DoubleCachedFieldTrialParameter TAB_STRIP_TAB_WIDTH =
@@ -176,18 +182,37 @@ public class TabUiFeatureUtilities {
     }
 
     /**
+     * @return Whether the tablet Grid Tab Switcher creation should be delayed to on GTS load
+     *         instead of on startup.
+     */
+    public static boolean isTabletGridTabSwitcherDelayCreationEnabled() {
+        return DELAY_GTS_CREATION.getValue();
+    }
+
+    /**
      * @return Whether the tab group feature is enabled and available for use.
      * @param context The activity context.
      */
     public static boolean isTabGroupsAndroidEnabled(Context context) {
         // Disable tab group for tablet.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            return CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS);
+            return isTabletTabGroupsEnabled(context);
         }
 
         return !DeviceClassManager.enableAccessibilityLayout(context)
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
                 && isTabManagementModuleSupported();
+    }
+  
+    /**
+     * @return Whether tab groups are enabled for tablet.
+     * @param context The activity context.
+     */
+    public static boolean isTabletTabGroupsEnabled(Context context) {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID);
     }
 
     /**

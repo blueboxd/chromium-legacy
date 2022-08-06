@@ -217,7 +217,7 @@ void PermissionRequestManager::AddRequest(
   // any other renderer-side nav initiations?). Double-check this for
   // correct behavior on interstitials -- we probably want to basically queue
   // any request for which GetVisibleURL != GetLastCommittedURL.
-  CHECK_EQ(source_frame->GetMainFrame(), web_contents()->GetMainFrame());
+  CHECK_EQ(source_frame->GetMainFrame(), web_contents()->GetPrimaryMainFrame());
   const GURL main_frame_origin =
       PermissionUtil::GetLastCommittedOriginAsURL(source_frame->GetMainFrame());
   bool is_main_frame =
@@ -477,7 +477,7 @@ GURL PermissionRequestManager::GetRequestingOrigin() const {
 
 GURL PermissionRequestManager::GetEmbeddingOrigin() const {
   return PermissionUtil::GetLastCommittedOriginAsURL(
-      web_contents()->GetMainFrame());
+      web_contents()->GetPrimaryMainFrame());
 }
 
 void PermissionRequestManager::Accept() {
@@ -579,6 +579,11 @@ void PermissionRequestManager::SetManageClicked() {
 
 void PermissionRequestManager::SetLearnMoreClicked() {
   set_learn_more_clicked();
+}
+
+base::WeakPtr<PermissionPrompt::Delegate>
+PermissionRequestManager::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 PermissionRequestManager::PermissionRequestManager(
@@ -1070,7 +1075,7 @@ PermissionRequestManager::DetermineCurrentRequestUIDispositionReasonForUMA() {
 }
 
 void PermissionRequestManager::LogWarningToConsole(const char* message) {
-  web_contents()->GetMainFrame()->AddMessageToConsole(
+  web_contents()->GetPrimaryMainFrame()->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kWarning, message);
 }
 

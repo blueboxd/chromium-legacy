@@ -9,8 +9,10 @@
 
 #include "base/base64.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_util.h"
 #include "components/url_param_filter/core/features.h"
 #include "components/url_param_filter/core/url_param_filter_classification.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -19,6 +21,19 @@
 namespace url_param_filter {
 
 namespace {
+constexpr char DEFAULT_TAG[] = "default";
+
+bool HasExperimentTag(const FilterClassification& classification,
+                      const std::string& tag) {
+  // We expect this list to almost never exceed 2 items, making a loop
+  // acceptable.
+  for (auto i : classification.experiment_tags()) {
+    if (i == tag) {
+      return true;
+    }
+  }
+  return false;
+}
 
 void AppendParams(ClassificationMap& map,
                   const FilterClassification& classification,
@@ -27,20 +42,16 @@ void AppendParams(ClassificationMap& map,
     // Any non-matching experimental params have been discarded previously.
     // We retain whether the classification was experimental, however, to write
     // a separate metric when those classifications are used.
-    map[classification.site()][use_case][param.name()] =
-        classification.has_experiment_identifier()
+    map[classification.site()][use_case][base::ToLowerASCII(param.name())] =
+        !classification.experiment_tags().empty() &&
+                !HasExperimentTag(classification, DEFAULT_TAG)
             ? ClassificationExperimentStatus::EXPERIMENTAL
             : ClassificationExperimentStatus::NON_EXPERIMENTAL;
   }
 }
 
 void ProcessClassification(ClassificationMap& map,
-                           const FilterClassification& classification,
-                           std::string experiment_identifier) {
-  if (classification.has_experiment_identifier() &&
-      experiment_identifier != classification.experiment_identifier()) {
-    return;
-  }
+                           const FilterClassification& classification) {
   if (classification.use_cases_size() > 0) {
     for (int use_case : classification.use_cases()) {
       AppendParams(map, classification,
@@ -64,9 +75,9 @@ ClassificationMap GetClassificationsFromFeature(
       for (auto i : classifications.classifications()) {
         if (i.site_role() == role) {
           // When retrieving classifications from the feature, we do not allow
-          // additional experiment overrides; we instead use the default "".
-          DCHECK(!i.has_experiment_identifier());
-          ProcessClassification(map, i, "");
+          // additional experiment overrides.
+          DCHECK(i.experiment_tags().empty());
+          ProcessClassification(map, i);
         }
       }
     }
@@ -81,10 +92,8 @@ ClassificationMap GetClassificationMap(
   if (!classifications.has_value())
     return ClassificationMap();
   ClassificationMap map;
-  std::string experiment_identifier = base::GetFieldTrialParamValueByFeature(
-      features::kIncognitoParamFilterEnabled, "experiment_identifier");
   for (const FilterClassification& classification : classifications.value()) {
-    ProcessClassification(map, classification, experiment_identifier);
+    ProcessClassification(map, classification);
   }
   return map;
 }
@@ -118,19 +127,42 @@ void ClassificationsLoader::ReadClassifications(
 
   std::vector<FilterClassification> source_classifications,
       destination_classifications;
+  int total_applicable_source_classifications = 0;
+  int total_applicable_destination_classifications = 0;
+  std::string experiment_identifier = base::GetFieldTrialParamValueByFeature(
+      features::kIncognitoParamFilterEnabled, "experiment_identifier");
+  // If there is no experiment identifier passed via the feature, then use the
+  // classifications that are marked `default`.
+  if (experiment_identifier.empty()) {
+    experiment_identifier = DEFAULT_TAG;
+  }
   for (const FilterClassification& fc : classification_list.classifications()) {
     DCHECK(fc.has_site());
     DCHECK(fc.has_site_role());
-    if (fc.site_role() == FilterClassification_SiteRole_SOURCE)
+    if (!HasExperimentTag(fc, experiment_identifier)) {
+      continue;
+    }
+    if (fc.site_role() == FilterClassification_SiteRole_SOURCE) {
       source_classifications.push_back(fc);
+      total_applicable_source_classifications++;
+    }
 
-    if (fc.site_role() == FilterClassification_SiteRole_DESTINATION)
+    if (fc.site_role() == FilterClassification_SiteRole_DESTINATION) {
       destination_classifications.push_back(fc);
+      total_applicable_destination_classifications++;
+    }
   }
 
   component_source_classifications_ = std::move(source_classifications);
   component_destination_classifications_ =
       std::move(destination_classifications);
+
+  base::UmaHistogramCounts10000(
+      "Navigation.UrlParamFilter.ApplicableClassificationCount.Source",
+      total_applicable_source_classifications);
+  base::UmaHistogramCounts10000(
+      "Navigation.UrlParamFilter.ApplicableClassificationCount.Destination",
+      total_applicable_destination_classifications);
 }
 
 void ClassificationsLoader::ResetListsForTesting() {

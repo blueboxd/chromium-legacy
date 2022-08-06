@@ -4,22 +4,25 @@
 
 #include "components/autofill/core/browser/single_field_form_fill_router.h"
 
-#include "components/autofill/core/browser/merchant_promo_code_manager.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/suggestions_context.h"
 
 namespace autofill {
 
 SingleFieldFormFillRouter::SingleFieldFormFillRouter(
     AutocompleteHistoryManager* autocomplete_history_manager,
-    base::WeakPtr<MerchantPromoCodeManager> merchant_promo_code_manager)
+    MerchantPromoCodeManager* merchant_promo_code_manager)
     : autocomplete_history_manager_(autocomplete_history_manager->GetWeakPtr()),
-      merchant_promo_code_manager_(merchant_promo_code_manager) {}
+      merchant_promo_code_manager_(
+          merchant_promo_code_manager
+              ? merchant_promo_code_manager->GetWeakPtr()
+              : nullptr) {}
 
 SingleFieldFormFillRouter::~SingleFieldFormFillRouter() = default;
 
 void SingleFieldFormFillRouter::OnWillSubmitForm(
     const FormData& form,
-    raw_ptr<const FormStructure> form_structure,
+    const FormStructure* form_structure,
     bool is_autocomplete_enabled) {
   if (form_structure)
     DCHECK(form.fields.size() == form_structure->field_count());
@@ -101,7 +104,8 @@ void SingleFieldFormFillRouter::OnSingleFieldSuggestionSelected(
     const std::u16string& value,
     int frontend_id) {
   if (merchant_promo_code_manager_ &&
-      frontend_id == POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY) {
+      (frontend_id == POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY ||
+       frontend_id == POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS)) {
     merchant_promo_code_manager_->OnSingleFieldSuggestionSelected(value,
                                                                   frontend_id);
   } else {

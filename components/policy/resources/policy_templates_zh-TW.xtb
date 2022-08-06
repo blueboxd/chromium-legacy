@@ -1315,6 +1315,7 @@
       Chrome 已在第 91 版停止支援將本政策設為「tls1」或「tls1.1」，目前則不再支援隱藏 TLS 1.0/1.1 警告。</translation>
 <translation id="2364639863953745682">Google 助理入門使用體驗的模式</translation>
 <translation id="2366301887862414321">允許使用者層級和系統層級的原生訊息傳遞主機</translation>
+<translation id="2382672620906337383">系統要在達到較高巢狀閾值後，才會延遲 JavaScript setTimeout()。</translation>
 <translation id="2384233438419344179">如果將這項政策設為啟用，網頁元素只要不屬於瀏覽器網址列中的網域，就無法設定 Cookie。如果將這項政策設為停用，這類元素將可設定 Cookie，且使用者無法變更這項設定。
 
       如果不設定，系統會啟用第三方 Cookie，但使用者可以變更這項設定。</translation>
@@ -1741,6 +1742,7 @@
 <translation id="283478052049914107">如果將這項政策設為啟用並輸入非標準連接埠 (也就是 80 或 443 以外的連接埠)，系統會在已產生的 Kerberos SPN 中加入該連接埠。
 
       如果將這項政策設為停用或不設定，已產生的 Kerberos SPN 不會包含連接埠。</translation>
+<translation id="2835686964326214400">自訂重新啟動裝置的時間表</translation>
 <translation id="2838830882081735096">不允許資料遷移和 ARC</translation>
 <translation id="2839294585867804686">網路檔案共用功能設定</translation>
 <translation id="284288632677954003">XML 檔案的網址，其中包含一律不觸發瀏覽器切換的網址。</translation>
@@ -2295,6 +2297,7 @@
 <translation id="3387211681524224831">如果將這項政策設為啟用，系統不會儲存瀏覽記錄，並會停用分頁同步功能，且使用者無法變更這項設定。
 
       如果將這項政策設為停用或不設定，系統會儲存瀏覽記錄。</translation>
+<translation id="3387999258705169775">setTimeout() 巢狀函式的預設行為出現延遲。</translation>
 <translation id="3389088527709746815">針對遠端存取主機啟用 gnubby 驗證機制</translation>
 <translation id="3391457705621770207">你可以透過這項政策，決定使用者多久 (以毫秒為單位) 沒有執行活動，才會自動登入由 <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> 政策所指定的裝置本機帳戶。
 
@@ -2960,6 +2963,16 @@
 
           如果不設定這項政策，系統會在初次顯示登入畫面時停用插入點醒目顯示，但使用者隨時可以啟用。</translation>
 <translation id="4183229833636799228"><ph name="FLASH_PLUGIN_NAME" /> 預設設定</translation>
+<translation id="4186244263855283575">允許自訂重新啟動裝置的時間表。如果設為 True，裝置會根據時間表重新啟動。如要取消任何排定的重新啟動作業，你必須先移除這項政策。
+
+      使用者工作階段和訪客工作階段適用以下情況：
+
+        * 系統會在預定時間前 1 小時，通知使用者將執行重新啟動作業。使用者可以選擇立即重新啟動，或等待排定的重新啟動作業，但無法延後排定的重新啟動作業。
+
+        * 裝置啟動後會有 1 小時的寬限期。在這段期間，系統會略過已排定的重新啟動作業，並根據設定安排在下一個日期、週或月執行。
+
+      在資訊站工作階段中，沒有任何寬限期，也沒有重新啟動作業相關通知。
+</translation>
 <translation id="4187576366596772431">封鎖這些網站上的 WebHID API</translation>
 <translation id="4192388905594723944">用於驗證遠端存取用戶端驗證憑證的網址</translation>
 <translation id="4203055629055264833">如果將這項政策設為啟用或不設定，代表使用者可透過工具列上的切換圖示開啟側邊面板，查看預設搜尋引擎的最新搜尋結果。
@@ -2987,14 +3000,6 @@
 <translation id="4228745249339680042">你可以透過這項政策指定網址和網域，當網站要求安全金鑰的認證憑證時，這些網址和網域不會顯示提示。系統也會傳送可能會使用個別認證的信號給安全金鑰。如果未設定這項政策，當網站要求安全金鑰的認證時，系統會向 <ph name="PRODUCT_NAME" /> 65 以上版本的使用者顯示提示。
 
       網址只會以 U2F appID 進行比對。網域只會以 webauthn RP ID 進行比對。因此，如要涵蓋 U2F API 和 webauthn API，請列出指定網站的 appID 網址和網域。</translation>
-<translation id="4239112794240794697">這項政策會授予 Projector 權限，讓企業版使用者能建立及轉錄螢幕畫面錄製內容，並上傳至雲端硬碟。
-
-      這項政策不適用於 Family Link 使用者。
-      這項政策不會影響 Family Link 使用者的 <ph name="PROJECTOR_DOGFOOD_FOR_FAMILY_LINK_ENABLED_POLICY_NAME" /> 政策。
-
-      如果啟用這項政策，系統就會啟用 Projector。
-      如果停用這項政策，則系統會停用 Projector。
-      如果不設定這項政策，系統預設會停用 Projector。</translation>
 <translation id="4239720644496144453">這個快取不會供 Android 應用程式使用。如有多位使用者安裝同一個 Android 應用程式，則會針對每位使用者重新下載快取。</translation>
 <translation id="4247914291127524388">如果將這項政策設為啟用，系統會在使用行動網路連線時，關閉 <ph name="PRODUCT_OS_NAME" />「檔案」應用程式中的 <ph name="GOOGLE_DRIVE_NAME" />同步功能。
 
@@ -3050,14 +3055,6 @@
       如果裝置未受管理或是只有一位使用者，系統會忽略這項政策，並一律顯示通知。
 
       如果受管理的裝置上有多個使用者帳戶，只有當這項政策啟用時，系統才會顯示通知。</translation>
-<translation id="4293593564662654474">這項政策提供了另一種停用 First-Party Sets 功能的方式。
-
-                  如果將這項政策設為啟用或不予設定，系統會啟用 First-Party Sets 功能。
-
-                  如果將這項政策設為停用，則系統會停用 First-Party Sets 功能。
-
-                  First-Party Sets 功能的狀態會控管 Chrome 是否要擷取 First-Party Sets 清單，
-                  以及 Chrome 是否支援 First-Party Sets 相關功能 (例如 SameParty Cookie 屬性)。</translation>
 <translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">裝置的指定座架 MAC 位址</translation>
 <translation id="4314538398999793073">在 Kerberos 驗證期間停用 CNAME 查詢</translation>
@@ -3301,6 +3298,7 @@
 <translation id="4632343302005518762">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理下列內容類型</translation>
 <translation id="4632566332417930481">禁止在由企業政策安裝的擴充功能中使用開發人員工具，允許在其他情況下使用開發人員工具</translation>
 <translation id="4635284822166984665">裝置開始充電的時間 (根據裝置當地時區)。</translation>
+<translation id="4638532652671131094">控制巢狀閾值，系統會在達到此閾值之前延遲啟動 JavaScript setTimeout() 函式。</translation>
 <translation id="4646626362889216307">當所選政策的來源不同，但具有相同的範圍和層級時，就可以設定這項政策來合併所選的政策。
 
         合併方式是將各個來源字典的第一層金鑰合併。系統會首先採用優先順序最高的來源所提供的金鑰。
@@ -4635,6 +4633,13 @@
       將政策設為有效的十六進位顏色，可讓系統根據該顏色自動產生主題，並套用至瀏覽器。使用者將無法變更這項政策設定的主題。
 
       如果不設定這項政策，使用者則可依照個人偏好變更瀏覽器的主題。</translation>
+<translation id="619376519309703699">這項政策提供了另一種停用第一方集合功能的方式。
+
+                  如果將這項政策設為啟用或不予設定，系統會啟用第一方集合功能。
+
+                  如果將這項政策設為停用，則系統會停用第一方集合功能。
+
+                  這項政策會控制 Chrome 是否支援第一方集合相關功能 (例如 SameParty Cookie 屬性)。</translation>
 <translation id="6195802366906945965">決定是否使用內建憑證驗證器來驗證伺服器憑證</translation>
 <translation id="6198947200418556248">這項政策已淘汰；如果仍需要舊版 Cookie 行為，請改用 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" />。這項政策可以將所有 Cookie 還原成舊版的 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為。還原成舊版的行為會導致系統將未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 屬性的 Cookie 視為「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」，並移除「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」Cookie 必須帶有「<ph name="ATTRIBUTE_SECURE_NAME" />」屬性的要求。此外，這也會讓系統在評估兩個網站的網址是否相同時，略過網路通訊協定的比較。如需完整說明，請參閱 https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies。
 
@@ -4823,6 +4828,13 @@
       如果將這項政策設為停用，系統會關閉 WPAD 最佳化功能，導致 <ph name="PRODUCT_NAME" /> 等待 DNS WPAD 伺服器的時間增加。
 
       無論這項政策是否有設定，使用者都無法變更 WPAD 最佳化設定。</translation>
+<translation id="6365249741643189510">這項政策會授予 Projector 權限，讓企業版使用者能建立及轉錄螢幕畫面錄製內容，並上傳至雲端硬碟。
+
+      這項政策不適用於 Family Link 使用者。
+      這項政策不會影響 Family Link 使用者的 <ph name="PROJECTOR_DOGFOOD_FOR_FAMILY_LINK_ENABLED_POLICY_NAME" /> 政策。
+
+      如果啟用這項政策或不設定，系統會啟用 Projector。
+      如果停用這項政策，Projector 也會隨之停用。</translation>
 <translation id="6366574325767783825">如果將這項政策設為 True 或不設定，<ph name="PRODUCT_NAME" /> 將接受透過 Signed HTTP Exchange 提供的網路內容。
 
       如果將這項政策設為 False，系統將無法載入 Signed HTTP Exchange。</translation>
@@ -5188,6 +5200,17 @@
       如果啟用這項政策，網站就可以不受限制地使用 SharedArrayBuffer。
       如果設為停用或未設定，則網站在進行跨來源隔離時才能使用 SharedArrayBuffers。</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
+<translation id="6740299900063889926">setTimeout(…, 0) 常用來細分長時間的 JavaScript 工作。
+          將這項政策設為啟用時，系統不會主動延遲間隔時間小於 4 毫秒的 setTimeouts 和 setIntervals。
+          這麼做可以提升短期間的執行效能，但濫用 API 的網站最終仍會將 setTimeouts 設為延遲。
+
+          這可能會改變網頁上的工作排序，進而導致必須以某種方法透過特定排序完成工作的網站發生異常行為，
+          也可能影響將許多 setTimeout() 設為逾時 0 毫秒 (例如增加 CPU 負載) 的網站。
+
+          對於未設定這項政策的使用者，Chrome 將在穩定版上逐步推出變更。
+
+          這項政策是暫時性的，預計會在 Chrome 107 中移除。如果有需要的企業眾多，我們將會延長這個期限。
+          </translation>
 <translation id="6740611636377710500">允許這位使用者執行 PluginVm。
 
       如果將這項政策設為 False 或不設定，系統不會為使用者啟用 <ph name="PLUGIN_VM_NAME" />。
@@ -5501,7 +5524,6 @@
           如果不設定這項政策，檔案櫃預設會顯示在畫面底部，且使用者可以變更檔案櫃的位置。</translation>
 <translation id="7039815268521168329">在初始設定期間顯示 Google 助理 Voice Match 流程</translation>
 <translation id="7040229947030068419">範例值：</translation>
-<translation id="7041170641363384736">允許自訂重新啟動裝置的時間表。這項政策目前僅適用於已在資訊站工作階段啟用自動啟動應用程式功能的裝置。如果設為 True，裝置會根據時間表重新啟動。如要取消任何排定的重新啟動作業，你必須先移除這項政策。</translation>
 <translation id="7044883996351280650">控制 Android 備份與還原服務</translation>
 <translation id="7047495632846973438">指定要檢查或略過螢幕擷取權限政策。</translation>
 <translation id="7066292150801784098">禁止遠端使用者在遠端協助工作階段中操控權限較高的視窗</translation>
@@ -6462,7 +6484,6 @@
           設定這項政策後，使用者即無法變更或覆寫。
 
           如果不設定這項政策，系統預設會停用游標醒目顯示功能，但使用者隨時可以啟用這項功能。</translation>
-<translation id="8161536598508377155">自訂重新啟動資訊站裝置的時間表</translation>
 <translation id="8164144100557223371">停用瀏覽器實驗功能工具列進入點</translation>
 <translation id="8164687848393015214">如果將這項政策設為啟用，系統會將監控網路封包 (<ph name="HEARTBEATS_TERM" />) 傳送到可監控上線狀態的管理伺服器，讓伺服器偵測裝置是否處於離線狀態。
 
@@ -7007,6 +7028,7 @@
 <translation id="8749536858950505376">將這項政策設為 True 時，系統會將大型游標保持在啟用狀態。將這項政策設為 False 時，系統會將大型游標保持在停用狀態。
 
       如果設定這項政策，使用者將無法變更。如果未設定，系統會先停用大型游標，但使用者隨時可以啟用。</translation>
+<translation id="8750941317035081777">系統會在達到一般巢狀閾值後延遲 JavaScript setTimeout()。</translation>
 <translation id="8753264624162178499">使用者可以使用「以圖片形式列印」選項，允許先將 PDF 光柵化，再把列印工作傳送至目的地。</translation>
 <translation id="8757552286070680084">設定 Wilco DTC</translation>
 <translation id="8758831693895931466">啟用雲端管理強制註冊設定</translation>

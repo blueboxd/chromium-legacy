@@ -629,8 +629,8 @@ content::WebContents* ScriptExecutor::GetWebContents() const {
   return delegate_->GetWebContents();
 }
 
-content::WebContents* ScriptExecutor::GetWebContentsForJsExecution() {
-  return delegate_->GetWebContentsForJsExecution();
+JsFlowDevtoolsWrapper* ScriptExecutor::GetJsFlowDevtoolsWrapper() const {
+  return delegate_->GetJsFlowDevtoolsWrapper();
 }
 
 ElementStore* ScriptExecutor::GetElementStore() const {
@@ -833,6 +833,7 @@ void ScriptExecutor::OnGetActions(
       roundtrip_duration.InMilliseconds());
   bool success = http_status == net::HTTP_OK &&
                  ProcessNextActionResponse(response, response_info);
+
   if (should_stop_script_) {
     // The last action forced the script to stop. Sending the result of the
     // action is considered best effort in this situation. Report a successful
@@ -874,12 +875,17 @@ bool ScriptExecutor::ProcessNextActionResponse(
   actions_.clear();
 
   bool should_update_scripts = false;
+  std::string js_flow_library;
   std::vector<std::unique_ptr<Script>> scripts;
   bool parse_result = ProtocolUtils::ParseActions(
       this, response, &run_id_, &last_global_payload_, &last_script_payload_,
-      &actions_, &scripts, &should_update_scripts);
+      &actions_, &scripts, &should_update_scripts, &js_flow_library);
   if (!parse_result) {
     return false;
+  }
+
+  if (!js_flow_library.empty()) {
+    delegate_->SetJsFlowLibrary(js_flow_library);
   }
 
   roundtrip_network_stats_ =
@@ -1131,7 +1137,8 @@ bool ScriptExecutor::SupportsExternalActions() {
 
 void ScriptExecutor::RequestExternalAction(
     const ExternalActionProto& external_action,
-    base::OnceCallback<void()> start_dom_checks_callback,
+    base::OnceCallback<void(ExternalActionDelegate::DomUpdateCallback)>
+        start_dom_checks_callback,
     base::OnceCallback<void(const external::Result& result)>
         end_action_callback) {
   bool prompt = external_action.allow_interrupt() ||

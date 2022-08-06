@@ -182,6 +182,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTIncognito,
     &kCCTIncognitoAvailableToThirdParty,
     &kCCTNewDownloadTab,
+    &kCCTPackageNameRecording,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kCCTRemoveRemoteViewIds,
@@ -190,6 +191,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableAllowResizeByUserGesture,
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
+    &kCCTRetainingState,
     &kCCTResourcePrefetch,
     &kCCTToolbarCustomizations,
     &kDontAutoHideBrowserControls,
@@ -219,6 +221,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualTriggersSelectionHandles,
     &kContextualTriggersSelectionMenu,
     &kContextualTriggersSelectionSize,
+    &kDelayToolbarUpdateOnLoadStarted,
     &kDirectActions,
     &kDisableCompositedProgressBar,
     &kDownloadFileProvider,
@@ -244,6 +247,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kLensOnQuickActionSearchWidget,
     &kLocationBarModelOptimizations,
     &kMostRecentTabOnBackgroundCloseTab,
+    &kNewInstanceFromDraggedLink,
     &kNewWindowAppMenu,
     &kNotificationPermissionVariant,
     &kPageAnnotationsService,
@@ -364,7 +368,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &query_tiles::features::kQueryTilesSegmentation,
     &reading_list::switches::kReadLater,
     &safe_browsing::kCreateSafebrowsingOnStartup,
-    &segmentation_platform::features::kContextualPageActionsWithPriceTracking,
+    &segmentation_platform::features::kContextualPageActions,
+    &segmentation_platform::features::kContextualPageActionPriceTracking,
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
     &share::kPersistShareHubOnAppSwitch,
@@ -492,6 +497,9 @@ const base::Feature kCCTIncognito{"CCTIncognito",
 const base::Feature kCCTIncognitoAvailableToThirdParty{
     "CCTIncognitoAvailableToThirdParty", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCCTPackageNameRecording{"CCTPackageNameRecording",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kCCTPostMessageAPI{"CCTPostMessageAPI",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -518,6 +526,9 @@ const base::Feature kCCTResizableForThirdParties{
 
 const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCCTRetainingState{"CCTRetainingState",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTToolbarCustomizations{"CCTToolbarCustomizations",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -609,6 +620,9 @@ const base::Feature kContextualTriggersSelectionMenu{
 const base::Feature kContextualTriggersSelectionSize{
     "ContextualTriggersSelectionSize", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDelayToolbarUpdateOnLoadStarted{
+    "DelayToolbarUpdateOnLoadStarted", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -686,6 +700,9 @@ const base::Feature kSearchEnginePromoNewDeviceV2{
 
 const base::Feature kMostRecentTabOnBackgroundCloseTab{
     "MostRecentTabOnBackgroundCloseTab", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNewInstanceFromDraggedLink{
+    "NewInstanceFromDraggedLink", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNewWindowAppMenu{"NewWindowAppMenu",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -816,7 +833,7 @@ const base::Feature kTrustedWebActivityLocationDelegation{
 
 const base::Feature kTrustedWebActivityNotificationPermissionDelegation{
     "TrustedWebActivityNotificationPermissionDelegation",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTrustedWebActivityPostMessage{
     "TrustedWebActivityPostMessage", base::FEATURE_DISABLED_BY_DEFAULT};

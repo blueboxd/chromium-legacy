@@ -18,6 +18,7 @@
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> เครื่องนี้จัดการโดย <ph name="MANAGER" /></translation>
 <translation id="1175951029573070619">ปานกลาง (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">นำออก</translation>
+<translation id="1190378975642195988">ตัวตรวจวัดความเร่งในส่วนฐาน</translation>
 <translation id="1195447618553298278">ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="1196959502276349371">เวอร์ชัน <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">เล่น/หยุดชั่วคราว</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">บันทึกไปยัง USB</translation>
 <translation id="1468664791493211953">ข้อเสนอ</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> จัดการอุปกรณ์นี้และอาจตรวจสอบกิจกรรมของคุณได้</translation>
+<translation id="147809995039451286">ดาวน์โหลดอัปเดตไม่ได้</translation>
 <translation id="1478594628797167447">เครื่องสแกน</translation>
 <translation id="1491076385728777984">กำลังอัปเดตเฟิร์มแวร์ใน <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> จัดการผู้ใช้รายนี้อยู่และอาจจัดการการตั้งค่าและตรวจสอบกิจกรรมของผู้ใช้จากระยะไกล</translation>
@@ -125,6 +127,7 @@
 <translation id="1999615961760456652">แคพทีฟพอร์ทัล</translation>
 <translation id="2006864819935886708">การเชื่อมต่อ</translation>
 <translation id="2008685064673031089">Prime Search</translation>
+<translation id="2011174342667534258">เวอร์ชันของ SDK:</translation>
 <translation id="2016697457005847575">ลองทำตามขั้นตอนการแก้ปัญหา</translation>
 <translation id="2016848882344942759">--ไม่มีไวท์เลเบล--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -156,6 +159,7 @@
 <translation id="225692081236532131">สถานะการเปิดใช้งาน</translation>
 <translation id="2271469253353559191">กำหนดเวลาโหมดมืด</translation>
 <translation id="2275586345903859204">ซ่อมเรียบร้อยแล้ว</translation>
+<translation id="2276999893457278469">เนื้อหาช่วยเหลือยอดนิยม</translation>
 <translation id="2287186687001756809">ไม่มีรูปภาพ ไปที่ <ph name="LINK" /> เพื่อเพิ่มรูปภาพ</translation>
 <translation id="2294753434210277304">เสียบที่จัดเก็บข้อมูลภายนอก เช่น ไดรฟ์ USB หรือการ์ด SD ซึ่งมีอิมเมจยูทิลิตีการกู้คืน Chromebook ที่ดาวน์โหลดมา</translation>
 <translation id="2307344026739914387">ใช้คู่คีย์ปัจจุบัน</translation>
@@ -177,6 +181,7 @@
 <translation id="2418150275289244458">เปิดในการตั้งค่า</translation>
 <translation id="2421798028054665193">ภาพที่ <ph name="CURRENT_PAGE" /> จาก <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">ความแม่นยำของจุดลอยตัว</translation>
+<translation id="2447969267935997922">ติดตั้งเสร็จสมบูรณ์แล้ว คุณนําไดรฟ์ USB หรือการ์ด SD ออกได้</translation>
 <translation id="2448312741937722512">ประเภท</translation>
 <translation id="2461822463642141190">ปัจจุบัน</translation>
 <translation id="2480034874476596812">ปิดด้วยตัวเอง</translation>
@@ -188,6 +193,7 @@
 <translation id="2517472476991765520">สแกน</translation>
 <translation id="2526590354069164005">เดสก์ท็อป</translation>
 <translation id="253029298928638905">กำลังรีสตาร์ท…</translation>
+<translation id="2533048460510040082">เนื้อหาช่วยเหลือที่แนะนำ</translation>
 <translation id="2536159006530886390">เชื่อมต่ออินเทอร์เน็ตไม่ได้</translation>
 <translation id="2570743873672969996">กำลังทำการทดสอบ <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">ไปที่การตั้งค่าเพื่อตั้งค่า</translation>
@@ -214,7 +220,6 @@
 <translation id="2878387241690264070">คายประจุ <ph name="RATE" /> ใน <ph name="NUM_SECONDS" /> วินาที</translation>
 <translation id="291142119251986300">คอมโพเนนต์ไม่ตรงตามข้อกำหนด</translation>
 <translation id="2926057806159140518">ป้อนชื่อผู้ใช้และรหัสผ่าน หรือสแกนคิวอาร์โค้ด</translation>
-<translation id="2928420929544864228">การติดตั้งเสร็จสมบูรณ์</translation>
 <translation id="3008341117444806826">รีเฟรช</translation>
 <translation id="3009958530611748826">เลือกโฟลเดอร์ที่จะใช้บันทึก</translation>
 <translation id="3017079585324758401">พื้นหลัง</translation>
@@ -268,6 +273,7 @@
 <translation id="3484914941826596830">ขณะอัปเดตเฟิร์มแวร์ โปรดอย่าถอดปลั๊กอุปกรณ์ภายนอกเครื่องนี้หรือปิดคอมพิวเตอร์ คุณย่อหน้าต่างนี้ให้เล็กสุดได้ การอัปเดตอาจใช้เวลาสักครู่และอุปกรณ์ภายนอกอาจใช้ไม่ได้ในช่วงเวลานี้</translation>
 <translation id="3486220673238053218">คำจำกัดความ</translation>
 <translation id="3488065109653206955">เปิดการใช้งานบางส่วน</translation>
+<translation id="3492982278147736083">เครื่องวัดการหมุนในส่วนฝา</translation>
 <translation id="3517001332549868749">การอัปเดต Chrome OS</translation>
 <translation id="3527036260304016759">ไม่สำเร็จ - ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="3532980081107202182">เหลือเวลาอีกประมาณ <ph name="MIN_REMAINING" /> นาที</translation>
@@ -287,6 +293,7 @@
 <translation id="3621202678540785336">อินพุต</translation>
 <translation id="3632579075709132555">เปิด/ปิดหน้าจอความเป็นส่วนตัว</translation>
 <translation id="3643810137582748570">ข้ามการปรับเทียบ</translation>
+<translation id="3651050199673793219">เลือกหน่วยวัดอุณหภูมิ</translation>
 <translation id="3678765385266369662">เลือกว่าคุณต้องการปิด Write Protect อย่างไร</translation>
 <translation id="3689839747745352263">การทดสอบ <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">กำลังโหลด ...</translation>
@@ -301,9 +308,12 @@
 <translation id="3820172043799983114">PIN ไม่ถูกต้อง</translation>
 <translation id="3838338534323494292">รหัสผ่านใหม่</translation>
 <translation id="385051799172605136">กลับ</translation>
+<translation id="3856304145690230735">เครื่องวัดการหมุนในส่วนฐาน</translation>
 <translation id="385832974417157471">ทำ Powerwash อุปกรณ์ก่อนปิด หากอุปกรณ์มีฝา ให้รอจนกว่าจะทำ Powerwash เสร็จจึงค่อยปิดฝา การทำ Powerwash อาจใช้เวลาถึง 1 นาทีจึงจะเสร็จสมบูรณ์</translation>
 <translation id="3858860766373142691">ชื่อ</translation>
+<translation id="3862598938296403232">ต้องป้อนคำอธิบาย</translation>
 <translation id="3865414814144988605">ความละเอียด</translation>
+<translation id="3866249974567520381">คำอธิบาย</translation>
 <translation id="387301095347517405">จำนวนครั้งที่ชาร์จแบตเตอรี่จนเต็ม</translation>
 <translation id="3885327323343477505">เปลี่ยนโปรแกรมรักษาหน้าจอ</translation>
 <translation id="3923184630988645767">การใช้อินเทอร์เน็ต</translation>
@@ -371,6 +381,7 @@
 <translation id="4472575034687746823">เริ่มต้น</translation>
 <translation id="4479639480957787382">อีเทอร์เน็ต</translation>
 <translation id="4483049906298469269">ใช้คำสั่ง ping กับเกตเวย์เครือข่ายที่ไม่ใช่ค่าเริ่มต้นไม่สำเร็จ</translation>
+<translation id="4500213108254186382">ตัวตรวจวัดความเร่งในส่วนฝา</translation>
 <translation id="4503223151711056411">ลูกศรซ้าย</translation>
 <translation id="4511264077854731334">พอร์ทัล</translation>
 <translation id="4521826082652183069">การจับคู่ชื่อสำรองของหัวเรื่อง</translation>
@@ -382,6 +393,7 @@
 <translation id="4561801978359312462">ปลดล็อกซิมแล้ว</translation>
 <translation id="4562494484721939086">ไม่มีบริการ</translation>
 <translation id="4568938274596692027">ติดตั้งเสร็จสมบูรณ์แล้ว กำลังเตรียมรีสตาร์ท...</translation>
+<translation id="4576943788798178439">อุปกรณ์รองสไตลัส</translation>
 <translation id="458794348635939462">แก้ไขทุกโฮสต์ไม่สำเร็จ</translation>
 <translation id="4593212453765072419">จำเป็นต้องมีการตรวจสอบสิทธิ์พร็อกซี</translation>
 <translation id="4609350030397390689">ลดความสว่างของแป้นพิมพ์</translation>
@@ -430,6 +442,7 @@
 <translation id="4915052247106771211">ตัวเลือกนี้จะรีเซ็ตอุปกรณ์เป็นการตั้งค่าเริ่มต้น (Powerwash)</translation>
 <translation id="4917385247580444890">แรง</translation>
 <translation id="4917889632206600977">หยุดพิมพ์ - กระดาษหมด</translation>
+<translation id="491791267030419270">เคล็ดลับในการเขียนความคิดเห็น</translation>
 <translation id="4921665434385737356">ชาร์จ <ph name="RATE" /> ใน <ph name="NUM_SECONDS" /> วินาที</translation>
 <translation id="4930320165497208503">ไปที่<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" />เพื่อตั้งค่าหรืออัปเดตการเชื่อมต่อ</translation>
 <translation id="4932733599132424254">วันที่</translation>
@@ -536,6 +549,7 @@
 <translation id="5866840822086176774">แรงมาก</translation>
 <translation id="588258955323874662">เต็มหน้าจอ</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
+<translation id="5898758006340607522">ปุ่มเปิด/ปิด</translation>
 <translation id="5901630391730855834">สีเหลือง</translation>
 <translation id="5903200662178656908">อุปกรณ์คือชุดแป้นพิมพ์และเมาส์</translation>
 <translation id="5916084858004523819">ห้ามใช้</translation>
@@ -671,6 +685,7 @@
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
 <translation id="714876143603641390">การเชื่อมต่อ LAN</translation>
+<translation id="7154020516215182599">แชร์ความคิดเห็นหรืออธิบายปัญหาของคุณ หากเป็นไปได้ ให้ระบุขั้นตอนต่างๆ เพื่อจำลองปัญหา</translation>
 <translation id="7155171745945906037">รูปภาพที่มีอยู่จากกล้องหรือไฟล์</translation>
 <translation id="7162487448488904999">แกลเลอรี</translation>
 <translation id="7170236477717446850">รูปโปรไฟล์</translation>
@@ -848,6 +863,7 @@
 <translation id="885701979325669005">พื้นที่เก็บข้อมูล</translation>
 <translation id="8863170912498892583">เปิดใช้ธีมมืด</translation>
 <translation id="8863888432376731307">รับ <ph name="INTENT" /> สำหรับ "<ph name="QUERY" />" และอื่นๆ</translation>
+<translation id="8864415976656252616">ไม่มีเนื้อหาที่แนะนำ ดูเนื้อหาช่วยเหลือยอดนิยม</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">อุปกรณ์เป็นแท็บเล็ต</translation>
 <translation id="8881098542468797602">การทดสอบสำเร็จ</translation>
@@ -858,6 +874,7 @@
 <translation id="8919792139048574232">ดูสิ่งที่ได้รับการแก้ไข</translation>
 <translation id="8919837981463578619">ไม่สำเร็จ - ไม่มีถาด</translation>
 <translation id="8923267550422472772">วันที่จะรีเซ็ตในแต่ละเดือน</translation>
+<translation id="8925613211674558308">VPD ที่แคช</translation>
 <translation id="8928727111548978589">ไม่สำเร็จ - กระดาษหมด</translation>
 <translation id="8930521118335213258">รายการเทียบเท่า</translation>
 <translation id="8930622219860340959">ไร้สาย</translation>
@@ -899,6 +916,7 @@
 <translation id="922179502584117429">เวอร์ชันปัจจุบัน <ph name="VERSION_NUMBER" /> ล้าสมัยแล้ว</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">ส่งความคิดเห็น</translation>
 <translation id="952992212772159698">ไม่ได้เปิดการใช้งาน</translation>
 <translation id="960719561871045870">รหัสผู้ให้บริการ</translation>
 <translation id="982713511914535780">ทดสอบการคายประจุของแบตเตอรี่</translation>

@@ -1560,7 +1560,7 @@ bool IsSigninForcedByPolicy() {
   Browser* mainBrowser = self.mainInterface.browser;
 
   switch (command.operation) {
-    case AUTHENTICATION_OPERATION_REAUTHENTICATE:
+    case AuthenticationOperationReauthenticate:
       self.signinCoordinator = [SigninCoordinator
           reAuthenticationCoordinatorWithBaseViewController:baseViewController
                                                     browser:mainBrowser
@@ -1568,7 +1568,7 @@ bool IsSigninForcedByPolicy() {
                                                 promoAction:command
                                                                 .promoAction];
       break;
-    case AUTHENTICATION_OPERATION_SIGNIN:
+    case AuthenticationOperationSigninAndSync:
       self.signinCoordinator = [SigninCoordinator
           userSigninCoordinatorWithBaseViewController:baseViewController
                                               browser:mainBrowser
@@ -1576,13 +1576,19 @@ bool IsSigninForcedByPolicy() {
                                           accessPoint:command.accessPoint
                                           promoAction:command.promoAction];
       break;
-    case AUTHENTICATION_OPERATION_ADD_ACCOUNT:
+    case AuthenticationOperationSigninOnly:
+      self.signinCoordinator = [SigninCoordinator
+          consistencyPromoSigninCoordinatorWithBaseViewController:
+              baseViewController
+                                                          browser:mainBrowser];
+      break;
+    case AuthenticationOperationAddAccount:
       self.signinCoordinator = [SigninCoordinator
           addAccountCoordinatorWithBaseViewController:baseViewController
                                               browser:mainBrowser
                                           accessPoint:command.accessPoint];
       break;
-    case AUTHENTICATION_OPERATION_FORCED_SIGNIN:
+    case AuthenticationOperationForcedSigninAndSync:
       self.signinCoordinator = [SigninCoordinator
           forcedSigninCoordinatorWithBaseViewController:baseViewController
                                                 browser:mainBrowser];
@@ -3145,7 +3151,7 @@ bool IsSigninForcedByPolicy() {
   TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
       urlLoadParams.web_params, nil, false, browser->GetWebStateList()->count(),
       /*in_background=*/false, /*inherit_opener=*/false,
-      /*should_show_start_surface=*/false);
+      /*should_show_start_surface=*/false, /*filtered_param_count=*/0);
   [self beginActivatingBrowser:browser dismissTabSwitcher:YES focusOmnibox:NO];
 }
 

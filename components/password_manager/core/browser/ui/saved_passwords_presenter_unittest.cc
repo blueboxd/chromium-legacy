@@ -139,6 +139,8 @@ TEST_F(SavedPasswordsPresenterTest, AddPasswordFailWhenInvalidUrl) {
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
   form.url = GURL("https://;/invalid");
+
+  base::HistogramTester histogram_tester;
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
   EXPECT_FALSE(presenter().AddPassword(form));
   RunUntilIdle();
@@ -149,6 +151,8 @@ TEST_F(SavedPasswordsPresenterTest, AddPasswordFailWhenInvalidUrl) {
   EXPECT_FALSE(presenter().AddPassword(form));
   RunUntilIdle();
   EXPECT_TRUE(store().IsEmpty());
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.PasswordNoteActionInSettings", 0);
 
   presenter().RemoveObserver(&observer);
 }
@@ -160,10 +164,14 @@ TEST_F(SavedPasswordsPresenterTest, AddPasswordFailWhenEmptyPassword) {
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
   form.password_value = u"";
+
+  base::HistogramTester histogram_tester;
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
   EXPECT_FALSE(presenter().AddPassword(form));
   RunUntilIdle();
   EXPECT_TRUE(store().IsEmpty());
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.PasswordNoteActionInSettings", 0);
 
   presenter().RemoveObserver(&observer);
 }
@@ -379,6 +387,8 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordEditUpdatedValues",
       metrics_util::PasswordEditUpdatedValues::kPassword, 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.PasswordNoteActionInSettings", 0);
 
   presenter().RemoveObserver(&observer);
 }
@@ -386,6 +396,9 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
 TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteFirstTime) {
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  form.notes.emplace_back(u"display name", u"note with non-empty display name",
+                          /*date_created=*/base::Time::Now(),
+                          /*hide_by_default=*/true);
 
   store().AddLogin(form);
   RunUntilIdle();
@@ -393,16 +406,22 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteFirstTime) {
 
   const std::u16string kNewNoteValue = u"new note";
 
+  base::HistogramTester histogram_tester;
   EXPECT_TRUE(presenter().EditSavedPasswords(
       forms, form.username_value, form.password_value, kNewNoteValue));
   RunUntilIdle();
 
+  // The note with the non-empty display name should be untouched. Another note
+  // with an empty display name should be added.
   PasswordForm expected_updated_form = form;
-  expected_updated_form.notes = {
-      PasswordNote(kNewNoteValue, base::Time::Now())};
+  expected_updated_form.notes.emplace_back(kNewNoteValue,
+                                           /*date_created=*/base::Time::Now());
   EXPECT_THAT(
       store().stored_passwords(),
       ElementsAre(Pair(form.signon_realm, ElementsAre(expected_updated_form))));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordNoteActionInSettings",
+      metrics_util::PasswordNoteAction::kNoteAddedInEditDialog, 1);
 }
 
 TEST_F(SavedPasswordsPresenterTest, EditingNotesShouldNotResetPasswordIssues) {
@@ -444,6 +463,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteSecondTime) {
 
   const std::u16string kNewNoteValue = u"new note";
 
+  base::HistogramTester histogram_tester;
   EXPECT_TRUE(presenter().EditSavedPasswords(
       forms, form.username_value, form.password_value, kNewNoteValue));
   RunUntilIdle();
@@ -453,6 +473,9 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteSecondTime) {
   EXPECT_THAT(
       store().stored_passwords(),
       ElementsAre(Pair(form.signon_realm, ElementsAre(expected_updated_form))));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordNoteActionInSettings",
+      metrics_util::PasswordNoteAction::kNoteEditedInEditDialog, 1);
 }
 
 TEST_F(SavedPasswordsPresenterTest, EditNoteAsEmpty) {
@@ -464,6 +487,7 @@ TEST_F(SavedPasswordsPresenterTest, EditNoteAsEmpty) {
   store().AddLogin(form);
   RunUntilIdle();
 
+  base::HistogramTester histogram_tester;
   EXPECT_TRUE(presenter().EditSavedPasswords(forms, form.username_value,
                                              form.password_value, u""));
   RunUntilIdle();
@@ -473,6 +497,34 @@ TEST_F(SavedPasswordsPresenterTest, EditNoteAsEmpty) {
   EXPECT_THAT(
       store().stored_passwords(),
       ElementsAre(Pair(form.signon_realm, ElementsAre(expected_updated_form))));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordNoteActionInSettings",
+      metrics_util::PasswordNoteAction::kNoteRemovedInEditDialog, 1);
+}
+
+TEST_F(SavedPasswordsPresenterTest,
+       GetSavedCredentialsReturnNotesWithEmptyDisplayName) {
+  // Create form with two notes, first is with a non-empty display name, and the
+  // second with an empty one.
+  PasswordNote kNoteWithEmptyDisplayName =
+      PasswordNote(u"note with empty display name",
+                   /*date_created=*/base::Time::Now());
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  form.notes.emplace_back(u"display name", u"note with non-empty display name",
+                          /*date_created=*/base::Time::Now(),
+                          /*hide_by_default=*/true);
+  form.notes.push_back(kNoteWithEmptyDisplayName);
+
+  store().AddLogin(form);
+  RunUntilIdle();
+
+  // The expect credential UI entry should contain only the note with that empty
+  // display name.
+  std::vector<CredentialUIEntry> saved_credentials =
+      presenter().GetSavedCredentials();
+  ASSERT_EQ(1U, saved_credentials.size());
+  EXPECT_EQ(kNoteWithEmptyDisplayName, saved_credentials[0].note);
 }
 
 TEST_F(SavedPasswordsPresenterTest, EditUsernameAndPassword) {
@@ -517,6 +569,8 @@ TEST_F(SavedPasswordsPresenterTest, EditUsernameAndPassword) {
   histogram_tester.ExpectBucketCount(
       "PasswordManager.PasswordEditUpdatedValues",
       metrics_util::PasswordEditUpdatedValues::kBoth, 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.PasswordNoteActionInSettings", 0);
 
   presenter().RemoveObserver(&observer);
 }
@@ -800,6 +854,51 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
   EXPECT_THAT(account_store().stored_passwords(),
               ElementsAre(Pair(account_store_form.signon_realm,
                                ElementsAre(account_store_form))));
+
+  presenter().RemoveObserver(&observer);
+}
+
+// Tests AddPassword stores passwords with or without note
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
+       AddPasswordStoresNoteIfExists) {
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  // Add a password without a note.
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore, /*index=*/0);
+  form.type = password_manager::PasswordForm::Type::kManuallyAdded;
+  form.date_created = base::Time::Now();
+  form.date_password_modified = base::Time::Now();
+
+  PasswordForm form2 =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore, /*index=*/1);
+  form2.type = password_manager::PasswordForm::Type::kManuallyAdded;
+  form2.date_created = base::Time::Now();
+  form2.date_password_modified = base::Time::Now();
+  form2.notes = {PasswordNote(u"new note", base::Time::Now())};
+
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(form)));
+  EXPECT_TRUE(presenter().AddPassword(form));
+  RunUntilIdle();
+  EXPECT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(form.signon_realm, ElementsAre(form))));
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.PasswordNoteActionInSettings", 0);
+
+  // Add a password with note.
+  EXPECT_CALL(observer,
+              OnSavedPasswordsChanged(UnorderedElementsAre(form, form2)));
+  EXPECT_TRUE(presenter().AddPassword(form2));
+  RunUntilIdle();
+  EXPECT_THAT(
+      profile_store().stored_passwords(),
+      UnorderedElementsAre(Pair(form.signon_realm, ElementsAre(form)),
+                           Pair(form2.signon_realm, ElementsAre(form2))));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordNoteActionInSettings",
+      metrics_util::PasswordNoteAction::kNoteAddedInAddDialog, 1);
 
   presenter().RemoveObserver(&observer);
 }

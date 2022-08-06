@@ -6,24 +6,19 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.view.View;
-import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
-import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 
 /**
  * The default strategy for setting the height of the custom tab.
  */
 public class CustomTabHeightStrategy {
-    public static CustomTabHeightStrategy createStrategy(Activity activity,
-            ObservableSupplier<? extends FrameLayout> parentViewSupplier, @Px int initialHeight,
-            MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
+    public static CustomTabHeightStrategy createStrategy(Activity activity, @Px int initialHeight,
             Integer navigationBarColor, Integer navigationBarDividerColor,
             CustomTabsConnection connection, @Nullable CustomTabsSessionToken session,
             ActivityLifecycleDispatcher lifecycleDispatcher) {
@@ -31,10 +26,15 @@ public class CustomTabHeightStrategy {
             return new CustomTabHeightStrategy();
         }
 
-        return new PartialCustomTabHeightStrategy(activity, parentViewSupplier, initialHeight,
-                multiWindowModeStateDispatcher, navigationBarColor, navigationBarDividerColor,
+        return new PartialCustomTabHeightStrategy(activity, initialHeight, navigationBarColor,
+                navigationBarDividerColor,
                 size -> connection.onResized(session, size), lifecycleDispatcher);
     }
+
+    /**
+     * @see {@link org.chromium.chrome.browser.lifecycle.InflationObserver#onPostInflationStartup()}
+     */
+    public void onPostInflationStartup() {}
 
     /**
      * Returns false if we didn't change the Window background color, true otherwise.
@@ -53,4 +53,18 @@ public class CustomTabHeightStrategy {
      */
     public void onToolbarInitialized(
             View coordinatorView, CustomTabToolbar toolbar, @Px int toolbarCornerRadius) {}
+
+    /**
+     * @see {@link BaseCustomTabRootUiCoordinator#handleCloseAnimation()}
+     */
+    public void handleCloseAnimation(Runnable finishRunnable) {
+        throw new IllegalStateException(
+                "Custom close animation should be performed only on partial CCT.");
+    }
+
+    /**
+     * Set the scrim value to apply to partial CCT UI.
+     * @param scrimFraction Scrim fraction.
+     */
+    public void setScrimFraction(float scrimFraction) {}
 }

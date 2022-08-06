@@ -144,6 +144,7 @@ class FeedStream : public FeedApi,
   void ProcessViewAction(base::StringPiece data,
                          const LoggingParameters& logging_parameters) override;
   bool WasUrlRecentlyNavigatedFromFeed(const GURL& url) override;
+  void InvalidateContentCacheFor(StreamKind stream_kind) override;
   DebugStreamData GetDebugStreamData() override;
   void ForceRefreshForDebugging(const StreamType& stream_type) override;
   std::string DumpStateForDebugging() override;
@@ -400,6 +401,15 @@ class FeedStream : public FeedApi,
   RequestMetadata GetCommonRequestMetadata(bool signed_in_request,
                                            bool allow_expired_session_id) const;
 
+  // Schedule a feed-close refresh when the user has taken some kind of action
+  // on the feed.
+  void ScheduleFeedCloseRefreshOnInteraction(const StreamType& type);
+  // Schedule a feed-close refresh when the user has viewed content for the
+  // first time.
+  void ScheduleFeedCloseRefreshOnFirstView(const StreamType& type);
+  // Internal method for scheduling the feed-close refresh.
+  void ScheduleFeedCloseRefresh(const StreamType& type);
+
   // Unowned.
 
   raw_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
@@ -454,6 +464,8 @@ class FeedStream : public FeedApi,
 
   std::vector<GURL> recent_feed_navigations_;
   UserActionsCollector user_actions_collector_;
+
+  base::TimeTicks last_refresh_scheduled_on_interaction_time_{};
 
   base::WeakPtrFactory<FeedStream> weak_ptr_factory_{this};
 };

@@ -722,6 +722,10 @@ void LayerTreeHostImpl::CommitComplete() {
       mutator_host_->HasSmilAnimation()) {
     frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
+    if (mutator_host_->HasSharedElementTransition()) {
+      frame_trackers_.StartSequence(
+          FrameSequenceTrackerType::kSETMainThreadAnimation);
+    }
   }
 
   for (const auto& info : mutator_host_->TakePendingThroughputTrackerInfos()) {
@@ -1893,12 +1897,7 @@ TargetColorParams LayerTreeHostImpl::GetTargetColorParams(
     return params;
   }
 
-  // The raster color space should contain sRGB to avoid artifacts during
-  // rasterization.
-  if (CheckColorSpaceContainsSrgb(hdr_color_space)) {
-    params.color_space = hdr_color_space;
-  }
-
+  params.color_space = hdr_color_space;
   return params;
 }
 
@@ -2513,6 +2512,11 @@ absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
       !mutator_host_->HasSmilAnimation()) {
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kSETMainThreadAnimation);
+  } else if (!mutator_host_->HasSharedElementTransition()) {
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kSETMainThreadAnimation);
   }
 
   if (lcd_text_metrics_reporter_) {
@@ -4118,6 +4122,8 @@ LayerTreeHostImpl::ProcessCompositorDeltas() {
   commit_data->is_scroll_active =
       input_delegate_ && GetInputHandler().IsCurrentlyScrolling();
   // We should never process non-unit page_scale_delta for an OOPIF subframe.
+  // TODO(wjmaclean): Remove this DCHECK as a pre-condition to closing the bug.
+  // https://crbug.com/845097
   DCHECK(settings().is_for_scalable_page ||
          commit_data->page_scale_delta == 1.f);
   commit_data->top_controls_delta =
@@ -4237,6 +4243,14 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
   } else {
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kCompositorAnimation);
+  }
+
+  if (animated && mutator_host_->HasSharedElementTransition()) {
+    frame_trackers_.StartSequence(
+        FrameSequenceTrackerType::kSETCompositorAnimation);
+  } else {
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kSETCompositorAnimation);
   }
 
   // TODO(crbug.com/551138): We could return true only if the animations are on

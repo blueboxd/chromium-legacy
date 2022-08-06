@@ -145,8 +145,10 @@ void NotificationGroupingController::PopulateGroupParent(
              ->FindNotificationById(notification_id)
              ->group_parent());
   MessageView* parent_view =
-      GetActiveNotificationViewController()->GetMessageViewForNotificationId(
-          notification_id);
+      GetActiveNotificationViewController()
+          ? GetActiveNotificationViewController()
+                ->GetMessageViewForNotificationId(notification_id)
+          : nullptr;
 
   // TODO(crbug/1277765) Need this check to fix crbug/1275765. However, this
   // should not be necessary if the message center bubble is initialized
@@ -184,17 +186,24 @@ void NotificationGroupingController::
         const std::string& notification_id,
         std::string& parent_id,
         Notification* parent_notification) {
+  auto* message_center = MessageCenter::Get();
+
+  auto* notification_view_controller = GetActiveNotificationViewController();
+  if (!notification_view_controller)
+    return;
+
+  Notification* notification =
+      message_center->FindNotificationById(notification_id);
+  if (!notification)
+    return;
+
   parent_id = SetupParentNotification(parent_notification, parent_id);
 
   grouped_notification_list_->AddGroupedNotification(notification_id,
                                                      parent_id);
 
-  auto* message_center = MessageCenter::Get();
-  Notification* notification =
-      message_center->FindNotificationById(notification_id);
   MessageView* parent_view =
-      GetActiveNotificationViewController()->GetMessageViewForNotificationId(
-          parent_id);
+      notification_view_controller->GetMessageViewForNotificationId(parent_id);
   if (parent_view)
     parent_view->AddGroupNotification(*notification);
   else
@@ -258,9 +267,10 @@ const std::string& NotificationGroupingController::SetupParentNotification(
   metrics_utils::LogGroupNotificationAddedType(
       metrics_utils::GroupNotificationType::GROUP_CHILD);
 
-  auto* parent_view =
-      GetActiveNotificationViewController()->GetMessageViewForNotificationId(
-          new_parent_id);
+  auto* parent_view = GetActiveNotificationViewController()
+                          ? GetActiveNotificationViewController()
+                                ->GetMessageViewForNotificationId(new_parent_id)
+                          : nullptr;
   if (parent_view) {
     parent_view->UpdateWithNotification(*new_parent_notification);
     // Grouped notifications should start off in the collapsed state.
@@ -311,7 +321,8 @@ void NotificationGroupingController::RemoveGroupedChild(
   // in a grouped notification.
   auto grouped_notifications =
       grouped_notification_list_->GetGroupedNotificationsForParent(parent_id);
-  if (GetActiveNotificationViewController()->GetMessageViewForNotificationId(
+  if (GetActiveNotificationViewController() &&
+      GetActiveNotificationViewController()->GetMessageViewForNotificationId(
           parent_id) &&
       grouped_notifications.size() == 1) {
     MessageCenter::Get()->RemoveNotification(parent_id, true);
@@ -355,9 +366,12 @@ void NotificationGroupingController::OnNotificationAdded(
       message_center->FindParentNotification(notification);
   std::string parent_id = parent_notification->id();
 
-  auto* parent_view = static_cast<AshNotificationView*>(
-      GetActiveNotificationViewController()->GetMessageViewForNotificationId(
-          parent_id));
+  auto* parent_view =
+      GetActiveNotificationViewController()
+          ? static_cast<AshNotificationView*>(
+                GetActiveNotificationViewController()
+                    ->GetMessageViewForNotificationId(parent_id))
+          : nullptr;
 
   // If we are creating a new notification group for this `notifier_id`,
   // we must create a copy of the designated parent notification and
@@ -379,7 +393,8 @@ void NotificationGroupingController::OnNotificationAdded(
 
   if (parent_view) {
     parent_view->AddGroupNotification(*notification);
-    message_center->ResetPopupTimer(parent_id);
+    if (message_center->FindPopupNotificationById(parent_id))
+      message_center->ResetPopupTimer(parent_id);
   } else {
     message_center->ResetSinglePopup(parent_id);
   }

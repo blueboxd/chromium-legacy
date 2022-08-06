@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">Toto zařízení <ph name="DEVICE_TYPE" /> spravuje doména <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Průměrný (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Odebrat</translation>
+<translation id="1190378975642195988">Akcelerometr v těle</translation>
 <translation id="1195447618553298278">Neznámá chyba.</translation>
 <translation id="1196959502276349371">Verze <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Přehrát/Pozastavit</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">Uložit na USB</translation>
 <translation id="1468664791493211953">Nabídky</translation>
 <translation id="1476467821656042872">Toto zařízení je spravováno doménou <ph name="MANAGER" />, která také může sledovat vaši aktivitu.</translation>
+<translation id="147809995039451286">Aktualizaci nelze stáhnout</translation>
 <translation id="1478594628797167447">Skener</translation>
 <translation id="1491076385728777984">Aktualizace firmwaru v zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732">Tohoto uživatele spravuje doména <ph name="MANAGER" />, která také může vzdáleně spravovat nastavení a sledovat jeho aktivitu.</translation>
@@ -95,6 +97,7 @@
 <translation id="1717874160321062422">Spravuje <ph name="FIRST_MANAGER" /> a <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Jmenné servery</translation>
 <translation id="1731082422893354635">Touchpad Bluetooth</translation>
+<translation id="1745577949879301685">Obrázky se nepodařilo načíst. Zkontrolujte připojení k síti a zkuste je načíst znovu.</translation>
 <translation id="1751249301761991853">Osobní</translation>
 <translation id="1753496554272155572">Zavřít náhled tapety</translation>
 <translation id="175763766237925754">Dobrý (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -124,6 +127,7 @@
 <translation id="1999615961760456652">Captive portál</translation>
 <translation id="2006864819935886708">Připojení</translation>
 <translation id="2008685064673031089">Vyhledávání prvočísel</translation>
+<translation id="2011174342667534258">Verze sady SDK:</translation>
 <translation id="2016697457005847575">Vyzkoušet postup odstraňování problémů</translation>
 <translation id="2016848882344942759">--žádný bílý štítek--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -155,6 +159,7 @@
 <translation id="225692081236532131">Stav aktivace</translation>
 <translation id="2271469253353559191">Plán tmavého režimu</translation>
 <translation id="2275586345903859204">Oprava je hotová</translation>
+<translation id="2276999893457278469">Nejnavštěvovanější obsah nápovědy</translation>
 <translation id="2287186687001756809">Žádné snímky. Fotky můžete přidat na adrese <ph name="LINK" />.</translation>
 <translation id="2294753434210277304">Vložte externí úložiště, například jednotku USB nebo kartu SD, se staženým obrazem Nástroje na obnovení Chromebooku</translation>
 <translation id="2307344026739914387">Použít aktuální dvojici klíčů</translation>
@@ -176,6 +181,7 @@
 <translation id="2418150275289244458">Otevřít v nastavení</translation>
 <translation id="2421798028054665193">Obrázek <ph name="CURRENT_PAGE" /> z <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Přesnost pohyblivé řádové čárky</translation>
+<translation id="2447969267935997922">Instalace je dokončena. Nyní můžete USB disk nebo SD kartu vyjmout.</translation>
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2461822463642141190">Aktuální</translation>
 <translation id="2480034874476596812">Vypnout ručně</translation>
@@ -187,6 +193,7 @@
 <translation id="2517472476991765520">Naskenovat</translation>
 <translation id="2526590354069164005">Plocha</translation>
 <translation id="253029298928638905">Restartování…</translation>
+<translation id="2533048460510040082">Navrhovaný obsah nápovědy</translation>
 <translation id="2536159006530886390">Nelze se připojit k internetu.</translation>
 <translation id="2570743873672969996">Běží test <ph name="TEST_NAME" />…</translation>
 <translation id="2584559707064218956">Konfiguraci lze provést v sekci Nastavení</translation>
@@ -213,7 +220,6 @@
 <translation id="2878387241690264070">Vybilo se <ph name="RATE" /> kapacity během <ph name="NUM_SECONDS" /> sekund.</translation>
 <translation id="291142119251986300">Nekvalifikované komponenty</translation>
 <translation id="2926057806159140518">Zadejte uživatelské jméno nebo heslo nebo naskenujte svůj QR kód</translation>
-<translation id="2928420929544864228">Instalace byla dokončena.</translation>
 <translation id="3008341117444806826">OBNOVIT</translation>
 <translation id="3009958530611748826">Vyberte cílovou složku</translation>
 <translation id="3017079585324758401">Pozadí</translation>
@@ -267,6 +273,7 @@
 <translation id="3484914941826596830">Během aktualizace firmwaru neodpojujte externí zařízení ani nevypínejte počítač. Toto okno můžete minimalizovat. Aktualizace může trvat několik minut a externí zařízení po tuto dobu nemusí fungovat.</translation>
 <translation id="3486220673238053218">definice</translation>
 <translation id="3488065109653206955">Částečně aktivováno</translation>
+<translation id="3492982278147736083">Gyroskop ve víku</translation>
 <translation id="3517001332549868749">Aktualizace ChromeOS</translation>
 <translation id="3527036260304016759">Tisk selhal – neznámá chyba</translation>
 <translation id="3532980081107202182">Zbývající minuty: <ph name="MIN_REMAINING" /></translation>
@@ -286,6 +293,7 @@
 <translation id="3621202678540785336">Vstup</translation>
 <translation id="3632579075709132555">Přepínač obrazovky s ochranou soukromí</translation>
 <translation id="3643810137582748570">Přeskočit kalibraci</translation>
+<translation id="3651050199673793219">Vyberte jednotku teploty</translation>
 <translation id="3678765385266369662">Vyberte, jak chcete vypnout ochranu proti zápisu</translation>
 <translation id="3689839747745352263">Test <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Načítání...</translation>
@@ -300,9 +308,12 @@
 <translation id="3820172043799983114">Neplatný kód PIN.</translation>
 <translation id="3838338534323494292">Nové heslo</translation>
 <translation id="385051799172605136">Zpět</translation>
+<translation id="3856304145690230735">Gyroskop v těle</translation>
 <translation id="385832974417157471">Před vypnutím obnovte zařízení pomocí funkce Powerwash. Pokud má zařízení víko, zavřete ho až po dokončení procesu Powerwash. Dokončení může trvat až jednu minutu.</translation>
 <translation id="3858860766373142691">Název</translation>
+<translation id="3862598938296403232">Je nutné zadat popis</translation>
 <translation id="3865414814144988605">Rozlišení</translation>
+<translation id="3866249974567520381">Popis</translation>
 <translation id="387301095347517405">Údaj, kolikrát baterie prošla celým cyklem nabíjení</translation>
 <translation id="3885327323343477505">Změnit spořič obrazovky</translation>
 <translation id="3923184630988645767">Využití dat</translation>
@@ -370,6 +381,7 @@
 <translation id="4472575034687746823">Začít</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Nepodařilo se pingnout bránu jiné než výchozí sítě</translation>
+<translation id="4500213108254186382">Akcelerometr ve víku</translation>
 <translation id="4503223151711056411">Šipka vlevo</translation>
 <translation id="4511264077854731334">Portál</translation>
 <translation id="4521826082652183069">Shoda alternativních názvů subjektu</translation>
@@ -381,6 +393,7 @@
 <translation id="4561801978359312462">Odemknutá SIM karta</translation>
 <translation id="4562494484721939086">Žádný signál</translation>
 <translation id="4568938274596692027">Instalace je dokončena. Příprava na restart…</translation>
+<translation id="4576943788798178439">Podpora dotykového pera</translation>
 <translation id="458794348635939462">Všechny hostitele se nepodařilo vyřešit</translation>
 <translation id="4593212453765072419">Vyžadováno ověření proxy serveru</translation>
 <translation id="4609350030397390689">Snížit jas</translation>
@@ -429,6 +442,7 @@
 <translation id="4915052247106771211">Zařízení se resetuje do továrního nastavení (Powerwash).</translation>
 <translation id="4917385247580444890">Silný</translation>
 <translation id="4917889632206600977">Zastaveno – došel papír</translation>
+<translation id="491791267030419270">Tipy k psaní zpětné vazby</translation>
 <translation id="4921665434385737356">Nabito na <ph name="RATE" /> za <ph name="NUM_SECONDS" /> s.</translation>
 <translation id="4930320165497208503">Pokud chcete nastavit nebo aktualizovat připojení, přejděte do sekce <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Datum</translation>
@@ -535,6 +549,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="5866840822086176774">Velmi silný</translation>
 <translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5895138241574237353">Restartovat</translation>
+<translation id="5898758006340607522">Vypínač</translation>
 <translation id="5901630391730855834">Žlutá</translation>
 <translation id="5903200662178656908">Zařízení je kombinace klávesnice a myši.</translation>
 <translation id="5916084858004523819">Zakázáno</translation>
@@ -670,6 +685,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="7143207342074048698">Připojování</translation>
 <translation id="7144878232160441200">Opakovat</translation>
 <translation id="714876143603641390">Připojení k síti LAN</translation>
+<translation id="7154020516215182599">Sdělte nám svůj názor nebo popište svůj problém. Pokud je to možné, uveďte postup, jak problém reprodukovat.</translation>
 <translation id="7155171745945906037">Stávající fotka z fotoaparátu nebo souboru</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7170236477717446850">Profilová fotka</translation>
@@ -725,7 +741,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="7701040980221191251">Žádné</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Počet cyklů</translation>
-<translation id="7747039790905080783">Předsdílený klíč</translation>
+<translation id="7747039790905080783">Předem sdílený klíč</translation>
 <translation id="7762130827864645708">Změna hesla byla úspěšná. Odteď používejte nové heslo.</translation>
 <translation id="7763470514545477072">Shoda přípon domén</translation>
 <translation id="7769672763586021400">ID modelu</translation>
@@ -821,7 +837,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="8660881923941176839">libry</translation>
 <translation id="8662671328352114214">Připojení k síti <ph name="TYPE" /></translation>
 <translation id="8671972493856476349">Aktualizovat na verzi <ph name="VERSION_NUMBER" /> a restartovat</translation>
-<translation id="8675354002693747642">Předsdílený klíč</translation>
+<translation id="8675354002693747642">Předem sdílený klíč</translation>
 <translation id="8677859815076891398">Žádná alba. Vytvořte album ve <ph name="LINK_BEGIN" />Fotkách Google<ph name="LINK_END" />.</translation>
 <translation id="8680431479333800907">Zařízení zůstane stejnému uživateli</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Tuto funkci můžete spravovat šipkami doleva nebo doprava.</translation>
@@ -847,6 +863,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="885701979325669005">Úložiště</translation>
 <translation id="8863170912498892583">Aktivovat tmavý motiv</translation>
 <translation id="8863888432376731307">Získejte <ph name="INTENT" /> na dotaz „<ph name="QUERY" />“ a mnohem víc</translation>
+<translation id="8864415976656252616">Žádný navrhovaný obsah. Podívejte se na nejnavštěvovanější obsah nápovědy.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Zařízení je tablet.</translation>
 <translation id="8881098542468797602">Test byl úspěšný</translation>
@@ -857,6 +874,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="8919792139048574232">Podívejte se, co bylo opraveno</translation>
 <translation id="8919837981463578619">Tisk selhal – chybí zásobník</translation>
 <translation id="8923267550422472772">Den v měsíci pro resetování</translation>
+<translation id="8925613211674558308">VPD v mezipaměti</translation>
 <translation id="8928727111548978589">Tisk selhal – došel papír</translation>
 <translation id="8930521118335213258">Peer</translation>
 <translation id="8930622219860340959">Bezdrátové připojení</translation>
@@ -898,6 +916,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="922179502584117429">Aktuální verze <ph name="VERSION_NUMBER" /> je zastaralá</translation>
 <translation id="932327136139879170">Domovská stránka</translation>
 <translation id="939519157834106403">Identifikátor SSID</translation>
+<translation id="945522503751344254">Odeslat zpětnou vazbu</translation>
 <translation id="952992212772159698">Není aktivováno</translation>
 <translation id="960719561871045870">Kód operátora</translation>
 <translation id="982713511914535780">Spustit test vybíjení</translation>

@@ -141,8 +141,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   void InitializeEngineForTesting(std::unique_ptr<PDFiumEngine> engine);
 
-  void set_full_frame_for_testing(bool full_frame) { full_frame_ = full_frame; }
-
   DocumentLoadState document_load_state_for_testing() const {
     return document_load_state_;
   }
@@ -162,14 +160,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   PdfViewPluginBase();
   ~PdfViewPluginBase() override;
 
-  // Performs initialization common to all implementations of this plugin.
-  // `engine` should be an appropriately-configured PDF engine, while the other
-  // parameters come from the corresponding plugin attributes.
-  void InitializeBase(std::unique_ptr<PDFiumEngine> engine,
-                      base::StringPiece src_url,
-                      base::StringPiece original_url,
-                      bool full_frame);
-
   // Creates a new `PDFiumEngine`.
   virtual std::unique_ptr<PDFiumEngine> CreateEngine(
       PDFEngine::Client* client,
@@ -185,6 +175,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   const PDFiumEngine* engine() const { return engine_.get(); }
   PDFiumEngine* engine() { return engine_.get(); }
+  void set_engine(std::unique_ptr<PDFiumEngine> engine);
 
   // Loads `url`, invoking `callback` on receiving the initial response.
   virtual void LoadUrl(base::StringPiece url, LoadUrlCallback callback) = 0;
@@ -315,6 +306,8 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Records user actions.
   virtual void UserMetricsRecordAction(const std::string& action) = 0;
 
+  void set_url(std::string url) { url_ = std::move(url); }
+
   ui::mojom::CursorType cursor_type() const { return cursor_type_; }
   void set_cursor_type(ui::mojom::CursorType cursor_type) {
     cursor_type_ = cursor_type;
@@ -322,7 +315,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   const std::string& link_under_cursor() const { return link_under_cursor_; }
 
-  bool full_frame() const { return full_frame_; }
+  virtual bool full_frame() const = 0;
 
   const gfx::Rect& available_area() const { return available_area_; }
 
@@ -332,9 +325,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // `plugin_rect_`, as this exposes the unintuitive "paint offset."
   const gfx::Rect& plugin_rect() const { return plugin_rect_; }
 
-  // Gets the frame-relative offset of the plugin in device pixels.
-  virtual gfx::Vector2d plugin_offset_in_frame() const;
-
   // Sets the new zoom scale.
   void SetZoom(double scale);
 
@@ -342,15 +332,16 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   float device_scale() const { return device_scale_; }
 
-  AccessibilityState accessibility_state() const {
-    return accessibility_state_;
-  }
+  void set_last_progress_sent(int progress) { last_progress_sent_ = progress; }
 
   static constexpr bool IsSaveDataSizeValid(size_t size) {
     return size > 0 && size <= kMaximumSavedFileSize;
   }
 
   static base::Value::Dict DictFromRect(const gfx::Rect& rect);
+
+  // Handles `LoadUrl()` result.
+  void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result);
 
  private:
   // Converts a scroll offset (which is relative to a UI direction-dependent
@@ -397,9 +388,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Starts loading accessibility information.
   void LoadAccessibility();
 
-  // Handles `LoadUrl()` result.
-  void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result);
-
   // Handles `LoadUrl()` result for print preview.
   void DidOpenPreview(std::unique_ptr<UrlLoader> loader, int32_t result);
 
@@ -436,9 +424,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   // The URL currently under the cursor.
   std::string link_under_cursor_;
-
-  // True if the plugin occupies the entire frame (not embedded).
-  bool full_frame_ = false;
 
   // Image data buffer for painting.
   SkBitmap image_data_;

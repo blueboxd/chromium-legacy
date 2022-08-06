@@ -361,6 +361,21 @@ std::string GetProductAndVersion(
   }
 }
 
+// Internal function to handle return the full or "reduced" user agent string,
+// depending on the UserAgentReduction enterprise policy.
+std::string GetUserAgentInternal(
+    ForceMajorVersionToMinorPosition force_major_to_minor,
+    UserAgentReductionEnterprisePolicyState user_agent_reduction) {
+  std::string product =
+      GetProductAndVersion(force_major_to_minor, user_agent_reduction);
+#if BUILDFLAG(IS_ANDROID)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMobileUserAgent))
+    product += " Mobile";
+#endif
+  return content::BuildUserAgentFromProduct(product);
+}
+
 std::string GetUserAgent(
     ForceMajorVersionToMinorPosition force_major_to_minor,
     UserAgentReductionEnterprisePolicyState user_agent_reduction) {
@@ -373,12 +388,12 @@ std::string GetUserAgent(
   }
 
   if (base::FeatureList::IsEnabled(blink::features::kFullUserAgent))
-    return GetFullUserAgent();
+    return GetFullUserAgent(force_major_to_minor);
 
   if (base::FeatureList::IsEnabled(blink::features::kReduceUserAgent))
     return GetReducedUserAgent(force_major_to_minor);
 
-  return GetFullUserAgent(force_major_to_minor, user_agent_reduction);
+  return GetUserAgentInternal(force_major_to_minor, user_agent_reduction);
 }
 
 std::string GetReducedUserAgent(
@@ -390,16 +405,10 @@ std::string GetReducedUserAgent(
 }
 
 std::string GetFullUserAgent(
-    ForceMajorVersionToMinorPosition force_major_to_minor,
-    UserAgentReductionEnterprisePolicyState user_agent_reduction) {
-  std::string product =
-      GetProductAndVersion(force_major_to_minor, user_agent_reduction);
-#if BUILDFLAG(IS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseMobileUserAgent))
-    product += " Mobile";
-#endif
-  return content::BuildUserAgentFromProduct(product);
+    ForceMajorVersionToMinorPosition force_major_to_minor) {
+  return GetUserAgentInternal(
+      force_major_to_minor,
+      UserAgentReductionEnterprisePolicyState::kForceDisabled);
 }
 
 // Generate a pseudo-random permutation of the following brand/version pairs:
@@ -494,12 +503,9 @@ blink::UserAgentBrandVersion GetGreasedUserAgentBrandVersion(
     blink::UserAgentBrandVersionType output_version_type) {
   std::string greasey_brand;
   std::string greasey_version;
-  // The updated algorithm is enabled by default, but we maintain the ability
-  // to opt out of it either via Finch (setting updated_algorithm to false) or
-  // via an enterprise policy escape hatch.
   if (enable_updated_grease_by_policy &&
       base::GetFieldTrialParamByFeatureAsBool(features::kGreaseUACH,
-                                              "updated_algorithm", true)) {
+                                              "updated_algorithm", false)) {
     const std::vector<std::string> greasey_chars = {
         " ", "(", ":", "-", ".", "/", ")", ";", "=", "?", "_"};
     const std::vector<std::string> greased_versions = {"8", "99", "24"};
@@ -528,11 +534,21 @@ blink::UserAgentBrandVersion GetGreasedUserAgentBrandVersion(
                                            output_version_type);
   }
 }
-// TODO(crbug.com/1103047): This can be removed/re-refactored once we use
-// "macOS" by default
+
 std::string GetPlatformForUAMetadata() {
 #if BUILDFLAG(IS_MAC)
+  // TODO(crbug.com/1103047): This can be removed/re-refactored once we use
+  // "macOS" by default
   return "macOS";
+#elif BUILDFLAG(IS_CHROMEOS)
+  // TODO(crbug.com/1334198): The branding change to remove the space caused a
+  // regression that's solved here. Ideally, we would just use the new OS name
+  // without the space here too, but that needs a launch plan.
+# if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return "Chrome OS";
+# else
+  return "Chromium OS";
+# endif
 #else
   return version_info::GetOSType();
 #endif

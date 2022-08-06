@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">Каляндар</translation>
 <translation id="1153356358378277386">Спалучаныя прылады</translation>
 <translation id="1165712434476988950">Каб прымяніць абнаўленне, трэба перазапусціць прыладу.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Кабель USB-C можа не падключацца да дысплэяў належным чынам</translation>
 <translation id="1175572348579024023">Прагартаць</translation>
 <translation id="1178581264944972037">Прыпыніць</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">Нядаўнія праграмы</translation>
 <translation id="1252999807265626933">Зараджаецца ад крыніцы сілкавання <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Якое надвор'е?</translation>
-<translation id="1262870540683925850">З <ph name="START_TIME" /> да 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Выберыце падзею, каб азнаёміцца з падрабязнымі звесткамі пра яе ў Календары Google.</translation>
 <translation id="1267032506238418139">Змяненне спалучэння клавіш</translation>
 <translation id="1269405891096105529">Перыферыйная прылада не падтрымліваецца ў гасцявым рэжыме</translation>
 <translation id="1270290102613614947">Экранная клавіятура выключана</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1632985212731562677">Доступ праз пераключальнікі можна выключыць у раздзеле "Налады &gt; Спецыяльныя магчымасці".</translation>
 <translation id="1637505162081889933">Прылад: <ph name="NUM_DEVICES" /></translation>
+<translation id="1639239467298939599">Ідзе загрузка</translation>
 <translation id="1654477262762802994">Пачаць галасавы запыт</translation>
 <translation id="1668469839109562275">Убудаваная сетка VPN</translation>
 <translation id="1677472565718498478">Засталося <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="2367186422933365202">Не ўдаецца выканаць уваход на прыладзе Chromebook</translation>
 <translation id="2369165858548251131">"Вітаю" па-кітайску</translation>
+<translation id="2375445874393996153">Пошук размешчаных на экране аб'ектаў з дапамогай Памочніка Google больш не падтрымліваецца.</translation>
 <translation id="2390318262976603432">Рэгіянальныя налады</translation>
 <translation id="240006516586367791">Элементы кіравання мультымедыя</translation>
 <translation id="2402411679569069051">Каб разблакіраваць Chromebook, выкарыстайце функцыю разблакіравання адбіткам пальца або разблакіруйце тэлефон</translation>
@@ -505,6 +504,7 @@
 <translation id="3901991538546252627">Ідзе падключэнне да сеткі <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Вярніцеся да ранейшай версіі АС на працягу 1 хвіліны}one{Вярніцеся да ранейшай версіі АС на працягу # хвіліны}few{Вярніцеся да ранейшай версіі АС на працягу # хвілін}many{Вярніцеся да ранейшай версіі АС на працягу # хвіліны}other{Вярніцеся да ранейшай версіі АС на працягу # хвіліны}}</translation>
 <translation id="3923494859158167397">Мабільныя сеткі не наладжаны</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, падзеі загружаюцца.</translation>
 <translation id="3932043219784172185">Няма падключаных прылад</translation>
 <translation id="3934456833412894880">Адаптыўная зарадка ўключана. Каб падоўжыць тэрмін службы акумулятара, узровень яго зараду будзе заставацца на ўзроўні 80%. Поўнасцю тэлефон зарадзіцца к таму моманту, калі ён вам будзе патрэбны.</translation>
 <translation id="3943857333388298514">Уставіць</translation>
@@ -704,6 +704,7 @@
 <translation id="5078796286268621944">Няправільны PIN-код</translation>
 <translation id="5083553833479578423">Адкрыйце больш функцый Памочніка.</translation>
 <translation id="509790653408515442">Тут будуць з'яўляцца праграмы з вашага тэлефона, якія вы адкрываеце без спампоўвання</translation>
+<translation id="5098537242461068432">Працоўны стол і вокны зноў адкрыты</translation>
 <translation id="5107522548814527560">Інтэрнэт</translation>
 <translation id="5117590920725113268">Паказаць наступны месяц</translation>
 <translation id="5136175204352732067">Падключана іншая клавіятура</translation>
@@ -1048,7 +1049,6 @@
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Вяртанне да старой раздзяляльнасці праз <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Абнавіць</translation>
-<translation id="718361511487535372">Адкрыць у Календары Google</translation>
 <translation id="7188494361780961876">Меню перамешчана ў левы верхні вугал экрана.</translation>
 <translation id="7189412385142492784">Якая адлегласць да Венеры</translation>
 <translation id="7198435252016571249">Акно перадпрагляду камеры прывязана да правага ніжняга вугла, бо яно перакрывала інтэрфейс сістэмы.</translation>
@@ -1057,6 +1057,10 @@
 <translation id="7258828758145722155">Зменена ўчора</translation>
 <translation id="726276584504105859">Каб перайсці ў рэжым падзеленага экрана, перацягніце акно сюды</translation>
 <translation id="7262906531272962081">Стварыць напамін</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> –
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Выберыце падзею, каб азнаёміцца з падрабязнымі звесткамі пра яе ў Календары Google.</translation>
 <translation id="7302889331339392448">Імгненныя субцітры выключаны.</translation>
 <translation id="7303365578352795231">Адказ выконваецца на іншай прыладзе.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@
 <translation id="7904094684485781019">Адміністратар уліковага запісу забараніў уваход у некалькі ўліковых запісаў.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Запісы голасу апрацоўваюцца на прыладзе і нікуды не перадаюцца. Галасавы ўвод працуе па-за сеткай.</translation>
+<translation id="7932451802722951285">Адкрыць у Google Календары</translation>
 <translation id="7933084174919150729">Памочнік Google даступны толькі ў асноўным профілі.</translation>
 <translation id="79341161159229895">Уліковым запісам кіруюць <ph name="FIRST_PARENT_EMAIL" /> і <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Каб прагледзець буфер абмену, націсніце <ph name="SHORTCUT_KEY_NAME" /> + V. Апошнія 5 скапіраваных вамі элементаў захоўваюцца ў буферы абмену.</translation>

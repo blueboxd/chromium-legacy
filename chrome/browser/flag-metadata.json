@@ -405,14 +405,14 @@
     "expiry_milestone": 106
   },
   {
+    "name": "autofill-enable-get-details-for-enroll-parsing-in-upload-card-response",
+    "owners": [ "vinnypersky@google.com", "siyua" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "autofill-enable-manual-fallback-for-virtual-cards",
     "owners": [ "siashah", "siyua" ],
     "expiry_milestone": 106
-  },
-  {
-    "name": "autofill-enable-merchant-bound-virtual-cards",
-    "owners": [ "siashah", "siyua" ],
-    "expiry_milestone": 105
   },
   {
     "name": "autofill-enable-offer-notification-for-promo-codes",
@@ -481,11 +481,6 @@
     "name": "autofill-enable-virtual-card-metadata",
     "owners": [ "siyua", "siashah"],
     "expiry_milestone": 110
-  },
-  {
-    "name": "autofill-enable-virtual-cards-risk-based-authentication",
-    "owners": [ "siyua", "jsaul@google.com" ],
-    "expiry_milestone": 105
   },
   {
     "name": "autofill-enforce-delays-in-strike-database",
@@ -625,6 +620,11 @@
   {
     "name": "bookmark-bottom-sheet",
     "owners": [ "wylieb" ],
+    "expiry_milestone": 107
+  },
+  {
+    "name": "bookmark-string-menu",
+    "owners": ["gambard", "bling-flags@google.com"],
     "expiry_milestone": 107
   },
   {
@@ -1644,6 +1644,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "enable-commerce-hint-android",
+    "owners": [ "chrome-shopping@google.com" ],
+    "expiry_milestone": 106
+  },
+  {
     "name": "enable-commerce-merchant-viewer",
     "owners": [ "chrome-shopping@google.com" ],
     "expiry_milestone": 108
@@ -1987,6 +1992,11 @@
     "expiry_milestone": 106
   },
   {
+    "name": "enable-discover-feed-ghost-cards",
+    "owners": [ "edchin", "adamta", "sczs", "tinazwang" ],
+    "expiry_milestone": 106
+  },
+  {
     "name": "enable-discover-feed-preview",
     "owners": [ "tinazwang", "sczs" ],
     "expiry_milestone": 101
@@ -2094,6 +2104,10 @@
     // This flag is used by developers and partners to test
     // stack switching features in WebAssembly.
     "expiry_milestone": 115
+  },
+  {"name": "enable-expkit-apple-calendar",
+      "owners": ["erahmaoui@google.com", "djean@google.com", "bling-flags@google.com"],
+      "expiry_milestone":107
   },
   {
     "name": "enable-external-keyboards-in-diagnostics-app",
@@ -2887,6 +2901,11 @@
     "expiry_milestone": 105
   },
   {
+    "name": "enable-user-policy",
+    "owners": [ "vincb" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "enable-vaapi-av1-decode-acceleration",
     "owners": [ "andrescj", "chromeos-gfx-video@google.com" ],
     "expiry_milestone": 100
@@ -3014,7 +3033,7 @@
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
     "owners": [ "hta" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 120
   },
   {
     "name": "enable-webrtc-hybrid-agc",
@@ -3231,6 +3250,11 @@
     "name": "feed-back-to-top",
     "owners": [ "//chrome/android/feed/OWNERS", "jianli@chromium.org" ],
     "expiry_milestone": 101
+  },
+  {
+    "name": "feed-close-refresh",
+    "owners": ["//chrome/android/feed/OWNERS", "iwells@chromium.org"],
+    "expiry_milestone": 110
   },
   {
     "name": "feed-interactive-refresh",
@@ -3998,7 +4022,7 @@
   {
     "name": "lightweight-reactions-android",
     "owners": [ "gujen", "sophey", "chrome-with-friends-robots@google.com" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 108
   },
   {
     "name": "link-capturing-infobar",
@@ -4306,6 +4330,11 @@
     "expiry_milestone": 93
   },
   {
+    "name": "new-instance-from-dragged-link",
+    "owners": [ "aishwaryarj", "clank-app-team@google.com" ],
+    "expiry_milestone": 106
+  },
+  {
     "name": "new-mobile-identity-consistency-fre",
     "owners": [ "jlebel", "chrome-signin-team" ],
     "expiry_milestone": 106
@@ -4378,11 +4407,6 @@
   {
     "name": "ntp-dummy-modules",
     "owners": [ "pauladedeji", "tiborg" ],
-    "expiry_milestone": 105
-  },
-  {
-    "name": "ntp-modules",
-    "owners": [ "mahmadi", "tiborg" ],
     "expiry_milestone": 105
   },
   {
@@ -4892,12 +4916,17 @@
   {
     "name": "password-notes",
     "owners": ["mamir", "derinel@google.com"],
-    "expiry_milestone": 105
+    "expiry_milestone": 108
   },
   {
     "name": "password-scripts-fetching",
     "owners": [ "kolos", "treib", "brunobraga@google.com", "chrome-duplex@google.com" ],
     "expiry_milestone": 105
+  },
+  {
+    "name": "password-view-page-in-settings",
+    "owners": ["mamir", "derinel@google.com"],
+    "expiry_milestone": 108
   },
   {
     "name": "passwords-account-storage-revised-opt-in-flow",

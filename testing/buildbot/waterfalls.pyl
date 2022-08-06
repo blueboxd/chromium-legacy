@@ -1349,7 +1349,7 @@
         'os_type': 'linux',
         'browser_config': 'release',
         'mixins': [
-          'linux_intel_hd_630_stable',
+          'linux_intel_uhd_630_stable',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_common_gtests_passthrough',
@@ -1370,7 +1370,7 @@
       'linux-angle-intel': {
         'os_type': 'linux',
         'mixins': [
-          'linux_intel_hd_630_stable',
+          'linux_intel_uhd_630_stable',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_linux_intel_gtests',
@@ -2160,11 +2160,11 @@
     'machines': {
       'Dawn Linux x64 Builder' : {},
       'Dawn Linux x64 DEPS Builder' : {},
-      'Dawn Linux x64 DEPS Release (Intel HD 630)': {
+      'Dawn Linux x64 DEPS Release (Intel UHD 630)': {
         'os_type': 'linux',
         'browser_config': 'release',
         'mixins': [
-          'linux_intel_hd_630_stable',
+          'linux_intel_uhd_630_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular',
@@ -2184,11 +2184,11 @@
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
-      'Dawn Linux x64 Release (Intel HD 630)': {
+      'Dawn Linux x64 Release (Intel UHD 630)': {
         'os_type': 'linux',
         'browser_config': 'release',
         'mixins': [
-          'linux_intel_hd_630_stable',
+          'linux_intel_uhd_630_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular',
@@ -2986,18 +2986,12 @@
       'android-fieldtrial-rel': {
         'mixins': [
           'has_native_resultdb_integration',
+          'finch-chromium-swarming-pool',
           'pie-x86-emulator',
           'linux-bionic',
           'x86-64',
         ],
         'os_type': 'android',
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'chromium.tests.finch',
-            },
-          ],
-        },
         'test_suites': {
           'gtest_tests': 'fieldtrial_android_tests',
         },
@@ -3315,7 +3309,7 @@
         ],
         'mixins': [
           'has_native_resultdb_integration',
-          'mac_11_x64',
+          'mac_12_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_13_main',
@@ -3333,7 +3327,7 @@
         ],
         'mixins': [
           'has_native_resultdb_integration',
-          'mac_11_x64',
+          'mac_12_x64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_14_beta',
@@ -3760,14 +3754,8 @@
       'win-fieldtrial-rel': {
         'mixins': [
             'win10',
+            'finch-chromium-swarming-pool',
         ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'chromium.tests.finch',
-            },
-          ],
-        },
         'test_suites': {
           'gtest_tests': 'fieldtrial_browser_tests',
           'isolated_scripts': 'fieldtrial_isolated_scripts',
@@ -3804,19 +3792,6 @@
             'win11',
         ],
         'swarming': {
-          'hard_timeout': 900,
-        },
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'win7-blink-rel-dummy': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-7-SP1',
-            },
-          ],
           'hard_timeout': 900,
         },
         'test_suites': {
@@ -4113,7 +4088,6 @@
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'isolated_scripts': 'rendering_mobile_representative_perf_tests_isolated_scripts_experimental',
         },
       },
       'GPU Linux Builder': {},
@@ -4162,7 +4136,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_mac_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac Retina Debug (AMD)': {
@@ -4185,7 +4158,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_passthrough_gtests',
           'gpu_telemetry_tests': 'gpu_common_gl_passthrough_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Win10 x64 Debug (NVIDIA)': {
@@ -4208,7 +4180,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_win_gtests',
           'gpu_telemetry_tests': 'gpu_common_win_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
     },
@@ -4262,7 +4233,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_gtests',
-          'isolated_scripts': 'gpu_mobile_representative_perf_fyi_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
           'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
         },
@@ -4371,10 +4341,7 @@
         'os_type': 'lacros',
         'browser_config': 'release',
         'mixins': [
-          # Weston does not work on Mesa 19, but works on Mesa 20.
-          # TODO(crbug.com/1153159): Switch to the stable mixin once 20 becomes
-          # the standard version.
-          'linux_intel_hd_630_experimental',
+          'linux_intel_uhd_630_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
@@ -4391,16 +4358,18 @@
           'gpu_telemetry_tests': 'gpu_fyi_linux_debug_telemetry_tests',
         },
       },
-      'Linux FYI Experimental Release (Intel HD 630)': {
+      'Linux FYI Experimental Release (Intel UHD 630)': {
         'os_type': 'linux',
         'browser_config': 'release',
         'mixins': [
           'limited_capacity_bot',
-          'linux_intel_hd_630_experimental',
+          'linux_intel_uhd_630_experimental',
         ],
+        # If the experimental configuration is the same as stable, this should
+        # only be running 'gpu_noop_sleep_telemetry_test'. Otherwise, this
+        # should be running the same tests as 'Linux FYI Release (Intel UHD 630)'.
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_linux_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
       'Linux FYI Experimental Release (NVIDIA)': {
@@ -4443,17 +4412,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_linux_release_telemetry_tests',
-        },
-      },
-      'Linux FYI Release (Intel HD 630)': {
-        'os_type': 'linux',
-        'browser_config': 'release',
-        'mixins': [
-          'linux_intel_hd_630_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_linux_release_vulkan_telemetry_tests',
         },
       },
       'Linux FYI Release (Intel UHD 630)': {
@@ -4551,7 +4509,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac FYI Release (Intel)': {
@@ -4563,7 +4520,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac FYI Retina ASAN (AMD)': {
@@ -4608,7 +4564,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_amd_release_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_mac_amd_release_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac FYI Retina Release (NVIDIA)': {
@@ -4712,7 +4667,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_desktop_representative_perf_fyi_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_amd_release_telemetry_tests',
         },
       },
@@ -4724,7 +4678,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_desktop_representative_perf_fyi_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
@@ -4737,7 +4690,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
-          'isolated_scripts': 'gpu_fyi_win_optional_and_representative_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_fyi_win_optional_isolated_scripts',
         },
       },
       'Win10 FYI x64 Release XR Perf (NVIDIA)': {
@@ -4758,7 +4711,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_fyi_win_optional_and_representative_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_fyi_win_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
@@ -5249,8 +5202,6 @@
         'additional_compile_targets': [
           'chrome',
           'chrome_sandbox',
-          'linux_symbols',
-          'symupload'
         ],
         'test_suites': {
           'gtest_tests': 'linux_lacros_gtests',
@@ -5764,7 +5715,7 @@
           'chromium-webrtc-rel-linux',
         ],
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests_linux',
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
       'WebRTC Chromium Mac Builder': {
@@ -5775,10 +5726,10 @@
       'WebRTC Chromium Mac Tester': {
         'mixins': [
           'chromium-webrtc-rel-mac',
-          'mac_x64',
+          'mac_11_x64',
         ],
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests_mac',
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
       'WebRTC Chromium Win Builder': {
@@ -5787,11 +5738,18 @@
         ],
       },
       'WebRTC Chromium Win10 Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10',
+            },
+          ]
+        },
         'mixins': [
           'chromium-webrtc-rel-win10',
         ],
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests_win',
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
     },

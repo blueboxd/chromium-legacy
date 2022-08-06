@@ -179,14 +179,15 @@ AndroidPlatformConfiguration::GetRuntimeModuleState(
 ThreadProfilerPlatformConfiguration::RelativePopulations
 AndroidPlatformConfiguration::GetEnableRates(
     absl::optional<version_info::Channel> release_channel) const {
-  if (release_channel) {
-    CHECK(*release_channel == version_info::Channel::CANARY ||
-          *release_channel == version_info::Channel::DEV);
-    // Use a 50/50 experiment to maximize signal in the relevant metrics.
-    return RelativePopulations{0, 50};
+  // Always enable profiling in local/CQ builds or browser test mode.
+  if (!release_channel.has_value() || browser_test_mode_enabled()) {
+    return RelativePopulations{100, 0};
   }
 
-  return DefaultPlatformConfiguration::GetEnableRates(release_channel);
+  DCHECK(*release_channel == version_info::Channel::CANARY ||
+         *release_channel == version_info::Channel::DEV);
+  // Use a 50/50 experiment to maximize signal in the relevant metrics.
+  return RelativePopulations{0, 50};
 }
 
 void AndroidPlatformConfiguration::RequestRuntimeModuleInstall() const {
@@ -228,7 +229,7 @@ bool AndroidPlatformConfiguration::IsEnabledForThread(
   // TODO(https://crbug.com/1326430): Enable for all the default processes.
   switch (process) {
     case metrics::CallStackProfileParams::Process::kRenderer:
-      return thread == metrics::CallStackProfileParams::Thread::kMain;
+      return true;
 
     default:
       return false;

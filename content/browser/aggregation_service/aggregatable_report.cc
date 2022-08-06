@@ -22,7 +22,9 @@
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/abseil_string_number_conversions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/cbor/values.h"
@@ -207,9 +209,9 @@ std::vector<std::vector<uint8_t>> ConstructUnencryptedTeeBasedPayload(
 // Encrypts the `plaintext` with HPKE using the processing url's
 // `public_key`. Returns empty vector if the encryption fails.
 std::vector<uint8_t> EncryptWithHpke(
-    const std::vector<uint8_t>& plaintext,
-    const std::vector<uint8_t>& public_key,
-    const std::vector<uint8_t>& authenticated_info) {
+    base::span<const uint8_t> plaintext,
+    base::span<const uint8_t> public_key,
+    base::span<const uint8_t> authenticated_info) {
   bssl::ScopedEVP_HPKE_CTX sender_context;
 
   // This vector will hold the encapsulated shared secret "enc" followed by the
@@ -282,12 +284,16 @@ AggregatableReportSharedInfo::AggregatableReportSharedInfo(
     base::GUID report_id,
     url::Origin reporting_origin,
     DebugMode debug_mode,
-    base::Value::Dict additional_fields)
+    base::Value::Dict additional_fields,
+    std::string api_version,
+    std::string api_identifier)
     : scheduled_report_time(scheduled_report_time),
       report_id(std::move(report_id)),
       reporting_origin(std::move(reporting_origin)),
       debug_mode(debug_mode),
-      additional_fields(std::move(additional_fields)) {}
+      additional_fields(std::move(additional_fields)),
+      api_version(std::move(api_version)),
+      api_identifier(std::move(api_identifier)) {}
 
 AggregatableReportSharedInfo::AggregatableReportSharedInfo(
     AggregatableReportSharedInfo&& other) = default;
@@ -296,9 +302,9 @@ AggregatableReportSharedInfo& AggregatableReportSharedInfo::operator=(
 AggregatableReportSharedInfo::~AggregatableReportSharedInfo() = default;
 
 AggregatableReportSharedInfo AggregatableReportSharedInfo::Clone() const {
-  return AggregatableReportSharedInfo(scheduled_report_time, report_id,
-                                      reporting_origin, debug_mode,
-                                      additional_fields.Clone());
+  return AggregatableReportSharedInfo(
+      scheduled_report_time, report_id, reporting_origin, debug_mode,
+      additional_fields.Clone(), api_version, api_identifier);
 }
 
 std::string AggregatableReportSharedInfo::SerializeAsJson() const {
@@ -316,8 +322,10 @@ std::string AggregatableReportSharedInfo::SerializeAsJson() const {
   value.Set("scheduled_report_time",
             base::NumberToString(scheduled_report_time.ToJavaTime() /
                                  base::Time::kMillisecondsPerSecond));
-  // TODO(alexmt): Replace with a real version once a version string is decided.
-  value.Set("version", "");
+
+  value.Set("version", api_version);
+
+  value.Set("api", api_identifier);
 
   // Only include the field if enabled.
   if (debug_mode == DebugMode::kEnabled) {
@@ -454,10 +462,6 @@ AggregatableReport& AggregatableReport::operator=(AggregatableReport&& other) =
 
 AggregatableReport::~AggregatableReport() = default;
 
-constexpr size_t AggregatableReport::kBucketDomainBitLength;
-constexpr size_t AggregatableReport::kValueDomainBitLength;
-constexpr char AggregatableReport::kDomainSeparationPrefix[];
-
 // static
 bool AggregatableReport::Provider::g_disable_encryption_for_testing_tool_ =
     false;
@@ -502,15 +506,13 @@ AggregatableReport::Provider::CreateFromRequestAndPublicKeys(
     return absl::nullopt;
   }
 
-  std::vector<uint8_t> authenticated_info(
-      kDomainSeparationPrefix,
-      kDomainSeparationPrefix + sizeof(kDomainSeparationPrefix));
-
   std::string encoded_shared_info =
       report_request.shared_info().SerializeAsJson();
-  authenticated_info.insert(authenticated_info.end(),
-                            encoded_shared_info.begin(),
-                            encoded_shared_info.end());
+
+  std::string authenticated_info_str =
+      base::StrCat({kDomainSeparationPrefix, encoded_shared_info});
+  base::span<const uint8_t> authenticated_info =
+      base::as_bytes(base::make_span(authenticated_info_str));
 
   std::vector<AggregatableReport::AggregationServicePayload> encrypted_payloads;
   DCHECK_EQ(unencrypted_payloads.size(), num_processing_urls);

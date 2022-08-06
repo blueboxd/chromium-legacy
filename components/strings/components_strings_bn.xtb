@@ -291,6 +291,7 @@
 <translation id="1662550410081243962">পেমেন্টের পদ্ধতিগুলি পূরণ করে সেভ করুন</translation>
 <translation id="1663943134801823270">Chrome থেকে কার্ড এবং ঠিকানাগুলি এসেছে। আপনি <ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> এ এগুলি পরিচালনা করতে পারবেন।</translation>
 <translation id="1671391448414634642">এখন থেকে <ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠা <ph name="TARGET_LANGUAGE" /> ভাষায় অনুবাদ করা হবে।</translation>
+<translation id="1673886523110456987">উপলভ্য অফার ব্যবহার করতে <ph name="CARD_DETAIL" />-এর মাধ্যমে করে চেক করুন</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> থেকে <ph name="TARGET_LANGUAGE" />-এ</translation>
 <translation id="1682696192498422849">আগে ছোট প্রান্ত</translation>
 <translation id="168693727862418163">এই নীতির মান সেটির স্কিমার সাথে যাচাই করা যায়নি, তাই সেটি উপেক্ষা করা হবে।</translation>
@@ -591,6 +592,7 @@
 <translation id="2523886232349826891">শুধুমাত্র এই ডিভাইসে সেভ করা যাবে</translation>
 <translation id="2524461107774643265">আরও তথ্য যোগ করুন</translation>
 <translation id="2529899080962247600">এই ফিল্ডে <ph name="MAX_ITEMS_LIMIT" />টির বেশি এন্ট্রি লেখা যাবে না। অন্য সব এন্ট্রি বাতিল করা হবে।</translation>
+<translation id="253493526287553278">প্রোমো কোড সংক্রান্ত বিবরণ দেখুন</translation>
 <translation id="2535585790302968248">গোপনে ব্রাউজ করতে ছদ্মবেশী ট্যাব খুলুন</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{এবং আরও ১টি}one{এবং আরও #টি}other{এবং আরও #টি}}</translation>
 <translation id="2536110899380797252">ঠিকানা যোগ করুন</translation>
@@ -707,7 +709,6 @@
 <translation id="2854764410992194509">ইন্টারনেট সার্ভিস প্রোভাইডার (ISPs)</translation>
 <translation id="2856444702002559011">আক্রমণকারীরা হয়ত <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> থেকে আপনার তথ্য (যেমন পাসওয়ার্ড, মেসেজ বা ক্রেডিট কার্ড) চুরি করার চেষ্টা করছে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2859806420264540918">এই সাইট ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন দেখায়।</translation>
-<translation id="286512204874376891">কোনও ভার্চুয়াল কার্ড আপনাকে সম্ভাব্য জালিয়াতির হাত থেকে রক্ষা করতে আপনার আসল কার্ডের ছদ্মবেশ নিতে পারে। <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="287596039013813457">বন্ধুত্বপূর্ণ</translation>
 <translation id="28761159517501904">সিনেমা</translation>
 <translation id="2876489322757410363">এক্সটার্নাল অ্যাপ্লিকেশনের মাধ্যমে পেমেন্ট করার জন্য ছদ্মবেশী মোড ছেড়ে বেরিয়ে আসা হচ্ছে। চালিয়ে যেতে চান?</translation>
@@ -935,6 +936,7 @@
 <translation id="3477679029130949506">সিনেমার তালিকা ও সিনেমাহলের সময়সূচি</translation>
 <translation id="3479552764303398839">এখনই নয়</translation>
 <translation id="3484560055331845446">আপনি আপনার Google অ্যাকাউন্টে অ্যাক্সেস হারাতে পারেন। Chrome-এর প্রস্তাব হল যে আপনি আপনার পাসওয়ার্ড এখনই পরিবর্তন করুন। আপনাকে আবার সাইন-ইন করতে বলা হবে।</translation>
+<translation id="3484861421501147767">রিমাইন্ডার: সেভ করা প্রোমো কোড উপলভ্য আছে</translation>
 <translation id="3487845404393360112">ট্রে ৪</translation>
 <translation id="3495081129428749620">এই পৃষ্ঠাতে খুঁজুন
     <ph name="PAGE_TITLE" /></translation>
@@ -1108,6 +1110,7 @@
 <translation id="3986705137476756801">এখনকার মতো লাইভ ক্যাপশন বন্ধ করে দিন</translation>
 <translation id="3987940399970879459">১ এমবির কম</translation>
 <translation id="3990250421422698716">জগ অফসেট</translation>
+<translation id="3992684624889376114">এই পৃষ্ঠা সম্পর্কে</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> সাইট থেকে অনুরোধ করা হয়েছে যে এতে করা সমস্ত অনুরোধের ক্ষেত্রে
     একটি 'অরিজিন নীতি' প্রয়োগ করা হোক, কিন্তু বর্তমানে এই নীতি কার্যকর করা যাচ্ছে না।</translation>
 <translation id="4006465311664329701">Google Pay-এর সাথে যুক্ত 'পেমেন্ট পদ্ধতি', 'অফার' ও 'ঠিকানা'</translation>
@@ -1283,6 +1286,7 @@
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">প্রক্সির ব্যবহার অক্ষম করা হয়েছে কিন্তু কোনো স্পষ্ট প্রক্সি কনফিগারেশান নির্দিষ্ট করা হয়েছে৷</translation>
 <translation id="4441832193888514600">উপেক্ষা করা হয়েছে কারণ নীতিটি শুধুমাত্র ক্লাউড ব্যবহারকারী নীতি হিসেবে সেট করা যেতে পারে।</translation>
+<translation id="4442470707340296952">Chrome ট্যাব</translation>
 <translation id="4450893287417543264">আর দেখতে চাই না</translation>
 <translation id="4451135742916150903">HID ডিভাইসের সাথে কানেক্ট করার অনুমতি চাইতে পারে</translation>
 <translation id="4452328064229197696">আপনি এইমাত্র যে পাসওয়ার্ড ব্যবহার করলেন, সেটি হ্যাক হওয়া কোনও ডেটাবেসে পাওয়া গেছে। আপনার অ্যাকাউন্ট সুরক্ষিত করতে, Google পাসওয়ার্ড ম্যানেজার আপনার সেভ করা পাসওয়ার্ড চেক করার সাজেশন দিচ্ছে।</translation>
@@ -1340,7 +1344,6 @@
 <translation id="4607603470419975064">Chrome সম্পর্কিত পরামর্শ দেখুন বোতাম, Chrome-এর ফিচার সম্পর্কে জানতে Enter প্রেস করুন</translation>
 <translation id="4607608436550361748">Chrome-এর পরামর্শ দেখুন</translation>
 <translation id="4617273035598175554">গ্রাফিক্স ও অ্যানিমেশন সফ্টওয়্যার</translation>
-<translation id="4627165777145349100">এই পৃষ্ঠা সম্পর্কে আরও তথ্য</translation>
 <translation id="4627675673814409125">এই নীতিটি Chrome প্রোফাইল লেভেলে সেট করা যাবে না এবং এড়িয়ে যাওয়া হবে।</translation>
 <translation id="4628948037717959914">ফটো</translation>
 <translation id="4631649115723685955">ক্যাশব্যাক অফার লিঙ্ক করা হয়েছে</translation>
@@ -1558,6 +1561,7 @@
 <translation id="5171045022955879922">খুঁজুন বা URL লিখুন</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">যন্ত্র</translation>
+<translation id="5177076414499237632">পৃষ্ঠার সোর্স ও বিষয় সম্পর্কে আরও জানুন</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />-এ নেই? এই ত্রুটি রিপোর্ট করুন</translation>
 <translation id="518639307526414276">পোষা খাদ্য এবং পোষা যত্ন সরবরাহ</translation>
 <translation id="5190835502935405962">বুকমার্ক বার</translation>
@@ -1875,7 +1879,6 @@
 <translation id="6061154937977953833">কুস্তি</translation>
 <translation id="6064217302520318294">স্ক্রিন লক</translation>
 <translation id="6064602040258638498">কুপন ও ডিসকাউন্ট অফার</translation>
-<translation id="6078813287646374487">এই পৃষ্ঠা সম্পর্কে আরও তথ্য দেখুন</translation>
 <translation id="6080696365213338172">অ্যাডমিনিস্ট্রেটরের দ্বারা সরবরাহ করা সার্টিফিকেট ব্যবহার করে আপনি কন্টেন্ট ব্যবহার করেছেন৷ <ph name="DOMAIN" />-কে আপনি যে ডেটা সরবরাহ করেন তাতে আপনার অ্যাডমিনিস্ট্রেটর বাধা দিতে পারে৷</translation>
 <translation id="6087312102907839798">সম্পর্কিত সার্চ</translation>
 <translation id="6094273045989040137">ব্যাখ্যা করুন</translation>
@@ -2221,6 +2224,7 @@
             <ph name="LIST_ITEM" />ফর্মে তথ্য দেওয়া হয়েছে<ph name="END_LIST_ITEM" />
           <ph name="END_LIST" /></translation>
 <translation id="7129409597930077180">এই ঠিকানায় শিপিং করা যাবে না। অন্য ঠিকানা বেছে নিন।</translation>
+<translation id="7129809579943936035"><ph name="VALUE_PROP" /> <ph name="DETAILS" /></translation>
 <translation id="7132939140423847331">আপনার অ্যাডমিন এই ডেটা কপি করার থেকে সীমাবদ্ধ করেছেন।</translation>
 <translation id="7135130955892390533">স্ট্যাটাস দেখুন</translation>
 <translation id="7138472120740807366">ডেলিভারির পদ্ধতি</translation>
@@ -2556,7 +2560,7 @@
 <translation id="8009225694047762179">পাসওয়ার্ড পরিচালনা করুন</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{এই কার্ড ও সেটির বিলিং ঠিকানা সেভ করা হবে। <ph name="USER_EMAIL" />-এ সাইন-ইন করে থাকা অবস্থায় আপনি সেটি ব্যবহার করতে পারবেন।}one{এই কার্ডগুলি ও সেগুলির বিলিং ঠিকানা সেভ করা হবে। <ph name="USER_EMAIL" />-এ সাইন-ইন করে থাকা অবস্থায় আপনি সেগুলি ব্যবহার করতে পারবেন।}other{এই কার্ডগুলি ও সেগুলির বিলিং ঠিকানা সেভ করা হবে। <ph name="USER_EMAIL" />-এ সাইন-ইন করে থাকা অবস্থায় আপনি সেগুলি ব্যবহার করতে পারবেন।}}</translation>
 <translation id="8025119109950072390">Attackers on this site may trick you into doing something dangerous like installing software or revealing your personal information (for example, passwords, phone numbers, or credit cards).</translation>
-<translation id="8026334261755873520">ব্রাউজ করা ডেটা সাফ করুন</translation>
+<translation id="8026334261755873520">ব্রাউজিং ডেটা সাফ করুন</translation>
 <translation id="8027077570865220386">ট্রে ১৫</translation>
 <translation id="8028698320761417183"><ph name="CREATE_GOOGLE_FORM_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Forms-এ চটপট নতুন ফর্ম তৈরি করতে প্রথমে Tab, তারপরে Enter প্রেস করুন</translation>
 <translation id="8028960012888758725">কাজের পর ট্রিম করুন</translation>
@@ -2578,6 +2582,7 @@
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8075736640322370409">চটপট Google Sheet তৈরি করুন</translation>
 <translation id="8075898834294118863">'সাইট সেটিংস' বোতাম ম্যানেজ করুন</translation>
+<translation id="8076492880354921740">ট্যাবগুলি</translation>
 <translation id="8078141288243656252">ঘূর্ণনের সময় ব্যাখ্যা করা যাবে না</translation>
 <translation id="8079031581361219619">সাইটটি রিলোড করবেন?</translation>
 <translation id="8081087320434522107">সেডান</translation>
@@ -2798,6 +2803,7 @@
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> হল আপনার <ph name="ORIGIN" />-এর কোড</translation>
 <translation id="874918643257405732">এই ট্যাব বুকমার্ক করুন</translation>
 <translation id="8751426954251315517">পরে আবার চেষ্টা করুন</translation>
+<translation id="8757526089434340176">Google Pay অফার উপলভ্য</translation>
 <translation id="8758885506338294482">প্রতিযোগিতামূলক ভিডিও গেমিং</translation>
 <translation id="8759274551635299824">এই কার্ডটির মেয়াদ শেষ হয়েছে</translation>
 <translation id="87601671197631245">এই সাইটটি পুরনো সিকিউরিটি কনফিগারেশন ব্যবহার করে তাই আপনার তথ্য (যেমন, পাসওয়ার্ড, মেসেজ বা ক্রেডিট কার্ডের নম্বর) এই সাইটে পাঠানোর সময় এইসব তথ্যের নিরাপত্তা বিঘ্নিত হতে পারে।</translation>
@@ -2998,6 +3004,7 @@
 <translation id="988159990683914416">ডেভেলপার বিল্ড</translation>
 <translation id="989988560359834682">ঠিকানা সম্পাদনা করুন</translation>
 <translation id="991413375315957741">মোশন বা লাইট সেন্সর</translation>
+<translation id="992110854164447044">আপনাকে সম্ভাব্য জালিয়াতির হাত থেকে রক্ষা করতে, ভার্চুয়াল কার্ড আসল কার্ডটি লুকায়। <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">গোলাপী</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" আপনার কম্পিউটার বা নেটওয়ার্কে সঠিকভাবে ইনস্টল করা হয়নি:

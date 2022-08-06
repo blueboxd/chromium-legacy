@@ -31,6 +31,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1150989369772528668">Kalendář</translation>
 <translation id="1153356358378277386">Spárovaná zařízení</translation>
 <translation id="1165712434476988950">K použití aktualizace je potřeba restartovat zařízení.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Váš kabel USB-C se možná nedokáže správně připojit k displejům</translation>
 <translation id="1175572348579024023">Posunout</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
@@ -55,10 +56,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1247519845643687288">Poslední aplikace</translation>
 <translation id="1252999807265626933">Zdroj nabíjení: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Jaké je počasí?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> až 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Výběrem zobrazíte další podrobnosti v Kalendáři Google.</translation>
 <translation id="1267032506238418139">Změna klávesové zkratky</translation>
 <translation id="1269405891096105529">Periferní zařízení není v režimu hosta podporováno</translation>
 <translation id="1270290102613614947">Softwarová klávesnice je deaktivována</translation>
@@ -124,6 +121,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Přístup pomocí přepínačů lze vypnout v Nastavení &gt; Přístupnost.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> zařízení</translation>
+<translation id="1639239467298939599">Načítání</translation>
 <translation id="1654477262762802994">Zahájit hlasový dotaz</translation>
 <translation id="1668469839109562275">Vestavěná VPN</translation>
 <translation id="1677472565718498478">zbývající čas: <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2367186422933365202">Přihlášení do Chromebooku se nezdařilo</translation>
 <translation id="2369165858548251131">„Ahoj“ čínsky</translation>
+<translation id="2375445874393996153">Vyhledávání obsahu na obrazovce pomocí Asistenta Google už není podporováno.</translation>
 <translation id="2390318262976603432">Nastavení národního prostředí</translation>
 <translation id="240006516586367791">Ovládání médií</translation>
 <translation id="2402411679569069051">Pokud chcete Chromebook odemknout, odemkněte telefon pomocí otisku prstu</translation>
@@ -505,6 +504,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="3901991538546252627">Připojování k síti <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Do 1 minuty zařízení převeďte na předchozí verzi}few{Do # minut zařízení převeďte na předchozí verzi}many{Do # minuty zařízení převeďte na předchozí verzi}other{Do # minut zařízení převeďte na předchozí verzi}}</translation>
 <translation id="3923494859158167397">Nejsou nastaveny žádné mobilní sítě</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, načítání událostí.</translation>
 <translation id="3932043219784172185">Není připojeno žádné zařízení</translation>
 <translation id="3934456833412894880">Je zapnuté adaptivní nabíjení. Baterie zůstane nabitá na 80 %, aby se prodloužila její životnost, a plně se nabije, jen když to budete potřebovat.</translation>
 <translation id="3943857333388298514">Vložit</translation>
@@ -704,6 +704,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="5078796286268621944">Nesprávný kód PIN</translation>
 <translation id="5083553833479578423">Odemkněte další funkce Asistenta.</translation>
 <translation id="509790653408515442">Tady se zobrazí aplikace streamované z telefonu</translation>
+<translation id="5098537242461068432">Plocha a okna se znovu otevřely</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Zobrazit další měsíc</translation>
 <translation id="5136175204352732067">Je připojena jiná klávesnice</translation>
@@ -1048,7 +1049,6 @@ Nová instalace</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Obnovit</translation>
-<translation id="718361511487535372">Otevřít v Kalendáři Google</translation>
 <translation id="7188494361780961876">Nabídka byla přesunuta do levého horního rohu obrazovky.</translation>
 <translation id="7189412385142492784">Jak daleko je Venuše</translation>
 <translation id="7198435252016571249">Kamera byla připnuta do pravého dolního rohu. Konflikt s platformou systému.</translation>
@@ -1057,6 +1057,10 @@ Nová instalace</translation>
 <translation id="7258828758145722155">Upraveno včera</translation>
 <translation id="726276584504105859">Chcete-li použít rozdělenou obrazovku, přetáhněte okno sem</translation>
 <translation id="7262906531272962081">Vytvořit připomenutí</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> až
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Výběrem zobrazíte další podrobnosti v Kalendáři Google.</translation>
 <translation id="7302889331339392448">Živý přepis je vypnutý.</translation>
 <translation id="7303365578352795231">Odpověď dostanete v jiném zařízení.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@ Nová instalace</translation>
 <translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Řeč se teď zpracovává místně a diktování funguje offline.</translation>
+<translation id="7932451802722951285">Otevřít v Kalendáři Google</translation>
 <translation id="7933084174919150729">Asistent Google je k dispozici pouze pro primární profil.</translation>
 <translation id="79341161159229895">Správci účtu: <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Stisknutím kláves <ph name="SHORTCUT_KEY_NAME" /> + V zobrazíte schránku. Ve schránce je uloženo posledních pět zkopírovaných položek.</translation>

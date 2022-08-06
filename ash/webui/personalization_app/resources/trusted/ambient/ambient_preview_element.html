@@ -12,6 +12,7 @@
       '. .              .       .       .';
     grid-template-columns: 20px minmax(0,1fr) 16px 106px 20px;
     grid-template-rows: auto minmax(158px, 220px) 20px 106px auto 24px;
+    height: 100%;
   }
 
   :host([main-page]) #container.zero-state-disabled {
@@ -23,24 +24,19 @@
     display: flex;
     flex-direction: column;
     grid-area: message;
+    justify-content: space-between;
   }
 
   #messageContainer .text {
     color: var(--cros-text-color-secondary);
     font: var(--cros-body-1-font);
-    height: 40px;
     line-height: 1.5;
     margin-top: 12px;
     text-align: center;
-    width: 60%;
   }
 
   #messageContainer cr-button {
     margin-top: 20px;
-  }
-
-  #messageContainer cr-button:hover {
-    color: var(--cros-text-color-primary);
   }
 
   :host(:not([main-page])) #container {
@@ -106,7 +102,11 @@
   }
 
   #imageContainer img.disabled {
-    opacity: var(--cros-disabled-opacity);
+    /**
+     * Use 50% for image instead of default cros-disabled-opacity.
+     * TODO(b/236415314) get this into design system as a semantic value.
+     */
+    opacity: 50%;
   }
 
   :host(:not([main-page])) #collageContainer,
@@ -173,6 +173,7 @@
   <template is="dom-if" if="[[!loading_]]">
     <template is="dom-if" if="[[!ambientModeEnabled_]]">
       <div id="imageContainer" class="preview-image-container" aria-hidden="true">
+        <div class="preview-image-border"></div>
         <img class="preview-image disabled" src="//personalization/common/slideshow.png">
       </div>
       <div id="messageContainer">
@@ -190,6 +191,7 @@
            Currently, we show blank containers -->
       <template is="dom-if" if="[[previewAlbums_]]">
         <div id="imageContainer" class="preview-image-container">
+          <div class="preview-image-border"></div>
           <template is="dom-if" if="[[clickable]]">
             <img class="preview-image clickable" is="cr-auto-img"
                 on-click="onClickPreviewImage_"
@@ -205,7 +207,7 @@
                 is-google-photos>
           </template>
         </div>
-        <h2 id="textContainer" class="preview-text-container album-info-mainpage album-info-subpage"
+        <h3 id="textContainer" class="preview-text-container album-info-mainpage album-info-subpage"
             aria-label$="[[getPreviewTextAriaLabel_(firstPreviewAlbum_, topicSource_, previewAlbums_)]]">
           <span id="currentlySet" class="currently-set-text" aria-hidden="true">
             $i18n{currentlySet}
@@ -219,8 +221,12 @@
           <span id="albumDescription" aria-hidden="true">
             [[getAlbumDescription_(topicSource_, previewAlbums_)]]
           </span>
-        </h2>
-        <div id="collageContainer" class$="[[getCollageContainerClass_(collageImages_)]]" aria-hidden="true">
+        </h3>
+        <div id="collageContainer"
+            class$="[[getCollageContainerClass_(collageImages_)]]"
+            on-click="onClickPreviewImage_"
+            on-keypress="onClickPreviewImage_"
+            aria-hidden="true">
           <template is="dom-repeat" items="[[collageImages_]]">
             <img class="collage-item" is="cr-auto-img"
                 auto-src="[[item.url]]" is-google-photos>

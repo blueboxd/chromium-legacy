@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">Календар</translation>
 <translation id="1153356358378277386">Спарени уреди</translation>
 <translation id="1165712434476988950">Потребно е да се рестартира уредот за да се примени ажурирањето.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" /> <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Кабелот USB-C не може да поврзува екрани правилно</translation>
 <translation id="1175572348579024023">Лизгај</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">Неодамнешни апликации</translation>
 <translation id="1252999807265626933">Се полни од <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какво е времето?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> до 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Изберете за повеќе детали во „Календарот на Google“.</translation>
 <translation id="1267032506238418139">Промена на кратенка</translation>
 <translation id="1269405891096105529">Периферниот уред не е поддржан во режим на гостин</translation>
 <translation id="1270290102613614947">Тастатурата на екранот е оневозможена</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1632985212731562677">Пристапот со прекинувачи може да се оневозможи во „Поставки &gt; Пристапност“.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> уреди</translation>
+<translation id="1639239467298939599">Се вчитува</translation>
 <translation id="1654477262762802994">Започнете гласовно барање</translation>
 <translation id="1668469839109562275">Вградена VPN</translation>
 <translation id="1677472565718498478">Уште <ph name="TIME" /></translation>
@@ -507,6 +505,7 @@
 <translation id="3901991538546252627">Се поврзува со <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Променете го уредот на претходната верзија во рок од 1 минута}one{Променете го уредот на претходната верзија во рок од # минута}other{Променете го уредот на претходната верзија во рок од # минути}}</translation>
 <translation id="3923494859158167397">Не се поставени мобилни мрежи</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, вчитување настани.</translation>
 <translation id="3932043219784172185">Нема поврзан уред</translation>
 <translation id="3934456833412894880">„Адаптивното полнење“ е вклучено. Батеријата ќе се задржи на 80 % за да се продолжи траењето на батеријата и да е целосно полна кога ќе ви треба.</translation>
 <translation id="3943857333388298514">Залепи</translation>
@@ -706,6 +705,7 @@
 <translation id="5078796286268621944">Неточен PIN</translation>
 <translation id="5083553833479578423">Отклучете повеќе функции на „Помошникот“.</translation>
 <translation id="509790653408515442">Кога ќе ги стримувате апликациите од телефонот, ќе се појават тука</translation>
+<translation id="5098537242461068432">Работната површина и прозорците се отворени повторно</translation>
 <translation id="5107522548814527560">Интернет</translation>
 <translation id="5117590920725113268">Прикажи го следниот месец</translation>
 <translation id="5136175204352732067">Поврзана е друга тастатура</translation>
@@ -1050,7 +1050,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Се навраќа на стара резолуција за <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Освежи</translation>
-<translation id="718361511487535372">Отворете во „Календар на Google“</translation>
 <translation id="7188494361780961876">Менито е преместено во горниот лев агол на екранот.</translation>
 <translation id="7189412385142492784">Колку е оддалечена Венера</translation>
 <translation id="7198435252016571249">Камерата е поставена во долниот десен агол. Конфликт со површината на системот.</translation>
@@ -1059,6 +1058,10 @@
 <translation id="7258828758145722155">Изменето вчера</translation>
 <translation id="726276584504105859">Повлечете тука за да користите поделен екран</translation>
 <translation id="7262906531272962081">Создајте потсетник</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> до
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Изберете за повеќе детали во „Календарот на Google“.</translation>
 <translation id="7302889331339392448">„Автоматските титлови“ се исклучени.</translation>
 <translation id="7303365578352795231">Се одговара на друг уред.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1171,6 +1174,7 @@
 <translation id="7904094684485781019">Администраторот за оваа сметка не дозволува повеќекратно пријавување.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Говорот сега се обработува локално и „Диктирањето“ функционира офлајн</translation>
+<translation id="7932451802722951285">Отворете во „Календар на Google“</translation>
 <translation id="7933084174919150729">„Помошникот на Google“ е достапен само за примарниот профил.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /> управуваат со сметката</translation>
 <translation id="793716872548410480">Притиснете <ph name="SHORTCUT_KEY_NAME" /> + V за да ја видите привремената меморија. Последните 5 ставки што сте ги копирале се зачувани во привремената меморија.</translation>

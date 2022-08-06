@@ -177,10 +177,8 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     std::vector<std::string> requested_extensions,
     WebSocketStreamRequestAPI* request,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
-    : result_(HandshakeResult::INCOMPLETE),
-      state_(std::move(connection), using_proxy),
+    : state_(std::move(connection), using_proxy),
       connect_delegate_(connect_delegate),
-      http_response_info_(nullptr),
       requested_sub_protocols_(std::move(requested_sub_protocols)),
       requested_extensions_(std::move(requested_extensions)),
       stream_request_(request),

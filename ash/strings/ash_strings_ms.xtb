@@ -56,10 +56,6 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1247519845643687288">Apl terbaharu</translation>
 <translation id="1252999807265626933">Mengecas daripada <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Bagaimanakah keadaan cuaca?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> hingga 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Pilih untuk mendapatkan butiran lanjut dalam Google Calendar.</translation>
 <translation id="1267032506238418139">Perubahan pintasan</translation>
 <translation id="1269405891096105529">Peranti persisian tidak disokong dalam mod Tetamu</translation>
 <translation id="1270290102613614947">Papan kekunci pada skrin dilumpuhkan</translation>
@@ -125,6 +121,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Akses Suis boleh dilumpuhkan dalam Tetapan &gt; Kebolehaksesan.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> peranti</translation>
+<translation id="1639239467298939599">Memuatkan</translation>
 <translation id="1654477262762802994">Mulakan pertanyaan suara</translation>
 <translation id="1668469839109562275">VPN terbina dalam</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
@@ -508,6 +505,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Tukar peranti kepada versi sebelumnya dalam masa 1 minit}other{Tukar peranti kepada versi sebelumnya dalam masa # minit}}</translation>
 <translation id="3923494859158167397">Tiada rangkaian mudah alih disediakan</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Memuatkan acara.</translation>
 <translation id="3932043219784172185">Tiada peranti disambungkan</translation>
 <translation id="3934456833412894880">Pengecasan mudah suai dihidupkan. Bateri anda akan kekal pada 80% untuk memanjangkan hayat bateri dan mengecas sepenuhnya apabila anda memerlukannya.</translation>
 <translation id="3943857333388298514">Tampal</translation>
@@ -707,6 +705,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5078796286268621944">PIN salah</translation>
 <translation id="5083553833479578423">Buka kunci pelbagai lagi ciri Assistant.</translation>
 <translation id="509790653408515442">Apabila anda menstrim apl telefon anda, apl itu akan dipaparkan di sini</translation>
+<translation id="5098537242461068432">Meja dan tingkap dibuka semula</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Tunjukkan bulan seterusnya</translation>
 <translation id="5136175204352732067">Papan kekunci lain disambungkan</translation>
@@ -1051,7 +1050,6 @@ Pemasangan baharu</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Muat semula</translation>
-<translation id="718361511487535372">Buka dalam Google Calendar</translation>
 <translation id="7188494361780961876">Menu dialihkan ke sudut atas sebelah kiri skrin.</translation>
 <translation id="7189412385142492784">Berapa jauhkah Venus</translation>
 <translation id="7198435252016571249">Kamera diautojajar ke penjuru kanan sebelah bawah. Bercanggah dengan permukaan sistem.</translation>
@@ -1060,6 +1058,10 @@ Pemasangan baharu</translation>
 <translation id="7258828758145722155">Diedit semalam</translation>
 <translation id="726276584504105859">Seret ke sini untuk menggunakan skrin pisah</translation>
 <translation id="7262906531272962081">Buat peringatan</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> hingga
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Pilih untuk mendapatkan butiran lanjut dalam Google Calendar.</translation>
 <translation id="7302889331339392448">Sari Kata Langsung dimatikan.</translation>
 <translation id="7303365578352795231">Menjawab menggunakan peranti lain.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1172,6 +1174,7 @@ Pemasangan baharu</translation>
 <translation id="7904094684485781019">Pentadbir akaun ini tidak membenarkan berbilang log masuk.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Kini pertuturan diproses secara setempat dan Pengimlakan berfungsi di luar talian</translation>
+<translation id="7932451802722951285">Buka dalam Google Calendar</translation>
 <translation id="7933084174919150729">Google Assistant hanya tersedia untuk profil utama.</translation>
 <translation id="79341161159229895">Akaun diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Tekan <ph name="SHORTCUT_KEY_NAME" /> + V untuk melihat papan keratan anda. 5 item terakhir yang telah anda salin disimpan pada papan keratan anda.</translation>

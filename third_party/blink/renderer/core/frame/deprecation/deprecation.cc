@@ -153,6 +153,9 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kObsoleteWebrtcTlsVersion:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kObsoleteWebRtcCipherSuite);
+    case WebFeature::kOpenWebDatabaseInsecureContext:
+      return DeprecationInfo::WithTranslation(
+          feature, DeprecationIssueType::kOpenWebDatabaseInsecureContext);
     case WebFeature::kPictureSourceSrc:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kPictureSourceSrc);
@@ -232,6 +235,9 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kXRSupportsSession:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kXRSupportsSession);
+    case WebFeature::kIdentityInCanMakePaymentEvent:
+      return DeprecationInfo::WithTranslation(
+          feature, DeprecationIssueType::kIdentityInCanMakePaymentEvent);
     default:
       return DeprecationInfo::NotDeprecated(feature);
   }

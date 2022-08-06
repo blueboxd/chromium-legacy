@@ -907,6 +907,12 @@ TEST_P(AmbientControllerTestForAnyTheme, ShowsOnMultipleDisplays) {
   auto* screen = display::Screen::GetScreen();
   EXPECT_EQ(screen->GetNumDisplays(), 2);
   EXPECT_EQ(GetContainerViews().size(), 2u);
+  AmbientViewID expected_child_view_id =
+      GetParam() == AmbientAnimationTheme::kSlideshow
+          ? AmbientViewID::kAmbientPhotoView
+          : AmbientViewID::kAmbientAnimationView;
+  EXPECT_TRUE(GetContainerViews().front()->GetViewByID(expected_child_view_id));
+  EXPECT_TRUE(GetContainerViews().back()->GetViewByID(expected_child_view_id));
   // Check that each root controller has an ambient widget.
   for (auto* ctrl : RootWindowController::root_window_controllers())
     EXPECT_TRUE(ctrl->ambient_widget_for_testing() &&
@@ -1184,43 +1190,57 @@ TEST_F(AmbientControllerTest,
 }
 
 TEST_P(AmbientControllerTestForAnyTheme, MetricsEngagementTime) {
+  // TODO(esum): Find a better way of fast forwarding time for lottie animations
+  // in unit tests. Currently, the whole compositor stack is being used in this
+  // test harness and there is no good way to control the frame rate, so
+  // FastForwardBy() blocks for long periods of time. Do not make this value
+  // too high, or the test is at risk of timing out.
+  constexpr base::TimeDelta kExpectedEngagementTime = base::Milliseconds(100);
+
   base::HistogramTester histogram_tester;
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   LockScreen();
 
-  FastForwardToLockScreenTimeout();
-  FastForwardTiny();
+  // Unlike other tests, the exact amount of time we spend in ambient mode
+  // matters to write the correct test expectation. So fast forward by the
+  // exact amount needed to trigger ambient mode.
+  // (FastForwardToLockScreenTimeout() adds on a little buffer to the timeout)
+  task_environment()->FastForwardBy(ambient_controller()
+                                        ->ambient_ui_model()
+                                        ->lock_screen_inactivity_timeout());
   ASSERT_TRUE(ambient_controller()->IsShown());
 
-  task_environment()->FastForwardBy(base::Minutes(1));
+  task_environment()->FastForwardBy(kExpectedEngagementTime);
 
   UnlockScreen();
   ASSERT_FALSE(ambient_controller()->IsShown());
 
   histogram_tester.ExpectTimeBucketCount(
-      "Ash.AmbientMode.EngagementTime.ClamshellMode", base::Minutes(1), 1);
+      "Ash.AmbientMode.EngagementTime.ClamshellMode", kExpectedEngagementTime,
+      1);
   histogram_tester.ExpectTimeBucketCount(
       base::StrCat({"Ash.AmbientMode.EngagementTime.", ToString(GetParam())}),
-      base::Minutes(1), 1);
+      kExpectedEngagementTime, 1);
 
   // Now do the same sequence in tablet mode.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   LockScreen();
 
-  FastForwardToLockScreenTimeout();
-  FastForwardTiny();
+  task_environment()->FastForwardBy(ambient_controller()
+                                        ->ambient_ui_model()
+                                        ->lock_screen_inactivity_timeout());
   ASSERT_TRUE(ambient_controller()->IsShown());
 
-  task_environment()->FastForwardBy(base::Minutes(1));
+  task_environment()->FastForwardBy(kExpectedEngagementTime);
 
   UnlockScreen();
   ASSERT_FALSE(ambient_controller()->IsShown());
 
   histogram_tester.ExpectTimeBucketCount(
-      "Ash.AmbientMode.EngagementTime.TabletMode", base::Minutes(1), 1);
+      "Ash.AmbientMode.EngagementTime.TabletMode", kExpectedEngagementTime, 1);
   histogram_tester.ExpectTimeBucketCount(
       base::StrCat({"Ash.AmbientMode.EngagementTime.", ToString(GetParam())}),
-      base::Minutes(1), 2);
+      kExpectedEngagementTime, 2);
 }
 
 TEST_P(AmbientControllerTestForAnyTheme, MetricsStartupTime) {

@@ -134,19 +134,19 @@ chromium-metrics-reviews@google.com.
                but there was in the last 2 minutes"/>
 </variants>
 
-<histogram name="PerformanceMonitor.AverageCPU4.Total{UsageScenario}"
+<histogram name="PerformanceMonitor.AverageCPU5.Total{UsageScenario}"
     units="1/100 %" expires_after="2022-11-30">
   <owner>fdoray@chromium.org</owner>
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
-    See definition of PerformanceClass.AverageCPU4.ProcessName. This is recorded
+    See definition of PerformanceClass.AverageCPU5.ProcessName. This is recorded
     for {UsageScenario} (see go/chrome_power_use_per_scenario).
   </summary>
   <token key="UsageScenario" variants="UsageScenario"/>
 </histogram>
 
-<histogram name="PerformanceMonitor.AverageCPU4.{ProcessName}" units="1/100 %"
+<histogram name="PerformanceMonitor.AverageCPU5.{ProcessName}" units="1/100 %"
     expires_after="2022-11-30">
   <owner>fdoray@chromium.org</owner>
   <owner>pmonette@chromium.org</owner>
@@ -166,6 +166,9 @@ chromium-metrics-reviews@google.com.
     we know that short-lived processes are very common (see
     Renderer.ProcessLifetime). A future version of this metric will address this
     limitation.
+
+    ANOTHER NOTE: On Windows, this is not recorded on CPUs that do not support
+    constant rate TSC.
   </summary>
   <token key="ProcessName" variants="ProcessName"/>
 </histogram>
@@ -201,6 +204,19 @@ chromium-metrics-reviews@google.com.
     limitation.
   </summary>
   <token key="ProcessName" variants="ProcessName"/>
+</histogram>
+
+<histogram name="PerformanceMonitor.HasPreciseCPUUsage" enum="Boolean"
+    expires_after="2022-09-30">
+  <owner>pmonette@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Records whether or not the CPU supports constant rate TSC, which allows a
+    more precise calculation of the CPU usage of a process. Recorded during
+    startup when the ProcessMonitor is instantiated.
+
+    Only Recorded on Windows.
+  </summary>
 </histogram>
 
 <histogram name="PerformanceMonitor.IdleWakeups2.Total{UsageScenario}"
@@ -899,7 +915,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerProcessType.{Visibility}"
-    enum="ProcessType2" expires_after="2022-07-18">
+    enum="ProcessType2" expires_after="2023-06-07">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1687,7 +1703,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressed" units="units"
-    expires_after="2022-06-01">
+    expires_after="2022-12-01">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>

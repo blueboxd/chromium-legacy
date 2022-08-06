@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">कॅलेंडर</translation>
 <translation id="1153356358378277386">जोडलेली डिव्हाइस</translation>
 <translation id="1165712434476988950">अपडेट लागू करण्यासाठी डिव्हाइस रीस्टार्ट करणे आवश्यक आहे.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">तुमची USB-C केबल ही कदाचित डिस्प्लेना योग्यरीत्या कनेक्ट होणार नाही</translation>
 <translation id="1175572348579024023">स्क्रोल करा</translation>
 <translation id="1178581264944972037">विराम द्या</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">अलीकडील अ‍ॅप्स</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> पासून चार्ज होत आहे</translation>
 <translation id="1255033239764210633">हवामान कसे आहे?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> ते 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Google Calendar मध्ये आणखी तपशिलांसाठी निवडा.</translation>
 <translation id="1267032506238418139">शॉर्टकट बदल</translation>
 <translation id="1269405891096105529">अतिथी मोडमध्ये पेरिफेरलला सपोर्ट नाही</translation>
 <translation id="1270290102613614947">ऑन-स्क्रीन कीबोर्ड अक्षम</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1632985212731562677">सेटिंग्ज &gt; अ‍ॅक्सेसिबिलिटी मध्ये स्विच अ‍ॅक्सेस बंद केले जाऊ शकते.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> डिव्हाइस</translation>
+<translation id="1639239467298939599">लोड करीत आहे</translation>
 <translation id="1654477262762802994">व्हॉइस क्वेरी सुरू करा</translation>
 <translation id="1668469839109562275">बिल्ट-इन VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शिल्लक</translation>
@@ -506,6 +504,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> वर कनेक्ट करीत आहे</translation>
 <translation id="3922427723338465344">{0,plural, =1{एक मिनिटामध्ये डिव्हाइस मागील आवृत्तीवर बदला}other{# मिनिटांमध्ये डिव्हाइस मागील आवृत्तीवर बदला}}</translation>
 <translation id="3923494859158167397">कोणतीही मोबाइल नेटवर्क सेट केलेली नाहीत</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, इव्हेंट लोड करत आहे.</translation>
 <translation id="3932043219784172185">कोणतेही डिव्हाइस कनेक्ट केले नाही</translation>
 <translation id="3934456833412894880">अडॅप्टिव्ह चार्जिंग सुरू आहे. बॅटरी लाइफ वाढवण्यासाठी तुमची बॅटरी ८०% वर राहील आणि तुम्हाला आवश्यक असेल, तेव्हा पूर्ण चार्ज होईल.</translation>
 <translation id="3943857333388298514">पेस्ट करा</translation>
@@ -705,6 +704,7 @@
 <translation id="5078796286268621944">चुकीचा पिन</translation>
 <translation id="5083553833479578423">असिस्टंटची आणखी वैशिष्ट्ये अनलॉक करा.</translation>
 <translation id="509790653408515442">तुम्ही तुमच्या फोनची अ‍ॅप्स स्ट्रीम कराल, तेव्हा ती येथे दिसतील</translation>
+<translation id="5098537242461068432">डेस्‍क आणि विंडो पुन्हा उघडल्या</translation>
 <translation id="5107522548814527560">वेब</translation>
 <translation id="5117590920725113268">पुढील महिना दर्शवा</translation>
 <translation id="5136175204352732067">वेगळा कीबोर्ड कनेक्ट केला आहे</translation>
@@ -1049,7 +1049,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> मध्ये जुन्या रिझोल्युशनवर परत करत आहे</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
-<translation id="718361511487535372">Google Calendar मध्ये उघडा</translation>
 <translation id="7188494361780961876">मेनू स्क्रीनच्या वरच्या डाव्या कोपर्‍यात हलवला.</translation>
 <translation id="7189412385142492784">शुक्र किती दूर आहे</translation>
 <translation id="7198435252016571249">कॅमेरा सर्वात खालच्या उजव्या कोपऱ्यात स्नॅप केला आहे. सिस्टीम सर्फेसवरील इतर ॲपवर ओव्‍हरलॅप होत आहे.</translation>
@@ -1058,6 +1057,10 @@
 <translation id="7258828758145722155">काल संपादित केलेली</translation>
 <translation id="726276584504105859">विभाजित स्क्रीन वापरण्यासाठी येथे ड्रॅग करा</translation>
 <translation id="7262906531272962081">रिमाइंडर तयार करा</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> ते
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Google Calendar मध्ये आणखी तपशिलांसाठी निवडा.</translation>
 <translation id="7302889331339392448">लाइव्ह कॅप्शन बंद आहे.</translation>
 <translation id="7303365578352795231">दुसऱ्या डिव्हाइसवर उत्तर देत आहे.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1170,6 +1173,7 @@
 <translation id="7904094684485781019">या खात्याच्या ॲडमिनिस्ट्रेटरने एकाहून अधिक साइन इन ची परवानगी  रद्द केली आहे.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">स्पीचवर आता स्थानिक पातळीवर प्रक्रिया केली जाते आणि डिक्टेशन ऑफलाइन काम करते</translation>
+<translation id="7932451802722951285">Google Calendar मध्ये उघडा</translation>
 <translation id="7933084174919150729">Google Assistant फक्त प्राथमिक प्रोफाइलवर उपलब्ध आहे.</translation>
 <translation id="79341161159229895">खाते <ph name="FIRST_PARENT_EMAIL" /> आणि <ph name="SECOND_PARENT_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="793716872548410480">तुमचा क्लिपबोर्ड पाहण्यासाठी <ph name="SHORTCUT_KEY_NAME" /> + V दाबा. तुम्ही कॉपी केलेल्या शेवटच्या पाच गोष्टी तुमच्या क्लिपबोर्डवर सेव्ह केल्या आहेत.</translation>

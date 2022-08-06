@@ -8,10 +8,13 @@
 #include <cstdint>
 
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/debug_utils.h"
 #include "content/public/browser/disallow_activation_reason.h"
+#include "content/public/common/content_features.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 namespace content {
@@ -472,6 +475,7 @@ void BackForwardCacheCanStoreDocumentResult::NoDueToDisallowActivation(
 
 void BackForwardCacheCanStoreDocumentResult::NoDueToAXEvents(
     const std::vector<ui::AXEvent>& events) {
+  DCHECK(base::FeatureList::IsEnabled(features::kEvictOnAXEvents));
   for (auto& event : events) {
     ax_events_.insert(event.event_type);
   }

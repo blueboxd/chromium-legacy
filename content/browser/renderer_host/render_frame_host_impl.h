@@ -202,6 +202,9 @@ namespace features {
 // non-legacy implementation of BrowsingContextState.
 CONTENT_EXPORT extern const base::Feature
     kDisableFrameNameUpdateOnNonCurrentRenderFrameHost;
+
+// Feature to evict when accessibility events occur while in back/forward cache.
+CONTENT_EXPORT extern const base::Feature kEvictOnAXEvents;
 }  // namespace features
 
 namespace content {
@@ -476,16 +479,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& data,
       IsClipboardPasteContentAllowedCallback callback);
 
-  void SendAccessibilityEventsToManager(
-      const AXEventNotificationDetails& details);
-
   // This is called when accessibility events arrive from renderer to browser.
   // This could cause eviction if the page is in back/forward cache. Returns
   // true if the eviction happens, and otherwise calls
   // |RenderFrameHost::IsInactiveAndDisallowActivation()| and returns the value
-  // from there.
+  // from there. This is only called when the flag to evict on accessibility
+  // events is on. When the flag is off, we do not evict the entry and keep
+  // processing the events, thus do not call this function.
   bool IsInactiveAndDisallowActivationForAXEvents(
       const std::vector<ui::AXEvent>& events);
+
+  void SendAccessibilityEventsToManager(
+      const AXEventNotificationDetails& details);
 
   // Evict the RenderFrameHostImpl with |reason| that causes the eviction. This
   // constructs a flattened list of NotRestoredReasons and calls
@@ -2500,6 +2505,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                  bool resolve_promises,
                                  int32_t world_id,
                                  JavaScriptResultAndTypeCallback callback);
+
+  // Call |HandleAXEvents()| for tests.
+  void HandleAXEventsForTests(const ui::AXTreeID& tree_id,
+                              mojom::AXUpdatesAndEventsPtr updates_and_events,
+                              int32_t reset_token) {
+    HandleAXEvents(tree_id, std::move(updates_and_events), reset_token);
+  }
 
  protected:
   friend class RenderFrameHostFactory;

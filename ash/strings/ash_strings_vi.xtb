@@ -56,10 +56,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1247519845643687288">Ứng dụng gần đây</translation>
 <translation id="1252999807265626933">Đang sạc từ <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Tình hình thời tiết thế nào?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> đến 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Chọn để xem thêm thông tin chi tiết trong Lịch Google.</translation>
 <translation id="1267032506238418139">Thay đổi phím tắt</translation>
 <translation id="1269405891096105529">Chế độ khách không hỗ trợ thiết bị ngoại vi</translation>
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
@@ -125,6 +121,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1632985212731562677">Bạn có thể tắt tính năng Tiếp cận bằng công tắc trong phần Cài đặt &gt; Hỗ trợ tiếp cận.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> thiết bị</translation>
+<translation id="1639239467298939599">Đang tải</translation>
 <translation id="1654477262762802994">Bắt đầu đặt câu hỏi bằng giọng nói</translation>
 <translation id="1668469839109562275">VPN tích hợp sẵn</translation>
 <translation id="1677472565718498478">Còn <ph name="TIME" /></translation>
@@ -507,8 +504,9 @@ Hãy sạc thiết bị.</translation>
 <translation id="3901991538546252627">Đang kết nối với <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng 1 phút}other{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng # phút}}</translation>
 <translation id="3923494859158167397">Bạn chưa thiết lập mạng di động nào</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, Đang tải sự kiện.</translation>
 <translation id="3932043219784172185">Không có thiết bị nào được kết nối</translation>
-<translation id="3934456833412894880">Tính năng Sạc thích ứng đang bật Pin của bạn sẽ giữ ở mức 80% để kéo dài tuổi thọ pin và sạc đầy khi bạn cần.</translation>
+<translation id="3934456833412894880">Tính năng Sạc thích ứng đang bật Pin của bạn sẽ giữ ở mức 80% để kéo dài thời lượng pin và sạc đầy khi bạn cần.</translation>
 <translation id="3943857333388298514">Dán</translation>
 <translation id="394485226368336402">Cài đặt âm thanh</translation>
 <translation id="3945319193631853098">Nhấn để hoàn tất quá trình thiết lập</translation>
@@ -706,6 +704,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="5078796286268621944">Mã PIN không chính xác</translation>
 <translation id="5083553833479578423">Mở khóa các tính năng khác của Trợ lý.</translation>
 <translation id="509790653408515442">Khi bạn phát trực tuyến các ứng dụng trên điện thoại, những ứng dụng đó sẽ xuất hiện ở đây</translation>
+<translation id="5098537242461068432">Đã mở lại không gian làm việc và cửa sổ</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Hiển thị tháng tiếp theo</translation>
 <translation id="5136175204352732067">Đã kết nối bàn phím khác</translation>
@@ -1050,7 +1049,6 @@ Mới cài đặt</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Làm mới</translation>
-<translation id="718361511487535372">Mở trong Lịch Google</translation>
 <translation id="7188494361780961876">Đã di chuyển trình đơn vào góc trên cùng bên trái màn hình.</translation>
 <translation id="7189412385142492784">Sao Kim cách đây bao xa</translation>
 <translation id="7198435252016571249">Máy ảnh đang bám theo góc dưới bên phải. Xung đột với khu vực hệ thống.</translation>
@@ -1059,6 +1057,10 @@ Mới cài đặt</translation>
 <translation id="7258828758145722155">Chỉnh sửa hôm qua</translation>
 <translation id="726276584504105859">Kéo vào đây để sử dụng chế độ chia đôi màn hình</translation>
 <translation id="7262906531272962081">Tạo lời nhắc</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> đến
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Chọn để xem thêm thông tin chi tiết trong Lịch Google.</translation>
 <translation id="7302889331339392448">Tính năng Phụ đề trực tiếp đang tắt.</translation>
 <translation id="7303365578352795231">Đang trả lời trên thiết bị khác.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1171,6 +1173,7 @@ Mới cài đặt</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Giọng nói được xử lý cục bộ và tính năng Nhập bằng giọng nói hoạt động ngoại tuyến</translation>
+<translation id="7932451802722951285">Mở trong Lịch Google</translation>
 <translation id="7933084174919150729">Bạn chỉ có thể sử dụng Trợ lý Google cho hồ sơ chính.</translation>
 <translation id="79341161159229895">Tài khoản được quản lý bởi <ph name="FIRST_PARENT_EMAIL" /> và <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Nhấn tổ hợp phím <ph name="SHORTCUT_KEY_NAME" /> + V để xem bảng nhớ tạm. 5 mục gần đây nhất mà bạn đã sao chép sẽ được lưu vào bảng nhớ tạm.</translation>
@@ -1227,7 +1230,7 @@ Mới cài đặt</translation>
 <translation id="826107067893790409">Nhấn Enter để mở khóa cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Xoá</translation>
 <translation id="8270450402312105425">{0,plural, =1{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng 1 giờ}other{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng # giờ}}</translation>
-<translation id="8271580342040932214">Pin tạm thời ở mức 80% trong khi cắm nguồn để kéo dài tuổi thọ pin. Pin sẽ được sạc đầy trước <ph name="FULLY_CHARGE_TIME" />.</translation>
+<translation id="8271580342040932214">Pin tạm thời ở mức 80% trong khi cắm nguồn để kéo dài thời lượng pin. Pin sẽ được sạc đầy trước <ph name="FULLY_CHARGE_TIME" />.</translation>
 <translation id="8284362522226889623">Hãy vuốt sang trái bằng 4 ngón tay để chuyển sang không gian làm việc trước</translation>
 <translation id="828708037801473432">Đang tắt</translation>
 <translation id="8297006494302853456">Yếu</translation>
@@ -1365,7 +1368,7 @@ Mới cài đặt</translation>
 <translation id="9080132581049224423">Vuốt lên để chuyển đến màn hình chính</translation>
 <translation id="9080206825613744995">Micrô đang được sử dụng.</translation>
 <translation id="9084606467167974638">Chuyển đổi vị trí menu</translation>
-<translation id="9085962983642906571">Pin duy trì ở mức 80% trong khi cắm nguồn để kéo dài tuổi thọ pin.</translation>
+<translation id="9085962983642906571">Pin duy trì ở mức 80% trong khi cắm nguồn để kéo dài thời lượng pin.</translation>
 <translation id="9089416786594320554">Phương thức nhập</translation>
 <translation id="9091626656156419976">Đã xóa màn hình <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Tắt tiếng điện thoại</translation>

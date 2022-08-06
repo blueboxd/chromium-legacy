@@ -64,6 +64,22 @@ void PasswordStoreBackendMetricsRecorder::RecordMetrics(
   }
 }
 
+void PasswordStoreBackendMetricsRecorder::RecordMetricsForUnenrolledClients(
+    const absl::optional<AndroidBackendError>& error) const {
+  base::UmaHistogramBoolean(BuildMetricName("UnenrolledFromUPM.Success"),
+                            !error.has_value());
+  if (!error.has_value())
+    return;
+
+  base::UmaHistogramEnumeration(BuildMetricName("UnenrolledFromUPM.ErrorCode"),
+                                error->type);
+  if (error->type == AndroidBackendErrorType::kExternalError) {
+    DCHECK(error->api_error_code.has_value());
+    base::UmaHistogramSparse(BuildMetricName("UnenrolledFromUPM.APIError"),
+                             error->api_error_code.value());
+  }
+}
+
 base::TimeDelta
 PasswordStoreBackendMetricsRecorder::GetElapsedTimeSinceCreation() const {
   return base::Time::Now() - start_;
@@ -87,6 +103,9 @@ void PasswordStoreBackendMetricsRecorder::RecordErrorCode(
   if (backend_error.type == AndroidBackendErrorType::kExternalError) {
     DCHECK(backend_error.api_error_code.has_value());
     RecordApiErrorCode(backend_error.api_error_code.value());
+    LOG(ERROR) << "Password Manager API call for " << metric_infix_
+               << " failed with error code: "
+               << backend_error.api_error_code.value();
   }
 }
 

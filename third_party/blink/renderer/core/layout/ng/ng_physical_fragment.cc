@@ -472,6 +472,14 @@ bool NGPhysicalFragment::IsTextControlPlaceholder() const {
          blink::IsTextControlPlaceholder(layout_object_->GetNode());
 }
 
+base::span<NGPhysicalOutOfFlowPositionedNode>
+NGPhysicalFragment::OutOfFlowPositionedDescendants() const {
+  if (!HasOutOfFlowPositionedDescendants())
+    return base::span<NGPhysicalOutOfFlowPositionedNode>();
+  return {oof_data_->oof_positioned_descendants.data(),
+          oof_data_->oof_positioned_descendants.size()};
+}
+
 NGFragmentedOutOfFlowData* NGPhysicalFragment::FragmentedOutOfFlowData() const {
   if (!has_fragmented_out_of_flow_data_)
     return nullptr;
@@ -786,11 +794,13 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
     NGInlineCursor* cursor) const {
   const auto* const text_combine =
       DynamicTo<LayoutNGTextCombine>(containing_block);
-  for (; *cursor; cursor->MoveToNext()) {
+  while (*cursor) {
     DCHECK(cursor->Current().Item());
     const NGFragmentItem& item = *cursor->Current().Item();
-    if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved()))
+    if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved())) {
+      cursor->MoveToNext();
       continue;
+    }
     switch (item.Type()) {
       case NGFragmentItem::kLine: {
         AddOutlineRectsForDescendant(
@@ -824,10 +834,16 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
           AddOutlineRectsForDescendant(
               {child_box, item.OffsetInContainerFragment()}, outline_rects,
               additional_offset, outline_type, containing_block);
+          if (child_box->IsInlineBox()) {
+            // Inline boxes have their children in the flat list. Skip them.
+            cursor->MoveToNextSkippingChildren();
+            continue;
+          }
         }
         break;
       }
     }
+    cursor->MoveToNext();
   }
 }
 

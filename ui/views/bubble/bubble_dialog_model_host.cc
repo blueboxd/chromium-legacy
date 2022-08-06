@@ -54,8 +54,6 @@ BubbleDialogModelHost::FieldType GetFieldTypeForField(
     case ui::DialogModelField::kCombobox:
       return BubbleDialogModelHost::FieldType::kControl;
     case ui::DialogModelField::kMenuItem:
-      // TODO(crbug.com/1324298): Implement.
-      NOTREACHED();
       return BubbleDialogModelHost::FieldType::kMenuItem;
     case ui::DialogModelField::kSeparator:
       return BubbleDialogModelHost::FieldType::kMenuItem;
@@ -367,8 +365,20 @@ BubbleDialogModelHost::BubbleDialogModelHost(
     SetShowIcon(true);
   }
 
-  if (model_->is_alert_dialog(GetPassKey()))
+  if (model_->is_alert_dialog(GetPassKey())) {
+#if BUILDFLAG(IS_WIN)
+    // This is taken from LocationBarBubbleDelegateView. See
+    // GetAccessibleRoleForReason(). crbug.com/1125118: Windows ATs only
+    // announce these bubbles if the alert role is used, despite it not being
+    // the most appropriate choice.
+    // TODO(accessibility): review the role mappings for alerts and dialogs,
+    // making sure they are translated to the best candidate in each flatform
+    // without resorting to hacks like this.
+    SetAccessibleRole(ax::mojom::Role::kAlert);
+#else
     SetAccessibleRole(ax::mojom::Role::kAlertDialog);
+#endif
+  }
 
   set_internal_name(model_->internal_name(GetPassKey()));
 
@@ -490,8 +500,7 @@ void BubbleDialogModelHost::OnFieldAdded(ui::DialogModelField* field) {
       AddOrUpdateCombobox(field->AsCombobox(GetPassKey()));
       break;
     case ui::DialogModelField::kMenuItem:
-      // TODO(crbug.com/1324298): Implement.
-      NOTREACHED();
+      AddOrUpdateMenuItem(field->AsMenuItem(GetPassKey()));
       break;
     case ui::DialogModelField::kSeparator:
       AddOrUpdateSeparator(field);
@@ -647,6 +656,35 @@ void BubbleDialogModelHost::AddOrUpdateCombobox(
   const gfx::FontList& font_list = combobox->GetFontList();
   AddViewForLabelAndField(model_field, model_field->label(GetPassKey()),
                           std::move(combobox), font_list);
+}
+
+void BubbleDialogModelHost::AddOrUpdateMenuItem(
+    ui::DialogModelMenuItem* model_field) {
+  // TODO(pbos): Handle updating existing field.
+
+  // TODO(crbug.com/1324298): Implement this for enabled items. Sorry!
+  DCHECK(!model_field->is_enabled(GetPassKey()));
+
+  auto item = std::make_unique<LabelButton>(
+      base::BindRepeating(
+          [](base::PassKey<ui::DialogModelHost> pass_key,
+             ui::DialogModelMenuItem* model_field, const ui::Event& event) {
+            model_field->OnActivated(pass_key, event.flags());
+          },
+          GetPassKey(), model_field),
+      model_field->label(GetPassKey()));
+  item->SetImageModel(Button::STATE_NORMAL, model_field->icon(GetPassKey()));
+  // TODO(pbos): Move DISTANCE_CONTROL_LIST_VERTICAL to
+  // views::LayoutProvider and replace "12" here. See below for another "12" use
+  // that also needs to be replaced.
+  item->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::VH(12 / 2, LayoutProvider::Get()->GetDistanceMetric(
+                                  DISTANCE_BUTTON_HORIZONTAL_PADDING))));
+
+  item->SetEnabled(model_field->is_enabled(GetPassKey()));
+
+  DialogModelHostField info{model_field, item.get(), nullptr};
+  AddDialogModelHostField(std::move(item), info);
 }
 
 void BubbleDialogModelHost::AddOrUpdateSeparator(
@@ -815,10 +853,12 @@ BubbleDialogModelHost::CreateStyledLabelForDialogModelLabel(
 
   auto styled_label = std::make_unique<StyledLabel>();
   styled_label->SetText(text);
-  styled_label->AddStyleRange(
-      gfx::Range(offset, offset + link_text.length()),
-      StyledLabel::RangeStyleInfo::CreateForLink(
-          dialog_label.links(GetPassKey()).front().callback));
+  auto style_info = StyledLabel::RangeStyleInfo::CreateForLink(
+      dialog_label.links(GetPassKey()).front().callback);
+  style_info.accessible_name =
+      dialog_label.links(GetPassKey()).front().accessible_name;
+  styled_label->AddStyleRange(gfx::Range(offset, offset + link_text.length()),
+                              style_info);
 
   styled_label->SetDefaultTextStyle(dialog_label.is_secondary(GetPassKey())
                                         ? style::STYLE_SECONDARY

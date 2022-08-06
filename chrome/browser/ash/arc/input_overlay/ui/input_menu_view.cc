@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/arc/input_overlay/ui/input_menu_view.h"
 
+#include "ash/components/arc/compat_mode/style/arc_color_provider.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/style/ash_color_provider.h"
@@ -20,6 +21,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -53,11 +55,22 @@ constexpr int kCloseButtonSize = 24;
 constexpr int kCloseButtonSide = 12;
 constexpr int kCornerRadius = 16;
 constexpr int kSideInset = 20;
+constexpr int kToggleInset = 16;
+constexpr int kCloseInset = 8;
 
 // String styles/sizes.
 constexpr char kGoogleSansFont[] = "Google Sans";
 constexpr int kTitleFontSize = 20;
 constexpr int kBodyFontSize = 13;
+
+// About Alpha style.
+constexpr int kAlphaFontSize = 11;
+constexpr int kAlphaCornerRadius = 4;
+constexpr int kAlphaHeight = 16;
+constexpr int kAlphaSidePadding = 4;
+constexpr int kAlphaLeftMargin = 12;
+constexpr SkColor kAlphaBgColor = SkColorSetA(gfx::kGoogleBlue300, 0x4D);
+constexpr SkColor kAlphaTextColor = gfx::kGoogleBlue200;
 
 constexpr char kFeedbackUrl[] =
     "https://docs.google.com/forms/d/e/"
@@ -163,7 +176,7 @@ void InputMenuView::Init() {
     auto header_view = std::make_unique<views::View>();
     header_view->SetLayoutManager(std::make_unique<views::FlexLayout>())
         ->SetOrientation(views::LayoutOrientation::kHorizontal)
-        .SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+        .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
     auto* menu_title = ash::login_views_utils::CreateBubbleLabel(
         l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA),
@@ -173,6 +186,20 @@ void InputMenuView::Init() {
                       kTitleFontSize, gfx::Font::Weight::MEDIUM),
         /*line_height=*/kHeaderMinHeight);
     header_view->AddChildView(menu_title);
+
+    auto* alpha_label = ash::login_views_utils::CreateBubbleLabel(
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_RELEASE_ALPHA),
+        /*view_defining_max_width=*/nullptr, kAlphaTextColor,
+        gfx::FontList({ash::login_views_utils::kGoogleSansFont},
+                      gfx::Font::FontStyle::NORMAL, kAlphaFontSize,
+                      gfx::Font::Weight::MEDIUM));
+    alpha_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    alpha_label->SetPreferredSize(gfx::Size(
+        alpha_label->GetPreferredSize().width() + 2 * kAlphaSidePadding,
+        kAlphaHeight));
+    alpha_label->SetBackground(
+        views::CreateRoundedRectBackground(kAlphaBgColor, kAlphaCornerRadius));
+    header_view->AddChildView(std::move(alpha_label));
 
     game_control_toggle_ =
         header_view->AddChildView(std::make_unique<views::ToggleButton>(
@@ -198,11 +225,15 @@ void InputMenuView::Init() {
     close_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_ACCESSIBILITY_ALPHA));
     close_button_ = header_view->AddChildView(std::move(close_button));
-    menu_title->SetBorder(views::CreateEmptyBorder(CalculateInsets(
-        header_view.get(), /*left=*/20, /*right=*/8, /*other_spacing=*/16)));
+    menu_title->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets::TLBR(0, kSideInset, 0, 0)));
     game_control_toggle_->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, 0, 16)));
+        views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, 0, kToggleInset)));
     SetCustomToggleColor(game_control_toggle_);
+    alpha_label->SetProperty(
+        views::kMarginsKey,
+        CalculateInsets(header_view.get(), kAlphaLeftMargin, /*right=*/0,
+                        /*other_spacing=*/kCloseInset));
 
     AddChildView(std::move(header_view));
     AddChildView(BuildSeparator());
@@ -223,14 +254,14 @@ void InputMenuView::Init() {
         /*line_height=*/kRowMinHeight);
     customize_view->AddChildView(key_mapping_label);
 
-    customize_button_ =
+    edit_button_ =
         customize_view->AddChildView(std::make_unique<ash::PillButton>(
-            base::BindRepeating(&InputMenuView::OnButtonCustomizedPressed,
+            base::BindRepeating(&InputMenuView::OnEditButtonPressed,
                                 base::Unretained(this)),
-            l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_CUSTOMIZE_BUTTON),
+            l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_EDIT_BUTTON),
             ash::PillButton::Type::kIconless,
             /*icon=*/nullptr));
-    customize_button_->SetEnabled(game_control_toggle_->GetIsOn());
+    edit_button_->SetEnabled(game_control_toggle_->GetIsOn());
     key_mapping_label->SetBorder(views::CreateEmptyBorder(
         CalculateInsets(customize_view.get(), /*left=*/kSideInset,
                         /*right=*/kSideInset, /*other_spacing=*/0)));
@@ -244,25 +275,25 @@ void InputMenuView::Init() {
         ->SetOrientation(views::LayoutOrientation::kHorizontal)
         .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
-    auto* hint_label = ash::login_views_utils::CreateBubbleLabel(
-        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_SHOW_HINT_OVERLAY),
+    auto* mapping_label = ash::login_views_utils::CreateBubbleLabel(
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_SHOW_KEY_MAPPING),
         /*view_defining_max_width=*/nullptr, color,
         /*font_list=*/
         gfx::FontList({kGoogleSansFont}, gfx::Font::FontStyle::NORMAL,
                       kBodyFontSize, gfx::Font::Weight::NORMAL),
         /*line_height=*/kRowMinHeight);
-    hint_view->AddChildView(hint_label);
-    show_hint_toggle_ = hint_view->AddChildView(
+    hint_view->AddChildView(mapping_label);
+    show_mapping_toggle_ = hint_view->AddChildView(
         std::make_unique<views::ToggleButton>(base::BindRepeating(
             &InputMenuView::OnToggleShowHintPressed, base::Unretained(this))));
-    show_hint_toggle_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_SHOW_HINT_OVERLAY));
-    show_hint_toggle_->SetEnabled(game_control_toggle_->GetIsOn());
-    show_hint_toggle_->SetIsOn(
+    show_mapping_toggle_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_MENU_SHOW_KEY_MAPPING));
+    show_mapping_toggle_->SetEnabled(game_control_toggle_->GetIsOn());
+    show_mapping_toggle_->SetIsOn(
         game_control_toggle_->GetIsOn() &&
         display_overlay_controller_->GetInputMappingViewVisible());
-    SetCustomToggleColor(show_hint_toggle_);
-    hint_label->SetBorder(views::CreateEmptyBorder(
+    SetCustomToggleColor(show_mapping_toggle_);
+    mapping_label->SetBorder(views::CreateEmptyBorder(
         CalculateInsets(hint_view.get(), /*left=*/kSideInset,
                         /*right=*/kSideInset, /*other_spacing=*/0)));
     AddChildView(std::move(hint_view));
@@ -302,25 +333,25 @@ void InputMenuView::OnToggleGameControlPressed() {
   const bool enabled = game_control_toggle_->GetIsOn();
   display_overlay_controller_->SetTouchInjectorEnable(enabled);
   // Adjust |enabled_| and |visible_| properties to match |Game controls|.
-  show_hint_toggle_->SetIsOn(enabled);
+  show_mapping_toggle_->SetIsOn(enabled);
   display_overlay_controller_->SetInputMappingVisible(enabled);
-  show_hint_toggle_->SetEnabled(enabled);
-  customize_button_->SetEnabled(enabled);
+  show_mapping_toggle_->SetEnabled(enabled);
+  edit_button_->SetEnabled(enabled);
 }
 
 void InputMenuView::OnToggleShowHintPressed() {
   DCHECK(display_overlay_controller_);
   display_overlay_controller_->SetInputMappingVisible(
-      show_hint_toggle_->GetIsOn());
+      show_mapping_toggle_->GetIsOn());
 }
 
-void InputMenuView::OnButtonCustomizedPressed() {
+void InputMenuView::OnEditButtonPressed() {
   DCHECK(display_overlay_controller_);
   if (!display_overlay_controller_)
     return;
   // Force key-binding labels ON before entering edit mode.
-  if (!show_hint_toggle_->GetIsOn()) {
-    show_hint_toggle_->SetIsOn(true);
+  if (!show_mapping_toggle_->GetIsOn()) {
+    show_mapping_toggle_->SetIsOn(true);
     display_overlay_controller_->SetInputMappingVisible(true);
   }
   // Change display mode, load edit UI per action and overall edit buttons.

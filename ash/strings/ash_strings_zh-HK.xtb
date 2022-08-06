@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">日曆</translation>
 <translation id="1153356358378277386">已配對的裝置</translation>
 <translation id="1165712434476988950">裝置必須重新啟動，才能套用更新。</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />，<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">您的 USB-C 連接線可能未妥善連接顯示屏</translation>
 <translation id="1175572348579024023">捲動</translation>
 <translation id="1178581264944972037">暫停</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">最近使用的應用程式</translation>
 <translation id="1252999807265626933">正在使用 <ph name="POWER_SOURCE" />充電</translation>
 <translation id="1255033239764210633">天氣點樣？</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" />至 
-        <ph name="END_TIME" />，
-        <ph name="TIME_ZONE" />，
-        <ph name="EVENT_SUMMARY" />。揀活動就可以喺 Google 日曆度睇詳情。</translation>
 <translation id="1267032506238418139">快速鍵有變動</translation>
 <translation id="1269405891096105529">訪客模式不支援周邊裝置</translation>
 <translation id="1270290102613614947">屏幕鍵盤已停用</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">相機</translation>
 <translation id="1632985212731562677">您可在 [設定] &gt; [無障礙功能] 中停用「按鈕控制」。</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> 部裝置</translation>
+<translation id="1639239467298939599">載入中</translation>
 <translation id="1654477262762802994">開始語音查詢</translation>
 <translation id="1668469839109562275">內置 VPN</translation>
 <translation id="1677472565718498478">電量尚餘 <ph name="TIME" /></translation>
@@ -239,7 +237,7 @@
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2367186422933365202">無法登入 Chromebook</translation>
 <translation id="2369165858548251131">「你好」嘅英文</translation>
-<translation id="2375445874393996153">系統已不再支援透過 Google 助理搜尋螢幕上的顯示內容。</translation>
+<translation id="2375445874393996153">系統不再支援透過「Google 助理」搜尋螢幕上的顯示內容。</translation>
 <translation id="2390318262976603432">語言代碼設定</translation>
 <translation id="240006516586367791">媒體控制項</translation>
 <translation id="2402411679569069051">如要解鎖 Chromebook，請使用指紋或解鎖手機</translation>
@@ -506,6 +504,7 @@
 <translation id="3901991538546252627">正在連線至 <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{在 1 分鐘內將裝置回復為先前的版本}other{在 # 分鐘內將裝置回復為先前的版本}}</translation>
 <translation id="3923494859158167397">未設定流動網絡</translation>
+<translation id="3925540965556789199"><ph name="DATE" />，正在載入活動。</translation>
 <translation id="3932043219784172185">未連接任何裝置</translation>
 <translation id="3934456833412894880">自動調節充電速度功能已開啟。裝置電量會維持在 80% 以延長電池壽命，並在您需要時將電池完全充滿。</translation>
 <translation id="3943857333388298514">貼上</translation>
@@ -704,6 +703,7 @@
 <translation id="5078796286268621944">PIN 不正確</translation>
 <translation id="5083553833479578423">啟用更多「Google 助理」功能。</translation>
 <translation id="509790653408515442">串流手機的應用程式時，這些應用程式將會在這裡顯示</translation>
+<translation id="5098537242461068432">已經重新開番桌面同視窗</translation>
 <translation id="5107522548814527560">網絡</translation>
 <translation id="5117590920725113268">顯示下個月</translation>
 <translation id="5136175204352732067">已連接不同的鍵盤</translation>
@@ -1047,7 +1047,6 @@
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解像度</translation>
 <translation id="7180611975245234373">重新整理</translation>
-<translation id="718361511487535372">在「Google 日曆」中開啟</translation>
 <translation id="7188494361780961876">已經將選單移去螢幕左上角。</translation>
 <translation id="7189412385142492784">金星距離幾遠</translation>
 <translation id="7198435252016571249">攝錄機已經對齊右下角，同系統平台有衝突。</translation>
@@ -1056,6 +1055,10 @@
 <translation id="7258828758145722155">昨天編輯過</translation>
 <translation id="726276584504105859">拖曳到此處即可分割畫面</translation>
 <translation id="7262906531272962081">建立提醒</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> 至
+        <ph name="END_TIME" />，
+        <ph name="TIME_ZONE" />，
+        <ph name="EVENT_SUMMARY" />。揀活動就可以喺 Google 日曆度睇詳情。</translation>
 <translation id="7302889331339392448">「即時字幕」功能已關閉。</translation>
 <translation id="7303365578352795231">正在透過其他裝置回應。</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1168,6 +1171,7 @@
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">語音處理程序已在本機執行，語音輸入功能會離線運作</translation>
+<translation id="7932451802722951285">在「Google 日曆」中開啟</translation>
 <translation id="7933084174919150729">「Google 助理」僅適用於主要設定檔。</translation>
 <translation id="79341161159229895">帳戶由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
 <translation id="793716872548410480">按下<ph name="SHORTCUT_KEY_NAME" /> + V 鍵即可查看剪貼簿。您最後複製的 5 個項目會儲存至剪貼簿。</translation>

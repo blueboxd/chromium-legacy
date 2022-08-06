@@ -125,6 +125,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   bool ShouldShowSigninPromo() override;
   bool AreServerCardsSupported() const override;
   void ExecuteCommand(int id) override;
+  void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
 
   // RiskDataLoader:
   void LoadRiskData(

@@ -348,6 +348,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2842985007712546952">Thư mục mẹ</translation>
 <translation id="2856503607207334158">Không đăng nhập được</translation>
 <translation id="2860954141821109167">Hãy đảm bảo bạn đã bật ứng dụng điện thoại trên thiết bị này</translation>
+<translation id="2861923151411510142">Một số tính năng của Chrome sẽ không dùng được nữa</translation>
 <translation id="2870560284913253234">Trang web</translation>
 <translation id="2871733351037274014">Tải trước các trang</translation>
 <translation id="2888126860611144412">Giới thiệu về Chrome</translation>
@@ -526,7 +527,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3845098929839618392">Mở trong thẻ Ẩn danh</translation>
 <translation id="3856096718352044181">Vui lòng xác minh rằng đây là nhà cung cấp hợp lệ hoặc thử lại sau</translation>
 <translation id="3858860766373142691">Tên</translation>
-<translation id="3859206958100234503">Đồng bộ hoá để xem mật khẩu, dấu trang và các nội dung khác trên tất cả thiết bị của bạn</translation>
 <translation id="3861633093716975811">Video phổ biến</translation>
 <translation id="3892148308691398805">Sao chép văn bản</translation>
 <translation id="3894427358181296146">Thêm thư mục</translation>
@@ -565,6 +565,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="4095146165863963773">Xóa dữ liệu ứng dụng?</translation>
 <translation id="4096227151372679484">Luồng lưu dấu trang đã mở ở nửa dưới của màn hình</translation>
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
+<translation id="4101475238162928417">Đồng bộ hoá để lấy mật khẩu, dấu trang và nội dung khác trên các thiết bị khác của bạn.</translation>
 <translation id="410351446219883937">Tự động phát</translation>
 <translation id="4106587138345390261">Chrome đang nghiên cứu các tính năng mới cho phép các trang web giữ nguyên trải nghiệm duyệt web nhưng dùng ít thông tin của bạn hơn</translation>
 <translation id="4108314971463891922">Theo dõi</translation>
@@ -587,6 +588,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="4227318652298512614">Theo dõi mọi trang web bạn muốn</translation>
 <translation id="4242533952199664413">Mở phần cài đặt</translation>
 <translation id="4248098802131000011">Bảo vệ mật khẩu của bạn trước việc bị rò rỉ dữ liệu và các vấn đề bảo mật khác</translation>
+<translation id="424864128008805179">Đăng xuất khỏi Chrome?</translation>
 <translation id="4249955472157341256">Sắp xếp theo Mới nhất</translation>
 <translation id="4250229828105606438">Ảnh chụp màn hình</translation>
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
@@ -654,7 +656,6 @@ Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web
 <translation id="4594952190837476234">Trang ngoại tuyến này được tạo từ lúc <ph name="CREATION_TIME" /> và có thể khác với phiên bản trực tuyến.</translation>
 <translation id="4616150815774728855">Mở <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">Xác minh danh tính của bạn</translation>
-<translation id="4627165777145349100">Xem thêm về trang này</translation>
 <translation id="4634124774493850572">Sử dụng mật khẩu</translation>
 <translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 mật khẩu bị lộ}other{# mật khẩu bị lộ}}</translation>
 <translation id="4650364565596261010">Tùy chọn mặc định của hệ thống</translation>
@@ -793,7 +794,6 @@ Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web
 <translation id="5342314432463739672">Yêu cầu cấp quyền</translation>
 <translation id="5355191726083956201">Tính năng Bảo vệ tăng cường đang bật</translation>
 <translation id="5368227114232678694">Để duyệt web riêng tư trên thiết bị này, hãy thử chế độ Ẩn danh</translation>
-<translation id="5371717687506906963">Lời nhắc Hộp cát về quyền riêng tư</translation>
 <translation id="5375577065097716013">Tìm hình ảnh bằng Google Ống kính <ph name="BEGIN_NEW" />Mới<ph name="END_NEW" /></translation>
 <translation id="5376898820269806588">Đã thay đổi phản ứng</translation>
 <translation id="5401851137404501592">Để tiếp tục, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> sẽ chia sẻ tên, địa chỉ email và ảnh hồ sơ của bạn với trang web này.</translation>
@@ -892,6 +892,7 @@ Tài khoản Google của bạn có thể có các dạng nhật ký duyệt web
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
 <translation id="5869789175361934029">Tiếp tục từ thiết bị khác</translation>
 <translation id="587735546353481577">Để theo dõi một trang web, hãy truy cập vào trang web đó, mở trình đơn Chrome rồi nhấn vào Theo dõi.</translation>
+<translation id="5879072387416556377">Nhận đề xuất tốt hơn</translation>
 <translation id="5880748256563468367">Chuyển đến nguồn cấp dữ liệu</translation>
 <translation id="5884076754568147479">Để giúp bạn hoàn thành những việc cần làm, Google sẽ nhận URL và nội dung của các trang web mà bạn sử dụng Trợ lý, cũng như thông tin bạn gửi qua Trợ lý</translation>
 <translation id="5906513782029855931">Bằng việc biết được URL của trang web, Trợ lý Google có thể giúp bạn hoàn tất một số công việc. Bạn có thể tắt Trợ lý trong phần cài đặt của Chrome.</translation>
@@ -1195,6 +1196,7 @@ Mã thông báo tin cậy giúp cải thiện quyền riêng tư trên web và 
 <translation id="749294055653435199">Không dùng được tính năng Google Ống kính trên thiết bị này</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Đã cập nhật <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Vui lòng đợi…</translation>
+<translation id="7502234197872745058">Để đăng xuất khỏi Tài khoản Google trên tất cả các trang web, hãy <ph name="BEGIN_LINK1" />đăng xuất khỏi Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Không có thông tin cập nhật</translation>
 <translation id="7507207699631365376">Xem <ph name="BEGIN_LINK" />chính sách quyền riêng tư<ph name="END_LINK" /> của nhà cung cấp này</translation>
 <translation id="7514365320538308">Tải xuống</translation>
@@ -1234,6 +1236,7 @@ Mã thông báo tin cậy giúp cải thiện quyền riêng tư trên web và 
 <translation id="770741401784017797">Đang tạo GIF</translation>
 <translation id="7707922173985738739">Sử dụng dữ liệu di động</translation>
 <translation id="7709094866268987903">Các mối quan tâm bạn đã xoá sẽ xuất hiện ở đây</translation>
+<translation id="7709918231054955894">Xem tất cả thẻ của bạn</translation>
 <translation id="7725024127233776428">Các trang mà bạn đánh dấu sẽ xuất hiện tại đây</translation>
 <translation id="7757787379047923882">Văn bản được chia sẻ từ <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Chọn ngày và giờ</translation>
@@ -1380,7 +1383,7 @@ Mã thông báo tin cậy giúp cải thiện quyền riêng tư trên web và 
 <translation id="8453310803815879010">Bắt đầu Trò chơi Khủng long</translation>
 <translation id="8461694314515752532">Mã hóa dữ liệu đã đồng bộ hóa bằng cụm mật khẩu đồng bộ hóa của riêng bạn</translation>
 <translation id="8466613982764129868">Hãy đảm bảo <ph name="TARGET_DEVICE_NAME" /> có kết nối Internet</translation>
-<translation id="8473863474539038330">Địa chỉ và các tùy chọn khác</translation>
+<translation id="8473863474539038330">Địa chỉ và các lựa chọn khác</translation>
 <translation id="8481921391193215807">Khi bạn bật Hộp cát về quyền riêng tư, các trang web có thể dùng kỹ thuật bảo vệ quyền riêng tư theo mô tả ở đây để cung cấp nội dung và dịch vụ của mình. Các kỹ thuật này gồm có những biện pháp thay thế cho hoạt động theo dõi trên nhiều trang web. Theo thời gian, chúng tôi có thể bổ sung nhiều chế độ dùng thử khác.
 
 <ph name="BEGIN_LIST_ITEM1" />Các nhà quảng cáo và nhà xuất bản có thể dùng kỹ thuật FLoC.<ph name="END_LIST_ITEM1" />
@@ -1429,6 +1432,7 @@ Mã thông báo tin cậy giúp cải thiện quyền riêng tư trên web và 
 <translation id="8656747343598256512">Bạn sẽ đăng nhập vào trang web này và Chrome bằng Tài khoản Google của bạn. Bạn có thể bật tính năng đồng bộ hóa sau.</translation>
 <translation id="8659579665266920523">Cách tìm kiếm bằng Chrome</translation>
 <translation id="8662811608048051533">Đăng xuất bạn khỏi hầu hết các trang web.</translation>
+<translation id="8664215986015753476">Sử dụng Chrome theo cách của bạn</translation>
 <translation id="8664979001105139458">Tên tệp đã tồn tại</translation>
 <translation id="8666759526542103597">Giới thiệu về tính năng cá nhân hoá quảng cáo dựa vào trình duyệt</translation>
 <translation id="8667760277771450375">Chúng tôi đang nghiên cứu các cách để hạn chế hoạt động theo dõi qua nhiều trang web đồng thời giúp các trang web ngăn chặn hành vi lừa đảo và quảng cáo không liên quan.</translation>

@@ -145,7 +145,7 @@
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/webauth/webauth_request_security_checker.h"
-#include "content/browser/webid/federated_auth_request_service.h"
+#include "content/browser/webid/federated_auth_request_impl.h"
 #include "content/browser/webid/flags.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/webtransport/web_transport_connector_impl.h"
@@ -288,6 +288,19 @@ namespace features {
 const base::Feature kDisableFrameNameUpdateOnNonCurrentRenderFrameHost{
     "DisableFrameNameUpdateOnNonCurrentRenderFrameHost",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Evict when accessibility events occur while in back/forward cache. Remove
+// once the https://crbug.com/1341507 is resolved. This crash started to happen
+// on Android with bfcache experiments, so we're enabling this flag only on
+// Android.
+const base::Feature kEvictOnAXEvents {
+  "EvictOnAXEvents",
+#if BUILDFLAG(IS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 }
 
 namespace content {
@@ -2781,13 +2794,16 @@ RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
 
 gfx::NativeViewAccessible
 RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
-  // If this method is called when the document is in BackForwardCache, evict
-  // the document to avoid ignoring any accessibility related events which the
-  // document might not expect.
-  if (IsInactiveAndDisallowActivation(
-          DisallowActivationReasonId::kAXGetNativeView))
+  if (base::FeatureList::IsEnabled(features::kEvictOnAXEvents) &&
+      base::FeatureList::IsEnabled(
+          features::kEnableBackForwardCacheForScreenReader) &&
+      IsInactiveAndDisallowActivation(
+          DisallowActivationReasonId::kAXGetNativeView)) {
+    // |AccessibilityGetNativeViewAccessible()| should be only accessible when
+    // we process AX events. Otherwise this should not be used while in
+    // back/forward cache and the document should be evicted.
     return nullptr;
-
+  }
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
   if (view)
@@ -2812,12 +2828,6 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::AccessibilityRenderFrameHost() {
-  // If this method is called when the frame is in BackForwardCache, evict
-  // the frame to avoid ignoring any accessibility related events which are not
-  // expected.
-  if (IsInactiveAndDisallowActivation(
-          DisallowActivationReasonId::kAXWebContents))
-    return nullptr;
   return this;
 }
 
@@ -6092,6 +6102,12 @@ bool RenderFrameHostImpl::IsInactiveAndDisallowActivation(uint64_t reason) {
     case LifecycleStateImpl::kReadyToBeDeleted:
       return true;
     case LifecycleStateImpl::kInBackForwardCache: {
+      // This function should not be called with kAXEvent when the page is in
+      // back/forward cache, because |HandleAXevents()| will continue to process
+      // accessibility events without evicting unless the kEvictOnAXEvents flag
+      // is on.
+      if (!base::FeatureList::IsEnabled(features::kEvictOnAXEvents))
+        DCHECK_NE(reason, kAXEvent);
       BackForwardCacheCanStoreDocumentResult can_store_flat;
       can_store_flat.NoDueToDisallowActivation(reason);
       EvictFromBackForwardCacheWithFlattenedReasons(can_store_flat);
@@ -6125,6 +6141,7 @@ bool RenderFrameHostImpl::IsInactiveAndDisallowActivation(uint64_t reason) {
 
 bool RenderFrameHostImpl::IsInactiveAndDisallowActivationForAXEvents(
     const std::vector<ui::AXEvent>& events) {
+  DCHECK(base::FeatureList::IsEnabled(features::kEvictOnAXEvents));
   if (lifecycle_state_ != LifecycleStateImpl::kInBackForwardCache) {
     return IsInactiveAndDisallowActivation(
         DisallowActivationReasonId::kAXEvent);
@@ -6859,7 +6876,7 @@ void RenderFrameHostImpl::OpenURL(blink::mojom::OpenURLParamsPtr params) {
   // Verify and unpack the Mojo payload.
   GURL validated_url;
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
-  if (!VerifyOpenURLParams(GetSiteInstance(), params, &validated_url,
+  if (!VerifyOpenURLParams(this, GetSiteInstance(), params, &validated_url,
                            &blob_url_loader_factory)) {
     return;
   }
@@ -7454,6 +7471,14 @@ void RenderFrameHostImpl::BeginNavigation(
   if (!VerifyBeginNavigationCommonParams(GetSiteInstance(), &*validated_params))
     return;
 
+  // BeginNavigation() should only be triggered when the navigation is
+  // initiated by a frame in the same process.
+  int initiator_process_id = GetProcess()->GetID();
+  if (!VerifyNavigationInitiator(this, begin_params->initiator_frame_token,
+                                 initiator_process_id)) {
+    return;
+  }
+
   // If the request is bearing Trust Tokens parameters:
   // - it must not be a main-frame navigation, and
   // - for certain Trust Tokens operations, the frame's parent needs the
@@ -7602,10 +7627,26 @@ void RenderFrameHostImpl::HandleAXEvents(
   accessibility_reset_token_ = 0;
 
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.is_mode_off() ||
-      IsInactiveAndDisallowActivationForAXEvents(updates_and_events->events)) {
+
+  if (accessibility_mode.is_mode_off()) {
     return;
   }
+  if (base::FeatureList::IsEnabled(features::kEvictOnAXEvents)) {
+    // If the flag is on, evict the bfcache entry now that AX events are
+    // received.
+    if (IsInactiveAndDisallowActivationForAXEvents(updates_and_events->events))
+      return;
+  } else {
+    // If the page is in back/forward cache, do not return early and continue to
+    // apply AX tree updates.
+    // TODO(https://crbug.com/1328126): Define and implement the behavior for
+    // when the page is prerendering, too.
+    if (!IsInBackForwardCache() &&
+        IsInactiveAndDisallowActivation(DisallowActivationReasonId::kAXEvent)) {
+      return;
+    }
+  }
+
   if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
     GetOrCreateBrowserAccessibilityManager();
 
@@ -10299,7 +10340,7 @@ void RenderFrameHostImpl::BindWebOTPServiceReceiver(
 
 void RenderFrameHostImpl::BindFederatedAuthRequestReceiver(
     mojo::PendingReceiver<blink::mojom::FederatedAuthRequest> receiver) {
-  FederatedAuthRequestService::Create(this, std::move(receiver));
+  FederatedAuthRequestImpl::Create(this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindRestrictedCookieManager(
@@ -10384,7 +10425,8 @@ void RenderFrameHostImpl::GetGeolocationService(
 void RenderFrameHostImpl::GetPendingBeaconHost(
     mojo::PendingReceiver<blink::mojom::PendingBeaconHost> receiver) {
   PendingBeaconHost::CreateForCurrentDocument(
-      this, PendingBeaconService::GetInstance());
+      this, GetStoragePartition()->GetURLLoaderFactoryForBrowserProcess(),
+      PendingBeaconService::GetInstance());
   PendingBeaconHost* pbh = PendingBeaconHost::GetForCurrentDocument(this);
   pbh->SetReceiver(std::move(receiver));
 }

@@ -476,8 +476,16 @@ void AdAuctionServiceImpl::OnAuctionComplete(
   if (!render_url) {
     DCHECK(report_urls.empty());
     std::move(callback).Run(absl::nullopt);
-    auction_result_metrics->ReportAuctionResult(
-        AdAuctionResultMetrics::AuctionResult::kFailed);
+    if (auction_result_metrics) {
+      // `auction_result_metrics` can be null since PageUserData like
+      // AdAuctionResultMetrics isn't guaranteed to be destroyed after document
+      // services like `this`, even though this typically is the case for
+      // destruction of the RenderFrameHost (except for renderer crashes).
+      //
+      // So, we need to guard against this.
+      auction_result_metrics->ReportAuctionResult(
+          AdAuctionResultMetrics::AuctionResult::kFailed);
+    }
     GetInterestGroupManager().EnqueueReports(
         std::vector<GURL>(), std::vector<GURL>(), debug_loss_report_urls,
         origin(), GetClientSecurityState(),
@@ -494,8 +502,10 @@ void AdAuctionServiceImpl::OnAuctionComplete(
   DCHECK(render_url->is_valid());
 
   std::move(callback).Run(render_url);
-  auction_result_metrics->ReportAuctionResult(
-      AdAuctionResultMetrics::AuctionResult::kSucceeded);
+  if (auction_result_metrics) {
+    auction_result_metrics->ReportAuctionResult(
+        AdAuctionResultMetrics::AuctionResult::kSucceeded);
+  }
   GetInterestGroupManager().EnqueueReports(
       report_urls, debug_win_report_urls, debug_loss_report_urls, origin(),
       GetClientSecurityState(), GetRefCountedTrustedURLLoaderFactory());

@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">Ezabatu lehendik dauden datuak.</translation>
 <translation id="1147031633655575115"><ph name="USER" /> gisa hasi duzu saioa</translation>
 <translation id="1154984953698510061">Ikusi beste fitxa batzuk</translation>
+<translation id="1161340988127985692">Eskatu beste aplikazioetako estekak ezkutuko moduan irekitzea</translation>
 <translation id="1164064664035028907">Erabili pasahitz sendo bat:</translation>
 <translation id="1165039591588034296">Errorea</translation>
 <translation id="1172898394251786223">Hurrengo eremua</translation>
@@ -65,6 +66,7 @@
 <translation id="1434356225517321998">Arakatzailea kudeatuta dago. <ph name="BEGIN_LINK" />Xehetasunak<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Ezkutatu pasahitza</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementu</translation>
+<translation id="1450170672351507823">Babes estandarra dago aktibatuta. Segurtasuna areagotzeko, erabili babes hobetua.</translation>
 <translation id="149095475893949513">Webgunea konfigurazio-profil bat deskargatu nahian dabil.</translation>
 <translation id="1491277525950327607">Sakatu birritan ezarpena aldatzeko</translation>
 <translation id="1492417797159476138">Dagoeneko gorde duzu erabiltzaile-izen hau webgune honetarako</translation>
@@ -291,6 +293,7 @@ Behar izanez gero, joan bilatzailearen argibideetara bilaketa-historia ezabatzea
 <translation id="3443810440409579745">Fitxa bat jaso da.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Ikuspegi zatitua</translation>
+<translation id="3450502512529866925">Ezarri laster-marka orriari</translation>
 <translation id="345565170154308620">Kudeatu pasahitzak…</translation>
 <translation id="3469166899695866866">Deskarga eten nahi duzu?</translation>
 <translation id="3470502288861289375">Kopiatzen…</translation>
@@ -405,6 +408,7 @@ Jarraitu beheko urratsei:</translation>
 <translation id="4502566650163919158">Egiaztatu</translation>
 <translation id="4505980578794259603">Azken egiaztatze-data: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Itxi saioa hasteko promozioa</translation>
+<translation id="4511669830082467224">Bilatu irudia Google bidez</translation>
 <translation id="4526249700380860531">Ikusi eta kudeatu gordetako pasahitzak <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> estekan.</translation>
 <translation id="452750746583162491">Berrikusi sinkronizatutako datuak</translation>
 <translation id="4536418791685807335">Hasi saioa berriro.</translation>
@@ -482,6 +486,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5090832849094901128">Pasahitza ezabatzen baduzu ere, ez da ezabatuko <ph name="WEBSITE" /> webguneko kontua.</translation>
 <translation id="5092117651143801290">Orriak gorde ditzakezu, geroago edo konexiorik ez daukazunean irakurtzeko. Orri luzeak gorde nahi dituzun galdetuko dizu Chrome-k.</translation>
 <translation id="5094827893301452931">Txio egin da.</translation>
+<translation id="509789154667432072">Gehitu laster-marka bat</translation>
 <translation id="5118713593561876160">Interesak</translation>
 <translation id="5118764316110575523">Desaktibatuta</translation>
 <translation id="5127805178023152808">Sinkronizazioa desaktibatuta dago</translation>
@@ -740,6 +745,7 @@ Ezkutuko moduan zaudenean, webguneek ezin dituzte erabili cookieak beste webgune
 <translation id="7099761977003084116">Azken fitxak</translation>
 <translation id="7102005569666697658">Deskargatzen… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Ezkutatu</translation>
+<translation id="7108762695052995889">Joan webgunera</translation>
 <translation id="7133798577887235672">Izen-abizenak</translation>
 <translation id="7136892417564438900">Kamera ez dago erabilgarri</translation>
 <translation id="7153999225810839758"><ph name="TIME" /> minutu behar dira irakurtzeko</translation>
@@ -770,6 +776,7 @@ Ezkutuko moduan zaudenean, webguneek ezin dituzte erabili cookieak beste webgune
 <translation id="7400418766976504921">URLa</translation>
 <translation id="7409985198648820906">Irakurri gabeko <ph name="UNREAD_COUNT" /> artikulu.</translation>
 <translation id="7412027924265291969">Egin aurrera</translation>
+<translation id="7419565702166471774">Erabili beti konexio seguruak</translation>
 <translation id="7425346204213733349">Aurrerantzean, ez dira Google-ko kontuarekin sinkronizatuko laster-marketan, historian, pasahitzetan eta bestelako ezarpenetan egiten dituzun aldaketak. Hala ere, orain arteko datuak Google-ko kontuan izaten jarraituko duzu.</translation>
 <translation id="7431991332293347422">Kontrolatu arakatze-historia nola erabiltzen den Bilaketa eta beste zerbitzu batzuk pertsonalizatzeko</translation>
 <translation id="7435356471928173109">Administratzaileak desaktibatu du</translation>
@@ -809,7 +816,6 @@ Ezkutuko moduan zaudenean, webguneek ezin dituzte erabili cookieak beste webgune
 <translation id="7781069478569868053">Fitxa berriaren orria</translation>
 <translation id="7781829728241885113">Atzo</translation>
 <translation id="778855399387580014">Hasi bilaketa Chrome-ren fitxa berri batean.</translation>
-<translation id="7790892308048519147">Erabili konexio seguruak</translation>
 <translation id="7791543448312431591">Gehitu</translation>
 <translation id="7807060072011926525">Google-k eman du</translation>
 <translation id="7839985698273989086">Konexiorik gabeko orria</translation>

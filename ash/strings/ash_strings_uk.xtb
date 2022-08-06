@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">Календар</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
 <translation id="1165712434476988950">Щоб застосувати оновлення, потрібно перезапустити пристрій.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Ваш кабель USB-C може не підключатися до екранів належним чином</translation>
 <translation id="1175572348579024023">Прокрутити</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">Нещодавні додатки</translation>
 <translation id="1252999807265626933">Джерело заряджання: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Який прогноз погоди?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" />–
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Виберіть подію, щоб переглянути відомості про неї в Google Календарі.</translation>
 <translation id="1267032506238418139">Зміна комбінацій клавіш</translation>
 <translation id="1269405891096105529">Периферійні пристрої не підтримуються в режимі гостя</translation>
 <translation id="1270290102613614947">Екранну клавіатуру вимкнено</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1632985212731562677">Щоб вимкнути кнопковий доступ, відкрийте "Налаштування" &gt; "Спеціальні можливості".</translation>
 <translation id="1637505162081889933">Пристроїв: <ph name="NUM_DEVICES" /></translation>
+<translation id="1639239467298939599">Завантаження</translation>
 <translation id="1654477262762802994">Ввести голосовий запит</translation>
 <translation id="1668469839109562275">Вбудована мережа VPN</translation>
 <translation id="1677472565718498478">Залишилося <ph name="TIME" /></translation>
@@ -182,7 +180,7 @@
 <translation id="1982717156487272186">Показати попередній тиждень</translation>
 <translation id="1989113344093894667">Не вдається записати контент</translation>
 <translation id="1990046457226896323">Файли живих субтитрів завантажено</translation>
-<translation id="1993072747612765854">Докладніше про останнє оновлення додатка <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1993072747612765854">Докладніше про останнє оновлення <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1998100899771863792">Поточний робочий стіл</translation>
 <translation id="2001444736072756133">Шукайте <ph name="CATEGORY" />, файли, додатки тощо.</translation>
 <translation id="2016340657076538683">Введіть повідомлення</translation>
@@ -239,6 +237,7 @@
 <translation id="2359808026110333948">Продовжити</translation>
 <translation id="2367186422933365202">Не вдається ввійти в обліковий запис на Chromebook</translation>
 <translation id="2369165858548251131">Як сказати "привіт" китайською</translation>
+<translation id="2375445874393996153">Пошук вмісту екрана за допомогою Google Асистента більше не підтримується.</translation>
 <translation id="2390318262976603432">Налаштування мовного коду</translation>
 <translation id="240006516586367791">Елементи керування медіа</translation>
 <translation id="2402411679569069051">Щоб розблокувати Chromebook, скористайтеся відбитком пальця або розблокуйте телефон</translation>
@@ -505,6 +504,7 @@
 <translation id="3901991538546252627">Під’єднання до <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Поверніться до попередньої версії на пристрої протягом 1 хвилини}one{Поверніться до попередньої версії на пристрої протягом # хвилини}few{Поверніться до попередньої версії на пристрої протягом # хвилин}many{Поверніться до попередньої версії на пристрої протягом # хвилин}other{Поверніться до попередньої версії на пристрої протягом # хвилини}}</translation>
 <translation id="3923494859158167397">Мобільні мережі не налаштовано</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, завантаження подій.</translation>
 <translation id="3932043219784172185">Немає підключених пристроїв</translation>
 <translation id="3934456833412894880">Адаптивне заряджання ввімкнено. Заряд акумулятора підтримуватиметься на рівні 80%, щоб подовжити час роботи. Акумулятор повністю зарядиться до того, як вам знадобиться пристрій.</translation>
 <translation id="3943857333388298514">Вставити</translation>
@@ -704,6 +704,7 @@
 <translation id="5078796286268621944">Неправильний PIN-код</translation>
 <translation id="5083553833479578423">Розблокуйте інші функції Асистента.</translation>
 <translation id="509790653408515442">Тут з’являтимуться додатки, які ви транслюєте з телефона</translation>
+<translation id="5098537242461068432">Робочий стіл і вікна знову відкрито</translation>
 <translation id="5107522548814527560">Інтернет</translation>
 <translation id="5117590920725113268">Показати наступний місяць</translation>
 <translation id="5136175204352732067">Під’єднано іншу клавіатуру</translation>
@@ -1048,7 +1049,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Оновити</translation>
-<translation id="718361511487535372">Відкрити в Google Календарі</translation>
 <translation id="7188494361780961876">Меню переміщено у верхній лівий кут екрана.</translation>
 <translation id="7189412385142492784">Яка відстань від Землі до Венери</translation>
 <translation id="7198435252016571249">Зображення з камери закріплено в нижньому правому куті, що конфліктує із системною платформою.</translation>
@@ -1057,6 +1057,10 @@
 <translation id="7258828758145722155">Змінено вчора</translation>
 <translation id="726276584504105859">Перетягніть сюди, щоб розділити екран</translation>
 <translation id="7262906531272962081">Створити нагадування</translation>
+<translation id="7297440678881127227">З <ph name="START_TIME" /> до
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Виберіть подію, щоб переглянути відомості про неї в Google Календарі.</translation>
 <translation id="7302889331339392448">Живі субтитри вимкнено.</translation>
 <translation id="7303365578352795231">Відповідь на іншому пристрої.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@
 <translation id="7904094684485781019">Адміністратор цього облікового запису заборонив паралельний вхід.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Мовлення тепер обробляється лише на пристрої, а функція диктування працює в режимі офлайн</translation>
+<translation id="7932451802722951285">Відкрити в Google Календарі</translation>
 <translation id="7933084174919150729">Google Асистент доступний лише в основному профілі.</translation>
 <translation id="79341161159229895">Обліковим записом керують <ph name="FIRST_PARENT_EMAIL" /> і <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Щоб переглянути буфер обміну, натисніть комбінацію клавіш <ph name="SHORTCUT_KEY_NAME" /> + V. У ньому зберігаються 5 останніх елементів, які ви скопіювали.</translation>

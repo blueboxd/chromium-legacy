@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。</translation>
 <translation id="1175951029573070619">一般 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">移除</translation>
+<translation id="1190378975642195988">底座加速計</translation>
 <translation id="1195447618553298278">未知的錯誤。</translation>
 <translation id="1196959502276349371">版本：<ph name="VERSION" /></translation>
 <translation id="1199355487114804640">播放/暫停</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">儲存至 USB</translation>
 <translation id="1468664791493211953">優惠</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> 會管理此裝置，並可能監察您的活動。</translation>
+<translation id="147809995039451286">無法下載更新內容</translation>
 <translation id="1478594628797167447">掃瞄器</translation>
 <translation id="1491076385728777984">正在更新 <ph name="DEVICE_NAME" />的韌體</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> 管理此使用者，並可能會遠端管理設定並監察使用者活動。</translation>
@@ -125,6 +127,7 @@
 <translation id="1999615961760456652">強制網絡入口</translation>
 <translation id="2006864819935886708">連線問題</translation>
 <translation id="2008685064673031089">尖峰搜尋</translation>
+<translation id="2011174342667534258">SDK 版本：</translation>
 <translation id="2016697457005847575">請嘗試解決疑難步驟</translation>
 <translation id="2016848882344942759">--沒有白色標籤--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -156,6 +159,7 @@
 <translation id="225692081236532131">啟用狀態</translation>
 <translation id="2271469253353559191">暗光模式時間表</translation>
 <translation id="2275586345903859204">維修程序已完成</translation>
+<translation id="2276999893457278469">熱門說明內容</translation>
 <translation id="2287186687001756809">沒有圖片。如要新增相片，請前往 <ph name="LINK" /></translation>
 <translation id="2294753434210277304">插入具有已下載 Chromebook 復原程式映像的外部儲存空間，例如 USB 磁碟或 SD 卡</translation>
 <translation id="2307344026739914387">使用目前的配對金鑰</translation>
@@ -177,6 +181,7 @@
 <translation id="2418150275289244458">在設定中開啟</translation>
 <translation id="2421798028054665193">第 <ph name="CURRENT_PAGE" /> 張圖，總共有 <ph name="TOTAL_PAGES" /> 張</translation>
 <translation id="2446553403094072641">浮點準確性</translation>
+<translation id="2447969267935997922">安裝完成。您現在可以移除 USB 磁碟或 SD 卡。</translation>
 <translation id="2448312741937722512">類型</translation>
 <translation id="2461822463642141190">電流</translation>
 <translation id="2480034874476596812">手動關閉</translation>
@@ -188,6 +193,7 @@
 <translation id="2517472476991765520">掃瞄</translation>
 <translation id="2526590354069164005">桌面電腦</translation>
 <translation id="253029298928638905">正在重新啟動…</translation>
+<translation id="2533048460510040082">建議的說明內容</translation>
 <translation id="2536159006530886390">無法連線至互聯網。</translation>
 <translation id="2570743873672969996">正在執行<ph name="TEST_NAME" />測試…</translation>
 <translation id="2584559707064218956">如要進行設定，請前往「設定」頁面</translation>
@@ -214,7 +220,6 @@
 <translation id="2878387241690264070">已在 <ph name="NUM_SECONDS" /> 秒內放電 <ph name="RATE" />。</translation>
 <translation id="291142119251986300">不兼容的組件</translation>
 <translation id="2926057806159140518">輸入使用者名稱和密碼，或掃瞄 QR 碼</translation>
-<translation id="2928420929544864228">安裝完成。</translation>
 <translation id="3008341117444806826">更新</translation>
 <translation id="3009958530611748826">選取儲存的資料夾</translation>
 <translation id="3017079585324758401">背景</translation>
@@ -268,6 +273,7 @@
 <translation id="3484914941826596830">韌體更新時，請勿拔除此外部裝置的插頭或關閉電腦。您可將此視窗縮到最小。此更新可能需要幾分鐘，這段期間外部裝置可能無法正常運作。</translation>
 <translation id="3486220673238053218">定義</translation>
 <translation id="3488065109653206955">部分已啟用</translation>
+<translation id="3492982278147736083">上蓋陀螺儀</translation>
 <translation id="3517001332549868749">Chrome OS 更新</translation>
 <translation id="3527036260304016759">失敗 - 不明錯誤</translation>
 <translation id="3532980081107202182">大約尚餘 <ph name="MIN_REMAINING" /> 分鐘</translation>
@@ -287,6 +293,7 @@
 <translation id="3621202678540785336">輸入</translation>
 <translation id="3632579075709132555">私隱保護畫面切換</translation>
 <translation id="3643810137582748570">略過校正</translation>
+<translation id="3651050199673793219">揀溫度單位</translation>
 <translation id="3678765385266369662">選取您想用來關閉「寫入保護」的方式</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />測試</translation>
 <translation id="370665806235115550">載入中…</translation>
@@ -301,9 +308,12 @@
 <translation id="3820172043799983114">PIN 無效。</translation>
 <translation id="3838338534323494292">新密碼</translation>
 <translation id="385051799172605136">返回</translation>
+<translation id="3856304145690230735">底座陀螺儀</translation>
 <translation id="385832974417157471">關機前請先在裝置上執行 Powerwash。如果裝置有蓋，請等待 Powerwash 完成，然後才關上蓋。Powerwash 需要最多一分鐘才能完成。</translation>
 <translation id="3858860766373142691">名稱</translation>
+<translation id="3862598938296403232">必須提供描述</translation>
 <translation id="3865414814144988605">解像度</translation>
+<translation id="3866249974567520381">描述</translation>
 <translation id="387301095347517405">電池經過完整充電循環的次數</translation>
 <translation id="3885327323343477505">改螢幕保護程式</translation>
 <translation id="3923184630988645767">數據用量</translation>
@@ -371,6 +381,7 @@
 <translation id="4472575034687746823">開始使用</translation>
 <translation id="4479639480957787382">以太網絡</translation>
 <translation id="4483049906298469269">無法連線偵測非預設的網絡閘道</translation>
+<translation id="4500213108254186382">上蓋加速計</translation>
 <translation id="4503223151711056411">向左箭咀</translation>
 <translation id="4511264077854731334">入口網站</translation>
 <translation id="4521826082652183069">主體替代名稱相符</translation>
@@ -382,6 +393,7 @@
 <translation id="4561801978359312462">SIM 卡已解鎖</translation>
 <translation id="4562494484721939086">不提供服務</translation>
 <translation id="4568938274596692027">安裝完成。正在準備重新啟動…</translation>
+<translation id="4576943788798178439">觸控筆支援</translation>
 <translation id="458794348635939462">無法解析所有主機</translation>
 <translation id="4593212453765072419">需要 Proxy 驗證</translation>
 <translation id="4609350030397390689">鍵盤校暗亮度</translation>
@@ -430,6 +442,7 @@
 <translation id="4915052247106771211">此操作會將裝置回復原廠設定 (Powerwash)。</translation>
 <translation id="4917385247580444890">強</translation>
 <translation id="4917889632206600977">已停止 - 紙張已用完</translation>
+<translation id="491791267030419270">撰寫意見的提示</translation>
 <translation id="4921665434385737356">已在 <ph name="NUM_SECONDS" /> 秒內充電 <ph name="RATE" />。</translation>
 <translation id="4930320165497208503">如要設定或更新連線，請前往「<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />」頁面。</translation>
 <translation id="4932733599132424254">日期</translation>
@@ -536,6 +549,7 @@
 <translation id="5866840822086176774">非常強</translation>
 <translation id="588258955323874662">全螢幕</translation>
 <translation id="5895138241574237353">重新啟動</translation>
+<translation id="5898758006340607522">開關按鈕</translation>
 <translation id="5901630391730855834">黃色</translation>
 <translation id="5903200662178656908">裝置係鍵盤同滑鼠組合。</translation>
 <translation id="5916084858004523819">禁止</translation>
@@ -671,6 +685,7 @@
 <translation id="7143207342074048698">正在連接</translation>
 <translation id="7144878232160441200">重試</translation>
 <translation id="714876143603641390">LAN 連接性</translation>
+<translation id="7154020516215182599">請反映意見，或者描述問題。請儘量在描述中包含步驟，以便重現問題。</translation>
 <translation id="7155171745945906037">相機或檔案中的現有照片</translation>
 <translation id="7162487448488904999">媒體庫</translation>
 <translation id="7170236477717446850">個人檔案相片</translation>
@@ -848,6 +863,7 @@
 <translation id="885701979325669005">儲存設備</translation>
 <translation id="8863170912498892583">啟用深色主題背景</translation>
 <translation id="8863888432376731307">取得「<ph name="QUERY" />」和其他查詢內容的<ph name="INTENT" /></translation>
+<translation id="8864415976656252616">沒有建議內容。請查看熱門說明內容。</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">裝置類型係平板電腦。</translation>
 <translation id="8881098542468797602">已通過測試</translation>
@@ -858,6 +874,7 @@
 <translation id="8919792139048574232">查看已修正的項目</translation>
 <translation id="8919837981463578619">失敗 - 沒有紙匣</translation>
 <translation id="8923267550422472772">每月重設日</translation>
+<translation id="8925613211674558308">完成快取的 VPD</translation>
 <translation id="8928727111548978589">失敗 - 紙張已用完</translation>
 <translation id="8930521118335213258">對等</translation>
 <translation id="8930622219860340959">無線</translation>
@@ -899,6 +916,7 @@
 <translation id="922179502584117429">目前的版本 <ph name="VERSION_NUMBER" /> 過舊</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">提供意見反映</translation>
 <translation id="952992212772159698">未啟用</translation>
 <translation id="960719561871045870">流動網絡供應商代碼</translation>
 <translation id="982713511914535780">執行放電測試</translation>

@@ -230,9 +230,6 @@
                   'third_party/blink/public/platform/modules/app_banner/|'\
                   'third_party/blink/renderer/modules/app_banner/',
     },
-    'base': {
-      'filepath': '^base/',
-    },
     'base_allocator': {
       'filepath': '^base/allocator',
     },
@@ -1514,6 +1511,10 @@
     'os_crypt': {
       'filepath': 'components/os_crypt/',
     },
+    'os_feedback_ui': {
+      'filepath': 'ash/webui/os_feedback_ui/|' \
+                  'chrome/browser/ash/os_feedback/'
+    },
     'ozone': {
       'filepath': 'ui/ozone/|'\
         'ui/events/ozone/|'\
@@ -2222,7 +2223,6 @@
                         'rayankans+watch@chromium.org'],
     'banners': ['dominickn+watch-banners@chromium.org',
                 'pkotwicz+watch@chromium.org'],
-    'base': ['vmpstr+watch@chromium.org'],
     'base_allocator': ['wfh+watch@chromium.org',
                        'lizeb+watch@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
@@ -2459,8 +2459,7 @@
                      'rnk@chromium.org',
                      'thakis@chromium.org',
                      'thestig@chromium.org',
-                     'ukai+watch@chromium.org',
-                     'vmpstr+watch@chromium.org'],
+                     'ukai+watch@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
     'components_deps': ['droger+watchlist@chromium.org'],
     'compositor_animator': ['mdjones+watch@chromium.org'],
@@ -2712,6 +2711,13 @@
     'origin_trials': ['chasej+watch@chromium.org',
                       'iclelland+watch@chromium.org'],
     'os_crypt': ['wfh+watch@chromium.org'],
+    'os_feedback_ui': ['ashleydp+feedback-watch@google.com',
+                       'cambickel+feedback-watch@google.com',
+                       'longbowei+feedback-watch@google.com',
+                       'wangdanny+feedback-watch@google.com',
+                       'xiangdongkong+feedback-watch@google.com',
+                       'yyhyyh+feedback-watch@google.com',
+                       'zhangwenyu+feedback-watch@google.com'],
     'ozone': ['ozone-reviews@chromium.org'],
     'ozone_fuchsia': ['dworsham@google.com',
                       'emircan@google.com',
@@ -2826,7 +2832,6 @@
     'structured_headers': ['iclelland+watch@chromium.org'],
     'styleguide': ['danakj+watch@chromium.org',
                    'jbroman+cpp@chromium.org',
-                   'vmpstr+watch@chromium.org',
                    'wfh+watch@chromium.org'],
     'styleguide_python': ['agrieve+watch@chromium.org',
                           'wnwen+watch@chromium.org'],

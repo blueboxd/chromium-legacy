@@ -83,8 +83,9 @@ message_center::NotificationViewController*
 GetActiveNotificationViewControllerForDisplay(int64_t display_id) {
   RootWindowController* root_window_controller =
       Shell::GetRootWindowControllerWithDisplayId(display_id);
-  if (!root_window_controller)
+  if (!root_window_controller || !root_window_controller->GetStatusAreaWidget())
     return nullptr;
+
   return root_window_controller->GetStatusAreaWidget()
       ->unified_system_tray()
       ->GetNotificationGroupingController()
@@ -176,6 +177,7 @@ void FadeOutView(views::View* view,
 
 void SlideOutView(views::View* view,
                   base::OnceClosure on_animation_ended,
+                  base::OnceClosure on_animation_aborted,
                   int delay_in_ms,
                   int duration_in_ms,
                   gfx::Tween::Type tween_type,
@@ -186,9 +188,6 @@ void SlideOutView(views::View* view,
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION) {
     delay_in_ms = 0;
   }
-
-  std::pair<base::OnceClosure, base::OnceClosure> split =
-      base::SplitOnceCallback(std::move(on_animation_ended));
 
   // The view must have a layer to perform animation.
   DCHECK(view->layer());
@@ -204,8 +203,8 @@ void SlideOutView(views::View* view,
   views::AnimationBuilder()
       .SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
-      .OnEnded(std::move(split.first))
-      .OnAborted(std::move(split.second))
+      .OnEnded(std::move(on_animation_ended))
+      .OnAborted(std::move(on_animation_aborted))
       .Once()
       .At(base::Milliseconds(delay_in_ms))
       .SetDuration(base::Milliseconds(duration_in_ms))

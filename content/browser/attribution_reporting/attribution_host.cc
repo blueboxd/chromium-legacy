@@ -109,6 +109,50 @@ void AttributionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
                                          initiator_root_frame_origin);
 }
 
+void AttributionHost::DidRedirectNavigation(
+    NavigationHandle* navigation_handle) {
+  auto it =
+      navigation_impression_origins_.find(navigation_handle->GetNavigationId());
+  if (it == navigation_impression_origins_.end())
+    return;
+
+  DCHECK(navigation_handle->GetImpression());
+
+  std::string source_header;
+  if (!navigation_handle->GetResponseHeaders()->GetNormalizedHeader(
+          "Attribution-Reporting-Register-Source", &source_header)) {
+    return;
+  }
+
+  AttributionManager* attribution_manager =
+      AttributionManager::FromWebContents(web_contents());
+  if (!attribution_manager)
+    return;
+
+  auto* data_host_manager = attribution_manager->GetDataHostManager();
+  if (!data_host_manager)
+    return;
+
+  const url::Origin& impression_origin = it->second;
+
+  const std::vector<GURL>& redirect_chain =
+      navigation_handle->GetRedirectChain();
+
+  if (redirect_chain.size() < 2)
+    return;
+
+  // The reporting origin should be the origin of the request responsible for
+  // initiating this redirect. At this point, the navigation handle reflects the
+  // URL being navigated to, so instead use the second to last URL in the
+  // redirect chain.
+  url::Origin reporting_origin =
+      url::Origin::Create(redirect_chain[redirect_chain.size() - 2]);
+
+  data_host_manager->NotifyNavigationRedirectRegistation(
+      navigation_handle->GetImpression()->attribution_src_token, source_header,
+      std::move(reporting_origin), impression_origin);
+}
+
 void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   // Observe only navigation toward a new document in the primary main frame.
   // Impressions should never be attached to same-document navigations but can
@@ -157,16 +201,15 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   DCHECK(navigation_handle->GetImpression());
   const blink::Impression& impression = *(navigation_handle->GetImpression());
 
-    auto* data_host_manager = attribution_manager->GetDataHostManager();
-    if (!data_host_manager)
-      return;
+  auto* data_host_manager = attribution_manager->GetDataHostManager();
+  if (!data_host_manager)
+    return;
 
-    const url::Origin& destination_origin =
-        navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin();
+  const url::Origin& destination_origin =
+      navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin();
 
-    data_host_manager->NotifyNavigationForDataHost(
-        impression.attribution_src_token, impression_origin,
-        destination_origin);
+  data_host_manager->NotifyNavigationForDataHost(
+      impression.attribution_src_token, impression_origin, destination_origin);
 }
 
 void AttributionHost::MaybeNotifyFailedSourceNavigation(

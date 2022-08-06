@@ -31,6 +31,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1150989369772528668">Dagatal</translation>
 <translation id="1153356358378277386">Pöruð tæki</translation>
 <translation id="1165712434476988950">Endurræsa þarf tækið til að nota uppfærsluna.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Ekki er víst að USB-C-snúran tengist skjáum á réttan hátt</translation>
 <translation id="1175572348579024023">Fletta</translation>
 <translation id="1178581264944972037">Gera hlé</translation>
@@ -55,10 +56,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1247519845643687288">Nýleg forrit</translation>
 <translation id="1252999807265626933">Verið er að hlaða með <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hvernig er veðrið?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> til 
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Veldu til að skoða nánar í Google dagatali.</translation>
 <translation id="1267032506238418139">Breyting á flýtileið</translation>
 <translation id="1269405891096105529">Jaðartæki ekki stutt í gestastillingu</translation>
 <translation id="1270290102613614947">Skjályklaborð óvirkt</translation>
@@ -124,6 +121,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1620510694547887537">Myndavél</translation>
 <translation id="1632985212731562677">Hægt er að slökkva á rofaaðgangi í Stillingar &gt; Aðgengi.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> tæki</translation>
+<translation id="1639239467298939599">Hleður</translation>
 <translation id="1654477262762802994">Hefja raddfyrirspurn</translation>
 <translation id="1668469839109562275">Innbyggt VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> eftir</translation>
@@ -239,6 +237,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="2359808026110333948">Halda áfram</translation>
 <translation id="2367186422933365202">Ekki tókst að skrá þig inn á Chromebook</translation>
 <translation id="2369165858548251131">„Halló“ á kínversku</translation>
+<translation id="2375445874393996153">Ekki er lengur stuðningur við að leita að því sem er á skjánum með Google hjálpara.</translation>
 <translation id="2390318262976603432">Stillingar tungumálskóða</translation>
 <translation id="240006516586367791">Efnisstýringar</translation>
 <translation id="2402411679569069051">Notaðu fingrafar eða taktu símann þinn úr lás til að taka Chromebook úr lás</translation>
@@ -505,6 +504,7 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="3901991538546252627">Tengist <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Færa verður tækið í fyrri útgáfu innan 1 mínútu}one{Færa verður tækið í fyrri útgáfu innan # mínútu}other{Færa verður tækið í fyrri útgáfu innan # mínútna}}</translation>
 <translation id="3923494859158167397">Ekkert farsímakerfi er uppsett</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, hleður viðburðum.</translation>
 <translation id="3932043219784172185">Ekkert tæki tengt</translation>
 <translation id="3934456833412894880">Kveikt er á aðlagaðri hleðslu. Rafhlaðan helst í 80% til að lengja rafhlöðuendingu og fullhleðst þegar þú þarft á að halda.</translation>
 <translation id="3943857333388298514">Líma</translation>
@@ -704,6 +704,7 @@ Tengdu tækið við rafmagn.</translation>
 <translation id="5078796286268621944">Rangt PIN-númer</translation>
 <translation id="5083553833479578423">Opnaðu fyrir fleiri eiginleika hjálparans.</translation>
 <translation id="509790653408515442">Um leið og þú streymir forrit símans birtast forritin hér</translation>
+<translation id="5098537242461068432">Skrifborð og gluggar opnaðir aftur</translation>
 <translation id="5107522548814527560">Vefur</translation>
 <translation id="5117590920725113268">Sýna næsta mánuð</translation>
 <translation id="5136175204352732067">Annað lyklaborð tengt</translation>
@@ -1048,7 +1049,6 @@ Ný uppsetning</translation>
 <translation id="7165278925115064263">Alt+shift+K</translation>
 <translation id="7168224885072002358">Skiptir aftur yfir í fyrri upplausn eftir <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Endurnýja</translation>
-<translation id="718361511487535372">Opna í Google dagatali</translation>
 <translation id="7188494361780961876">Valmynd færð efst í vinstra horn skjásins.</translation>
 <translation id="7189412385142492784">Hvað er Venus langt í burtu?</translation>
 <translation id="7198435252016571249">Myndavél fest við neðra horn hægra megin. Skörun við vettvang kerfis.</translation>
@@ -1057,6 +1057,10 @@ Ný uppsetning</translation>
 <translation id="7258828758145722155">Breytt í gær</translation>
 <translation id="726276584504105859">Dragðu hingað til að skipta skjánum</translation>
 <translation id="7262906531272962081">Búa til áminningu</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> til
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Veldu til að skoða nánar í Google dagatali.</translation>
 <translation id="7302889331339392448">Slökkt er á skjátextum í rauntíma.</translation>
 <translation id="7303365578352795231">Svarar á öðru tæki.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@ Ný uppsetning</translation>
 <translation id="7904094684485781019">Stjórnandi þessa reiknings hefur gert innskráningu á marga reikninga óvirka.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Úrvinnsla á tali fer núna fram í tækinu og raddinnsláttur virkar án nettengingar</translation>
+<translation id="7932451802722951285">Opna í Google dagatali</translation>
 <translation id="7933084174919150729">Google hjálparinn er aðeins í boði fyrir aðalprófíl.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /> stjórna þessum reikningi</translation>
 <translation id="793716872548410480">Ýttu á <ph name="SHORTCUT_KEY_NAME" /> + V til að skoða klippiborðið. Síðustu 5 atriðin sem þú afritaðir eru vistuð á klippiborðinu.</translation>

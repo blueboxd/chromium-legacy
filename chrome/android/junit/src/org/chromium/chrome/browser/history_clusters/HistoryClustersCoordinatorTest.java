@@ -4,9 +4,13 @@
 
 package org.chromium.chrome.browser.history_clusters;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.view.ViewGroup;
 
@@ -27,6 +31,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import org.chromium.base.Promise;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
@@ -40,6 +45,7 @@ import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.favicon.LargeIconBridgeJni;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.display.DisplayAndroidManager;
+import org.chromium.url.GURL;
 
 /** Unit tests for HistoryClustersCoordinator. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -80,6 +86,8 @@ public class HistoryClustersCoordinatorTest {
     private ActivityScenario<ChromeTabbedActivity> mActivityScenario;
     private HistoryClustersCoordinator mHistoryClustersCoordinator;
     private Intent mIntent = new Intent();
+    private Activity mActivity;
+    private Promise mPromise = new Promise();
 
     @Before
     public void setUp() {
@@ -87,13 +95,40 @@ public class HistoryClustersCoordinatorTest {
         jniMocker.mock(LargeIconBridgeJni.TEST_HOOKS, mMockLargeIconBridgeJni);
         doReturn(1L).when(mMockLargeIconBridgeJni).init();
         ShadowHistoryClustersBridge.sBridge = mHistoryClustersBridge;
+        doReturn(mPromise).when(mHistoryClustersBridge).queryClusters(anyString());
 
         mActivityScenario = ActivityScenario.launch(ChromeTabbedActivity.class);
+        HistoryClustersDelegate historyClustersDelegate = new HistoryClustersDelegate() {
+            @Override
+            public boolean isSeparateActivity() {
+                return true;
+            }
+
+            @Override
+            public Tab getTab() {
+                return mTab;
+            }
+
+            @Override
+            public Intent getHistoryActivityIntent() {
+                return mIntent;
+            }
+
+            @Override
+            public Intent getOpenUrlIntent(GURL gurl) {
+                return mIntent;
+            }
+
+            @Override
+            public ViewGroup getToggleView(ViewGroup parent) {
+                return mToggleView;
+            }
+        };
+
         mActivityScenario.onActivity(activity -> {
-            mHistoryClustersCoordinator = new HistoryClustersCoordinator(mProfile, activity,
-                    ()
-                            -> mIntent,
-                    () -> mTab, (url) -> new Intent(), mTemplateUrlService, (vg) -> mToggleView);
+            mActivity = activity;
+            mHistoryClustersCoordinator = new HistoryClustersCoordinator(
+                    mProfile, activity, mTemplateUrlService, historyClustersDelegate);
         });
     }
 
@@ -113,6 +148,30 @@ public class HistoryClustersCoordinatorTest {
 
         HistoryClustersToolbar toolbar = listLayout.findViewById(R.id.action_bar);
         assertNotNull(toolbar);
+    }
+
+    @Test
+    public void testSearchMenuItem() {
+        HistoryClustersToolbar toolbar = mHistoryClustersCoordinator.getActivityContentView()
+                                                 .findViewById(R.id.selectable_list)
+                                                 .findViewById(R.id.action_bar);
+        assertNotNull(toolbar);
+
+        mHistoryClustersCoordinator.onMenuItemClick(
+                toolbar.getMenu().findItem(R.id.search_menu_id));
+        assertTrue(toolbar.isSearching());
+    }
+
+    @Test
+    public void testCloseMenuItem() {
+        HistoryClustersToolbar toolbar = mHistoryClustersCoordinator.getActivityContentView()
+                                                 .findViewById(R.id.selectable_list)
+                                                 .findViewById(R.id.action_bar);
+        assertNotNull(toolbar);
+
+        assertFalse(mActivity.isFinishing());
+        mHistoryClustersCoordinator.onMenuItemClick(toolbar.getMenu().findItem(R.id.close_menu_id));
+        assertTrue(mActivity.isFinishing());
     }
 
     private static void resetStaticState() {

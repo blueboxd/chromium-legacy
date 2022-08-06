@@ -20,7 +20,7 @@
 <translation id="2313070403598893276">‏Google Chrome ساده، ایمن، و سریع‌تر از همیشه است</translation>
 <translation id="2339201583852607431">‏گذرواژه در «حساب Google» خودتان (<ph name="EMAIL" />) ذخیره خواهد شد.</translation>
 <translation id="2342919707875585281">‏Chrome مکانتان را با سایت‌هایی که مجاز کرده‌اید هم‌رسانی می‌کند.</translation>
-<translation id="2347208864470321755">‏وقتی این ویژگی روشن است، Chrome ترجمه صفحات نوشته شده به دیگر زبان‌ها را با استفاده از ‏‫ترجمه Google‬ پیشنهاد می‌دهد. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
+<translation id="2347208864470321755">‏وقتی این ویژگی روشن است، Chrome ترجمه صفحه‌های نوشته‌شده به دیگر زبان‌ها را بااستفاده از «ترجمه Google» پیشنهاد می‌دهد. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2427791862912929107">‏Chrome ویژگی‌هایی دارد که به شما کمک می‌کنند داده‌های اینترنت و سرعت بارگیری صفحه‌های وب را مدیریت کنید.
 <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2561231791489583059">‏از Chrome به‌عنوان مرورگر پیش‌فرض استفاده کنید تا دربرابر سایت‌های خطرناک از شما محافظت شود و امنیت گذرواژه‌هایتان حفظ شود</translation>
@@ -48,7 +48,7 @@
 <translation id="384394811301901750">‏Google Chrome اکنون نمی‌تواند از دوربین استفاده کند</translation>
 <translation id="3980220367029651214">‏هم‌اکنون حساب‌های همگام‌سازی را از <ph name="USER_EMAIL1" /> به <ph name="USER_EMAIL2" /> تغییر می‌دهید. داده‌های موجود Chrome شما توسط <ph name="DOMAIN" /> مدیریت می‌شود. با این کار، داده‌هایتان از این دستگاه حذف می‌شود اما همچنان در <ph name="USER_EMAIL1" /> باقی می‌ماند.</translation>
 <translation id="3984746313391923992">‏سازمانتان از شما می‌خواهد خارج از سیستم Chrome باقی بمانید.</translation>
-<translation id="3988789688219830639">‏Google Chrome به عکس‌ها یا ویدیوهای شما دسترسی ندارد. با رفتن به تنظیمات iOS &gt; حریم‌خصوصی &gt; عکس‌ها دسترسی را فعال کنید.</translation>
+<translation id="3988789688219830639">‏Google Chrome به عکس‌ها یا ویدیوهای شما دسترسی ندارد. با رفتن به تنظیمات iOS &gt; حریم خصوصی &gt; عکس‌ها دسترسی را فعال کنید.</translation>
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="417201473131094001">‏در Chrome Canary پشتیبانی نمی‌شود</translation>
 <translation id="4214277427269650960">‏به سیستم این سایت و Chrome وارد شوید. می‌توانید بعداً همگام‌سازی را روشن کنید.</translation>
@@ -58,6 +58,7 @@
 <translation id="4523886039239821078">‏برخی از افزونه‌ها باعث می‌شوند Chrome از کار بیفتد. لطفاً آنها را حذف نصب کنید:</translation>
 <translation id="4633328489441962921">‏Chrome نمی‌تواند به‌روزرسانی‌ها را بررسی کند</translation>
 <translation id="4698415050768537821">‏Chrome نمی‌تواند همه گذرواژه‌هایتان را بررسی کند. فردا دوباره امتحان کنید یا <ph name="BEGIN_LINK" />گذرواژه‌ها را در «حساب Google» خود بررسی کنید<ph name="END_LINK" />.</translation>
+<translation id="4802922164792993118">‏نکته‌ای درباره Chrome. با انتخاب کردن گذرواژه ذخیره‌شده در بالای صفحه‌کلید، سریع‌تر به سیستم وارد شوید.</translation>
 <translation id="4819268619367838612">‏برای کمک به بهبود برنامه، Chrome داده‌های استفاده و ازکارافتادگی را به Google ارسال می‌کند. <ph name="BEGIN_LINK" />مدیریت<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">‏در «Chrome بتا» پشتیبانی نمی‌شود</translation>
 <translation id="5030102366287574140">‏Chrome می‌تواند به محافظت از شما دربرابر نقض داده، وب‌سایت‌های ناامن، و موارد دیگر کمک کند.</translation>
@@ -67,7 +68,7 @@
 <translation id="5389212809648216794">‏Google Chrome نمی‌تواند از دوربین استفاده کند زیرا برنامه دیگری از آن استفاده می‌کند</translation>
 <translation id="5460571915754665838">‏۴. Chrome را انتخاب کنید</translation>
 <translation id="5552137475244467770">‏Chrome به‌طور دوره‌ای گذرواژه‌هایتان را با فهرست‌هایی که به‌صورت آنلاین منتشر می‌شود مقایسه می‌کند. هنگام انجام این کار، نام‌های کاربری و گذرواژه‌های شما رمزگذاری می‌شود تا توسط اشخاص دیگر، ازجمله Google خوانده نشود.</translation>
-<translation id="5639704535586432836">‏Settings (تنظیمات) &gt; Privacy (حریم‌خصوصی) &gt; Camera (دوربین) &gt; Google Chrome را باز کنید و دوربین را روشن کنید.</translation>
+<translation id="5639704535586432836">‏Settings (تنظیمات) &gt; Privacy (حریم خصوصی) &gt; Camera (دوربین) &gt; Google Chrome را باز کنید و دوربین را روشن کنید.</translation>
 <translation id="5642200033778930880">‏Google Chrome نمی‌تواند از دوربین درحالت «نمای تقسیم‌شده» استفاده کند</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">‏آفلاین هستید، Chrome نمی‌تواند به‌روزرسانی‌ها را بررسی کند.</translation>

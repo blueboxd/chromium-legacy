@@ -476,9 +476,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   DCHECK(!self.removeOrMyGoogleChooserAlertCoordinator);
   _authenticationOperationInProgress = YES;
 
+  // TODO(crbug.com/1338990): Remove the following line when todo bug will be
+  // fixed.
+  [self preventUserInteraction];
   __weak __typeof(self) weakSelf = self;
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AUTHENTICATION_OPERATION_ADD_ACCOUNT
+      initWithOperation:AuthenticationOperationAddAccount
                identity:nil
             accessPoint:AccessPoint::ACCESS_POINT_SETTINGS
             promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
@@ -490,6 +493,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)handleDidAddAccount:(BOOL)success {
+  // TODO(crbug.com/1338990): Remove the following line when todo bug will be
+  // fixed.
+  [self allowUserInteraction];
   [self handleAuthenticationOperationDidFinish];
   if (success && _closeSettingsOnAddAccount) {
     [self.dispatcher closeSettingsUI];

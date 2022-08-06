@@ -19,7 +19,9 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.features.TabInteractionRecorder;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
@@ -189,6 +191,22 @@ public class CustomTabObserver extends EmptyTabObserver {
                 && !navigation.isErrorPage() && navigation.isInPrimaryMainFrame()
                 && !navigation.isSameDocument();
         if (isFirstMainFrameCommit) mFirstCommitTimestamp = SystemClock.elapsedRealtime();
+    }
+
+    @Override
+    public void onDestroyed(Tab tab) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_RETAINING_STATE)) {
+            TabInteractionRecorder observer = TabInteractionRecorder.getFromTab(tab);
+            if (observer != null) observer.onTabClosing();
+        }
+    }
+
+    @Override
+    public void onShown(Tab tab, int type) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PACKAGE_NAME_RECORDING)
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_RETAINING_STATE)) {
+            TabInteractionRecorder.createForTab(tab);
+        }
     }
 
     public void onFirstMeaningfulPaint(Tab tab) {

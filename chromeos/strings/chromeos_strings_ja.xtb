@@ -18,6 +18,7 @@
 <translation id="1175697296044146566">この <ph name="DEVICE_TYPE" /> は <ph name="MANAGER" /> によって管理されています。</translation>
 <translation id="1175951029573070619">普通（<ph name="SIGNAL_STRENGTH" />）</translation>
 <translation id="1181037720776840403">削除</translation>
+<translation id="1190378975642195988">本体加速度計</translation>
 <translation id="1195447618553298278">不明なエラーです。</translation>
 <translation id="1196959502276349371">バージョン <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">再生と一時停止</translation>
@@ -61,6 +62,7 @@
 <translation id="1459784442280469416">USB に保存</translation>
 <translation id="1468664791493211953">クーポン</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> はこのデバイスを管理しており、アクティビティを監視できる可能性があります。</translation>
+<translation id="147809995039451286">アップデートをダウンロードできませんでした</translation>
 <translation id="1478594628797167447">スキャナ</translation>
 <translation id="1491076385728777984">「<ph name="DEVICE_NAME" />」のファームウェアを更新中</translation>
 <translation id="1499900233129743732">このユーザーは <ph name="MANAGER" /> によって管理されています。設定の管理とユーザー アクティビティの監視がリモートで行われることがあります。</translation>
@@ -125,6 +127,7 @@
 <translation id="1999615961760456652">キャプティブ ポータル</translation>
 <translation id="2006864819935886708">接続</translation>
 <translation id="2008685064673031089">Prime サーチ</translation>
+<translation id="2011174342667534258">SDK のバージョン:</translation>
 <translation id="2016697457005847575">トラブルシューティングの手順を試す</translation>
 <translation id="2016848882344942759">--ホワイトラベルなし--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -156,6 +159,7 @@
 <translation id="225692081236532131">起動状態</translation>
 <translation id="2271469253353559191">ダークモードのスケジュールを設定する</translation>
 <translation id="2275586345903859204">修復が完了しました</translation>
+<translation id="2276999893457278469">関連するヘルプ コンテンツ</translation>
 <translation id="2287186687001756809">画像がありません。写真を追加するには、<ph name="LINK" /> にアクセスしてください</translation>
 <translation id="2294753434210277304">Chromebook リカバリ ユーティリティ イメージをダウンロードした USB ドライブや SD カードなどの外部ストレージを接続してください</translation>
 <translation id="2307344026739914387">現在の鍵ペアを使用</translation>
@@ -177,6 +181,7 @@
 <translation id="2418150275289244458">設定で開く</translation>
 <translation id="2421798028054665193">画像 <ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">浮動小数点数精度</translation>
+<translation id="2447969267935997922">インストールが完了しました。USB ドライブまたは SD カードを取り外すことができます。</translation>
 <translation id="2448312741937722512">種類</translation>
 <translation id="2461822463642141190">現在</translation>
 <translation id="2480034874476596812">手動で無効にする</translation>
@@ -188,6 +193,7 @@
 <translation id="2517472476991765520">スキャン</translation>
 <translation id="2526590354069164005">デスクトップ</translation>
 <translation id="253029298928638905">再起動中…</translation>
+<translation id="2533048460510040082">ヘルプ コンテンツの候補</translation>
 <translation id="2536159006530886390">インターネットに接続できません。</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> のテストを実行しています...</translation>
 <translation id="2584559707064218956">設定を行うには [設定] に移動します</translation>
@@ -214,7 +220,6 @@
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> 秒で <ph name="RATE" /> 放電しました。</translation>
 <translation id="291142119251986300">資格を満たしていないコンポーネント</translation>
 <translation id="2926057806159140518">ユーザー名とパスワードを入力するか、QR コードをスキャンしてください</translation>
-<translation id="2928420929544864228">インストールが完了しました。</translation>
 <translation id="3008341117444806826">更新</translation>
 <translation id="3009958530611748826">保存先のフォルダを選択</translation>
 <translation id="3017079585324758401">背景</translation>
@@ -268,6 +273,7 @@
 <translation id="3484914941826596830">ファームウェアのアップデート中、この外部デバイスを電源から外したり、パソコンをシャットダウンしたりしないでください。このウィンドウは最小化できます。アップデートには数分かかることがあります。その間、外部デバイスは動作しない可能性があります。</translation>
 <translation id="3486220673238053218">定義</translation>
 <translation id="3488065109653206955">一部有効</translation>
+<translation id="3492982278147736083">カバー部ジャイロスコープ</translation>
 <translation id="3517001332549868749">ChromeOS の更新</translation>
 <translation id="3527036260304016759">失敗 - 不明なエラー</translation>
 <translation id="3532980081107202182">残り時間: 約 <ph name="MIN_REMAINING" /> 分</translation>
@@ -287,6 +293,7 @@
 <translation id="3621202678540785336">入力</translation>
 <translation id="3632579075709132555">プライバシー画面の切り替え</translation>
 <translation id="3643810137582748570">キャリブレーションをスキップ</translation>
+<translation id="3651050199673793219">温度の単位を選択してください</translation>
 <translation id="3678765385266369662">書き込み保護を無効にする方法を選択してください</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> テスト</translation>
 <translation id="370665806235115550">読み込んでいます...</translation>
@@ -301,9 +308,12 @@
 <translation id="3820172043799983114">無効な PIN です。</translation>
 <translation id="3838338534323494292">新しいパスワード</translation>
 <translation id="385051799172605136">戻る</translation>
+<translation id="3856304145690230735">本体ジャイロスコープ</translation>
 <translation id="385832974417157471">シャットダウンする前に、デバイスで Powerwash を実行してください。折りたたみ式のデバイスの場合は、Powerwash が完了するまで待ってからカバーを閉じてください。Powerwash が完了するまでに 1 分ほどかかることがあります。</translation>
 <translation id="3858860766373142691">名前</translation>
+<translation id="3862598938296403232">説明は必須です</translation>
 <translation id="3865414814144988605">解像度</translation>
+<translation id="3866249974567520381">説明</translation>
 <translation id="387301095347517405">電池がフル充電されたサイクルの回数です</translation>
 <translation id="3885327323343477505">スクリーン セーバーを変更</translation>
 <translation id="3923184630988645767">データ使用</translation>
@@ -371,6 +381,7 @@
 <translation id="4472575034687746823">始める</translation>
 <translation id="4479639480957787382">イーサネット</translation>
 <translation id="4483049906298469269">デフォルト以外のネットワーク ゲートウェイに向けた ping が失敗しました</translation>
+<translation id="4500213108254186382">カバー部加速度計</translation>
 <translation id="4503223151711056411">左矢印</translation>
 <translation id="4511264077854731334">ポータル</translation>
 <translation id="4521826082652183069">サブジェクト代替名マッチ</translation>
@@ -382,6 +393,7 @@
 <translation id="4561801978359312462">SIM のロックは解除されています</translation>
 <translation id="4562494484721939086">サービスなし</translation>
 <translation id="4568938274596692027">インストールが完了しました。再起動の準備をしています...</translation>
+<translation id="4576943788798178439">タッチペンのサポート</translation>
 <translation id="458794348635939462">すべてのホストを解決できませんでした</translation>
 <translation id="4593212453765072419">プロキシ認証が必要です</translation>
 <translation id="4609350030397390689">キーボードの明るさを下げる</translation>
@@ -430,6 +442,7 @@
 <translation id="4915052247106771211">デバイスは出荷時の設定にリセットされます（Powerwash）。</translation>
 <translation id="4917385247580444890">強い</translation>
 <translation id="4917889632206600977">停止 - 用紙切れ</translation>
+<translation id="491791267030419270">フィードバックの作成に関するヒント</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> 秒で <ph name="RATE" /> 充電しました。</translation>
 <translation id="4930320165497208503">接続を設定または更新するには、[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] に移動します。</translation>
 <translation id="4932733599132424254">日付</translation>
@@ -442,7 +455,7 @@
 <translation id="500920857929044050">テストを停止</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">画面がアイドル状態のときに、写真、時刻、天気、メディア情報を表示します。</translation>
-<translation id="5039804452771397117">許可</translation>
+<translation id="5039804452771397117">許可する</translation>
 <translation id="5049856988445523908">SIM はロックされています（<ph name="LOCK_TYPE" />）</translation>
 <translation id="5050042263972837708">グループ名</translation>
 <translation id="5051044138948155788">これは存在する唯一のページです。削除すると、スキャンのスタート画面に戻ります。</translation>
@@ -536,6 +549,7 @@
 <translation id="5866840822086176774">非常に強い</translation>
 <translation id="588258955323874662">全画面表示</translation>
 <translation id="5895138241574237353">再起動</translation>
+<translation id="5898758006340607522">電源ボタン</translation>
 <translation id="5901630391730855834">黄</translation>
 <translation id="5903200662178656908">デバイスはキーボードとマウスの一体型です。</translation>
 <translation id="5916084858004523819">禁止</translation>
@@ -671,6 +685,7 @@
 <translation id="7143207342074048698">接続中</translation>
 <translation id="7144878232160441200">再読み込み</translation>
 <translation id="714876143603641390">LAN 接続</translation>
+<translation id="7154020516215182599">フィードバックまたは問題の内容を記入します。可能な場合は、問題の再現手順もお知らせください。</translation>
 <translation id="7155171745945906037">カメラやファイルに保存されている写真</translation>
 <translation id="7162487448488904999">ギャラリー</translation>
 <translation id="7170236477717446850">プロフィール写真</translation>
@@ -848,6 +863,7 @@
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="8863170912498892583">ダークモードを有効にする</translation>
 <translation id="8863888432376731307">「<ph name="QUERY" />」の <ph name="INTENT" /> の取得など</translation>
+<translation id="8864415976656252616">コンテンツの候補はありません。関連するヘルプ コンテンツをご覧ください。</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">デバイスの種類はタブレットです。</translation>
 <translation id="8881098542468797602">テストが成功しました</translation>
@@ -858,6 +874,7 @@
 <translation id="8919792139048574232">修復内容を確認できます</translation>
 <translation id="8919837981463578619">失敗 - トレイがありません</translation>
 <translation id="8923267550422472772">リセット日</translation>
+<translation id="8925613211674558308">VPD キャッシュ</translation>
 <translation id="8928727111548978589">失敗 - 用紙がありません</translation>
 <translation id="8930521118335213258">ピア</translation>
 <translation id="8930622219860340959">ワイヤレス</translation>
@@ -899,6 +916,7 @@
 <translation id="922179502584117429">現在のバージョン <ph name="VERSION_NUMBER" /> は最新ではありません</translation>
 <translation id="932327136139879170">ホーム</translation>
 <translation id="939519157834106403">SSID</translation>
+<translation id="945522503751344254">フィードバックを送信</translation>
 <translation id="952992212772159698">無効</translation>
 <translation id="960719561871045870">事業者コード</translation>
 <translation id="982713511914535780">放電テストを実行</translation>

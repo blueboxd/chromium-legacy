@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">कैलेंडर</translation>
 <translation id="1153356358378277386">युग्‍मित डिवाइस</translation>
 <translation id="1165712434476988950">अपडेट लागू करने के लिए डिवाइस को रीस्टार्ट करना ज़रूरी है.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">हो सकता है कि आपकी यूएसबी-सी केबल, डिसप्ले के साथ ठीक तरह से कनेक्ट न हो पाए</translation>
 <translation id="1175572348579024023">स्क्रोल करें</translation>
 <translation id="1178581264944972037">रोकें</translation>
@@ -55,17 +56,13 @@
 <translation id="1247519845643687288">हाल ही में इस्तेमाल किए गए ऐप्लिकेशन</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> से चार्ज हो रहा है</translation>
 <translation id="1255033239764210633">मौसम कैसा है?</translation>
-<translation id="1262870540683925850"><ph name="START_TIME" /> से 
-        <ph name="END_TIME" /> तक, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. ज़्यादा जानकारी के लिए, Google Calendar में जाकर चुनें.</translation>
 <translation id="1267032506238418139">शॉर्टकट में बदलाव</translation>
 <translation id="1269405891096105529">मेहमान मोड चालू होने पर, सहायक डिवाइस (जैसे, कीबोर्ड, माउस, मॉनिटर, वेबकैम वगैरह) काम नहीं करते.</translation>
 <translation id="1270290102613614947">ऑन-स्‍क्रीन कीबोर्ड अक्षम है</translation>
 <translation id="1272079795634619415">रोकें</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> चार्ज कर रहा है</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1285992161347843613">फ़ोन का पता लगाने की सुविधा</translation>
+<translation id="1285992161347843613">फ़ोन का पता लगाएं</translation>
 <translation id="1287002645302686982"><ph name="DESK_TEMPLATE_NAME" /> नाम से सेव किया डेस्क पहले से मौजूद है</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> को <ph name="COME_BACK_TIME" /> बजे फिर से देखें.</translation>
 <translation id="1290331692326790741">कमज़ोर सिग्नल</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">कैमरा</translation>
 <translation id="1632985212731562677">ऐक्सेस करने का तरीका बदलने की सुविधा को सेटिंग &gt; सुलभता में जाकर, बंद किया जा सकता है.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> डिवाइस</translation>
+<translation id="1639239467298939599">लोड हो रहा है</translation>
 <translation id="1654477262762802994">बोलकर खोजना शुरू करें</translation>
 <translation id="1668469839109562275">पहले से मौजूद वीपीएन</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> बाकी</translation>
@@ -239,6 +237,7 @@
 <translation id="2359808026110333948">जारी रखें</translation>
 <translation id="2367186422933365202">आपके Chromebook में साइन इन नहीं हो पाया</translation>
 <translation id="2369165858548251131">चाइनीज़ भाषा में "नमस्ते" कैसे बोलते हैं</translation>
+<translation id="2375445874393996153">Google Assistant की मदद से, स्क्रीन पर मौजूद कॉन्टेंट को अब खोजा नहीं जा सकता.</translation>
 <translation id="2390318262976603432">स्थान-भाषा की सेटिंग</translation>
 <translation id="240006516586367791">मीडिया कंट्रोल</translation>
 <translation id="2402411679569069051">Chromebook अनलॉक करने के लिए, अपना फ़िंगरप्रिंट इस्तेमाल करें या अपना फ़ोन अनलॉक करें</translation>
@@ -506,6 +505,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> से कनेक्‍ट हो रहा है</translation>
 <translation id="3922427723338465344">{0,plural, =1{अपने डिवाइस को 1 मिनट के अंदर पिछले वर्शन पर ले जाएं}one{अपने डिवाइस को # मिनट के अंदर पिछले वर्शन पर ले जाएं}other{अपने डिवाइस को # मिनट के अंदर पिछले वर्शन पर ले जाएं}}</translation>
 <translation id="3923494859158167397">कोई भी मोबाइल नेटवर्क सेट अप नहीं किया गया है</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, इवेंट लोड हो रहे हैं.</translation>
 <translation id="3932043219784172185">कोई भी डिवाइस कनेक्ट नहीं है</translation>
 <translation id="3934456833412894880">अडैप्टिव चार्जिंग की सुविधा चालू है. इसकी मदद से, बैटरी लाइफ़ बढ़ाने के लिए बैटरी 80% चार्ज रहती है और ज़रूरत पड़ने पर पूरी चार्ज हो जाती है.</translation>
 <translation id="3943857333388298514">चिपकाएं</translation>
@@ -705,6 +705,7 @@
 <translation id="5078796286268621944">गलत पिन</translation>
 <translation id="5083553833479578423">Assistant की और भी सुविधाओं के बारे में जानें.</translation>
 <translation id="509790653408515442">फ़ोन के ऐप्लिकेशन स्ट्रीम करने पर, वे यहां दिखेंगे</translation>
+<translation id="5098537242461068432">डेस्क और विंडो को फिर से खोला गया</translation>
 <translation id="5107522548814527560">वेब</translation>
 <translation id="5117590920725113268">अगला महीना दिखाएं</translation>
 <translation id="5136175204352732067">अलग कीबोर्ड कनेक्ट किया गया</translation>
@@ -1049,7 +1050,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> में पुराने रिज़ॉल्यूशन में वापस लौट रहा है</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
-<translation id="718361511487535372">Google Calendar में खोलें</translation>
 <translation id="7188494361780961876">मेन्यू, स्क्रीन के सबसे ऊपर बाएं कोने में चला गया है.</translation>
 <translation id="7189412385142492784">धरती से शुक्र ग्रह कितना दूर है</translation>
 <translation id="7198435252016571249">कैमरा इनपुट की झलक, अब नीचे दाएं कोने में दिखेगी. ऐसा, सिस्टम पर दूसरे ऐप्लिकेशन के साथ ओवरलैप होने की वजह से किया गया है.</translation>
@@ -1058,6 +1058,10 @@
 <translation id="7258828758145722155">इसमें, कल बदलाव किया गया था</translation>
 <translation id="726276584504105859">दो स्क्रीन का इस्तेमाल करने के लिए यहां खींचें और छोडें</translation>
 <translation id="7262906531272962081">रिमाइंडर लगाएं</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> से
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. ज़्यादा जानकारी के लिए, Google Calendar में जाकर यह एंट्री चुनें.</translation>
 <translation id="7302889331339392448">लाइव कैप्शन की सुविधा बंद है.</translation>
 <translation id="7303365578352795231">दूसरे डिवाइस पर जवाब देना.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1170,6 +1174,7 @@
 <translation id="7904094684485781019">इस खाते के एडमिन ने एक से ज़्यादा साइन-इन को अस्वीकार कर दिया है.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">स्पीच को स्थानीय तौर पर प्रोसेस किया जाता है और लिखवाने की सुविधा ऑफ़लाइन काम करती है</translation>
+<translation id="7932451802722951285">Google Calendar में खोलें</translation>
 <translation id="7933084174919150729">Google Assistant सिर्फ़ प्राथमिक प्रोफ़ाइल के लिए उपलब्ध है.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> और <ph name="SECOND_PARENT_EMAIL" /> खाता संभालते हैं</translation>
 <translation id="793716872548410480">क्लिपबोर्ड देखने के लिए, <ph name="SHORTCUT_KEY_NAME" /> + V दबाएं. आपके कॉपी किए गए आखिरी पांच आइटम, क्लिपबोर्ड पर सेव किए गए.</translation>

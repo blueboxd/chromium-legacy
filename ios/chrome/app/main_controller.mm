@@ -25,6 +25,7 @@
 #include "components/component_updater/installer_policies/on_device_head_suggest_component_installer.h"
 #import "components/component_updater/installer_policies/optimization_hints_component_installer.h"
 #include "components/component_updater/installer_policies/safety_tips_component_installer.h"
+#include "components/component_updater/installer_policies/url_param_classification_component_installer.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -34,6 +35,7 @@
 #include "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #import "components/previous_session_info/previous_session_info.h"
+#import "components/sync/driver/sync_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/app/app_metrics_app_state_agent.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
@@ -97,6 +99,7 @@
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -214,6 +217,7 @@ void RegisterComponentsForUpdate() {
   RegisterAutofillStatesComponent(cus,
                                   GetApplicationContext()->GetLocalState());
   RegisterOptimizationHintsComponent(cus);
+  RegisterUrlParamClassificationComponent(cus);
 }
 
 // The delay, in seconds, for cleaning external files.
@@ -1139,15 +1143,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)scheduleFaviconsCleanup {
+#if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
+  __weak MainController* weakSelf = self;
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kFaviconsCleanup
                   block:^{
-#if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
-                    UpdateFaviconsStorage(
-                        IOSChromeFaviconLoaderFactory::GetForBrowserState(
-                            self.currentBrowserState));
-#endif
+                    [weakSelf performFaviconsCleanup];
                   }];
+#endif
 }
 
 - (void)expireFirstUserActionRecorder {
@@ -1319,6 +1322,22 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   BrowsingDataRemoverFactory::GetForBrowserState(browserState)
       ->Remove(timePeriod, removeMask, base::BindOnce(removalCompletion));
 }
+
+#if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
+- (void)performFaviconsCleanup {
+  ChromeBrowserState* browserState = self.currentBrowserState;
+  if (!browserState)
+    return;
+
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(browserState);
+  if (syncService) {
+    UpdateFaviconsStorage(
+        IOSChromeFaviconLoaderFactory::GetForBrowserState(browserState),
+        syncService->IsSyncFeatureEnabled());
+  }
+}
+#endif
 
 #pragma mark - BlockingSceneCommands
 

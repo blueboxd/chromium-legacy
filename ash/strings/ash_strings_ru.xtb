@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">Календарь</translation>
 <translation id="1153356358378277386">Сопряженные устройства</translation>
 <translation id="1165712434476988950">Чтобы применить обновление, необходимо перезапустить устройство.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Возможно, кабель USB-C неправильно подключен к экрану.</translation>
 <translation id="1175572348579024023">Прокрутка</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -55,10 +56,6 @@
 <translation id="1247519845643687288">Недавние приложения</translation>
 <translation id="1252999807265626933">Подключен источник питания: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какая сейчас погода?</translation>
-<translation id="1262870540683925850">С <ph name="START_TIME" /> до
-        <ph name="END_TIME" />, 
-        <ph name="TIME_ZONE" />, 
-        <ph name="EVENT_SUMMARY" />. Выберите мероприятие, чтобы посмотреть сведения о нем в Google Календаре.</translation>
 <translation id="1267032506238418139">Изменение сочетания клавиш</translation>
 <translation id="1269405891096105529">Периферийные устройства в гостевом режиме не поддерживаются.</translation>
 <translation id="1270290102613614947">Экранная клавиатура отключена</translation>
@@ -124,6 +121,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1632985212731562677">Функцию Switch Access можно отключить в разделе "Настройки &gt; Специальные возможности".</translation>
 <translation id="1637505162081889933">Устройств: <ph name="NUM_DEVICES" /></translation>
+<translation id="1639239467298939599">Загрузка</translation>
 <translation id="1654477262762802994">Произнесите запрос</translation>
 <translation id="1668469839109562275">Встроенная VPN</translation>
 <translation id="1677472565718498478">Ещё <ph name="TIME" /></translation>
@@ -239,6 +237,7 @@
 <translation id="2359808026110333948">Продолжить</translation>
 <translation id="2367186422933365202">Не удалось войти в аккаунт на устройстве Chromebook.</translation>
 <translation id="2369165858548251131">"Привет" по-китайски</translation>
+<translation id="2375445874393996153">Google Ассистент больше не поддерживает поиск контента на экране.</translation>
 <translation id="2390318262976603432">Региональные настройки</translation>
 <translation id="240006516586367791">Управление медиаконтентом</translation>
 <translation id="2402411679569069051">Чтобы разблокировать Chromebook, используйте отпечаток пальца или разблокируйте телефон.</translation>
@@ -505,6 +504,7 @@
 <translation id="3901991538546252627">Подключение к <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Вернитесь к предыдущей версии ОС в течение 1 минуты}one{Вернитесь к предыдущей версии ОС в течение # минуты}few{Вернитесь к предыдущей версии ОС в течение # минут}many{Вернитесь к предыдущей версии ОС в течение # минут}other{Вернитесь к предыдущей версии ОС в течение # минуты}}</translation>
 <translation id="3923494859158167397">Нет настроенных мобильных сетей</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, загрузка мероприятий</translation>
 <translation id="3932043219784172185">Нет подключенных устройств</translation>
 <translation id="3934456833412894880">Адаптивная зарядка включена. Чтобы продлить срок службы батареи, заряд будет доводиться до уровня 80 % и удерживаться на нем. Полностью батарея будет заряжаться, только когда это необходимо.</translation>
 <translation id="3943857333388298514">Вставить</translation>
@@ -704,6 +704,7 @@
 <translation id="5078796286268621944">Неверный PIN-код</translation>
 <translation id="5083553833479578423">Получите доступ к другим возможностям Ассистента.</translation>
 <translation id="509790653408515442">Приложения, которые вы транслируете с телефона, появляются здесь.</translation>
+<translation id="5098537242461068432">Рабочий стол и окна открыты повторно</translation>
 <translation id="5107522548814527560">Интернет</translation>
 <translation id="5117590920725113268">Показать следующий месяц</translation>
 <translation id="5136175204352732067">Подключена другая клавиатура</translation>
@@ -1048,7 +1049,6 @@
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Возврат к предыдущему разрешению через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Обновить</translation>
-<translation id="718361511487535372">Открыть в Google Календаре</translation>
 <translation id="7188494361780961876">Меню перемещено в левый верхний угол экрана.</translation>
 <translation id="7189412385142492784">Расстояние до Венеры</translation>
 <translation id="7198435252016571249">Окно предварительного просмотра камеры привязано к правому нижнему углу, так как перекрывало элементы системного интерфейса</translation>
@@ -1057,6 +1057,10 @@
 <translation id="7258828758145722155">Изменено вчера</translation>
 <translation id="726276584504105859">Перетащите сюда, чтобы разделить экран</translation>
 <translation id="7262906531272962081">Создать напоминание</translation>
+<translation id="7297440678881127227">С <ph name="START_TIME" /> до
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Выберите мероприятие, чтобы посмотреть дополнительные сведения о нем в Google Календаре.</translation>
 <translation id="7302889331339392448">Автоматические субтитры отключены</translation>
 <translation id="7303365578352795231">Ассистент отвечает на другом устройстве.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1169,6 +1173,7 @@
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Речь теперь обрабатывается на устройстве. Вы можете пользоваться голосовым вводом офлайн.</translation>
+<translation id="7932451802722951285">Открыть в Google Календаре</translation>
 <translation id="7933084174919150729">Google Ассистент доступен только в основном профиле</translation>
 <translation id="79341161159229895">Администраторы аккаунта: <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Чтобы посмотреть содержимое буфера обмена, нажмите клавиши <ph name="SHORTCUT_KEY_NAME" /> + V. В буфере сохраняются пять последних скопированных объектов.</translation>
